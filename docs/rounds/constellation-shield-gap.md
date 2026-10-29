@@ -6,7 +6,7 @@ gate (`docs/rounds/constellation-gating-plan.md`); ⚓ Nate asked whether to fix
 session and the answer was no — see §5.
 
 ⚠️ **It is NOT a leak and the constellation gate did not cause it.** These shields draw
-nothing at C0 and nothing at C6 either. It is the [[orphaned_schema]] blind spot the
+nothing at C0 and nothing at C6 either. It is the `docs/curation/orphaned-schema-audit.md` blind spot the
 guard cannot see: `shield` effects ARE read, just not from this source, so a green
 `orphanedSchema.test.ts` says nothing here.
 
@@ -88,7 +88,7 @@ explaining why it is shaped as it is:
 
 ⚠️ **Every one of the seven is authored with NO `label`.** The shield lane renders
 `Effect.label`, the shield's in-game NAME, and ⛔ inventing one is forbidden
-([[shield_summon_split]]). Beidou C1, Yanfei C4 and Nicole C2 have no named shield in
+(`docs/rounds/shield-summon-split.md`). Beidou C1, Yanfei C4 and Nicole C2 have no named shield in
 game, so **what an unlabelled shield bar reads as is a design question for Nate** — it
 is the first of its kind on that lane.
 
@@ -103,7 +103,7 @@ Not scope discipline for its own sake — three concrete reasons:
   the caveat/curation conventions and the `ingest-character` recipe; the gating session
   was carrying the parser-collection material instead.
 - **It touches character JSONs**, and the project's own convention puts char-JSON edits
-  in a fresh context (memory `stance_chain_pilot`).
+  in a fresh context (`stance_chain_pilot` (a retired note)).
 
 ## 6. How to verify it
 

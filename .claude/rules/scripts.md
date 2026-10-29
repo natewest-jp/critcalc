@@ -24,7 +24,11 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 
 - The oracle is `scripts/gcsim-dump/main.go`, which links gcsim as a library (a shim Go module generated into gitignored `scratch/`, with `replace` → `~/Code/gcsim`) rather than shelling out. The cancel slice is `action.Info.Frames(next)` and is not in the debug log. Running one ability in an empty core makes application attribution exact. The whole roster takes about 2s.
 - Fetch the gcsim checkout first: the oracle audits whatever is checked out. gcsim's `go.mod` needs Go 1.27, and the dumper's `GOPROXY=off` build then reads as "Go not installed", so prime it with `go version` in the clone.
-- Frames from an unmerged gcsim PR follow the Ifa/Varka precedent. Never take them from a draft whose slices are placeholders. Still absent from gcsim: Lohen, Sandrone, Zibai, Alyosha.
+- If the shim build fails with "module lookup disabled" after a gcsim upgrade, run `go mod download` in the clone.
+- Characters whose frames come from an unmerged gcsim PR (`meta.framesSource: "gcsim-pr"`) go stale when the PR moves: re-check its head with `git ls-remote origin refs/pull/N/head`, and re-run the writers when it merges.
+- A frames migration never collapses a distinction the corpus draws. If two maps that differ today would match afterwards, the capture describes only one of them, and the whole group reverts.
+- A module a Node script imports must not import a `.svelte.ts` runes module, even transitively, and imports sibling TypeScript files with the `.ts` extension.
+- Frames from an unmerged gcsim PR follow the Ifa/Varka precedent. Never take them from a draft whose slices are placeholders. To see who gcsim still lacks, list `~/Code/gcsim/internal/characters/` after a fetch; the state of the checkout is `docs/design/gcsim-checkout-state.md`.
 
 ## Reading the oracle
 

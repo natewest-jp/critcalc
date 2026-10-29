@@ -1772,7 +1772,7 @@ gcsim coverage complete.
   `state` window still runs to 12.57 s. Everything keyed to that duration is equally long: A4's +70 %
   Normal DMG and C4's +40 % ATK both carry `duration: 12.57`. No caveat names the stance length (the
   skill's only caveat is about hold-E). _Fix:_ engine — a drain-driven state end; belongs in the open
-  E3 v2 drain round (`project_e3_v2_handoff`). ⛔ Don't shorten `duration` to 6.43 — void-rift absorption
+  E3 v2 drain round (`docs/rounds/e3-v2-handoff.md`). ⛔ Don't shorten `duration` to 6.43 — void-rift absorption
   genuinely extends it, so the max is not wrong, the _termination rule_ is missing.
 - **[S] A swap destroys the Serpent's Subtlety pool, in two different wrong directions.**
   Measured at C0: `Skirk E N3 > Fischl E > Skirk Q` → the stance correctly ends on swap at 1.28 s, but the
@@ -2040,7 +2040,7 @@ carries the measured `tickCap: 8`.
   (`summonTick.icdGate`, `chargedIcdWindow`) but has no home on a cast's `application[]` — schema + engine.
 - **[B] Mini Baku draws 16 tick marks for 8 snacks.** Measured `ticks=16`: the heal and damage series share
   `interval 1.5` and `firstTickDelay 1.5`, so both emit markers at identical instants. This is the known
-  open bug in memory `gauge_round_l5e` ("8 summons draw DUPLICATE tick markers … `opacity:.92` makes them
+  open bug in `docs/rounds/gauge-round-L5e.md` ("8 summons draw DUPLICATE tick markers … `opacity:.92` makes them
   read solid") — Mizuki is one of the eight. The burst's caveat ("Each tick mark is one snack") is true on
   screen and false in the data.
 - **[B] The first snack tick is 0.3 s early against the oracle** — §5: ours 183 f, gcsim 201 f. 183 f is the
@@ -2316,7 +2316,7 @@ activation sites, the C0/C2 gate asymmetry — and it behaves exactly as its not
 - **[A] Tugarin's tick markers are drawn THREE times per instant.** Measured at C6:
   `ticks: 120,120,120, 240,240,240, …` — **27 marks for 9 mauls**, because the damage series, the A1 heal
   and the C4 heal all sit on the identical 2s cadence with `opacity:.92`. This is the open 8-summon
-  duplicate-marker bug in memory `gauge_round_l5e`, and Alyosha is its worst case (three deep, not two).
+  duplicate-marker bug in `docs/rounds/gauge-round-L5e.md`, and Alyosha is its worst case (three deep, not two).
   At C0 it is 12 marks for 6 mauls.
 - **[A] Two summons on one cadence produce exactly-coincident applications.** Measured: applications at
   **120 and 120**, 360 ×2, 600 ×2, 840 ×2 (Tugarin + Fulgurite Hunting Field, same element, same 1U).
@@ -4173,8 +4173,7 @@ authored description-only with the C6 Radiance clause wired.
   effect sit on the same 2s cadence and `computeSummonTicks` takes both. Measured:
   `Diona hE Q` → `summon Drunken Mist 1.58→14.08s ticks=12`. Evidence:
   `src/lib/data/characters/diona.json` burst `summons[0].effects[0..1]` (both
-  `summonTick interval 2 firstTickDelay 2`). Fix: this is the open corpus bug in memory
-  `project_gauge_round_l5e` ("8 summons draw DUPLICATE tick markers"); Diona is one of the
+  `summonTick interval 2 firstTickDelay 2`). Fix: this is the open corpus bug in `docs/rounds/gauge-round-L5e.md` ("8 summons draw DUPLICATE tick markers"); Diona is one of the
   eight. Needs the engine-side dedupe decision, not authoring — and per that memory note,
   ⛔ not without a corpus measurement first.
 - **[A]** C2 has no `effects` at all. gcsim `skill.go` `pawsPewPew`: `if Cons >= 2 { shdHp *= 1.15 }`;

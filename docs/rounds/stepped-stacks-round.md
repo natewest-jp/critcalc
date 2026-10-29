@@ -93,3 +93,10 @@ even "up". The gate was `null` forever and a bare Q lost its grant.
 - The C6 self elevation is one 45% effect (25% + her additional 20%) so a stat
   dedupe cannot split them.
 - ⏭ Nate judges the stepped bar on screen (density floor, tooltip).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/stepped-stacks-round.md`:
+
+- 🐛 Fixed in `fc77bcb4` (found by Nate at C2): keying received rows by stat made two rows share `receiver::label`, and the chart's `{#each}`, keyed by that alone, hit `each_key_duplicate` and froze the planner. Rows now carry their map key (`recRow.key`), guarded by `src/lib/timeline/buffRowKeys.test.ts` (`a2cc8c8d`). The lesson, the third time it has bitten: any change to a projection's dedup key must move the template's render key with it.
+- Merged `094b3a81` and pushed 2026-09-27 (e2e 78 + 78 green on the merged main).

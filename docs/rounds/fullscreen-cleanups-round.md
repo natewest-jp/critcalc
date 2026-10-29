@@ -61,3 +61,11 @@ full-screen surface after the Roster round (Nate's list).
 - ⚠ **Rows align on the disc's line** (grid `align-items: end`): a side
   portrait's box is its disc plus the hair above it, so centring dropped
   every disc below the lead beside it.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/fullscreen-cleanups-round.md`:
+
+- Judge a lineup card at desktop width and at a 320 phone's card width. To see the phone width on a desktop, narrow `.cards` to a 288px track in JS, then reset it.
+- A grid item pinned to row 1 (the lead rule) makes the full-width auto-placed rows skip row 1, so every row names its own `grid-row`.
+- The sidebar's `MINE` set (MenuState) decides which places wear `--side-mine`, the profile's colour.

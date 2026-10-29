@@ -8,7 +8,7 @@ The Rotation Planner's timeline gains a **playhead**: press play and a cursor tr
 
 ⚓ **The tool does not judge whether a rotation "loops"**. It draws the next laps and the reader sees whether they match. This is the buff-pool / tiling posture already taken in the Team Builder (a repeat is a CLAIM, disclosed in the footnote), applied to time.
 
-Origin: Nate's in-game test batch (`project_ingame_test_batch`). Following a static chart while playing is impossible; following a metronome is not.
+Origin: Nate's in-game test batch (`docs/rounds/ingame-test-batch.md`). Following a static chart while playing is impossible; following a metronome is not.
 
 ## 2. The two modes
 
@@ -195,3 +195,15 @@ Per round: vitest / check / lint / build. `advance()` and the audio SCHEDULE (a 
 **Then:** e2e (two "N passed" lines) → merge `--no-ff` → push when asked. The §6.1–§6.2 strings go to the text sheets when the branches meet.
 
 **Later (parked):** clicking the ruler to set the start point (⚓ agreed 2026-09-30 as the next step, before any draggable playhead) · a guzheng pluck needs an AudioWorklet · the aura log has no lap column · the stream's `src` ranges point past the document (no reader) · the round-A rulings on `pointer: coarse` and the drawer stay with the responsive survey.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/playback-round-plan.md`, traps met during the build that §10 does not record:
+
+- A plate whose label changes (the speed) must be sized at its WIDEST label, or cycling it shifts the band.
+- In `SettingsPanel` a lone modifier (`.sp-row--stack`) ties with the later `.sp-row` and loses on source order; use a compound selector.
+- A band B word change means re-measuring the Total against its rail: document overflow cannot see that collision. The Repeat plate broke the old `wide` fact the day it landed.
+- A drum kit is inaudible over Genshin's broadband sound effects. A sound has to be tonal and narrow to be heard.
+- Editing `tones.ts` by an exact multi-line match fails after Prettier rewraps it; slice by markers instead.
+- `dueBetween` is half-open, `[from, to)`.
+- On 2026-09-30 the worktree was removed, `feat/planner-playback` deleted, and `main` merged into the text branch as `cd60053a`.

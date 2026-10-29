@@ -18,6 +18,8 @@ Budget: about 10,000 characters. `src/lib/timeline/` holds pure projection modul
 - Shields ride the summon lane (`shieldRows.ts` projects into `SummonSubrow`), so lane heights, block layout and the PNG export pick them up unchanged. Rows sort skill before burst, so each sits beside the cast that raised it; shields join that sort rather than being appended.
 - There is one summon resolver, `findSummonsForBar` (`summonSubrows` re-exports it as `findCastSummons`).
 - Bars refresh-merge per row at the projection (`mergeRefreshedBars.ts`): a buff re-applied before it expires is one covered span with one label. No interior seams (Nate). The 2px lit edge stays and means "the buff changed", because only same-shape overlaps merge. Eligibility is "windows that mean the same buff re-applied", never "bars that touch". NB is excluded: its bar width is its cooldown, so its bars only abut.
+- Bar layering: E/Q, summon and buff bars at z 2, swap connectors at z 1, cooldown ghosts at z 0.
+- Never show a raw `Stat` key to a player: extend `BUFF_STAT_LABEL`, and `SCALING_STAT_LABEL` for scaling stats (`buffStatMaps.ts`). A projection's dedup key and its `{#each}` key change together (`.claude/rules/svelte.md`).
 - `barPhases.ts` holds the E/Q pill's three-case geometry, shared by the live chart and the PNG. ⚠️ The ghost cooldown tail ends at `readyAt`, not `start + cooldown`: the tail's end answers "when can I recast". The `cooldown` field survives as the tail's label, which names its length.
 
 ## Gadgets
@@ -57,3 +59,4 @@ Shared with the Visualizers' Gauge Explorer:
 ## The PNG export
 
 - `timelineExport.ts` mirrors the screen, and the export's backdrop is the dimmed scene (`exportScene.ts`). The chart ground is `CHART_BG`.
+- ⚠️ `timelineExport.mirror.test.ts` checks colour only. Any other divergence between the screen and the PNG (ink choice, weight, size, position) is found by eye or not at all, so compare a live view with its PNG after timeline polish.

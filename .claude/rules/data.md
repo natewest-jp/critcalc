@@ -23,11 +23,14 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 ## Editing
 
 - Edit JSON with `jsonc-parser`'s `modify`. A Python `json` round-trip expands every hand-compact object.
-- After any character JSON edit, run `npm run generate-character-index`.
+- After any character JSON edit, run `npm run generate-character-index`. A new index field goes in both `INDEX_FIELDS` lists: the generator's and the drift test's (`characterIndex.test.ts`).
+- ⚠️ `src/lib/utils/characterLint.ts` must stay free of runtime imports. The index generator imports it under bare Node type stripping, so a value import of `$lib/...` breaks `prebuild`, and only `npm run build` sees it (Vitest, check and lint stay green).
+- The first step of any data item is the kit text and the gcsim function, not the note that queued it: queued premises go stale. Never generalise a verified verdict to another character on structural similarity alone.
 - ⚠️ A genshin-db upgrade is not additive. Run `audit-genshin-db-text.mjs` (its patch sweep), and when a rename adds a converted reaction to a trigger, re-read the numbers. Mizuki's C1 once drew double this way.
 - ⚠️ genshin-db's 7.x kit text is incomplete: mechanics live in the Fandom wiki's Extra Effect tooltips. Never author a 7.x kit from genshin-db alone. `ingest-character.mjs` splits `extraPassives` by position, which 7.0 broke.
 - Travelers are hand-built (the generator refuses them), share the `aether`/`lumine` portrait slug, and need two e2e counts updated (`ROSTER_SIZE` and `e2e/traveler.spec.ts`).
-- Manekin and Manekina are not supported (scope ruling).
+- Manekin and Manekina are not supported (scope ruling). A constellation-locked character (Aloy) carries `noConstellations: true`.
+- The roles CSV is soft editorial truth: roles flex to fit the derived capabilities, never the reverse. A role edit is Nate's call, proposed with capability evidence (`docs/curation/capability-sweep.md`).
 
 ## Authoring conventions
 
@@ -36,6 +39,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - A faction tier is a condition on the effect, never a runtime state the parser tracks: Ascendant Gleam is `{ type: 'teamFaction', faction: 'moonsign', min: 2 }`, and the Nascent rung is the same gate wrapped in `not` (sanctioned in `docs/library/game/factions.md`). ⚠️ Check the tier-0 case: gcsim gives a Moonsign set nothing with no Moonsign character.
 - `twoPiece` is declared on `ArtifactSetBonus` and read by nothing, so a 2-piece bonus is inert data. Don't add a `Stat` key for one until a consumer exists.
 - A character without frames lives in `FRAMELESS_EXEMPT` (`characterLint.test.ts`) and renders honestly ("not yet curated" in the Builder, generic cast times in the planner). Frames flip `isCurated`, so never land frames on a kit with no effects.
+- When gcsim's source says a behaviour was tested in game and deliberately departs from the kit text, author gcsim's behaviour and quote its comment in `_curatorNotes` (Nate). An unexplained divergence is still flagged to Nate: gcsim also carries placeholders.
 - Never fake timing. Tick intervals and durations come only from gcsim or kit text. Unknowns are `~?s`; unmodellable effects go in `_curatorNotes`.
 - A buff re-applied per tick is authored at its honest length (Nate's ruling): Bennett's field is 14.1s, Faruzan 16s/22s. The buff outlives the field and the bar says so.
 - Never author `value: 0` for an unknown buff. Use `BuffValue {type: 'unknown'}`.
@@ -77,5 +81,5 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 ## Checks that guard this data
 
 - `characterLint.test.ts` (the lint rules cited above by number), `characterIndex.test.ts`, and the parser-invariant gate `notationParser.roster.test.ts`, which drives every character's declared input tokens.
-- `orphanedSchema.test.ts` fails when authored data has no consumer. It matches property access, not mentions, so a type declaration does not count. On failure: wire it, retire it, or add it to `INERT` with a reason. ⚠️ It cannot see partially-wired data, so a green run is not proof (`docs/curation/orphaned-schema-audit.md`).
+- `orphanedSchema.test.ts` fails when authored data has no consumer. It matches property access, not mentions, so a type declaration does not count. ⚠️ It matches by key name, so give a new field a name unique across `src/` and `scripts/`: a field named `icd` was once "consumed" by the Visualizers' ICD instrument. On failure: wire it, retire it, or add it to `INERT` with a reason. ⚠️ It cannot see partially-wired data, so a green run is not proof (`docs/curation/orphaned-schema-audit.md`).
 - The audit scripts are described in `.claude/rules/scripts.md`.

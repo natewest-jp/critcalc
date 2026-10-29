@@ -68,3 +68,13 @@ hands-on with Nate, one look per step.
   ↻ Teams' details NEVER had the bug: there the margin cancels the flex
   column's 0.9rem gap. Removing it there opened a gap (Nate saw the grid fade
   farther from the strip), and the cleanups round restored it.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- `CharacterFilterRail` was deleted with this round (no users were left). The merge ran e2e green on 80 Chrome + 80 WebKit.
+- `menu.headActions` (`menuState.svelte.ts`) is a snippet slot: a section sets it in an `$effect` and clears it only while it is still its own (`if (menu.headActions === mine)`). RosterTab's `inMenu` prop decides between the menu state's head and its own bar; the old layout still renders the bar.
+- The page head starts at `.main`'s 1.5rem padding while the ✕ is pinned at 1.25rem, so anything on the ✕'s line needs the `calc(1.25rem - 1.5rem)` lift.
+- A toast's Undo must take back only that action's records: the first cut restored a whole snapshot and ate later edits.
+- ⚓ Nate wants the floating keys bar reused when other surfaces show keyboard shortcuts. Lift it into a shared component then, not before.
+- `Mark filled="solid"` drops the stroke from shapes with points; lines and circles keep theirs. Play and pause keep `filled` (true) on purpose.
+- At the time, driving the new layout headless needed a profile: one was created at `/profile/new?next` (placeholder "My profile", button "Add profile") in an isolated browser context.

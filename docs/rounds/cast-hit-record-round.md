@@ -118,3 +118,15 @@ merge commit says how it ran.
 - Windows that START past the rotation's end: a pre-existing class (138 in the
   probe before, 157 after — late landings of a rotation's last cast).
 - Phase B: 88 multi-hit casts are still ONE record.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+Traps from Phases A and B that this record does not carry:
+
+- A probe rotation that writes a character's full name instead of its `displayName` ("Raiden Shogun E" where the name is "Raiden") has its segment dropped SILENTLY: R2 once ran with no Eye at all. Check `casts` in a trace before trusting a multi-character probe.
+- The committed `docs/curation/gcsim-reaction-diff.md` was stale at the time (an older gcsim commit). To attribute an oracle move, run the oracle on stashed code too (`git stash -u -- src`) and diff the two dry runs.
+- Two proc tests had a proc answering a BUTTON PRESS (Raiden's Eye at +5f of her own press; Albedo's Blossom off Raiden's press). Any test that asserts a proc instant near a cast start is suspect the same way.
+- How gcsim's Raiden Eye start was judged without written evidence: `git log -L` on the line showed a deliberate later correction by a core maintainer, which outranks a default.
+- Phase B: `FrameMap.lands` became `number | number[]`, which broke exactly one test (`toBeGreaterThan(0)` on Keqing's CA). Any reader doing arithmetic on `fm.lands` directly is a bug; go through `landsAt` / `landingsOf` (`src/lib/utils/frames.ts`).
+- Phase B's measurement trick, worth reusing: inject the candidate data in memory inside the probe, so the design is measured before a single JSON changes (the naive-list versus name-stem diff of 8 digests fell out for free).
+- Still open at the time: Alyosha's N4 (`hitIndex: 3` gain and consume-all) once gcsim covers him, and Nate's on-screen look at aura-lane pip density on an infused string.

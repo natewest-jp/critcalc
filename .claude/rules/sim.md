@@ -29,8 +29,9 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 
 ## Hits, buffs and stacks
 
-- Per-swing hit records (at the swing's end; no element means physical; a multi-hit swing is one hit, a documented approximation) drive `gainStacks`/`consumeStacks` dispatch, `Effect.procCooldown`, and `holderStatesAt`.
+- Hit records are per landing: `landingsOf()` (`$lib/utils/frames.ts`) gives every frame a swing's hits land, so a two-hit swing spends two ICD slots and fires a per-hit grant twice; `landsAt()` is the first. No element means physical. The records drive `gainStacks`/`consumeStacks` dispatch, `Effect.procCooldown`, and `holderStatesAt`.
 - `deriveBuffWindows` (`buffWindows.ts`, at finalize) computes all of who buffs whom and when, as `buff` windows with their effects and trigger-time context. `parseNotation` takes `teamCharacters` (the slot roster) for team context.
+- ⚠️ The stack dispatchers act only on a definitive `true`, while the buff passes drop only on a definitive `false` (`stacks.ts`). A state gate on `gainStacks`/`consumeStacks` can work in one and be dead in the other, so measure it in both.
 - Off-field summon damage ticks become synthesized hits at finalize. They feed `deriveBuffWindows` only, never `dispatchHit`, which mutates live state in parse order.
 - The live tick chain in `sim/aura.ts` dispatches gains, then a snapshot, then consumes at the tick's own instant, and the hit carries that snapshot (`ctx.tickStacks`). ⚠️ Never dispatch from both ends: they are one tick seen twice. A heal tick is not a hit.
 - `computeSummonTicks` is parser-side; don't fork it (`summonSubrows` re-exports it).

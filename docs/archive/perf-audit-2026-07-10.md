@@ -3,7 +3,7 @@
 > **📦 ARCHIVAL (2026-07-15).** The L2 audit is COMPLETE — all green-light fixes shipped
 > (WebGL starfield `53fbb0e`, planner SSR fix `33634d5`, WebGL Dire border `f0c183d`,
 > scene visibility-hidden `6e36381`, abyssal loading veil `aa9347f`). This dated report is
-> kept for its findings + reproduction recipes. Summary: memory `project_perf_audit_2026-07-10.md`.
+> kept for its findings + reproduction recipes. Summary: `docs/archive/perf-audit-2026-07-10.md`.
 
 Scope: whole site under throttled CPU/network, both engines, launch-gate framing
 ("performs well on modest hardware, not just a strong machine"). Method: production
@@ -285,7 +285,7 @@ F1 sequencing (pull SSR fix forward vs. ride L1).
   2026-07-10 handoff's attribution. The block remains fully masked by the
   paint-gated fade (re-verified below); shrinking it for real means less
   DOM/derived work at mount, which is planner-redesign territory (Track A
-  levers, documented in [[planner-perf]]).
+  levers, documented in `docs/rounds/planner-perf.md`).
 - **Landing TBT under throttle is noisy run-to-run** (657→~750±80 @4×); an A/B
   with preloads stripped from the built HTML showed the font preloads have no
   measurable TBT cost (~700–830 both arms). Landing TBT is dominated by
@@ -320,3 +320,14 @@ at 1600px with only 2 instruments mounted, picking a benched instrument mounts
   planner probes seed `critcalc:rotationTabs` first.
 - Chunk attribution: `npx vite build --sourcemap` + `mapattr.mjs` (bytes per npm
   package / src dir per chunk via source-map).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/archive/perf-audit-2026-07-10.md`, the decisions Nate made the same day (2026-07-10):
+
+- **F6 resolved (`6d2925d`):** the animated conic frame border was retired for a static 1px border at its brightest stop (a 40% Dire-tint mix). Repaints 272 per 2.5s → 4. Doctrine: any future pulse is the opacity of a stacked static ring, never a paint property.
+- **F7 shipped as WebGL (`53fbb0e`):** TwinkleStars became one point-sprite canvas (`src/lib/landing/starfield.ts`). Layers on `/` 1,415 → 16, `getAnimations` 1,400 → 0, `/` HTML 275.8 → 9.4KB, rAF provably dead on tool routes, in hidden tabs and under reduced motion; 226/228 star positions matched the spans. GL lesson: the blend must be PREMULTIPLIED into a transparent canvas; a straight `(SRC_ALPHA, …)` blend stores α² and erases dim stars. Verification lesson: restart the preview after every rebuild, because a stale server serves mixed chunks, hydration dies silently, and the probes read garbage.
+- **F1 sequenced:** the planner SSR fix came right after the WebGL starfield (`33634d5`).
+- **F4 shipped (`6e36381`):** a `sceneOccluded` handshake in `transition.ts`, not derived from the route or a timer. The tools layout sets it true two rAFs after `revealed` paints; the scene layout clears it in `beforeNavigate` to the landing (always under cover) and seeds it on the cold-load path, so a tool cold load never rasters the scene. `visibility: hidden` on `.scene` + `.dim`. Measured −53MB of layer bytes at 1× dpr (dpr²-scaled on retina); pixel diff 0 across the 7-state nav matrix; the scene never hides before the shell paints. Nate verified it in real Safari.
+- **F5 decided:** the Dire border was converted to WebGL (`docs/archive/webgl-dire-border-handoff.md`, `61c41ef`; shipped `f0c183d`) after eviction flashes survived the tile-width fix on real hardware. Two band-sized canvases, 7 animations → 0, ~100MB → ~4MB. It superseded the line-waves bbox-crop option; animated AVIF stayed rejected.
+- Layer-memory estimate = w × h × 4 × dsf² (an upper bound; use deltas). Landing TBT under throttle is noisy (±80ms); an A/B on the built HTML (edit `build/index.html` directly) beats rebuild loops.

@@ -5,8 +5,8 @@
 The mobile and wide-screen sweep before launch: five parallel surveys (the
 Planner from 320 to 1137, the Planner from 1135 to 3440, the Team Builder, the
 Visualizers, and the landing + static pages + overlays), each followed by an
-independent verify pass and then a fixer. Branch `sweep/responsive` (worktree
-`/Users/producer/Code/critcalc-responsive`), 18 commits on `main` at `abde521d`,
+independent verify pass and then a fixer. Branch `sweep/responsive` (in a separate
+worktree), 18 commits on `main` at `abde521d`,
 from `fd509049` to `3c1ee8ce`. ⚠️ **Nothing is pushed or merged.**
 
 Every screenshot is local, in `scratch/responsive-shots/` (gitignored).
@@ -852,3 +852,19 @@ they can be dropped.
 Gates on the tip: vitest `2373 passed`, check 0/0, lint clean, build exit 0,
 e2e `76 passed` on Chrome and on WebKit. On the last two items: vitest, check,
 lint and build again, and `team-builder.spec.ts` `18 passed` on each engine.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+**Also merged and pushed the same night:** `polish/eased-fades` (`91415d48`), `polish/builder-phone-filters` (`dd96cab1`) and `polish/rp-bench-hide` (`3dc35e18`); the sweep itself merged as `39d98c18`. What shipped across them and now stands as design (Nate-approved, most of it checked on an iPhone):
+
+- `pointer: coarse` `::before` hit areas (a 44px target, with the half-gap neighbour rule). The T1–T3 exceptions were accepted as they are: the constellation chip at 21×24, the tab ✕ eating about 7px of label, and document tabs not growing because `.doc-tabs` clips.
+- A height axis, `(max-height: 30rem)` (`short()`), with the landing's fixed footer hidden there.
+- Planner at `toolMin` and above: the composer pins to the shell's foot on OPAQUE slate (glass at .8 was tried and the bars bled through the text; Nate kept opaque), and the aside is sticky and rises to the chrome through a scroll-driven animation (`--aside-rise`, under `@supports animation-timeline`).
+- Builder: the filter rows fold into Roles, Elements and Capabilities plates below `compact` (`BandMenu` `face`); More is a mark plus a count below `compact` (`BandMenu` `count`); the pane-switch word returns above `paneWord` (21.25rem, 340px); "Lineup" sits at band B's right end below `wide`; the pin plate says "Rotation"; a card's glyph column caps at what fits, with "+K" past it, and filtered capabilities sort first.
+- Every roll-off is an eased ramp (smootherstep, 10 stops) with one knob, `--scroll-fade-scale` .7 (Nate by eye). The chrome fade starts 10px below the chrome and is gone at the icon midline (`--chrome-fade-below` / `--chrome-fade-end`).
+- Planner below `toolMin` or on a short screen: a **Bench** plate in band B (left of Buffs) hides the bench row and its reserve (`siteSettings.showBenchRow`, stored as `benchRow` only once toggled; visible by default).
+- Planner below `compact`: the timeline scrollers bleed to the screen edge (a negative margin of `--tool-pad-x` + `--rp-frame-pad-x`, with matching padding) under a 14px fade. ⚠️ The JS subtracts that padding (`trackPad`) in the viewport floor, the playback page-turn and `scrollToSeconds`, so a new padding there must update it too.
+
+⚓ **Rejected by Nate (2026-10-15): full-bleed controls on phones** (bands and panels running to the screen edge). Glass plates need their edges, and Safari's edge back-swipe and phone-case lips both work against it. A possible trial instead: `--tool-pad-x` 16 → about 8–10 below `compact`, and edge-bleed for content surfaces (the Builder grid, Visualizer charts) the way the timeline does it.
+
+**Still open after the sweep:** the landing on mobile, with Nate (notices ran off the bottom at 844×390, and the cards touched the wordmark at 568×320); real-Safari checks (R16 `cqh`, R11's rise lag, the legal footer's fade, the tap areas); the 320 Total rail is tight beside the Bench plate (a 100s+ Total touches its edges; accepted). A Builder crash seen on an iPhone happened only on the dev server (the production preview was clean), to be rechecked in the pre-flip Safari pass. A lone capability glyph between grid cards in swap mode (for example Vesna's "%") is correct, not a stray.

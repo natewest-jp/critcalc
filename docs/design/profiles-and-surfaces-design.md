@@ -318,7 +318,7 @@ This design doesn't redesign the tools' interiors; the structure survey's per-to
 - A fifth name with every slot awake keeps today's `--ui-provisional` flag.
 - **Why order matters** (Nate): players are particular about which character is on which key, and the bench should match the party they know.
 
-**Costs, accepted:** ⚠️ this **partly reverses the 2026-08-13 ruling** (memory `notation_single_truth`): the notation stays the truth for what HAPPENS; the slots become the truth for WHO is on the team and in which order, and "slot order = notation order" is undone on purpose. The `?r=` codec goes to **format 3** with an optional slots field (KQM export unchanged). **Undo must reach slots**: ⌘Z after typing Kazuha puts Bennett back, so slot changes ride the editor's history (a CodeMirror state field with invertible effects), designed in, not added later. ⚠️ The demo's plain textarea does NOT do this.
+**Costs, accepted:** ⚠️ this **partly reverses the 2026-08-13 ruling** (`docs/rounds/notation-single-truth.md`): the notation stays the truth for what HAPPENS; the slots become the truth for WHO is on the team and in which order, and "slot order = notation order" is undone on purpose. The `?r=` codec goes to **format 3** with an optional slots field (KQM export unchanged). **Undo must reach slots**: ⌘Z after typing Kazuha puts Bennett back, so slot changes ride the editor's history (a CodeMirror state field with invertible effects), designed in, not added later. ⚠️ The demo's plain textarea does NOT do this.
 
 - **Builder:** the board's header carries the lineup's properties; a board row's team picker reads the profile's Teams; values follow §2.4.
 - **Visualizers:** no document and no profile scope (⏭ unless an instrument wants the roster later).

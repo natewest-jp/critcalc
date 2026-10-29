@@ -1,7 +1,7 @@
 # The responsive survey — both ends, measured (2026-09-01)
 
 Roadmap §5 (mobile: REACHABLE, not CONVERTED) and §12 (wide-screen pass) are one
-audit taken from opposite ends, and [[mobile-conversion-plan]] says the round
+audit taken from opposite ends, and `docs/rounds/mobile-conversion-plan.md` says the round
 opens as a **survey**, not a conversion: sweep every surface, classify
 **workable / fixable / genuinely-needs-space**, and let that scoped list — not an
 open-ended "make it mobile" — be what gets decided on.
@@ -127,7 +127,7 @@ brand and three 34px chrome buttons. ⚓ **This matters more than the tool
 numbers**: §5's whole argument is that a Genshin link shared to Discord is opened
 on a phone, so the landing has to sell there even though the tools don't run.
 **It already does.** The remaining landing work is composition (§11 /
-[[project_landing_card_round]]), not repair.
+`docs/rounds/landing-card-round.md`), not repair.
 
 ---
 
@@ -213,7 +213,7 @@ Also under the line, at every width:
 
 ⛔ **None of these are landed.** They are all inside geometry Nate tuned by hand
 (`MARK_SIZE`, the bench card round, the bench tail round, `BAND_A_H` measured at
-29px with no slack), and [[feedback_expose_tuning_knobs]] is explicit that his
+29px with no slack), and memory `feedback_expose_tuning_knobs` is explicit that his
 values are measurements, not derivations. Resizing them is a design pass, not a
 repair. **The standard move is `@media (pointer: coarse)` growing hit areas
 without touching the desk rendering** — orthogonal to width, since a tablet at
@@ -307,7 +307,7 @@ the case that proves the axes are independent.
 
 ---
 
-## 6. The classification, as [[mobile-conversion-plan]] asked for it
+## 6. The classification, as `docs/rounds/mobile-conversion-plan.md` asked for it
 
 | Surface              | narrow                                | wide           |                                         |
 | -------------------- | ------------------------------------- | -------------- | --------------------------------------- |
@@ -566,7 +566,7 @@ So at today's 118px floor a phone gets **2 across at 390px and 3 across at
 card renders at 131px in shipping configurations already (bench-off at 1024), so
 110 is a 16% reduction from a size that exists rather than a new design.
 
-⚠️ **But it goes below a floor you set** — [[project_tb_card_round]] records
+⚠️ **But it goes below a floor you set** — `docs/rounds/tb-card-round.md` records
 7-across-at-150 as the calibration point and 118 as the declared minimum — so
 whether the card survives at 110 is your eye, not my arithmetic. **The useful
 framing: this is a token nudge to test, not a card variant to design.** Try 110;
@@ -716,7 +716,7 @@ to the panel column. ⚓ The `.note` fix was the first instance of this principl
 
 `--cg-tile-min` is 118px: **2-across at 390, 3-across at 430**, missing
 3-across@390 by 6px of tile. ~110 buys it and 131px already ships in some
-configs — ⚠️ but 118 is a floor Nate set ([[project_tb_card_round]],
+configs — ⚠️ but 118 is a floor Nate set (`docs/rounds/tb-card-round.md`,
 7-across-at-150), so try it and judge; 2-across is still a working roster.
 
 ### 7. Smaller, unscheduled
@@ -806,3 +806,8 @@ The rail's honest minimum, measured: labels 40.6 + 51.8 + 71.3 plus 3 × 19.2 of
 - **N2/N3** as filed; AtlasView's stray `620px` (absorb into `compact` at 640, or state its content fact).
 - **The grep guard** for the table — proposed, awaiting approval.
 - **The e2e suite has no narrow-width spec** — every assertion runs at 1600. A phone-width smoke (band B reachable at 390, the drawer opens and closes) would be the natural promotion once Nate has judged the forms.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- Two editing traps from the narrow round: Prettier de-indents a top-level `{#snippet}`, so a scripted edit keyed on the tab can fail (that one failed on its assert and wrote nothing, but check); and a `'\t{/snippet}\n'` search also matches a more deeply indented closer, so slicing a block by its closer cut midway through a nested snippet.
+- The optical-size measurement behind the compass: rasterised at a 200px reference, the compass's top 41 of 197 rows carry less than half its peak ink (the hanging loop and star points), while the cog is dense from row 9 to 190, so at equal height one mark spends about 21% of its box on ornament. Ink-area parity is 34.0px and dense-body parity 37.1px (an overshoot); 33px shipped (Nate's eye, just under ink parity) with a 2px optical lift done as `position: relative; top`. Not a margin, which `place-items: center` re-splits to 1px, and not a transform.

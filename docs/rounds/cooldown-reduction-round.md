@@ -267,3 +267,8 @@ by seconds). It wants a third shape, a team-wide "a cast inside window X pays
 85%" applied at the CD write, gated on the field being live, with the same
 "anyone on field is inside the circle" assumption Bennett's field makes. One
 holder today; a half day when it is wanted.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- Merged as `9a5b2125`, with Anemo Resonance as `ee324ae9` and its full-party fix as `acc964d6`; all pushed 2026-09-18 (e2e 73 + 73 on `02512887`).
+- A probe rotation must name characters by their display names (`Raiden`, `Itto`, `Kazuha`), not by the words in their ids.

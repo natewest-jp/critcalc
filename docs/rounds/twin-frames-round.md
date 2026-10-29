@@ -44,3 +44,8 @@ the frames, landings and applications writers all run her through the same rules
 
 Anemo A1 / Geo A4 extra-hit timing (A1 isn't authored; A4 rides the N5 hit), Pyro C6
 Lumine's shared enhanced-CA ICD tag, Hydro Q's energy-consume frame, hitboxes.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- Merged and pushed 2026-10-28 as `5592c6c2`. Nate tested all of it and liked the twin row living in the constellation popover.
+- A What's new entry shipped with it, titled "The Traveler twins, and Arlecchino’s cooldown", with Cryo as the notation example. The toast and flag wording were approved as drafted.

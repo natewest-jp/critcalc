@@ -130,3 +130,7 @@ Also, on the way:
   pool leaves both whole). Five fail without the change.
 - `characterLint.test.ts` — D.45/D.46, four cases.
 - Gates per commit: vitest 1984, check, lint, build.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/event-ended-buffs-round.md`: merged as `59d27895` (e2e 73 + 73 green on `8c6e4e47`) and pushed 2026-09-21.

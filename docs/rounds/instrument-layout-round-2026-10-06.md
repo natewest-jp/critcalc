@@ -82,3 +82,10 @@ Three slots — `.instrument-chart`, `.instrument-controls` (one `.panel`, or a 
   row stretch.
 - Safari: Nate's to check by eye (the `min-height` + `fr` rows, `contain: size`, the sticky
   Readout) — e2e WebKit is green, which catches throws, not rendering.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- Merged and pushed 2026-10-06 as `7a0131d5`.
+- In a backgrounded Chrome tab, ResizeObserver fires only on a paint, so a JS measurement taken after a layout change reads a stale `bind:clientWidth` until something (a screenshot) forces a paint.
+- When the browser window cannot be resized, narrow a tile instead with `document.querySelector('.ws').style.maxWidth`.
+- Left open: panels side by side in one `.panels` row (the ICD Timeline at the wide tier) still stretch to equal height. Nate had not raised it.

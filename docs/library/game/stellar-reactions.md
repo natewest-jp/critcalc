@@ -1,8 +1,7 @@
 # Stellar Reactions
 
 **Sources:** Fandom wiki "Damage" page (Stellar section, pasted by Nate 2026-07-29) +
-Nate's trigger-model explanation (2026-07-29, recorded in project memory
-`hexerei-stellar-todo`). gcsim had no Stellar implementation as of `5d1ec8c79`
+Nate's trigger-model explanation (2026-07-29, recorded in project `docs/rounds/hexerei-stellar-todo.md`). gcsim had no Stellar implementation as of `5d1ec8c79`
 (2026-07-26) — **wiki + Nate are the arbiters for now** (the Hexerei round showed
 gcsim can be off on current-patch details anyway).
 ↻ **2026-10-01:** gcsim now implements both (`pkg/reactable/stellarconduct.go`,

@@ -264,7 +264,7 @@
 
 		   The proportion is now the ARTWORK'S — 511 × 919 (1:1.7984), straight
 		   off heroArt.ts's PLATE_VIEWBOX. It lands within a pixel of the 1:1.8
-		   that was DERIVED from the phone (memory `project_landing_card_round`:
+		   that was DERIVED from the phone (`docs/rounds/landing-card-round.md`:
 		   three cards across a 360px viewport with 16px gutters and 10px gaps
 		   leaves 102px per card, and the art + two-line label block need 172px
 		   of height — 1:1.69 with zero slack, plus ~7% air), so every size that
@@ -530,7 +530,7 @@
 	   267 at the max clamp. The kicker is allowed to wrap ("ROTATION PLANNER"
 	   runs out of card below a ~150px plate) — and when space runs out it
 	   drops DECORATION, never meaning: below `compact` it loses its wide
-	   tracking first (⚓ memory `project_landing_card_round`). */
+	   tracking first (⚓ `docs/rounds/landing-card-round.md`). */
 	.hero__kicker {
 		/* Set like the BETA tag — same face, weight and tracking, so the
 		   site's two small caps labels read as one voice. ⚓ BODY, not mono

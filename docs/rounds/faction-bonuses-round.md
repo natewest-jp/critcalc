@@ -140,3 +140,10 @@ The dropped one is the Silver Isotoma buff, whose real gate — a skill hit with
 - Whether the faction row belongs on the team-buff surface or wants its own visual register — it is a **conditional** buff in a way no other row is, and the chart currently has no vocabulary for "this only exists in a certain team". Deferred until the bars are on screen and Nate can look at them.
 - The general `attribution`-as-row-label round (24 effects, 6 characters) remains unscheduled.
 - 📌 **Reactions fire on E/Q casts but not on normal-attack blocks.** Investigated after this round closed and promoted to its own handoff: **`docs/rounds/icd-round-handoff.md`**. Short version — the wiring is small and the element is already resolved, but there is no ICD model anywhere, and normals are exactly where ICD bites.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/faction-bonuses-round.md`:
+
+- Provenance rides a WeakMap keyed on effect identity (`factionProvenanceOf` in `src/lib/utils/buffWindows.ts`), not a wrapper type, because the collectors return `Effect[]` to a dozen sites that narrow on `effect.type`. ⚠️ `normalizeBuffLikeEffect` re-registers its `elevate` clone, the only place a collected effect is not the authored object.
+- The step-4 fix for an `onReaction` buff targeting `self` or `active` is `reactionPoolsFor` plus two new received-surface blocks. The active-target block is sliced across on-field windows; the self-target block is not (one receiver, no field-following). The fix also exposed a label bug: a reaction window has no `abilityClass`, so `charReceivedBuffRows` read "Varka undefined".

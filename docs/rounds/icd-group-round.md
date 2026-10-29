@@ -322,7 +322,7 @@ baselines are quoted, never recomputed.
 
 **Gates per landing:** `npx vitest run` · `npm run check` · `npm run lint` · `npm run build`
 (~30 s together). **`test:e2e` before the merge only** — and ⛔ never piped through `tail`;
-capture whole and grep for TWO "N passed" lines ([[feedback_gate_cadence]]).
+capture whole and grep for TWO "N passed" lines (memory `feedback_gate_cadence`).
 
 **The measurement** is `node scripts/audit-gcsim-reactions.mjs` — recorded baseline after
 the mark-triggered round:

@@ -197,3 +197,9 @@ Corpus-wide (123 characters × C0 and C6, `<name> E Q N5 N5 > Kaeya N5 N5 N5`): 
 the eight authored characters move and nothing else does.** Nahida does not appear in the
 diff and Fischl appears only at C6, which is the proof that authoring `icdGate: 'none'` on
 the two shipped reaction procs preserved them exactly.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- ⚓⚓ **A wave counts SECONDS, not swings.** Measured: `Xingqiu Q > Diluc N5 N5 N5` and `Xingqiu Q > Kaeya N5 N5 N5` are fifteen swings each and give 13 waves and 9 — the ratio of the strings' durations, not of their swing counts. An `onHit`-per-swing model is wrong in both directions.
+- **Three of the round's eleven new tests asserted numbers that were reasoned to rather than measured, and all three were wrong.** The rewritten one (the 13-vs-9 above) became the round's best assertion. Measure before asserting, in a test as much as in a doc.
+- "Authored but unread" is not automatically a bug (Nicole): check what the thing does in gcsim before wiring it.

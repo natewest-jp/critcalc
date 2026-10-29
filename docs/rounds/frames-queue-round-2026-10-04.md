@@ -1,6 +1,6 @@
 # Frames queue round — 2026-10-04
 
-The queue memory `project_frames_curation_queue` held seven items, left behind when the
+The queue `docs/rounds/frames-queue-round-2026-10-04.md` held seven items, left behind when the
 dumper started reading every capture on a fresh core (`6a2f5bba`): Zibai's Stage 4, and
 the frames-audit rows that change had made honest. All seven are done, on
 `data/frames-queue-2026-10-04`. gcsim is at `703ac69ba`.
@@ -115,3 +115,7 @@ cast-only by design, so they would need their own shape. Skirk's `exitSkillState
 reached by an E re-press; check that against her authoring before assuming either way.
 The rest (Furina, Lauma, Nicole, Kinich, Lyney, Sigewinne, Yaoyao and the `onExitField`
 handlers) are recast refreshes, resource ends, or swap clears.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/frames-queue-round-2026-10-04.md`: merged as `ccec8901` and, for §5's `endsStance`, `55e6688e`; pushed at `704aa5bd`; e2e 78 + 78 at both.

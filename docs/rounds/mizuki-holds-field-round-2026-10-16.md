@@ -163,3 +163,11 @@ Found and recorded, not done:
 - **Data:** the recast's stray 7s clock is now 0; the CD it starts is the base
   skill's.
 - **Tests:** each band, a swap, the expiry (45s), C1 and C6.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/mizuki-holds-field-round-2026-10-16.md`:
+
+- Merged as `10cd36e9` (e2e 75 + 75) and pushed. §5's `fix/stance-exits`, including F3's Tartaglia cooldown table (`bfb1ebed`), merged as `6766ea7f` (e2e 75 + 75).
+- The order agreed with Nate on 2026-10-16 for the follow-ups: Tartaglia's exit and Chasca's cooldown, then Tartaglia's cooldown table (design first), then Mavuika.
+- The pill name "End Dreamdrifter" is new copy. No caveat or help text for the hold was written in this round: a caveat must name a pixel that is wrong, and Help belonged to the static-pages rewrite.

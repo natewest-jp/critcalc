@@ -136,8 +136,7 @@ data says which today. Three sources, in precedence order:
 
 1. `effects` (or a variant's, or `summons[]`, or `activeDuration`) authored →
    **lit**. A grant on a trigger that has NO reader (`onHeal`, `onEnergy`,
-   `onHPChange`, `onHPDecrease`, `onHPIncrease` — memory
-   `project_manual_trigger_retirement`) → **provisional** (we took it; the
+   `onHPChange`, `onHPDecrease`, `onHPIncrease` — `docs/rounds/manual-trigger-retirement-round.md`) → **provisional** (we took it; the
    planner draws nothing). A `BuffValue {type:'unknown'}` → **provisional**.
 2. `notModeled: { reason }` on the host (§5.1) → **not modelled**.
 3. Neither: **missing** if the capability oracle expects something here
@@ -191,7 +190,7 @@ authored" everywhere else.
 Orphaned-schema finding 6: Nicole carries `framesSource`, declared nowhere.
 The strip is its consumer: `'gcsim' | 'gcsim-pr' | 'wiki' | 'hand'`, with
 `gcsim-pr` → provisional timing (Illuga #2677, Kachina #2697 are the live
-cases — memory `project_swing_hitmark_round`). ⏭ Authoring it corpus-wide is
+cases — `docs/rounds/swing-hitmark-round.md`). ⏭ Authoring it corpus-wide is
 a mechanical pass off the frames audit + each character's notes; day one may
 ship with it on the PR-sourced characters only and everyone else defaulting
 to `gcsim` — say so in the round record.
@@ -246,8 +245,7 @@ becomes regenerated: sort the page by missing width and it is the list.
   provisional") + the host's `caveat` + the `notModeled.reason`. A caveat's
   host IS its column (lint E.28 guarantees an ability-shaped host), so the
   mapping needs no metadata.
-- **Click** a row → an IN-FLOW accordion (⛔ never a modal — memory
-  `project_design_principle_nonmodal_tools`) with every facet's line, grouped
+- **Click** a row → an IN-FLOW accordion (⛔ never a modal — `docs/rounds/design-principle-nonmodal-tools.md`) with every facet's line, grouped
   by column, plus provenance and the frameless reason. On `pointer: coarse`
   there is no hover, so the accordion is the only tier — same axis the slider
   uses, nothing designed twice.
@@ -327,6 +325,14 @@ _Shipped 2026-09-23 on `feat/coverage-page`, merged to `main` the same day. This
 
 **Not done**: the editor's stand-in hover still carries no coverage link — it is a plain `title`, which cannot hold one.
 
-**Found on the way, for the engine queue** (memory `project_engine_queue_2026-09-17`): Alhaitham's C4/C6 read a `mirrors` key nothing grants; Eula's Hold variant keeps its 10s cooldown at C2 (variants have no `cooldownModifiers`); Dahlia C4 extends an unauthored Favonian Favor window. And `.gitignore`'s `coverage/` had swallowed `src/lib/coverage/` and the route — anchored to `/coverage/`.
+**Found on the way, for the engine queue** (`docs/rounds/engine-queue-2026-09-17.md`): Alhaitham's C4/C6 read a `mirrors` key nothing grants; Eula's Hold variant keeps its 10s cooldown at C2 (variants have no `cooldownModifiers`); Dahlia C4 extends an unauthored Favonian Favor window. And `.gitignore`'s `coverage/` had swallowed `src/lib/coverage/` and the route — anchored to `/coverage/`.
 
 **Verification**: vitest 2027/2027, check, lint; e2e **78 + 78** passed (chrome + webkit) with the new `e2e/coverage.spec.ts` (wide and 390).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/coverage-round.md`:
+
+- Merged as `774bf495` and pushed 2026-09-23 (e2e 78 + 78).
+- Triage rulings (⚓ Nate, 2026-09-22): a LICENSE was queued with the feedback-form and analytics work, ⛔ to be discussed before one was chosen (`LICENSE` and `LICENSE-DATA` exist now) · orphaned-schema findings 2–6: retire `mobility` and `durationModel`, mark `durationType` INERT with a reason, keep `shortName` for the coverage row, consume `framesSource` here · promotions approved: the breakpoint-table grep guard and a 390px e2e smoke, folded into this page's spec · ⚓ **the BETA tag drops when Nate says so**: it has no end condition, ⛔ don't propose one again · Diona C2 acknowledged: co-op effects are not for these tools.
+- Found while building: a cast's `application[]` carries a summon's hits only if it reaches past the animation or lands after the spawn, otherwise one hit masks a gap · the derivation cannot see effects authored elsewhere with no host name (`durationExtensions`, `flatScaling`), which is the gap `modeledBy` answers.

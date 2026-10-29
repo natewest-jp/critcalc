@@ -219,3 +219,14 @@ stays.
 - ⚠️ Observed, not changed: on the synchronous path the charged and plunge sites
   run `humanPad` BEFORE the landing, so with Human timing on, a swing that states
   no landing lands after its pad.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/swing-hitmark-round.md`, traps not recorded above:
+
+- A character authored from an UNMERGED gcsim PR goes stale when the PR moves before it lands (Iansan: six maps and both cast landings; the Cryo Traveler's Star cadence 75f/180f → 187f/176f). On 2026-09-20 Illuga (#2677) and Kachina (#2697) were still PR-sourced, and both PR heads were identical to the commits the data was authored from (`db0153ae` / `72cff353`). Re-check a head with `git ls-remote origin refs/pull/N/head`, and re-run the writers when it merges.
+- Test a writer by corrupting a value and letting it repair it, but pick a value no guard covers: corrupting Iansan's base N1 tripped the frames writer's "would collapse a distinction" hold-back and looked like a bug.
+- An application gained or lost in a digest diff here was always the edge of the 2.5s ICD timer or of a proc cooldown, but four were classified before one was traced. Trace first.
+- Tests that restate a cadence inline break when it is re-measured; `fields.test.ts` reads the Star's cadence from the data now.
+- gcsim was relicensed to AGPLv3 effective 2026-09-19. critcalc links it only in the local, dev-only dumper.
+- Both queued rounds shipped on 2026-09-21 (`docs/rounds/multi-hit-swings-round.md` §7, `docs/rounds/projectile-travel-round.md` §6). A measurement shape worth reusing from the second: state the EXPECTED mover set before running (21 bows + 9 catalysts = 30) and diff the sets; "exactly 30, nobody else" is a stronger result than any count. And a test asserting an on-field/off-field difference through a proc must clear that proc's cooldown first (Faruzan's Collapse is 3s): the first cut passed for the wrong reason, and `Faruzan Q ~4s > Fischl N1 ~1s` against `… > Fischl N1 > Faruzan ~3s` is the clean pair.

@@ -770,3 +770,8 @@ specifics worth keeping, because they are the predicted shapes showing up by nam
   cap reached inside the stance, a late swirl cannot change the number either way. ⛔ A
   test that cannot fail is worse than no test, so the invariant moved to a purpose-built
   stub with a high cap and one application per cast.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- 🐛 Substring name-matching swallowed cast hits: "Pyronado Hit 1" contains "Pyronado", so Xiangling's Q read as applying nothing. The match is an exact label now, or an evenly spaced stream of three or more hits on an ability that declares a summon.
+- 🐛 `orphanedSchema.test.ts` counted a writer as a consumer, because a `migrate-*` script mentions the fields it writes. Writers are excluded now (`WRITERS` in the test); `audit-*` scripts still count as consumers.

@@ -89,3 +89,12 @@ pips). `storageSession.updateTeam` takes a `loadout` patch.
 
 Gates on `51debf1b`: vitest 2606, check, lint, build; full e2e chrome 79 +
 webkit 79 passed.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+Traps met during the round that the rulings above do not name:
+
+- A wrapping flex line breaks on an item's BASIS before anything shrinks: give a search field a small basis plus grow plus a max-width, or the last control wraps onto a line of its own.
+- `--sel-ring` is itself a `color-mix`, so it must never be mixed again (the WebKit nested-mix crash); mix from `--accent` instead.
+- `:empty` never matches a Svelte element whose content is `{#if}` blocks; gate the element itself.
+- A history entry that names a team has to be cleared (`replaceState`) when that team is gone, or `headless` keeps hiding the head over the cards.

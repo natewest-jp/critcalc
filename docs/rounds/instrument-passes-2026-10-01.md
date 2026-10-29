@@ -95,3 +95,17 @@ one 600f window with all four.
 - ⏭ Real-Safari look at both instruments (Nate) — many small drawn elements now.
 - ⏭ The new strings of both passes go into the translation ledger when it is built.
 - ⏭ Next instrument pass: Nate's pick (Crit 01 / ICD 02 / Gauge 03 have ruled sheets).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/instrument-passes-2026-10-01.md`, Reaction Curves details the record above does not carry:
+
+- The Transformative note says "for most characters". ⛔ Don't enumerate the crit exceptions (Nahida C2, Mizuki).
+- Copy rule as applied: the readings carry no "At X EM" prefix and no "Another 50 EM" sentence. The readout's intro spans the box (it overrides `.note`'s 56ch).
+- ⚠️ Crystallize same-element absorption is 2.5× (+150%), per gcsim `shield/template.go:51`; an earlier reading said "150% of that".
+- Measured: 1080p fits with no scroll; 1440×900 needs a short scroll to reach the sliders.
+- Three abreast (EM, RB, Level) was too short to land a level, which is why Level always takes its own full-width line.
+
+From `docs/rounds/instrument-passes-2026-10-01.md`, one Damage Anatomy value the record above does not carry:
+
+- The glass bar's edge settled at **1px** (⚓ Nate); no edge and a 2px edge were both tried first.

@@ -467,3 +467,8 @@ settle-after-state-ends regime has never had a resource to act on across a swap.
 That interaction is unmeasured and wants its own before/after, not a ride-along.
 ⚠️ Re-check the burst's `consumeStacks: 'all'` and its fails-open `min: 51` gate
 under the new scope before flipping it.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- ⚠️ **The Half B test's signature is the SPAN, not the start, and the first try was decoration.** "A window opens on a tick instant" stayed green under the mutation for three of the ten characters, because a summon-spawning cast's `fieldStart` is often exactly where its first tick lands; excluding cast instants then failed those three on correct code. ⛔ Don't simplify `summonTickBuffs.test.ts` back; watch a mutation go red first.
+- **One e2e casualty, let through by a skipped gate.** The Stage 2 merge (`5f85a92`) landed with `test:e2e` declared skipped and broke the Team Builder spec "the heal facet narrows the grid to healers" in both engines. Not a defect: the uncurated-bucket assertion had been set to 1 while Odette and Alyosha were Stage 0 stubs, and its own comment said it would return to 0 once their Stage 2 effects landed. Fixed in `a2173a3`. ⚓ The lesson is the gate: a data round that moves DERIVED CAPABILITIES can break the browser surface while vitest, check, lint and build all pass, because the Builder's honesty buckets are computed from exactly that. Count "capabilities moved" among the changes that earn an e2e run.

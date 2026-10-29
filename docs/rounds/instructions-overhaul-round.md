@@ -1,6 +1,6 @@
 # The instructions overhaul: a repo set up for the engineer who lives in it
 
-Status: **steps 1 and 2 shipped 2026-10-29** on `docs/instructions-overhaul` (§12 says what shipped, §13 is the ledger). Steps 3–5 are next. §1–§11 are the proposal as Nate approved it, kept as written. Written by Claude at Nate's request: "think about how you would like to have the repo set up … to facilitate yourself first and foremost."
+Status: **all five steps shipped 2026-10-29** on `docs/instructions-overhaul`. §12–§13 are steps 1–2 and their ledger; §14 is the to-do candidates for Nate's triage; §15 is steps 3–5; §16 is the memory ledger. §1–§11 are the proposal as Nate approved it, kept as written. Written by Claude at Nate's request: "think about how you would like to have the repo set up … to facilitate yourself first and foremost."
 
 The roles this is built around: Nate directs and designs (requests, instructions, art, rulings, and the final eye on anything visual). Claude engineers and architects, and is the one who reads these files every session. So the files are written for that reader first, while staying readable for Nate.
 
@@ -243,35 +243,35 @@ Every claim was checked against the current code as it moved, because moving sta
 
 ### The old root `CLAUDE.md`
 
-| Old section                                                                                                | New home                                                                                                                                                                          |
-| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Intro ("What this is", the retired "never calculate verdicts" wording)                                     | Root, "What this is" (the scope sentence and "never write never" kept; the retirement story is history)                                                                           |
-| Visualizers bullet                                                                                         | `visualizers.md` (workspace, tile-is-the-viewport, Gauge Explorer); materials in `ui.md`                                                                                          |
-| Rotation Planner bullet                                                                                    | `planner.md` (corrected: seats, format 3, lint registers, `A` and `W`); the timeline's ground in `planner.md`                                                                     |
-| Team Builder bullet                                                                                        | `builder.md`, rewritten for boards and swap mode; the retired Compare/Audition material is history (`docs/rounds/compare-round.md`, `docs/rounds/tb-endgame-round-2026-10-09.md`) |
-| Tech Stack: framework, Node                                                                                | Root, "What this is" and "Standing rules"                                                                                                                                         |
-| Styling (four layers, grounds, gold, inset, `--debuff`, `color-mix`, light glass, scrim, glass densities)  | `ui.md`; the tool dim in `scene.md`                                                                                                                                               |
-| Motion                                                                                                     | `ui.md`                                                                                                                                                                           |
-| Materials                                                                                                  | `ui.md`                                                                                                                                                                           |
-| Tool chrome (bands, layers)                                                                                | `tool-chrome.md` (corrected for the live layout); layers in `planner.md`                                                                                                          |
-| Site chrome (compass round)                                                                                | `tool-chrome.md`, "The top bar" (corrected: `TopBar.svelte`, ☰, wordmark below 75rem); the SVG `fill-opacity` and ink-area rules in `ui.md`                                      |
-| The narrow round                                                                                           | Breakpoints in `ui.md`; the bench row in `planner.md`; the drawer in `tool-chrome.md`. "Where to resume" items stay in memory `project_responsive_survey.md` and the to-do        |
-| Tool columns                                                                                               | `tool-chrome.md` (corrected: planner only); the aside's occupants in `planner.md`; marks and Lucide in `ui.md`                                                                    |
-| Data Architecture: character data, capabilities                                                            | `data.md`                                                                                                                                                                         |
-| Data quality machinery (scripts, probes, parser gate)                                                      | `scripts.md`; the parser gate and `orphanedSchema` in `data.md`                                                                                                                   |
-| Key types pointer, stores                                                                                  | Root map                                                                                                                                                                          |
-| Coding conventions: no speculative abstractions, SSR, page meta, errors                                    | Root, "Standing rules" (page meta corrected: `/styleguide` and `/lab` are dev-only exceptions; the boundary gap added)                                                            |
-| Coding conventions: sub-pixel laws, avatars, hidden input labels                                           | `ui.md`                                                                                                                                                                           |
-| Coding conventions: `--tool-pad-bottom`                                                                    | `tool-chrome.md` (the "viewport − 300px" measurement was of the old chrome and is dropped); `auraPlotH` riding the PNG in `timeline.md`                                           |
-| Coding conventions: notation length cap                                                                    | `sim.md`                                                                                                                                                                          |
-| Commits                                                                                                    | Root                                                                                                                                                                              |
-| Verification Policy                                                                                        | Root (with the new test policy), e2e detail in `e2e.md`                                                                                                                           |
-| Roadmap: launch, to-do pointer, round log                                                                  | Root map                                                                                                                                                                          |
-| Standing rulings: `manual` retired, honest buff lengths, editing character data, summon authoring, shields | `data.md`                                                                                                                                                                         |
-| Standing rulings: reading the oracle, oracle artefacts, gcsim checkout, data pipeline                      | `scripts.md`                                                                                                                                                                      |
-| Standing rulings: reaction conversion                                                                      | `gauge.md`                                                                                                                                                                        |
-| Standing rulings: constellation gating, off-field damage, human timing                                     | `sim.md`                                                                                                                                                                          |
-| Standing rulings: gadgets                                                                                  | `timeline.md`                                                                                                                                                                     |
+| Old section                                                                                                | New home                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intro ("What this is", the retired "never calculate verdicts" wording)                                     | Root, "What this is" (the scope sentence and "never write never" kept; the retirement story is history)                                                                            |
+| Visualizers bullet                                                                                         | `visualizers.md` (workspace, tile-is-the-viewport, Gauge Explorer); materials in `ui.md`                                                                                           |
+| Rotation Planner bullet                                                                                    | `planner.md` (corrected: seats, format 3, lint registers, `A` and `W`); the timeline's ground in `planner.md`                                                                      |
+| Team Builder bullet                                                                                        | `builder.md`, rewritten for boards and swap mode; the retired Compare/Audition material is history (`docs/rounds/compare-round.md`, `docs/rounds/tb-endgame-round-2026-10-09.md`)  |
+| Tech Stack: framework, Node                                                                                | Root, "What this is" and "Standing rules"                                                                                                                                          |
+| Styling (four layers, grounds, gold, inset, `--debuff`, `color-mix`, light glass, scrim, glass densities)  | `ui.md`; the tool dim in `scene.md`                                                                                                                                                |
+| Motion                                                                                                     | `ui.md`                                                                                                                                                                            |
+| Materials                                                                                                  | `ui.md`                                                                                                                                                                            |
+| Tool chrome (bands, layers)                                                                                | `tool-chrome.md` (corrected for the live layout); layers in `planner.md`                                                                                                           |
+| Site chrome (compass round)                                                                                | `tool-chrome.md`, "The top bar" (corrected: `TopBar.svelte`, ☰, wordmark below 75rem); the SVG `fill-opacity` and ink-area rules in `ui.md`                                       |
+| The narrow round                                                                                           | Breakpoints in `ui.md`; the bench row in `planner.md`; the drawer in `tool-chrome.md`. "Where to resume" items stay in `docs/rounds/responsive-survey-2026-09-01.md` and the to-do |
+| Tool columns                                                                                               | `tool-chrome.md` (corrected: planner only); the aside's occupants in `planner.md`; marks and Lucide in `ui.md`                                                                     |
+| Data Architecture: character data, capabilities                                                            | `data.md`                                                                                                                                                                          |
+| Data quality machinery (scripts, probes, parser gate)                                                      | `scripts.md`; the parser gate and `orphanedSchema` in `data.md`                                                                                                                    |
+| Key types pointer, stores                                                                                  | Root map                                                                                                                                                                           |
+| Coding conventions: no speculative abstractions, SSR, page meta, errors                                    | Root, "Standing rules" (page meta corrected: `/styleguide` and `/lab` are dev-only exceptions; the boundary gap added)                                                             |
+| Coding conventions: sub-pixel laws, avatars, hidden input labels                                           | `ui.md`                                                                                                                                                                            |
+| Coding conventions: `--tool-pad-bottom`                                                                    | `tool-chrome.md` (the "viewport − 300px" measurement was of the old chrome and is dropped); `auraPlotH` riding the PNG in `timeline.md`                                            |
+| Coding conventions: notation length cap                                                                    | `sim.md`                                                                                                                                                                           |
+| Commits                                                                                                    | Root                                                                                                                                                                               |
+| Verification Policy                                                                                        | Root (with the new test policy), e2e detail in `e2e.md`                                                                                                                            |
+| Roadmap: launch, to-do pointer, round log                                                                  | Root map                                                                                                                                                                           |
+| Standing rulings: `manual` retired, honest buff lengths, editing character data, summon authoring, shields | `data.md`                                                                                                                                                                          |
+| Standing rulings: reading the oracle, oracle artefacts, gcsim checkout, data pipeline                      | `scripts.md`                                                                                                                                                                       |
+| Standing rulings: reaction conversion                                                                      | `gauge.md`                                                                                                                                                                         |
+| Standing rulings: constellation gating, off-field damage, human timing                                     | `sim.md`                                                                                                                                                                           |
+| Standing rulings: gadgets                                                                                  | `timeline.md`                                                                                                                                                                      |
 
 ### The old `src/lib/CLAUDE.md`
 
@@ -297,8 +297,294 @@ Every claim was checked against the current code as it moved, because moving sta
 | The gauge charts' shared grammar                                                                                                    | `timeline.md`, "The application-marker grammar"                                                              |
 | The aura log and the two-way link                                                                                                   | `timeline.md`, "The aura log"; the rAF trap in the root; the `scrollToSeconds` trap stays at its declaration |
 | The planner's layers                                                                                                                | `planner.md`                                                                                                 |
-| "Three-phase E/Q bar rendering: see memory `project_ui_design`"                                                                     | Left to step 3 (memory migration)                                                                            |
+| "Three-phase E/Q bar rendering: see `docs/rounds/ui-design.md`"                                                                     | Left to step 3 (memory migration)                                                                            |
 
 ### Deliberately dropped
 
 Measurements, before-and-after counts, commit hashes, dates, branch names, and the stories of what was tried. Every one of these lives in the round record each rule now cites. A sample check confirmed the character-specific details survive there (Chongyun C2, Xingqiu's burst, Kinich, Ororon's 0.8s, Ifa, Mona, Kuki, Collei, Itto C2, Ayaka C1, Raiden, Emilie's pairing trap, Lauma's deer, Fischl's Oz, Xilonen).
+
+## 14. Found in the memory migration: to-do candidates for Nate's triage
+
+Open items the old memory files carried that `docs/todo.md` does not. They are not on the list: items change there only on Nate's rulings. "Unverified" means the agent couldn't confirm the item is still open.
+
+**Engine and data**
+
+- Alhaitham C4/C6 read a `mirrors` stack key that nothing grants, so their gates can never pass (`alhaitham.json`).
+- Verdant Dew party pool, gcsim's `player/verdantdew.go` model with three spenders (`docs/rounds/verdant-dew.md`).
+- Skirk's Serpent's Subtlety → `gainStacks.scope: 'rotation'`: deliberately not flipped yet (the drain interaction is unmeasured).
+- Prune's Clang Clang recast (the converted second E) is unmodelled.
+- Traveler (Hydro) C4 needs a channel window; a latent wrong-pool hazard in `registerInfusionsOnCast`.
+- Elemental-absorption leftovers: Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6, Jahoda.
+- ICD-cap leftover: Collei's 12th leap. Dumper panic on Mavuika's in-Nightsoul E re-press. Mavuika's form switch mid-Blessing.
+- Frames-queue §4: Nilou's Sword Dance swing indexing; Zibai's Ascendant Gleam N4 extra hit.
+- Swing-hitmark leftovers: 34 uncovered landing maps; Barbara's and Yae's charged attacks land no damage in gcsim's capture; `humanPad` runs before a charged or plunge landing on the synchronous path.
+- Mizuki round F4–F7: Dehya's Sanctum return, a `drivers.json` row for the exit press, Chasca's `C`, Wanderer/Jahoda `holdsField`.
+- State-gates §6.7: Varka A1 → `passive` + `scaling atk`; Skirk A4 → an `onHit` on a teammate's hit (unverified).
+- Tri-Karma and Oz procs don't enter the finalize hit stream, so they trigger no artifact `onHit` set (unverified).
+- 14 curator notes still say "no cooldownStartDelay field", but variants have one now.
+- An `atkSpd` stat key (Mika), and DMG Reduction and ATK Speed facets (planned in the Atlas round).
+- The reaction's direction on the aura lane ("Vaporize", not "×2"): a multiplier field on `ReactionEvent`.
+- Radiance is a standing condition while the Prism is a window (Nate's call, not taken); Thundercloud lightning ticks and the Moondrift Harmony attack are unmodelled.
+- Positional schema validation of the character JSON (a generated JSON Schema), deferred from the caveat refresh.
+- An LLM semantic audit (one agent per character, kit text against JSON), proposed in the data pipeline, never built.
+- Alyosha: once gcsim has his frames, check whether his two burst summons' tick series are offset.
+- The frames audit has no column for `summonTick.icdCounter` (Tugarin's row reads "pair by eye").
+- Parser-hardening leftovers: bound the `[^)]*` scans, memoize `inferredStates`, debounce the editor parse, and a `MAX_NOTATION_CHARS` test in `rotationUrl.test.ts`.
+- The in-game test batch's open items (`docs/rounds/ingame-test-batch.md`).
+
+**Planner**
+
+- Human timing: are Flins's and Varka's held inputs paying a pad they shouldn't? Is a swap press during E/Q buffered?
+- A swap-terminated stance still draws its full nominal bar (Raiden Q with a swap at 1s draws 7s); ruled its own round in August.
+- Ifa needs stance-cancel mechanics (a token that ends a stance).
+- Chongyun C2's cooldown reduction (Nate's wishlist).
+- Playback: click the ruler to set the start point; the aura log has no lap column.
+
+**Team Builder and Teams**
+
+- Teams details: browser Back drops an unsaved draft without asking; reordering is drag-only (no keyboard, and HTML drag doesn't work on iOS).
+- Should a fingerprint "find" narrow to who would be lit in that team? The 187 KB season data sits in the Builder chunk.
+- No user-facing text says the Atlas's roles come from Imaginarium Theater and are a presence classification, not a ranking (Nate's call, unmade).
+
+**Visualizers**
+
+- At one tile, only Crit uses the extra width; the other seven stretch (the "surplus-width policy"). Side-by-side panels stretch to equal height.
+- No whole-workspace share.
+
+**Look, landing and site**
+
+- Landing: the announcements box redesign, the phone landing composition, a BETA explainer page; at 844×390 the notices run off the bottom, and at 568×320 the cards touch the wordmark.
+- Role SVGs are edited in place at unhashed, immutable `/assets/` paths ("revisit post-launch").
+- `.banner` and `.banner-end` have no consumer outside `/styleguide` (an idiom on trial).
+- The brand logo's hover uses element `opacity`, the WebKit jitter class (unverified).
+- The `<img>` → `background-image` change on roster grids is a Safari 26 workaround; revisit after Safari 27.
+- Inline emphasis colour: gold does two jobs, parked since the palette round (unverified).
+- Help's Artifact Odds and Wish Odds sections were left as working text for Nate (unverified).
+- The drawer's duplicate "Target aura" kicker; `--cg-tile-min` 118 → about 110.
+
+**Housekeeping**
+
+- The rendered-page check for banned unicode characters (once `probe-marks.mjs`) has no home since the probes retired; a convention test could hold it.
+- Accept `CA`/`CS` as notation aliases; write the Resonance and Weapon Infusion library docs; unify the bucket numbering between `lunar-reactions.md` and `elevation.md`.
+
+- Stale local branches in the gcsim clone (`pr-2677`, `pr-2697`, `pr-2596-latest`, `linnea`).
+- `extract-strings.mjs --write` would rewrite 28 ledger files still carrying old `W` strings (unverified).
+
+**Conflicts between records, for Nate**
+
+- The BETA tag: one ruling says it "drops when Nate says so, don't propose an end condition", while `docs/todo.md` says "removal after the first feedback round".
+- Elevate rendering: one record says it is "still frozen", another that the Tier-2 schema was unfrozen.
+
+## 15. Steps 3–5 (2026-10-29)
+
+**Step 4, `docs/` sorted** (`4faee1f5`): four living designs to `docs/design/`, 110 round records to `docs/rounds/`, the two April parser handoffs to `docs/archive/`, and `docs/README.md`. 616 references were rewritten by script (code comments, curator notes, scripts, skills, instruction files, memory).
+
+**Step 5, checks instead of prose** (`c9dc8220`): the guard hook (`.claude/hooks/guard.mjs`) and `src/lib/conventions.test.ts`, each pipe-tested or seeded both ways.
+
+**Step 3, memory into the repo:**
+
+- 195 memory files sorted by six agents and one more for the reference files, against one brief (scratch, not kept): 121 moved into `docs/` as new records (the to-do list among them, now `docs/todo.md`), 52 appended to an existing record as "Notes carried over from Claude's working memory", 20 retired as already covered, and 2 kept private (the design constitution, which holds Nate's background, and the git-identity record, which holds an old personal email).
+- About 900 cross-links (`[[name]]`, "memory `x`", links to memory file names) were resolved to their new paths, in the repo and in the memory files that stay.
+- Privacy: every moved word was scrubbed as it moved, then three fresh reviewers read everything the round added (new files in full, the added lines of existing ones) and made six more fixes; a pattern sweep over the already-public `docs/` found two home-directory paths, now removed from the working tree (they remain in history from before this round). A public creator credited as the source of a mechanic keeps the credit; players and people who send feedback stay anonymous. Nate's other site is written as "the sister site".
+- About 50 verified rules from the old memories joined the rule files, including a new `.claude/rules/svelte.md`. Two rule lines were found stale and corrected (multi-hit swings shipped; Zibai and Alyosha are in gcsim). Two moved records carry a correction note where the code has overtaken them.
+- The old memory files went to a holding folder outside the memory directory, recoverable, and `MEMORY.md` was rewritten as a short index of what memory still holds.
+
+## 16. Memory ledger: where each memory went
+
+| Memory                                       | Verdict | Now                                                  |
+| -------------------------------------------- | ------- | ---------------------------------------------------- |
+| `archive_bug_lessons`                        | move    | `docs/rounds/bug-lessons.md`                         |
+| `archive_completed_features`                 | move    | `docs/rounds/completed-features.md`                  |
+| `project_abyssal_loading_screen`             | move    | `docs/rounds/abyssal-loading-screen.md`              |
+| `project_archetype_consistency_pass`         | move    | `docs/rounds/archetype-consistency-pass.md`          |
+| `project_architecture_overview`              | retire  | nothing durable left; superseded                     |
+| `project_artifact_curation_plan`             | move    | `docs/rounds/artifact-curation-plan.md`              |
+| `project_artifact_odds_pass`                 | twin    | `docs/rounds/artifact-odds-pass-2026-10-06.md`       |
+| `project_ascend_revival_2026-08-02`          | move    | `docs/rounds/ascend-revival-2026-08-02.md`           |
+| `project_aside_column_round`                 | move    | `docs/rounds/aside-column-round.md`                  |
+| `project_band_plates_round`                  | move    | `docs/rounds/band-plates-round.md`                   |
+| `project_bars_demo`                          | move    | `docs/rounds/bars-demo.md`                           |
+| `project_bench_band_round`                   | move    | `docs/rounds/bench-band-round.md`                    |
+| `project_bench_card_round`                   | move    | `docs/rounds/bench-card-round.md`                    |
+| `project_bench_portrait_round`               | retire  | `docs/rounds/bench-portrait-round-2026-10-13.md`     |
+| `project_bench_tail_round`                   | move    | `docs/rounds/bench-tail-round.md`                    |
+| `project_brand_mark_pipeline`                | move    | `docs/rounds/brand-mark-pipeline.md`                 |
+| `project_breathing_room_round`               | move    | `docs/rounds/breathing-room-round.md`                |
+| `project_buff_bar_merge_round`               | move    | `docs/rounds/buff-bar-merge-round.md`                |
+| `project_bug_sweep_2026-07-05`               | move    | `docs/rounds/bug-sweep-2026-07-05.md`                |
+| `project_capability_sweep`                   | move    | `docs/rounds/capability-sweep.md`                    |
+| `project_cast_hit_record`                    | twin    | `docs/rounds/cast-hit-record-round.md`               |
+| `project_caveat_pass_a7`                     | twin    | `docs/curation/caveat-pass/followups.md`             |
+| `project_caveat_refresh_round`               | twin    | `docs/curation/caveat-refresh-2026-08-18.md`         |
+| `project_character_card_display_exploration` | move    | `docs/rounds/character-card-display-exploration.md`  |
+| `project_character_selector`                 | move    | `docs/rounds/character-selector.md`                  |
+| `project_cleanup_branch_2026-09-24`          | move    | `docs/rounds/cleanup-branch-2026-09-24.md`           |
+| `project_cleanup_branch_2026-09-30`          | move    | `docs/rounds/cleanup-branch-2026-09-30.md`           |
+| `project_color_families`                     | move    | `docs/rounds/color-families.md`                      |
+| `project_constellation_gating`               | twin    | `docs/rounds/constellation-gating-plan.md`           |
+| `project_constellation_shield_wire`          | twin    | `docs/rounds/constellation-shield-gap.md`            |
+| `project_cooldown_reduction_round`           | twin    | `docs/rounds/cooldown-reduction-round.md`            |
+| `project_coordinated_attacks`                | twin    | `docs/rounds/coordinated-attacks-round.md`           |
+| `project_coverage_page`                      | twin    | `docs/rounds/coverage-round.md`                      |
+| `project_crit_viz_redesign_status`           | move    | `docs/rounds/crit-viz-redesign-status.md`            |
+| `project_cross_character_onhit`              | retire  | `docs/rounds/cross-character-onhit-round.md`         |
+| `project_cryo_traveler`                      | move    | `docs/rounds/cryo-traveler.md`                       |
+| `project_curation_plan`                      | move    | `docs/rounds/curation-plan.md`                       |
+| `project_curator_notes_survey`               | move    | `docs/rounds/curator-notes-survey.md`                |
+| `project_damage_anatomy_upgrade`             | twin    | `docs/rounds/instrument-passes-2026-10-01.md`        |
+| `project_data_pipeline`                      | move    | `docs/rounds/data-pipeline.md`                       |
+| `project_defres_pass`                        | twin    | `docs/rounds/defres-pass-2026-10-06.md`              |
+| `project_deployment`                         | move    | `docs/rounds/deployment.md`                          |
+| `project_design_constitution`                | keep    | stays in memory                                      |
+| `project_design_decisions`                   | move    | `docs/rounds/design-decisions.md`                    |
+| `project_design_principle_nonmodal_tools`    | move    | `docs/rounds/design-principle-nonmodal-tools.md`     |
+| `project_design_roadmap`                     | retire  | nothing durable left; superseded                     |
+| `project_dire_border`                        | twin    | `docs/archive/dire-border-handoff.md`                |
+| `project_dire_retirement_round`              | move    | `docs/rounds/dire-retirement-round.md`               |
+| `project_e3_handoff`                         | move    | `docs/rounds/e3-handoff.md`                          |
+| `project_e3_v2_handoff`                      | move    | `docs/rounds/e3-v2-handoff.md`                       |
+| `project_element_icon_generator`             | move    | `docs/rounds/element-icon-generator.md`              |
+| `project_element_palette_round`              | move    | `docs/rounds/element-palette-round.md`               |
+| `project_elemental_absorption_round`         | twin    | `docs/rounds/elemental-absorption-survey.md`         |
+| `project_elevate_visualization`              | move    | `docs/rounds/elevate-visualization.md`               |
+| `project_engine_queue_2026-09-17`            | move    | `docs/rounds/engine-queue-2026-09-17.md`             |
+| `project_essential_characters`               | retire  | `docs/curation/essential-characters-2026-09-15.md`   |
+| `project_event_ended_buffs`                  | twin    | `docs/rounds/event-ended-buffs-round.md`             |
+| `project_event_log_round`                    | move    | `docs/rounds/event-log-round.md`                     |
+| `project_f1_manual_trigger_cleanup`          | move    | `docs/rounds/f1-manual-trigger-cleanup.md`           |
+| `project_f2_residuals`                       | move    | `docs/rounds/f2-residuals.md`                        |
+| `project_faction_bonuses_round`              | twin    | `docs/rounds/faction-bonuses-round.md`               |
+| `project_flip_notice_round`                  | retire  | `docs/rounds/flip-notice-round.md`                   |
+| `project_frames_curation_queue`              | twin    | `docs/rounds/frames-queue-round-2026-10-04.md`       |
+| `project_fullscreen_cleanups_round`          | twin    | `docs/rounds/fullscreen-cleanups-round.md`           |
+| `project_fullscreen_refine_round`            | twin    | `docs/rounds/fullscreen-surface-round.md`            |
+| `project_furina_arkhe`                       | retire  | `docs/rounds/furina-arkhe-round.md`                  |
+| `project_gauge_marker_grammar`               | move    | `docs/rounds/gauge-marker-grammar.md`                |
+| `project_gauge_round`                        | twin    | `docs/rounds/gauge-round.md`                         |
+| `project_gauge_round_l4`                     | twin    | `docs/rounds/gauge-round-L4.md`                      |
+| `project_gauge_round_l5`                     | twin    | `docs/rounds/gauge-round-L5.md`                      |
+| `project_gauge_round_l5e`                    | twin    | `docs/rounds/gauge-round-L5e.md`                     |
+| `project_gauge_round_l6`                     | twin    | `docs/rounds/gauge-round-L6.md`                      |
+| `project_gcsim_checkout_state`               | move    | `docs/design/gcsim-checkout-state.md`                |
+| `project_genshin_night_palette`              | move    | `docs/rounds/genshin-night-palette.md`               |
+| `project_git_identity_rewrite`               | keep    | stays in memory                                      |
+| `project_hero_cards`                         | move    | `docs/rounds/hero-cards.md`                          |
+| `project_hexerei_stellar_todo`               | move    | `docs/rounds/hexerei-stellar-todo.md`                |
+| `project_human_timing_round`                 | move    | `docs/rounds/human-timing-round.md`                  |
+| `project_icd_cap_round`                      | retire  | `docs/rounds/icd-cap-round.md`                       |
+| `project_icd_round`                          | twin    | `docs/rounds/icd-round-handoff.md`                   |
+| `project_immersion_direction_handoff`        | move    | `docs/rounds/immersion-direction-handoff.md`         |
+| `project_ingame_test_batch`                  | move    | `docs/rounds/ingame-test-batch.md`                   |
+| `project_instrument_layout_round`            | twin    | `docs/rounds/instrument-layout-round-2026-10-06.md`  |
+| `project_landing_card_round`                 | move    | `docs/rounds/landing-card-round.md`                  |
+| `project_landing_scene_pipeline`             | move    | `docs/rounds/landing-scene-pipeline.md`              |
+| `project_landing_status`                     | move    | `docs/rounds/landing-status.md`                      |
+| `project_lauma_charged_forms`                | twin    | `docs/rounds/lauma-charged-forms-round.md`           |
+| `project_launch_roadmap`                     | move    | `docs/rounds/launch-roadmap.md`                      |
+| `project_lazy_character_loading_plan`        | move    | `docs/rounds/lazy-character-loading-plan.md`         |
+| `project_legibility_point_fixes_2026-07-31`  | move    | `docs/rounds/legibility-point-fixes-2026-07-31.md`   |
+| `project_lightness_structure_2026-08-01`     | move    | `docs/rounds/lightness-structure-2026-08-01.md`      |
+| `project_loop_queue_2026-05-12`              | move    | `docs/rounds/loop-queue-2026-05-12.md`               |
+| `project_loop_queue_2026-05-14`              | retire  | `docs/rounds/manual-trigger-retirement-round.md`     |
+| `project_loop_queue_2026-05-14-cluster-c`    | move    | `docs/rounds/loop-queue-2026-05-14-cluster-c.md`     |
+| `project_loop_queue_2026-05-17-wave-4`       | retire  | nothing durable left; superseded                     |
+| `project_manual_trigger_retirement`          | twin    | `docs/rounds/manual-trigger-retirement-round.md`     |
+| `project_mark_triggered_damage`              | twin    | `docs/rounds/mark-triggered-damage-round.md`         |
+| `project_mavuika_nightsoul`                  | twin    | `docs/rounds/mavuika-nightsoul-round-2026-10-16.md`  |
+| `project_mirrored_tool_surfaces`             | move    | `docs/rounds/mirrored-tool-surfaces.md`              |
+| `project_mizuki_holds_field`                 | twin    | `docs/rounds/mizuki-holds-field-round-2026-10-16.md` |
+| `project_mobile_conversion_plan`             | move    | `docs/rounds/mobile-conversion-plan.md`              |
+| `project_motion_round_handoff`               | move    | `docs/rounds/motion-round-handoff.md`                |
+| `project_notation_single_truth`              | move    | `docs/rounds/notation-single-truth.md`               |
+| `project_notices_round`                      | twin    | `docs/design/notices-design.md`                      |
+| `project_orphaned_schema`                    | retire  | `docs/curation/orphaned-schema-audit.md`             |
+| `project_overview`                           | retire  | nothing durable left; superseded                     |
+| `project_p4_event_stream`                    | twin    | `docs/rounds/p4-event-stream-plan.md`                |
+| `project_palette_definition_round`           | move    | `docs/rounds/palette-definition-round.md`            |
+| `project_panel_system_audit`                 | move    | `docs/rounds/panel-system-audit.md`                  |
+| `project_parser_architecture`                | move    | `docs/rounds/parser-architecture.md`                 |
+| `project_perf_audit_2026-07-10`              | twin    | `docs/archive/perf-audit-2026-07-10.md`              |
+| `project_planner_cleanup_2026-07-18`         | move    | `docs/rounds/planner-cleanup-2026-07-18.md`          |
+| `project_planner_color_tokens_2026-07-19`    | move    | `docs/rounds/planner-color-tokens-2026-07-19.md`     |
+| `project_planner_frame_grammar_2026-07-19`   | move    | `docs/rounds/planner-frame-grammar-2026-07-19.md`    |
+| `project_planner_mobile_round`               | twin    | `docs/rounds/planner-mobile-round-2026-10-14.md`     |
+| `project_planner_perf`                       | move    | `docs/rounds/planner-perf.md`                        |
+| `project_planner_redesign`                   | move    | `docs/rounds/planner-redesign.md`                    |
+| `project_playback_round`                     | twin    | `docs/rounds/playback-round-plan.md`                 |
+| `project_polestar_field`                     | twin    | `docs/curation/polestar-field-round.md`              |
+| `project_portrait_loading_diagnosis`         | move    | `docs/rounds/portrait-loading-diagnosis.md`          |
+| `project_post_launch_todo`                   | move    | `docs/todo.md`                                       |
+| `project_preflip_cleanups_round`             | retire  | `docs/rounds/preflip-cleanups-round.md`              |
+| `project_profile_surface_round`              | twin    | `docs/rounds/profile-surface-round.md`               |
+| `project_reaction_conversion_model`          | move    | `docs/rounds/reaction-conversion-model.md`           |
+| `project_reaction_curves_upgrade`            | twin    | `docs/rounds/instrument-passes-2026-10-01.md`        |
+| `project_responsive_survey`                  | twin    | `docs/rounds/responsive-survey-2026-09-01.md`        |
+| `project_roles_soft_editorial`               | retire  | `docs/curation/capability-sweep.md`                  |
+| `project_roster_surface_round`               | twin    | `docs/rounds/roster-surface-round.md`                |
+| `project_rotation_planner_roadmap`           | move    | `docs/rounds/rotation-planner-roadmap.md`            |
+| `project_rotation_planner_ssr_fix`           | move    | `docs/rounds/rotation-planner-ssr-fix.md`            |
+| `project_rp_scene_round`                     | move    | `docs/rounds/rp-scene-round.md`                      |
+| `project_rp_source_retirement`               | move    | `docs/rounds/rp-source-retirement.md`                |
+| `project_save_button_round`                  | move    | `docs/rounds/save-button-round.md`                   |
+| `project_scene_dim_shader`                   | move    | `docs/rounds/scene-dim-shader.md`                    |
+| `project_scene_occlusion_perf`               | move    | `docs/rounds/scene-occlusion-perf.md`                |
+| `project_scene_star_freeze`                  | move    | `docs/rounds/scene-star-freeze.md`                   |
+| `project_schema_model_mismatch`              | move    | `docs/rounds/schema-model-mismatch.md`               |
+| `project_settings_help_consolidation`        | move    | `docs/rounds/settings-help-consolidation.md`         |
+| `project_settings_surface_round`             | twin    | `docs/rounds/settings-surface-round.md`              |
+| `project_shield_summon_split`                | move    | `docs/rounds/shield-summon-split.md`                 |
+| `project_simplification_round_2026-07-24`    | move    | `docs/rounds/simplification-round-2026-07-24.md`     |
+| `project_stage2_odette_alyosha`              | move    | `docs/rounds/stage2-odette-alyosha.md`               |
+| `project_stance_chain_pilot`                 | retire  | nothing durable left; superseded                     |
+| `project_stance_cooldown_round`              | twin    | `docs/rounds/stance-cooldown-round.md`               |
+| `project_state_gates_round`                  | twin    | `docs/rounds/state-gates-round.md`                   |
+| `project_static_pages_site_chrome`           | move    | `docs/rounds/static-pages-site-chrome.md`            |
+| `project_stepped_stacks_round`               | twin    | `docs/rounds/stepped-stacks-round.md`                |
+| `project_stores`                             | retire  | `docs/design/profiles-and-surfaces-design.md`        |
+| `project_style_reference`                    | move    | `docs/rounds/style-reference.md`                     |
+| `project_summon_bound_buffs`                 | retire  | `docs/rounds/summon-bound-buffs-round.md`            |
+| `project_summon_tick_gaps_round`             | twin    | `docs/rounds/summon-tick-gaps-round.md`              |
+| `project_summon_tick_onhit`                  | twin    | `docs/rounds/summon-tick-stacks-round.md`            |
+| `project_swing_hitmark_round`                | twin    | `docs/rounds/swing-hitmark-round.md`                 |
+| `project_tall_bench_round`                   | move    | `docs/rounds/tall-bench-round.md`                    |
+| `project_tb_atlas_round`                     | move    | `docs/rounds/tb-atlas-round.md`                      |
+| `project_tb_card_round`                      | move    | `docs/rounds/tb-card-round.md`                       |
+| `project_tb_compare_round`                   | move    | `docs/rounds/tb-compare-round.md`                    |
+| `project_tb_final_layout`                    | move    | `docs/rounds/tb-final-layout.md`                     |
+| `project_tb_loadout_constellation_port`      | move    | `docs/rounds/tb-loadout-constellation-port.md`       |
+| `project_tb_round_2026_10`                   | move    | `docs/rounds/tb-round-2026-10.md`                    |
+| `project_team_builder_atlas_roles_facets`    | move    | `docs/rounds/team-builder-atlas-roles-facets.md`     |
+| `project_team_builder_redesign_2026-07-20`   | move    | `docs/rounds/team-builder-redesign-2026-07-20.md`    |
+| `project_team_builder_tool`                  | move    | `docs/rounds/team-builder-tool.md`                   |
+| `project_teams_surface_round`                | twin    | `docs/rounds/teams-surface-round.md`                 |
+| `project_text_round`                         | twin    | `docs/rounds/text-round.md`                          |
+| `project_tier_c_architecture_plan`           | move    | `docs/rounds/tier-c-architecture-plan.md`            |
+| `project_timeline_extraction_cleanup`        | move    | `docs/rounds/timeline-extraction-cleanup.md`         |
+| `project_tool_constitutions`                 | move    | `docs/rounds/tool-constitutions.md`                  |
+| `project_tool_page_revival`                  | move    | `docs/rounds/tool-page-revival.md`                   |
+| `project_tool_scene_brightness_2026-07-31`   | move    | `docs/rounds/tool-scene-brightness-2026-07-31.md`    |
+| `project_toolbar_refine_round`               | twin    | `docs/rounds/toolbar-refine-round.md`                |
+| `project_toolbar_round`                      | move    | `docs/rounds/toolbar-round-2026-08-07.md`            |
+| `project_transition_hardening_queue`         | move    | `docs/rounds/transition-hardening-queue.md`          |
+| `project_twin_frames_round`                  | twin    | `docs/rounds/twin-frames-round.md`                   |
+| `project_ui_design`                          | move    | `docs/rounds/ui-design.md`                           |
+| `project_ui_state_colors`                    | move    | `docs/rounds/ui-state-colors.md`                     |
+| `project_uncurated_two_tool_split`           | move    | `docs/rounds/uncurated-two-tool-split.md`            |
+| `project_unified_bench_card`                 | move    | `docs/rounds/unified-bench-card.md`                  |
+| `project_unified_chrome_areas`               | move    | `docs/rounds/unified-chrome-areas.md`                |
+| `project_varka_two_elements`                 | retire  | `docs/curation/varka-two-elements-scope.md`          |
+| `project_verdant_dew`                        | move    | `docs/rounds/verdant-dew.md`                         |
+| `project_viz_dev_round_2026-07-24`           | move    | `docs/rounds/viz-dev-round-2026-07-24.md`            |
+| `project_vz_on_the_scene`                    | move    | `docs/rounds/vz-on-the-scene.md`                     |
+| `project_weapon_artifact_type_plan`          | move    | `docs/rounds/weapon-artifact-type-plan.md`           |
+| `reference_data_schema`                      | move    | `docs/rounds/data-schema-reference-2026-04.md`       |
+| `reference_element_wash_recipe`              | move    | `docs/design/element-wash-recipe.md`                 |
+| `reference_elemental_reactions`              | retire  | `docs/library/game/elemental-reactions.md`           |
+| `reference_font_weight_ladder`               | move    | `docs/design/font-weight-ladder.md`                  |
+| `reference_framemap_conventions`             | move    | `docs/rounds/framemap-conventions.md`                |
+| `reference_game_knowledge_library`           | twin    | `docs/library/README.md`                             |
+| `reference_hrule`                            | move    | `docs/design/hrule.md`                               |
+| `reference_icon_set`                         | move    | `docs/design/icon-set.md`                            |
+| `reference_kqm_notation`                     | move    | `docs/library/kqm-notation.md`                       |
+| `reference_subpixel_rendering_laws`          | move    | `docs/design/subpixel-rendering-laws.md`             |
+| `reference_worktree_node_modules`            | retire  | `CLAUDE.md`                                          |

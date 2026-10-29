@@ -742,7 +742,7 @@ an independent re-derivation pass behind it.
 
 ## 5. The measurement
 
-⚓ **Quote the recorded baseline, never recompute it** (memory `project_gauge_round`).
+⚓ **Quote the recorded baseline, never recompute it** (`docs/rounds/gauge-round.md`).
 
 | metric                       | L0 baseline | post-L4 | post-L5 | **L5e target** |
 | ---------------------------- | ----------- | ------- | ------- | -------------- |
@@ -776,3 +776,19 @@ improvement, not on being finished** (contract §5).
 | **Phase disagreement on tick offsets** (§1's ⚠️).                                            | Verify `summonActivatesAt` + `firstTickDelay` composition against the oracle's observed first-tick times before L5e-b lands. |
 | **An extension after a chain stops cannot revive the tail.**                                 | Documented simplification (§2). Corpus extensions arrive while the summon is up.                                             |
 | **Over-gating on ICD.**                                                                      | ⛔ Default ungated — §3.3 measured it. Add a clock per summon only on evidence.                                              |
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+### A tick series can change cadence (2026-08-18)
+
+- A series whose rate changes is authored as the same series twice with mutually exclusive `conditions`, never as an interval override. Aino's burst goes from 1.5s to 0.7s under Moonsign (Ascendant Gleam, `teamFaction: moonsign >= 2`); Ororon's goes from 1s to 0.8s at C4. The class is closed: gcsim's other `tickrate`/`Interval` users are internal 0.1–0.3s samplers, and Nahida's is a `procCooldown`.
+- Two series, because the rate is not the only thing that moves. Aino's ICD group changes with it (Default 150f/every 3 → `AinoBurstMoonHit` 108f/every 4) and her count goes from 10 to 21, so applications go from every 3s to every 2.1s. Ororon's group does not travel with his rate, which is why his note authors the group rather than the coincidence.
+- ⚠️ `summonTickSeries` drops only a definitive false, so a gated pair whose condition is unresolvable fires both. The live chain had no `ConditionContext`, and Aino drew 10 markers while applying 12. Every reader of a tick series takes the same context.
+- That is why `finalize` became the one producer of a summon's markers (`TimelineWindow.ticks`, read by `computeSummonSubrows`): it removed a must-stay-identical pair, and the renderer could never have answered a `teamFaction` gate without duplicating the parser's counts. ⚠️ It runs in the late pass over `windows`, never inside `emitSummon`: recast truncation shortens the prior window after it is pushed, and a walk at emission time kept ten of Fischl's Oz markers out at 82–613f on a window already cut to 44.
+- The oracle adjudicates neither character: the dumper runs one character at C0 in an empty core and reaches no gated branch. Both were authored from the Go source. Ororon's 0.8s is a deliberate 0.05s divergence from gcsim's hard-coded 0.75s, because "rotates 25% faster" is a rate; it wants an in-game check.
+- Aino's C2 coordinated attack landed with it, hosted on the burst's summon so that the summon's liveness is gcsim's `burstKey` window.
+
+### Duplicate tick markers (found 2026-08-31, fixed 2026-09-19)
+
+- While measuring the summon-tick stacks round, eight summons were found drawing duplicate tick markers at C6 (Alyosha's Tugarin 27 markers for 9 distinct instants, Diona, Kuki Shinobu, Kokomi, Sayu, Sigewinne, Yaoyao, Mizuki): the marker walk stamped one marker per series, and a summon whose damage and heal series share a cadence emitted each instant twice, or three times when a constellation adds a series. It was visible because `.rp-summon-tick` paints at `opacity: 0.92`, so stacked markers composited nearly opaque.
+- ⚓ Fixed 2026-09-19 (Nate's ruling: one mark per frame). `finalize.ts` now drops exact same-frame duplicates from the markers only; the hit stream walks damage series on its own and is untouched.

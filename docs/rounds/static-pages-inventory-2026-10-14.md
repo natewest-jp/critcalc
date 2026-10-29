@@ -1,7 +1,7 @@
 # Static pages inventory (2026-10-14)
 
 **What this is:** the read-only preparation for the static-pages rewrite, the last of the
-roadmap's three Claude-solo items (memory `project_launch_roadmap`, "Final stretch plan" ③).
+roadmap's three Claude-solo items (`docs/rounds/launch-roadmap.md`, "Final stretch plan" ③).
 The plan: Nate and Claude agree a section list from this document, then Claude proposes
 copy line by line (memory `feedback_copy_proposed_first`). ⛔ No prose is rewritten here.
 

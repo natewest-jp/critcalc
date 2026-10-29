@@ -38,6 +38,10 @@ Budget: about 8,000 characters. The design is `docs/design/profiles-and-surfaces
 - Share lives in each tool's toolbar.
 - `ToolStack` publishes `--room-*` gaps. A scroller reaches into that gap, so its fade ends at the neighbour. ⚠️ Nested scrollers must reach equally, and `clientHeight` includes the pad-back.
 - `--tool-pad-bottom` (1.5rem) is subtracted by every viewport-fit surface. Don't make it viewport-derived.
+- ⚠️ A percentage height inside a tool page never resolves: `.tool-main` is `min-height: 100%`, deliberately not definite, so `height: 100%` falls back to `auto`. A fitted surface uses the viewport calc `ToolStack` uses.
+- Deep-link query parameters are consumed through `src/routes/(scene)/(tools)/lib/deepLinkUrl.ts`: `$app/navigation`'s `replaceState` throws before the router starts and would abort a cold-loaded link.
+- A registration slot shared by the tools is keyed by tool (`benchBand`'s `#hosts`): with a single last-writer-wins slot, the other tool's late teardown nulls it after an A→B→A switch.
+- A full-screen section with its own inner scroller must be listed in `MenuState.svelte`'s `fills`, or the content area scrolls as one block and the inner scroller does nothing.
 - Switching tools is a 150ms linear crossfade. ⚠️ A tool page you leave is paused, not destroyed, so don't rely on `onMount` to reset state when it is shown again.
 
 ## Tool columns (`ToolColumns.svelte`)

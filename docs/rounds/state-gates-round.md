@@ -261,3 +261,9 @@ site), 5 + 2 on the `'active'` fix (all Qiqi). No timing change on
   §3. Columbina's C6 takes `source: 'burst'` (gcsim gates it on
   `ReactBonusModIsActive(burstBuffKey)`, `cons.go:232` — the Domain, not the
   Ripple).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- The live stack dispatchers (`stacks.ts`) act only on a definitive `true`, while the buff passes drop a window only on a definitive `false`. A state gate that works in one can be dead in the other, so when a state gate sits on a `gainStacks` or `consumeStacks` effect, measure both. Odette's first attempt silently stopped the opener's own grant this way.
+- The self-opened rule has a blind spot: an `inStance` gate cannot separate a stance OPENER from its in-stance sibling skill, because both keep. Lohen's Etched Secret Rite trigger was reached the same day by name instead (`filter.abilityName`, `docs/rounds/cast-binding-round.md`). For a sibling-only effect on a non-ability host, reach for the name filter, not a state gate.
+- The corpus digests are blind to nearly all of this (one E and one Q each, no stance re-entry). The inside/outside digest was the gitignored `scratch/probe/stategates.test.ts` (`TAG=` names the output; diff two runs).

@@ -92,3 +92,10 @@ its own ground):
 - ⏭ Autocomplete's desktop look, for Nate's eye. The narrow round's
   `pointer: coarse` pass for band controls is still queued.
 - ✅ The dock's e2e spec (`e2e/planner-dock.spec.ts`) was approved and landed.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- ⚓ Nate called the round "a huge win": the tool feels pleasant to write in on a phone now. The `CriOS`-only 24px dock padding was, in his words, "perfectly sized".
+- `--scroll-fade-inset` is registered with `inherits: false`. Inherited, it cut the Builder grid's top row.
+- Follow-ons on 2026-10-15 (merged and pushed `3dc35e18`): a Bench plate in band B hides the phone bench row and its reserve (`siteSettings.showBenchRow` / `benchRow`, visible by default), and below `compact` the timeline scrollers bleed to the screen edge with a 14px eased fade. ⚠️ `trackPad`, the scroller's own inline padding, is subtracted in the viewport floor, the playback page-turn and `scrollToSeconds`.
+- ⚠️ A Builder crash on iOS while scrolling cards (a hydration `appendChild`) reproduced only on the dev server, never on the production preview. When something crashes on a phone, test it against `vite preview --host`.

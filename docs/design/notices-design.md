@@ -297,3 +297,10 @@ not hue, detail or size, and a dark card on dark grounds has neither.
 - ✅ **No backdrop blur** on toasts (it could not be seen through the slate).
 - ⏭ The toast and the keys bar share bottom centre on the Roster, so an Undo
   toast while editing lands on the keys bar.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/design/notices-design.md`:
+
+- Punctuation, from Nate's string review: a one-clause toast takes no full stop; two sentences do.
+- ⚠️ An Undo toast can outlive the document or profile it was made for, so its `run` must check that what it captured is still active (`docs/rounds/flip-readiness-2026-10-26.md` §1 item 2).

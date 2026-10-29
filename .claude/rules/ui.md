@@ -9,6 +9,8 @@ paths:
 
 # Design language
 
+The detailed references are in `docs/design/`: `icon-set.md` (before adding any icon or mark), `subpixel-rendering-laws.md`, `font-weight-ladder.md` (the mono and condensed faces are static, so `--fw-medium` folds), `element-wash-recipe.md` (before painting a portrait backing) and `hrule.md` (the two ornamental rules).
+
 Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and look things up on `/styleguide` (the exhaustive reference, including the full text of the sub-pixel laws). Both are dev-only. Visual verdicts are Nate's.
 
 ## Tokens: four layers and one law
@@ -25,13 +27,16 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - `--accent` is gold: `--gold-400` on dark and night, `--gold-700` on light (one hue at two rungs). Gold names a block, never a word: the `.kicker` and its rule are gold, titles are not. No gold fill or glow on paper.
 - Borders are ink. The inset frame is gold (`--inset-line`, zoned by context), 1px by default and 2px on large panels (`--inset-stroke`).
 - `--debuff` is not a token: `var(--debuff)` would silently inherit (`conventions.test.ts` checks). Destructive or loss ink is `--ui-danger`. `--ui-warning` means "we cannot take this"; `--ui-provisional` means "we took it, and this is a stand-in".
-- ⚠️ A `color-mix` fed by another `color-mix` crashes WebKit. Derived stops ship as resolved literals, with the recipe checked in the mirror test.
+- ⚠️ A `color-mix` fed by another `color-mix` crashes WebKit. Derived stops ship as resolved literals, with the recipe checked in the mirror test. `--sel-ring` is itself a mix, so never feed it to another; mix from `--accent`.
+- An opaque `color-mix` hairline has a floor: the ground it mixes against. On night, mix toward `transparent` (`--chart-grid`, `--chart-rule`).
+- Element colours (`--el-*`) were transcribed from Genshin and are never re-tuned as a set. Element marks sit on dark contexts; on parchment they run in one ink (`--ink-900`). When an element colour closes on a UI colour, spend lightness, not hue. Element icons are a build artifact of `--el-*-main` (`scripts/generate-element-icons.mjs`): never hand-recolour one, import `elementIcon()`, and leave the glyph sizing unnormalised (Nate).
 
 ## Materials
 
-- **Night looks, glass touches, paper answers.** Charts sit on the scene; `.panel` (which is `.ctx-glass`) holds apparatus; `.panel.panel--paper` is the one readout card per instrument. It is written as a compound selector because a lone modifier ties with `.panel` and loses on source order.
+- **Night looks, glass touches, paper answers.** Charts sit on the scene; `.panel` (which is `.ctx-glass`) holds apparatus; `.panel.panel--paper` is the one readout card per instrument. It is written as a compound selector because a lone modifier ties with `.panel` and loses on source order. ⚠️ That holds for every modifier: write it compound (`.btn.btn--glass`).
 - No surface paints a slab to stand on. The `.frame` class is retired (`conventions.test.ts` checks); `--frame-bg` survives only as the unpainted mix reference.
 - Glass is `.58` for a panel and `.45` for a well. Hovering a pane (under `@media (hover: hover)`) is `.80` plus an ink ring. A lit plate is a dim gold fill. Density separates resting from engaged.
+- Glass has no `backdrop-filter`. Remove a blur, never set `blur(0)`: any value still pays for compositing and still creates a stacking context and a containing block. Glass alphas are measured unblurred.
 - The shaped scrim is scrapped.
 
 ## Motion
@@ -40,8 +45,10 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - Every surface fade is linear. A control's small hover change keeps the token's easing.
 - `prefers-reduced-motion` is honoured by zeroing the tokens in one `:root` block, so a new rule is covered automatically. Never enumerate selectors. Only keyframes, the scene machinery and Svelte's `transition:` honour it by hand (`$lib/motion.ts` mirrors the numbers; a smooth scroll asks its `scrollBehavior()`, since Chrome ignores the preference there).
 - A refused action nudges with the shared `@keyframes nudge` in `app.css`, never a local shake.
+- ⚠️ `@starting-style` has the same specificity as the normal rule, so a later declaration of the same property wins the starting style too, and the fade silently runs from 1 to 1.
+- Pseudo-elements don't inherit their element's transitions. Animate one registered `@property` that both re-resolve from (`--bb-act-fill`, `--sp-wash-a`).
 - Scene and navigation clocks (`TOOL_NAV_MS`, the camera, the star clock, the veil) are tuned by Nate and never use these tokens.
-- ⚠️ An outro transition can eat the click meant for what replaces it; the fix is `inert`. Read memory `project_motion_round_handoff.md` before adding a transition.
+- ⚠️ An outro transition can eat the click meant for what replaces it; the fix is `inert`. Read `docs/rounds/motion-round-handoff.md` before adding a transition.
 
 ## Sub-pixel laws
 
@@ -50,6 +57,10 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - Centering a label centers its box, not its ink. Measure with `scripts/probe-ink-centering.mjs` and tune optical nudges against Chrome (WebKit snaps glyphs to whole pixels).
 - ⚠️ An inlined SVG's `fill-opacity` with no `fill` inherits `currentColor`. Always state `fill="#000"` on a wash path.
 - Match a glyph's optical size by ink area, never height. Override per button.
+- When a unicode character becomes a `<Mark>`, delete the typographic CSS that was tuned for it (`font-size`, `line-height`, nudges): it does nothing for the SVG except misalign it.
+- Nate tunes visual values by eye, so expose them as named constants or custom properties in one obvious place, never inline.
+- WebKit snaps CSS boxes to pixels but paints inline-SVG geometry at the exact fractional offset, so a live overlay that must line up with bars is built from positioned elements (the timeline's connectors are divs). Playwright's WebKit doesn't reproduce this; real Safari does.
+- `<Mark filled>` fills Lucide's stroke geometry. Use it only where the solid form is the idiom: on an open path it blobs.
 - ⚠️ Real Safari shows a 1px gap in tiled multi-layer CSS backgrounds on timeline bars. Don't use them there.
 
 ## Breakpoints
@@ -64,6 +75,12 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 
 - A visually-hidden input's label must be positioned: `.check input` and `.toggle input` are `position: absolute`, and with no positioned ancestor they escape a scroll container. Both labels carry `position: relative`.
 - Toolbar groups sit at even gaps, with no rules inside a control strip.
-- Anything that must escape a toolbar or popover clip portals (`BandMenu.svelte`).
+- Anything that must escape a toolbar or popover clip portals (`BandMenu.svelte`). A non-`none` `clip-path` also makes a containing block for fixed descendants (the bench ribbon clips itself), so anything fixed inside one portals too.
+- `overflow-y: auto` forces `overflow-x: auto`, so a vertical scroller clips all four edges. One that holds a focusable control or a lifting card reserves a gutter for the focus ring and the hover rise (`--cg-gutter`).
+- A component's custom-property default is a `var(--x, default)` fallback at each use site, never a declaration on its root: a property set on the element beats the caller's inherited value. And a custom property built from `var()` resolves where it is declared, so a `:root` token made of other tokens doesn't re-resolve per context.
+- `--r-round` is `999px`, never `50%`: a percentage radius is per axis and draws an ellipse on an oblong box.
+- The global `img { display: block; max-width: 100% }` squashes art meant to overhang its box; give such art `max-width: none`.
+- Roster-scale grids avoid a per-item `<img>` and use `background-image` (Safari pays about 2ms per dynamically created image).
+- ⚠️ A malformed comment in `app.css` silently deletes the rule after it, and no gate catches it. After editing comments there, strip them and look for a stray `*/`.
 - Avatars come from `getAvatar(id, preferNewfit, size, traveler)`, with the Traveler from the profile's `travelerTwin`. The availability manifest (`hasAvatar`) prevents server-rendered 404 images, which fail prerendering. Regenerate with `npm run generate-newfit`.
 - Notices (toasts, banners, confirms, save status) follow `docs/design/notices-design.md`. ⚠️ An Undo toast must check that its document and profile are still active.

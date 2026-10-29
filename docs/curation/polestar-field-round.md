@@ -70,7 +70,7 @@ currently required.
 team-wide Prism belongs to nobody. The only team-scoped chart furniture is the
 aura lane, which lives in the ruler strip — and ⚓⚓ **anything above the first
 track row moves the bench** (`headerH` is published through
-`benchBand.trackTop`; see memory `project_gauge_round_l6`). So a Prism lane
+`benchBand.trackTop`; see `docs/rounds/gauge-round-L6.md`). So a Prism lane
 costs bench geometry, the PNG export's `oy` arithmetic, and pixels from a
 viewport budget `--tool-pad-bottom` has already spent once.
 
@@ -875,6 +875,10 @@ is its own (`${char}:summon:${label}:${index}`), so two entities hitting togethe
 each apply. ⚠️ Whether Alyosha's two summons SHOULD both apply is a curation
 question his kit cannot answer today: gcsim has nothing for him, so both tick
 series are deliberately bare (no `icdGate`, no `application[]`) — see
-[[project_stage2_odette_alyosha]]. ⛔ Do not "fix" it by making the ledger skip
+`docs/rounds/stage2-odette-alyosha.md`. ⛔ Do not "fix" it by making the ledger skip
 duplicates: that would put a display problem into the arithmetic, and the gauge
 receives both applications regardless.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/curation/polestar-field-round.md`: adding the `gadget` kind to `TimelineWindow` broke type narrowing at five sites that read `.characterId` or `.sourceCastId` off a bare `TimelineWindow`. All five were fixed with kind-first predicates, none with a cast.

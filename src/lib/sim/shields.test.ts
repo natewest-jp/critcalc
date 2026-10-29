@@ -4,7 +4,7 @@
  * ⚓ `registerShieldOnCast` read the CAST ABILITY'S own effects only, so a
  * `shield` Effect authored on a constellation entry drew nothing at any level.
  * ⚠️ NOT a leak and NOT the constellation gate's doing — nothing drew at C0 or
- * at C6 — it is the [[orphaned_schema]] blind spot: `shield` effects ARE read,
+ * at C6 — it is the `docs/curation/orphaned-schema-audit.md` blind spot: `shield` effects ARE read,
  * just not from that source, so a green guard said nothing.
  * Record: docs/rounds/constellation-shield-gap.md.
  *

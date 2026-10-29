@@ -5,7 +5,7 @@
 > individually without an autonomous batch script. This recipe is preserved for
 > historical reference and pattern lookup, but is **not** the source of truth for
 > new curation work — defer to the current schema (`reference_data_schema.md`)
-> and conventions (`project_curation_plan.md` memory) instead.
+> and conventions (`docs/rounds/curation-plan.md` memory) instead.
 
 This document instructs an autonomous run to draft **one** character JSON to
 first-pass quality from gcsim source. It is the source of truth for
@@ -158,8 +158,7 @@ to cancel-frame counts; extract these into the JSON's `FrameMap` shape.
 | `action.InvalidAction` | (do not use) | This is `AnimationLength`, **not** swap |
 
 Required key set per ability type — see the table in
-`src/lib/utils/notationParser.ts` JSDoc and the reference memory
-`reference_framemap_conventions.md`. Quick reference:
+`src/lib/utils/notationParser.ts` JSDoc and the reference `docs/rounds/framemap-conventions.md`. Quick reference:
 
 - **Normal hit (non-bow, non-final):** `swap`, `N`, `C`
 - **Normal hit (non-bow, final in combo):** `swap`, `N` (no `C`)

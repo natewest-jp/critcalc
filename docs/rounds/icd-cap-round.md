@@ -158,8 +158,7 @@ true` feeds the series' clock the cast's counted `application[]` entries lazily,
   (Yelan's `hA` spends the Barb, Lauma's `Q` the deer) — one builder,
   `dumperDriverEntry`, for the audit and all three migrators. Durin's Purity recast
   `anim` 48 → 83 (gcsim's slice; the swap value had been authored). The rows leaked state
-  had hidden are queued for the frames session with Zibai (memory
-  `project_frames_curation_queue`; ⚓ Nate: Wanderer's base Q takes the plain frames, a
+  had hidden are queued for the frames session with Zibai (`docs/rounds/frames-queue-round-2026-10-04.md`; ⚓ Nate: Wanderer's base Q takes the plain frames, a
   Windfavored variant the in-skill ones).
 - **Nilou's shared counter** (⚓ Nate approved). gcsim puts her Dance, Whirling Steps and
   Sword Dance on ONE `ElementalArt` counter: `E E E E` applies on hits 1 and 4 (Dance 17,

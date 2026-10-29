@@ -323,3 +323,16 @@ full suite green; no visual change (3e explicitly verified).
   (perf constraint; irrelevant to these files but stated for safety).
 - The parser stays **pure and runtime-import-free** (Node scripts execute
   sibling modules directly; no store imports).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+**How the refactor was run** (it worked well and is worth reusing): a design gate first (spec, IR types and an asymmetry table), then two sequential workflows, each step being implement → gates → adversarial verify → at most two fix rounds, halting on any unverified step. About 2.6M subagent tokens across 29 agents, with zero failed steps. The load-bearing safety net was a **golden master**: an untracked vitest snapshot of the legacy parser's output across 131 rotations (kept out of git via `.git/info/exclude`), held green through phases 0–3 and retired in phase 4.
+
+**Lessons and residual hazards:**
+
+- The golden master caught the spec's "same instant" claim being byte-wrong: the legacy E handler computed the cast start after advancing (`localCursor - eCast`), one ULP off Q's pre-advance capture. Normalised to plain `castStart` in phase 4.
+- Latent trap (commented in code): `inferredStates` reads `bar.uptime` mid-parse, which since P4 is the un-extended value until finalize. Inert while no character has both an extendable stationary summon and `duringSummon`-gated logic; a future character with both would silently diverge.
+- The parser's summon-window swap-out uses the next different `characterId`; it was proven equivalent to `summonSubrows`' old next-different-`slotIdx` (one character never maps to two slots), and the invariant is documented at both sites.
+- Stance windows are `[castStart, castStart + dur]`: the summon spawn offset shifts only summon windows, not the `inStance` state span (Nilou E, `summonActivatesAt: 161`).
+
+**The `sQ` / post-action transient-state primitive** shipped in the same session (`5e962ad`, 2026-07-17): the tokenizer reads `sQ` as kind Q; variant matching became condition-aware (`matchVariant`, with the parser building team faction and element context), which fixed a latent Varka bug where his conditioned Four Winds variant shadowed the base tap-E so his stance never opened; `TransientStateSpec` openers `opensTransientState` (instant casts: Flins's Spearstorm opens a 6s swap-terminated `symphonyWindow`) and `plungeOpensState` (Varesa's 2.33s `apexDrive`, C2-gated on the base kit); variant `consumesState` and `bypassesCooldown` (Symphony ignores the burst clock per gcsim `ActionReady`; Kablam shares it and writes 1s). E/Q pill badges and the PNG export now print `bar.label` (`sQ`, `hE`) instead of a hard-coded row letter.

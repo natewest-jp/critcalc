@@ -560,3 +560,7 @@ Data: a 0.5s series from the aura's spawn + 1f, `icdGate {timer: 114}` (gcsim
 37 at C1. ⚠️ The cap is the LIVE game's: Nate's log has ten applications over
 18s at C1, the last at the boundary, where gcsim's chain stops at nine. C0's
 seven is the same rule, unmeasured. Test: `summonTicks.test.ts`.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/summon-tick-gaps-round.md`: Faruzan F1 (§7) merged as `7848f970` and pushed 2026-09-20. Lumi (§9) merged to `main` as `504131f1` (branch tip `9cb0ced3`) on 2026-10-17, not pushed at the time.

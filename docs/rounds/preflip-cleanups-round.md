@@ -32,7 +32,7 @@ Nate's last cleanups before the redesign goes live, worked through with him in o
 
 - ⚠️ **A sticky inset does not count the scroll container's padding.** That is why Coverage's header stuck 24px down in the menu state. A section needing a sticky header reads `--menu-sticky-top` / `--menu-sticky-reach`.
 - ⚠️ **`named` treats every STRING value as a name.** Plain words go in as an array (`['the Library']`); a `NoticeText` built elsewhere is spliced as is. The first draft bolded "the Library" by passing it as a string.
-- ⚠️ **The header now scrolls WITH the tracks.** Anything that measured or mirrored `.rp-ruler-scroll` is gone; `trackPad` and `scrollToSeconds` were already reading `.rp-track-scroll`. The gauge round's records (`docs/rounds/gauge-round-L6.md`, memory `gauge_round_l6`) describe the old follower and carry a ↻ note.
+- ⚠️ **The header now scrolls WITH the tracks.** Anything that measured or mirrored `.rp-ruler-scroll` is gone; `trackPad` and `scrollToSeconds` were already reading `.rp-track-scroll`. The gauge round's records (`docs/rounds/gauge-round-L6.md`, `docs/rounds/gauge-round-L6.md`) describe the old follower and carry a ↻ note.
 - ⚠️ **A pair from before `pairHome` has no home.** `CompareControl` keeps the old order for it (a what-if's real profile first, else the older) and treats the left side as home, passing that to `endPair(home)`.
 - ⚠️ From inside Theorycraft, a what-if's home belongs to another profile, so ✕ there ends the pair and stays put.
 - ⚠️ Trashing one side leaves the other's `pairId` pointing at a tombstone. Nothing shows it, and it is what lets Undo restore the pair.

@@ -3,7 +3,7 @@
 > **📦 ARCHIVAL (2026-07-15).** This conversion SHIPPED (`f0c183d`). Kept for the shader
 > technique — an infinite scroll as `fract(u + t)` over a REPEAT-wrapped tile, so no
 > oversized texture exists for Safari to evict. Not a live handoff; outcome + the
-> `--dire-*` knobs live in memory `project_dire_border.md`.
+> `--dire-*` knobs live in `docs/archive/dire-border-handoff.md`.
 
 **Decision:** Nate green-lit planning this 2026-07-10, after confirming the
 Safari eviction flashes SURVIVE the `--dire-tile-w` shrink (two flashes in

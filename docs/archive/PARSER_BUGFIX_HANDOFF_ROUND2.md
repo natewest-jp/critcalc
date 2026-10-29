@@ -79,7 +79,7 @@ Curated characters with E/Q: ganyu, bennett, xingqiu, fischl, cyno, zhongli, kaz
 2. **Re-read this doc, then `docs/archive/PARSER_BUGFIX_HANDOFF.md` section 7 for orientation.** Section 8's "unsure" list still partially applies for PR 4.
 3. **Ask user about Bug #5 path** before touching `ability.ts:329-332` or infuse JSON entries.
 4. **PR 4 plan:** pick Option A vs B, do audit, implement, add tests, `npm run check && npm test`, commit.
-5. **After PR 4 merges**, archive the `project_parser_bugfix_status.md` memory and fold the "variant replaces base" semantic into `project_parser_architecture.md` or `project_curation_plan.md`.
+5. **After PR 4 merges**, archive the `project_parser_bugfix_status.md` memory and fold the "variant replaces base" semantic into `docs/rounds/parser-architecture.md` or `docs/rounds/curation-plan.md`.
 
 ---
 

@@ -337,7 +337,7 @@ Oracle re-run, the residue enumerated, `gauge-round.md` §5 updated, memory writ
 
 ## 6. The measurement
 
-⚓ **Quote the recorded baseline, never recompute it** (memory `project_gauge_round`).
+⚓ **Quote the recorded baseline, never recompute it** (`docs/rounds/gauge-round.md`).
 
 | metric                       | L0 baseline | post-L4 | **post-L5** |
 | ---------------------------- | ----------- | ------- | ----------- |
@@ -386,3 +386,17 @@ and magnitude, never equality.
 | **A self-rescheduling gauge task and `clock.drain()`.**                                                                                                                                                                                                           | Chains are bounded by fuel/aura lifetime. Pinned by a test that a burning chain at rotation end terminates.                            |
 | **Perf** — the editor re-parses per keystroke and the gauge frame-walks live auras.                                                                                                                                                                               | Bounded by aura lifetime with the idle skip; measure a 120 s rotation and record it here.                                              |
 | **Per-ability ICD tag + group is still the top schema gap** (L4).                                                                                                                                                                                                 | Unchanged by L5: casts stay gated within a cast, not across. ⛔ Do not widen the gate here on a guess.                                 |
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+What shipped differs from the plan above in places, and a few lessons were recorded only in memory:
+
+- ⚓ **The gauge has NO wake-up task, and that is a ruling.** `Band.TICK` was reserved at L3 for gauge decay, and §5's L5c text says the gauge's next internal instant would be scheduled on it. It buys nothing: the only internal applicator is the Burning chain, and a Burning tick's Pyro provably cannot react (everything that would react with it reacts on contact, so it is never sitting there as an aura). Lazy catch-up at the next application reaches the identical state. ⛔ A task whose only job is to check back later is how the cost the jumping clock avoids gets back in. ⚠️ If an internal event ever emits a reaction, this inverts and the wake-up becomes required.
+- The idle skip once skipped a frame with an unflushed application. Its post-sample is what closes a series interval, so skipping it merged two lifetimes of one aura into a line drawn across the gap (148 of 400 sweep cases).
+- `createGauge()` is the live gauge and `simulateGauge` is a loop over it. ⛔ Never add a rule to only one of them; the batch is written in terms of the stream so a second gauge cannot appear. Proven by a 400-case sweep against the pre-split module (series, events, duration, truncation: 0 mismatches).
+- `reactionBridge.ts` can answer NOTHING: `crystallizeBlocked` is the 1s GCD, which the coarse model had no notion of, so every Geo cast used to crystallize.
+- Dendro cores as shipped: a 30f spawn delay (gcsim `dendrocore.Delay`), a 6s life, a cap of 5, one taken per Electro or Pyro trigger. ⚓ Taking one costs the trigger nothing and is not "reacting": the core is a separate gadget, so the same hit hyperblooms it and then meets the enemy's aura. ⚠️ The 6s is KQM's; gcsim writes `Duration = 300 // ??`, its own author flagging a guess, the one place KQM outranks it here.
+- `ParsedRotation.applications` is what the gauge was FED, straight from the run. ⛔ Never reconstruct the application stream from IR events again: that is how the L0 oracle came to measure a model we no longer had for a whole commit (L4d).
+- `units` is authored on every MEASURED entry, 1U included (1U ×327, 2U ×58, 4U ×2: Beidou Q, Zhongli Q), because absent has to keep meaning unmeasured (gcsim logs no durability for a hit its own ICD suppressed).
+- 🐛 **A test that passed because of the bug.** `max:3 cap with oldest-dropped saturation` reached 3 stacks only because the never-decaying Electro aura made every later Hydro cast emit a phantom Electro-Charged; the four real reactions land 12s apart, so a 30s lifetime holds at most two. The seven ICD tests were rebased too: they counted swirls on the premise "swirl does not consume the aura it reads", true of flags and false of a gauge, and now read `applications`. ⚓ A test can be green off a defect; rebasing one is a finding, not a chore.
+- Phantom reactions went 31 → 19 at the landing.

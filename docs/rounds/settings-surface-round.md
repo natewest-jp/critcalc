@@ -76,3 +76,12 @@ for Settings, from the streamer's session: they could not scan it quickly.
 - **A picker previews what it changes**: the swap picker plays the swap alone;
   Voice and the Notes rows play the phrase without its swap
   (`PREVIEW_NOTES`). Sound mode, Preview and Volume keep the whole phrase.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/settings-surface-round.md` (traps the record above doesn't carry):
+
+- `SettingsPanel` was rendered by three hosts at the time (the menu state, the old gear modal, the old `/settings` route). It is a container (`container-type`), so judge each form by the panel's width, not the window's. In Chrome driven through the browser extension the window won't resize; set `.sp`'s max-width in JS instead.
+- `SETTINGS_GROUPS` (a module export) drives the sidebar sub-list in `MenuState`; a group needs `id="settings-<id>"` on its section.
+- ⚠️ Never click Delete everything or Clear in the dev browser, which holds real data. Verify in an isolated Playwright context, seeding through `page.evaluate`, not `addInitScript`: the wipe deletes the seed flag, so an init script re-seeds on the reload and the wipe looks broken.
+- The copy is Nate's verbatim (items 1–15, 2026-10-26).

@@ -91,3 +91,10 @@ day.
 
 vitest 2293 · check · lint · build green at `ec428337`; full e2e before the merge (see the
 merge commit).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/defres-pass-2026-10-06.md`:
+
+- ⚠️ Lesson: Claude told Nate "no engine change" for Mavuika before checking, and it needed two. Probe the actual bars (a throwaway vitest under `src/`, deleted afterwards) before claiming a shape works; the probe is what found both gaps.
+- Still open at the close: form switching mid-Blessing (Mavuika's skill re-cast) is unmodelled, and at C6 her C2 and C6 bars draw as two rows of one debuff (Nate accepted that). The other five instruments were checked for the svg-width clipping hazard from CSS only, and none has it.

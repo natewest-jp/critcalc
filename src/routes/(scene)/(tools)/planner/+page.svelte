@@ -382,7 +382,7 @@
 	//     second Space clicked the speed plate. The pointer is tracked instead.
 	//   - only while the planner is the page on screen — a tool page is REVIVED,
 	//     not remounted, and outlives its route for a retention window (memory
-	//     `project_tool_page_revival`), so a window listener must ask.
+	//     `docs/rounds/tool-page-revival.md`), so a window listener must ask.
 	let clickFocused: Element | null = null;
 	function onPointerFocus(e: PointerEvent) {
 		clickFocused = (e.target as Element | null)?.closest('button, a, [role="radio"]') ?? null;

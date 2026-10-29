@@ -337,3 +337,8 @@ It is brightest at the bar's top edge and gone by its foot, where the ticks rise
 from, so the two never share pixels. The constants live in
 `timeline/summonMarks.ts` (`LUNAR_GLEAM_*`). The timeline uses a mask; the PNG
 export draws rows at a falling alpha. The hit's element is no longer drawn.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- **Tick ink** (`49221e2c`, same day as the gleam): the per-element tick colour is lifted in OKLab L by Electro's +.1326 step over the bar — Pyro `#feafae`, Hydro `#b0d7ff`, Cryo `#d0fffe`, Dendro `#b1ffa4`; the other three keep their `hi`. It lives in `TICK_INK` (`src/lib/utils/elementColors.ts`) and is guarded by `tickInk.test.ts`. The `hi` palette itself is never re-tuned for this.
+- Status after the build (2026-10-17): merged and pushed (`origin/main` = `54ccff9d`). Still open then: Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6 and Jahoda; Venti's stream being cut at the Stormeye's end is unverified and queued as an in-game check (Kazuha Q plus a late Venti), and Venti must not be given `travel`; Sayu's E re-press has no token (a `~Xs` says the same thing); and Nate's real-Safari look at the absorbed fill, the gleam (`mask-image`) and the tick ink.

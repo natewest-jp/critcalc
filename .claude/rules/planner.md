@@ -57,5 +57,5 @@ Budget: about 10,000 characters. Records: `docs/rounds/planner-slots-round.md`, 
 
 ## The timeline's ground
 
-- The timeline renders straight on the night scene, with no frame: edge fades, a condensed row ladder, and bars made of a material (`--glass-bar`) rather than a colour. Read memory `project_rp_scene_round.md` before changing that ground.
+- The timeline renders straight on the night scene, with no frame: edge fades, a condensed row ladder, and bars made of a material (`--glass-bar`) rather than a colour. Read `docs/rounds/rp-scene-round.md` before changing that ground.
 - The PNG export mirrors the screen. After any timeline polish, compare a live view with its PNG.

@@ -17,6 +17,7 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 ## The tile is the viewport
 
 - `.ws-body` scrolls under a roll-off mask, and the tool never page-scrolls.
+- A chart box that is measured and then drawn to fit carries `contain: size` with a natural-height floor, or its row ratchets taller on every redraw.
 - ⚠️ The tile's grid row is `minmax(0, 1fr)`, never `1fr`: `1fr` means `minmax(auto, 1fr)`, and the `auto` minimum stops an instrument's own `overflow-y: auto` from ever running.
 
 ## Materials

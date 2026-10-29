@@ -3,7 +3,7 @@
 **Status:** ✅ shipped 2026-08-17 · branch `feat/mark-triggered-damage`
 **Reads:** [`gauge-round-L5.md`](gauge-round-L5.md) (the gauge, and the no-wake-up ruling) ·
 [`gauge-round-L5e.md`](gauge-round-L5e.md) (summon ticks — the third application source, and
-the pattern this one copies) · memory `mark_triggered_damage`
+the pattern this one copies) · `docs/rounds/mark-triggered-damage-round.md`
 
 > The gauge is fed from exactly three places: a cast's own `application[]`, an N/C/P swing,
 > and a summon tick series. This round adds the FOURTH — a hit emitted by an off-field
@@ -111,7 +111,7 @@ pinned by its own tests instead.
 
 ⚓ **The Seed of Skandha is NOT authored as a summon.** It is a state on the ENEMY, which
 Nahida's curator note has said since ingest, and `summons[]` means a thing left in the
-world (memory `shield_summon_split`). `armedFor` says what the mark actually is: the
+world (`docs/rounds/shield-summon-split.md`). `armedFor` says what the mark actually is: the
 trigger listens for 25 s and then stops. ⛔ And it is not `activeDuration` either — that
 would grow Nahida's E bar to 25 s, which claims the ABILITY is active when what persists
 is a debuff on the target.
@@ -257,3 +257,10 @@ rather than a summon, so its Hydro counts as the active character's own hit. gcs
 (the Melody Loop's `ActorIndex` is Barbara's), so nothing diverges — but if that ring is
 ever re-authored as a summon, these procs go away, and that would be a data change with a
 behaviour consequence.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/mark-triggered-damage-round.md`:
+
+- Verified by Nate on the live tool and in real Safari, Nahida and Oz both, then pushed.
+- ⛔ `lunarCharged` is left off Fischl's reaction list because `reactionBridge` never emits it; authoring it would be inert data.

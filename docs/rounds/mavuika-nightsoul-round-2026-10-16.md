@@ -314,3 +314,11 @@ Tap E then Q first (from a cold start her Q has only 10 points), then Prydwen's
   Blessing ends at 1032). Before the fix it needed 7f.
 - ⚓ The 10f default stays: KQM's sourced "starting point", which our model
   already applies only where the game does not buffer.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- Phase 1 merged as `a4e919d2` and the bike Charged Attack round as `0effbb9e`; both were pushed 2026-10-16 with e2e green (75 + 75).
+- The bike timings were measured by running gcsim's CLI on Prydwen's combos and reproduce gcsim's trace except the 3f finisher hitlag.
+- Nate's four combat-log runs reproduce only once each Ring hit's 3-point cost is counted; the first predictions forgot that cost.
+- Without an E before her Q she has only 10 points and falls off the bike right after the Crucible. That is correct, and gcsim agrees.
+- ⏭ Later (Nate): audit Flins's and Varka's strings for held inputs that pay a human-timing pad, the way the cancel dash's held `C` did.

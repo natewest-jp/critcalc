@@ -36,3 +36,14 @@ Hands-on with Nate, under the switch (`?next`), starting from the redesign bug s
 ## Verification
 
 vitest 2606 · check · lint · build. A width sweep, 320–1900 in 10px steps, checking every toolbar, rail and top-bar control for overlaps, controls past the edge and page overflow: 0 findings at Medium (default), Large and Small, and with a pair showing at Medium and Large. With `data-next` removed the gated styles revert (uppercase, the gold ring, the centre's ground and padding). The flip measured per frame: the foot holds through six flips in a row.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/toolbar-refine-round.md` (covers this round and `builder-toolbar-round.md`):
+
+- **Gating a removed declaration.** To keep a declaration behind the switch, scope the OLD declaration to `:where(:root:not([data-next]))` rather than writing `none` or `normal` under the switch. Removal means inheriting or falling to another rule (`.chip--control` falls to `.chip`'s capitalize), and an explicit value is a different result from the one tested. In a Svelte component the form is `:global(:where(:root[data-next])) .x`.
+- **Testing widths.** A Chrome window resize does not change the viewport in the automation used here, so widths were tested in a same-origin iframe resized by JS (media queries follow, no reload). Never run two sweeps on one iframe: a timed-out script keeps running and fights the next one.
+- **Showing a paired state without touching real data.** Set `storageSession.plannerPair` in memory through the iframe's own module instance, `w.eval("import('/src/lib/storage/session.svelte.ts?t=<v>')")`, with `v` read from the transformed CompareControl source (HMR stamps the URL; without the stamp you get a second, empty instance). Theorycraft can be faked the same way in a read-only tab, `storageSession.profile = {...real, kind: 'theorycraft'}`, restored afterwards.
+- The rail toggle writes `siteSettings.showBenchRow` to localStorage, which any other open tab shares: restore it after testing.
+- The bench ribbon paints above the page, so tucking it under the rail can clip the rail's buttons: 3px clipped 0.3px, and 2px is the limit.
+- `RAIL_FACE` (20) is still a tuning knob.

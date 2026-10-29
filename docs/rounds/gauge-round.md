@@ -952,3 +952,13 @@ inventory (the ten hard couplings), the float-time surface, gcsim hitmark/durabi
 extractability, the data surface, and the `gauge.ts` ↔ `pkg/reactable` fidelity audit.
 Findings are folded into the sections above; the raw reports are session artifacts, not
 checked in.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/gauge-round.md`:
+
+- ⚓ Launch was explicitly allowed to slip for this round (Nate).
+- ⛔ L4 was not fanned out, and §7's plan that said to was written against a route the round did not take. "123 characters, each independently verifiable" assumed a human read of Go source per character; the library dumper did the whole roster in about two seconds and the residue was 18 table rows. ⚓ Automate before you parallelise.
+- Nate's verdicts as the landings went live: at L4, on the live tool and the PNG, _"different, but not suspiciously different"_ (Kazuha's buffs moved later in his attack string, which is the hitmark becoming accurate); at L5, _"buff bars stayed put, and swirl reactions don't continue indefinitely any more"_; at L6, _"I'm typing in rotations and it's leaving me stunned… almost entirely the shape of it"_; real Safari on 2026-08-17, _"Safari's green"_.
+- ⚠️ Before the push that published the round, `main` was 59 commits ahead of `origin`: the entire round had been local.
+- The mark-triggered damage round (2026-08-17, `885884a`) added a fourth application source, a `damage` effect on an `onReaction` trigger. It is clock-scheduled, so the no-wake-up ruling still stands: read the L5 note as "nothing inside the gauge may apply off a reaction", not "nothing may".

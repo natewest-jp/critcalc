@@ -65,3 +65,7 @@ Reaching those notes is `action=parse&prop=wikitext` against the MediaWiki API u
 `notationParser.test.ts` — two describes. The Xilonen/Nahida/Bennett one pins shipped behaviour (full stance → 16s; swap → swap + 7; an 11f delay unchanged at 5.183; no delay unchanged at 4.0, Bennett's 5s less the 20% his ascension passive takes off). The early-exit one is pinned to a **synthetic** fixture, deliberately: pinning the mechanism to Xilonen would make it a hostage of the open `terminatesOnSwap` question and would silently stop testing anything the day that flips.
 
 `barPhases` needed no work — its geometry was already fixed in `4fa17a7` and is covered by the delayed-cooldown describe in `barPhases.test.ts`.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- The general lesson: "same field, same shape" is not "same mechanic". Two Natlan stances with an identical `cooldownStartsAtStanceEnd` encoding have different exit rules, because one character is on the ground and the other is in the air. Don't generalise a verified data verdict across characters on structural similarity alone: that reasoning is what produced the wrong first claim about Ifa here.

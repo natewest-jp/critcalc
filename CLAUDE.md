@@ -21,7 +21,7 @@ Since 2026-10-27 the site runs the profiles layout: each profile holds its own d
 - **Nate's call:** anything visual (build it, describe what changed, let him look), real Safari and iPhone checks, user-facing copy, taste, and anything public about himself. A value he tunes by eye lands verbatim as a `tune(nate)` commit and is never "corrected" or regenerated.
 - **Claude's call:** engineering, structure, tests and refactors. Give a clear recommendation with its reason, not an open menu.
 - User-facing text: read `docs/text/style-guide.md` and `docs/text/glossary.md` before writing or editing any string. US English, Oxford comma, no capitals for emphasis. Propose copy before landing it. The existing prose was AI-written, so all of it is fair game.
-- The repo is public, so nothing private goes in: credentials and private IDs, email addresses, home-directory paths, personal circumstances, or third parties by name. Scrub before committing; a pushed commit is effectively permanent.
+- The repo is public, so nothing private goes in: credentials and private IDs, email addresses, home-directory paths, personal circumstances, or private individuals by name (players and people who send feedback stay anonymous; a public creator credited as a source keeps the credit). Scrub before committing; a pushed commit is effectively permanent.
 - Push only when asked. Never commit feature work straight to `main`.
 
 ## Standing rules
@@ -55,17 +55,19 @@ The guard hook (`.claude/hooks/guard.mjs`, registered in `.claude/settings.json`
 
 - Conventional commit types (`feat` `fix` `refactor` `perf` `test` `docs` `chore` `revert`) plus three of ours: `tune` (hand-tuned values, not behaviour), `polish` (refining an existing surface, no new capability), and `experiment` (exploratory work, usually on an `experiment/` branch). The scope names the area: `(planner)`, `(data)`, `(builder)`, `(visualizers)`, `(sim)`, `(pages)`, `(text)` and so on.
 - The subject names the change; the body says why, including what was tried and rejected.
+- Never `git checkout` a file you have also hand-edited in the session: it silently throws away the hand edit.
+- An agent worktree under `.claude/worktrees/` starts with no `node_modules`. Give it an APFS clone from the main checkout (`cp -cR`), never a symlink: Vite resolves a symlink outside `server.fs.allow`, so `vite dev` SSRs but never hydrates while every gate still passes. While worktrees exist, lint `src/` directly, because a lint from the main checkout scans them too.
 - Feature branches merge with `--no-ff` and the message `Merge <branch> — <summary>`. The merge commit is the hash to cite later.
 
 ## Where to find things
 
-- **Area rules**, each loading on its own when you read or edit a file its `paths:` match: `.claude/rules/` (`data` · `schema` · `sim` · `gauge` · `timeline` · `planner` · `builder` · `visualizers` · `ui` · `tool-chrome` · `scene` · `scripts` · `e2e`).
+- **Area rules**, each loading on its own when you read or edit a file its `paths:` match: `.claude/rules/` (`data` · `schema` · `sim` · `gauge` · `timeline` · `planner` · `builder` · `visualizers` · `ui` · `svelte` · `tool-chrome` · `scene` · `scripts` · `e2e`).
 - **Character data and types:** `src/lib/data/characters/`, `src/lib/types/`. **Derived capabilities:** `src/lib/capabilities/deriveCapabilities.ts`.
 - **Parser and sim:** `src/lib/utils/notationParser.ts` (the façade) and `src/lib/sim/`. **Timeline projections:** `src/lib/timeline/`, drawn by `src/lib/components/RotationTimeline.svelte`. **Rotation links (`?r=`):** `src/lib/utils/rotationUrl.ts`.
 - **Profiles and documents (IndexedDB):** `src/lib/storage/`. **Settings and small local stores (localStorage):** `src/lib/stores.ts` (`siteSettings`, `constellations`, `loadout`).
 - **Breakpoints:** `src/lib/breakpoints.ts` (the table) and `src/lib/media.svelte.ts`. **Design tokens and global styles:** `src/app.css`; judge on `/lab`, look things up on `/styleguide`. **The scene (WebGL night sky):** `src/lib/landing/`.
 - **Audits, generators, writers:** `scripts/`. **Skills (step-by-step recipes):** `.claude/skills/` (`ingest-character`, `gcsim-frames`, `verify`, `daily-checkin`).
-- **Why something is the way it is:** the round records in `docs/rounds/` (index: `docs/rounds/round-history.md`). **The current design of a surface:** `docs/design/`. **What's next:** `docs/todo.md`, the one to-do list.
+- **Why something is the way it is:** the round records in `docs/rounds/` (`round-history.md` there is the digest of rounds before launch). **The current design of a surface:** `docs/design/`. **What's next:** `docs/todo.md`, the one to-do list.
 
 House words: a **round** is one unit of work with its own branch and record. **The oracle** is gcsim, run through `scripts/gcsim-dump/`. **The corpus** is the full set of character JSONs. **Night, glass and paper** are the three materials (`.claude/rules/ui.md`). **The bench** is the planner's slot cards beside the timeline.
 

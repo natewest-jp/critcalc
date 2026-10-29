@@ -39,3 +39,11 @@ for Profile, after the Settings round moved Clear data onto it.
 - The old chrome's roster mark followed the twin; the new top bar's Teams
   door is generic art and doesn't. If a twin-aware figure ever returns, it
   reads `travelerTwin`.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/profile-surface-round.md`:
+
+- Merged and pushed as `76903fb4` (e2e 160).
+- ⚓ `travelerTwin` is the ONE reader of the Traveler twin: ⛔ never read `siteSettings.travelerVariant` in a component again (two readers were the bug sweep's "two sources"). The one component read left is the old layout's Traveler row in `SettingsPanel.svelte`.
+- A trap from the build: a Python edit script written as `open(p, 'w').write(expr)` truncates the file before `expr` is evaluated, so an exception inside `expr` leaves the file empty (it blanked `ProfileForm` once). Build the string first, then open the file.

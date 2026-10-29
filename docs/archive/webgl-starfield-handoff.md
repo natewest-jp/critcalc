@@ -3,7 +3,7 @@
 > **📦 ARCHIVAL (2026-07-15).** This conversion SHIPPED (`53fbb0e`). Kept for the
 > span→point-sprite recipe + the premultiplied-alpha gotcha (straight alpha into a
 > transparent canvas double-attenuates → dim stars vanish). Not a live handoff;
-> outcome in memory `project_perf_audit_2026-07-10.md`.
+> outcome in `docs/archive/perf-audit-2026-07-10.md`.
 
 **STATUS: SHIPPED 2026-07-10** (implementation in `src/lib/landing/starfield.ts` +
 `TwinkleStars.svelte`). Measured at 1600×1000 headless: layers on `/`
@@ -64,7 +64,7 @@ directly.
   the component already has) or `document.hidden`. Leave the last frame in the
   canvas — resume just restarts the loop (time-based phases, so no pop; see
   Animation below). This satisfies the standing scene-occlusion constraint
-  (memory `scene-occlusion-perf`): zero live animations AND zero rAF work
+  (`docs/rounds/scene-occlusion-perf.md`): zero live animations AND zero rAF work
   behind tools.
 
 ### Canvas / GL setup

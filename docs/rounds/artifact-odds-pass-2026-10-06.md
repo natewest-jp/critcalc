@@ -100,3 +100,12 @@ session (with Wish Odds').
 Hallowed Exegesis tracking (which reshape tier is next) · farm vs. define with Elixir
 (supply-capped) · the touch case of point-to-read on a finished piece (no hover on a phone;
 the Readout carries the numbers).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/artifact-odds-pass-2026-10-06.md`, the hazards this pass found that apply to the other instruments:
+
+- The svg-width trap (`bind:clientWidth` on a box whose `<svg width>` starts wide, so the box never shrinks and a narrower tile clips the chart) had the same shape in the ICD, Gauge, Reaction Curves, DEF/RES and Wish instruments, unchecked at the time. The shared `.instrument-graph` rule in `app.css` (`contain: size; min-width: 0`) now covers the instruments that use it.
+- `--surface` inside `.ctx-glass` is the glass panel itself, so any popover inside a glass panel comes out translucent unless it claims `.ctx-dark`.
+- "First accepted, in list order" is not "the one picked": derive a primary from an array in picked order.
+- `probe-ink-centering.mjs` takes `PAGE` (any route, such as an instrument `?i=` share link) and `INK=dark` (dark digits on a light disc; without it a gold pip reads as one clamped blob).

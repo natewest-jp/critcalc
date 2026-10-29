@@ -114,12 +114,12 @@ Four effects were DELETED with a full restore spec in their `_curatorNotes`,
 because the primitive they need is named and queued. ⛔ None of them is lost;
 each is a copy-paste from the note when its round lands.
 
-| what                                                                   | where the spec lives                   | the round that restores it                                                                            |
-| ---------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Sucrose C6** — +20% team DMG Bonus for the absorbed element          | `sucrose.json`, "Chaotic Entropy"      | elemental absorption (memory `elemental_absorption_round`; ⚓ Nate wants its own round, survey first) |
-| **Wanderer A1** — the Cryo branch's +20% CRIT Rate                     | `wanderer.json`, "Jade-Claimed Flower" | same                                                                                                  |
-| **Yae Miko C4** — +20% team Electro DMG for 5s per Sesshou Sakura tick | `yae_miko.json`, "Sakura Channeling"   | the summon-tick BUFF collector                                                                        |
-| **Yae Miko C4** — +8 Energy per tick, 5s cooldown                      | same                                   | same                                                                                                  |
+| what                                                                   | where the spec lives                   | the round that restores it                                                                                     |
+| ---------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Sucrose C6** — +20% team DMG Bonus for the absorbed element          | `sucrose.json`, "Chaotic Entropy"      | elemental absorption (`docs/rounds/elemental-absorption-survey.md`; ⚓ Nate wants its own round, survey first) |
+| **Wanderer A1** — the Cryo branch's +20% CRIT Rate                     | `wanderer.json`, "Jade-Claimed Flower" | same                                                                                                           |
+| **Yae Miko C4** — +20% team Electro DMG for 5s per Sesshou Sakura tick | `yae_miko.json`, "Sakura Channeling"   | the summon-tick BUFF collector                                                                                 |
+| **Yae Miko C4** — +8 Energy per tick, 5s cooldown                      | same                                   | same                                                                                                           |
 
 ⚠️ **Yae's pair carries a trap the round must not walk into.** A `summonTick`
 trigger is legal only inside `summons[].effects[]` (lint `summon-tick-misplaced`),

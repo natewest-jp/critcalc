@@ -59,8 +59,7 @@ await page.goto('http://localhost:4998/planner', { waitUntil: 'networkidle' });
 ## Headless WebKit (Safari-class bugs)
 
 Safari-only behavior reproduces in Playwright's real WebKit build — this is
-how the 2026-07-06 momentum-jerk was root-caused (see memory
-`scene-occlusion-perf`):
+how the 2026-07-06 momentum-jerk was root-caused (see `docs/rounds/scene-occlusion-perf.md`):
 
 ```bash
 npx playwright install webkit   # one-time per machine (shared cache in ~/Library/Caches/ms-playwright)

@@ -13,8 +13,7 @@ everything else is an agreed default.
 - `c6ceb8c3`: one Roster (the Atlas cards are its front door), one finder, `providesFacet`, team delta.
 - `5bba0571`: the rotation-backed audition.
 
-Plan of that round: `~/.claude/plans/i-like-this-plan-twinkling-wind.md`.
-Memory: `project_tb_round_2026_10`.
+Record: `docs/rounds/tb-round-2026-10.md`.
 
 ---
 
@@ -265,8 +264,7 @@ differences are seen as shapes before anything is read.
 Optional: faction emblems (Moonsign, Hexerei, Natlan), which are text pills today. Boss
 portraits only if curated seasons go ahead.
 Pipeline: `static/assets/…` plus a generator in the shape of the element icons'
-(content-hashed; see the immutable `/assets/*` caching note in memory
-`project_tb_atlas_round`).
+(content-hashed; see the immutable `/assets/*` caching note in `docs/rounds/tb-atlas-round.md`).
 
 ---
 
@@ -794,7 +792,7 @@ the tool should take" — no lab demo.
    `+page.svelte` sweep.
 6. **Copy, Help, glossary, ledger, record.**
 
-Also pending: 🎨 Nate is drawing the glyphs (memory `project_tb_round_2026_10` holds his
+Also pending: 🎨 Nate is drawing the glyphs (`docs/rounds/tb-round-2026-10.md` holds his
 concept list); ⚠️ data gaps for a later data pass — Chongyun has NO infuse effect;
 Xingqiu's interruption resistance doesn't derive (`interruptionRes` = Gorou + Columbina
 only; Noelle/Thoma absent too).

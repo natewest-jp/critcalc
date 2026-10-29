@@ -2,7 +2,7 @@
 
 Branch `polish/fullscreen-surface`, behind `?next`. The first refinement pass
 over the menu state (`MenuState.svelte`, `LibraryPlace.svelte`,
-`TeamsPlace.svelte`). Agreed shape: memory `project_fullscreen_refine_round`.
+`TeamsPlace.svelte`). Agreed shape: `docs/rounds/fullscreen-surface-round.md`.
 
 ## Rulings
 
@@ -49,3 +49,12 @@ over the menu state (`MenuState.svelte`, `LibraryPlace.svelte`,
 - Each surface (Roster, Teams, Settings, Profile) wants its own pass.
 
 Gates: vitest 2606, check, lint, build; full e2e chrome + webkit 160 passed.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/fullscreen-surface-round.md` (the rulings agreed before the build):
+
+- In that discussion, anything Nate didn't answer directly counted as accepted.
+- ⛔ No preview pane on the collections. Nate: people come to reopen, and portraits plus the name suffice.
+- Counts on Rotations and Lineups, because (Nate) they encourage decluttering.
+- After the first revisions, the surface stands on `--site-pad-x`.

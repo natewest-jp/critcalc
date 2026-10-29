@@ -439,3 +439,12 @@ Traveler's Q are likely; Emilie's E is not); §1.L's stance-CANCEL token; §1.M'
 summon-dies-on-cast; the editor tint. ⏱️ e2e was skipped on all three landings
 (parser + data, no browser-surface reach; last green at the human-timing merge
 `3818211`) and should run before the merge.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/rounds/lauma-charged-forms-round.md`:
+
+- **The next form-taker** (a mount, a transformation, a non-attacking input) is data: `nonHitting` on the class, `actionOpensState` with `terminatesOnAction`/`onEnd`, a state-gated sibling for the other form, two State edits (the union and `characterLint`'s `STATES`), and a `drivers.json` row with a counter-neutral ender (a burst).
+- ⛔ §1.L's stance-cancel token and §1.M's summon-dies-on-cast are different primitives; don't fold them into `terminatesOnAction`.
+- A synthetic-character sim test needs `passives: []` and `constellations: []`, or `lintCharacter` throws.
+- From the cast-side twin (`nonhitting-casts-round.md`): a subagent applying a "does the cast QueueAttack" rule counts tick loops enumerated inside the cast as hits, so re-read those rows against the summon authoring before trusting them.

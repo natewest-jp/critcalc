@@ -62,7 +62,7 @@ are authored on an **Effect**, not an ability. Nothing reads them:
   only — and **never `factionBonuses` at all**.
 
 ⚓ **Written, never rendered, never style-linted — which is exactly why they drifted.** This is the
-[[orphaned_schema]] blind spot in its documented form: the guard matches by KEY NAME, `caveat` _is_
+`docs/curation/orphaned-schema-audit.md` blind spot in its documented form: the guard matches by KEY NAME, `caveat` _is_
 read (on abilities), so the test stays green over 20 dead strings.
 
 ⏭ **Decision needed:** delete them, or teach `slotCaveats` + the lint to descend into effects.
