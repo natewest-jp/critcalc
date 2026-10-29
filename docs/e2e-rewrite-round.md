@@ -35,7 +35,7 @@ The five-minute stalls were not random on this machine. System Chrome on macOS s
 
 ## Found along the way
 
-1. 🐛 **Escape on the returning-visitor dialog also closes the full-screen section under it** (product bug, not fixed here). Seen on `/profile`: one Escape dismissed the dialog AND left the section for `/`. The dialog calls `preventDefault`; the menu state's Escape handler apparently does not check it. A returning visitor whose first load is a section (`/profile`, `/roster`, a shared Library address) loses it.
+1. 🐛 ✅ **Escape on the returning-visitor dialog also closed the full-screen section under it** (fixed on `fix/flip-notice-escape`: the dialog's keys moved to the CAPTURE phase and a handled key stops there; both listeners were on the window and the menu state's, mounted first, heard Escape before the dialog could claim it). Seen on `/profile`: one Escape dismissed the dialog AND left the section for `/`. The dialog calls `preventDefault`; the menu state's Escape handler apparently does not check it. A returning visitor whose first load is a section (`/profile`, `/roster`, a shared Library address) loses it.
 2. **`ResizeObserver loop completed with undelivered notifications`** surfaced as a WebKit page error arriving in the Builder from the Library's New lineup. It is the browser deferring notifications a frame (Chrome stays quiet), so the fixture lets exactly that message through; any other page error still fails.
 3. **Not a bug:** "a board survives a reload" failed once the idle wait went. A reload immediately after an imported team appears keeps it on both engines (the unload journal works); the test was reloading before the import landed.
 
