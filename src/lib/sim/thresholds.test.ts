@@ -1,6 +1,6 @@
 /**
  * thresholds.test.ts — the stack-threshold trigger (`onStack`), stack-threshold
- * round 2026-09-18 (spec + record in docs/stack-threshold-round.md).
+ * round 2026-09-18 (spec + record in docs/rounds/stack-threshold-round.md).
  *
  * A trigger that fires the instant the summed count of its `keys` reaches
  * `count`, spends the set, records a `stackThreshold` event, and — per effect

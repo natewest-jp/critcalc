@@ -61,3 +61,13 @@ the table stays queued, unscheduled.
 Done (Wave 9): see `a7b-candidates.md` in this directory — 36 zero-caveat
 characters / 85 abilities whose `_curatorNotes` contain divergence keywords.
 A7b is a future audit with full verification treatment; not part of A7.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/curation/caveat-pass/followups.md`, the outcome of the passes this queue came from:
+
+- **A7** (2026-07-20): all 151 caveats across 66 characters audited and adversarially verified, then applied: 138 rewrites (average about 300 → 170 characters), 8 deletes (all field-verified), 2 keeps. Merged `e95d72a`, with the Ifa `cooldownStartDelay` decision executed in `12f0661`.
+- **A7b** (missing-caveat audit, 2026-07-20): 36 zero-caveat characters and 85 candidates gave 10 new caveats and 7 effects authored instead of caveats (Nate's implement-first doctrine), the rest no caveat.
+- **Render-surface session**: merged `8ca144e` (canonicalAssumption retired, constellation always-on bonuses listed in the planner caption).
+- Process lessons that worked for a corpus-wide pass: a pilot wave and Nate's style sign-off before the bulk; each wave's proposals committed before verification, so an interrupted session loses at most one audit step; the compression-only rule with `claimsLost` accounting; a full review of every delete; style lessons folded into the guide between waves.
+- `scripts/caveat-apply.mjs` is a format-preserving JSON editor (jsonc-parser CST edits plus a deep-equal net). A full-file `JSON.stringify` → Prettier round-trip is not byte-stable, because Prettier preserves hand-inlined objects.

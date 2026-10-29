@@ -1,7 +1,7 @@
 # Notes — `vz_defres` (Enemy RES & DEF)
 
 Hand-written half of the ledger for `../inventory/vz_defres.md`. Written at the close of the
-DEF & RES pass (2026-10-06, `docs/defres-pass-2026-10-06.md`); the rulings come from worksheet
+DEF & RES pass (2026-10-06, `docs/rounds/defres-pass-2026-10-06.md`); the rulings come from worksheet
 05 + the conventions sheet (both superseded) and from that pass, where Nate approved every
 explainer line by line.
 

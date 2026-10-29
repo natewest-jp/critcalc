@@ -172,7 +172,7 @@ test.describe('detail card', () => {
 
 		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-mag').click();
 		// ↻ The flip: the details door opens the inspector MODAL (inspector
-		// round, docs/inspector-round.md), which hosts the details card.
+		// round, docs/rounds/inspector-round.md), which hosts the details card.
 		await page.locator('.im').waitFor();
 		await page.locator('.im .dc-caps .dc-cap').first().waitFor();
 

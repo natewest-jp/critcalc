@@ -2,7 +2,7 @@
 	 shell reads them for the sidebar's table of contents.
 
 	 Rewritten 2026-10-16 for launch against the LINEUPS tool (design doc
-	 docs/team-builder-lineups-design.md §11 wins; swap mode is §11.6 item 20).
+	 docs/design/team-builder-lineups-design.md §11 wins; swap mode is §11.6 item 20).
 	 Glossary names: Lineup (never "board"), Characters (the grid), Roster (the
 	 Library tab ONLY), "the team's capabilities" (never "fingerprint"). ⚠ The
 	 Abyss banner + Opponents need a CURRENT cycle in season-dates.json, so the

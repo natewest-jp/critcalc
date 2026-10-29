@@ -1,5 +1,5 @@
 <!--
-  Banners: CONDITIONS, at the top of the surface (docs/notices-design.md
+  Banners: CONDITIONS, at the top of the surface (docs/design/notices-design.md
   §3.3). Paper, a severity rule and mark, a bold lead clause. A banner stays
   while its condition holds and leaves by itself; a warning may be put away
   for the session (✕), an error may not. A refused action calls a banner

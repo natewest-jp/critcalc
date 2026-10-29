@@ -10,7 +10,7 @@ The canonical schema lives in `src/lib/types/ability.ts` (read the JSDoc) and `s
 
 ## Before you start
 
-1. **Read `project_tier_c_architecture_plan.md` memory.** It carries the live status of the schema proposals (P1–P5). What you can use today depends on which proposals have shipped.
+1. **Read `docs/rounds/tier-c-architecture-plan.md` memory.** It carries the live status of the schema proposals (P1–P5). What you can use today depends on which proposals have shipped.
 2. **Run `npm test`** to confirm the baseline is green. Aggressive-migration posture means _the lint must pass on main before you touch anything_. If it's red, fix the existing failure first; don't add new work on a broken baseline.
 3. **Look up the character's tier classification** in `docs/curation/queue.md`. Confirm it's Tier C and read the one-line "reason" — that's your headline mechanic to plan around.
 4. **Check `docs/curation/queue.md` for re-tiering.** If the character has been re-tiered to A or B since this guide was written, follow the simpler path.
@@ -57,7 +57,7 @@ Skill absorbs a team element to determine ability damage type. For Chasca specif
 Skill has two modes that consume charge stacks. The mode toggle is closer to a `state` (similar to Clorinde) than a stance — different N behavior is what gates whether to author it as `behavior: "stance"` or as a `state`-conditioned variant.
 
 - Author both modes as separate ability entries with `state` conditions if N behavior changes; otherwise as variants.
-- Charge-stack consumption is the **stacks** problem (currently deferred — see `project_tier_c_architecture_plan.md` for handoff).
+- Charge-stack consumption is the **stacks** problem (currently deferred — see `docs/rounds/tier-c-architecture-plan.md` for handoff).
 
 ### Nightsoul resource pools
 

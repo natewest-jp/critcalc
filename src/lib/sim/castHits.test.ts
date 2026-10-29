@@ -2,7 +2,7 @@
  * src/lib/sim/castHits.test.ts
  *
  * ⚓ A CAST'S HIT RECORD LANDS WHERE ITS APPLICATION DOES (cast hit-record round,
- * 2026-09-21 — `docs/multi-hit-swings-round.md` §6, Phase A). §1.K synced a
+ * 2026-09-21 — `docs/rounds/multi-hit-swings-round.md` §6, Phase A). §1.K synced a
  * swing's application and hit record; a cast's record still fired at the button
  * PRESS while its `application[]` was queued at the hitmark, so every `onHit`
  * consumer heard the cast up to 530 frames early and a damage proc landed AHEAD

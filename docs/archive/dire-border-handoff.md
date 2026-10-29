@@ -111,9 +111,19 @@ sources in `assets-src/tools/` (`waves.svg`, `noise-alpha-repeating-1200x600.png
 `halftone-repeating-10x200.png`) — source-asset precedent, they're the design's
 raw material.
 
-Design-history trail (memory `project_dire_border.md` holds the narrative):
+Design-history trail (`docs/archive/dire-border-handoff.md` holds the narrative):
 CSS original `30b2c77` → WebGL conversion `f0c183d` (2026-07-11) →
 scroll-under split 2026-07-24 → twilight-ramp rebuild `a9103bc` + line-layer
 redesign `44b8fbc`/`b793c3e` (2026-08-01, the lightness round) → retired here.
 Nate's last verdict on the look itself: "basically exactly where I'd like it"
 — it retired for zoning reasons, not aesthetic ones.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+From `docs/archive/dire-border-handoff.md` (details this handoff and `webgl-dire-border-handoff.md` don't carry):
+
+- The 2026-08-01 five-ask round: the two body waves counter-flow and both crest at the `--dire-*-h` marks (far exact, near `--dire-near-drop` 15px shallower). Body fade: the crest is fully opaque and eases toward the base (`--dire-wave-base-a`); the first cut faded the crest and Nate flipped it. The line's breathe is biased narrow (`--dire-crest-fade-bias`), with a twin line (`--dire-crest2-off`, which Nate ran 50px deep, its fade drifting the opposite way).
+- An outer-haze experiment was built and removed the same day (Nate: without was better). Don't reintroduce it without asking. The pre-blurred-silhouette technique (one sample per frame, no `ctx.filter`) is recorded in `f2e60ce`.
+- Vite HMR causes dev-only flashes on save; judge perf on `npm run preview` or the deployed site, never dev.
+- The 2026-08-01 twilight-ramp rebuild was never soaked in real Safari. That soak became moot when the border was deleted; if the border is ever revived, the soak is owed again.
+- The graph-frame radial glow was heatmap-only (`.cv-map-frame` in `CritHeatmap.svelte`: a blue radial top-left and a magenta one bottom-right over `#081225`); every other instrument frame was flat `#081225`.

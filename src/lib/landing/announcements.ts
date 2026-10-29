@@ -3,7 +3,7 @@
 // ⚓ The first question a Genshin player asks about any tool is whether it is
 // updated for the current patch, and nothing on the site used to answer it.
 // So this is a TRUST signal, not a news feed, and it has one hard rule
-// (memory `project_landing_card_round`): it renders ONLY while there is
+// (`docs/rounds/landing-card-round.md`): it renders ONLY while there is
 // something current. An empty slot is worse than none, and a stale one
 // ("New: 7.0 support!" in November) actively signals abandonment — so every
 // entry carries its own expiry, and the failure mode is that NOTHING shows,

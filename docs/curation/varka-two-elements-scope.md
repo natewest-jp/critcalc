@@ -261,16 +261,16 @@ Measured: `Xiangling E > Varka E N2 sC` → 64f (Azure Devour), `… sE` → 68f
 (Four Winds), `… C` → 60f (the ordinary in-stance charge); out of stance both
 fall back; `N2sC` splits correctly concatenated; and the corpus is byte-identical
 apart from Varka. ↻ Azure Devour SPENDS its Four Winds use since 2026-09-18
-(`docs/varka-azure-devour-round.md`).
+(`docs/rounds/varka-azure-devour-round.md`).
 
 ### ⚠️⚠️ What is left, and why it is a PAIR rather than two edits
 
 ↻ **SHIPPED TOGETHER 2026-09-18** — the cooldown-reduction round
-(`docs/cooldown-reduction-round.md` §4): `charges: 2` (+1 at C1),
+(`docs/rounds/cooldown-reduction-round.md` §4): `charges: 2` (+1 at C1),
 `startsOnCooldown`, and Secret Rite as two `cooldownReduce` effects capped 15
 per stance; charges recharge one at a time now, which is what makes the second
 use honest. Measured `Xiangling E > Varka E N2 sE`: Four Winds at 685f. ↻ And
-**Azure Devour's cost shipped the same day** (`docs/varka-azure-devour-round.md`),
+**Azure Devour's cost shipped the same day** (`docs/rounds/varka-azure-devour-round.md`),
 which also found that round's C1 (`+1` charge) wrong — it is a use handed back
 at entry, not a third charge on cooldown.
 

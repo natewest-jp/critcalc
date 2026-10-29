@@ -119,7 +119,7 @@
 		     The form that ships is 310.8 — compass and cog, 9.2px of slack —
 		     and that is what lets `critcalc.app` survive on a phone instead of
 		     the logo silently collapsing to 0px, which is what it did before.
-		     Derivation: docs/responsive-survey-2026-09-01.md § 8.2.
+		     Derivation: docs/rounds/responsive-survey-2026-09-01.md § 8.2.
 
 		     Artwork is Nate's, from assets-src/tools/navigation.svg — Genshin's
 		     own compass, chosen because it is the shape a player already reads
@@ -399,7 +399,7 @@
 		   whenever there is room — while refusing to crush either one when
 		   there is not. Below 40rem the centre is empty anyway (the switcher
 		   lives in the compass), so the crowded case no longer arises at all.
-		   Measured + the rejected alternative: docs/responsive-survey-2026-09-01.md
+		   Measured + the rejected alternative: docs/rounds/responsive-survey-2026-09-01.md
 		   § N1 and § 8.2. */
 		grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
 		align-items: center;

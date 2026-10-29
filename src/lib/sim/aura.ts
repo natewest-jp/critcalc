@@ -1649,7 +1649,7 @@ type StrikeStep = Extract<Effect, { type: 'damage' }> & {
 
 /**
  * ⚓⚓ A SEQUENCED SUMMON'S STRIKES, decided one at a time on the live clock and
- * PUBLISHED (Lumi round, 2026-10-17; `docs/summon-tick-gaps-round.md` §1.5, §6.6).
+ * PUBLISHED (Lumi round, 2026-10-17; `docs/rounds/summon-tick-gaps-round.md` §1.5, §6.6).
  *
  * Each strike lands, THEN picks the next step and its gap — so the decision sees
  * the strike's own first landing (a Geo-first Pound's Moondrifts summon the Heavy

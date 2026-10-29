@@ -93,3 +93,11 @@ mechanic, and where a gap remains. That's the bridge from "how the game works" t
 - Note the **game version** the doc reflects, and update it when patches change things.
 - New `game/` topics go in `game/` and get an index row above; new mistakes go in
   the `gotchas/` catalog with the entry template it defines.
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+- **History.** The library was started 2026-07-14, because knowledge that lived only in gcsim or in one-off notes kept evaporating (elevation was "special" but unspecified; `factionBonuses` was drafted on Fischl and forgotten). The same day it was split into `game/` and `gotchas/`, the root README gained the inclusion test, and every planned `game/` doc was written; it reached main as `05348d5`.
+- **The HoYoLAB wiki is a proven source, through its JSON API.** The wiki's pages are JavaScript shells, but `https://sg-wiki-api-static.hoyolab.com/hoyowiki/genshin/wapi/entry_page?entry_page_id=<ID>&lang=en-us` returns the full entry with no auth (retcode 0). It was used for reactions (entry 5206), lunar reactions (10450) and the damage formula (5654). ⚠️ A WebFetch summary of it can drop exact numbers, so corroborate key constants against gcsim.
+- **Fandom's `Internal_Cooldown/Data` is paywalled to WebFetch (HTTP 402).** `game/icd.md` cites it as the per-ability lookup only.
+- **`game/elemental-reactions.md` stays ONE doc.** Reactions are one interlocking system and gauge theory underpins all of it; its §1–8 numbering is kept because code comments cite those section numbers (`reactionCurves.ts`, `gauge.ts`). If it ever has to split, the path is a `game/reactions/` subdirectory.
+- **Open follow-ups:** full Elemental Resonance and Weapon Infusion docs (today the §6/§7 stubs in `game/elemental-reactions.md`), and unifying the bucket numbering between `game/lunar-reactions.md` (five buckets) and `game/elevation.md` (three mechanics) if it ever confuses.

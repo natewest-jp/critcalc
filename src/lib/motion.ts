@@ -93,7 +93,7 @@ export function motion(ms: number): number {
  * A fading-out overlay is STILL IN THE DOM for the length of its fade, and a
  * full-screen dismiss backdrop that outlives its own visibility eats the next
  * click. That is the press-what-you-can-see shape this repo has already paid
- * for once (see [[project_bench_card_round]]) — at 120ms it is rare enough to
+ * for once (see `docs/rounds/bench-card-round.md`) — at 120ms it is rare enough to
  * never be reported and often enough to feel like the site dropped an input.
  *
  * `inert` is the whole fix in one word: it kills pointer events AND focus for

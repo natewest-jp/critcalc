@@ -65,7 +65,7 @@ export function openSettings(): void {
  * ⚠ Settings is still LISTED in the panel as well, and ⛔ that is not a
  * duplicate to tidy away: the cog is an unlabelled glyph, and a reader who
  * does not recognise it will open this panel to look.
- * Derivation: docs/responsive-survey-2026-09-01.md § 8.2.
+ * Derivation: docs/rounds/responsive-survey-2026-09-01.md § 8.2.
  */
 export function openNav(): void {
 	if (get(nextLayout)) return menu.show('index');

@@ -1,7 +1,7 @@
 /**
  * src/lib/sim/absorb.test.ts
  *
- * ⚓ Elemental absorption (2026-10-17; `docs/elemental-absorption-survey.md` §8)
+ * ⚓ Elemental absorption (2026-10-17; `docs/rounds/elemental-absorption-survey.md` §8)
  * end to end over the shipped data, read off the public IR: what each absorber
  * applies once its lock holds, and that nothing appears with no aura to absorb.
  * Numbers are gcsim's (4eda9fc5f), cited in each character's curator notes.

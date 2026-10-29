@@ -47,7 +47,7 @@ export type CharacterRoles = { position: RolePosition[]; function: RoleFunction[
 export type CharacterMeta = {
 	source: 'genshin-db';
 	generatedAt: string;
-	/** Where the FrameMaps came from (coverage round, docs/coverage-round.md
+	/** Where the FrameMaps came from (coverage round, docs/rounds/coverage-round.md
 	 *  §5.3). Absent = `gcsim` (merged main). `gcsim-pr` (an unmerged PR — the
 	 *  Ifa/Varka precedent), `wiki` and `hand` read as stand-in timing on the
 	 *  coverage page. */

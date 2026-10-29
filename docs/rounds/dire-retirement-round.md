@@ -1,0 +1,67 @@
+# Dire-retirement round — ✅ MERGED TO MAIN `824f92f` + PUSHED 2026-08-05 (11 commits), live on the noindexed site
+
+> Moved from Claude's working memory on 2026-10-29. A dated record: it describes things as they were when written, so check the code and `.claude/rules/` before relying on it.
+
+**Color/identity work CONTINUES in-session or in a next color round — the "still open" list at the bottom of the follow-up section is the live queue. The `docs/rounds/bench-band-round.md` structural round is queued BETWEEN color sessions (Nate's sequencing: structure before more paint). Memory truing done at merge: `docs/rounds/color-families.md` marked history, `docs/archive/dire-border-handoff.md` marked archived, `docs/rounds/scene-occlusion-perf.md` carries the inversion note, CLAUDE.md design-language line updated.**
+
+## ✅ Structural half DONE (2026-08-05, pre-color session)
+
+- **Item 3 SHIPPED `b044066`:** DireBorder.svelte + direBorderGL.ts deleted; twilight knob block stripped from the tools layout; dire-noise tiles + optimize-dire.js + the dead probe-plate-analyze.mjs removed (assets-src sources KEPT). Nate's final ramp values preserved verbatim in `docs/archive/dire-border-handoff.md`. Shell keeps opaque `#131518` (the ramp's base) as PLACEHOLDER — literal now, not a var. 15-check headless smoke passed (all 3 tools + landing, no errors, occlusion intact).
+- **Item 6 SHIPPED `8a026be`:** zone names are now **"in the world"** (landing/static/meta) vs **"at the crest"** (inside a tool) — app.css comments, /styleguide § Laws + zoning section, and the design constitution (its light↔dark descend paragraph REWRITTEN to the ascend register; portals dropped from the motif list; avoid-list amended). Dire marked retirement-bound everywhere, values untouched.
+- **Survey findings (the loose-elements sweep + the color call-site map):** beyond `--accent`'s ~148 sites, direct dire consumers are: debuff bars (RT `--dire-fill`+`--dire` edge + the 20% gradient; exporter literals `DIRE_TINT`/`DIRE_FILL`/`PROC_FILL`) = the enemy-facing semantic · `--knob: var(--dire)` tool-zone re-declare · `.frame` border dire 40% (app.css:~1078) · chrome-ground fill tints dire 13/20% (`.site-chrome/.rp-tab-bar/.tb-tabs/.ws-*` — they have NO background of their own; the "maroon band" was the border's gradient, already gone) · notationEditor hover border hard-codes `var(--dire, #d91254)` (⚠ loose: should ride `--accent`) · **three data-quality marks wearing the domain color** (⚠ loose, by the domain-vs-UI-state law arguably `--ui-warning` family): the ∅ no-frame-data namemark (CharacterCard+SlotPortrait, dire 80% white), `.rp-active-text--dire` generic-timing text, the NOTES caveat badge dot (inline SVG `fill="var(--dire)"`). Legacy aliases `--dire-tint/--calm-tint/--calm-edge` have NO live consumers — free to delete.
+- **Probe triage:** probe-frame-rework asserts border-hover = dire@50% (breaks at accent pick); probe-scroll-under's premise (raised border) is gone — retire or repoint at recolor; probe-site-chrome's 72px pin survives; probe-lightness-round pins beige/control-face (survive); probe-ascend-pan samples the landing side (survives). Export-mirror test trips on recolor by design.
+
+## ⚠⚠ DIRECTION CLARIFIED (Nate, 2026-08-05 mid-round): tools OVERLAY the scene — NO opaque background
+
+The intended destination is the tools rendered OVER the live scene, shell transparent — the `#131518` placeholder is a stopgap, not a preview of a solid ground. Whether a dim overlay is needed between scene and tool: "let's see" (decide by eye once transparency lands). **Engineering implications to work through before flipping it** (NOT yet designed — do not implement casually): the ascend occlusion handshake (`covered` → `sceneOccluded`) exists so the scene can unpaint and release ~90MB+ of textures behind an opaque shell (perf audit F4), and the scene-perf doctrine says persistent scene animations suspend on tool routes (`docs/rounds/scene-occlusion-perf.md`) — a transparent shell inverts both (scene stays painted + possibly animating under every tool). Needs its own perf story (static frame? paused-but-painted? starfield running?). Also re-reads the alpha-compositing law: tool fills sitting on a VARIABLE ground (the scene) is exactly what the mix-against-known-grounds rule forbids — panels over the scene likely need opaque surfaces even if the shell gap between them is transparent.
+
+## ✅ Loose-elements fixes SHIPPED `6492a4f` (Nate's call, same day)
+
+The three data-quality marks left the domain palette for `--ui-danger`: the ∅ no-frame-data namemark (CharacterCard + SlotPortrait), `.rp-active-text--dire` → renamed `.rp-active-text--danger`, the NOTES caveat badge dot. No exporter mirrors touched (none paint these). Still open from the survey: the editor hover border hard-coding `var(--dire, #d91254)` (should ride `--accent`) + the dead legacy aliases.
+
+## 🎨 THE ARCHETYPE LANDED (2026-08-05, same session): the two contexts
+
+Nate pulled values from Genshin's UI directly and reshaped the palette's primary axis from hue families to **CONTEXT — dark areas and light areas, each with its own text + border rules**. Shipped `7d7df6a` (transparent shell — live scene under tools, his call after recalling the dire-border precedent; no overlay, panels opaque) + `e1ac0c1` (the context layer + first assignments):
+
+- **`.ctx-dark`** (chart-like panels): surface `#1c1a1a` / raised `#212121` / text `#e5d9c3` / dim+border `#857971`. **`.ctx-light`** (most other panels + character cards ALWAYS — Genshin renders theirs light): surface `#f2f2ec` / raised `#e9e5dc` / text `#857971` / labels `--muted` `#495366` / border `#e5d9c3` / ribbon `#e5d9c3`+ink `#765f4d` (ribbon-ink ONLY on ribbon). `--ink` `#03020c`; `--chrome` `#fff` (site chrome, branding, biggest headers — SiteChrome + tool switcher converted; gilt's chrome role superseded). Two hinge values bind the axis: #E5D9C3 = dark text AND light ribbon/border; #857971 = dark dim AND light text.
+- **Assignments:** viz chart frames dark · TB frame light · planner root dark (frame = raised rung, chart well = surface — the well idiom survives; `--rp-chart-bg` `#15151c`→`#1c1a1a`, exporter follows) · cards intrinsically light (class on SlotPortrait/CharacterCard roots) · `.panel` light · `.frame` border = `var(--border)` (dire 40% mix retired). Mirror test got a `ctxToken` helper (sources context-sensitive tokens from the `.ctx-*` blocks).
+- **Contexts NEST; every context ground stays opaque (alpha law) — the scene shows only in the gaps between panels.**
+
+## ✅ Follow-up round SHIPPED `62cdee4` (same session): dim + chrome contract + THE FAMILIES ARE GONE
+
+- **Ink dim overlay:** `.dim` wears `--ink`; `dimTarget` = `TOOL_DIM 0.25` on tool routes, 0 in the world (knob in transition.ts). Nate: no other overlay; panels opaque.
+- **Chrome state contract:** logo/wordmark/glyphs/switcher all rest 0.85-translucent white → opaque on hover. ⚠ **Nate HAND-EDITED `static/critcalc-logo-white.svg` to a white fill — `npm run build-logo` would REVERT it** (generator doesn't know white; teach it before ever re-running). ↻ **Resolved 2026-09-26:** the source SVG and `INK` are white now, so `build-logo` regenerates the shipped logo instead of reverting it (`docs/rounds/brand-mark-pipeline.md`).
+- **dire + gilt DELETED from app.css** (values recorded in the styleguide's retired card + git). Survivors: `--debuff #c9524a` / `--debuff-fill #6e332d` (⚠ MY interim picks, enemy-facing successor — Nate still owes the destination); generic-timing wash → `--ui-danger`; editor hover → `--accent` (zoning bypass fixed); prose h1/h2 + settings title → `--chrome`; kicker/.title/field/knob/HRule tint → context `--text`/`--muted`. **Accent is context-borne (interim): world+`.tool-shell` = chrome white, `.ctx-dark` = parchment #e5d9c3, `.ctx-light` = slate #495366, each block re-deriving sel-fill/-hover/-ring/hover-fill + --knob.** `--sel-surface` = #e5d9c3 direct.
+- **⚠ THE COLOR-PROPERTY LESSON:** context blocks must set `color: var(--text)` — re-declaring tokens alone never re-colors descendants that inherit the color PROPERTY computed at body (was the viz white-text-on-paper bug). Mirror test's `ctxToken` is ^-anchored (comments mention .ctx-\* in prose).
+
+Still open: the real accent story (context accents are interim); debuff destination color; viz workspace toolbars + tab strips over the scene (white-tinted fills now, may want more); landing hero cards; portal action doesn't carry ctx classes to body (popovers read shell rung).
+
+**↻ 2026-08-06 — most of that list was CLEARED by `docs/rounds/archetype-consistency-pass.md`** (merged `4b0b865`): meta/modals context assignment (root now nets to `.ctx-dark`), RP portrait-column card grounds (the `ctx-light`-with-no-ground bug — 2.33:1), the `/styleguide` full context rewrite, and the dark-raised rung (#212121 was a C.000 neutral 177° off its own ground). probe-frame-rework needed no re-pin — it passes. Read that memory before continuing here; it also holds the measured evaluation of every value Nate pulled from Genshin's UI.
+
+## Remaining (Nate's values — items 1/2/4/5 + memory closeout, item 7)
+
+**The premise (Nate's 2026-08-02 direction call, `docs/rounds/ascend-revival-2026-08-02.md`):** every UI in Genshin (and nature) is light-warm / cool-dark; the tools belong on a **cool-dark ground** (element bars need neutral-cool to white-balance); the dire _scene_ was a mistaken destination that existed to rationalize the portal — and the portal is now retired (merged to main `795ab22`, archived at `docs/archive/portal-handoff.md`). The landing scene is the world the whole site lives in; the tools live IN it.
+
+**This is a COLOR round — run it in tandem with Nate (his palette re-establishment session). Structure landed already; nothing here blocks on engineering.**
+
+## Work list
+
+1. **Tool-zone `--accent` revert** — `--dire` doubles as the tool-zone accent (~148 call sites re-themed via zoning). New accent = TBD by Nate. The zoning MECHANISM (accent re-declares per zone) can stay; the dire value goes.
+2. **Chrome grounds re-cut** — the tool-side maroon/twilight fills: `.site-chrome` (tool variant), `.rp-tab-bar`, `.tb-tabs`, `.ws-toolbar`, `.ws-bar` re-declared fills. Re-ground on the cool-dark family (the whisper law: near-neutral C .010–.025, hue borrowed from the scene, L by the ladder — `docs/rounds/lightness-structure-2026-08-01.md`).
+3. **DireBorder removal + archive** — delete `DireBorder.svelte` + `direBorderGL.ts` + the twilight-ramp station knobs on `.tool-shell` (the `--dire-base/-sky/-horizon/-wave-*/-crest*/-ember` block in the tools layout). **Archive to `docs/archive/` AT removal** (dire-border precedent — `docs/archive/dire-border-handoff.md` holds the design history; the twilight-ramp rebuild from the lightness round dies here too, as planned when that branch merged). The tool shell keeps an opaque background — the ascend occlusion handshake depends on it (`covered` → `sceneOccluded`); re-ground it from `--dire-base` to the new cool-dark base.
+4. **Debuff-bar recolor** — the enemy-facing SEMANTIC (debuff bars in the planner) still needs a color once dire leaves. Decision pending, Nate's.
+5. **Dim overlay design** — `dimTarget()` in transition.ts is pinned 0 with its WAAPI plumbing intact; the tool-over-scene treatment (does the crest sky need dimming under tools at all, given full occlusion?) is this round's to decide.
+6. **`/styleguide` § Laws + memory `project_design_constitution` amendment** — the "past the portal" zoning language (dire = past the portal, calm = landing side) references a mechanism that NO LONGER EXISTS. The 2026-06-02 "descend into power" light↔dark spatial gradient reverts to the ORIGINAL ascend register — "picking a path is the moment you ascend" is already the constitution's touchstone language. Rewrite the zone names around the ascend (e.g. at-rest vs at-the-crest / in-the-world vs in-a-tool).
+7. **Memory updates at close** — `docs/rounds/color-families.md` (dire=enemy-facing-past-the-portal rule dies), `docs/archive/dire-border-handoff.md` (mark archived), this file.
+
+## What SURVIVES retirement (don't sweep these)
+
+From the lightness round (merged `2a986b7`): the grounds/`--ink`/`--control-face`/barMix contract/beige selection pilot, the whisper law, the mirror drift-guard test, the grayscale gate. From the brightness round: the alpha-compositing law (mix against known grounds, never transparent), surface=modal vs raised=in-page roles. The element mains + hydro cut. **Nate 2026-08-05 (at merge): the round also surfaced a few loose elements not yet looped into the styling rules — sweep candidates while re-grounding; keep an eye out during the chrome re-cut.**
+
+## Ground rules
+
+- Dire colors are IN PLACE on main today (structure-only merges, by design). Do not pre-emptively recolor anything before Nate's session — every replacement value is his to pick.
+- The export mirror (`timelineExport.mirror.test.ts`) re-derives hand-mirrored literals — chrome/bar recolors will trip it until the exporter follows; that's the test working.
+- Probes that sample tool-side pixels/colors may need re-pinning after the recolor (probe-scroll-under samples wave occlusion; check the repaired-probe list in `docs/rounds/mirrored-tool-surfaces.md`).
+
+Related: `docs/rounds/ascend-revival-2026-08-02.md` (the direction + the merged engine) · `docs/rounds/color-families.md` · `docs/rounds/style-reference.md` · `docs/rounds/tool-scene-brightness-2026-07-31.md`

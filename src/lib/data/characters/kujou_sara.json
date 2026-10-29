@@ -128,7 +128,7 @@
 				"ATK buff (Tengu Juurai: Ambush) authored 2026-07-12: BuffValue scaling ratio 77.33 = skill talent lv10 'ATK Bonus Ratio' sidecar row (flat ATK = 77.33% of Sara's Base ATK). Duration 6s / refresh ('effects and duration determined by the last Tengu Juurai to take effect'). snapshottable: true — standard flat-ATK stat mod on the recipient (gcsim skill.go attackBuff: active.AddStatMod, modifier.NewBaseWithHitlag 360f), captured by snapshotting abilities like Bennett's buff (KQM Sara+snapshot tech). In the base kit the grant fires from the CA-spawned Crowfeather (aimed.go), not E itself — modeled onCast per curation convention; see caveat.",
 				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103). Under the onCast model this changes nothing about the authored buff window.",
 				"[A7] The delayed ATK grant is the kit effect named Tengu Juurai: Ambush.",
-				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim sara/skill.go:37-68 — at C0 the press only adds Crowfeather Cover and the CD. ⚠️ At C2 the same cast queues Tengu Juurai: Ambush (C2) at c2Hitmark — the C2 variant below re-enables the hit."
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/rounds/nonhitting-casts-round.md §1)): gcsim sara/skill.go:37-68 — at C0 the press only adds Crowfeather Cover and the CD. ⚠️ At C2 the same cast queues Tengu Juurai: Ambush (C2) at c2Hitmark — the C2 variant below re-enables the hit."
 			],
 			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
 			"application": [],
@@ -268,7 +268,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"AUTHORED 2026-09-18 (cooldown-reduction round — docs/cooldown-reduction-round.md §5). Crow's Eye: −1s Tengu Stormcall CD when Tengu Juurai grants ATK or hits, once per 3s (gcsim cons.go c1, a 180f status; called from skill.go:117 and burst.go:56 — the E's Ambush and the Q's Titanbreaker). Authored on the cast hit of either ability (`abilityType: [\"skill\",\"burst\"]`), which fires at the cast rather than at the Ambush's delayed detonation — ~1s early, inside the 3s proc window."
+				"AUTHORED 2026-09-18 (cooldown-reduction round — docs/rounds/cooldown-reduction-round.md §5). Crow's Eye: −1s Tengu Stormcall CD when Tengu Juurai grants ATK or hits, once per 3s (gcsim cons.go c1, a 180f status; called from skill.go:117 and burst.go:56 — the E's Ambush and the Q's Titanbreaker). Authored on the cast hit of either ability (`abilityType: [\"skill\",\"burst\"]`), which fires at the cast rather than at the Ambush's delayed detonation — ~1s early, inside the 3s proc window."
 			]
 		},
 		{

@@ -2,7 +2,7 @@
 
 > **📦 ARCHIVAL (2026-07-15).** The Visualizers redesign SHIPPED (`8b8dc33`; design
 > language finalized `43a47d0`). Kept for the phase-by-phase design rationale — this is
-> not a live engagement. Current status: memory `project_crit_viz_redesign_status.md`.
+> not a live engagement. Current status: `docs/rounds/crit-viz-redesign-status.md`.
 
 > **You are Fable.** This brief hands you a scoped, multi-phase engagement on critcalc's Crit
 > Visualizer, authored by Opus after a codebase recon. Nate (the developer) drives; you execute
@@ -44,17 +44,17 @@
 
 **Design memory** (`~/.claude/projects/<project>/memory/`):
 
-- `project_tool_constitutions.md` — **the guardrail for the feature brainstorm.** Crit Visualizer
+- `docs/rounds/tool-constitutions.md` — **the guardrail for the feature brainstorm.** Crit Visualizer
   scope: "graph + slider shape," visualization-not-calculation, what it will never be.
 - `project_design_constitution.md` — mission, Abyss-as-possibility theme, audience, warm-accent
   philosophy. Strategic foundation.
-- `project_design_decisions.md` — settled calls + open questions. Note especially: **tool-chrome
+- `docs/rounds/design-decisions.md` — settled calls + open questions. Note especially: **tool-chrome
   unification is an open question** (back-to-landing, settings entry, tool-internal nav; current
   planner top-right "other tools" link is a placeholder). Warm accent = sparing, ~5–8 instances
   site-wide, active/live/accomplishment only. Two chrome layers (site vs tool). Desktop-first.
-- `project_landing_status.md` — the abyss/portal/magenta direction and tool-interior intent
+- `docs/rounds/landing-status.md` — the abyss/portal/magenta direction and tool-interior intent
   (black sky, themed starfield, a Stygian "Dire" border effect — this is where "Dire" comes from).
-- `project_ui_design.md` — element color palette, three-phase bar system, CSS conventions.
+- `docs/rounds/ui-design.md` — element color palette, three-phase bar system, CSS conventions.
 - `project_design_roadmap.md` — what's queued in design.
 
 **Code — the Crit Visualizer (2 files, ~960 LOC, zero shared deps):**

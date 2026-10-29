@@ -74,14 +74,14 @@ Rules of thumb for curators:
 This is the **correct** shape and the schema was right to keep it distinct from the
 `lunar*DmgBonus` stats (different bucket). What's incomplete is everything _around_ it:
 
-| Area                                    | Current state                                                                                | Needed                                                                                                                |
-| --------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Render (single lunar reaction)          | ✅ converted to synthetic `lunar*DmgBonus` buff (`effectCollection.normalizeBuffLikeEffect`) | Relabel so it reads **"elevated"**, not the additive-bonus label (the `project_elevate_visualization` memory's point) |
-| Render (multi-reaction)                 | ❌ returns `null`, unrendered (Columbina "all lunar")                                        | Decide: one row labelled by the reaction set, or one row per reaction                                                 |
-| Render (non-lunar reaction)             | ❌ `elevateReactionToDisplayStat` only maps the 3 lunar reactions                            | Extend when Stellar lands (Stellar-Conduct, …)                                                                        |
-| Capabilities (Team Builder)             | ❌ `elevate` skipped as "kit mechanic"                                                       | Consider surfacing "elevates \<reaction\> DMG" as a capability facet                                                  |
-| Per-cast elevation (Zibai Spirit Steed) | ❌ flagged as "may not fit `reactions[]`"                                                    | Model per-cast/event-driven elevation — may need a trigger-based variant                                              |
-| `Reaction` union                        | has lunar variants; **missing `stellarConduct`**                                             | Add Stellar reactions when they ship                                                                                  |
+| Area                                    | Current state                                                                                | Needed                                                                                                                       |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Render (single lunar reaction)          | ✅ converted to synthetic `lunar*DmgBonus` buff (`effectCollection.normalizeBuffLikeEffect`) | Relabel so it reads **"elevated"**, not the additive-bonus label (the `docs/rounds/elevate-visualization.md` memory's point) |
+| Render (multi-reaction)                 | ❌ returns `null`, unrendered (Columbina "all lunar")                                        | Decide: one row labelled by the reaction set, or one row per reaction                                                        |
+| Render (non-lunar reaction)             | ❌ `elevateReactionToDisplayStat` only maps the 3 lunar reactions                            | Extend when Stellar lands (Stellar-Conduct, …)                                                                               |
+| Capabilities (Team Builder)             | ❌ `elevate` skipped as "kit mechanic"                                                       | Consider surfacing "elevates \<reaction\> DMG" as a capability facet                                                         |
+| Per-cast elevation (Zibai Spirit Steed) | ❌ flagged as "may not fit `reactions[]`"                                                    | Model per-cast/event-driven elevation — may need a trigger-based variant                                                     |
+| `Reaction` union                        | has lunar variants; **missing `stellarConduct`**                                             | Add Stellar reactions when they ship                                                                                         |
 
 **Authoring caveat wording:** because elevation is multiplicative and reaction-scoped,
 its `caveat` should say something like _"elevates \<reaction\> DMG by X% (a multiplier,
@@ -95,7 +95,7 @@ in-game "elevated" language.
    HP-scaled); C2 = **`+40% Max HP`** (a stat feeding bucket 1); Burst = **bucket 3** (Reaction
    Bonus, `AddReactBonusMod`). See [`lunar-reactions.md`](lunar-reactions.md).
 2. **Elevate render** — relabel "elevated" + handle multi-reaction; is a distinct visual
-   treatment wanted, or label-only? (memory `project_elevate_visualization` says label is enough)
+   treatment wanted, or label-only? (`docs/rounds/elevate-visualization.md` says label is enough)
 3. **Non-lunar / Stellar** — extend `Reaction` + the display mapping when Stellar-Conduct ships.
 4. ~~**Direct vs Reaction elevation** — does elevation apply to Direct damage too?~~
    ✅ **RESOLVED (Nate, 2026-07-14): YES** — elevation of Lunar damage applies to

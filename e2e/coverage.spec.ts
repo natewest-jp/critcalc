@@ -1,7 +1,7 @@
 import { test, expect, openSection, openTool, CHARACTER_COUNT } from './fixtures/critcalc';
 
 /**
- * The coverage page at the browser surface (docs/coverage-round.md §8; the
+ * The coverage page at the browser surface (docs/rounds/coverage-round.md §8; the
  * 390px run is the narrow-width smoke the responsive survey proposed, ⚓ Nate
  * approved 2026-09-22). It guards what no unit test can see: the list renders
  * every character, search and the deep link narrow it, a row's details open in

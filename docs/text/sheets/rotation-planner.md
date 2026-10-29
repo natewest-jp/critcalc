@@ -353,7 +353,7 @@ so it is at least consistent.
 
 ☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
 an approval. The playback round shipped on `main` (`6f3195ec`) with Claude's first-cut
-strings, written against the style guide; its record is `docs/playback-round-plan.md`.
+strings, written against the style guide; its record is `docs/rounds/playback-round-plan.md`.
 Keys are left to the extraction pass. Line numbers are `rotation-planner/+page.svelte`
 unless named. ⚠️ The new Help paragraphs (**Play.** and **Laps.** in the Rotation Planner
 chapter) are pass 2 material, like every Help chapter.

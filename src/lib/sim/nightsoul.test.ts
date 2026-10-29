@@ -2,7 +2,7 @@
  * The simulated Nightsoul pool (`sim/nightsoul.ts`) — Mavuika.
  *
  * ⚓ The first five cases are Nate's in-game runs (C0, combat log, 2026-10-16;
- * `docs/mavuika-nightsoul-round-2026-10-16.md`): their numbers are the GAME's,
+ * `docs/rounds/mavuika-nightsoul-round-2026-10-16.md`): their numbers are the GAME's,
  * and gcsim's model reproduces them once each Ring hit's 3-point cost counts.
  * The sim swaps at the earliest frame where Nate swapped by hand, so the swap
  * instants differ; what is pinned is everything measured FROM them.

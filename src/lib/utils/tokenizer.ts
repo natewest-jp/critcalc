@@ -80,7 +80,7 @@ export type Token = {
  * remote: a ~90-character URL can kill the *recipient's* tab, and the planner
  * persists what it imports, so it re-kills on every reload.
  *
- * Full defect list and measurements: `docs/parser-hardening-2026-08-14.md`.
+ * Full defect list and measurements: `docs/rounds/parser-hardening-2026-08-14.md`.
  *
  * 16 KiB is ~3× the largest rotation anyone would plausibly write — a realistic
  * four-character rotation cycled out to 5,319 characters parses in 19 ms. Both

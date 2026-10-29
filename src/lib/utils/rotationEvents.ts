@@ -372,7 +372,7 @@ export type BuffWindowSource =
 	 *  field and it is read only in the `afterDuration` branch, so teaching the
 	 *  general row branches to read it would re-key all 24 and re-shape bars on
 	 *  characters with nothing to do with factions. See
-	 *  docs/faction-bonuses-round.md. */
+	 *  docs/rounds/faction-bonuses-round.md. */
 	/**
 	 * ⚓⚓ A REACTION'S FIELD, WHICH BELONGS TO NOBODY (Polestar-Field round,
 	 * 2026-09-01). Its own arm for the same reason `faction` has one: the row

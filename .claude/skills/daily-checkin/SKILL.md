@@ -1,6 +1,6 @@
 ---
 name: daily-checkin
-description: The daily check-in — read user feedback (the Google Form's Sheet, GitHub issues/PRs), pull gcsim and see which characters moved, check lunaris.moe for a new Abyss cycle or Stygian season, check genshin-db and the live site, and sweep the to-do list (memory `project_post_launch_todo`) for finished items. Produces ONE triage list, read against the to-do list, then a reallocation talk; acts only on what Nate picks. Use when Nate says "check-in", "daily check", "morning routine", or asks what's new upstream / in feedback.
+description: The daily check-in — read user feedback (the Google Form's Sheet, GitHub issues/PRs), pull gcsim and see which characters moved, check lunaris.moe for a new Abyss cycle or Stygian season, check genshin-db and the live site, and sweep the to-do list (`docs/todo.md`) for finished items. Produces ONE triage list, read against the to-do list, then a reallocation talk; acts only on what Nate picks. Use when Nate says "check-in", "daily check", "morning routine", or asks what's new upstream / in feedback.
 ---
 
 # Daily check-in
@@ -21,8 +21,9 @@ that file, ⛔ never against memory or recollection.
 
 Read `docs/checkin/state.json`. Every step below compares against it.
 
-Read the to-do list: memory `project_post_launch_todo` (Now · Next · Queue ·
-On hold). It lives in Claude's memory directory, ⛔ never in this public repo.
+Read the to-do list: `docs/todo.md` (Now · Next · Queue · On hold). The repo is
+public, so an item that comes from feedback never names or quotes the person who
+sent it, and nothing from the feedback sheet beyond what the item needs.
 It is the context every finding is read against: a feedback row or an
 upstream change that touches a listed item says so, and may argue for moving
 that item.
@@ -153,7 +154,7 @@ git log --no-merges --format='%h %s' <todo.lastSwept>..main -- src scripts stati
 For every item in Now, Next and Queue, ask whether it is done:
 
 - a merge or commit since the sweep that names it (read the subject, and the
-  round's `docs/` record if it has one);
+  round's record in `docs/rounds/` if it has one);
 - its premise is gone (read the CURRENT code or data, ⛔ not the item's own
   description: the list can be stale in the same way memory can);
 - an upstream finding from 1c–1e closes it (gcsim added the character, the
@@ -184,8 +185,8 @@ Then a short **to-do** block, in this order:
 ## 3. Reallocate, then act
 
 The report is followed by a talk with Nate about the to-do list: what's
-done, what moves, what's new. Edit `project_post_launch_todo` ONLY on his
-rulings: delete finished items (no ✅ graveyard; the round's `docs/` record
+done, what moves, what's new. Edit `docs/todo.md` ONLY on his
+rulings: delete finished items (no ✅ graveyard; the round's record in `docs/rounds/`
 holds the history), move items between sections, add new ones where he puts
 them. Keep the file's own rules (Now is his order; On hold says why). If he
 picks nothing, the list stays as it is.
@@ -215,4 +216,4 @@ line to `docs/checkin/log.md`:
 
 Commit both as `chore(checkin): YYYY-MM-DD` (with any fetcher output) — a
 state file is bookkeeping, not feature work. Push only when asked. Also bump
-memory `project_gcsim_checkout_state` when the clone moved.
+`docs/design/gcsim-checkout-state.md` when the clone moved.

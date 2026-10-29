@@ -5,7 +5,7 @@
  * The one-shot rewrite of every FrameMap into gcsim's slice shape — an explicit
  * animation default (`anim`) plus overrides, with `hit` carrying a normal's hitmark —
  * and the plunge split (`plungeFrames` = HIGH, `lowPlungeFrames` = `lP`).
- * Gauge round L4b; the shape is settled in `docs/gauge-round-L4.md` §3.
+ * Gauge round L4b; the shape is settled in `docs/rounds/gauge-round-L4.md` §3.
  *
  * ⚓ A MIGRATION, not an audit, and the two are deliberately separate programs.
  * `audit-gcsim-frames.mjs` may never write data — that rule is what keeps a wrong

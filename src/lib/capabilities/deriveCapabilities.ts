@@ -691,7 +691,7 @@ function pushEffectCapabilities(
 		// `Trigger` union, so the condition no longer typechecks. ⚓ The guarantee
 		// moved UPSTREAM — characterLint B.18 refuses the trigger — which is the
 		// stronger place for it: a filter here would still have let the data exist.
-		// docs/manual-trigger-retirement-round.md.
+		// docs/rounds/manual-trigger-retirement-round.md.
 		const mapped = effectCapability(effect);
 		if (!mapped) continue;
 		const composed = composeConditions(ctx.hostConditions, effect.conditions);
@@ -958,7 +958,7 @@ function walkAbility(
 			holderElement
 		};
 		pushEffectCapabilities(variant.effects, ctx, out);
-		// A variant's summons/effects REPLACE the base's (src/lib/CLAUDE.md), so
+		// A variant's summons/effects REPLACE the base's (.claude/rules/schema.md), so
 		// its window is read off whatever the variant actually carries, falling
 		// back to the base where the variant restates nothing.
 		pushTagCapabilities(

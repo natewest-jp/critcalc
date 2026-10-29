@@ -1,9 +1,9 @@
 <script lang="ts">
 	/**
 	 * THE NOTICES LAB (⚓ Nate 2026-10-26) — the five shapes of
-	 * docs/notices-design.md, in a mock tool and a mock full-screen surface,
+	 * docs/design/notices-design.md, in a mock tool and a mock full-screen surface,
 	 * at desktop and phone width, with the survey's real messages
-	 * (docs/notices-survey-2026-10-26.md).
+	 * (docs/rounds/notices-survey-2026-10-26.md).
 	 *
 	 * Everything here is a PROPOSAL drawn locally (the /lab rule): nothing in
 	 * app.css yet. Local state only. When a shape is settled it moves to

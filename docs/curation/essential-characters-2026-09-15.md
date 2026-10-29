@@ -97,7 +97,7 @@ Kinich: Scalespiker Cannon never resolves and Loop Shot is unreachable from `N` 
 | cyno              | T0.5 | Burst's +100 EM self-buff unauthored; in-stance N5 FrameMap inverted                                                                        | Author the EM buff; `{anim:62, hit:40}`; C2's stack shape                                                          |
 | flins             | T0.5 | Three over-authored application lists manufacture phantom Electro — and phantom Lunar-Charged, Thunderclouds                                | Tap-E `[]`, burst → one entry, `sQ` `[]`                                                                           |
 | skirk             | T0.5 | E cooldown starts at cast not stance exit; stance drawn at its 12.57s max where SS depletion ends it at ~6.4s; swap zeroes the SS pool      | `cooldownStartsAtStanceEnd: true`; the rest is the E3 drain round                                                  |
-| traveler_cryo     | T0.5 | Two crystal series doubled the gauge feed — **fixed today (`4b18535e`)**                                                                    | Radiance-window round scoped in `docs/radiance-window-round.md`                                                    |
+| traveler_cryo     | T0.5 | Two crystal series doubled the gauge feed — **fixed today (`4b18535e`)**                                                                    | Radiance-window round scoped in `docs/rounds/radiance-window-round.md`                                             |
 | varka             | T0.5 | Sturm und Drang swings apply nothing (his identity); burst applies once where `ICDTagNone` gives two                                        | State-gated in-stance normal with `infusion: 'anemo'`; Four Winds as a sibling skill (`cooldown 11, charges 2`)    |
 | wriothesley       | T0.5 | A fabricated `+50% ATK` shipped in the TB index; A4 authors nothing                                                                         | Delete the effect, regenerate the index; an honest stance-long A4 bar                                              |
 | yumemizuki_mizuki | T0.5 | Witch's Revelation passive (Vast Be the Dream) missing entirely; her EM-scaled Swirl bonus draws nothing on a stale blocker                 | Author the passive's team EM buff; add a `swirlReactionBonus` Stat member; C2 as four `scaling` buffs              |
@@ -162,7 +162,7 @@ the affected character through `parseNotation` after.
 
 **T1**
 
-1. Ororon Hypersense as a cast-armed proc (`armedFor 15`, `[{12, electro, 1U}]`, `source: 'team'`). 2. Varesa `bypassesCooldown`, Kablam application, `consumes: ['apexDrive']`, `fiery_passion_rush` application at 2, normal anims. 3. Faruzan durations 16/22; `C: 61`. 4. Nahida summon `durationModifiers` on Hydro count; C4 re-trigger; CA `anim 69, Q 64`; INERT-list C2's crits. 5. Kinich Loop Shot retype; both applications (30/38, 48); normals `{anim,hit}`; Q `durationExtensions +1.7`; A4 `gainStacks` on `onTeamNightsoulBurst`. ⏭ And `nonHitting: true` on his E in the SAME commit (`docs/nonhitting-casts-round.md` §4): his C2/C6 are `onHit skill` and today fire off the grapple cast; flagging the E before the Cannon resolves would make them fire off nothing. 6. Arlecchino `infusion: 'pyro'` + caveat; 338f `units`; C6 re-trigger; delete the stale C6 note. 7. Mualani `cooldownStartsAtStanceEnd`; stance + in-stance CA caveats; retire two `manual` skeletons. 8. Albedo 7 Fatal Blossoms; plunge maps; Silver-Isotoma caveat. 9. Furina CA map; C4 energy. 10. Xilonen three plunge maps; C2 Geo-shred twin; C1 stance caveat; burst heal-mode variant. 11. Aino C1 team arm → `active`. 12. Lohen A4 caveat.
+1. Ororon Hypersense as a cast-armed proc (`armedFor 15`, `[{12, electro, 1U}]`, `source: 'team'`). 2. Varesa `bypassesCooldown`, Kablam application, `consumes: ['apexDrive']`, `fiery_passion_rush` application at 2, normal anims. 3. Faruzan durations 16/22; `C: 61`. 4. Nahida summon `durationModifiers` on Hydro count; C4 re-trigger; CA `anim 69, Q 64`; INERT-list C2's crits. 5. Kinich Loop Shot retype; both applications (30/38, 48); normals `{anim,hit}`; Q `durationExtensions +1.7`; A4 `gainStacks` on `onTeamNightsoulBurst`. ⏭ And `nonHitting: true` on his E in the SAME commit (`docs/rounds/nonhitting-casts-round.md` §4): his C2/C6 are `onHit skill` and today fire off the grapple cast; flagging the E before the Cannon resolves would make them fire off nothing. 6. Arlecchino `infusion: 'pyro'` + caveat; 338f `units`; C6 re-trigger; delete the stale C6 note. 7. Mualani `cooldownStartsAtStanceEnd`; stance + in-stance CA caveats; retire two `manual` skeletons. 8. Albedo 7 Fatal Blossoms; plunge maps; Silver-Isotoma caveat. 9. Furina CA map; C4 energy. 10. Xilonen three plunge maps; C2 Geo-shred twin; C1 stance caveat; burst heal-mode variant. 11. Aino C1 team arm → `active`. 12. Lohen A4 caveat.
 
 **T1.5**
 
@@ -199,7 +199,7 @@ the affected character through `parseNotation` after.
 | Duplicate-marker dedupe after a measurement (§1.J)                                                                                        | Diona, Mizuki, Alyosha, Gorou C4                                                                        |
 | Summon terminates on another cast (§1.M) / stance-cancel token (§1.L) / `cdReset` on abilities (§1.N) / normal hit at `frames.hit` (§1.K) | Mavuika, Gorou, Emilie / Varesa, Mualani, Jahoda, Ifa, Xilonen / Arlecchino, Freminet / Mualani, Varesa |
 | Chain-step condition (§1.F)                                                                                                               | Nilou WS2/WS3, Kinich Cannon ordering                                                                   |
-| Radiance as a window                                                                                                                      | Cryo Traveler (scoped in `docs/radiance-window-round.md`), then nine holders                            |
+| Radiance as a window                                                                                                                      | Cryo Traveler (scoped in `docs/rounds/radiance-window-round.md`), then nine holders                     |
 | `swirlReactionBonus` + reaction-CRIT Stat families                                                                                        | Mizuki; Lauma A1                                                                                        |
 
 ---
@@ -239,13 +239,13 @@ nobody checked the Team Builder, whose `deriveCapabilities` never inspects
 triggers and still derives all 167 effects. ⚓ **Decision: retire the channel** —
 (1) the TB skips `manual` today, (2) lint refuses the trigger, (3) each of the 167
 is re-triggered where a real trigger fits or retired to description + note.
-→ Plan: `docs/manual-trigger-retirement.md`.
+→ Plan: `docs/rounds/manual-trigger-retirement.md`.
 
 **6.3 Columbina.** ⚓ **Option 3**: Gravity as a stack resource — a grant per team
 Lunar reaction, cap 60, the Interference effects fire when the threshold is
 reached. `onStack` exists in the Trigger union with NO reader, so this is a small
 engine round; option 1 (blank + restored caveats) is the interim.
-→ Plan: `docs/stack-threshold-round.md`.
+→ Plan: `docs/rounds/stack-threshold-round.md`.
 
 **6.4 Bennett and Faruzan.** ⚓ **Extend the buffs honestly.** gcsim re-applies
 Bennett's ATK buff (and C6's Pyro bonus + infusion) as a 126f mod on every field
@@ -355,7 +355,7 @@ the capability fixture.
 **Nate's calls (same day):** Sandrone's `activeDuration` stands until gcsim
 implements her. Lauma's `C` is Spiritcall Prayer, with a caveat that the first
 charged attack in game is the deer and Prayer exists only in the ~4s after it.
-✅ **The bookmark is closed (2026-09-16, `docs/lauma-charged-forms-round.md`):**
+✅ **The bookmark is closed (2026-09-16, `docs/rounds/lauma-charged-forms-round.md`):**
 both of Lauma's charged forms are modelled — the deer is a non-hitting `C`
 (`NormalAbility.nonHitting`, the corpus's first) that opens `spiritEnvoy`, ended
 by her next attack or cast (`terminatesOnAction`; ⚓ Nate: not a dash or a jump)
@@ -1637,7 +1637,7 @@ Also worth flagging: **rubric N12 is stale.** `docs/curation/engine-capability-r
 - **[A]** **A4 Philokalia is anchored at Nicole's own E and Q casts**, not at teammates' elemental hits. A passive-hosted `onHit` with no `trigger.abilityType` is excluded from the N/CA/P pass (`utils/effectCollection.ts:352-366`) and admitted for `castType skill|burst`, and `onHitTriggerMatches` is never called on the character-buff path — so `source: 'active'` and `damageType: 'elemental'` are both inert. Measured: `Nicole E Q > Bennett E Q` draws the +300 ATK bar at 0.00 and 0.53 (her own casts). — evidence: the effect's own `_curatorNotes` and the entry-level caveat both state this correctly; it is corpus-wide (rubric P2), not Nicole's to fix.
 - **[B]** C6's "Guidance no longer reverts" is unmodelled — one `active`-target effect cannot say four members hold it at once. Caveated on the A1 passive with the "at C6" prefix, which is the right call given `slotCaveats` has no level for a passive host.
 - **[B]** C2's element-varying RES shred renders as All-Elemental for a flat 20s. Caveated.
-- **[B]** **`capability-audit.md:26` carries a stale expectation**: "expected shield target=team, derived targets: active". That expectation is now deliberately wrong — the C2 shield is co-op-only and unmodelled by ruling (`docs/constellation-shield-gap.md` §7.3, and the rubric's FROZEN list says it "needs no caveat"). The fixture should be updated so the audit stops reporting a closed decision as backlog.
+- **[B]** **`capability-audit.md:26` carries a stale expectation**: "expected shield target=team, derived targets: active". That expectation is now deliberately wrong — the C2 shield is co-op-only and unmodelled by ruling (`docs/rounds/constellation-shield-gap.md` §7.3, and the rubric's FROZEN list says it "needs no caveat"). The fixture should be updated so the audit stops reporting a closed decision as backlog.
 - **[B]** No `plungeFrames` although `input` lists `P` (gcsim has no `plunge.go`).
 - **[B]** `data-outliers.md:33` flags C1's `scaling: 600` as a magnitude outlier — correct as authored (gcsim `cons.go` `Mult: 6`), benign.
 
@@ -1772,7 +1772,7 @@ gcsim coverage complete.
   `state` window still runs to 12.57 s. Everything keyed to that duration is equally long: A4's +70 %
   Normal DMG and C4's +40 % ATK both carry `duration: 12.57`. No caveat names the stance length (the
   skill's only caveat is about hold-E). _Fix:_ engine — a drain-driven state end; belongs in the open
-  E3 v2 drain round (`project_e3_v2_handoff`). ⛔ Don't shorten `duration` to 6.43 — void-rift absorption
+  E3 v2 drain round (`docs/rounds/e3-v2-handoff.md`). ⛔ Don't shorten `duration` to 6.43 — void-rift absorption
   genuinely extends it, so the max is not wrong, the _termination rule_ is missing.
 - **[S] A swap destroys the Serpent's Subtlety pool, in two different wrong directions.**
   Measured at C0: `Skirk E N3 > Fischl E > Skirk Q` → the stance correctly ends on swap at 1.28 s, but the
@@ -1821,7 +1821,7 @@ gcsim coverage complete.
 `application[]`, by design. Normals derived from the six sibling Travelers (three independent agreements,
 documented). The Frostpierce Star cadence and the Frostglow stack chain were authored **today** from gcsim
 **draft PR #2742**, which has no main-branch oracle. (Radiance / Polestar-Field behaviour excluded per
-`docs/radiance-window-round.md`.)
+`docs/rounds/radiance-window-round.md`.)
 
 **Gaps**
 
@@ -2040,7 +2040,7 @@ carries the measured `tickCap: 8`.
   (`summonTick.icdGate`, `chargedIcdWindow`) but has no home on a cast's `application[]` — schema + engine.
 - **[B] Mini Baku draws 16 tick marks for 8 snacks.** Measured `ticks=16`: the heal and damage series share
   `interval 1.5` and `firstTickDelay 1.5`, so both emit markers at identical instants. This is the known
-  open bug in memory `gauge_round_l5e` ("8 summons draw DUPLICATE tick markers … `opacity:.92` makes them
+  open bug in `docs/rounds/gauge-round-L5e.md` ("8 summons draw DUPLICATE tick markers … `opacity:.92` makes them
   read solid") — Mizuki is one of the eight. The burst's caveat ("Each tick mark is one snack") is true on
   screen and false in the data.
 - **[B] The first snack tick is 0.3 s early against the oracle** — §5: ours 183 f, gcsim 201 f. 183 f is the
@@ -2180,7 +2180,7 @@ double-counted and its summon cadence is measurably off.
   `c.skillTravel` 5 — and the same stream is authored again as the summon's `summonTick`
   (`escoffier.json:120-133`). Measured `Escoffier E` (C6): applications land at 23, **171, 212**, **348,
   387**, **525, 563**, **702, 738**, **879**, 1056 — the pairs are the two streams gating independently;
-  gcsim applies at 23, 153, 270, 387, 504, 621, … at an even 117f. This is `docs/furina-arkhe-round.md`
+  gcsim applies at 23, 153, 270, 387, 504, 621, … at an even 117f. This is `docs/rounds/furina-arkhe-round.md`
   §8 **kind A** (real double count, same as Kinich/Furina). ⚠️ §8 explicitly _cleared_ escoffier
   ("their late entries are genuine cast hits") — that verdict was reached with a phase test, and the
   phase is wrong for the reason below, so the test missed it. **Fix:** trim `application[]` to the cast's
@@ -2316,7 +2316,7 @@ activation sites, the C0/C2 gate asymmetry — and it behaves exactly as its not
 - **[A] Tugarin's tick markers are drawn THREE times per instant.** Measured at C6:
   `ticks: 120,120,120, 240,240,240, …` — **27 marks for 9 mauls**, because the damage series, the A1 heal
   and the C4 heal all sit on the identical 2s cadence with `opacity:.92`. This is the open 8-summon
-  duplicate-marker bug in memory `gauge_round_l5e`, and Alyosha is its worst case (three deep, not two).
+  duplicate-marker bug in `docs/rounds/gauge-round-L5e.md`, and Alyosha is its worst case (three deep, not two).
   At C0 it is 12 marks for 6 mauls.
 - **[A] Two summons on one cadence produce exactly-coincident applications.** Measured: applications at
   **120 and 120**, 360 ×2, 600 ×2, 840 ×2 (Tugarin + Fulgurite Hunting Field, same element, same 1U).
@@ -2529,7 +2529,7 @@ ten-entry list). The gauge is right; most of the rest of her kit is unauthored o
 
 - **[A] The Herald of Frost's nine coordinated-attack swipes draw no tick markers, and the Team Builder
   does not know she has off-field damage.** The swipes live in the skill's `application[]` — which is
-  **correct** per `docs/furina-arkhe-round.md` §9.2: gcsim's own comment concedes it is guessing, and the
+  **correct** per `docs/rounds/furina-arkhe-round.md` §9.2: gcsim's own comment concedes it is guessing, and the
   cadence is PAIRED (1.5 / 3.75 / 4.75 / 7 / 8 / 10.25 / 11.25 / 13.5 / 14.5s) which a fixed `summonTick`
   interval cannot express. The costs are two: the Herald's summon bar shows **4 heal marks and zero damage
   marks** (measured ticks `32, 302, 572, 842`), and `deriveCapabilities` derives `offFieldDamage` only from
@@ -2696,7 +2696,7 @@ _Audited 2026-09-15 against gcsim `ac2d76dde`, `docs/curation/*` as committed on
 
 **Gaps**
 
-- **[S] The skill's 6s cooldown starts at the cast; in game it starts when Nightsoul ends.** gcsim sets it **only** in `cancelNightsoul` (`skill.go:57` `c.SetCD(action.ActionSkill, 6*60)`), which runs on point exhaustion, on a re-press, and on swap (`mualani.go:121-127`). Measured `Mualani E E` → second E at 6.00s; in game it is stance-end + 6s. **The curator note saying "Schema has no field to express 'CD starts on stance end'" is STALE** — `cooldownStartsAtStanceEnd` shipped 2026-08-15 with Xilonen and Ifa (`docs/stance-cooldown-round.md`). — fix: one field. Authorable today.
+- **[S] The skill's 6s cooldown starts at the cast; in game it starts when Nightsoul ends.** gcsim sets it **only** in `cancelNightsoul` (`skill.go:57` `c.SetCD(action.ActionSkill, 6*60)`), which runs on point exhaustion, on a re-press, and on swap (`mualani.go:121-127`). Measured `Mualani E E` → second E at 6.00s; in game it is stance-end + 6s. **The curator note saying "Schema has no field to express 'CD starts on stance end'" is STALE** — `cooldownStartsAtStanceEnd` shipped 2026-08-15 with Xilonen and Ifa (`docs/rounds/stance-cooldown-round.md`). — fix: one field. Authorable today.
 - **[S] Sharky's Bite applies Hydro at the swing's cancel point, not its hitmark.** A normal's hit time is `action.time + cancel-resolved duration` (verified: `Klee N3` → app at 31 = `frames.N`; `Mualani N3` → app at 23 = `frames.N`), and Sharky's Bite's cancel ladder is gcsim's genuine one (`sharkBiteFrames[0]`: Attack 109, anim/swap 215) while its hitmark is 7 + 10 travel. Measured `Mualani E N` → Hydro at **frame 220** where gcsim lands it at 22; mid-chain `Mualani E N N N Q` → `1.90 3.72 4.38` vs gcsim's `0.36 2.18 4.00`. She is the Hydro applicator in every team she is in, so the aura lane is 1.5–3.3s late on every bite. — fix: **engine** — a normal's hit record must read `frames.hit` independently of the cancel key. Authoring `hit` cannot fix it (`hit` only fills _absent_ cancel keys, and hers are all explicit).
 - **[A] Wave Momentum / Sharky's Surging Bite / Marked as Prey / Shark Missiles are entirely unmodelled.** No stack resource, no 3-stack frame variant (gcsim `sharkBiteFrames[3]`: Attack 144, anim 258, hitmark 42), no mark, no missile spread. Every bite draws the 0-stack block — and at C2 the game hands her 2 free stacks on entry, so the _first_ bite is usually a Surging Bite with a 44-frame-later hitmark and a much longer block. — fix: `gainStacks`/`consumeStacks` exist and dispatch on `onHit`, so the resource is partly authorable today; the **frame variant is not** (a `hits[]` entry cannot be stack-gated).
 - **[A] A4 "Wavechaser's Exploits" and C1 both carry `trigger: 'manual'` damage effects → they reach no surface.** Rubric D3. Combined with C2/C6 being description-only, **the only thing her passives and constellations put on screen is C4's +75% burst chip.** — fix: A4 is a stack-gated FlatDmg on the burst (no pixel — damage magnitude, correctly out of scope); C1 likewise. The honest action is to delete the two `manual` skeletons and say so in `_curatorNotes`, not to author them. `data-outliers.md:32` flags C1's `damage|hp = 66`.
@@ -2723,7 +2723,7 @@ _Audited 2026-09-15 against gcsim `ac2d76dde`, `docs/curation/*` as committed on
 - **[S] The Volcano Kablam variant has no `application[]` and inherits the base burst's frame 88.** Measured at C2: the Kablam casts at 3.35s and its Electro lands at **4.82s** — 46 frames _after_ the variant's own 42–47-frame block has ended. gcsim `burst.go:22` `kablamHitmark = 42`, Electro, `Durability: 25`. — fix: `application: [{frame: 42, element: 'electro', units: 1}]` on the variant. Authorable today.
 - **[A] Only ONE of A1's two `plungeFlatDmg` tiers ever draws, and it is the weaker one.** The self-buff pool dedupes by `stat` **before** conditions are evaluated, and a kit `state` condition returns null (rubric D6), so the first-authored out-of-Fiery-Passion `+50% ATK` effect is what prints at every constellation, in and out of the stance. Compounding it, `constellationScaling` (C1's upgrade to 180%) is read only by the `gainStacks` amount override and `tickCapScaling` — it appears nowhere in `buffWindows.ts`/`buffDisplay.ts`. Measured at C0, C2 **and** C6: always `plungeFlatDmg = {scaling, atk, ratio: 50}`. The in-FP 180% tier is unreachable. — fix: engine (either evaluate conditions before the stat dedupe, or teach the buff path `constellationScaling`). The curator note at `constellations[0]` already records both halves.
 - **[A] Pressing `E` should close Apex Drive and does not.** gcsim `skill.go:91-92` `if c.StatusIsActive(apexState) { c.DeleteStatus(apexState) }`; kit: "Varesa will exit Apex Drive after using her Elemental Skill." Our parse leaves the 2.33s window open, so `P E sQ` still fires the Kablam. — fix: add `consumes: ['apexDrive']` to the skill's transient-state spec — the primitive exists (mode displacement). Authorable today.
-- **[A] A plunge inside Fiery Passion ends the blessing; our 15s pill runs its full authored length.** gcsim `plunge.go:175-186` sets `exitNS = true` and consumes all points, and `clearNightsoulCB` drops the blessing at the next non-burst animation. So after `Q C P sQ` the player is out of Fiery Passion at ~4s while the chart shows the stance to 15.37s — and every in-FP variant after that keeps resolving. The file's own note says this "currently reaches no reader at all". — fix: the stance-**cancel** primitive (a token that terminates a state), which `TokenKind` lacks — same engine gap as Ifa's landing (`docs/stance-cooldown-round.md`). Meanwhile it is caveat-shaped, and the burst ability is the only host that can carry the prose.
+- **[A] A plunge inside Fiery Passion ends the blessing; our 15s pill runs its full authored length.** gcsim `plunge.go:175-186` sets `exitNS = true` and consumes all points, and `clearNightsoulCB` drops the blessing at the next non-burst animation. So after `Q C P sQ` the player is out of Fiery Passion at ~4s while the chart shows the stance to 15.37s — and every in-FP variant after that keeps resolving. The file's own note says this "currently reaches no reader at all". — fix: the stance-**cancel** primitive (a token that terminates a state), which `TokenKind` lacks — same engine gap as Ifa's landing (`docs/rounds/stance-cooldown-round.md`). Meanwhile it is caveat-shaped, and the burst ability is the only host that can carry the prose.
 - **[A] A4 is two independent 12s stacks; we draw one refreshing +35% bar.** gcsim `asc.go:62-76` uses `MultipleRefreshNoRemove(2, …)` — peak **+70% ATK**. Own note acknowledges it. — fix: an independent-stack-duration BuffValue (engine).
 - **[B] Normal FrameMaps carry `anim = swap = hitmark` instead of the animation length.** Ours: base `anim` 23/7/33, fiery 17/29/37. gcsim `attack.go:35-58`: `InitNormalCancelSlice(hitmark, 49|30|59)` base, `(…, 39|47|63)` fiery. `gcsim-frames-diff.md:79-80` flags `by_the_horns.hits[0]` and `.plungeFrames` (part of that row is gcsim's 6-frame N1 windup, but the `anim` error is real and independent). `by_the_horns.plungeFrames.anim = 37` where gcsim's high plunge is `InitAbilSlice(72)`. — fix: mechanical, per §1.
 - **[B] `fiery_passion_rush` has no `application[]`** → provisional Electro at frame 0 vs gcsim's `fierySkillHitmark = 2`. Two frames, but it puts a `--ui-provisional` foot on the lane for no reason. One-line fix.
@@ -2747,7 +2747,7 @@ _Audited 2026-09-15 against gcsim `ac2d76dde`, `docs/curation/*` as committed on
 - **[A] The burst's 7 Fatal Blossoms are missing from `application[]` and from every lane.** gcsim `burst.go:80-99` queues 7 attacks at `145 + i×5` frames (Geo, `Durability: 25`, sharing `ICDTagElementalBurst` with the initial hit) **whenever a Solar Isotoma is up** — i.e. in every real rotation. Our burst authors only `frame 75`. ⚠ **§4's row cannot see this**: the dumper runs one ability in an empty core, so `c.skillActive` is false and the blossom branch returns early — this is exactly the oracle-artefact class the report warns about, in the opposite direction (a row that looks complete and is not). — fix: extend the burst's `application[]` with the seven hits (a `[icd]`-suppressed hit is still authored). Authorable today; needs a driver that casts E first, or hand-authoring from source.
 - **[A] Homuncular Nature's +125 EM bar starts 75 frames early.** gcsim calls `c.a4()` inside the `burstHitmark` task (`burst.go:65`), so the 10s window runs 75→675; ours is `onCast burst`, measured `0.55→10.55s` for a cast at 0.55. 1.25s early at both ends. — fix: no `onHit`-anchored team buff shape exists for a burst that deals its damage mid-animation; accept, or engine.
 - **[B] No `plungeFrames` / `lowPlungeFrames`, though gcsim has both** (`plunge.go`: high `InitAbilSlice(66)`/hitmark 39, low `63`/37). A `P` in an Albedo segment emits **no action event at all** (`run.ts`: an unresolvable plunge emits nothing), which matters because C4 is a plunge buff and Albedo appears in Geo plunge comps. — fix: mechanical.
-- **[B] The Transient Blossom fires off Albedo's own E hit and the Isotoma's radius gate is unmodelled.** gcsim `skill.go:118-120` excludes `skillAbilInitial` by name and requires `trg.IsWithinArea(c.skillArea)` (radius 10). Measured `Albedo E Q` at C6 → `ticks=1`, and that one tick is from his own E while the Q's hit at 1.80s is suppressed by our 2s proc cooldown — gcsim would do the reverse. The effect's own `_curatorNotes` state both halves accurately. Positional gating is a standing refusal (`docs/gauge-round-L5e.md`); the self-exclusion is authorable only with an ability-name filter on the proc trigger (engine).
+- **[B] The Transient Blossom fires off Albedo's own E hit and the Isotoma's radius gate is unmodelled.** gcsim `skill.go:118-120` excludes `skillAbilInitial` by name and requires `trg.IsWithinArea(c.skillArea)` (radius 10). Measured `Albedo E Q` at C6 → `ticks=1`, and that one tick is from his own E while the Q's hit at 1.80s is suppressed by our 2s proc cooldown — gcsim would do the reverse. The effect's own `_curatorNotes` state both halves accurately. Positional gating is a standing refusal (`docs/rounds/gauge-round-L5e.md`); the self-exclusion is authorable only with an ability-name filter on the proc trigger (engine).
 - **[B] The Silver Isotomas (2+ Hexerei) are not summons and never will be** — enemy-anchored, spawn-gated on a skill HIT within 20s of a _prior_ skill cast, 2-construct pool. Caveated on the Secret Rite entry ✓, and the Secret Rite's Silver buff correspondingly fires from the first skill hit. Correct call; note the removed skill-level caveat ("a Hexerei player sees ONE lane where they expect up to two more") was a real pixel and now reaches nobody.
 - **[B] C1 energy (1.2/blossom), C2 Fatal Reckoning, C4 plunge, C6 crystallize+position — all correctly unauthored**, and each reason was re-derived 2026-08-18. ⚓ The load-bearing one: a proc landing announces itself through `notifyDamage` and **never enters `dispatchHit`**, so a blossom cannot grant a Fatal Reckoning stack. ⛔ Do not re-open any of these on the strength of the blossoms now existing.
 - **[B] `data-outliers.md:21`** flags C1's `def% = 50` as a magnitude outlier — correct value (the permanent current-patch C1 addition, Nate's 2026-07-29 ruling). No action.
@@ -4014,7 +4014,7 @@ weak points are both constellation-shaped, and one of them is on screen in every
   `capability-sweep.md:163` files the derived-capability half of this.
 - **[B]** ⛔ **The Orbital's 7 missing Hydro applications per window are CLOSED BY DECISION — do not
   re-file.** `gcsim-reaction-diff.md` lines 127-133 and 444-450 show 7 missing hydro applications in
-  each of two fixtures, the largest single-character miss in the report. `docs/gauge-round-L5e.md` §4
+  each of two fixtures, the largest single-character miss in the report. `docs/rounds/gauge-round-L5e.md` §4
   refuses it on two independent grounds: gcsim's `AttackInfo` for `Xingqiu Orbital` carries no `Mult`
   at all (our gauge is reachable only through a `damage` effect, so authoring needs a lying
   `scaling: 0`), and the hit is a **radius-1.2 circle centred on the PLAYER** — asserting it would
@@ -4173,8 +4173,7 @@ authored description-only with the C6 Radiance clause wired.
   effect sit on the same 2s cadence and `computeSummonTicks` takes both. Measured:
   `Diona hE Q` → `summon Drunken Mist 1.58→14.08s ticks=12`. Evidence:
   `src/lib/data/characters/diona.json` burst `summons[0].effects[0..1]` (both
-  `summonTick interval 2 firstTickDelay 2`). Fix: this is the open corpus bug in memory
-  `project_gauge_round_l5e` ("8 summons draw DUPLICATE tick markers"); Diona is one of the
+  `summonTick interval 2 firstTickDelay 2`). Fix: this is the open corpus bug in `docs/rounds/gauge-round-L5e.md` ("8 summons draw DUPLICATE tick markers"); Diona is one of the
   eight. Needs the engine-side dedupe decision, not authoring — and per that memory note,
   ⛔ not without a corpus measurement first.
 - **[A]** C2 has no `effects` at all. gcsim `skill.go` `pawsPewPew`: `if Cons >= 2 { shdHp *= 1.15 }`;

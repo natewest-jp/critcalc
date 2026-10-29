@@ -3,10 +3,12 @@
  *
  * URL codec for sharing a single rotation-planner tab via a `?r=` query param.
  *
- * Wire format:  "2~" + base64url( deflate-raw( JSON.stringify(payload) ) )
+ * Wire format:  "3~" + base64url( deflate-raw( JSON.stringify(payload) ) )
  *
- *   - The leading "2~" is a version/format marker; the decoder dispatches on it
+ *   - The leading "3~" is a version/format marker; the decoder dispatches on it
  *     before attempting decompression, and the payload carries a matching `v`.
+ *     Format 3 adds the party's `slots` and `placed` (Planner slots); format 2
+ *     links still decode, under the retention rule below.
  *
  *     ⚓ BUMPED TO 2 (2026-08-13, single truth): the `team` field is GONE. The
  *     notation is the team now, so an explicit slot list is not a compatible

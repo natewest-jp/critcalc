@@ -7,7 +7,7 @@ fresh-context work; this file is the starting point.
 ## Why
 
 The 18 worksheets in `docs/text/sheets/` were written as review documents for Nate. The
-text round now runs as hands-on surface passes (`docs/instrument-passes-2026-10-01.md`
+text round now runs as hands-on surface passes (`docs/rounds/instrument-passes-2026-10-01.md`
 §0), so the sheets no longer need to be readable by him. What survives is a ledger for
 **Claude and for translation**: every user-facing string, where it renders, what fills
 it, and what a translator must know. ⚠️ The sheets proved that a hand-maintained
@@ -29,7 +29,7 @@ Two layers per surface:
    (glossary 🔒 / 🏷), rulings specific to the surface. Carried over from the sheets'
    useful notes, ⛔ not their review chatter.
 
-The end product feeds Paraglide's English source (`docs/i18n-plan.md` §3 picks Paraglide, §5 generates `en.json`), so
+The end product feeds Paraglide's English source (`docs/design/i18n-plan.md` §3 picks Paraglide, §5 generates `en.json`), so
 keys should be the ones extraction will use.
 
 ## The extractor

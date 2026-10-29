@@ -2,7 +2,7 @@
  * src/lib/coverage/coverageWidths.ts
  *
  * ⚓ THE WEIGHTING, DRAWN. The coverage strip prints no percentage
- * (docs/coverage-round.md §1): what a gap costs is its WIDTH, and every width is
+ * (docs/rounds/coverage-round.md §1): what a gap costs is its WIDTH, and every width is
  * here, in one table, in units. Timing is widest because frames shift everything
  * after them; a missing buff is narrowest.
  *

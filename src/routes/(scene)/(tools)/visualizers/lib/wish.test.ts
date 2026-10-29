@@ -104,7 +104,7 @@ describe('rateAt — the 4★ table', () => {
 // `up_4star_specific_character`, `DualPityModel(PITY_5STAR, [0, 0.55, 1])` (the
 // 55% consolidated rate, independent per 5★) and `up_5star_ep_weapon`. Each row is
 // [copies, pity, guaranteed, mean, median, p90]. Record:
-// docs/wish-odds-pass-2026-10-04.md §1.
+// docs/rounds/wish-odds-pass-2026-10-04.md §1.
 const ORACLE: Record<
 	'character' | 'fourStar' | 'weapon',
 	[number, number, boolean, number, number, number][]

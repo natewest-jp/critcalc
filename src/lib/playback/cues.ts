@@ -1,6 +1,6 @@
 /**
  * Playback cues — the rotation's INPUTS as a list of instants (playback round,
- * 2026-09-29; plan: docs/playback-round-plan.md §5).
+ * 2026-09-29; plan: docs/rounds/playback-round-plan.md §5).
  *
  * ⚓ A cue marks a PRESS, never a hit. The sound exists so a player can follow
  * the rotation with their eyes on the game, and what they do at each instant is

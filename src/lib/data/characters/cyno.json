@@ -249,7 +249,7 @@
 			"_curatorNotes": [
 				"[A7] Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
 				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap.",
-				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim cyno/burst.go: stat mod + stance tasks, no QueueAttack.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/rounds/nonhitting-casts-round.md §1)): gcsim cyno/burst.go: stat mod + stance tasks, no QueueAttack.",
 				"+100 EM self-buff AUTHORED 2026-09-16 (T0.5). The official talent table carries it as a named burst row (Elemental Mastery Bonus: 100, flat at every level) and gcsim burst.go:33-41 adds it as a 712f StatMod — Cyno's whole identity is an EM-scaled self-buffer and there was no bar for it anywhere. duration 11.87 = gcsim's 712f, the same number the stance already carries.",
 				"⚠️ In gcsim the EM mod and the stance are ONE object: StatusIsActive/ExtendStatus resolve to modIsActive/extendMod (pkg/core/player/character/mods.go:185,235) over the same burstKey, so skill.go:143's ExtendStatus(burstKey, 240) grows the EM with the window. Our durationExtensions reach the STANCE only (sim/extensions.ts moves a stance's end; a buff window's end comes from effect.duration in buffWindows and nothing extends it), so with two Mortuary Rites the stance reads 19.87s and the EM bar 11.87s. Not expressible with a wired primitive — durationModifiers belongs to summons and abilities, not to Effects — so it is caveated rather than authored."
 			],

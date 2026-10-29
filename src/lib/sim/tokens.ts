@@ -140,7 +140,7 @@ export const MAX_BRACKET_REPEATS = 99;
  * bounded the bracket BODY, so `99[` + 2,000 × `N9` — 4 KB of input — expanded
  * to 1.78 million IR events and ~1 GB of heap, and 24 KB of it OOM-ed the tab
  * outright. Measured ceiling was ~445 IR events per input character.
- * (docs/parser-hardening-2026-08-14.md §2.)
+ * (docs/rounds/parser-hardening-2026-08-14.md §2.)
  *
  * 20k is far past legitimate use and still cheap: the heaviest plausible bracket
  * — `99[` around fifty tokens `]` — expands to ~5k, and a realistic twenty-cycle

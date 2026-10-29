@@ -1,7 +1,7 @@
 # Notes — `vz_artifact` (Artifact Odds)
 
 Hand-written half of the ledger for `../inventory/vz_artifact.md`. Written at the close of the
-Artifact Odds pass (2026-10-06, `docs/artifact-odds-pass-2026-10-06.md`); the rulings come from
+Artifact Odds pass (2026-10-06, `docs/rounds/artifact-odds-pass-2026-10-06.md`); the rulings come from
 worksheet 08 + the conventions sheet (both superseded) and from that pass, where Nate rewrote
 every explainer with Claude.
 

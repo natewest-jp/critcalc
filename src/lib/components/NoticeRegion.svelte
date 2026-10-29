@@ -1,5 +1,5 @@
 <!--
-  The toast home and the dialog host (docs/notices-design.md §3.2, §3.4).
+  The toast home and the dialog host (docs/design/notices-design.md §3.2, §3.4).
   Mounted ONCE, by the scene layout, so every surface (tools, the full-screen
   surface, the landing) has the same place to look.
 

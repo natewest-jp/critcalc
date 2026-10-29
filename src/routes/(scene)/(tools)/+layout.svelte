@@ -1075,7 +1075,7 @@
 				     scene, no way back, and (client-side) not even a status code.
 				     The 2026-08-14 parser sweep found two live routes to exactly
 				     that: unbounded `push(...)` spreads that RangeError on a large
-				     enough rotation (docs/parser-hardening-2026-08-14.md §6).
+				     enough rotation (docs/rounds/parser-hardening-2026-08-14.md §6).
 				     Those get fixed at the source; this is the floor under them.
 
 				     Scoped to .tool-page ON PURPOSE — the failure is contained to

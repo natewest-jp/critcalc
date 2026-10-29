@@ -57,7 +57,7 @@ export function rulerTicks(
 		// the whole bug: at the default zoom `step` is 1, so the tick count EQUALS
 		// the duration in seconds, and each tick feeds two keyed {#each} blocks.
 		// 1e7 seconds measured at 853 MB and a visible stall; 4e7 killed the tab.
-		// (docs/parser-hardening-2026-08-14.md §1.)
+		// (docs/rounds/parser-hardening-2026-08-14.md §1.)
 		//
 		// Stopping early degrades honestly: the ruler runs out but every bar still
 		// draws at its true position, which beats both a frozen tab and a silently

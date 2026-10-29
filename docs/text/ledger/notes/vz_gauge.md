@@ -1,7 +1,7 @@
 # Notes — `vz_gauge` (Gauge Explorer)
 
 Hand-written half of the ledger for `../inventory/vz_gauge.md`. Written at the close of
-the Gauge Explorer pass (2026-10-02, `docs/gauge-explorer-pass-2026-10-02.md`); the
+the Gauge Explorer pass (2026-10-02, `docs/rounds/gauge-explorer-pass-2026-10-02.md`); the
 rulings come from worksheet 03 + the conventions sheet (both superseded) and from that
 pass.
 

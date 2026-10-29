@@ -97,7 +97,7 @@ export function getCharacterCdResetTargets(
 	// entry the `constellation` condition is pure duplication of the field (0 of
 	// 133 name a different level), and a `state` or team gate is what a
 	// skill-fired reset needs to tell the stance opener from its in-stance
-	// sibling. See docs/constellation-gating-plan.md.
+	// sibling. See docs/rounds/constellation-gating-plan.md.
 	// ⚓ THE ONE WALK (small-fix bundle, 2026-09-17). This used to be
 	// `[...passives, ...unlockedConstellations]` — a bespoke surface walk the
 	// constellation-gating ruling forbids, and one that SKIPPED `char.abilities`,

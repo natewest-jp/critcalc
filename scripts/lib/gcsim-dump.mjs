@@ -3,7 +3,7 @@
  *
  * Builds and runs `scripts/gcsim-dump/main.go` — the Go program that links gcsim as a
  * LIBRARY and reads its exact action-cancel slices and per-ability application
- * schedules. See docs/gauge-round-L4.md §2.
+ * schedules. See docs/rounds/gauge-round-L4.md §2.
  *
  * ⚓ Why a shim module rather than a file dropped into the gcsim checkout: the tool is
  * OURS and belongs in our history, but gcsim's `internal/` packages are unreachable

@@ -5,7 +5,7 @@ import type { Page } from '@playwright/test';
  * ONE top bar on every surface, and the menu state's addresses.
  *
  * ⚓ Every section has its own address WITHOUT remounting the tool
- * (docs/menu-state-round.md, design §13.4): over a tool a section is a
+ * (docs/rounds/menu-state-round.md, design §13.4): over a tool a section is a
  * SHALLOW history entry, so the address bar, Back and a copied link name the
  * section while the tools layout's `{#key}` still names the tool. ONE Escape
  * returns to the tool however many sections the visit passed through; Back

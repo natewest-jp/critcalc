@@ -1,0 +1,338 @@
+# P4 — Parser Event-Stream Refactor: Design + Migration Spec
+
+**Status:** COMPLETE (branch `refactor/p4-event-stream`, 2026-07-17). Per-phase
+outcomes:
+
+- **Phase 0** — per-character `CharState` objects replaced the ~18 parallel
+  `Map<charId,…>`s; outputs byte-identical.
+- **Phase 1** — E and Q cast handlers unified into one `handleCast` pipeline;
+  outputs byte-identical (roster-sweep net held).
+- **Phase 2** — `parseNotation` now emits `events` + `windows`; legacy arrays
+  became filtered projections; new corpus-driven IR invariants added.
+- **Phase 3** — every consumer (moonsign/NB/summon-subrows/totalDuration/
+  barPhases/team-buff/char-received-buff rows) migrated to read the IR; no
+  visual change (3e PNG-verified).
+- **Phase 4** — legacy `reactionEvents`/`hitEvents`/`shieldEndEvents`/
+  `weaponProcBars` fields (+ their orphaned types) deleted, `weaponProcRows`
+  now consumes `weaponProc` windows, `castEventStart` collapsed to plain
+  `castStart` (ULP pin no longer needed), golden-master harness retired; IR
+  invariants + module tests own coverage.
+
+**Post-P4 future directions** (Fable, 2026-07-17 — "if I owned it" review at
+close-out; each is a candidate future session, ordered by leverage/effort):
+
+1. ✅ **DONE 2026-07-17 (`5e280f5`) — IR identity + provenance.** Events carry
+   a stable `id`; windows carry `sourceCastId` (optional — plunge-opened
+   transient states are the first cast-less windows). `teamBuffRows` joins
+   afterDuration windows to casts on ids, the timestamp-keyed map is gone.
+   Aliases renamed to `ReactionEvent`/`ShieldEndEvent`. `hit` DECIDED:
+   parser-private (removed from the public IR; internal gainStacks dispatch
+   only) — backlog #2 owns the future public per-action surface.
+2. ✅ **DONE 2026-07-17 — Action-level events.** `ActionEvent` joined the IR:
+   per-SWING granularity for normals (an `N5` token emits 5 events sharing a
+   `blockId` anchor, each with `comboIndex` + `element`), one event each for
+   charged/plunge/dash/jump/unset. `inputBlocks` became finalize-time
+   projections of the event stream (byte-identity proven corpus-wide before
+   the flip; the reconstruction stays as a permanent invariant). Windows
+   gained `sourceActionId`; `plungeOpensState` generalized to
+   `actionOpensState {normal?, plunge?}` + `consumes?: State[]`; `nbRows`
+   dropped `tracks` (anchor-only triggers — per-swing catalyst triggering is
+   a deliberate NON-change, opt-in follow-up). Durin's dual-form landed as
+   the validation kit (N-opens-state → darkForm; summon resolution is now
+   abilityId-aware). Corrections to this item's original framing: the
+   "teammate-hit family" was 3/4 stale — Mavuika A1/Varesa A4/Xilonen A2
+   already ride `onTeamNightsoulBurst`; only **Escoffier C6** truly waited,
+   and the onHit dispatch wiring it needed landed with backlog #5 (see item
+   5 — substrate-only was #2's ratified scope; the #5 arc lifted it). Flins
+   C2 effect 1 remains Tier-2-frozen (Lunar-Charged DMG) regardless. The
+   inputBlock walks and Yanfei A1 render also resolved with #5.
+3. ✅ **DONE 2026-07-17 (`cd48921`) — Bars are projections.** `CastEvent`
+   carries the full geometry (`uptime`/`cooldown`/`readyAt`/
+   `summonActivatesAt`/`sacProcFired`); `eBars`/`qBars` are projected from
+   the events at finalize (bijection + field-agreement by construction,
+   guarded corpus-wide in the IR sweep); `totalDuration` reads cast events,
+   not bars. InputBlocks were still directly emitted at close-out; #2 later
+   completed the derivation (they're projections of the event stream now).
+4. ✅ **DONE 2026-07-17 (`80ef4dc`) — `stance` ⊂ `state` merge.** The
+   `stance` window kind is gone; stance casts emit `state` windows named
+   `inStance` carrying `source` (the ONLY state windows with `source` — an
+   IR invariant). Redundant `opensState: "inStance"` companions are skipped
+   parser-side (jahoda/nefer data cleaned — post-merge the source-less
+   duplicate could shadow the extension-adjusted window in sourceCastId
+   joins). Paves the full-P1 vision (multiple simultaneous states replacing
+   `behavior: "stance"`).
+5. ✅ **DONE 2026-07-17 (post-P4 #5 arc, branch `feat/onhit-buff-windows`)
+   — Buff windows parser-side + the onHit dispatch wiring (bundled).**
+   Six phases, one commit each:
+   (1) parser-private hits extended to PER-SWING action hits (swing-END
+   time, element-absent-⇒-physical, damageTag/abilityName/hitIndex,
+   pre-consume stack snapshot; per-swing = one hit is the ratified
+   multi-hit convention) with FULL symmetric stack dispatch — all
+   gainStacks decay shapes + consumeStacks fire onHit, source:'self'
+   grants are per-segment, team/others rotation-wide with a required decay
+   shape (lint `gainstacks-onhit-unbounded`), Effect.procCooldown gates
+   per-effect ICDs, and `holderStatesAt` resolves ANY holder's states at
+   hit time (following-summon-aware `duringSummon` — Escoffier's gate);
+   (2) onHit `abilityType` arrays (one shared ICD clock) + three
+   validation kits — Yanfei's Scarlet Seals auto-tracked (not(C6)/C6
+   gainStacks pairs, CA consume), Flins C2 eff. 2 authored, Escoffier C6
+   authored + gate-verified;
+   (3) NB derivation parser-side (`nightsoulBurst` public event kind;
+   nbRows is a projection; `parseNotation` gained `teamCharacters` — the
+   slot roster);
+   (4) `buff` TimelineWindow kind + `deriveBuffWindows` (a bar-for-bar
+   port of both legacy modules run at finalize; receivers CONCRETE,
+   active-target buffs pre-sliced at swap boundaries) dark-launched
+   behind a corpus byte-parity test (257 assertions: roster + C6 sweep +
+   multi-char/loadout scenarios, rows/order/keys/display-strings equal);
+   (5) consumers flipped — the modules shrank to group+format projections
+   (~1,500 meaning lines deleted renderer-side), behavioral tests
+   migrated to end-to-end parser-driven form;
+   (6) parity scaffolding retired, permanent buff-window IR invariants
+   added, and the deliberate deltas enabled: onHit N/CA/P windows anchor
+   per-swing with refresh-merge (Flins C2 rides an NA string as one
+   window) and hit-time stack snapshots (Yanfei A1 renders her real
+   per-seal value).
+   Open follow-ups spawned: Skirk A4 revert to hit-driven accrual;
+   `NormalHit.hitCount` (multi-hit counting fidelity); `maxProcs`
+   (Escoffier's 6-proc cap); a damage-proc render surface; a periodic
+   grant trigger (Yanfei burst seals).
+
+Deliberately NOT on the list: open/close event pairs (re-litigated in P4 —
+records won), moving `computeSummonTicks` parser-side (fine where it is
+unless 2 lands), and any reaction-model deepening (Tier-2 freeze).
+
+**Baseline:** 995 vitest tests green on `main` at branch point.
+**Goal:** `parseNotation` emits a first-class IR (`events: TimelineEvent[]` +
+`windows: TimelineWindow[]`, types in `src/lib/utils/rotationEvents.ts`);
+the rendering layer becomes a pure projection of that IR instead of
+re-deriving windows from bar geometry. Scope-adds ratified with P4:
+unify the E/Q cast handlers; replace parallel `Map<charId,…>` parser state
+with per-character state objects.
+
+**Non-goals (explicitly out of scope):**
+
+- No new gameplay modeling. Zero behavior change outside the phases' stated
+  refactors — every phase must keep the full suite green.
+- Summon tick computation stays renderer-side (`computeSummonTicks` in
+  `summonSubrows.ts` is pure + tested). A `tick` event kind can fold in later.
+- Tier-2 schema work (reactions/elevation) is FROZEN by Nate — do not touch.
+
+**Gates for EVERY phase commit:** `npx vitest run` && `npm run check` &&
+`npm run lint`. One commit per phase, message prefix `refactor(p4):`.
+Line numbers below were surveyed 2026-07-17 and are approximate — verify
+against live code before editing.
+
+---
+
+## The IR (authored, committed with this doc)
+
+See `src/lib/utils/rotationEvents.ts`. Two output surfaces on `ParsedRotation`:
+
+- `events: TimelineEvent[]` — time-sorted point events:
+  `cast` (NEW — one per resolved E/Q cast) plus the three existing arrays
+  folded in as `reaction` / `hit` / `shieldEnd`.
+- `windows: TimelineWindow[]` — span records with FINAL end times
+  (`stance` / `state` / `summon` / `shield` / `weaponProc`). Windows are
+  records, not open/close pairs: extensions retroactively move ends during
+  parsing, and every consumer wants spans.
+
+During migration the legacy fields (`reactionEvents`, `hitEvents`,
+`shieldEndEvents`, `weaponProcBars`) remain populated — from Phase 2 onward
+they are **filtered views of the IR** so consistency holds by construction.
+They are deleted in Phase 4.
+
+---
+
+## Phase 0 — Per-character state objects (mechanical, no behavior change)
+
+**Problem:** `parseNotation` threads ~18 parallel `Map<charId, …>`s; the
+2026-07-05 bug sweep showed order-of-operations across them is the parser's
+top bug class.
+
+**Change:** introduce one `CharState` record per character,
+`charStates: Map<string, CharState>` with a `getCharState(charId)`
+get-or-create accessor. Fold in (current decls near notationParser.ts:1573–1840):
+
+| Cluster              | Today                                                                                                                     | Becomes                                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Q cooldown           | `qReadyAt`                                                                                                                | `cs.qReadyAt: number`                                                                                                                    |
+| Sac ICD              | `sacProcReadyAt`                                                                                                          | `cs.sacProcReadyAt: number`                                                                                                              |
+| Stance               | `stanceWindows`, `stanceTerminatesOnSwap`, `stanceOwnerAbility`, `stanceQBarRefs`, `extensionCounts`, `extensionLastFire` | `cs.stance?: StanceRecord` (end, terminatesOnSwap, ownerAbility, barRef, extCounts: Map<number,number>, extLastFire: Map<number,number>) |
+| Named states         | `stateWindows`                                                                                                            | `cs.states: Map<string, number>`                                                                                                         |
+| Chains               | `chainPositions`                                                                                                          | `cs.chains: Map<'skill'\|'burst', {index, expiresAt}>`                                                                                   |
+| Summon extensions    | `summonExtensionOwners`                                                                                                   | `cs.summonExt?: SummonExtRecord`                                                                                                         |
+| Shields              | `shieldWindows`, `shieldEndProcCooldown`                                                                                  | `cs.shields: {ability, endTime}[]`, `cs.shieldEndProcCooldown: Map<string, number>`                                                      |
+| Rotation-wide stacks | `onReactionStackState`, `onReactionStackInstances`, `sourceLifetimeState`, `drainLastUpdate`                              | `cs.onReactionStacks`, `cs.onReactionStackInstances`, `cs.sourceLifetime`, `cs.drainAnchors`                                             |
+
+**Deliberately unchanged:**
+
+- `eChargeQueues` stays keyed by **abilityId** (stance characters keep
+  independent charge queues per skill variant — Cyno). Document this with a
+  comment at the decl.
+- `weaponProcBars` (an output), per-segment locals (`stackState`,
+  `stackInstances`, `normalCounter`, `lastEText`), `cursor`, `auraState`,
+  team scaffolding.
+
+**Acceptance:** pure renaming/re-grouping — control flow, evaluation order,
+and all outputs byte-identical. Full suite green. No exported-type changes.
+
+---
+
+## Phase 1 — Unify the E and Q cast handlers
+
+**Problem:** two ~200-line near-twins (Q at ~:2320–2508, E at ~:2509–2755)
+that have drifted before (bug-sweep #5 fixed E by copying Q's ordering).
+
+**Change:** one cast pipeline (e.g. `handleCast(kind: 'skill' | 'burst',
+tok, …)`) executing the shared step sequence **in exactly the current
+shared order**:
+
+settle cursor (kind-specific, below) → `dispatchShieldEnds` →
+`computeCurrentStates` → `applyDrain` → `applyLifetimeExpiry` →
+`syncSourceLifetimeToStackState` → `syncOnReactionToStackState` →
+`getChainIndexMap` → `resolveActiveAbility` → `resolveEQCastTime` /
+`resolveAbilityTiming` → `dispatchGainStacks` → stack snapshot + **bar push**
+→ `dispatchConsumeStacks` → **CD write (kind-specific)** → `emitBlock` →
+advance cursor → `advanceChain` → stance-open → summon-extension
+registration → `registerShieldOnCast` → `emitReactionsAtCast` →
+`dispatchOnCastExtensions`.
+
+**Kind-specific steps (the complete asymmetry table — nothing else differs):**
+
+| Step                                  | Q (burst)                                                                            | E (skill)                                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cursor settle                         | `Math.max(localCursor, cs.qReadyAt)`; no re-resolution                               | forward-scan wait loop (≤8 iters) re-resolving the active variant at each candidate cursor; lazily inits per-ability charge queue via `resolveEffectiveCharges` |
+| CD write                              | `cs.qReadyAt = castStart + cooldownStartDelay/60 + cd`, written **before** emitBlock | `queue[0] = consumedReadyAt` then sort, written **after** the sac-proc check (proc may retarget it)                                                             |
+| Weapon sac-proc (cdReset)             | —                                                                                    | onHit proc: override `consumedReadyAt = hitTime`, push weaponProcBars, set `cs.sacProcReadyAt`, flag `bar.sacProcFired`                                         |
+| Character cdReset targets (Kazuha C1) | refunds own `eChargeQueues` / `qReadyAt` after cast                                  | —                                                                                                                                                               |
+| `lastEText`                           | —                                                                                    | set to `tok.text` after emitBlock (plunge-variant selection)                                                                                                    |
+| No-ability fallback                   | generic 15s-CD bar, `qReadyAt = cursor + 15`                                         | single-charge queue keyed by bare charId, 12s CD, still sets `lastEText`                                                                                        |
+
+Also **normalize the cast-start argument**: capture `const castStart =
+localCursor` before advancing; pass it to `emitReactionsAtCast` /
+`dispatchOnCastExtensions` for both kinds (today Q passes captured `qStart`,
+E passes `localCursor - eCast` — same value, computed differently).
+
+**Acceptance:** full suite green — the roster-wide parser-invariant sweep
+(`notationParser.roster.test.ts`) is the real net (drives Hold/tap variants
+corpus-wide, asserts no-throw / all-finite / hold≠tap timing). Outputs
+byte-identical. The unified pipeline must read as ONE sequence with small
+kind-branches, not two functions glued together.
+
+---
+
+## Phase 2 — Emit the IR
+
+1. `ParsedRotation` gains `events: TimelineEvent[]` and
+   `windows: TimelineWindow[]` (import types from `rotationEvents.ts`;
+   re-export from notationParser for consumer convenience).
+2. **Cast events:** emit one `cast` event per E/Q bar push (in the unified
+   handler — single site). `abilityId` = resolved variant's id; `label` =
+   `tok.text`; `fieldStart` = `time + (summonActivatesAt ?? 0)/60`;
+   `stackContext` = the same snapshot stamped on the bar.
+3. **Fold legacy events:** `emitReactionsAtCast` / hit emission /
+   `dispatchShieldEnds` push into `events`; the legacy
+   `reactionEvents`/`hitEvents`/`shieldEndEvents` returned fields become
+   filtered projections of `events` built at return time (consistency by
+   construction). Keep legacy field shapes identical.
+4. **Window records become the SoT for span ends.** The Phase-0
+   `StanceRecord` / state-map entries / `SummonExtRecord` / shield entries
+   grow into (or produce) `TimelineWindow` records: opened at cast, `end`
+   mutated by extension dispatchers, clamped by swap-close, pushed to
+   `windows` at finalize. Summon windows: emit one per cast-spawned summon
+   (spawn offset applied) — including summons WITHOUT durationExtensions
+   (today only extension-bearing summons get parser records; the window
+   registry must cover every `summons[0]` cast bar so consumers can drop
+   geometry math). Apply the same end rules summonSubrows.ts applies today
+   (terminatesOn swap/recast truncation) — port that logic parser-side.
+   `weaponProc` windows mirror weaponProcBars.
+5. **Kill the bar back-channel:** extension dispatchers stop mutating
+   `bar.uptime` / stance-bar refs directly; at finalize, stamp
+   `bar.uptime = record.end - record.fieldStart` for stance/summon owner
+   bars from their window records. (`barRef` may live inside the record for
+   the finalize stamp; nothing else touches bars post-push.)
+6. **Invariant tests (new file, corpus-driven like the roster sweep):**
+   - `events` sorted by time, all times finite; `windows` all `end >= start`.
+   - Legacy arrays === filtered `events` projections (deep-equal).
+   - Every eBar/qBar ↔ exactly one `cast` event (matching time/label/kind).
+   - Every stance/summon owner bar's `start + offset + uptime` === its
+     window's `end` (geometry agrees with records).
+
+**Acceptance:** full suite + new invariants green. Renderer untouched.
+
+---
+
+## Phase 3 — Consumer migrations (one commit each, in this order)
+
+Consumers stop walking bar geometry and read the IR. `evalCondition` /
+`ConditionContext` signatures are a public contract — unchanged.
+
+- **3a `moonsignRows.ts`:** replace eBars/qBars `.start` walks with `cast`
+  events filtered by characterId. Tests updated to feed events.
+- **3b `computeNBBars` → `src/lib/timeline/nbRows.ts`:** extract the inline
+  Nightsoul-Burst derivation (RotationTimeline.svelte ~:324–353) into a
+  tested pure module consuming `cast` events (+ `inputBlocks` for the
+  catalyst-normals case, unchanged). New test file.
+- **3c `summonSubrows.ts`:** consume `summon` windows (spawn/end/truncation
+  now parser-authoritative); keep `computeSummonTicks` and condition gating
+  as-is, fed by window spans. Delete the local spawn/end reconstruction.
+- **3d `totalDuration`** (RotationTimeline.svelte ~:602–631): compute from
+  IR extents — max over `windows[].end`, `events[].time`, track ends, and
+  bar `start + cooldown` (ghost-CD tails still extend the axis).
+- **3e Shared `barPhases()` helper** (new, `src/lib/timeline/barPhases.ts`):
+  the three-case E/Q pill geometry (sacProc / stance / single-phase +
+  ghost-CD split) currently duplicated in the Svelte template (~:1314–1563)
+  and `timelineExport.ts` (~:316–364). One pure function of
+  `(bar, hasSummon)` returning phase segments; both consumers project it.
+  Visual output must be pixel-identical — compare a PNG export before/after
+  on a reference rotation (e.g. `Furina E Q > Bennett E Q ~5s`).
+- **3f `teamBuffRows.ts`:** replace per-bar walks with `cast` events
+  (label/abilityId/fieldStart/stackContext all carried) + `windows` for
+  afterDuration ends. `resolveCastContext` moves from `(bar)` to
+  `(castEvent)` input. reactionEvents parameter → `reaction` events.
+- **3g `charReceivedBuffRows.ts`:** same treatment as 3f.
+
+**Acceptance per step:** module tests updated to construct IR fixtures;
+full suite green; no visual change (3e explicitly verified).
+
+---
+
+## Phase 4 — Cleanup
+
+- Delete legacy `reactionEvents` / `hitEvents` / `shieldEndEvents` /
+  `weaponProcBars` fields; migrate remaining readers (weaponProcRows →
+  `weaponProc` windows; parser tests → IR assertions).
+- Delete dead reconstruction code paths surfaced by 3a–3g.
+- Update `CLAUDE.md` (parser section) + project memory.
+
+---
+
+## Risk register
+
+- **Order-of-operations is the historical bug class** (bug-sweep 2026-07-05:
+  E-handler eval-before-wait, stance-extension gates, reset scoping). Phases
+  0–1 must not reorder ANY shared step. When in doubt, match Q's ordering —
+  that's the reference the E fix copied.
+- **Keyed `{#each}` blocks** in RotationTimeline: render keys are coarser
+  than dedup keys in places (archived bug lesson). 3b/3e touch the template —
+  do not change existing keys.
+- **`evalCondition` / `ConditionContext` / `ChainIndex`** are imported by
+  timeline modules + `constellationFilter.ts` — public contract, frozen.
+- **Never statically import notationEditor** from planner-reachable code
+  (perf constraint; irrelevant to these files but stated for safety).
+- The parser stays **pure and runtime-import-free** (Node scripts execute
+  sibling modules directly; no store imports).
+
+## Notes carried over from Claude's working memory (2026-10-29)
+
+**How the refactor was run** (it worked well and is worth reusing): a design gate first (spec, IR types and an asymmetry table), then two sequential workflows, each step being implement → gates → adversarial verify → at most two fix rounds, halting on any unverified step. About 2.6M subagent tokens across 29 agents, with zero failed steps. The load-bearing safety net was a **golden master**: an untracked vitest snapshot of the legacy parser's output across 131 rotations (kept out of git via `.git/info/exclude`), held green through phases 0–3 and retired in phase 4.
+
+**Lessons and residual hazards:**
+
+- The golden master caught the spec's "same instant" claim being byte-wrong: the legacy E handler computed the cast start after advancing (`localCursor - eCast`), one ULP off Q's pre-advance capture. Normalised to plain `castStart` in phase 4.
+- Latent trap (commented in code): `inferredStates` reads `bar.uptime` mid-parse, which since P4 is the un-extended value until finalize. Inert while no character has both an extendable stationary summon and `duringSummon`-gated logic; a future character with both would silently diverge.
+- The parser's summon-window swap-out uses the next different `characterId`; it was proven equivalent to `summonSubrows`' old next-different-`slotIdx` (one character never maps to two slots), and the invariant is documented at both sites.
+- Stance windows are `[castStart, castStart + dur]`: the summon spawn offset shifts only summon windows, not the `inStance` state span (Nilou E, `summonActivatesAt: 161`).
+
+**The `sQ` / post-action transient-state primitive** shipped in the same session (`5e962ad`, 2026-07-17): the tokenizer reads `sQ` as kind Q; variant matching became condition-aware (`matchVariant`, with the parser building team faction and element context), which fixed a latent Varka bug where his conditioned Four Winds variant shadowed the base tap-E so his stance never opened; `TransientStateSpec` openers `opensTransientState` (instant casts: Flins's Spearstorm opens a 6s swap-terminated `symphonyWindow`) and `plungeOpensState` (Varesa's 2.33s `apexDrive`, C2-gated on the base kit); variant `consumesState` and `bypassesCooldown` (Symphony ignores the burst clock per gcsim `ActionReady`; Kablam shares it and writes 1s). E/Q pill badges and the PNG export now print `bar.label` (`sQ`, `hE`) instead of a hard-coded row letter.

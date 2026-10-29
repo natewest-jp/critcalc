@@ -1,5 +1,5 @@
 /**
- * NOTICES: how the site tells people things (docs/notices-design.md; the
+ * NOTICES: how the site tells people things (docs/design/notices-design.md; the
  * notices round, 2026-10-26). One channel for three of the five shapes:
  *
  * - a TOAST is an event: one home, bottom centre (`NoticeRegion`), glass,

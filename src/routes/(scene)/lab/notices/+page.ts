@@ -1,7 +1,7 @@
 import { dev } from '$app/environment';
 import { error } from '@sveltejs/kit';
 
-/** The notices lab (docs/notices-design.md): dev-only, local state, no
+/** The notices lab (docs/design/notices-design.md): dev-only, local state, no
  *  stores. The /lab contract: no prerender, 404 in production. */
 export const prerender = false;
 

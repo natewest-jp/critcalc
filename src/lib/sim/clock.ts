@@ -15,7 +15,7 @@
  * full of waits SUMS. 14 KB of legal notation — 2,000 × `~3600s` — parses in
  * 4.3 ms today and reaches **432,000,000 frames** of simulated time. A per-frame
  * loop over that is 4+ seconds of frozen tab at an optimistic 10 ns/iteration,
- * which is exactly the hang class docs/parser-hardening-2026-08-14.md closed.
+ * which is exactly the hang class docs/rounds/parser-hardening-2026-08-14.md closed.
  *
  * ⚠️ The rule survives the gauge (L5). Continuous decay is bounded by AURA
  * LIFETIME (`2.5·U + 7` s), not by rotation length, so a long idle advances the

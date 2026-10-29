@@ -86,8 +86,8 @@ authored keys, zero genuine strays (the 13 a name-based proxy flags are FrameMap
 
 ✅ **THE CHANNEL IS RETIRED.** 0 effects in the corpus, `'manual'` struck from the
 `Trigger` union, characterLint B.18 refuses it. Record:
-`docs/manual-trigger-retirement-round.md`; the plan it closes is
-`docs/manual-trigger-retirement.md`.
+`docs/rounds/manual-trigger-retirement-round.md`; the plan it closes is
+`docs/rounds/manual-trigger-retirement.md`.
 
 ⚓ **The prediction in this section came true, and is worth keeping for the
 pattern.** It said "a large share of the surviving caveats exist only because of

@@ -147,7 +147,7 @@
 			"_curatorNotes": [
 				"N and E frames omitted: burstFrames[ActionAttack] and burstFrames[ActionSkill] are InitAbilSlice(111) defaults (not explicitly assigned in burst.go). Comment says '// Q -> N1/E' at the InitAbilSlice call — reviewer to verify whether 111 is a meaningful cancel for N or E.",
 				"Fiery Rain modeled as summon (duration 2s, spawnsAt 72). Duration sourced from burst loop bounds (three loops all capping at i<=120, i.e. 120 frames = 2s at 60fps); no explicit `duration :=` constant in burst.go. burstStart=72 used as spawnsAt per recipe convention. Reviewer to confirm summon modeling is appropriate for a continuous arrow barrage rather than a persistent entity.",
-				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim amber/burst.go queues the three arrow loops from f84 — the Fiery Rain series; the cast itself lands nothing."
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/rounds/nonhitting-casts-round.md §1)): gcsim amber/burst.go queues the three arrow loops from f84 — the Fiery Rain series; the cast itself lands nothing."
 			],
 			"description": "Fires off a shower of arrows, dealing continuous AoE Pyro DMG.",
 			"application": [],

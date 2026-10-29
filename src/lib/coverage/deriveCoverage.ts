@@ -5,7 +5,7 @@
  * represents, per piece of kit anatomy — from the character JSON. The
  * `/coverage` page draws it as a strip; the eager index carries it compactly
  * (`encodeCoverage`), stamped by scripts/generate-character-index.mjs and
- * drift-guarded by characterIndex.test.ts. Spec: docs/coverage-round.md.
+ * drift-guarded by characterIndex.test.ts. Spec: docs/rounds/coverage-round.md.
  *
  * ⚓ DERIVED, never hand-maintained (the deriveCapabilities pattern). Where the
  * data cannot say something the strip needs, the DATA learns to say it — the
@@ -237,7 +237,7 @@ function hasUnknownValue(e: Effect): boolean {
 /** A summon is covered when something carries its damage — its own tick
  *  series or proc (`effects`), or the casting ability's `application[]`
  *  schedule or a `damage` proc on it (Ganyu's lotus, Klee's Sparks, Albedo's
- *  blossom; docs/summon-tick-gaps-round.md §0) — or when it states it deals
+ *  blossom; docs/rounds/summon-tick-gaps-round.md §0) — or when it states it deals
  *  nothing. Otherwise its window draws and its hits may not. */
 function summonLines(
 	s: Summon,

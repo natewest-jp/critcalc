@@ -6,7 +6,7 @@
  * Xiangling's C1 on Guoba's, Sigewinne's C2 on "Bolstering Bubblebalm", Venti's
  * C6 on "Wind's Grand Ode" — but until the summon-tick pass landed, the only
  * hit such an effect ever saw was the CAST's own. Every one of them opened at
- * the cast and never refreshed. Record: docs/summon-tick-stacks-round.md §9.
+ * the cast and never refreshed. Record: docs/rounds/summon-tick-stacks-round.md §9.
  *
  * ⚠️⚠️ THE DEFECT SURVIVED SIXTEEN DAYS BEHIND A COMMENT SAYING IT WAS FIXED.
  * Step 6c synthesized the hits on 2026-08-15 and both CLAUDE.md and

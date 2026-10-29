@@ -382,7 +382,7 @@ export function takeReactionProcs(
  * is precisely the Eye's own strike — and it is also what bounds the feedback
  * loop at one fire per cooldown. ⚠️ gcsim lets Albedo's and Dehya's fields hear
  * THEMSELVES and therefore self-sustain with no player input; we do not. See
- * docs/coordinated-attacks-round.md §5.
+ * docs/rounds/coordinated-attacks-round.md §5.
  */
 export function takeHitProcs(ctx: SimContext, dmg: DamageEvent, time: number): ProcListener[] {
 	const fired: ProcListener[] = [];
