@@ -170,7 +170,8 @@
 					},
 					"_curatorNotes": [
 						"Frames recorded at minimum hold (hold param=1, internal duration=35f). Formula: skillHoldEndFrames[action]+duration where duration=clamp(hold,1,150)+34. At max hold (hold=150, duration=184f): swap=211, N=213, E=213, Q=213, D=212, J=215.",
-						"cooldownStartDelay for Hold = duration + skillHoldEndCDStart (14f). At min hold: 35+14=49f; at max hold: 184+14=198f. Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to decide extension."
+						"cooldownStartDelay for Hold = duration + skillHoldEndCDStart (14f). At min hold: 35+14=49f; at max hold: 184+14=198f. Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to decide extension.",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 49` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 26). gcsim skill.go SetCDWithDelay(..., duration+skillHoldEndCDStart); at the authored minimum hold duration = 1+34 = 35 (landing 51 = 35+16), so 35+14 = 49. The schema-gap note above is superseded."
 					],
 					"application": [
 						{
@@ -181,7 +182,8 @@
 						{
 							"frame": 79
 						}
-					]
+					],
+					"cooldownStartDelay": 49
 				}
 			],
 			"description": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG.",

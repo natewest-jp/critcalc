@@ -100,7 +100,8 @@
 							"element": "geo",
 							"units": 1
 						}
-					]
+					],
+					"cooldownStartDelay": 41
 				}
 			],
 			"_curatorNotes": [
@@ -110,7 +111,8 @@
 				"Removed generator duration:300 — Crystal Shrapnel stack duration is a resource mechanic (gcsim comment: 'way too long to bother'), not a summon or persistent ability window.",
 				"Removed generator tags:[\"summon\"] — the skill fires projectiles and spawns no persistent summon entity.",
 				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored.",
-				"Surging Blade applies NOTHING (2026-09-17, T1.5): gcsim skill.go surgingBlade is `Durability: 0`, so its +75 (tap) and +105 (hold) entries are gone from both `application` lists. They had been masked only by the per-cast ICD counter suppressing the second entry — the frames report's `[icd]` tag cannot tell that from a no-Durability hit."
+				"Surging Blade applies NOTHING (2026-09-17, T1.5): gcsim skill.go surgingBlade is `Durability: 0`, so its +75 (tap) and +105 (hold) entries are gone from both `application` lists. They had been masked only by the per-cast ICD counter suppressing the second entry — the frames report's `[icd]` tag cannot tell that from a no-Durability hit.",
+				"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 41` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 11). gcsim skill.go firingTime = skillHoldCDStart (41) + hold, hold = p[\"hold\"] - 1 = 0 at the authored minimum. The schema-gap note above is superseded."
 			],
 			"application": [
 				{

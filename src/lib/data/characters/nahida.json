@@ -175,7 +175,8 @@
 					},
 					"_curatorNotes": [
 						"Hold E has parametric total frame count: Frames(next) = hold + skillHoldFrames[next], where hold = max(min(p['hold'], 300), 1) - 1 ∈ [0, 299]. Frames recorded above are at min-hold (hold=0). At max-hold (hold=299): swap=356, N=356, Q=361, D=358, J=361.",
-						"cooldownStartDelay for Hold variant is parametric: hold + 30 frames. At min-hold (hold=0): 30 frames. At max-hold (hold=299): 329 frames. AbilityVariant has no cooldownStartDelay schema field — reviewer to decide whether to extend the schema or model only the min-hold value."
+						"cooldownStartDelay for Hold variant is parametric: hold + 30 frames. At min-hold (hold=0): 30 frames. At max-hold (hold=299): 329 frames. AbilityVariant has no cooldownStartDelay schema field — reviewer to decide whether to extend the schema or model only the min-hold value.",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 30` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 11). gcsim skill.go SetCDWithDelay(ActionSkill, skillHoldCD, hold+30); at the authored minimum hold (hold = 0, landing 33 = hold+3+30) that is 30. The schema-gap note above is superseded."
 					],
 					"application": [
 						{
@@ -183,7 +184,8 @@
 							"element": "dendro",
 							"units": 1
 						}
-					]
+					],
+					"cooldownStartDelay": 30
 				}
 			],
 			"description": "Sends forth karmic bonds of wood and tree from her side, dealing AoE Dendro DMG and marking up to 8 opponents hit with the Seed of Skandha.\nWhen held, this skill will trigger differently.\n\nHold\nEnters Aiming Mode, which will allow you to select a limited number of opponents within a limited area. During this time, Nahida's resistance to interruption will be increased.\nWhen released, this skill deals Dendro DMG to these opponents and marks them with the Seed of Skandha.\nAiming Mode will last up to 5s and can select a maximum of 8 opponents.\n\nSeed of Skandha\nOpponents who have been marked by the Seed of Skandha will be linked to one another up till a certain distance.\nAfter you trigger Elemental Reactions on opponents who are affected by the Seeds of Skandha or when they take DMG from Dendro Cores (including Burgeon and Hyperbloom DMG), Nahida will unleash Tri-Karma Purification on the opponents and all connected opponents, dealing Dendro DMG based on her ATK and Elemental Mastery.\nYou can trigger at most 1 Tri-Karma Purification within a short period of time.",

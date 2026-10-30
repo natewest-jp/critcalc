@@ -292,7 +292,8 @@
 					],
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay is 32 frames (gcsim: skillHoldCDStart+1 = 32); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
-						"gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry."
+						"gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry.",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 32` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 2). gcsim skill.go SetCDWithDelay(ActionSkill, 15*60, skillHoldCDStart+1), skillHoldCDStart = 31. The schema-gap note above is superseded."
 					],
 					"application": [
 						{
@@ -300,7 +301,8 @@
 							"element": "cryo",
 							"units": 2
 						}
-					]
+					],
+					"cooldownStartDelay": 32
 				}
 			],
 			"tags": [],

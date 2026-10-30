@@ -142,7 +142,8 @@
 					"_curatorNotes": [
 						"cooldownStartDelay for Hold Lv.1 is 48 frames (gcsim skillCDStarts[1] = 48); schema gap — AbilityVariant has no cooldownStartDelay field.",
 						"Shield duration: 50 frames = 0.8s (gcsim skillHitmarks[1] = 50).",
-						"Shield effect restated on this variant because a variant's `effects` REPLACE the base ability's — absorption is identical across hold levels (gcsim skillShieldPct/skillShieldFlat are indexed by talent level, not charge), only the duration differs. gcsim expires the shield at `hitDelay`, i.e. it lasts exactly until the swing lands, which is why these are fractions of a second rather than a normal shield duration."
+						"Shield effect restated on this variant because a variant's `effects` REPLACE the base ability's — absorption is identical across hold levels (gcsim skillShieldPct/skillShieldFlat are indexed by talent level, not charge), only the duration differs. gcsim expires the shield at `hitDelay`, i.e. it lasts exactly until the swing lands, which is why these are fractions of a second rather than a normal shield duration.",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 48` authored on the Hold Lv.1 variant, now that a variant can state its own (it used to inherit the base's 11). gcsim skill.go skillCDStarts[1] = 48. The schema-gap note above is superseded."
 					],
 					"activeDuration": 0.8,
 					"effects": [
@@ -166,7 +167,8 @@
 							"element": "geo",
 							"units": 2
 						}
-					]
+					],
+					"cooldownStartDelay": 48
 				},
 				{
 					"label": "Hold Lv.2",
@@ -184,7 +186,8 @@
 					"_curatorNotes": [
 						"cooldownStartDelay for Hold Lv.2 is 90 frames (gcsim skillCDStarts[2] = 90); schema gap — AbilityVariant has no cooldownStartDelay field.",
 						"Shield duration: 93 frames = 1.6s (gcsim skillHitmarks[2] = 93).",
-						"Shield effect restated on this variant because a variant's `effects` REPLACE the base ability's — absorption is identical across hold levels (gcsim skillShieldPct/skillShieldFlat are indexed by talent level, not charge), only the duration differs. gcsim expires the shield at `hitDelay`, i.e. it lasts exactly until the swing lands, which is why these are fractions of a second rather than a normal shield duration."
+						"Shield effect restated on this variant because a variant's `effects` REPLACE the base ability's — absorption is identical across hold levels (gcsim skillShieldPct/skillShieldFlat are indexed by talent level, not charge), only the duration differs. gcsim expires the shield at `hitDelay`, i.e. it lasts exactly until the swing lands, which is why these are fractions of a second rather than a normal shield duration.",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 90` authored on the Hold Lv.2 variant, now that a variant can state its own (it used to inherit the base's 11). gcsim skill.go skillCDStarts[2] = 90. The schema-gap note above is superseded."
 					],
 					"activeDuration": 1.6,
 					"effects": [
@@ -208,7 +211,8 @@
 							"element": "geo",
 							"units": 2
 						}
-					]
+					],
+					"cooldownStartDelay": 90
 				}
 			],
 			"_curatorNotes": [

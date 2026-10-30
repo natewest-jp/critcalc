@@ -118,7 +118,8 @@
 					},
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay = 52 (skillHoldCDStarts[0] in gcsim). AbilityVariant has no cooldownStartDelay field — schema gap; reviewer to extend if needed. Inside-Q Hold cooldownStartDelay also = 52 (skillHoldCDStarts[1]).",
-						"Hold Q-cancel: ActionBurst not explicitly set in skillHoldFrames[0] — stays at InitAbilSlice default (103 = AnimationLength). Omitted per rule. gcsim comment labels InitAbilSlice(103) as 'Hold E -> Q', suggesting 103f as Q-cancel; reviewer to verify."
+						"Hold Q-cancel: ActionBurst not explicitly set in skillHoldFrames[0] — stays at InitAbilSlice default (103 = AnimationLength). Omitted per rule. gcsim comment labels InitAbilSlice(103) as 'Hold E -> Q', suggesting 103f as Q-cancel; reviewer to verify.",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 52` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 30). gcsim skill.go skillHoldCDStarts = {52, 52}, in and out of the burst. The schema-gap note above is superseded."
 					],
 					"application": [
 						{
@@ -126,7 +127,8 @@
 							"element": "electro",
 							"units": 1
 						}
-					]
+					],
+					"cooldownStartDelay": 52
 				}
 			],
 			"_curatorNotes": [
