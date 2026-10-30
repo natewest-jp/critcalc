@@ -112,3 +112,61 @@ describe('retired names stay retired (.claude/rules/ui.md)', () => {
 		expect(offenders).toEqual([]);
 	});
 });
+
+/**
+ * The source half of the mark sweep; `e2e/marks.spec.ts` is the rendered half,
+ * on the surfaces it opens. Same code points, same exemptions: rarity stars
+ * (`5★` is Genshin's notation) and `?` are real glyphs in the body face.
+ */
+describe('symbol marks are geometry, not type (.claude/rules/ui.md: sub-pixel laws)', () => {
+	const BANNED = /[←→↑↓⇄⇆↺↻✓✔✗✕✖✘●○☆🔒▾▴⌄⌃∅⧉⤴]/gu;
+
+	/** Help prose may name a control by its mark (docs/text/style-guide.md);
+	 *  the dev pages document the marks themselves. */
+	const EXEMPT = [
+		/^src\/lib\/help\//,
+		/^src\/routes\/styleguide\//,
+		/^src\/routes\/\(scene\)\/lab\//
+	];
+
+	/** Exact spans allowed in one file. Remove an entry when its span goes. */
+	const ALLOWED: { file: string; span: string }[] = [
+		// Parses the roles sheet's check mark; renders nothing.
+		{ file: 'src/lib/data/parseRolesCsv.ts', span: `'✔'` },
+		// TODO: typeset glyphs in live UI, found when this test landed; each needs Nate's look.
+		{ file: 'src/lib/components/MoveDialog.svelte', span: 'C{c.from} → C{c.to}' },
+		{ file: 'src/lib/components/RosterTab.svelte', span: `['←', '→', '↑', '↓']` },
+		{ file: 'src/lib/components/CompareControl.svelte', span: '(⌃\\`)' },
+		{ file: 'src/lib/timeline/buffDisplay.ts', span: '` → ${value.cap}%`' },
+		{ file: 'src/lib/timeline/buffDisplay.ts', span: '`${startStr} → ${endStr} over duration`' },
+		{
+			file: 'src/routes/(scene)/(tools)/visualizers/lib/DefResInstrument.svelte',
+			span: '`${x}% → ${fmtX(resAt(x))}`'
+		},
+		{
+			file: 'src/routes/(scene)/(tools)/visualizers/lib/DefResInstrument.svelte',
+			span: '`Lv ${x} → ${fmtX(defAt(x))}`'
+		}
+	];
+
+	const scanned = files.filter(
+		(f) =>
+			/\.(svelte|ts|css)$/.test(f) &&
+			!/\.(test|generated)\.ts$/.test(f) &&
+			!EXEMPT.some((re) => re.test(f))
+	);
+
+	it('no source that renders typesets a banned code point', () => {
+		const offenders = scanned.flatMap((f) => {
+			let src = stripComments(read(f));
+			for (const a of ALLOWED) if (a.file === f) src = src.split(a.span).join('');
+			return [...new Set(src.match(BANNED) ?? [])].map((ch) => `${f}: ${ch}`);
+		});
+		expect(offenders).toEqual([]);
+	});
+
+	it('every allowance still matches its file', () => {
+		const stale = ALLOWED.filter((a) => !read(a.file).includes(a.span));
+		expect(stale).toEqual([]);
+	});
+});
