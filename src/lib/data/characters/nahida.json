@@ -427,7 +427,7 @@
 				}
 			],
 			"description": "When unleashing Illusory Heart, the Shrine of Maya will gain the following effects:\nThe Elemental Mastery of the active character within the field will be increased by 25% of the Elemental Mastery of the party member with the highest Elemental Mastery.\nYou can gain a maximum of 250 Elemental Mastery in this manner.",
-			"caveat": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +250 EM cap; in game it's 25% of the highest-EM party member's EM, and in canonical play the caster is that member — reaching the cap."
+			"caveat": "Shown at the +250 EM cap. In game it's 25% of the highest EM in the party, so it reaches the cap only when someone has 1,000 EM or more."
 		},
 		{
 			"id": "nahida__passive__awakening_elucidated",
