@@ -26,6 +26,7 @@ import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
 import xilonenJson from '$lib/data/characters/xilonen.json';
+import ifaJson from '$lib/data/characters/ifa.json';
 import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
 import cynoJson from '$lib/data/characters/cyno.json';
 import yumemizukiJson from '$lib/data/characters/yumemizuki_mizuki.json';
@@ -792,6 +793,48 @@ describe('parseNotation — cooldownStartsAtStanceEnd + early exit (swap closes 
 		const track = result.tracks.find((t) => t.characterId === 'stancer')!;
 		expect(track.eBars).toHaveLength(2);
 		expect(track.eBars[1].start).toBe(framesOf(16));
+	});
+});
+
+describe('parseNotation — Ifa ends his hover with the Skill (memory-triage round, 2026-10-30)', () => {
+	// gcsim `ifa/skill.go`: a Tap while in Nightsoul's Blessing exits at the
+	// press; a Hold is the plunge, which exits at its 39f hitmark. Either way
+	// exitNightsoul() runs SetCD(7.5s) at the exit, the stance-end clock.
+	const ifa = ifaJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'Ifa' ? ifa : null);
+	const HOVER_CD = framesOf(7.5);
+
+	it('with no re-press the hover runs its full 10s and the E returns 7.5s after', () => {
+		const track = parseNotation('Ifa E', lookup, 8).tracks.find((t) => t.characterId === 'ifa')!;
+		expect(track.eBars[0].readyAt).toBe(framesOf(10) + HOVER_CD);
+	});
+
+	it('a Tap ends the hover at the press, and the cooldown starts there', () => {
+		const r = parseNotation('Ifa E ~2s E', lookup, 8);
+		const track = r.tracks.find((t) => t.characterId === 'ifa')!;
+		const press = track.eBars[1].start;
+		expect(track.eBars[1].abilityId).toBe('ifa__skill__end_hover');
+		expect(track.eBars[0].readyAt).toBe(press + HOVER_CD);
+		const blessing = r.windows.filter((w) => w.kind === 'state' && w.name === 'nightsoulBlessing');
+		expect(blessing.map((w) => w.end)).toEqual([press]);
+	});
+
+	it('a third E opens a fresh hover once the shortened cooldown is back', () => {
+		const track = parseNotation('Ifa E ~2s E E', lookup, 8).tracks.find(
+			(t) => t.characterId === 'ifa'
+		)!;
+		expect(track.eBars).toHaveLength(3);
+		expect(track.eBars[2].abilityId).toBe('ifa__skill__airborne_disease_prevention');
+		expect(track.eBars[2].start).toBe(track.eBars[0].readyAt);
+	});
+
+	it('a Hold plunges and ends the hover at the 39f landing', () => {
+		const r = parseNotation('Ifa E ~2s hE', lookup, 8);
+		const track = r.tracks.find((t) => t.characterId === 'ifa')!;
+		const press = track.eBars[1].start;
+		expect(track.eBars[0].readyAt).toBe(press + 39 + HOVER_CD);
+		const blessing = r.windows.filter((w) => w.kind === 'state' && w.name === 'nightsoulBlessing');
+		expect(blessing.map((w) => w.end)).toEqual([press + 39]);
 	});
 });
 

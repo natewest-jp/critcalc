@@ -127,7 +127,7 @@
 					"flat": 105.9
 				}
 			],
-			"caveat": "The cooldown is shown starting when the hover ends, assuming the full ~10s Nightsoul state; ending it early (dashes or the Hold plunge) starts the cooldown sooner.",
+			"caveat": "The cooldown is shown starting when the hover ends, assuming the full ~10s Nightsoul state; ending it early by dashing starts the cooldown sooner.",
 			"_curatorNotes": [
 				"Skill frames from gcsim gcsim PR #2639 (MERGED 2026-08-24; bugfixes #2740 re-verified 2026-09-15 against main ac2d76dde — E/Q slices unchanged, normals/charge/burst gained their real `anim` and the burst its application[] via the migration). skill.go skillFrames = InitAbilSlice(31), ActionCharge=28, ActionSkill=17, ActionBurst=5, ActionDash=28, ActionSwap=589+42=631. The ActionSwap=631 is a gcsim modeling artifact ('wait for nightsoul to run out and fall onto the ground') — it encodes the swap-lock, not the entry animation. Since the Nightsoul window is modeled separately as duration:10, swap is authored as the InitAbilSlice entry-animation default (31) rather than 631, so the E cast bar is not painted ~10.5s long. CanQueueAfter in gcsim = ActionBurst = 5 (earliest cancel into Q).",
 				"behavior:stance + opensState:nightsoulBlessing + duration:10 + terminatesOnSwap:false. Duration derived from the deterministic drain: enterNightsoul grants 80 Nightsoul points (skill talent 'Nightsoul Point Limit' = 80) and nightsoulPointReduceFunc drains 0.8 per 6 frames = 8/sec, so pure hover = 80/8 = 10s (KQM quickguide: 'State lasts approximately 10 seconds'). Dashing (13.5/dash) or a Hold-E plunge ends it earlier; canonical hover window is 10s (matches iansan/kinich Nightsoul-stance treatment). terminatesOnSwap:false because gcsim ActionReady blocks swap while Nightsoul points > 0 — the stance keeps Ifa on-field until it drains.",
@@ -140,6 +140,66 @@
 			"description": "It's time for the real bash bros to step up! Ifa calls Cacucu in as backup.\nAfter using this skill, Ifa gains 80 Nightsoul points and enters the **Nightsoul's Blessing** state. In the Nightsoul's Blessing state, Ifa will hover with Cacucu's help. When he uses Normal Attacks in this state, he will use different kinds of **Supporting Fire** depending on whether you Tap or Hold, firing Tonicshots that are capable of healing all party members.\n\nAdditionally, Holding the Elemental Skill Airborne Disease Prevention while Ifa is in Nightsoul's Blessing will cause him to use a Nightsoul-aligned Plunging Attack. Letting go of the skill button will interrupt this Plunging Attack to maintain his hover. If Ifa lands due to this Plunging Attack, his Nightsoul's Blessing state will end.",
 			"application": [],
 			"nonHitting": true
+		},
+		{
+			"id": "ifa__skill__end_hover",
+			"name": "Airborne Disease Prevention (while hovering)",
+			"input": ["E"],
+			"abilityType": "skill",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"cooldown": 0,
+			"behavior": "instant",
+			"tags": [],
+			"effects": [],
+			"frames": {
+				"anim": 44,
+				"N": 43,
+				"Q": 42,
+				"J": 43,
+				"W": 41,
+				"swap": 42
+			},
+			"application": [],
+			"nonHitting": true,
+			"endsStance": {
+				"at": 0
+			},
+			"_curatorNotes": [
+				"Memory-triage round, 2026-10-30. gcsim `ifa/skill.go` Skill(): a Tap pressed while `nightsoulState.HasBlessing()` calls exitNightsoul() inside the press and returns skillCancelFrames (InitAbilSlice(44) 'E -> Jump'; Attack 43, Burst 42, Jump 43, Walk 41, Swap 42; LowPlunge 6 has no slot here). exitNightsoul() is the stance's end: it clears the points and runs SetCD(ActionSkill, 7.5*60) at that instant, which is `cooldownStartsAtStanceEnd` on the base skill restamped by `endsStance.at: 0`. No attack is queued (`nonHitting`, `application: []`), no cooldown of its own. Gated on `inStance`, the Mizuki End Dreamdrifter shape: it is what makes `E … E` end the hover rather than wait out the cooldown and open a second one. Its 37f swap lock (`Player.SwapCD = 37`) sits inside the 42f swap cancel.",
+				"Memory-triage round, 2026-10-30, the Hold variant. gcsim `ifa/skill.go` skillPlunge(): Skill with `hold=1` while `HasBlessing()`. Queues one Low Plunge Attack (AttackTagPlunge + Nightsoul, ICDTagNone, Anemo, Durability 25 → 1U) at skillCancelPlungeHitmark = 39, and at the same frame a task runs exitNightsoul() and zeroes the swap lock, so the stance (and the base skill's stance-end cooldown clock) ends at +39f: `endsStance.at: 39`. Frames are skillCancelPlungeFrames: InitAbilSlice(69) 'E -> Walk'; Attack 50, Charge 49, Skill 39, Burst 49, Dash 63-19 = 44, Jump 58, Swap 55. Damage is the plunge's low-plunge multiplier, which this tool doesn't print."
+			],
+			"description": "Holding the Elemental Skill Airborne Disease Prevention while Ifa is in Nightsoul's Blessing will cause him to use a Nightsoul-aligned Plunging Attack. Letting go of the skill button will interrupt this Plunging Attack to maintain his hover. If Ifa lands due to this Plunging Attack, his Nightsoul's Blessing state will end.",
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": {
+						"anim": 69,
+						"N": 50,
+						"C": 49,
+						"E": 39,
+						"Q": 49,
+						"D": 44,
+						"J": 58,
+						"swap": 55
+					},
+					"nonHitting": false,
+					"noICD": true,
+					"application": [
+						{
+							"frame": 39,
+							"element": "anemo",
+							"units": 1
+						}
+					],
+					"endsStance": {
+						"at": 39
+					}
+				}
+			]
 		},
 		{
 			"id": "ifa__burst__compound_sedation_field",
