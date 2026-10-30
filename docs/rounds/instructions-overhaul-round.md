@@ -305,6 +305,8 @@ Measurements, before-and-after counts, commit hashes, dates, branch names, and t
 
 ## 14. Found in the memory migration: to-do candidates for Nate's triage
 
+↻ **Triaged with Nate on 2026-10-30:** where each item went is in `docs/rounds/memory-triage-round.md`.
+
 Open items the old memory files carried that `docs/todo.md` does not. They are not on the list: items change there only on Nate's rulings. "Unverified" means the agent couldn't confirm the item is still open.
 
 **Engine and data**

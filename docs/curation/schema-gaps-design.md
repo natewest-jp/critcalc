@@ -25,7 +25,7 @@ _renderer/derivation_ extension, not a new data primitive.
 > The G1 Moonsign-additivity question is **resolved**: every benediction char is
 > +1, so Moonsign level == member count; `factionContributions` stays
 > forward-looking. Tier 2 (reactions/elevate) remains ⛔ frozen pending the
-> reaction pass, now spec'd by the library.
+> reaction pass, now spec'd by the library. ↻ 2026-10-30: the Tier-2 schema was unfrozen on 2026-07-29 (`docs/rounds/hexerei-stellar-todo.md`), and since 2026-08-31 every `elevate` in the corpus renders as a buff window (single reactions to their own stat, whole families to the umbrella stat, `normalizeBuffLikeEffect` in `effectCollection.ts`). What stays out is reaction-DMG derivation, which is damage math and outside the current scope.
 
 ## What already exists (build on it — don't reinvent)
 
@@ -224,5 +224,5 @@ real test case:**
   `factionContributions: {moonsign: 1}` (mechanism is ready). Fold into Nate's Moonsign study.
 - **G2 live resolution** — `perTeamCount` renders the per-member formula; × count against
   the loadout is a renderer follow-up.
-- **Tier 2 (reactions/elevate)** — ⛔ still frozen pending Nate's review.
+- **Tier 2 (reactions/elevate)** — ⛔ still frozen pending Nate's review. ↻ 2026-10-30: the Tier-2 schema was unfrozen on 2026-07-29 (`docs/rounds/hexerei-stellar-todo.md`), and since 2026-08-31 every `elevate` in the corpus renders as a buff window (single reactions to their own stat, whole families to the umbrella stat, `normalizeBuffLikeEffect` in `effectCollection.ts`). What stays out is reaction-DMG derivation, which is damage math and outside the current scope.
 - **G8–G10** — on demand (`geoFlatDmg`, `scaling` threshold offset, per-N-stacks trigger).

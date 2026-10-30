@@ -826,6 +826,9 @@
 	);
 
 	// Reference $constellations so the split re-derives when roster levels change.
+	// ⚓ The split never reads the board: a facet finds everyone who can provide
+	// it, even where the current four wouldn't light it, so the player can
+	// rebuild the team around that character (Nate, 2026-10-30).
 	const split = $derived.by(() => {
 		const cons = mounted ? $constellations : {};
 		const own = mounted ? $ownership : {};

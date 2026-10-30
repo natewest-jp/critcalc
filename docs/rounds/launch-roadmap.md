@@ -428,7 +428,7 @@ Everything else in `docs/design/i18n-plan.md` stands and is good: Tier A free fr
 ### Other post-launch
 
 - **Mobile: real conversion decision** — ↻ 2026-09-05: CONVERTED in the structural sense (see §5); what analytics would still decide is how much polish the phone forms get (touch targets, the compact card). `docs/rounds/responsive-survey-2026-09-01.md` Part IV.
-- **BETA tag removal** when the first feedback round clears.
+- ~~**BETA tag removal** when the first feedback round clears.~~ ↻ 2026-10-30 (⚓ Nate): superseded by the dated 2026-09-22 ruling above, the tag drops when Nate says so.
 - **Sample rotations** — seed 4–6 famous comps so the planner doesn't open empty; reuses the `?r=` deserializer. 👤 Comp selection is Nate's; wiring is Opus. _(Strong empty-state work — also the standing answer to "onboarding," see below.)_
 - **Onboarding** — ⛔ standing recommendation: **no forced product tour.** Audience skews KQM-literate (would skip), tours anchor to CSS selectors so they break under any UI churn, and a "click Next 8×" modal fights the ethos. Prefer sample rotations + strong empty states, a "How it works" help section, and at most ONE dismissible coach-mark on the notation composer. If ever wanted: Driver.js, opt-in, after the UI settles.
 - **⏳ 7.0 characters — Odette, Alyosha, Cryo Traveler — BLOCKED ON genshin-db, but the unblock is IMMINENT.** Checked 2026-08-14: installed **and** latest-on-npm are both `5.2.12`, published **2026-07-01** — six weeks _before_ 7.0 shipped (08-12). All three miss; a prefix scan of the 120-name list shows only Albedo/Alhaitham/Aloy. **Nothing to ingest yet.** ⚠️ But the release cadence is strikingly regular — `5.2.8`→`5.2.12` at +38/+42/+45/+40/+41 days — which put the next drop at **~2026-08-11, already 3 days overdue**, almost certainly holding for 7.0. **Re-check every few days; it may well land inside launch week.** When it does, everything but frames is ready via the `ingest-character` skill (frames follow separately via `gcsim-frames`). ⛔ Not launch-blocking — a missing brand-new character is a normal, expected state for a Genshin tool, and shipping stubs would be worse.
@@ -501,6 +501,30 @@ All three tools are built, merged, and on `main`. Launch readiness has been a **
 - 🆕 2026-10-19 (⚓ Nate): GAUGE EXPLORER — add Lunar-Charged and Lunar-Crystallize as options. LC ticks every ~2s (gcsim `lunarcharged.go`, per-enemy `lcIcdKey` 2\*60; 0.4U off both auras per tick, as EC) so auras drain ~half as fast; LCrys consumes Hydro ×0.5 like Crystallize but has NO 1s cooldown (`lunarcrystallize.go` never reads `crystallizeGCD`). The help chapter discloses both as unmodeled until then.
 - 🆕 2026-10-19 (⚓ Nate): PLAYBACK LATENCY CALIBRATION (Genshin rhythm-mode tap test in Settings) — ONLY IF the automatic correction (cursor reads `ctx.outputLatency + baseLatency` late, commit 'the cursor follows what you hear') proves wrong on real Bluetooth devices. `__playback.delay(ms)` in the console is the by-ear offset such a screen would set. ✅ Nate tested 2026-10-19 over Bluetooth audio in Chrome AND Safari: the reported latency is precise enough, a mid-play device switch re-aligns. So calibration is NOT needed — revisit only if a user reports drift on another device.
 - 🆕 2026-10-19 (⚓ Nate): ONE TRAVELER in the Planner. The Builder enforces it since `0d81b2cb` (`characterKey` in `characterLookup.ts`: every `traveler_*` is one character; a second variant takes the Traveler's slot), but the Planner's notation can still name two variants in one rotation. Likely a composer flag (notationFlags.ts) rather than a parser refusal; decide with Nate.
+
+## ⏭ Engine and data leftovers (triaged 2026-10-30, ⚓ Nate)
+
+From the old working memories (`docs/rounds/instructions-overhaul-round.md` §14), each checked against the code on 2026-10-30; the record is `docs/rounds/memory-triage-round.md`. `docs/todo.md` carries one line pointing here.
+
+- **Elemental absorption leftovers** (`docs/rounds/elemental-absorption-survey.md` §8.1): Kazuha's plunge add-on (only his Q absorbs), Lan Yan, Wanderer A1, Sucrose C6's element bonus on the lock, Jahoda.
+- **Kit gaps:**
+  - Prune's recast, "Clang Clang! Witch-tribution Comes!" (`prune.json` notes).
+  - Traveler (Hydro) C4 needs a channel window (the skill is `instant`; the shield is deliberately inert, `docs/rounds/constellation-shield-gap.md`).
+  - Mavuika: the in-Nightsoul E re-press is unauthored, and gcsim's dumper panicked on it (`docs/rounds/frames-queue-round-2026-10-04.md`; rerun the dump to see if it still does); her form switch mid-Blessing (`docs/rounds/defres-pass-2026-10-06.md`); Fighting Spirit.
+  - Nilou: which Sword Dance swing a press draws; A1 Bountiful Cores (gadget strip only, item 3 of the aura audit above).
+  - Zibai's Ascendant Gleam N4 extra hit.
+  - From the Mizuki round's F4–F7: Dehya's Sanctum return, a `drivers.json` row for Mizuki's exit press, Chasca's Hold Multitarget Fire, and `holdsField` for Wanderer and Jahoda.
+  - Mona pop/Omen (low).
+- **Party systems:** the Verdant Dew pool (gcsim `player/verdantdew.go`, three spenders; today only Columbina's stand-in gate, `docs/rounds/verdant-dew.md`) · Skirk's Serpent's Subtlety to `gainStacks.scope: 'rotation'`, deliberately not flipped until the drain interaction is measured.
+- **Timing:**
+  - `humanPad` runs before a charged or plunge landing on the synchronous path (`sim/run.ts`, before `landCharged`/`landPlunge`).
+  - Flins's and Varka's held inputs may be paying a pad they shouldn't (`docs/rounds/mavuika-nightsoul-round-2026-10-16.md`).
+  - A swap pressed during E/Q isn't buffered; unmeasured, pads today (`docs/rounds/human-timing-round.md`).
+  - Barbara's and Yae's charged attacks land no damage in gcsim's capture, so their `chargeFrames` have no landing.
+- **Hits:** Tri-Karma and Oz procs never enter the finalize hit stream, so they trigger no artifact `onHit` set (`docs/rounds/coordinated-attacks-round.md`) · gcsim skips Burning's 9th tick and we don't.
+- **Deliberately unmodelled, recorded so nobody re-asks:** Thundercloud lightning ticks and the Moondrift Harmony attack (`sim/gadgets.ts`).
+- **Frames audit:** no column for `summonTick.icdCounter` (Alyosha's Field and Tugarin rows read "pair by eye") · 83 uncovered landing maps (`docs/rounds/swing-hitmark-round.md`).
+- **Parser:** debounce the editor's parse (changes how typing feels, so with Nate) · a parser-level guard for the core-contact fix (proposal only).
 
 ## 🧭 HAND-OFF, end of 2026-10-18 session (read first next time)
 
