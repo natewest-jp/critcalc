@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { encodeRotation, decodeRotation, type SharedRotation } from './rotationUrl';
+import { MAX_NOTATION_CHARS } from './tokenizer';
 
 const SAMPLE: SharedRotation = {
 	notation: 'Zhongli E > Kazuha E Q > Yelan E Q > Hu Tao E N2C N2C N2C D N2C Q',
@@ -43,6 +44,17 @@ describe('rotationUrl codec', () => {
 			loadout: {}
 		};
 		expect(await decodeRotation(await encodeRotation(shared))).toEqual(shared);
+	});
+
+	it('accepts a notation at the length cap and refuses one a character over it', async () => {
+		// The cap guards against a hostile link, and decode REFUSES rather than
+		// truncates: a cut rotation is a different rotation, applied silently.
+		const atCap = 'Bennett ' + 'N'.repeat(MAX_NOTATION_CHARS - 'Bennett '.length);
+		expect(atCap.length).toBe(MAX_NOTATION_CHARS);
+		const ok: SharedRotation = { notation: atCap, constellations: {}, loadout: {} };
+		expect(await decodeRotation(await encodeRotation(ok))).toEqual(ok);
+		const over: SharedRotation = { ...ok, notation: atCap + 'N' };
+		expect(await decodeRotation(await encodeRotation(over))).toBeNull();
 	});
 
 	it('round-trips unicode and long notation', async () => {
