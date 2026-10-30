@@ -47,10 +47,10 @@ Branch `feat/alhaitham-mirrors`. The to-do's Next item (⚓ Nate 2026-10-30, "be
 
 ## 5. Open (⏭)
 
-- ⏭ Nate: the 4.0s kit text against gcsim's 233f. Keep gcsim's?
+- ✅ ⚓ Nate 2026-10-30: follow gcsim's 233f over the kit text's 4.0s, for now.
 - ✅ The burst's hit count, C1, C2 and C4 shipped the same day (§6).
-- ⏭ An overflow trigger would restore C6's Charged/Plunging path and the refill's own overflow.
-- ⏭ C2's and C4's caveats describe the old one-Mirror bars. Replacement wording is proposed to Nate (§6) and lands on his ruling.
+- ⚓ Nate 2026-10-30: the C6 overflow trigger (its Charged/Plunging path and the refill's own overflow) waits until a player asks for it.
+- ✅ The C2 and C4 caveats landed as proposed (⚓ Nate 2026-10-30): C2 rewritten, C4 deleted.
 - ⏭ A Mirror count on the timeline. The stack ledger and `whileStacks` rows cover rotation-scoped keys only. Today the pool is visible as Dendro-tinted swings and Projection pips on the aura lane. Whether it deserves its own row is a visual call (Nate).
 - A typed `{mirrors:N}` still writes the pool and has no instances behind it, so it holds until the swap. That falls under the to-do's typed-count re-examination.
 
@@ -79,7 +79,14 @@ Branch `feat/alhaitham-mirrors`. The to-do's Next item (⚓ Nate 2026-10-30, "be
 
 Corpus, the previous commit against this one: 11 of 1,152 rotations differ, 9 of them Alhaitham's and 2 Arlecchino's (item 4).
 
-**Caveat wording proposed to Nate** (lands on his ruling):
+**Caveat wording, approved by Nate and landed:**
 
 1. C2: "Each bar is one trigger's Mirrors. In game only four stacks run at once, so where bars overlap their total can read higher than in game."
 2. C4: delete. Every value and start now matches, so no pixel is wrong.
+
+## 7. Rulings and what stays open (2026-10-30)
+
+- ⚓ Nate approved the wording and the rest of §6, and ruled the 233f interval and the C6 deferral (§5).
+- **A Mirror count on the timeline**: recommended as Odette's stepped bar; waiting on Nate.
+- **Arlecchino's two C2 clocks**: not a quick fix, recommended deferred; waiting on Nate. Her Q copy (cast pool) and Charged copy (swing surface) are two effects judged in two separate passes, and the passes do not run in time order. A shared clock therefore needs both triggers' instants merged per holder in time order first, plus a data field saying two effects are one ICD. She is the only author of the shape.
+- The Electro Traveler's Falling Thunder is two damage effects with one ICD, authored before arrays existed in `onHit.abilityType`. Neither carries an `application[]`, so neither reaches a sim, and merging them would change nothing on screen.
