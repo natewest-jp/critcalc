@@ -1088,7 +1088,7 @@
 					{#snippet failed(error, reset)}
 						<RenderCrash
 							title="This tool ran into a problem."
-							body="The rest of the site is fine — you can switch tools above, or try again. Your saved rotations and lineups are untouched."
+							body="The rest of the site is fine, and your saved rotations and lineups are untouched."
 							tool={feedbackToolForPath(page.url.pathname)}
 							{error}
 							{reset}

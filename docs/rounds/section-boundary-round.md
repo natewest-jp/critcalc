@@ -24,4 +24,7 @@
 
 ## Copy
 
-The section's title and body are working copy, awaiting Nate (`docs/text/sheets/errors-and-frame.md` §2).
+⚓ Nate 2026-10-30 picked the shortest of three bodies, and trimmed the tool boundary's to match. Neither gives directions any more, since the way out and Try again are on screen (style guide §1.3c); the tool's old "switch tools above" was also wrong on a phone. Both are in `docs/text/sheets/errors-and-frame.md` §2.
+
+- Section: "This section ran into a problem." / "The rest of the site is fine, and your saved work is untouched."
+- Tool: "This tool ran into a problem." / "The rest of the site is fine, and your saved rotations and lineups are untouched."

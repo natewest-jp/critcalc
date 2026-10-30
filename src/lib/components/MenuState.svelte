@@ -559,7 +559,7 @@
 				{#snippet failed(error, reset)}
 					<RenderCrash
 						title="This section ran into a problem."
-						body="The rest of the site is fine. You can open another section from the menu, or try again. Your saved work is untouched."
+						body="The rest of the site is fine, and your saved work is untouched."
 						tool="site"
 						{error}
 						reset={() => {

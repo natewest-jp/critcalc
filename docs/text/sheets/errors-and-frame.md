@@ -87,16 +87,16 @@ label on the feedback channel when it lands (roadmap §6), so it is worth choosi
 surface on purpose** — the chrome, the scene and the bench survive, so the reader can
 navigate away. That is most of what made the old blank page bad, and the copy leans on it.
 **Now (title):** This tool ran into a problem.
-**Now (body):** The rest of the site is fine — you can switch tools above, or try again.
-Your saved rotations are untouched.
+**Now (body):** The rest of the site is fine, and your saved rotations and lineups are
+untouched.
 **New (title):**
 **New (body):**
 **Notes:** ⚓ **"Your saved rotations are untouched" is the sentence that matters.** The
 first thing a user fears here is losing work. ⛔ Keep it, and keep it last — it is the
 line they leave with.
-⚠️ "switch tools above" is a spatial instruction. It survives translation but ⚠️ it
-assumes the switcher is _above_, which below 47.5rem it is not (it folds into the
-compass). Worth a phrasing that does not depend on the layout.
+⚓ No directions (Nate 2026-10-30): the tool links and Try again are on screen, so naming
+them explained what the reader can see (style guide §1.3c). The old "switch tools above"
+was also wrong below 47.5rem, where the tool links fold into ☰.
 `src/routes/(scene)/(tools)/+layout.svelte` (the `failed` snippet)
 
 | key                  | Where                              | Now         | New |
@@ -116,12 +116,11 @@ About), when a section throws during render. The top bar, the sidebar and the pa
 survive, so the reader can open another section. Shares `boundary.retry` and
 `boundary.report` with the tool boundary.
 **Now (title):** This section ran into a problem.
-**Now (body):** The rest of the site is fine. You can open another section from the menu,
-or try again. Your saved work is untouched.
+**Now (body):** The rest of the site is fine, and your saved work is untouched.
 **New (title):**
 **New (body):**
-**Notes:** Working copy, awaiting Nate. "from the menu" holds at every width: the sidebar
-on a wide screen, the Menu button on a phone. "saved work" rather than "rotations and
+**Notes:** ⚓ Nate 2026-10-30, matching the tool boundary's body. No directions: the
+sidebar (or the Menu button on a phone) and Try again are on screen. "saved work" rather than "rotations and
 lineups": the roster, teams and profile live here too. ⚠️ An unsaved profile form is lost
 in the crash, which "saved" covers.
 `src/lib/components/MenuState.svelte` (the `failed` snippet)
