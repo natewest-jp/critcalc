@@ -163,7 +163,8 @@
 					"cooldown": 18,
 					"frames": { "anim": 138, "N": 133, "C": 133, "E": 131, "Q": 131, "W": 137, "swap": 135 },
 					"_curatorNotes": [
-						"Hold cast (Focused Impression). input:['hE'] added 2026-07-15 — was previously the unreachable input-less 'Finisher Frame Cast' (cooldown only, no frames). gcsim skillHoldCD=1080f=18s (base Press = 720f = 12s). Frames = skillHoldFrames at min hold (hold=1): swap=134+1, N=132+1, E/Q=130+1; the hold parameter adds a variable offset, D/J stay at the InitAbilSlice 137 default (omitted per recipe). Hold cooldownStartDelay is parametric (hitmark-2) — AbilityVariant has no cooldownStartDelay field (see [[curator-notes-deferral-survey]])."
+						"Hold cast (Focused Impression). input:['hE'] added 2026-07-15 — was previously the unreachable input-less 'Finisher Frame Cast' (cooldown only, no frames). gcsim skillHoldCD=1080f=18s (base Press = 720f = 12s). Frames = skillHoldFrames at min hold (hold=1): swap=134+1, N=132+1, E/Q=130+1; the hold parameter adds a variable offset, D/J stay at the InitAbilSlice 137 default (omitted per recipe). Hold cooldownStartDelay is parametric (hitmark-2) — AbilityVariant has no cooldownStartDelay field (see [[curator-notes-deferral-survey]]).",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 110` authored on the Focused Impression (Hold) variant, now that a variant can state its own (it used to inherit the base's 29). gcsim skill.go SetCDWithDelay(..., hitmark-2), hitmark = hold + skillHoldHitmark (111); at the authored minimum hold (landing 112) that is 110. The schema-gap note above is superseded."
 					],
 					"application": [
 						{
@@ -226,7 +227,8 @@
 							},
 							"attribution": "A Summation of Interest"
 						}
-					]
+					],
+					"cooldownStartDelay": 110
 				}
 			],
 			"tags": ["heal"],

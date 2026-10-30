@@ -141,7 +141,8 @@
 						"input:['hE'] — the Hold variant is selected by the hE token; without it the variant was unreachable and hE fell back to base (Tap) timing/frames/shield. Fixed 2026-07-15; removed the redundant input-less 'Press' variant (its cooldown 6 = base, so Tap resolves off the base ability). Same unreachable-Hold-variant bug exists on diona/razor/shenhe/venti — see [[curator-notes-deferral-survey]].",
 						"Hold variant cooldownStartDelay is 89 frames (gcsim: skillCDStarts[1]=89); AbilityVariant has no cooldownStartDelay field — OPEN schema gap (see [[curator-notes-deferral-survey]]; 12 chars affected). Hold CD-start delay under-renders by (89-14)/60 = 1.25s until that field lands.",
 						"C4 Sentinel Oath: reduces Hold cooldown from 9s to 6s (match Tap). gcsim skill.go: cd = skillCD[chargeLevel]; if Cons>=4 { cd = skillCD[0] } → skillCD={360,540}f = {6,9}s. Authored as cooldownModifiers flat -3 gated on constellation 4.",
-						"Hold shield override: same absorption as the base/Tap shield (21.6% Max HP + 2542.43 flat) but longer window — the barrier persists until the leaping strike lands (gcsim skillHitmarks[1]=91f → duration 1.52s), matching kit text 'This barrier lasts until the Elemental Skill is unleashed.'"
+						"Hold shield override: same absorption as the base/Tap shield (21.6% Max HP + 2542.43 flat) but longer window — the barrier persists until the leaping strike lands (gcsim skillHitmarks[1]=91f → duration 1.52s), matching kit text 'This barrier lasts until the Elemental Skill is unleashed.'",
+						"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 89` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 14). gcsim skill.go skillCDStarts[1] = 89. The schema-gap note above is superseded."
 					],
 					"effects": [
 						{
@@ -163,7 +164,8 @@
 							"element": "hydro",
 							"units": 1
 						}
-					]
+					],
+					"cooldownStartDelay": 89
 				}
 			],
 			"_curatorNotes": [

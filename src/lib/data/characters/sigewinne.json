@@ -264,7 +264,8 @@
 						{
 							"frame": 106
 						}
-					]
+					],
+					"cooldownStartDelay": 40
 				},
 				{
 					"label": "Hold",
@@ -348,7 +349,8 @@
 						{
 							"frame": 130
 						}
-					]
+					],
+					"cooldownStartDelay": 66
 				}
 			],
 			"_curatorNotes": [
@@ -361,7 +363,9 @@
 				"Bubble bounce mechanics: base 5 bounces (bubbleHitLimit=5) at 107f intervals (bubbleHitInterval=107). C1 adds 3 bounces (bubbleHitLimit+=3 → 8). Duration = (bubbleHitLimit-1)*107/60: base 4*107/60=7.1s, C1 7*107/60=12.5s (+5.4s). First bounce at spawnsAt per variant (press=35f, shortHold=66f, hold=90f).",
 				"Schema gap — Short Hold variant (h1E) cooldownStartDelay=40f (skillShortHoldCDStart=40 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
 				"Schema gap — Hold variant (h2E) cooldownStartDelay=66f (skillHoldCDStart=66 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on all three counts. Heal effects reach no planner surface whatsoever (no heal lane, no heal row — grep for a heal branch in src/lib/timeline and buffWindows returns nothing), so neither the final-bounce self-heal nor the +5%/+10% held-cast boost could show anywhere. The bubble's bounce MARKERS are already correct — `tickCap` 5 / 8-at-C1 is authored and the summon lane draws heal ticks too. Bond of Life is on the standing out-of-scope list. Three magnitudes with no bar to be wrong. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on all three counts. Heal effects reach no planner surface whatsoever (no heal lane, no heal row — grep for a heal branch in src/lib/timeline and buffWindows returns nothing), so neither the final-bounce self-heal nor the +5%/+10% held-cast boost could show anywhere. The bubble's bounce MARKERS are already correct — `tickCap` 5 / 8-at-C1 is authored and the summon lane draws heal ticks too. Bond of Life is on the standing out-of-scope list. Three magnitudes with no bar to be wrong. Category: invisible-omission.",
+				"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 40` authored on the Short Hold variant, now that a variant can state its own (it used to inherit the base's 16). gcsim skill.go skillShortHoldCDStart = 40. The schema-gap note above is superseded.",
+				"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 66` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 16). gcsim skill.go skillHoldCDStart = 66. The schema-gap note above is superseded."
 			],
 			"description": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP.",
 			"application": [

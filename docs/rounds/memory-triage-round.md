@@ -31,10 +31,47 @@ The old working memories carried about 60 open items that `docs/todo.md` didn't 
 - The brand logo's opacity hover (the top bar changes paint only), the BETA explainer page, and the phone landing composition.
 - Alhaitham C4's `mirrors` gate: it never had one. Only C6 does (see §4).
 
-## 4. The clear-out (in progress)
+## 4. The clear-out
 
-Nothing visible, so it runs while Nate works on other things.
+Nothing visible changed, so it ran while Nate worked on other things.
 
-- **Engine fix bundle**: Alhaitham C6 (its four effects need a `mirrors` stack nothing grants, so they never fire) · Ifa's stance ending early through `endsStance` · Chongyun C2's cooldown reduction, if the schema can express it · Wriothesley's Revelation against gcsim · `CA`/`CS` as charged-attack aliases · a `MAX_NOTATION_CHARS` test and bounded scans · stale notes.
-- **Housekeeping**: a banned-Unicode convention test · retire `DerivedCapability.summon` and the unused `monotone` role-icon variant · the library's bucket numbering · Resonance and Weapon Infusion docs.
-- **Then Kokomi A1**, on its own branch.
+### The engine bundle (`fix/triage-engine-bundle`)
+
+- **Ifa's Skill ends his hover** (`624169cb`). gcsim `ifa/skill.go`: a Tap in Nightsoul's Blessing exits at the press, and a Hold is the Nightsoul plunge, which exits at its 39f landing. Either way the 7.5s cooldown starts at the exit. Authored as an `inStance` sibling with a Hold variant, Mizuki's End Dreamdrifter shape. Dashes still don't shorten the hover, and the caveat now names only them. Test: `notationParser.test.ts` "Ifa ends his hover with the Skill".
+- **Ifa's hover runs on simulated Nightsoul points** (`40d76d0f`, ⚓ Nate 2026-10-30). He joins Mavuika on `nightsoulPool`: 80 points drained 0.8 a tick from +4f, 13.5 per dash in the Blessing (gcsim `dash.go`). Dashes now shorten the hover and start the cooldown sooner, so the caveat that said they didn't is deleted. Two additions to the pool model: `NightsoulCastSpec.exitsAt` (his Tap and Hold end the Blessing through it, replacing `endsStance`) and `NightsoulPoolSpec.firstTickAfter`. Nate approved the sibling's name, "Airborne Disease Prevention (while hovering)".
+- **Hold variants start their cooldown at their own frame** (`6c69619f`). The stale "no cooldownStartDelay field" notes turned out to be missing data: 14 Hold variants (and Furina's Pneuma) inherited the tap's delay, because the variant field came later (Alyosha, 2026-10-16). Each value is re-read from gcsim, at the minimum hold where the hold is parametric. Test: `sim/holdCooldownDelay.test.ts`.
+- **Wriothesley's Witch's Revelation** cross-checked against gcsim (`64ce1608`, notes only): gcsim now implements it and agrees with everything we draw.
+- **The share link's length cap** is pinned at its edge (`36d7cbda`). Test: `rotationUrl.test.ts`.
+- **Collei's and Sucrose's contradicted notes** are marked superseded (`69749b16`).
+
+### Dropped or held back, and why
+
+- **Alhaitham C6 was never broken.** `mirrors` is a stack the player asserts in the notation (`{mirrors:3}`), chosen in the manual-trigger retirement (2026-09-21) because his Mirror economy can't be modelled; the old memory, and the triage's own check, missed the assertion. The triage proposal to Nate called it a real bug; that was wrong. Whether the planner should hint that the assertion exists is a copy question for Nate.
+- **Chongyun C2 needs a new primitive.** gcsim's C2 is a cooldown modifier on whoever is active, for as long as the field's infusion lasts. The schema has an ability's own modifiers and static team ones (Anemo Resonance), but nothing timed and cross-character. Back to the engine leftovers.
+- **`CA`/`CS` aliases are dropped** (⚓ Nate 2026-10-30, on Claude's recommendation). `CA` already tokenizes as a charged attack followed by an aimed shot, so an alias would change what existing documents and shared links mean; `A` stays, since it is in KQM's own table, gcsim uses it, and on a non-bow it is already flagged.
+- **Bounding the tokenizer's group scans was reverted.** The two open-ended scans are quadratic on unclosed openers (about 190ms at the 16,384-character cap). Stopping them at a second opener brings that to 7ms, but `Bennett (E (Q) N)` would then absorb "(E" into the character name. The cost is bounded by the cap, so it stays.
+- **Yun Jin's Hold Lv.2 is unreachable**: both levels read `hE`. Found along the way, not fixed.
+
+### Housekeeping (`chore/triage-housekeeping`)
+
+See §5.
+
+## 5. Housekeeping (`chore/triage-housekeeping`)
+
+Done by an agent in a worktree, checked by Claude, Chrome e2e green (71).
+
+- **Symbol marks are geometry, not type** (`27b1e2ac`): a source check in `conventions.test.ts` for the old probe's banned code points (the set `e2e/marks.spec.ts` still uses), with an allowlist that fails once a fixed span is gone. Seven live spans are allowlisted with a TODO: `MoveDialog.svelte` (`C{from} → C{to}`), the Roster's arrow-key legend, `CompareControl.svelte`'s tooltip, two `→` in `buffDisplay.ts`, and two in `DefResInstrument.svelte`. ⚓ Nate 2026-10-30: they stay. Arrows mid-text are fine, though only ↑ and ↓ are in the shipped IBM Plex Sans subset, so → and ← fall back to each system's font; if one ever looks off, it becomes a `<Mark>`.
+- **Retired** (`47ee1157`): `DerivedCapability.summon` (no reader anywhere, never in the index) and the unused `monotone` role-icon variant. The `monotone/` assets stay, as `/assets` is add-only.
+- **One bucket numbering** (`62573e2d`): `elevation.md` now uses `lunar-reactions.md`'s (Base DMG Bonus 3, Elevation 4, Reaction Bonus 5), which `stellar-reactions.md` and about ten curator notes already cite, with gcsim's `CalcSpecialReactionDmg` quoted for the order. Its render rows now say what renders (`caecb302`).
+- **New library docs** (`4f14dd38`): `docs/library/game/resonance.md` and `weapon-infusion.md`. Figures gcsim lacks are marked NEEDS-CONFIRM (the −40% aura-duration cuts, Anemo's movement speed, Protective Canopy).
+
+Found and left alone:
+
+- **Anemo Resonance's −5%:** gcsim applies it to every cooldown (`pkg/simulation/setup.go`, no action filter, no in-game-tested comment, beside a movement-speed TODO), the planner to Skills only. ⚓ Nate 2026-10-30: the kit text says Skill CD and nothing tested says otherwise, so the planner keeps Skills-only; gcsim's is read as a simplification. Reporting it upstream is Nate's call.
+- gcsim infuses four kits the corpus doesn't: Aloy's Rushing Ice, Keqing A1, Ayaka's dash, and Lynette C6.
+- `POSITION_LABEL` in `roleIcons.ts` is an unused export (the Builder keeps its own copy).
+
+## 6. Next, from this round (⚓ Nate 2026-10-30)
+
+- **Alhaitham's Mirrors, simulated**, ahead of Kokomi in Next. Mirrors aren't modelled, so his attacks draw physical and his Dendro never reaches the aura lane. gcsim's economy: E gives 1 (2 from none), A1 gives 1 on a Charged or Plunging hit (12s), at most 3; one is lost every 233f on a clock that restarts when the pool refills from empty or overflows, all on swap-out, all on Q; at C6 the Q regenerates 3 at +184f if he's still on field. While he holds one, his attacks are Dendro and his hits fire Projection Attacks. Missing pieces: the one-at-a-time loss, a stack-gated infusion, and the delayed C6 refill. When it lands, `{mirrors:3}` retires.
+- **Re-examine every typed-count shortcut** (`{key:N}`, never taught to players): Escoffier `coldDish`, Kinich `huntersExperience`, Heizou `declension`, plus Alhaitham's `mirrors` until that round. Each was judged unmodellable against an older stack system.

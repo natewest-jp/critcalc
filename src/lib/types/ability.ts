@@ -3095,12 +3095,16 @@ export type ChargeSpin = {
  * - `pause` — the drain and every point cost are multiplied by 0 from `at` for
  *   `frames`, or until the caster swaps out (her Crucible, gcsim
  *   `nightsoulConsumptionMul`; a swap deletes `burstKey`).
+ * - `exitsAt` — the cast ENDS the Blessing this many frames after its start,
+ *   whatever points are left (gcsim `exitNightsoul`: Ifa's Tap at the press,
+ *   his Hold plunge at its 39f landing). A skill stance still open ends with it.
  */
 export type NightsoulCastSpec = {
 	points?: number | 'max';
 	pointsAt?: number;
 	entersForm?: State;
 	pause?: { at: number; frames: number };
+	exitsAt?: number;
 };
 
 /**
@@ -3123,6 +3127,9 @@ export type NightsoulPoolSpec = {
 	maxModifiers?: ModifierBase[];
 	/** Points drained every 6 frames in any form. */
 	drainPerTick: number;
+	/** Frames from the entry to the FIRST drain tick, when it isn't 6 (Ifa's
+	 *  drain task is queued at +4, then every 6). The phase is kept on a refill. */
+	firstTickAfter?: number;
 	forms: {
 		state: State;
 		extraDrainPerTick?: number;

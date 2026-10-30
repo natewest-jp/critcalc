@@ -158,7 +158,8 @@
 							"frame": 38,
 							"element": "cryo"
 						}
-					]
+					],
+					"cooldownStartDelay": 29
 				}
 			],
 			"tags": ["shield"],
@@ -189,7 +190,8 @@
 				"Press variant cooldownStartDelay = 5 (skillPressHitmark). Base ability cooldownStartDelay reflects Press variant.",
 				"[A7] Shield duration = 2.4s per paw landed at talent level 10 (pawDur[9]); the caveat text now conveys the paws-scaling qualitatively. Already recorded in existing curator notes.",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Assumes every paw lands — 2 on Press, 5 on Hold — so absorption and duration are shown at maximum. Fewer hits give a weaker, shorter shield.\"",
-				"IN-GAME 2026-10-16 (docs/library/ingame-logs/2026-10-16.md, two Hold-E combat logs on a permanent Electro aura): five paws, each 1U, the 1st and 4th applying (Superconduct) — CONFIRMS the Hold variant's application[]. The paws fan out and land over ~0.18–0.21s, often in same-frame pairs, wider than our 34–38 spread; count and order unchanged, so no data change."
+				"IN-GAME 2026-10-16 (docs/library/ingame-logs/2026-10-16.md, two Hold-E combat logs on a permanent Electro aura): five paws, each 1U, the 1st and 4th applying (Superconduct) — CONFIRMS the Hold variant's application[]. The paws fan out and land over ~0.18–0.21s, often in same-frame pairs, wider than our 34–38 spread; count and order unchanged, so no data change.",
+				"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 29` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 5). gcsim skill.go SetCDWithDelay(ActionSkill, 900, skillHoldHitmark), skillHoldHitmark = 29. The schema-gap note above is superseded."
 			],
 			"description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
 			"application": [

@@ -99,7 +99,8 @@
 				"[A7] Ability caveat demoted kit detail: the Sacramental Shower is touch-triggered — nearby party members bounce off it, opponents make it explode.",
 				"[A7] Ability caveat demoted rationale: its duration is not tracked by gcsim and has no canonical source, so no window is surfaced (a fabricated window would mislead). Already captured in curator notes.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The hold-E leaves a Sacramental Shower standing in the world, and the summon lane shows NO row for it — a blank where every other world-leaving summon (Oz, Guoba, Baizhu's Pulsing Clarity) gets a labelled bar with ticks. The second sentence is what stops the blank reading as a bug: the lifetime has no canonical source, so a fabricated window would be worse than none. Category: expected-but-absent.",
-				"IN-GAME 2026-10-16 (docs/library/ingame-logs/2026-10-16.md, Nate's stopwatch, several Hold-E tries placed away from the dummy): an UNTOUCHED Sacramental Shower fades ~10.5s after the press = ~10s after it appears (±~0.5s, a stopwatch read). That is a lifetime source the note above lacked — but only for the untouched case; a touching opponent ends it at once with the f27 explosion, as gcsim and this application[] model. Whether that earns a summon bar is a separate call."
+				"IN-GAME 2026-10-16 (docs/library/ingame-logs/2026-10-16.md, Nate's stopwatch, several Hold-E tries placed away from the dummy): an UNTOUCHED Sacramental Shower fades ~10.5s after the press = ~10s after it appears (±~0.5s, a stopwatch read). That is a lifetime source the note above lacked — but only for the untouched case; a touching opponent ends it at once with the f27 explosion, as gcsim and this application[] model. Whether that earns a summon bar is a separate call.",
+				"↻ 2026-10-30 (memory-triage round): `cooldownStartDelay: 21` authored on the Hold variant, now that a variant can state its own (it used to inherit the base's 23). gcsim skill.go skillCDStarts[1] = 21. The schema-gap note above is superseded."
 			],
 			"frames": {
 				"anim": 53,
@@ -128,7 +129,8 @@
 							"element": "hydro",
 							"units": 1
 						}
-					]
+					],
+					"cooldownStartDelay": 21
 				}
 			],
 			"application": [
