@@ -45,6 +45,7 @@
 	import ProfileForm from './ProfileForm.svelte';
 	import SettingsPanel, { SETTINGS_GROUPS } from './SettingsPanel.svelte';
 	import TrashPlace from './TrashPlace.svelte';
+	import RenderCrash from './RenderCrash.svelte';
 
 	// ⚓ THE INDEX NEVER SHOWS ON DESKTOP (Nate 2026-10-25). On a phone the
 	// index is the sidebar on its own; beside a sidebar it has nothing to say,
@@ -71,14 +72,33 @@
 	const profileName = $derived(storageSession.profile?.name ?? 'You');
 	const groupTitle = (g: (typeof SECTION_GROUPS)[number]) => g.title ?? profileName;
 	const isTheorycraft = $derived(storageSession.profile?.kind !== 'real');
-	/** A section that FILLS the screen (2026-10-25): its own controls stay put
-	 *  and only its grid scrolls — the Roster, and a team's details. */
+
+	/** A section that threw while rendering, caught by the boundary around the
+	 *  body, and the address it threw at. The sidebar and the head survive it,
+	 *  so the reader can go elsewhere. */
+	let crash = $state<{ at: string; reset: () => void } | null>(null);
+	/** Where the body is: the section, and a team's details within Teams. */
+	const address = $derived(`${section}|${menu.teamDetail ?? ''}`);
+	// A failed boundary renders nothing but its fallback, so the next section
+	// would never mount: moving anywhere (each move is a history entry) tries
+	// again, at the new address.
+	$effect(() => {
+		if (!crash || crash.at === address) return;
+		const { reset } = crash;
+		crash = null;
+		reset();
+	});
+
 	/** ⚓ A team's details carry no page head and no ✕ (Nate 2026-10-25): the
 	 *  team's name is the title, and its Done is the one way out — two closes
-	 *  on one screen were mistaken for each other. Escape still leaves. */
-	const headless = $derived(!isTheorycraft && section === 'teams' && !!menu.teamDetail);
+	 *  on one screen were mistaken for each other. Escape still leaves.
+	 *  ⚠️ The head comes back if the details crash: with Done gone, it holds
+	 *  the only ways out a phone has. */
+	const headless = $derived(!crash && !isTheorycraft && section === 'teams' && !!menu.teamDetail);
+	/** A section that FILLS the screen (2026-10-25): its own controls stay put
+	 *  and only its grid scrolls — the Roster, and a team's details. */
 	const fills = $derived(
-		!isTheorycraft && (section === 'roster' || (section === 'teams' && !!menu.teamDetail))
+		!crash && !isTheorycraft && (section === 'roster' || (section === 'teams' && !!menu.teamDetail))
 	);
 	/** A real profile edits itself; Theorycraft invites an account (§2.2). */
 	const itemsOf = (g: (typeof SECTION_GROUPS)[number]) =>
@@ -460,77 +480,95 @@
 		{/if}
 
 		<div class="body">
-			{#if section === 'rotations'}
-				<LibraryPlace place="planner" />
-			{:else if section === 'lineups'}
-				<LibraryPlace place="builder" />
-			{:else if section === 'profile'}
-				<ProfileForm mode="edit" />
-			{:else if section === 'profile/new'}
-				<ProfileForm mode="new" />
-			{:else if (section === 'roster' || section === 'teams') && isTheorycraft}
-				<!-- §9.1: Theorycraft has no roster and no teams; the invitation
-				     stands in them. -->
-				<div class="invite ctx-light">
-					<h3>Add a profile</h3>
-					{#if section === 'roster'}
-						<p>
-							Theorycraft has every character at every level, so it has no roster. Add a profile to
-							mark what you own and set your constellations.
-						</p>
-					{:else}
-						<p>
-							Teams belong to a profile. Add one to name the teams you play and start rotations and
-							lineups from them.
-						</p>
-					{/if}
-					<button class="btn btn--primary" onclick={() => menu.show('profile/new')}
-						>Add a profile</button
-					>
-				</div>
-			{:else if section === 'teams'}
-				<TeamsPlace />
-			{:else if section === 'roster'}
-				<!-- Keyed on the profile: its undo history belongs to one roster, and
-				     replayed into another it would overwrite that one. -->
-				{#key storageSession.profile?.id}
-					<RosterTab
-						inMenu
-						focus={library.rosterFocus}
-						onFocused={() => (library.rosterFocus = null)}
-					/>
-				{/key}
-			{:else if section === 'settings'}
-				<SettingsPanel />
-			{:else if section === 'trash'}
-				<TrashPlace />
-			{:else if chapter && ChapterC}
-				{#if chapter.bare}
-					<ChapterC />
-				{:else}
-					<!-- THE READING LAYOUT (2026-10-25): a text column and a MARGIN
-					     beside it, for what sits level with a paragraph — Help's
-					     screenshots, About's notes (Nate). -->
-					<div class="reading-host">
-						<div class="reading">
-							<article class="prose chapter"><ChapterC /></article>
-							{#if dev}
-								<!-- ⏳ DEV-ONLY MOCK: slate blocks standing in for the margin's
-							     figures so the proportions can be judged before any exist.
-							     Stripped from a build by `import.meta.env.DEV`. -->
-								<aside class="margin" aria-hidden="true">
-									{#each [{ top: 9, h: 11, cap: 'The composer, mid-edit' }, { top: 16, h: 8, cap: 'A buff row, hovered' }, { top: 20, h: 14, cap: 'The aura lane' }] as m (m.cap)}
-										<figure class="margin-fig" style:margin-top="{m.top}rem">
-											<div class="margin-shot" style:height="{m.h}rem"></div>
-											<figcaption>{m.cap}</figcaption>
-										</figure>
-									{/each}
-								</aside>
-							{/if}
-						</div>
+			<!-- ⚠️ The only boundary over the sections: without it a throw in any of
+			     them blanks the whole document (no top bar, no scene, no way back).
+			     Inside the body ON PURPOSE, so the sidebar and the head survive. -->
+			<svelte:boundary onerror={(_, reset) => (crash = { at: address, reset })}>
+				{#if section === 'rotations'}
+					<LibraryPlace place="planner" />
+				{:else if section === 'lineups'}
+					<LibraryPlace place="builder" />
+				{:else if section === 'profile'}
+					<ProfileForm mode="edit" />
+				{:else if section === 'profile/new'}
+					<ProfileForm mode="new" />
+				{:else if (section === 'roster' || section === 'teams') && isTheorycraft}
+					<!-- §9.1: Theorycraft has no roster and no teams; the invitation
+					     stands in them. -->
+					<div class="invite ctx-light">
+						<h3>Add a profile</h3>
+						{#if section === 'roster'}
+							<p>
+								Theorycraft has every character at every level, so it has no roster. Add a profile
+								to mark what you own and set your constellations.
+							</p>
+						{:else}
+							<p>
+								Teams belong to a profile. Add one to name the teams you play and start rotations
+								and lineups from them.
+							</p>
+						{/if}
+						<button class="btn btn--primary" onclick={() => menu.show('profile/new')}
+							>Add a profile</button
+						>
 					</div>
+				{:else if section === 'teams'}
+					<TeamsPlace />
+				{:else if section === 'roster'}
+					<!-- Keyed on the profile: its undo history belongs to one roster, and
+					     replayed into another it would overwrite that one. -->
+					{#key storageSession.profile?.id}
+						<RosterTab
+							inMenu
+							focus={library.rosterFocus}
+							onFocused={() => (library.rosterFocus = null)}
+						/>
+					{/key}
+				{:else if section === 'settings'}
+					<SettingsPanel />
+				{:else if section === 'trash'}
+					<TrashPlace />
+				{:else if chapter && ChapterC}
+					{#if chapter.bare}
+						<ChapterC />
+					{:else}
+						<!-- THE READING LAYOUT (2026-10-25): a text column and a MARGIN
+						     beside it, for what sits level with a paragraph — Help's
+						     screenshots, About's notes (Nate). -->
+						<div class="reading-host">
+							<div class="reading">
+								<article class="prose chapter"><ChapterC /></article>
+								{#if dev}
+									<!-- ⏳ DEV-ONLY MOCK: slate blocks standing in for the margin's
+									     figures so the proportions can be judged before any exist.
+									     Stripped from a build by `import.meta.env.DEV`. -->
+									<aside class="margin" aria-hidden="true">
+										{#each [{ top: 9, h: 11, cap: 'The composer, mid-edit' }, { top: 16, h: 8, cap: 'A buff row, hovered' }, { top: 20, h: 14, cap: 'The aura lane' }] as m (m.cap)}
+											<figure class="margin-fig" style:margin-top="{m.top}rem">
+												<div class="margin-shot" style:height="{m.h}rem"></div>
+												<figcaption>{m.cap}</figcaption>
+											</figure>
+										{/each}
+									</aside>
+								{/if}
+							</div>
+						</div>
+					{/if}
 				{/if}
-			{/if}
+
+				{#snippet failed(error, reset)}
+					<RenderCrash
+						title="This section ran into a problem."
+						body="The rest of the site is fine. You can open another section from the menu, or try again. Your saved work is untouched."
+						tool="site"
+						{error}
+						reset={() => {
+							crash = null;
+							reset();
+						}}
+					/>
+				{/snippet}
+			</svelte:boundary>
 		</div>
 	</main>
 </div>
