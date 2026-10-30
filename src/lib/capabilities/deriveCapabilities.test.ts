@@ -442,20 +442,19 @@ describe('coordinated attacks carry their window', () => {
 
 	// The nine the 2026-10-07 census found drawing nothing.
 	it.each([
-		['xingqiu', 15.55, 'Rainbow Bladework'],
-		['yelan', 15, 'Exquisite Throw'],
-		['raiden_shogun', 25, 'Eye of Stormy Judgment'],
-		['nahida', 25, undefined],
-		['beidou', 15, undefined],
-		['albedo', 30, 'Solar Isotoma'],
-		['dehya', 12, 'Fiery Sanctum'],
-		['nicole', 20, undefined],
-		['qiqi', 15, 'Herald of Frost']
-	])('%s: %ss', (id, duration, label) => {
+		['xingqiu', 15.55],
+		['yelan', 15],
+		['raiden_shogun', 25],
+		['nahida', 25],
+		['beidou', 15],
+		['albedo', 30],
+		['dehya', 12],
+		['nicole', 20],
+		['qiqi', 15]
+	])('%s: %ss', (id, duration) => {
 		const caps = deriveCharacterCapabilities(byId.get(id)!).capabilities;
 		const coord = caps.find((c) => c.detail === 'coordinatedAttack');
 		expect(coord?.duration).toBe(duration);
-		expect(coord?.summon?.label).toBe(label);
 	});
 
 	it('every coordinated attack in the corpus has one', () => {

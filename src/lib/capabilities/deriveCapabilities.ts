@@ -80,17 +80,6 @@ export type DerivedCapability = {
 	 *  summon's when the effect has none (heal ticks live as long as the herald).
 	 *  Absent for instant effects and tag-derived entries. */
 	duration?: number;
-	/** Present when a SUMMON hosts this capability — its label, plus the tick
-	 *  cadence when the producing effect fires on `summonTick`.
-	 *
-	 *  ⚠ This is emitted HERE, and not read off `computeSummonTicks` in
-	 *  `$lib/timeline/summonSubrows`, on purpose: that helper calls the parser's
-	 *  `evalCondition`, so importing it would drag notationParser into every
-	 *  consumer of this module — including the Team Builder, which has no other
-	 *  reason to carry it. This module imports TYPES ONLY and must stay that way.
-	 *  The walk is three lines here because `pushSummonCapabilities` already has
-	 *  the trigger in hand; tick OFFSETS are then arithmetic at the consumer. */
-	summon?: { label: string; tickInterval?: number; firstTickDelay?: number };
 	/** The effect's own number when it is a plain one: a shred's size as a
 	 *  POSITIVE percent (the data stores shred negative), a buff's flat value.
 	 *  Absent for scaling/unknown values and tag-derived entries. Read by the
@@ -680,8 +669,7 @@ function pushEffectCapabilities(
 	effects: Effect[] | undefined,
 	ctx: HostContext,
 	out: DerivedCapability[],
-	fallbackDuration?: number,
-	summonLabel?: string
+	fallbackDuration?: number
 ): void {
 	for (const effect of effects ?? []) {
 		// ⛔⛔ THE `manual` SKIP THAT LIVED HERE IS GONE, and its absence is the
@@ -710,7 +698,6 @@ function pushEffectCapabilities(
 			minConstellation,
 			caveats: [...caveats].sort(),
 			...(duration !== undefined && duration > 0 && { duration }),
-			...(summonLabel !== undefined && { summon: summonHost(summonLabel, effect) }),
 			...amountOf(effect),
 			...(host !== undefined && { host }),
 			...(teamNeed && { teamNeed }),
@@ -764,28 +751,13 @@ function hostOf(
 	return undefined;
 }
 
-/** The summon descriptor for one capability: the label always, plus the cadence
- *  when THIS effect is the one that ticks. An effect riding a summon without a
- *  `summonTick` trigger (an aura buff applied once at spawn) is still
- *  summon-hosted — it just has no rhythm of its own. */
-function summonHost(label: string, effect: Effect): DerivedCapability['summon'] {
-	const trigger = effect.trigger as { type?: string; interval?: number; firstTickDelay?: number };
-	if (trigger?.type !== 'summonTick' || !(trigger.interval! > 0)) return { label };
-	return {
-		label,
-		tickInterval: trigger.interval,
-		...(trigger.firstTickDelay !== undefined && { firstTickDelay: trigger.firstTickDelay })
-	};
-}
-
 /**
  * How long a coordinated attack stays armed after its cast, read from the
  * three places the corpus states it — in this order, because the first two
  * are the attack's OWN window and the third is the cast's:
  *
  *   1. the summon that carries its damage (Xingqiu's Rainbow Bladework,
- *      Yelan's Exquisite Throw, Raiden's Eye) — and its label, so this lane
- *      and the summon path's merge rather than drawing one window twice;
+ *      Yelan's Exquisite Throw, Raiden's Eye);
  *   2. the `armedFor` on a proc's trigger (Nahida's Tri-Karma, Beidou);
  *   3. the cast's `activeDuration` (Nicole).
  *
@@ -799,13 +771,13 @@ function coordinatedWindow(host: {
 	effects?: Effect[];
 	summons?: Summon[];
 	activeDuration?: number;
-}): { duration: number; summonLabel?: string } | undefined {
+}): { duration: number } | undefined {
 	for (const summon of host.summons ?? []) {
 		const deals = (summon.effects ?? []).some(
 			(e) => e.type === 'damage' && !(e.trigger?.type === 'summonTick' && e.trigger.appliesOnly)
 		);
 		if (deals && typeof summon.duration === 'number' && summon.duration > 0) {
-			return { duration: summon.duration, summonLabel: summon.label };
+			return { duration: summon.duration };
 		}
 	}
 	let armed = 0;
@@ -825,7 +797,7 @@ function pushTagCapabilities(
 	tags: readonly string[] | undefined,
 	ctx: HostContext,
 	out: DerivedCapability[],
-	window?: { duration: number; summonLabel?: string }
+	window?: { duration: number }
 ): void {
 	for (const tag of tags ?? []) {
 		let kind: CapabilityKind;
@@ -861,7 +833,6 @@ function pushTagCapabilities(
 			caveats: [...caveats].sort(),
 			...(teamNeed && { teamNeed }),
 			...(timed && { duration: timed.duration }),
-			...(timed?.summonLabel !== undefined && { summon: { label: timed.summonLabel } }),
 			via: 'tag',
 			source: ctx.source
 		});
@@ -884,9 +855,8 @@ function pushSummonCapabilities(
 ): void {
 	for (const summon of summons ?? []) {
 		// ⚓ A sequenced summon's strikes (`summonStrike`, Lumi) are off-field
-		// damage too — with no fixed rhythm to report, so `summonHost` gives the
-		// label alone.
-		const tickingDamage = (summon.effects ?? []).find(
+		// damage too.
+		const ticksDamage = (summon.effects ?? []).some(
 			(e) =>
 				e.type === 'damage' &&
 				((e.trigger?.type === 'summonTick' && !e.trigger.appliesOnly) ||
@@ -894,7 +864,7 @@ function pushSummonCapabilities(
 		);
 		const summonDuration =
 			typeof summon.duration === 'number' && summon.duration > 0 ? summon.duration : undefined;
-		if (tickingDamage) {
+		if (ticksDamage) {
 			const gate = minConstellationFor(composeConditions(ctx.hostConditions, undefined));
 			if (gate !== null) {
 				out.push({
@@ -903,7 +873,6 @@ function pushSummonCapabilities(
 					minConstellation: Math.max(gate, ctx.hostConstellation),
 					caveats: [],
 					...(summonDuration !== undefined && { duration: summonDuration }),
-					summon: summonHost(summon.label, tickingDamage),
 					via: 'effect',
 					source: ctx.source
 				});
@@ -911,7 +880,7 @@ function pushSummonCapabilities(
 		}
 		// Non-damage summon effects (heal ticks — Qiqi herald, buff auras) are
 		// capabilities in their own right.
-		pushEffectCapabilities(summon.effects, ctx, out, summonDuration, summon.label);
+		pushEffectCapabilities(summon.effects, ctx, out, summonDuration);
 	}
 }
 
