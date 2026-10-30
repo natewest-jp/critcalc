@@ -64,6 +64,8 @@ import {
 import { polestarFieldOpenAt } from './fields';
 import type { SimContext } from './context';
 import { onHitTriggerMatches, type HitEvent } from './hits';
+import type { CharacterData } from '$lib/types/character';
+import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 
 /** The three trigger kinds this module arms. ⚓ ONE list, read by the acceptance
  *  rule below AND by characterLint, so a curator can never author an effect the
@@ -249,6 +251,52 @@ export function armCastProcs(args: {
 	}
 }
 
+/**
+ * Arm a holder's STACK-ARMED listeners (`onHit.armedWhileStacks`, Mirrors
+ * round, 2026-10-30) — once, at the rotation's start, for the whole rotation.
+ *
+ * ⚓ THE STACK IS THE WINDOW, so the listener itself never closes: every hit
+ * asks the count it carries (`heldCountFor`), and a hit with none held is
+ * refused before it can spend the cooldown. Keyed `holder::stacks:host::index`
+ * — the same entity rule `armOne` keeps for the other two hosts.
+ */
+export function armStackProcs(ctx: SimContext, holder: CharacterData, constellation: number): void {
+	const none: ReadonlySet<string> = new Set();
+	for (const src of effectSourcesAtConstellation(holder, constellation)) {
+		for (const { effect, index } of procEffects(src.effects, constellation, none)) {
+			if (effect.trigger.type !== 'onHit') continue;
+			if (effect.trigger.armedWhileStacks === undefined) continue;
+			const key = `${holder.id}::stacks:${src.id}::${index}`;
+			armOne(ctx, key, {
+				key,
+				holderId: holder.id,
+				effect,
+				start: 0,
+				endNow: () => Infinity,
+				isCurrent: () => true,
+				preStates: none,
+				constellation,
+				chainIdx: new Map(),
+				castKind: src.abilityType === 'burst' ? 'burst' : 'skill'
+			});
+		}
+	}
+}
+
+/**
+ * The count a stack-armed listener reads off one hit, or `undefined` for every
+ * other listener. ⚓ Only the holder's OWN hit carries the holder's pool
+ * (`HitEvent.stacks` is the hitter's), so anyone else's hit, or an entity's,
+ * reads as none held — and so does a hit with no snapshot at all: the holder
+ * landed it with an empty pool.
+ */
+export function heldCountFor(l: ProcListener, dmg: DamageEvent): number | undefined {
+	const trig = l.effect.trigger;
+	if (trig.type !== 'onHit' || trig.armedWhileStacks === undefined) return undefined;
+	if (dmg.characterId !== l.holderId || dmg.viaEntity === true) return 0;
+	return dmg.stacks?.get(trig.armedWhileStacks) ?? 0;
+}
+
 /** Arm a summon's listeners. ⚓ Each borrows the tick chain's own `endNow` and
  *  generation check, so a swap-out, a duration extension or a recast reaches it
  *  through the one answer the ticks already use — and the host key is the
@@ -399,6 +447,11 @@ export function takeHitProcs(ctx: SimContext, dmg: DamageEvent, time: number): P
 		// tie only exists now that the hit lands where the summon appears.
 		if (l.tickKey !== undefined && time <= l.start) continue;
 		if (!onHitTriggerMatches(trig, dmg, l.holderId)) continue;
+		// ⚓ A stack-armed proc fires only while its key is held — asked before the
+		// cooldown, so a hit with none held spends nothing (gcsim's Projection
+		// checks its ICD, then `mirrorCount == 0`, and stamps only on a fire).
+		const held = heldCountFor(l, dmg);
+		if (held !== undefined && held < 1) continue;
 		// ⚓ A proc gated on the Polestar Field is asked at the OFFER instant
 		// (Radiance-window round, 2026-09-19) — arming is optimistic about the
 		// leaf (no instant exists at arm time), so this is where it is decided.

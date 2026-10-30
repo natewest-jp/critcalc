@@ -1351,7 +1351,8 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 		const result = parseNotation('GainStub E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
 		expect(track.eBars).toHaveLength(1);
-		expect(track.eBars[0].stackContext).toBeUndefined();
+		// ⚓ Known empty, not unknown: a fresh turn starts its granted keys at 0.
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(0);
 	});
 
 	it('at C1, a single E grants 6 stacks (post-grant snapshot on the bar)', () => {
@@ -1390,7 +1391,7 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 		const result = parseNotation('GainStub Q', lookup, 8, { gainstub: 1 });
 		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
 		expect(track.qBars).toHaveLength(1);
-		expect(track.qBars[0].stackContext).toBeUndefined();
+		expect(track.qBars[0].stackContext?.get('fieldCatalog')).toBe(0);
 	});
 
 	it('composes with {key:N} assertions: assertion adds to gainStacks accrual', () => {

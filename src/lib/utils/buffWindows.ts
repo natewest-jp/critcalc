@@ -255,15 +255,32 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			return true;
 		});
 	};
-	/** Splits a per-event effect list by `duration`, first-seen order. Every
-	 *  effect that reaches this has a duration (the pool prefilters demand one),
-	 *  so `part[0].duration!` is the part's span. */
+	/** ⚓ An `onHit` effect's own `procCooldown` on a per-swing surface (Mirrors
+	 *  round, 2026-10-30): a landing inside it does not fire. The hit pass and the
+	 *  cast pools already kept it; the block surfaces drew one bar per landing, so
+	 *  Alhaitham's A1-gated C2 stack drew twice off one Charged Attack's two hits.
+	 *  The clock is per surface and per track, like `lastWinByDur` beside it. */
+	const cooldownOpen = (ready: Map<Effect, number>, effect: Effect, t: number): boolean =>
+		t >= (ready.get(effect) ?? -Infinity);
+	const stampCooldowns = (
+		ready: Map<Effect, number>,
+		fired: readonly Effect[],
+		t: number
+	): void => {
+		for (const fx of fired)
+			if (typeof fx.procCooldown === 'number') ready.set(fx, t + framesOf(fx.procCooldown));
+	};
+	/** Splits a per-event effect list by `duration` (and `opensAfter`, which
+	 *  moves a part's start), first-seen order. Every effect that reaches this has
+	 *  a duration (the pool prefilters demand one), so `part[0].duration!` is the
+	 *  part's span. */
 	const partitionByDuration = <T extends Effect>(effects: readonly T[]): T[][] => {
 		if (effects.length < 2) return effects.length ? [[...effects]] : [];
 		const parts: T[][] = [];
-		const byDur = new Map<number, T[]>();
+		const byDur = new Map<string, T[]>();
 		for (const fx of effects) {
-			const d = (fx as { duration?: number }).duration ?? -1;
+			const f = fx as { duration?: number; opensAfter?: number };
+			const d = `${f.duration ?? -1}|${f.opensAfter ?? 0}`;
 			let p = byDur.get(d);
 			if (!p) {
 				p = [];
@@ -292,20 +309,21 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		effects: readonly T[],
 		cast: CastEvent
 	): Array<{ anchor: number; extend: number; part: T[] }> => {
+		// ⚓ A part that OPENS LATER (`BuffEffect.opensAfter`, Mirrors round,
+		// 2026-10-30) anchors that long after the cast, and only if its holder is on
+		// field then — gcsim's burst refill and C4's gain return when he is not.
+		const atCast = (part: T[]): Array<{ anchor: number; extend: number; part: T[] }> => {
+			const delay = (part[0] as { opensAfter?: number }).opensAfter;
+			if (delay === undefined) return [{ anchor: cast.fieldStart, extend: 0, part }];
+			const at = cast.time + framesOf(delay);
+			return onFieldAt(at) === cast.characterId ? [{ anchor: at, extend: 0, part }] : [];
+		};
 		const hitsAt = cast.hitsAt;
 		if (hitsAt === undefined || (hitsAt.length === 1 && hitsAt[0] === cast.fieldStart))
-			return partitionByDuration(effects).map((part) => ({
-				anchor: cast.fieldStart,
-				extend: 0,
-				part
-			}));
+			return partitionByDuration(effects).flatMap(atCast);
 		const onHit = effects.filter((fx) => fx.trigger.type === 'onHit');
 		const rest = effects.filter((fx) => fx.trigger.type !== 'onHit');
-		const out = partitionByDuration(rest).map((part) => ({
-			anchor: cast.fieldStart,
-			extend: 0,
-			part
-		}));
+		const out = partitionByDuration(rest).flatMap(atCast);
 		for (const part of partitionByDuration(onHit)) {
 			const head = part[0] as { duration?: number; procCooldown?: unknown };
 			const dur = framesOf(head.duration ?? 0);
@@ -971,11 +989,13 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// a hit that fires a 4s part and a 10s part keeps two open windows,
 					// each refreshed by the next hit that fires its own shape.
 					const lastWinByDur = new Map<number, BuffWindow>();
+					const blockReady = new Map<Effect, number>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
 						const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
 						const barEffects = dedupByStat(
 							qualifiedEffects.filter((effect) => {
+								if (!cooldownOpen(blockReady, effect, hit.time)) return false;
 								if (
 									evalCondition(
 										effect.conditions,
@@ -995,6 +1015,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								return true;
 							})
 						);
+						stampCooldowns(blockReady, barEffects, hit.time);
 						for (const part of partitionByDuration(barEffects)) {
 							const buffStart = hit.time;
 							const buffEnd = buffStart + framesOf(part[0].duration!);
@@ -1027,11 +1048,13 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const resShredBlockPool = blockGroup.effects.filter(resShredBase);
 				if (resShredBlockPool.length > 0) {
 					const lastWinByDur = new Map<number, BuffWindow>();
+					const blockReady = new Map<Effect, number>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
 						const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
 						const barEffects = dedupResShredByElement(
 							resShredBlockPool.filter((effect) => {
+								if (!cooldownOpen(blockReady, effect, hit.time)) return false;
 								if (
 									evalCondition(
 										effect.conditions,
@@ -1050,6 +1073,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								return true;
 							})
 						);
+						stampCooldowns(blockReady, barEffects, hit.time);
 						for (const part of partitionByDuration(barEffects)) {
 							const buffStart = hit.time;
 							const buffEnd = buffStart + framesOf(part[0].duration!);
@@ -2036,12 +2060,14 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					return true;
 				});
 				if (activeEffects.length === 0) continue;
+				const blockReady = new Map<Effect, number>();
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
 					const hitStates = stateIndex.at(sourceTrack.characterId, hit.time);
 					const gate = gateFor(receivedCtxOf(char.id), hitStates);
 					const barEffects = dedupByStat(
 						activeEffects.filter((effect) => {
+							if (!cooldownOpen(blockReady, effect, hit.time)) return false;
 							if (
 								evalCondition(
 									effect.conditions,
@@ -2060,6 +2086,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							return true;
 						})
 					);
+					stampCooldowns(blockReady, barEffects, hit.time);
 					for (const part of partitionByDuration(barEffects)) {
 						const buffStart = hit.time;
 						const buffEnd = buffStart + framesOf(part[0].duration!);
@@ -2511,6 +2538,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// PER-SWING hit anchored (phase-6): the hit-time stack snapshot is
 				// what stack-gated self buffs read — Yanfei A1's perStack Pyro DMG
 				// bonus sees her pre-consume seal count at the CA hit.
+				const blockReady = new Map<Effect, number>();
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
 					const gate = gateFor(
@@ -2520,6 +2548,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					);
 					const barEffects = dedupByStat(
 						selfEffects.filter((effect) => {
+							if (!cooldownOpen(blockReady, effect, hit.time)) return false;
 							if (
 								evalCondition(
 									effect.conditions,
@@ -2538,6 +2567,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							return true;
 						})
 					);
+					stampCooldowns(blockReady, barEffects, hit.time);
 					for (const part of partitionByDuration(barEffects)) {
 						const buffStart = hit.time;
 						const buffEnd = buffStart + framesOf(part[0].duration!);

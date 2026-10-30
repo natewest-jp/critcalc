@@ -31,6 +31,7 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 
 - Hit records are per landing: `landingsOf()` (`$lib/utils/frames.ts`) gives every frame a swing's hits land, so a two-hit swing spends two ICD slots and fires a per-hit grant twice; `landsAt()` is the first. No element means physical. The records drive `gainStacks`/`consumeStacks` dispatch, `Effect.procCooldown`, and `holderStatesAt`.
 - `deriveBuffWindows` (`buffWindows.ts`, at finalize) computes all of who buffs whom and when, as `buff` windows with their effects and trigger-time context. `parseNotation` takes `teamCharacters` (the slot roster) for team context.
+- ⚠️ A fresh turn starts every key its own grants write at 0 (`segmentStackKeysOf`). An absent key made a cast's snapshot `undefined`, a `stacks` gate on it unresolvable, and the buff passes drew it.
 - ⚠️ The stack dispatchers act only on a definitive `true`, while the buff passes drop only on a definitive `false` (`stacks.ts`). A state gate on `gainStacks`/`consumeStacks` can work in one and be dead in the other, so measure it in both.
 - Off-field summon damage ticks become synthesized hits at finalize. They feed `deriveBuffWindows` only, never `dispatchHit`, which mutates live state in parse order.
 - The live tick chain in `sim/aura.ts` dispatches gains, then a snapshot, then consumes at the tick's own instant, and the hit carries that snapshot (`ctx.tickStacks`). ⚠️ Never dispatch from both ends: they are one tick seen twice. A heal tick is not a hit.
@@ -44,15 +45,17 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 - An `active`-target infusion needs no per-receiver window: only the active character swings, so the swinger is the receiver.
 - One condition tree carries two subjects: `constellation` is the holder's and known at the cast, `weaponType` is the receiver's and known only at the swing. The cast site drops a window only on a definitive false; the swing re-evaluates with the receiver's weapon.
 - A granted infusion resolves per swing, and the input block splits where the element changes. A stance infusion wins over a granted one; the newest grant wins. ⚠️ A window is never truncated on swap (Bennett's is still there when you swap back).
+- `NormalAbility.infusionWhileStacks` holds a character's own infusion only while they hold a stack of the key, asked per swing against the turn's pool (`ownInfusion` in `run.ts`).
 
 ## Constellation gating
 
 - `effectSourcesAtConstellation` (`src/lib/utils/effectCollection.ts`) is the one walk of a character's effect surface. Never reintroduce `[...abilities, ...passives, ...constellations]` at a site that decides something.
-- Gate the walk that asks "does this fire", never the walk that asks "what keys exist". The four key-space walks in `stacks.ts` stay ungated. Don't double-gate `deriveCapabilities`.
+- Gate the walk that asks "does this fire", never the walk that asks "what keys exist". The key-space walks in `stacks.ts` stay ungated. Don't double-gate `deriveCapabilities`.
 - Guarded by `constellationGating.test.ts`. Record: `docs/rounds/constellation-gating-plan.md` §7.
 
 ## Off-field damage and proc listeners
 
+- A proc's landing reaches the `onHit` cooldown reducer, once per fire; the summon-tick stream does not.
 - `source: 'active'` refuses a hit delivered by an entity (`Offer.viaEntity` / `HitEvent.viaEntity`). Never use an id comparison: a tick carries its owner's id.
 - A listener belongs to the entity (`holder::host::index`), not to the authored object, and never fires off its own output.
 - 1.5U is an ICD-group multiplier, not a durability.

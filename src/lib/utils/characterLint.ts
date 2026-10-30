@@ -2112,6 +2112,13 @@ function lintNormal(
 		if (a.infusion === undefined)
 			push('strict', 'invalid-element', 'coInfusion without infusion', a.id);
 	}
+	// (C.19c) infusionWhileStacks names a key, and gates an infusion that exists.
+	if (a.infusionWhileStacks !== undefined) {
+		if (typeof a.infusionWhileStacks !== 'string' || a.infusionWhileStacks.length === 0)
+			push('strict', 'invalid-element', 'infusionWhileStacks must name a stack key', a.id);
+		if (a.infusion === undefined)
+			push('strict', 'invalid-element', 'infusionWhileStacks without infusion', a.id);
+	}
 }
 
 /**
@@ -2206,6 +2213,19 @@ function lintHoldsField(
 		}))
 	];
 	for (const { where, opens, app } of hosts) {
+		// (D.56) A hit that needs the caster to hold a stack count at the press
+		// (Mirrors round, 2026-10-30) names a key and a whole count of at least 1.
+		for (const e of app ?? []) {
+			const g = e.minStacksAtCast;
+			if (g === undefined) continue;
+			if (typeof g.key !== 'string' || g.key.length === 0 || !Number.isInteger(g.min) || g.min < 1)
+				push(
+					'strict',
+					'min-stacks-at-cast-invalid',
+					`${where} minStacksAtCast needs a stack key and a whole min of at least 1, got ${JSON.stringify(g)}`,
+					a.id
+				);
+		}
 		const bound = (app ?? []).filter((e) => e.whileStance !== undefined);
 		if (!bound.length) continue;
 		if (!opens) {
@@ -3618,6 +3638,19 @@ function lintEffect(
 		}
 	}
 
+	// (B.14b) opensAfter — a cast-anchored window that opens later. Only the cast
+	// pools read it, so only on an onCast buff.
+	if (eff.type === 'buff' && eff.opensAfter !== undefined) {
+		if (!isPositiveNumber(eff.opensAfter) || eff.trigger.type !== 'onCast') {
+			push(
+				'strict',
+				'opens-after-invalid',
+				`opensAfter must be a positive number of seconds on an onCast buff (got ${JSON.stringify(eff.opensAfter)} on ${eff.trigger.type})`,
+				location
+			);
+		}
+	}
+
 	// (B.13b) ⚓ AN `onHit` DAMAGE PROC MUST HAVE A WINDOW AND A COOLDOWN
 	// (coordinated-attack round, 2026-08-18). Beidou's Stormbreaker, Raiden's Eye,
 	// Albedo's Transient Blossom, Dehya's Fiery Sanctum, Nicole's burst.
@@ -3646,12 +3679,46 @@ function lintEffect(
 				location
 			);
 		}
+		// ⚓ A STACK IS THE OTHER WINDOW (Mirrors round, 2026-10-30): armed for the
+		// rotation, asked of each hit's own snapshot — so the hit must be the
+		// holder's, and it never sits beside a timed window or on a summon.
+		const armedWhileStacks = eff.trigger.armedWhileStacks;
+		if (armedWhileStacks !== undefined) {
+			const source = eff.trigger.source ?? 'self';
+			if (
+				typeof armedWhileStacks !== 'string' ||
+				armedWhileStacks.length === 0 ||
+				!isDamageProc ||
+				ctx.isSummon ||
+				armedFor !== undefined ||
+				source !== 'self'
+			) {
+				push(
+					'strict',
+					'hit-proc-stack-window-invalid',
+					`onHit armedWhileStacks names a stack key on an ability-hosted damage proc with source self, in place of armedFor`,
+					location
+				);
+			}
+		}
+		if (eff.type === 'damage') {
+			for (const app of eff.application ?? []) {
+				if (app.atStacks === undefined) continue;
+				if (armedWhileStacks === undefined || !Number.isInteger(app.atStacks) || app.atStacks < 1)
+					push(
+						'strict',
+						'hit-proc-at-stacks-invalid',
+						`application atStacks must be a whole count of at least 1, on a proc armed by armedWhileStacks (got ${JSON.stringify(app.atStacks)})`,
+						location
+					);
+			}
+		}
 		if (isDamageProc) {
-			if (!ctx.isSummon && armedFor === undefined) {
+			if (!ctx.isSummon && armedFor === undefined && armedWhileStacks === undefined) {
 				push(
 					'strict',
 					'hit-proc-unarmed',
-					`onHit damage effect with application[] needs trigger.armedFor (how long the proc listens, in seconds) unless it is hosted on a summon`,
+					`onHit damage effect with application[] needs trigger.armedFor (how long the proc listens, in seconds) or armedWhileStacks, unless it is hosted on a summon`,
 					location
 				);
 			}
@@ -4137,6 +4204,41 @@ function lintEffect(
 					'strict',
 					'gainstacks-lifetime-refresh-invalid',
 					`gainStacks lifetimeRefresh must be true and sit beside a lifetime (got ${JSON.stringify(eff.lifetimeRefresh)}, lifetime ${JSON.stringify(eff.lifetime)})`,
+					location
+				);
+			}
+		}
+		// (B.13f3) lifetimeChain — the ONE-AT-A-TIME model is a queue `lifetime`
+		// apart that a grant past `max` restarts, so it needs both, and it is a
+		// third model beside the shared one, never combined with it.
+		if (eff.lifetimeChain !== undefined) {
+			if (
+				eff.lifetimeChain !== true ||
+				eff.lifetime === undefined ||
+				eff.max === undefined ||
+				eff.lifetimeRefresh !== undefined
+			) {
+				push(
+					'strict',
+					'gainstacks-lifetime-chain-invalid',
+					`gainStacks lifetimeChain must be true, beside a lifetime and a max, and never with lifetimeRefresh`,
+					location
+				);
+			}
+		}
+		// (B.13f4) grantDelay — seconds from an onCast trigger to the grant. The
+		// cast pipeline is the one dispatcher that defers; every other trigger
+		// would silently land it at once.
+		if (eff.grantDelay !== undefined) {
+			if (
+				!isPositiveNumber(eff.grantDelay) ||
+				eff.trigger.type !== 'onCast' ||
+				eff.accrual !== undefined
+			) {
+				push(
+					'strict',
+					'gainstacks-grant-delay-invalid',
+					`gainStacks grantDelay must be a positive number of seconds on an onCast grant, never beside accrual (got ${JSON.stringify(eff.grantDelay)} on ${eff.trigger.type})`,
 					location
 				);
 			}

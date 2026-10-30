@@ -329,7 +329,14 @@ function replayCast(char, ability, node, cast, all) {
 		(node.behavior ?? ability.behavior) === 'stance' && typeof duration === 'number'
 			? Math.round(duration * 60)
 			: Infinity;
-	const app = authored.filter((e) => !e.whileStance || e.frame - e.whileStance.travel < baseEnd);
+	// ⚓ And an empty core holds no stacks (Mirrors round, 2026-10-30), so a hit
+	// gated `minStacksAtCast` — Alhaitham's burst instances past the fourth — never
+	// lands in the capture either.
+	const app = authored.filter(
+		(e) =>
+			(!e.whileStance || e.frame - e.whileStance.travel < baseEnd) &&
+			e.minStacksAtCast === undefined
+	);
 	const refs = app.filter((e) => e.element && typeof e.element !== 'string').length;
 	const nominal = app.filter((e) => typeof e.element === 'string');
 	const ours = resolveCastApplications(

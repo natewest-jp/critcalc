@@ -85,7 +85,7 @@ import {
 	dispatchStacksOnSummonTick,
 	rotationStackSnapshot
 } from './stacks';
-import { dispatchCooldownReduceOnReaction } from './cooldownReduce';
+import { dispatchCooldownReduceOnHit, dispatchCooldownReduceOnReaction } from './cooldownReduce';
 import { closeStateWindows, holderStatesAt, openSummonState } from './states';
 import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
@@ -93,6 +93,7 @@ import { getChainIndexMap } from './cooldowns';
 import { convertReaction, toReactions } from './reactionBridge';
 import {
 	armSummonProcs,
+	heldCountFor,
 	takeHitProcs,
 	takeReactionProcs,
 	takeWaveFires,
@@ -468,7 +469,15 @@ function emitReaction(
  * (`takeHitProcs`), which is Raiden's own stated exclusion and the thing that
  * bounds the loop.
  */
-function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number): void {
+function fireProc(
+	ctx: SimContext,
+	clock: Clock,
+	l: ProcListener,
+	time: number,
+	/** The count a stack-armed proc fired at (`heldCountFor`): only the entries
+	 *  of that count land (`ElementalApplication.atStacks`). */
+	held?: number
+): void {
 	// ⚓ THE PROC'S OWN ICD, and it is NOT `procCooldown`: the cooldown says how
 	// often this proc FIRES, the gate says how often a fire APPLIES. Raiden's Eye
 	// fires every 0.9 s and applies every third strike; Dehya's Sanctum fires every
@@ -485,6 +494,7 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 
 	let earliest = Infinity;
 	for (const app of l.effect.application) {
+		if (app.atStacks !== undefined && app.atStacks !== held) continue;
 		const at = time + app.frame;
 		if (at < earliest) earliest = at;
 		// ⛔ A physical (element-less) entry applies nothing — the same rule a
@@ -559,7 +569,7 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 		else ctx.stateGatedTicks.set(l.tickKey, [landing]);
 	}
 	clock.schedule(landing, Band.LAND, () => {
-		notifyDamage(ctx, clock, {
+		const dmg: DamageEvent = {
 			characterId: l.holderId,
 			time: landing,
 			abilityType: l.castKind,
@@ -568,7 +578,14 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 			abilityName: l.effect.attribution,
 			sourceEventId: -1,
 			procKey: l.key
-		});
+		};
+		// ⚓ A proc's hit is a hit its holder landed, so an `onHit` cooldown
+		// reduction hears it (Mirrors round, 2026-10-30): Alhaitham's C1 takes 1.2s
+		// off the skill when a Projection Attack hits, matched by its attribution.
+		// ⚠️ Once per fire, at the first landing — gcsim's 1s ICD admits no more.
+		// The summon-tick stream still does not reach the reducer.
+		dispatchCooldownReduceOnHit(ctx, dmg);
+		notifyDamage(ctx, clock, dmg);
 	});
 }
 
@@ -613,7 +630,8 @@ function scheduleReactionProcs(
  */
 export function notifyDamage(ctx: SimContext, clock: Clock, dmg: DamageEvent): void {
 	if (ctx.procs.size === 0) return;
-	for (const l of takeHitProcs(ctx, dmg, dmg.time)) fireProc(ctx, clock, l, dmg.time);
+	for (const l of takeHitProcs(ctx, dmg, dmg.time))
+		fireProc(ctx, clock, l, dmg.time, heldCountFor(l, dmg));
 }
 
 /**

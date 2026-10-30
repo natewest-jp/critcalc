@@ -658,6 +658,22 @@ export type Trigger =
 			 * characterLint B.13b enforces both halves.
 			 */
 			armedFor?: number;
+			/**
+			 * ⚓ ARMED FOR AS LONG AS THE HOLDER HOLDS THIS STACK KEY — the damage
+			 * proc's other window, in place of `armedFor` (Mirrors round,
+			 * 2026-10-30). Alhaitham's Projection Attacks fire "when he possesses
+			 * Chisel-Light Mirrors", and no one cast opens them (A1 and the burst's
+			 * refill make Mirrors too), so the listener is armed for the whole
+			 * rotation and each hit asks the count it carries (`HitEvent.stacks`,
+			 * post-gain: gcsim's A1 "adds a stack before the mirror count for the
+			 * Projection Attack is determined").
+			 *
+			 * ⚠️ Asked BEFORE the cooldown, so a hit with none held spends nothing.
+			 * The proc's entries can name the count they belong to
+			 * (`ElementalApplication.atStacks`). Only with `source: 'self'` (the
+			 * snapshot is the hitter's pool), never beside `armedFor` (lint B.13b).
+			 */
+			armedWhileStacks?: string;
 	  }
 	| {
 			type: 'onReaction';
@@ -1769,6 +1785,14 @@ export type Effect =
 				value: BuffValue;
 			};
 			/**
+			 * Seconds from an `onCast` trigger to the window's start, its
+			 * `duration` counted from there (Mirrors round, 2026-10-30). The window
+			 * opens only if its holder is on field at that instant: Alhaitham's
+			 * C2 and C4 grant on Mirrors the burst refills 184f later, in a task
+			 * that "returns if he is no longer on field". Lint B.14b.
+			 */
+			opensAfter?: number;
+			/**
 			 * ⚓ HOW LONG THE RECEIVER MUST HAVE BEEN ON FIELD before this buff
 			 * lands (Nicole, 2026-08-18) — "after the observed character has
 			 * remained on the field for 3s, their Grace of Kenosis is upgraded".
@@ -2172,6 +2196,22 @@ export type Effect =
 			 *  stacks each die 10s after THEIR grant). Only meaningful beside
 			 *  `lifetime` (lint B.13f2). */
 			lifetimeRefresh?: true;
+			/** The ONE-AT-A-TIME model (Mirrors round, 2026-10-30): the stacks
+			 *  leave one by one, `lifetime` apart, on a clock that starts when the
+			 *  pool fills from empty and restarts when a grant overflows `max`; a
+			 *  grant into a live pool joins the back of the queue. Alhaitham's
+			 *  Chisel-Light Mirrors (gcsim `skill.go` `mirrorLoss`, 233f, with
+			 *  `lastInfusionSrc` as the restart). Only beside `lifetime` and `max`,
+			 *  never with `lifetimeRefresh` (lint B.13f3). */
+			lifetimeChain?: true;
+			/** Seconds from an `onCast` trigger to the grant (Mirrors round,
+			 *  2026-10-30). The conditions and the amount are judged at the cast;
+			 *  the stacks land later, into the holder's pool if their turn is still
+			 *  running and nowhere if it is not, since a segment-scoped key dies
+			 *  with the swap. gcsim's `Tasks.Add(c.skillMirrorGain, 15)` and the
+			 *  burst's 184f refill, which "returns if he is no longer on field".
+			 *  Only on an `onCast` grant, never beside `accrual` (lint B.13f4). */
+			grantDelay?: number;
 			/** Conditional override of `amount` (E3 v2.x). Mirrors
 			 *  `BuffEffect.constellationScaling`: when `conditions` evaluates
 			 *  definitively true (typically `{ type: 'constellation', level: N }`),
@@ -2659,6 +2699,11 @@ export type NormalAbility = AbilityCommon & {
 	 *  Varka's right-hand claymore, which is Pyro/Hydro/Electro/Cryo by party
 	 *  priority and PHYSICAL when the party has none of the four. */
 	infusion?: ElementRef;
+	/** The `infusion` holds only while the holder has at least one stack of
+	 *  this key (Mirrors round, 2026-10-30): Alhaitham's attacks are Dendro
+	 *  "when he possesses Chisel-Light Mirrors". Asked per swing, at its start,
+	 *  against the turn's live pool. Only beside `infusion` (lint). */
+	infusionWhileStacks?: string;
 	/**
 	 * A SECOND element every swing of this ability lands, on its own ICD counter
 	 * (Varka's two claymores round, 2026-09-16).
@@ -2938,6 +2983,24 @@ export type ElementalApplication = {
 	 * Only on a cast that opens a stance (lint D.48).
 	 */
 	whileStance?: { travel: number };
+	/**
+	 * ⚓ THIS LANDING EXISTS ONLY AT THIS COUNT (Mirrors round, 2026-10-30). A
+	 * proc armed by `armedWhileStacks` lands the entries whose `atStacks` equals
+	 * the count its triggering hit carried, and the ones without it always: one
+	 * Projection Attack per Mirror, each count on its own frames (gcsim
+	 * `mirror1HitmarkLeft`, `mirror2HitmarksLeft`, `mirror3Hitmarks`). Only on
+	 * such a proc (lint B.13b).
+	 */
+	atStacks?: number;
+	/**
+	 * ⚓ THIS LANDING EXISTS ONLY WHEN THE CASTER HELD THIS MANY AT THE PRESS
+	 * (Mirrors round, 2026-10-30) — a cast's own entry, read against the cast's
+	 * snapshot (post-gain, pre-consume). Alhaitham's burst deals 4 + 2 × Mirrors
+	 * consumed instances (gcsim `burst.go`), so its fifth to tenth entries say how
+	 * many Mirrors each pair needs. Only on a skill or burst's `application[]`
+	 * (lint D.56). The frames audit's empty-core replay drops every gated entry.
+	 */
+	minStacksAtCast?: { key: string; min: number };
 	/**
 	 * ⚓ THIS HIT BELONGS TO A HELD CAST'S PHASES (`HeldCast`, Sayu, 2026-10-17).
 	 * `'during'` — a hit of the held phase itself, authored to the LONGEST hold:
