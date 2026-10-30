@@ -271,9 +271,20 @@
 				"Particle generation: Dendro particle on first Projection Attack hit per cast (1.5s ICD on particleICDKey). Not authored as an explicit effect — particle generation is not currently modeled in character JSONs.",
 				"C1 (Intuition) reduces this skill's CD by 1.2s per Projection Attack hit, 1s ICD. Flagged on C1.",
 				"Per-character pattern note: alhaitham was flagged 'most complex Tier B case' in recipe-tier-b.md. Tap/Hold E authored as variants per the note's guidance; mirror-count gating intentionally not authored as conditions/effects — schema cannot represent stack-keyed buffs and per-mirror lifetimes. All mirror-dependent mechanics flagged here and on consuming abilities.",
-				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the Mirror economy is simulated, and the \"schema cannot encode\" notes above are superseded. Key `mirrors`, segment-scoped (the swap clears it, gcsim's alhaitham-exit), max 3, `lifetime: 3.883` (gcsim mirrorInterval 233f) with `lifetimeChain`: one leaves every 233f on a clock that starts from empty and restarts on an overflow (lastInfusionSrc). The tap grant lands 15f after the press and the hold's 23f (`grantDelay`, gcsim Tasks.Add(skillMirrorGain, 15 / 23)); \"2 from none\" is a second +1 gated on an empty pool at the cast. ⚠️ Kit text gives the Removal Interval as 4.0s; gcsim's 233f is authored, ⚓ Nate 2026-10-30: follow gcsim for now."
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the Mirror economy is simulated, and the \"schema cannot encode\" notes above are superseded. Key `mirrors`, segment-scoped (the swap clears it, gcsim's alhaitham-exit), max 3, `lifetime: 3.883` (gcsim mirrorInterval 233f) with `lifetimeChain`: one leaves every 233f on a clock that starts from empty and restarts on an overflow (lastInfusionSrc). The tap grant lands 15f after the press and the hold's 23f (`grantDelay`, gcsim Tasks.Add(skillMirrorGain, 15 / 23)); \"2 from none\" is a second +1 gated on an empty pool at the cast. ⚠️ Kit text gives the Removal Interval as 4.0s; gcsim's 233f is authored, ⚓ Nate 2026-10-30: follow gcsim for now.",
+				"↻ 2026-10-30 (Mirror row round): `drawsStacks` draws the Mirror count as one stepped bar in the summon lane (⚓ Nate: Odette's stepped bar), named \"Chisel-Light Mirror\" as the kit text names it. The steps are the pool's own expiry lists, so each loss lands on its 233f instant and the swap ends the bar."
 			],
-			"application": [{ "frame": 19, "element": "dendro", "units": 1 }]
+			"application": [
+				{
+					"frame": 19,
+					"element": "dendro",
+					"units": 1
+				}
+			],
+			"drawsStacks": {
+				"key": "mirrors",
+				"label": "Chisel-Light Mirror"
+			}
 		},
 		{
 			"id": "alhaitham__burst__particular_field_fetters_of_phenomena",

@@ -49,7 +49,12 @@ import {
 } from '$lib/timeline/summonMarks';
 import { elementPalette, shiftHue, desaturate, tickInk } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
-import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
+import {
+	UPTIME_DIM_MIX,
+	GHOST_FILL_MIX,
+	GHOST_CHROMA_KEEP,
+	stackStepMix
+} from '$lib/timeline/barMix';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import { stepCeiling, stepDensity } from '$lib/timeline/barSteps';
 import type {
@@ -970,6 +975,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// the E/Q badge above — the mirror test reads colour tokens, not
 					// ink choice or font weight.
 					paintCastFill(px, rowTop, pw, snap.summonRowH, p.bar);
+					// A drawn stack count is stepped — mirror steppedSummonBackground:
+					// each step the element mixed into the chart ground by its count.
+					if (sbar.steps?.length) {
+						const ceiling = stepCeiling(sbar.steps, sbar.stepMax);
+						for (const st of sbar.steps) {
+							ctx!.fillStyle = mix(p.bar, CHART_BG, stackStepMix(st.count, ceiling));
+							ctx!.fillRect(x(st.start), rowTop, x(st.end) - x(st.start), snap.summonRowH);
+						}
+					}
 					// An absorbing summon becomes its element — mirror
 					// .rp-summon-absorbed: a fade from its first absorbed hit, then
 					// that element to the bar's end, under the label.

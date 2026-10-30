@@ -58,7 +58,12 @@
 		tickInk,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
-	import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
+	import {
+		UPTIME_DIM_MIX,
+		GHOST_FILL_MIX,
+		GHOST_CHROMA_KEEP,
+		stackStepMix
+	} from '$lib/timeline/barMix';
 	import {
 		xForTime as projectX,
 		barGeom as projectBar,
@@ -69,6 +74,7 @@
 	import type { InputBlock } from '$lib/sim/types';
 	import type {
 		BarStep,
+		SummonBar,
 		CharReceivedBuffBar,
 		MergedEffectDisplay,
 		SlottedTrack
@@ -82,6 +88,7 @@
 	import { ABSORB_FADE_PX, LUNAR_GLEAM_STOPS, summonMarks } from '$lib/timeline/summonMarks';
 	const LUNAR_GLEAM_BG = `linear-gradient(90deg, ${LUNAR_GLEAM_STOPS.map(([at, c]) => `${c} ${at * 100}%`).join(', ')})`;
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
+	import { computeStackSubrows } from '$lib/timeline/stackRows';
 	import {
 		computeGadgetRows,
 		type GadgetBar,
@@ -432,6 +439,23 @@
 		return `linear-gradient(to right, ${stops.join(', ')})`;
 	}
 
+	/** ⚓ A STEPPED SUMMON-LANE BAR (Mirror row round, 2026-10-30) — a drawn stack
+	 *  count in the stepped bar's grammar, with HARD stops. ⚠️ Mixed toward the
+	 *  chart ground, not transparent: a summon-lane bar is opaque so the swap
+	 *  connectors behind it stay hidden (`stackStepMix`, shared with the PNG). */
+	function steppedSummonBackground(bar: SummonBar, color: string): string | undefined {
+		const steps = bar.steps;
+		const span = bar.end - bar.start;
+		if (!steps?.length || !(span > 0)) return undefined;
+		const ceiling = stepCeiling(steps, bar.stepMax);
+		const stops = steps.map((st) => {
+			const a = (((st.start - bar.start) / span) * 100).toFixed(3);
+			const b = (((st.end - bar.start) / span) * 100).toFixed(3);
+			return `color-mix(in srgb, ${color} ${stackStepMix(st.count, ceiling).toFixed(1)}%, var(--rp-chart-bg)) ${a}% ${b}%`;
+		});
+		return `linear-gradient(to right, ${stops.join(', ')})`;
+	}
+
 	/** A stepped bar's tooltip is the STEP under the pointer — anchored to the
 	 *  cursor, because the bar's centre is one moment among several. */
 	function showStepTooltip(
@@ -693,9 +717,14 @@
 		// with E, as it always has).
 		// ⚠ Sort, not partition — `Array.prototype.sort` is stable, so summons
 		// and shields keep their own internal order within each group.
+		// ⚓ And a drawn stack count (`stackRows.ts`), the same shape again.
+		const stacks = computeStackSubrows(
+			rotation.windows,
+			(id) => annotatedTracks.find((t) => t.characterId === id)?.slotIdx
+		);
 		const rank = (r: { bars: { source: 'skill' | 'burst' }[] }) =>
 			r.bars[0]?.source === 'burst' ? 1 : 0;
-		return [...summons, ...shields].sort((a, b) => rank(a) - rank(b));
+		return [...summons, ...shields, ...stacks].sort((a, b) => rank(a) - rank(b));
 	});
 
 	let slotSummonLaneHeights = $derived(
@@ -3473,9 +3502,13 @@
 													class="rp-summon-bar"
 													class:rp-inspectable={$nextLayout}
 													onclick={() => inspectRaised(srow.characterId, sbar.source, sbar.start)}
+													onmouseenter={(e) => sbar.steps && showStepTooltip(e, sbar, srow.label)}
+													onmousemove={(e) => sbar.steps && showStepTooltip(e, sbar, srow.label)}
+													onmouseleave={() => sbar.steps && hideTooltip()}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background={castFill(p.bar)}
+													style:background={(sbar.steps && steppedSummonBackground(sbar, p.bar)) ||
+														castFill(p.bar)}
 												>
 													<!-- ⚓ An absorbing summon BECOMES its element (⚓ Nate,
 													     2026-10-17): a fade from its first absorbed hit, then that

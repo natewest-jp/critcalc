@@ -39,3 +39,16 @@ export const GHOST_FILL_MIX = 50;
  *  CD bars into mud; they keep most of their element identity now and
  *  recede mainly by the mix ratio. */
 export const GHOST_CHROMA_KEEP = 75;
+
+/** % of the element main a STEPPED summon-lane bar keeps at one stack, rising
+ *  to full at the key's cap — a drawn stack count (Mirror row round,
+ *  2026-10-30; Alhaitham's Chisel-Light Mirrors at 1 / 2 / 3). Mixed toward the
+ *  chart ground like `UPTIME_DIM_MIX`, so the bar stays opaque over the swap
+ *  connectors the summon lane hides. ⏭ Nate tunes by eye. */
+export const STACK_STEP_MIX_MIN = 50;
+
+/** The mix a step of `count` (out of `max`) is drawn at, in percent. */
+export function stackStepMix(count: number, max: number): number {
+	if (!(max > 0)) return 100;
+	return STACK_STEP_MIX_MIN + (100 - STACK_STEP_MIX_MIN) * Math.min(1, count / max);
+}

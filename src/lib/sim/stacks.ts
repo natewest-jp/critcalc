@@ -525,10 +525,11 @@ export function dispatchConsumeStacks(
 			} else {
 				const current = target.write.state.get(fx.key) ?? 0;
 				target.write.state.set(fx.key, Math.max(0, current - fx.amount));
+				// ⚠️ A new list through `set`, never an in-place splice: a drawn key's
+				// pool records its writes (`sim/stackLanes.ts`).
 				const instances = target.write.instances.get(fx.key);
-				if (instances && instances.length > 0) {
-					instances.splice(0, Math.min(fx.amount, instances.length));
-				}
+				if (instances && instances.length > 0)
+					target.write.instances.set(fx.key, instances.slice(fx.amount));
 			}
 			mirrorKey(target, fx.key);
 		}
@@ -983,9 +984,7 @@ export function dispatchConsumeStacksOnHit(
 					const current = state.get(fx.key) ?? 0;
 					state.set(fx.key, Math.max(0, current - fx.amount));
 					const inst = instances.get(fx.key);
-					if (inst && inst.length > 0) {
-						inst.splice(0, Math.min(fx.amount, inst.length));
-					}
+					if (inst && inst.length > 0) instances.set(fx.key, inst.slice(fx.amount));
 				}
 				mirrorKey(target, fx.key);
 				if (fx.closesStateWhenEmpty !== undefined && (state.get(fx.key) ?? 0) <= 0)

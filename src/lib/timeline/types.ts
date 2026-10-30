@@ -138,6 +138,10 @@ export type SummonBar = {
 	 *  the first turns the bar into that element, and all merge into `ticks`
 	 *  one stub per frame (`summonMarks`). Read off the window, never derived. */
 	absorbedTicks?: { time: number; element: string }[];
+	/** A drawn stack count's steps (`stackRows.ts`): the bar is drawn stepped,
+	 *  full strength at `stepMax`, and its tooltip reads the step. */
+	steps?: BarStep[];
+	stepMax?: number;
 };
 export type SummonSubrow = {
 	slotIdx: number;

@@ -159,6 +159,7 @@ import {
 	scheduleSummonTicks
 } from './aura';
 import { armCastProcs, armStackProcs } from './procs';
+import { closeStackLanes, newInstancePool } from './stackLanes';
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
@@ -303,8 +304,12 @@ export function runRotation(
 		// character are not a swap-out at all. Both halves are precisely
 		// finalize's "the next track with a DIFFERENT characterId".
 		const prevTrack = ctx.tracks[ctx.tracks.length - 1];
-		if (prevTrack && prevTrack.characterId !== char.id)
+		if (prevTrack && prevTrack.characterId !== char.id) {
 			ctx.lastSwapOutAt.set(prevTrack.characterId, clock.now);
+			// The swap drops the leaver's pool, so a drawn count ends here too.
+			const leaver = ctx.team.teamChars.find((c) => c.id === prevTrack.characterId);
+			if (leaver) closeStackLanes(ctx, leaver, clock.now);
+		}
 
 		// ⚓ A `>` BETWEEN TWO SEGMENTS OF ONE CHARACTER IS NOT A SWAP (playback
 		// round B, 2026-09-29). `Bennett E > Bennett Q` is one stay on field
@@ -443,7 +448,9 @@ export function runRotation(
 		// expiry times of every individual stack instance. `applyLifetimeExpiry`
 		// drops expired instances and updates `stackState[key]` to match the
 		// remaining instance count. Per-turn scope (matching `stackState`).
-		const stackInstances: Map<string, number[]> = carried?.stackInstances ?? new Map();
+		// ⚓ A drawn key's pool is a ledger (`sim/stackLanes.ts`) — every write is a step.
+		const stackInstances: Map<string, number[]> =
+			carried?.stackInstances ?? newInstancePool(ctx, char);
 		// A fresh turn knows its own keys are empty (`segmentStackKeysOf`).
 		if (!carried) for (const key of segmentStackKeysOf(char)) stackState.set(key, 0);
 
