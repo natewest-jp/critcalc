@@ -23,7 +23,6 @@ import {
 import { browser } from '$app/environment';
 import { narrowFormQuery } from '$lib/breakpoints';
 import { askOnFirstSave } from '$lib/utils/storageDurability';
-import { storageUsable } from '$lib/storageUsable';
 
 // ---------------------------------------------------------------------------
 // Guarded writes
@@ -269,17 +268,18 @@ const CONSTELLATION_KEY = 'critcalc:constellations';
 // to its sink, ⚓ never to localStorage, which stays as the migration found it
 // (copy-only, §13.1). Read straight off the switch's own key: importing
 // `nextLayout` here would be circular (it imports this module). ⚠ Since the
-// flip (2026-10-27) the switch is ON unless the key holds '0' — the same test
-// as `nextLayout.ts` `read()`, and the two must change together.
+// flip (2026-10-27) the switch is ON unless the key holds '0', and ON where
+// the key cannot be read — the same test as `nextLayout.ts` `read()`, and the
+// two must change together.
 
 export type RosterPart = 'constellations' | 'ownership' | 'loadout';
 let rosterSink: ((part: RosterPart, value: object) => void) | null = null;
 const underSwitch = (): boolean => {
 	if (!browser) return false;
 	try {
-		return localStorage.getItem('critcalc:nextLayout') !== '0' && storageUsable();
+		return localStorage.getItem('critcalc:nextLayout') !== '0';
 	} catch {
-		return false;
+		return true;
 	}
 };
 

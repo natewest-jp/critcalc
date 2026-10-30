@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { IDBFactory } from 'fake-indexeddb';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseBackup } from '$lib/utils/settingsBackup';
 import { hadLegacyData } from './boot';
+import { LOCAL_DB_KEY } from './localDb';
+
+// The open path reads the old keys only in a browser.
+vi.mock('$app/environment', () => ({ browser: true, dev: false, building: false, version: '' }));
 
 /** A `localStorage` stand-in holding exactly these raw values. */
 function storage(raw: Record<string, string>): Pick<Storage, 'getItem'> {
@@ -46,5 +51,102 @@ describe('the returning-visitor signal (flip-readiness §1 item 4)', () => {
 			}
 		};
 		expect(hadLegacyData(blocked)).toBe(false);
+	});
+});
+
+describe('where the store lives (boot.ts)', () => {
+	const legacy = {
+		'critcalc:constellations': '{"bennett":6}',
+		'critcalc:savedNotations':
+			'[{"id":"s1","name":"National","notation":"Bennett E Q > Xiangling Q","savedAt":5}]'
+	};
+
+	/** A whole Storage: the journals are found by walking its keys. */
+	function withLocalStorage(raw: Record<string, string>): Storage {
+		const m = new Map(Object.entries(raw));
+		const ls: Storage = {
+			get length() {
+				return m.size;
+			},
+			key: (i) => [...m.keys()][i] ?? null,
+			getItem: (k) => m.get(k) ?? null,
+			setItem: (k, v) => void m.set(k, String(v)),
+			removeItem: (k) => void m.delete(k),
+			clear: () => m.clear()
+		};
+		vi.stubGlobal('localStorage', ls);
+		return ls;
+	}
+
+	/** A fresh page: boot's open-once promise is module state. Asked through
+	 *  the same module graph, or `instanceof LocalDb` compares two classes. */
+	async function openPage() {
+		vi.resetModules();
+		const db = (await (await import('./boot')).ensureStorage())!;
+		const { getAll, getMeta } = await import('./db');
+		const { LocalDb } = await import('./localDb');
+		return {
+			kind: db instanceof LocalDb ? db.kind : 'indexeddb',
+			profiles: () => getAll(db, 'profiles'),
+			meta: () => getMeta(db)
+		};
+	}
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it('IndexedDB, where it opens, and nothing written to localStorage', async () => {
+		const ls = withLocalStorage(legacy);
+		vi.stubGlobal('indexedDB', new IDBFactory());
+		const page = await openPage();
+		expect(page.kind).toBe('indexeddb');
+		expect(await page.profiles()).toHaveLength(2);
+		expect(ls.getItem(LOCAL_DB_KEY)).toBeNull();
+	});
+
+	it('no IndexedDB: the stand-in in localStorage, migrated once and kept', async () => {
+		const ls = withLocalStorage(legacy);
+		vi.stubGlobal('indexedDB', undefined);
+		const page = await openPage();
+		expect(page.kind).toBe('local');
+		expect(await page.profiles()).toHaveLength(2);
+		const { migratedAt } = await page.meta();
+		// Copy-only: the old keys stay as they were.
+		expect(ls.getItem('critcalc:constellations')).toBe(legacy['critcalc:constellations']);
+		// The next page opens the same store, with no second migration.
+		const again = await openPage();
+		expect((await again.meta()).migratedAt).toBe(migratedAt);
+		expect(await again.profiles()).toHaveLength(2);
+	});
+
+	it('IndexedDB that will not open: this tab in memory, copying nothing and taking no journal', async () => {
+		const journal = { 'critcalc:journal:page1': '{"at":1,"docs":[]}' };
+		const ls = withLocalStorage({ ...legacy, ...journal });
+		vi.stubGlobal('indexedDB', {
+			open: () => {
+				throw new Error('InvalidStateError');
+			}
+		});
+		const page = await openPage();
+		expect(page.kind).toBe('memory');
+		// The database may hold newer work than the old keys: Theorycraft alone.
+		expect((await page.profiles()).map((p) => p.kind)).toEqual(['theorycraft']);
+		expect(ls.getItem(LOCAL_DB_KEY)).toBeNull();
+		expect(ls.getItem('critcalc:journal:page1')).not.toBeNull();
+	});
+
+	it('no IndexedDB and site data blocked: a store in memory', async () => {
+		vi.stubGlobal('indexedDB', undefined);
+		Object.defineProperty(globalThis, 'localStorage', {
+			configurable: true,
+			get() {
+				throw new DOMException('blocked', 'SecurityError');
+			}
+		});
+		const page = await openPage();
+		expect(page.kind).toBe('memory');
+		expect(await page.profiles()).toHaveLength(1);
+		Reflect.deleteProperty(globalThis, 'localStorage');
 	});
 });

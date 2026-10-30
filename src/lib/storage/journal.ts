@@ -15,7 +15,7 @@
  */
 
 import { exclusively } from './docLock';
-import { get, getMeta, put } from './db';
+import { get, getMeta, put, type Db } from './db';
 import type { DocumentRecord, ProfileRecord, Roster } from './records';
 
 const PREFIX = 'critcalc:journal:';
@@ -111,13 +111,13 @@ function takeJournals(): Journal[] {
 	return out.sort((a, b) => a.at - b.at);
 }
 
-async function liveProfile(db: IDBDatabase, id: string): Promise<ProfileRecord | undefined> {
+async function liveProfile(db: Db, id: string): Promise<ProfileRecord | undefined> {
 	const p = await get(db, 'profiles', id);
 	return p && !p.deleted ? p : undefined;
 }
 
 /** Replay every journal left by a page that unloaded before its save landed. */
-export async function replayJournals(db: IDBDatabase): Promise<void> {
+export async function replayJournals(db: Db): Promise<void> {
 	await exclusively('journal', async () => {
 		const journals = takeJournals();
 		if (!journals.length) return;
