@@ -43,8 +43,8 @@ catalogued in [`icd.md`](icd.md).
 3. [Transformative Reactions](#3-transformative-reactions) — Overload … the Bloom line
 4. [Additive Reactions](#4-additive-reactions) — Quicken, Spread, Aggravate
 5. [Elemental Absorption](#5-elemental-absorption)
-6. [Elemental Resonance](#6-elemental-resonance) — _stub_
-7. [Weapon Infusion](#7-weapon-infusion) — _stub_
+6. [Elemental Resonance](#6-elemental-resonance) — see [`resonance.md`](resonance.md)
+7. [Weapon Infusion](#7-weapon-infusion) — see [`weapon-infusion.md`](weapon-infusion.md)
 8. [Simultaneous Reaction Priorities](#8-simultaneous-reaction-priorities)
 9. [→ How our tools use this](#-how-our-tools-use-this)
 10. [Reference sourcing](#reference-sourcing) · [Glossary](#glossary--reaction-terms)
@@ -478,17 +478,14 @@ ability can absorb **only one Element per use**.
 
 ## 6. Elemental Resonance
 
-🚧 **Stub.** Resonance is the team-comp passive granting stat bonuses based on element
-pairs/triples on the team. Not load-bearing for the parser's cast-only reaction emission;
-deferred. Source when needed:
-<https://library.keqingmains.com/combat-mechanics/elemental-effects/elemental-resonance>.
+Moved to its own doc: [`resonance.md`](resonance.md) (gcsim's `SetupResonance`, what each
+resonance applies, and what the tools show). The section number stays because code comments
+cite this doc's numbering.
 
 ## 7. Weapon Infusion
 
-🚧 **Stub.** Covers bow Charged Shots, Catalyst attacks, and stance infusions. Relevant to
-per-hit reaction emission in a future parser expansion; not load-bearing for cast-only
-emission. Source when needed:
-<https://library.keqingmains.com/combat-mechanics/elemental-effects/weapon-infusion>.
+Moved to its own doc: [`weapon-infusion.md`](weapon-infusion.md) (gcsim's infusion handler,
+the stance and granted kinds, and how the planner resolves an element per swing).
 
 ## 8. Simultaneous Reaction Priorities
 
