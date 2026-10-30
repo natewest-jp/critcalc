@@ -3,7 +3,8 @@
  *
  * ⚓ A SIMULATED NIGHTSOUL POOL (Nightsoul round, 2026-10-16 — ⚓ Nate: Mavuika is
  * simulated for real, not drawn at fixed lengths). One per character that
- * authors `CharacterData.nightsoulPool`; Mavuika is the only author today.
+ * authors `CharacterData.nightsoulPool`: Mavuika, and Ifa since the memory-triage
+ * round (2026-10-30).
  *
  * gcsim's model, which all four of Nate's in-game runs matched
  * (`docs/rounds/mavuika-nightsoul-round-2026-10-16.md`):
@@ -15,7 +16,9 @@
  *   - Spends (a Ring hit, a bike swing, a bike dash) come off at their instant.
  *   - A pause (her Crucible) multiplies every cost by 0 until it ends or she
  *     swaps out.
- *   - Below 0.001 the Blessing ENDS — there is no timer.
+ *   - Below 0.001 the Blessing ENDS — there is no timer. A cast can also end it
+ *     outright (`exitsAt`, gcsim `exitNightsoul`), and a skill stance still open
+ *     ends with it (Ifa's hover, which has no form).
  *
  * ⚓⚓ THE POOL OWNS ITS STATE WINDOWS, AND THEIR ENDS ARE ITS PREDICTION. The
  * Blessing's window (and the current form's) ends where the points would run
@@ -173,6 +176,10 @@ function exit(ctx: SimContext, cs: CharState, pool: NightsoulPool, at: number): 
 	pool.gen += 1;
 	if (pool.blessing) setEnd(ctx, cs, pool.blessing, at);
 	closeForm(ctx, cs, pool, at);
+	// A pool with no forms (Ifa) still owns the skill stance that entered it:
+	// the hover IS the Blessing. With a form this already ran in `closeForm`.
+	if (cs.stance && cs.stance.source === 'skill' && cs.stance.end > at)
+		clampStance(ctx, cs, pool.charId, at);
 	pool.pendingForm = null;
 }
 
@@ -234,7 +241,8 @@ function enterOrRefill(
 	}
 	pool.open = true;
 	pool.points = Math.min(pool.max, amount);
-	pool.phase = at;
+	// Ticks land at `phase + 6k`, k ≥ 1, so a first tick at `at + f` is phase `at + f − 6`.
+	pool.phase = at + (pool.spec.firstTickAfter ?? TICK_F) - TICK_F;
 	pool.tick = 0;
 	pool.blessing = {
 		characterId: pool.charId,
@@ -286,6 +294,15 @@ export function nightsoulOnCast(
 	if (spec.pause) {
 		const from = castStart + spec.pause.at;
 		pool.pause = { from, to: from + spec.pause.frames };
+	}
+	if (spec.exitsAt !== undefined) {
+		const at = castStart + spec.exitsAt;
+		const end = () => {
+			settle(ctx, cs, pool, at);
+			if (pool.open) exit(ctx, cs, pool, at);
+		};
+		if (spec.exitsAt === 0) end();
+		else clock.schedule(at, Band.TICK, end);
 	}
 	refresh(ctx, clock, cs, pool);
 }

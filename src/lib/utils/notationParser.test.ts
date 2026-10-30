@@ -796,17 +796,30 @@ describe('parseNotation — cooldownStartsAtStanceEnd + early exit (swap closes 
 	});
 });
 
-describe('parseNotation — Ifa ends his hover with the Skill (memory-triage round, 2026-10-30)', () => {
+describe("parseNotation — Ifa's hover runs on Nightsoul points (memory-triage round, 2026-10-30)", () => {
 	// gcsim `ifa/skill.go`: a Tap while in Nightsoul's Blessing exits at the
-	// press; a Hold is the plunge, which exits at its 39f hitmark. Either way
-	// exitNightsoul() runs SetCD(7.5s) at the exit, the stance-end clock.
+	// press; a Hold is the plunge, which exits at its 39f hitmark; a dash spends
+	// points (`dash.go`). However it ends, exitNightsoul() runs SetCD(7.5s) at
+	// the exit, the stance-end clock. His points are simulated (`sim/nightsoul.ts`).
 	const ifa = ifaJson as unknown as CharacterData;
 	const lookup = (n: string): CharacterData | null => (n === 'Ifa' ? ifa : null);
 	const HOVER_CD = framesOf(7.5);
 
-	it('with no re-press the hover runs its full 10s and the E returns 7.5s after', () => {
+	it('untouched, the hover lasts its 80 points and the E returns 7.5s after', () => {
+		// 0.8 a tick, the first at +4f and then every 6f: the 100th lands at
+		// 4 + 99×6 = 598f, two frames short of the 10s the kit rounds to.
 		const track = parseNotation('Ifa E', lookup, 8).tracks.find((t) => t.characterId === 'ifa')!;
-		expect(track.eBars[0].readyAt).toBe(framesOf(10) + HOVER_CD);
+		expect(track.eBars[0].readyAt).toBe(598 + HOVER_CD);
+	});
+
+	it('each dash spends 13.5 points, so the hover ends and the cooldown starts sooner', () => {
+		// Dash at 28f, after five ticks (4…28): 80 − 4 − 13.5 = 62.5 points,
+		// which 79 more ticks drain, the last at 28 + 79×6 = 502f.
+		const r = parseNotation('Ifa E D', lookup, 8);
+		const track = r.tracks.find((t) => t.characterId === 'ifa')!;
+		const blessing = r.windows.filter((w) => w.kind === 'state' && w.name === 'nightsoulBlessing');
+		expect(blessing.map((w) => w.end)).toEqual([502]);
+		expect(track.eBars[0].readyAt).toBe(502 + HOVER_CD);
 	});
 
 	it('a Tap ends the hover at the press, and the cooldown starts there', () => {
