@@ -2213,6 +2213,19 @@ function lintHoldsField(
 		}))
 	];
 	for (const { where, opens, app } of hosts) {
+		// (D.56) A hit that needs the caster to hold a stack count at the press
+		// (Mirrors round, 2026-10-30) names a key and a whole count of at least 1.
+		for (const e of app ?? []) {
+			const g = e.minStacksAtCast;
+			if (g === undefined) continue;
+			if (typeof g.key !== 'string' || g.key.length === 0 || !Number.isInteger(g.min) || g.min < 1)
+				push(
+					'strict',
+					'min-stacks-at-cast-invalid',
+					`${where} minStacksAtCast needs a stack key and a whole min of at least 1, got ${JSON.stringify(g)}`,
+					a.id
+				);
+		}
 		const bound = (app ?? []).filter((e) => e.whileStance !== undefined);
 		if (!bound.length) continue;
 		if (!opens) {
@@ -3620,6 +3633,19 @@ function lintEffect(
 				'strict',
 				'on-field-delay-invalid',
 				`onFieldDelay.seconds must be a positive number of seconds (got ${JSON.stringify(eff.onFieldDelay.seconds)})`,
+				location
+			);
+		}
+	}
+
+	// (B.14b) opensAfter — a cast-anchored window that opens later. Only the cast
+	// pools read it, so only on an onCast buff.
+	if (eff.type === 'buff' && eff.opensAfter !== undefined) {
+		if (!isPositiveNumber(eff.opensAfter) || eff.trigger.type !== 'onCast') {
+			push(
+				'strict',
+				'opens-after-invalid',
+				`opensAfter must be a positive number of seconds on an onCast buff (got ${JSON.stringify(eff.opensAfter)} on ${eff.trigger.type})`,
 				location
 			);
 		}

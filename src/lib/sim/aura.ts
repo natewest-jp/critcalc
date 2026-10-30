@@ -85,7 +85,7 @@ import {
 	dispatchStacksOnSummonTick,
 	rotationStackSnapshot
 } from './stacks';
-import { dispatchCooldownReduceOnReaction } from './cooldownReduce';
+import { dispatchCooldownReduceOnHit, dispatchCooldownReduceOnReaction } from './cooldownReduce';
 import { closeStateWindows, holderStatesAt, openSummonState } from './states';
 import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
@@ -569,7 +569,7 @@ function fireProc(
 		else ctx.stateGatedTicks.set(l.tickKey, [landing]);
 	}
 	clock.schedule(landing, Band.LAND, () => {
-		notifyDamage(ctx, clock, {
+		const dmg: DamageEvent = {
 			characterId: l.holderId,
 			time: landing,
 			abilityType: l.castKind,
@@ -578,7 +578,14 @@ function fireProc(
 			abilityName: l.effect.attribution,
 			sourceEventId: -1,
 			procKey: l.key
-		});
+		};
+		// ⚓ A proc's hit is a hit its holder landed, so an `onHit` cooldown
+		// reduction hears it (Mirrors round, 2026-10-30): Alhaitham's C1 takes 1.2s
+		// off the skill when a Projection Attack hits, matched by its attribution.
+		// ⚠️ Once per fire, at the first landing — gcsim's 1s ICD admits no more.
+		// The summon-tick stream still does not reach the reducer.
+		dispatchCooldownReduceOnHit(ctx, dmg);
+		notifyDamage(ctx, clock, dmg);
 	});
 }
 

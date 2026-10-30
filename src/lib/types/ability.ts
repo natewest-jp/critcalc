@@ -1785,6 +1785,14 @@ export type Effect =
 				value: BuffValue;
 			};
 			/**
+			 * Seconds from an `onCast` trigger to the window's start, its
+			 * `duration` counted from there (Mirrors round, 2026-10-30). The window
+			 * opens only if its holder is on field at that instant: Alhaitham's
+			 * C2 and C4 grant on Mirrors the burst refills 184f later, in a task
+			 * that "returns if he is no longer on field". Lint B.14b.
+			 */
+			opensAfter?: number;
+			/**
 			 * ⚓ HOW LONG THE RECEIVER MUST HAVE BEEN ON FIELD before this buff
 			 * lands (Nicole, 2026-08-18) — "after the observed character has
 			 * remained on the field for 3s, their Grace of Kenosis is upgraded".
@@ -2984,6 +2992,15 @@ export type ElementalApplication = {
 	 * such a proc (lint B.13b).
 	 */
 	atStacks?: number;
+	/**
+	 * ⚓ THIS LANDING EXISTS ONLY WHEN THE CASTER HELD THIS MANY AT THE PRESS
+	 * (Mirrors round, 2026-10-30) — a cast's own entry, read against the cast's
+	 * snapshot (post-gain, pre-consume). Alhaitham's burst deals 4 + 2 × Mirrors
+	 * consumed instances (gcsim `burst.go`), so its fifth to tenth entries say how
+	 * many Mirrors each pair needs. Only on a skill or burst's `application[]`
+	 * (lint D.56). The frames audit's empty-core replay drops every gated entry.
+	 */
+	minStacksAtCast?: { key: string; min: number };
 	/**
 	 * ⚓ THIS HIT BELONGS TO A HELD CAST'S PHASES (`HeldCast`, Sayu, 2026-10-17).
 	 * `'during'` — a hit of the held phase itself, authored to the LONGEST hold:

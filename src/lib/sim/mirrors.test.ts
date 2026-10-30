@@ -138,3 +138,75 @@ describe("Alhaitham's Mirrors", () => {
 		expect(crit(parse('Alhaitham Q ~2s E', 6))).toHaveLength(1);
 	});
 });
+
+describe('what the Mirrors scale', () => {
+	/** Alhaitham's buff windows carrying `stat`, as [start, value]. */
+	const bars = (r: ParsedRotation, stat: string) =>
+		r.windows.flatMap((w) =>
+			w.kind === 'buff' && w.characterId === 'alhaitham'
+				? w.effects.flatMap((fx) =>
+						fx.type === 'buff' && fx.stat === stat ? [[w.start, fx.value] as const] : []
+					)
+				: []
+		);
+	const burstApps = (r: ParsedRotation) =>
+		r.applications
+			.filter((a) => a.characterId === 'alhaitham' && a.castKind === 'burst')
+			.map((a) => a.time);
+
+	it('add two burst instances per Mirror consumed, 21f apart', () => {
+		// 4 instances from 94: the standard window applies the 1st and 4th.
+		expect(burstApps(parse('Alhaitham Q'))).toEqual([94, 157]);
+		// 2 consumed → 8: the 7th (220) applies too. Q at 28.
+		expect(burstApps(parse('Alhaitham E Q'))).toEqual([122, 185, 248]);
+		// 3 consumed → 10: the 10th window opens at 244, so 262 applies. Q at 137.
+		expect(burstApps(parse('Alhaitham hE lP Q'))).toEqual([231, 294, 357, 399]);
+	});
+
+	it('C1: each Projection Attack fire takes 1.2s off the skill', () => {
+		// Four fires (38, 173, 271, 394) before the second E.
+		const eAt = (cons: number) =>
+			parse('Alhaitham E N5 N5 N5 E', cons).events.filter(
+				(e) => e.kind === 'cast' && e.ability === 'skill'
+			)[1].time;
+		expect(eAt(0)).toBe(1095);
+		expect(eAt(1)).toBe(1095 - 4 * 72);
+	});
+
+	it('C2: each trigger grants the Mirrors it generates, when they land', () => {
+		// A fresh E generates 2 (+100) at 15.
+		expect(bars(parse('Alhaitham E', 2), 'em')).toEqual([[15, 100]]);
+		// Q refills 3 at 184 (+150); the E at 207 overflows one (+50 at 222); the
+		// Charged Attack's A1 adds one more at its first landing (270), not its second.
+		expect(bars(parse('Alhaitham Q ~2s E C', 2), 'em')).toEqual([
+			[184, 150],
+			[222, 50],
+			[270, 50]
+		]);
+		// A refill due after a swap generates nothing, and grants nothing.
+		expect(bars(parse('Alhaitham Q > Nahida E', 2), 'em')).toEqual([]);
+	});
+
+	it('C4: the party EM counts the Mirrors consumed, his Dendro bonus the ones refilled', () => {
+		// E → 2; Q at 28 consumes both (30 × 2 for the party) and refills 1 at 212.
+		const r = parse('Alhaitham E Q', 4);
+		const em = r.windows.find(
+			(w) =>
+				w.kind === 'buff' &&
+				w.effects.some((fx) => fx.type === 'buff' && fx.stat === 'em' && fx.target !== 'self')
+		)!;
+		expect(em.start).toBe(28);
+		expect(em.kind === 'buff' && em.stackContext?.get('mirrors')).toBe(2);
+		expect(bars(r, 'dendroDmgBonus')).toEqual([[212, 10]]);
+		// At C6 the refill is 3 whatever was consumed.
+		expect(bars(parse('Alhaitham E Q', 6), 'dendroDmgBonus')).toEqual([[212, 30]]);
+		// No Mirrors consumed: no party EM (gcsim's c4Loss returns at 0).
+		expect(
+			parse('Alhaitham Q', 4).windows.some(
+				(w) =>
+					w.kind === 'buff' &&
+					w.effects.some((fx) => fx.type === 'buff' && fx.stat === 'em' && fx.target !== 'self')
+			)
+		).toBe(false);
+	});
+});

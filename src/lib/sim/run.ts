@@ -1121,9 +1121,19 @@ export function runRotation(
 				// ⚠️ A held cast's list is resolved to ITS hold here — the roll's hits
 				// past the release dropped, the kick moved — and every reader below
 				// takes this one list.
-				const castApps = held
-					? heldApplications(variant?.application ?? active.application, held, heldFor)
-					: (variant?.application ?? active.application);
+				// ⚓ And to the cast's own snapshot (Mirrors round, 2026-10-30): an entry
+				// gated `minStacksAtCast` lands only when the caster held that many at the
+				// press — Alhaitham's burst deals 2 more instances per Mirror it consumes.
+				// Post-gain, pre-consume: the snapshot the cast event carries.
+				const castApps = (
+					held
+						? heldApplications(variant?.application ?? active.application, held, heldFor)
+						: (variant?.application ?? active.application)
+				)?.filter(
+					(a) =>
+						a.minStacksAtCast === undefined ||
+						(stacks?.get(a.minStacksAtCast.key) ?? 0) >= a.minStacksAtCast.min
+				);
 				{
 					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
 					if (first !== undefined && first !== char.element) castEvent.element = first;

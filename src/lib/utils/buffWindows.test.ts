@@ -1529,3 +1529,32 @@ describe('consumeStacks.closesStateWhenEmpty', () => {
 		expect(r.team[0].bars[0].end).toBe(framesOf(20));
 	});
 });
+
+describe('an onHit buff on a swing keeps its own procCooldown', () => {
+	// Arlecchino C2: +20% All Elemental and Physical RES for 15s off a Charged
+	// Attack, once every 10s (gcsim cons.go c2IcdKey). The block surface drew one
+	// bar per landing until the Mirrors round; her second C lands 311f after the
+	// first, well inside the ICD.
+	const modules = import.meta.glob<{ default: CharacterData }>('$lib/data/characters/*.json', {
+		eager: true
+	});
+	const arle = Object.values(modules).find((m) => m.default.id === 'arlecchino')!.default;
+	it('a second Charged Attack inside 10s draws no second bar', () => {
+		const r = parseNotation(
+			'Arlecchino E N3 C Q N3 E N2 C',
+			(n) => (n === arle.name ? arle : null),
+			8,
+			{
+				arlecchino: 2
+			}
+		);
+		const fromSwings = r.windows.filter(
+			(w) =>
+				w.kind === 'buff' &&
+				w.source?.type === 'character' &&
+				w.source.trigger === 'block' &&
+				w.effects.some((fx) => fx.type === 'buff' && fx.stat === 'allElementalRes')
+		);
+		expect(fromSwings).toHaveLength(1);
+	});
+});

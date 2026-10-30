@@ -378,13 +378,78 @@
 				"C4 (Elucidation) grants stacking team EM and self Dendro DMG bonus per mirror consumed/generated (15s, fixed duration, refresh on next burst). Existing skeletons in C4 use single-stack values (30 EM team, 10% Dendro self) — they assume max-mirror baseline; reviewer to encode the per-mirror-count gating.",
 				"energyCost = 70 (data_gen.textproto burst_energy_cost: 70).",
 				"ConsumeEnergy(6) on cast — gcsim convention; not relevant to JSON encoding.",
-				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the consume and the refill are authored. gcsim burst.go: mirrorLoss(lastInfusionSrc, consumed)() spends every Mirror at the cast (consumeStacks all, after the cast's snapshot); QueueCharTask at 184f, returning if he is no longer active, gains 3 − consumed — three `grantDelay: 3.067` grants gated on the count at the cast (0/1/2 → 3/2/1), each raised to 3 at C6 by constellationScaling; C6 carries the fourth (3 consumed → 3). ⏭ The burst's own hit count (4 + 2 × Mirrors) is still the 0-Mirror list."
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the consume and the refill are authored. gcsim burst.go: mirrorLoss(lastInfusionSrc, consumed)() spends every Mirror at the cast (consumeStacks all, after the cast's snapshot); QueueCharTask at 184f, returning if he is no longer active, gains 3 − consumed — three `grantDelay: 3.067` grants gated on the count at the cast (0/1/2 → 3/2/1), each raised to 3 at C6 by constellationScaling; C6 carries the fourth (3 consumed → 3). ⏭ The burst's own hit count (4 + 2 × Mirrors) is still the 0-Mirror list.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the hit count is authored. gcsim burst.go queues 4 + 2 × mirrorCount instances at burstHitmark + i × 21 (94 … 283), so entries five to ten carry `minStacksAtCast` (1, 1, 2, 2, 3, 3), read against the cast's pre-consume snapshot. Units where the standard 2.5s/3-hit window applies (220, the seventh hit; 262, the first after the reset at 244), absent where it refuses, the convention the first four already follow. The frames audit's empty-core replay drops the gated six. Supersedes the ⏭ above."
 			],
 			"application": [
-				{ "frame": 94, "element": "dendro", "units": 1 },
-				{ "frame": 115, "element": "dendro" },
-				{ "frame": 136, "element": "dendro" },
-				{ "frame": 157, "element": "dendro", "units": 1 }
+				{
+					"frame": 94,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 115,
+					"element": "dendro"
+				},
+				{
+					"frame": 136,
+					"element": "dendro"
+				},
+				{
+					"frame": 157,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 178,
+					"element": "dendro",
+					"minStacksAtCast": {
+						"key": "mirrors",
+						"min": 1
+					}
+				},
+				{
+					"frame": 199,
+					"element": "dendro",
+					"minStacksAtCast": {
+						"key": "mirrors",
+						"min": 1
+					}
+				},
+				{
+					"frame": 220,
+					"element": "dendro",
+					"units": 1,
+					"minStacksAtCast": {
+						"key": "mirrors",
+						"min": 2
+					}
+				},
+				{
+					"frame": 241,
+					"element": "dendro",
+					"minStacksAtCast": {
+						"key": "mirrors",
+						"min": 2
+					}
+				},
+				{
+					"frame": 262,
+					"element": "dendro",
+					"units": 1,
+					"minStacksAtCast": {
+						"key": "mirrors",
+						"min": 3
+					}
+				},
+				{
+					"frame": 283,
+					"element": "dendro",
+					"minStacksAtCast": {
+						"key": "mirrors",
+						"min": 3
+					}
+				}
 			]
 		}
 	],
@@ -453,7 +518,25 @@
 			"constellationLevel": 1,
 			"description": "When a Projection Attack hits an opponent, Universality: An Elaboration on Form's CD is decreased by 1.2s. This effect can be triggered once every 1s.",
 			"_curatorNotes": [
-				"Skill cooldown reduction tied to Projection Attack hits — gcsim cons.go c1: ReduceActionCooldown(ActionSkill, 72f) per trigger, 1s ICD (c1IcdKey = 60f). Not authored as a cooldownModifier (modifier shape is static; this is a runtime cdReduce on hit). Effect not yet authored — reviewer pass."
+				"Skill cooldown reduction tied to Projection Attack hits — gcsim cons.go c1: ReduceActionCooldown(ActionSkill, 72f) per trigger, 1s ICD (c1IcdKey = 60f). Not authored as a cooldownModifier (modifier shape is static; this is a runtime cdReduce on hit). Effect not yet authored — reviewer pass.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): authored. gcsim cons.go c1: ReduceActionCooldown(ActionSkill, 72) on a Projection Attack hit, behind a 60f ICD (procCooldown 1). Matched by the proc's attribution, since the E's own rush is a skill hit too. A proc's landing now reaches the onHit reducer, once per fire at its first landing, which the 1s ICD makes exact (a fire is at most 3 hits within 51f)."
+			],
+			"effects": [
+				{
+					"type": "cooldownReduce",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Chisel-Light Mirror: Projection Attack"
+						}
+					},
+					"amount": 1.2,
+					"reduces": "skill",
+					"procCooldown": 1
+				}
 			]
 		},
 		{
@@ -465,10 +548,32 @@
 				{
 					"type": "buff",
 					"target": "self",
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					},
 					"trigger": {
 						"type": "onCast",
-						"ability": "skill"
+						"ability": "skill",
+						"input": ["E", "tE"]
 					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 0,
+						"max": 0
+					},
+					"opensAfter": 0.25
+				},
+				{
+					"type": "buff",
+					"target": "self",
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -478,7 +583,69 @@
 					"stacks": {
 						"maxStacks": 4,
 						"durationModel": "separate"
-					}
+					},
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E", "tE"]
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 1
+					},
+					"opensAfter": 0.25
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					},
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 0,
+						"max": 0
+					},
+					"opensAfter": 0.383
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 50,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					},
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 1
+					},
+					"opensAfter": 0.383
 				},
 				{
 					"type": "buff",
@@ -502,12 +669,121 @@
 						"maxStacks": 4,
 						"durationModel": "separate"
 					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 150,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					},
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 0,
+								"max": 0
+							},
+							{
+								"type": "constellation",
+								"level": 6
+							}
+						]
+					},
+					"opensAfter": 3.067
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					},
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 1,
+								"max": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 6
+								}
+							}
+						]
+					},
+					"opensAfter": 3.067
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 50,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					},
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 2,
+								"max": 2
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 6
+								}
+							}
+						]
+					},
+					"opensAfter": 3.067
 				}
 			],
 			"description": "When Alhaitham generates a Chisel-Light Mirror, his Elemental Mastery will be increased by 50 for 8 seconds, max 4 stacks. Each stack's duration is counted independently. This effect can be triggered even when the maximum number of Chisel-Light Mirrors has been reached.",
 			"_curatorNotes": [
 				"Inherited trigger: `manual` — likely a custom 'on mirror generated' hook with no current schema equivalent. The current Trigger union has no 'on mirror generated' variant; reviewer to extend or use `onCast` { ability: 'skill' } as proxy (imprecise: misses A1 mirror gen, burst regeneration, and the C2 'overflow still triggers' clause). Stack model added with maxStacks=4, durationModel=separate to match the description.",
-				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C2: Debate — effects[0] (buff, stat `em`, value 50) RE-TRIGGERED. gcsim: `cons.go:34-47` — `c2(generated)` adds one 480f (8s) EM+50 StatMod per Mirror generated, called from `skill.go:147` inside `mirrorGain()`, which is itself reached from three places: the skill cast (`skill.go:65` tap, `skill.go:95` hold — a task at 15f/23f), the A1 callback (`asc.go:29`, 720f ICD on a Charged or Plunging hit), and the burst's regeneration task (`burst.go:62`, at 184f). the third source — the Burst regenerates `3 − consumed` Mirrors at frame 184 (3 at C6) and each one grants a stack — deliberately NOT authored, because at C2–C5 the count depends on the Mirrors the Burst consumed, which the parser does not track; and that `BuffEffect.stacks` has no consumer today and is carried as description only. ⚠️ The skill-cast effect fires at the cast while gcsim's Mirror lands 15f (tap) / 23f (hold) later — a quarter-second early. The two effects share `stat: \"em\"` but sit in different pools (a cast pool vs the hit pass), so the cast pool's stat dedupe cannot collide them. The A1 effect's `procCooldown: 12` is the Mirror-generation ICD, not an effect ICD, and it is correct only because A1 generates exactly one Mirror per fire. A buff on `onHit` must NOT carry `armedFor` (lint B.13b)."
+				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C2: Debate — effects[0] (buff, stat `em`, value 50) RE-TRIGGERED. gcsim: `cons.go:34-47` — `c2(generated)` adds one 480f (8s) EM+50 StatMod per Mirror generated, called from `skill.go:147` inside `mirrorGain()`, which is itself reached from three places: the skill cast (`skill.go:65` tap, `skill.go:95` hold — a task at 15f/23f), the A1 callback (`asc.go:29`, 720f ICD on a Charged or Plunging hit), and the burst's regeneration task (`burst.go:62`, at 184f). the third source — the Burst regenerates `3 − consumed` Mirrors at frame 184 (3 at C6) and each one grants a stack — deliberately NOT authored, because at C2–C5 the count depends on the Mirrors the Burst consumed, which the parser does not track; and that `BuffEffect.stacks` has no consumer today and is carried as description only. ⚠️ The skill-cast effect fires at the cast while gcsim's Mirror lands 15f (tap) / 23f (hold) later — a quarter-second early. The two effects share `stat: \"em\"` but sit in different pools (a cast pool vs the hit pass), so the cast pool's stat dedupe cannot collide them. The A1 effect's `procCooldown: 12` is the Mirror-generation ICD, not an effect ICD, and it is correct only because A1 generates exactly one Mirror per fire. A buff on `onHit` must NOT carry `armedFor` (lint B.13b).",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the Mirrors are simulated, so each trigger draws the Mirrors it generates, opening when they land (`opensAfter`). The E: 2 from an empty pool (+100) or 1 (+50), 15f after a tap and 23f after a hold, read against the cast's pre-grant snapshot. A1: 1, at the hit. The burst's refill: 3 − consumed at 184f, only if he is on field (gcsim's task returns otherwise), 3 at C6 — tiers on the burst cast's pre-consume count. Overflowing Mirrors still count, as the kit says, because the E's tiers read the count before the grant. ⚠️ Each trigger is its own bar: in game at most four stacks run, so overlapping bars can sum past +200."
 			],
 			"caveat": "One Elemental Mastery stack is shown per trigger; in game each Chisel-Light Mirror generated grants its own, and up to four run at once."
 		},
@@ -535,8 +811,81 @@
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "em",
+					"value": {
+						"type": "perStack",
+						"key": "mirrors",
+						"per": 30,
+						"maxStacks": 3
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 1
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "dendroDmgBonus",
 					"value": 30,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 0,
+								"max": 0
+							},
+							{
+								"type": "constellation",
+								"level": 6
+							}
+						]
+					},
+					"opensAfter": 3.067
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "dendroDmgBonus",
+					"value": 20,
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 1,
+								"max": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 6
+								}
+							}
+						]
+					},
+					"opensAfter": 3.067
 				},
 				{
 					"type": "buff",
@@ -550,14 +899,34 @@
 					"source": "character",
 					"stat": "dendroDmgBonus",
 					"value": 10,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 2,
+								"max": 2
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 6
+								}
+							}
+						]
+					},
+					"opensAfter": 3.067
 				}
 			],
 			"description": "When Particular Field: Fetters of Phenomena is unleashed, the following effects will become active based on the number of Chisel-Light Mirrors consumed and created this time around:\n·Each Mirror consumed will increase the Elemental Mastery of all other nearby party members by 30 for 15s.\n·Each Mirror generated will grant Alhaitham a 10% Dendro DMG Bonus for 15s.\n\nThe pre-existing duration of the aforementioned effects will be cleared if you use Particular Field: Fetters of Phenomena again while they are in effect.",
 			"_curatorNotes": [
 				"Inherited trigger: `manual` — likely `onCast` with `ability: 'burst'`. Both effects are stacking-by-mirror: team EM = 30 * mirrorsConsumed; self Dendro DMG = 10% * mirrorsGenerated. Existing skeletons treat as single-stack (30 EM, 10% Dendro). Schema can't gate by mirror count; reviewer to extend with a `stacks` field keyed off mirror state (consumed vs generated are distinct counts). Generator changed target from 'team' to 'teamExcludingSelf' — verified against gcsim (cons.go c4Loss skips i == c.Index()). durationType set to 'refresh' per description ('pre-existing duration ... will be cleared').",
 				"Mirror-gen effect target should clarify 'nearby party members' — assuming team-radius gating handled by runtime, not schema.",
-				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C4: Elucidation — effects[0] (buff, stat `em`, value 30, target `teamExcludingSelf`) RE-TRIGGERED. gcsim: `cons.go:58-77` — `c4Loss(consumed)` runs at the burst cast (`burst.go:55`), returns early when `consumed <= 0`, and adds `EM = 30 × consumed` for 900f to every party member except Alhaitham (`cons.go:64-66` skips `i == c.Index()`). that the value is `30 × Mirrors consumed` and that the bar is authored at one Mirror; and that `teamExcludingSelf` is verified against gcsim's index skip, not inferred from \"all other nearby party members\". ⚠️ Fires on every burst, where gcsim returns early at `consumed == 0` — an over-claim on a burst cast with no Mirrors up, which is unreachable by the parser (no Mirror state). Different `stat` from effects[1], so no dedupe collision inside the burst's cast pool.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C4: Elucidation — effects[1] (buff, stat `dendroDmgBonus`, value 10, target `self`) RE-TRIGGERED. gcsim: `cons.go:79-92` — `c4Gain(generated)` adds `DendroP = 0.1 × generated` for 900f to Alhaitham, called from the burst's queued task at frame 184 (`burst.go:60-67`), which also early-returns if he is no longer the active character. that the value is `10 × Mirrors generated` (`3 − consumed`, forced to 3 at C6), that it actually lands 184f ≈ 3.07s after the cast, and that gcsim drops it entirely if Alhaitham has swapped out by then. ⚠️ The bar starts at the cast and the game's starts ~3.07s later, so the window is 3s early at both ends. Fires on every burst where in game `generated` can be 0 (bursting at 3 Mirrors below C6)."
+				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C4: Elucidation — effects[0] (buff, stat `em`, value 30, target `teamExcludingSelf`) RE-TRIGGERED. gcsim: `cons.go:58-77` — `c4Loss(consumed)` runs at the burst cast (`burst.go:55`), returns early when `consumed <= 0`, and adds `EM = 30 × consumed` for 900f to every party member except Alhaitham (`cons.go:64-66` skips `i == c.Index()`). that the value is `30 × Mirrors consumed` and that the bar is authored at one Mirror; and that `teamExcludingSelf` is verified against gcsim's index skip, not inferred from \"all other nearby party members\". ⚠️ Fires on every burst, where gcsim returns early at `consumed == 0` — an over-claim on a burst cast with no Mirrors up, which is unreachable by the parser (no Mirror state). Different `stat` from effects[1], so no dedupe collision inside the burst's cast pool.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C4: Elucidation — effects[1] (buff, stat `dendroDmgBonus`, value 10, target `self`) RE-TRIGGERED. gcsim: `cons.go:79-92` — `c4Gain(generated)` adds `DendroP = 0.1 × generated` for 900f to Alhaitham, called from the burst's queued task at frame 184 (`burst.go:60-67`), which also early-returns if he is no longer the active character. that the value is `10 × Mirrors generated` (`3 − consumed`, forced to 3 at C6), that it actually lands 184f ≈ 3.07s after the cast, and that gcsim drops it entirely if Alhaitham has swapped out by then. ⚠️ The bar starts at the cast and the game's starts ~3.07s later, so the window is 3s early at both ends. Fires on every burst where in game `generated` can be 0 (bursting at 3 Mirrors below C6).",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): both halves read the simulated count. The party's EM is perStack 30 × Mirrors on the burst cast's pre-consume snapshot, gated min 1 (gcsim c4Loss returns at 0). His Dendro DMG Bonus is 10% × the refill's Mirrors (3 − consumed, 3 at C6) in three tiers, opening 184f after the cast and only if he is on field (`opensAfter`; c4Gain sits in the same task). The ⚠️ notes above about a one-Mirror bar and a window 3s early are superseded."
 			],
 			"caveat": "Both bars show one Mirror's worth — the Elemental Mastery scales with the Mirrors the Burst consumed and the Dendro DMG Bonus with the Mirrors it created, up to three each."
 		},
