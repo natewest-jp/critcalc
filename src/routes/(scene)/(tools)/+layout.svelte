@@ -3,7 +3,6 @@
 	import { onMount, untrack } from 'svelte';
 	import { get } from 'svelte/store';
 	import { resolve } from '$app/paths';
-	import { dev } from '$app/environment';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
@@ -35,7 +34,7 @@
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { boards } from '$lib/boards.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
-	import ReportLink from '$lib/components/ReportLink.svelte';
+	import RenderCrash from '$lib/components/RenderCrash.svelte';
 	import { feedbackToolForPath } from '$lib/feedback';
 	import { savedNotations, siteSettings } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
@@ -1087,30 +1086,14 @@
 					{@render children()}
 
 					{#snippet failed(error, reset)}
-						<div class="tool-crash">
-							<h2>This tool ran into a problem.</h2>
-							<p>
-								The rest of the site is fine — you can switch tools above, or try again. Your saved
-								rotations and lineups are untouched.
-							</p>
-							<div class="tool-crash__actions">
-								<button class="btn btn--primary" onclick={reset}>Try again</button>
-								<!-- The feedback form, with the error and — where the tool can
-								     still make one — the document's share link. -->
-								<ReportLink
-									class="btn"
-									prefill={{
-										category: 'broken',
-										tool: feedbackToolForPath(page.url.pathname),
-										error
-									}}
-									shareUrl={crashShareUrl}>Report this</ReportLink
-								>
-							</div>
-							{#if dev}
-								<pre>{error instanceof Error ? (error.stack ?? error.message) : String(error)}</pre>
-							{/if}
-						</div>
+						<RenderCrash
+							title="This tool ran into a problem."
+							body="The rest of the site is fine, and your saved rotations and lineups are untouched."
+							tool={feedbackToolForPath(page.url.pathname)}
+							{error}
+							{reset}
+							shareUrl={crashShareUrl}
+						/>
 					{/snippet}
 				</svelte:boundary>
 			</div>
@@ -1452,60 +1435,6 @@
 	.tool-page {
 		grid-area: 1 / 1;
 		min-width: 0;
-	}
-
-	/* The render-boundary fallback. Claims .ctx-dark's job by hand rather than
-	   the class, because it is a bare notice on the dimmed world, not a tool
-	   surface — no frame, no glass, nothing to mistake for apparatus. Centred in
-	   the tool area so it reads as "this pane failed" rather than "the site
-	   failed", which is the whole point of scoping the boundary here. */
-	.tool-crash {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.75rem;
-		min-height: 50svh;
-		padding: clamp(1.5rem, 5vw, 3rem);
-		text-align: center;
-	}
-
-	.tool-crash h2 {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-
-	.tool-crash p {
-		margin: 0;
-		max-width: 32rem;
-		font-size: var(--fs-md);
-		line-height: var(--lh-relaxed);
-		color: var(--muted);
-	}
-
-	.tool-crash__actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		justify-content: center;
-		margin-top: 0.5rem;
-	}
-
-	.tool-crash pre {
-		max-width: 100%;
-		margin: 1rem 0 0;
-		padding: 0.75rem 1rem;
-		overflow-x: auto;
-		font-family: var(--font-mono);
-		font-size: var(--fs-xs);
-		text-align: left;
-		color: var(--muted);
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm);
 	}
 
 	/* The bench band's mount: absolutely positioned in .tool-main coordinates

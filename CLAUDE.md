@@ -29,7 +29,7 @@ Since 2026-10-27 the site runs the profiles layout: each profile holds its own d
 - No speculative abstractions. Flag a data gap as `// TODO: data gap — [field]`.
 - SSR and hydration: paint a deterministic default first, then restore client state in `onMount`.
 - Page meta comes from one map, `src/lib/seo.ts`, rendered once by `SeoHead.svelte` in the root layout. Never give a page its own `<svelte:head>` title: `<svelte:head>` does not dedupe, so the page would ship two of every tag. A new route needs an entry in `seo.ts` and in `static/sitemap.xml`. `src/lib/conventions.test.ts` checks all three.
-- Errors have two surfaces that catch different things: `src/routes/+error.svelte` handles routing and load failures (chiefly 404, rendered outside the scene), and the `<svelte:boundary>` in `(tools)/+layout.svelte` catches a throw during render. ⚠️ That boundary is the only one, so the full-screen sections under `(pages)` have none yet.
+- Errors have two surfaces that catch different things: `src/routes/+error.svelte` handles routing and load failures (chiefly 404, rendered outside the scene), and a `<svelte:boundary>` catches a throw during render. There are two boundaries, around the tool page (`(tools)/+layout.svelte`) and around the menu state's sections (`MenuState.svelte`), and both show `RenderCrash.svelte`. ⚠️ A throw anywhere else (the landing, the top bar, a dialog) still blanks the whole document.
 - `/assets/*` is immutable and add-only. A redrawn asset ships under a new name (`-v2`), never as an overwrite.
 - Mechanics are verified against the local gcsim checkout at `~/Code/gcsim` (tick cadences, scalings, targeting, in `internal/characters/{id}/`). Fetch it first.
 - Terminology follows KQM (Keqing Mains) throughout.
