@@ -54,3 +54,18 @@ Nothing visible changed, so it ran while Nate worked on other things.
 ### Housekeeping (`chore/triage-housekeeping`)
 
 See §5.
+
+## 5. Housekeeping (`chore/triage-housekeeping`)
+
+Done by an agent in a worktree, checked by Claude, Chrome e2e green (71).
+
+- **Symbol marks are geometry, not type** (`27b1e2ac`): a source check in `conventions.test.ts` for the old probe's banned code points (the set `e2e/marks.spec.ts` still uses), with an allowlist that fails once a fixed span is gone. Seven live spans are allowlisted with a TODO, each needing Nate's eye: `MoveDialog.svelte` (`C{from} → C{to}`), the Roster's arrow-key legend, `CompareControl.svelte`'s tooltip, two `→` in `buffDisplay.ts`, and two in `DefResInstrument.svelte`.
+- **Retired** (`47ee1157`): `DerivedCapability.summon` (no reader anywhere, never in the index) and the unused `monotone` role-icon variant. The `monotone/` assets stay, as `/assets` is add-only.
+- **One bucket numbering** (`62573e2d`): `elevation.md` now uses `lunar-reactions.md`'s (Base DMG Bonus 3, Elevation 4, Reaction Bonus 5), which `stellar-reactions.md` and about ten curator notes already cite, with gcsim's `CalcSpecialReactionDmg` quoted for the order. Its render rows now say what renders (`caecb302`).
+- **New library docs** (`4f14dd38`): `docs/library/game/resonance.md` and `weapon-infusion.md`. Figures gcsim lacks are marked NEEDS-CONFIRM (the −40% aura-duration cuts, Anemo's movement speed, Protective Canopy).
+
+Found and left alone:
+
+- **Anemo Resonance's −5%:** gcsim applies it to every cooldown, the planner to Skills only. A game question for Nate.
+- gcsim infuses four kits the corpus doesn't: Aloy's Rushing Ice, Keqing A1, Ayaka's dash, and Lynette C6.
+- `POSITION_LABEL` in `roleIcons.ts` is an unused export (the Builder keeps its own copy).
