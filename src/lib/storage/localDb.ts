@@ -29,6 +29,9 @@ type Tables = Rows & { meta: Meta };
 type Row<S extends StoreName> = Stores[S];
 
 export type LocalKind = 'local' | 'memory';
+/** Why a store is in memory, for the notice the session raises: site data
+ *  is blocked, or there is a store this tab could not open. */
+export type MemoryCause = 'blocked' | 'unopened';
 
 const empty = (): Tables => ({ profiles: {}, documents: {}, teams: {}, meta: {} });
 
@@ -44,14 +47,22 @@ export function memoryStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeIt
 
 export class LocalDb {
 	readonly kind: LocalKind;
+	readonly cause?: MemoryCause;
 	#storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 	constructor(
 		storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = memoryStorage(),
-		kind: LocalKind = 'memory'
+		kind: LocalKind = 'memory',
+		cause?: MemoryCause
 	) {
 		this.#storage = storage;
 		this.kind = kind;
+		this.cause = cause;
+	}
+
+	/** A store in memory, for this tab only. */
+	static inMemory(cause: MemoryCause): LocalDb {
+		return new LocalDb(memoryStorage(), 'memory', cause);
 	}
 
 	/** Whether this storage has ever held a stand-in store. */

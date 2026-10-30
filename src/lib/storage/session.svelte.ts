@@ -70,6 +70,7 @@ import {
 	type Meta
 } from './db';
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
+import { LocalDb } from './localDb';
 import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
 import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
 import { linkTab, settleDocuments } from './arrivals';
@@ -158,6 +159,9 @@ const RETRY_MS = [1000, 30_000] as const;
 /** The save-failure banner's key (notices §3.3). */
 const SAVE_FAILED_KEY = 'save-failed';
 const SAVE_FAILED_NOTICE = 'Couldn’t save your changes.';
+/** A store in memory (`boot.ts`): the work lasts as long as the tab.
+ *  Approved by Nate 2026-10-30. */
+const MEMORY_STORE_KEY = 'memory-store';
 
 export type DocTool = 'planner' | 'builder';
 
@@ -228,6 +232,7 @@ class StorageSession {
 		const profile = await this.#activeProfile(db, meta);
 		if (!profile) return false;
 		this.#db = db;
+		this.#memoryNotice(db);
 		this.#attach();
 		this.#useProfile(profile);
 		await this.#loadProfiles();
@@ -461,6 +466,32 @@ class StorageSession {
 			void this.flush();
 			void this.#flushRoster();
 		}, wait);
+	}
+
+	/** Say so when this tab's work cannot outlive it. The two causes need
+	 *  different advice: blocked site data is the person's setting, while a
+	 *  store that would not open may open on a reload. */
+	#memoryNotice(db: Db): void {
+		if (!(db instanceof LocalDb) || db.kind !== 'memory') return;
+		notices.banner(
+			db.cause === 'blocked'
+				? {
+						key: MEMORY_STORE_KEY,
+						kind: 'warning',
+						lead: 'This tab can’t save.',
+						body: 'Your browser isn’t letting critcalc store anything, so your work here lasts until you close the tab.',
+						actions: [{ label: 'Download a backup', run: () => void this.#downloadBackup() }],
+						dismissable: true
+					}
+				: {
+						key: MEMORY_STORE_KEY,
+						kind: 'warning',
+						lead: 'Your saved work couldn’t be opened in this tab.',
+						body: 'Reload to try again. Changes made here last until you close the tab.',
+						actions: [{ label: 'Reload', run: () => location.reload() }],
+						dismissable: true
+					}
+		);
 	}
 
 	#saveLanded(): void {
