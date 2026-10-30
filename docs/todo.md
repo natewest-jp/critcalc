@@ -16,6 +16,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ⏭ Next (after the streamlining)
 
+- **Alhaitham's Mirrors, simulated (⚓ Nate 2026-10-30: before Kokomi).** Mirrors aren't modelled, so his attacks draw physical and his Dendro never reaches the aura lane in any rotation he's in. Most of gcsim's economy fits the stack system (grants with a cap, a swap clearing them, a Q consuming them, hit-triggered procs); missing are the one-at-a-time loss on a restarting clock, a Dendro infusion gated on holding a Mirror, and C6's delayed refill. The economy and the plan: `docs/rounds/memory-triage-round.md` §6. Retires his `{mirrors:3}` assertion.
 - **Kokomi A1 Tamakushi Casket: Q refreshes her Bake-Kurage (⚓ Nate 2026-10-28: "a little more", so Next; player report, 2026-10-27).** gcsim `asc.go` `a1`: at Q + 46f, if `kokomiskill` is live, it is SET to 12s + 1f remaining; the tick task keeps its phase (it re-checks the status each tick). `durationExtensions` only ADDS a delta, so this needs a new refresh-to-remaining primitive: schema + lint, the summon window end, the live tick chain's liveness (`sim/aura.ts`), and the marker walk (`collectSummonTicks`), which must agree. Same reporter's C4 ATK SPD stays unmodelled (no attack speed anywhere).
 - **Help additions** (three pieces, after the streamlining, which may change what Help needs to show):
   - **The Atlas's roles, explained (from the memory triage).** No user-facing text says the roles come from Imaginarium Theater and are a presence classification, not a ranking (only code comments: `capabilities/roles.ts`, `builder/lib/atlas.ts`). Copy is Nate's; propose it first.
@@ -54,6 +55,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 - Transitions: Back→Forward revive at full opacity · same-path nav blink · resize mid-transition stale pose · a same-tab external link would descend (latent). Bug 2 detail: `docs/rounds/transition-hardening-queue.md`.
 - **Housekeeping:** rewrite `docs/rounds/tool-constitutions.md` (partly false) · the string inventory, after step 5 retires the old layout: `extract-strings.mjs` now finds 388 unassigned strings in the new layout's files, so surfaces need assigning before `--write` · the nine unmerged local branches in the gcsim clone (delete once Nate confirms none holds his work).
 - Bigger: i18n zh-Hans + ja (run alone, token-heavy) · the static pages' own visual style (Nate debating).
+- **Re-examine the typed-count shortcuts (⚓ Nate 2026-10-30).** A few characters' stacks are only reachable by typing `{key:N}` into the notation, which no player has been taught: Escoffier `coldDish`, Kinich `huntersExperience`, Heizou `declension` (and Alhaitham's `mirrors`, which the Mirrors round retires). Each was judged unmodellable against an older stack system; check each against today's, model what now fits, and decide what to teach for the rest.
 - **BETA tag: comes off when Nate says so** (ruling 2026-09-22; ⛔ don't propose an end condition).
 
 ## ⏸ On hold
