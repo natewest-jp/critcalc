@@ -66,6 +66,7 @@ import {
 	replaceAll,
 	setMeta,
 	tombstone,
+	type Db,
 	type Meta
 } from './db';
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
@@ -187,7 +188,7 @@ class StorageSession {
 	savedAt = $state<number | null>(null);
 	saving = $state(false);
 
-	#db: IDBDatabase | null = null;
+	#db: Db | null = null;
 	#channel: ReturnType<typeof openStorageChannel> | null = null;
 	#locks = new Map<string, DocumentLock>();
 	/** Last-written `{ name, body }` per document, so an unchanged one is not rewritten. */
@@ -205,9 +206,10 @@ class StorageSession {
 	/** This page's own name, for its unload journal. */
 	#page = newId();
 
-	/** Open the store and load the active profile's current documents. Falls
-	 *  back to localStorage (today's behaviour) if the store is unavailable —
-	 *  or if loading throws, so the tools never wait on a session that died. */
+	/** Open the store and load the active profile's current documents. The
+	 *  store is always there (`boot.ts`: IndexedDB, else a stand-in); if
+	 *  loading throws, the tools restore their own state, so they never wait
+	 *  on a session that died. */
 	async start(): Promise<void> {
 		try {
 			if (await this.#start()) return;
@@ -254,7 +256,7 @@ class StorageSession {
 
 	/** The profile the site opens in: the stored choice while it is live, else
 	 *  Theorycraft (a profile deleted in another tab can leave the pointer). */
-	async #activeProfile(db: IDBDatabase, meta: Meta): Promise<ProfileRecord | undefined> {
+	async #activeProfile(db: Db, meta: Meta): Promise<ProfileRecord | undefined> {
 		// ⚓ A link's Theorycraft lasts for the tab it arrived in (a reload
 		// there stays); the next new tab opens back in the profile it left.
 		if (meta.returnToProfileId && !linkTab.has()) {
@@ -280,7 +282,7 @@ class StorageSession {
 	 * nag the visitor who only follows links. Shown once, then quiet for
 	 * another window whether it was acted on or not.
 	 */
-	async #remindBackup(db: IDBDatabase, meta: Meta): Promise<void> {
+	async #remindBackup(db: Db, meta: Meta): Promise<void> {
 		if (!backupReminderDue(meta.migratedAt)) return;
 		if (!(await this.changedSince(readLastBackup() ?? 0))) return;
 		notices.toast(
@@ -315,7 +317,7 @@ class StorageSession {
 	}
 
 	/** Once, after the migration moved the player's data (§13.1). */
-	async #offerBackup(db: IDBDatabase): Promise<void> {
+	async #offerBackup(db: Db): Promise<void> {
 		const download = () => this.#downloadBackup();
 		// Once ever, with a button that matters: it stays until dismissed, and
 		// is marked seen only once it has gone (notices §3.2).
@@ -729,7 +731,7 @@ class StorageSession {
 	/** Merge fields into a stored document, keeping the session's copy in step
 	 *  (an autosave spreads it, so a stale copy would undo the change). */
 	async #patch(
-		db: IDBDatabase,
+		db: Db,
 		id: string,
 		fields: Partial<Pick<DocumentRecord, 'name' | 'openedAt' | 'pinned'>>
 	): Promise<DocumentRecord | null> {
@@ -747,7 +749,7 @@ class StorageSession {
 		return next;
 	}
 
-	async #setCurrent(db: IDBDatabase, tool: DocTool, id: string | null): Promise<void> {
+	async #setCurrent(db: Db, tool: DocTool, id: string | null): Promise<void> {
 		this.#db ??= db;
 		const pid = this.profile?.id ?? THEORYCRAFT_ID;
 		await this.#putProfile(pid, (p) => ({ ...p, current: { ...p.current, [tool]: id } }));
@@ -1052,7 +1054,7 @@ class StorageSession {
 	}
 
 	/** Write one document if it changed and this tab holds it. */
-	async #save(db: IDBDatabase, entry: Entry, now: number): Promise<boolean> {
+	async #save(db: Db, entry: Entry, now: number): Promise<boolean> {
 		const { id, type, body } = entry;
 		let { name } = entry;
 		if (this.#tombstoned.has(id) || this.#written.get(id) === JSON.stringify({ name, body })) {
@@ -1490,7 +1492,7 @@ class StorageSession {
 	 * nothing changes silently: ⇅ shows both. The stored levels are left where
 	 * they are (copy-only; under the switch an owned character reads the roster).
 	 */
-	async #makeGuests(db: IDBDatabase): Promise<void> {
+	async #makeGuests(db: Db): Promise<void> {
 		// ⚓ Once, however many tabs open at the same moment after the migration
 		// (two made two copies of one rotation): one runs, the rest find it done.
 		await exclusively('guests', async () => {
@@ -1499,7 +1501,7 @@ class StorageSession {
 		});
 	}
 
-	async #makeGuestsNow(db: IDBDatabase): Promise<void> {
+	async #makeGuestsNow(db: Db): Promise<void> {
 		const now = Date.now();
 		for (const p of await getAll(db, 'profiles')) {
 			if (p.kind !== 'real') continue;
@@ -1620,7 +1622,7 @@ class StorageSession {
 	 * brings it back round. Under a lock, as the guests are (two tabs opening
 	 * together must not both move it).
 	 */
-	async #retireRosterLoadouts(db: IDBDatabase): Promise<void> {
+	async #retireRosterLoadouts(db: Db): Promise<void> {
 		const holding = (await getAll(db, 'profiles')).some(
 			(p) => !p.deleted && p.kind === 'real' && Object.keys(p.roster.loadout ?? {}).length
 		);
@@ -1764,7 +1766,7 @@ class StorageSession {
 		});
 	}
 
-	async #putTeam(db: IDBDatabase, team: TeamRecord): Promise<void> {
+	async #putTeam(db: Db, team: TeamRecord): Promise<void> {
 		await put(db, 'teams', $state.snapshot(team) as TeamRecord);
 		this.#channel?.post({ kind: 'saved', store: 'teams', id: team.id, profileId: team.profileId });
 		this.#teamsChanged();
@@ -1994,7 +1996,7 @@ class StorageSession {
 
 	/** Clear what has been in the Trash for its days. On every start, and
 	 *  whenever the Trash is read. */
-	async #clearExpired(db: IDBDatabase): Promise<void> {
+	async #clearExpired(db: Db): Promise<void> {
 		const now = Date.now();
 		const all = await readAll(db);
 		for (const store of ['profiles', 'documents', 'teams'] as const) {
@@ -2059,7 +2061,7 @@ class StorageSession {
 	 * deleting the live one lets it back.
 	 */
 	async #revive(
-		db: IDBDatabase,
+		db: Db,
 		store: 'documents' | 'teams',
 		id: string,
 		now: number
@@ -2089,7 +2091,7 @@ class StorageSession {
 
 	/** A profile out of the Trash, with what it took with it, in its own
 	 *  colour: colours are not exclusive. */
-	async #untrashProfile(db: IDBDatabase, id: string, now: number, say: boolean): Promise<boolean> {
+	async #untrashProfile(db: Db, id: string, now: number, say: boolean): Promise<boolean> {
 		const p = await get(db, 'profiles', id);
 		if (!p || !inTrash(p, now)) return false;
 		const all = await readAll(db);

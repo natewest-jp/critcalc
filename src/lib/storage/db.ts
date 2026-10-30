@@ -10,8 +10,13 @@
  * covers it the same way.
  *
  * The factory is injectable so vitest can hand in `fake-indexeddb`.
+ *
+ * Every call also takes the stand-in (`localDb.ts`), for a browser where
+ * IndexedDB is missing or will not open: the callers hold a `Db` and never
+ * ask which.
  */
 
+import { LocalDb } from './localDb';
 import type { MigrationResult } from './migrate';
 import type { DocumentRecord, ProfileRecord, SyncFields, TeamRecord } from './records';
 
@@ -19,12 +24,15 @@ export const DB_NAME = 'critcalc';
 /** ⚠ Bump only with an `onupgradeneeded` step for the old version. */
 export const DB_VERSION = 1;
 
-type Stores = {
+export type Stores = {
 	profiles: ProfileRecord;
 	documents: DocumentRecord;
 	teams: TeamRecord;
 };
 export type StoreName = keyof Stores;
+
+/** An open store: the database, or the stand-in where there is none. */
+export type Db = IDBDatabase | LocalDb;
 
 /** Facts about the store itself, not about anyone's work. */
 export type Meta = {
@@ -89,10 +97,11 @@ export function openDb(factory: IDBFactory = indexedDB): Promise<IDBDatabase> {
 
 /** Every live record in a store, or a profile's. Tombstones are left out. */
 export async function getAll<S extends StoreName>(
-	db: IDBDatabase,
+	db: Db,
 	store: S,
 	profileId?: string
 ): Promise<Stores[S][]> {
+	if (db instanceof LocalDb) return db.getAll(store, profileId);
 	const os = db.transaction(store).objectStore(store);
 	const rows = (await request(
 		profileId === undefined ? os.getAll() : os.index('profileId').getAll(profileId)
@@ -102,18 +111,16 @@ export async function getAll<S extends StoreName>(
 
 /** One record, tombstoned or not — a caller asking by id wants to know. */
 export async function get<S extends StoreName>(
-	db: IDBDatabase,
+	db: Db,
 	store: S,
 	id: string
 ): Promise<Stores[S] | undefined> {
+	if (db instanceof LocalDb) return db.get(store, id);
 	return (await request(db.transaction(store).objectStore(store).get(id))) as Stores[S] | undefined;
 }
 
-export async function put<S extends StoreName>(
-	db: IDBDatabase,
-	store: S,
-	record: Stores[S]
-): Promise<void> {
+export async function put<S extends StoreName>(db: Db, store: S, record: Stores[S]): Promise<void> {
+	if (db instanceof LocalDb) return db.putMany(store, [record]);
 	const tx = db.transaction(store, 'readwrite');
 	tx.objectStore(store).put(record);
 	await done(tx);
@@ -127,11 +134,12 @@ export async function put<S extends StoreName>(
  * `null` to write nothing. Resolves what was written, else `null`.
  */
 export async function modify<S extends StoreName>(
-	db: IDBDatabase,
+	db: Db,
 	store: S,
 	id: string,
 	change: (stored: Stores[S] | undefined) => Stores[S] | null
 ): Promise<Stores[S] | null> {
+	if (db instanceof LocalDb) return db.modify(store, id, change);
 	const tx = db.transaction(store, 'readwrite');
 	const os = tx.objectStore(store);
 	const next = change((await request(os.get(id))) as Stores[S] | undefined);
@@ -142,22 +150,22 @@ export async function modify<S extends StoreName>(
 
 /** Several records in ONE transaction: all of them land, or none. */
 export async function putMany<S extends StoreName>(
-	db: IDBDatabase,
+	db: Db,
 	store: S,
 	records: Stores[S][]
 ): Promise<void> {
+	if (db instanceof LocalDb) return db.putMany(store, records);
 	const tx = db.transaction(store, 'readwrite');
 	for (const r of records) tx.objectStore(store).put(r);
 	await done(tx);
 }
 
 /** ⚓ A deletion is a TOMBSTONE, never a removal (records.ts). */
-export async function tombstone(
-	db: IDBDatabase,
-	store: StoreName,
-	id: string,
-	now: number
-): Promise<void> {
+export async function tombstone(db: Db, store: StoreName, id: string, now: number): Promise<void> {
+	if (db instanceof LocalDb) {
+		db.modify(store, id, (rec) => (rec ? { ...rec, deleted: true, updatedAt: now } : null));
+		return;
+	}
 	const tx = db.transaction(store, 'readwrite');
 	const os = tx.objectStore(store);
 	const rec = (await request(os.get(id))) as SyncFields | undefined;
@@ -165,11 +173,13 @@ export async function tombstone(
 	await done(tx);
 }
 
-export async function getMeta(db: IDBDatabase): Promise<Meta> {
+export async function getMeta(db: Db): Promise<Meta> {
+	if (db instanceof LocalDb) return db.getMeta();
 	return ((await request(db.transaction(META).objectStore(META).get(META_KEY))) as Meta) ?? {};
 }
 
-export async function setMeta(db: IDBDatabase, patch: Meta): Promise<void> {
+export async function setMeta(db: Db, patch: Meta): Promise<void> {
+	if (db instanceof LocalDb) return db.setMeta(patch);
 	const tx = db.transaction(META, 'readwrite');
 	const os = tx.objectStore(META);
 	const cur = ((await request(os.get(META_KEY))) as Meta | undefined) ?? {};
@@ -184,39 +194,42 @@ export async function setMeta(db: IDBDatabase, patch: Meta): Promise<void> {
  * opening at once both try, and the second must not duplicate the first.
  */
 export async function writeMigration(
-	db: IDBDatabase,
+	db: Db,
 	result: MigrationResult,
 	now: number,
 	{ flipNotice = false }: { flipNotice?: boolean } = {}
 ): Promise<boolean> {
+	const next = (cur: Meta): Meta | null => {
+		if (cur.migratedAt !== undefined) return null;
+		const backupOffer = result.profiles.some((p) => p.kind === 'real');
+		return {
+			...cur,
+			migratedAt: now,
+			activeProfileId: result.activeProfileId,
+			...(backupOffer && { backupOffer }),
+			...(flipNotice && { flipNotice })
+		};
+	};
+	if (db instanceof LocalDb) return db.writeMigration(result, next);
 	const tx = db.transaction(['profiles', 'documents', 'teams', META], 'readwrite');
 	const meta = tx.objectStore(META);
-	const cur = ((await request(meta.get(META_KEY))) as Meta | undefined) ?? {};
-	if (cur.migratedAt !== undefined) {
+	const written = next(((await request(meta.get(META_KEY))) as Meta | undefined) ?? {});
+	if (!written) {
 		await done(tx);
 		return false;
 	}
 	for (const p of result.profiles) tx.objectStore('profiles').put(p);
 	for (const d of result.documents) tx.objectStore('documents').put(d);
 	for (const t of result.teams) tx.objectStore('teams').put(t);
-	const backupOffer = result.profiles.some((p) => p.kind === 'real');
-	meta.put(
-		{
-			...cur,
-			migratedAt: now,
-			activeProfileId: result.activeProfileId,
-			...(backupOffer && { backupOffer }),
-			...(flipNotice && { flipNotice })
-		},
-		META_KEY
-	);
+	meta.put(written, META_KEY);
 	await done(tx);
 	return true;
 }
 
 /** Empty every store, so the migration can be run again from the untouched
  *  `localStorage` (§13.1: a bad migration must be re-runnable). */
-export async function clearAll(db: IDBDatabase): Promise<void> {
+export async function clearAll(db: Db): Promise<void> {
+	if (db instanceof LocalDb) return db.clearAll();
 	const tx = db.transaction(['profiles', 'documents', 'teams', META], 'readwrite');
 	for (const s of ['profiles', 'documents', 'teams', META]) tx.objectStore(s).clear();
 	await done(tx);
@@ -229,24 +242,29 @@ export async function clearAll(db: IDBDatabase): Promise<void> {
  * what-if pass to run again (a v1/v2 file came through the migration).
  */
 export async function replaceAll(
-	db: IDBDatabase,
+	db: Db,
 	result: MigrationResult,
 	now: number,
 	guestsDue: boolean
 ): Promise<void> {
+	const meta: Meta = { migratedAt: now, activeProfileId: result.activeProfileId };
+	if (!guestsDue) meta.guestsMadeAt = now;
+	if (db instanceof LocalDb) return db.replaceAll(result, meta);
 	const tx = db.transaction(['profiles', 'documents', 'teams', META], 'readwrite');
 	for (const s of ['profiles', 'documents', 'teams', META]) tx.objectStore(s).clear();
 	for (const p of result.profiles) tx.objectStore('profiles').put(p);
 	for (const d of result.documents) tx.objectStore('documents').put(d);
 	for (const t of result.teams) tx.objectStore('teams').put(t);
-	const meta: Meta = { migratedAt: now, activeProfileId: result.activeProfileId };
-	if (!guestsDue) meta.guestsMadeAt = now;
 	tx.objectStore(META).put(meta, META_KEY);
 	await done(tx);
 }
 
 /** Every record of every store, tombstones included (a backup leaves them out). */
-export async function readAll(db: IDBDatabase): Promise<MigrationResult> {
+export async function readAll(db: Db): Promise<MigrationResult> {
+	if (db instanceof LocalDb) {
+		const { meta, ...rest } = db.readAll();
+		return { ...rest, activeProfileId: meta.activeProfileId ?? 'theorycraft' };
+	}
 	const all = async <S extends StoreName>(s: S) =>
 		(await request(db.transaction(s).objectStore(s).getAll())) as Stores[S][];
 	const meta = await getMeta(db);

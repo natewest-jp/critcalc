@@ -5,8 +5,7 @@
  *
  * - The default is the absence of the key, so a visitor carries nothing.
  *   Only a stored `'0'` turns it off. Nothing in the UI writes one: it is
- *   kept for the e2e suite (`e2e/fixtures/critcalc.ts` seeds it) and for
- *   `?next=0` in dev.
+ *   kept for `?next=0` in dev.
  * - `?next` / `?next=0` are read in DEV ONLY. A link must not be able to
  *   hand the public the old layout.
  *
@@ -16,15 +15,14 @@
  * be circular), so the two tests must change together.
  *
  * On, the site migrates its storage into IndexedDB (copy-only) and renders
- * the new layout; without usable IndexedDB the switch reads as off.
+ * the new layout. A browser without IndexedDB gets it too, on a stand-in
+ * store (`storage/boot.ts`), and so does one whose site data is blocked: a
+ * key that cannot be read leaves the switch at its default, on.
  */
 
 import { writable } from 'svelte/store';
 import { browser, dev } from '$app/environment';
 import { safeRemoveItem, safeSetItem } from '$lib/stores';
-import { storageUsable } from '$lib/storageUsable';
-
-export { storageFailed } from '$lib/storageUsable';
 
 const KEY = 'critcalc:nextLayout';
 
@@ -33,16 +31,16 @@ function read(): boolean {
 	try {
 		return localStorage.getItem(KEY) !== '0';
 	} catch {
-		return false;
+		return true;
 	}
 }
 
 function createSwitch() {
-	const store = writable(read() && storageUsable());
+	const store = writable(read());
 	const set = (on: boolean) => {
 		if (on) safeRemoveItem(KEY);
 		else safeSetItem(KEY, '0');
-		store.set(on && storageUsable());
+		store.set(on);
 	};
 	const fromUrl = (url: URL) => {
 		if (!dev) return;

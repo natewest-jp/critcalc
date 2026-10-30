@@ -7,19 +7,23 @@ import {
 	getMeta,
 	openDb,
 	put,
+	readAll,
 	setMeta,
 	tombstone,
-	writeMigration
+	writeMigration,
+	type Db
 } from './db';
+import { LocalDb, memoryStorage } from './localDb';
 import { migrate } from './migrate';
 import { THEORYCRAFT_ID, type TeamRecord } from './records';
 
 const NOW = 1_800_000_000_000;
-let db: IDBDatabase;
-
-beforeEach(async () => {
-	db = await openDb(new IDBFactory());
-});
+// ⚓ Both homes answer every call alike: the stand-in (`localDb.ts`) runs the
+// same suite as IndexedDB.
+const homes: [string, () => Promise<Db>][] = [
+	['IndexedDB', () => openDb(new IDBFactory())],
+	['the localStorage stand-in', async () => new LocalDb(memoryStorage(), 'local')]
+];
 
 function sample() {
 	let n = 0;
@@ -35,7 +39,13 @@ function sample() {
 	);
 }
 
-describe('storage', () => {
+describe.each(homes)('storage in %s', (_, open) => {
+	let db: Db;
+
+	beforeEach(async () => {
+		db = await open();
+	});
+
 	it('writes a migration once, atomically, and records where to open', async () => {
 		const result = sample();
 		expect(await writeMigration(db, result, NOW)).toBe(true);
@@ -57,7 +67,7 @@ describe('storage', () => {
 		expect((await getMeta(db)).flipNotice).toBe(true);
 		await setMeta(db, { flipNotice: false });
 		expect((await getMeta(db)).flipNotice).toBe(false);
-		const other = await openDb(new IDBFactory());
+		const other = await open();
 		await writeMigration(other, sample(), NOW);
 		expect(await getMeta(other)).not.toHaveProperty('flipNotice');
 	});
@@ -104,5 +114,40 @@ describe('storage', () => {
 		await clearAll(db);
 		expect(await getMeta(db)).toEqual({});
 		expect(await writeMigration(db, sample(), NOW + 1)).toBe(true);
+	});
+});
+
+describe('the localStorage stand-in', () => {
+	it('reads another tab’s write on the next call: nothing is cached', async () => {
+		const shared = memoryStorage();
+		const a = new LocalDb(shared, 'local');
+		const b = new LocalDb(shared, 'local');
+		await writeMigration(a, sample(), NOW);
+		const [team] = await getAll(a, 'teams');
+		await tombstone(b, 'teams', team.id, NOW + 1);
+		expect(await getAll(a, 'teams')).toHaveLength(0);
+		// And the second tab's migration still writes nothing.
+		expect(await writeMigration(b, sample(), NOW + 2)).toBe(false);
+	});
+
+	it('a write past the quota throws and leaves the store as it was', async () => {
+		const storage = memoryStorage();
+		const db = new LocalDb(storage, 'local');
+		await writeMigration(db, sample(), NOW);
+		const before = await readAll(db);
+		storage.setItem = () => {
+			throw new DOMException('full', 'QuotaExceededError');
+		};
+		const [team] = await getAll(db, 'teams');
+		await expect(put(db, 'teams', { ...team, name: 'Renamed' })).rejects.toThrow('full');
+		expect(await readAll(db)).toEqual(before);
+	});
+
+	it('a record comes back as a copy, as from a database', async () => {
+		const db = new LocalDb();
+		await writeMigration(db, sample(), NOW);
+		const [team] = await getAll(db, 'teams');
+		team.name = 'changed in hand';
+		expect((await get(db, 'teams', team.id))?.name).not.toBe('changed in hand');
 	});
 });
