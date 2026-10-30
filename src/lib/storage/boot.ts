@@ -89,12 +89,15 @@ function hasIndexedDb(): boolean {
 
 async function open(): Promise<Db | null> {
 	const local = localStorageOrNull();
+	// Blocked site data is a setting the person can change; anything else is
+	// a store this tab could not open, which a reload may fix.
+	const cause = local ? 'unopened' : 'blocked';
 	if (hasIndexedDb()) {
 		try {
 			return await ready(await openWithRetry(), local);
 		} catch (err) {
 			console.warn('[critcalc] IndexedDB would not open; this tab keeps its work in memory', err);
-			return ready(new LocalDb(), null).catch(() => null);
+			return ready(LocalDb.inMemory(cause), null).catch(() => null);
 		}
 	}
 	if (local) {
@@ -107,7 +110,7 @@ async function open(): Promise<Db | null> {
 			);
 		}
 	}
-	return ready(new LocalDb(), local).catch(() => null);
+	return ready(LocalDb.inMemory(cause), local).catch(() => null);
 }
 
 /** Migrate a store opened for the first time, from `legacy`'s old keys

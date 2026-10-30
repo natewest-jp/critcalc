@@ -31,3 +31,18 @@ Step 5(b) of the redesign (`docs/todo.md` Now 1): a browser without IndexedDB ge
 ## Next
 
 Step 5(c), retiring the switch's off state, no longer has a storage reason to wait. Only `?next=0` in dev still reaches it (the e2e suite no longer seeds it; `nextLayout.ts`'s comment now says so).
+
+## The memory-store notices (branch `feat/memory-store-notice`)
+
+Flip-readiness §1.10's honest banner, worded by Claude and approved by Nate 2026-10-30. A store in memory now says so, and the advice depends on the cause, which `boot.ts` records on the store (`LocalDb.cause`):
+
+- **Site data blocked** (localStorage unreadable, whichever path got there): "This tab can't save. Your browser isn't letting critcalc store anything, so your work here lasts until you close the tab." Action: Download a backup.
+- **A store this tab could not open**: "Your saved work couldn't be opened in this tab. Reload to try again. Changes made here last until you close the tab." Action: Reload.
+
+Both are dismissable warnings. ⚠️ Chrome with blocked site data has `indexedDB` but refuses it, so the cause is read from localStorage, not from the path taken.
+
+Found on the way: a backup could not be made at all with blocked site data. `buildEnvelope` read the settings keys unguarded and threw, so the save-failed banner's Download a backup had been failing there too. It now skips the keys and keeps the store's records. Covered in `boot.test.ts` (fails without the fix).
+
+Verified in the production build in headless Chrome: each cause shows its banner, the localStorage stand-in shows none, Download a backup produces a file under blocked storage, and Reload reloads.
+
+Not added: a notice for the localStorage stand-in itself (no IndexedDB, about 5 MB). The space only matters when a save fails, and that banner already appears then.

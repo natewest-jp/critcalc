@@ -481,7 +481,12 @@ export function buildEnvelope(exportedAt = Date.now()): BackupEnvelope {
 	const data: BackupData = {};
 	if (browser) {
 		for (const key of BACKUP_KEYS) {
-			const raw = localStorage.getItem(key);
+			let raw: string | null;
+			try {
+				raw = localStorage.getItem(key);
+			} catch {
+				break; // blocked site data: the store's records still make a backup
+			}
 			if (raw == null) continue;
 			try {
 				data[key] = JSON.parse(raw);

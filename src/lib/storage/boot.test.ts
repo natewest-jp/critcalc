@@ -87,6 +87,7 @@ describe('where the store lives (boot.ts)', () => {
 		const { LocalDb } = await import('./localDb');
 		return {
 			kind: db instanceof LocalDb ? db.kind : 'indexeddb',
+			cause: db instanceof LocalDb ? db.cause : undefined,
 			profiles: () => getAll(db, 'profiles'),
 			meta: () => getMeta(db)
 		};
@@ -130,6 +131,7 @@ describe('where the store lives (boot.ts)', () => {
 		});
 		const page = await openPage();
 		expect(page.kind).toBe('memory');
+		expect(page.cause).toBe('unopened'); // the notice offers a reload
 		// The database may hold newer work than the old keys: Theorycraft alone.
 		expect((await page.profiles()).map((p) => p.kind)).toEqual(['theorycraft']);
 		expect(ls.getItem(LOCAL_DB_KEY)).toBeNull();
@@ -146,7 +148,28 @@ describe('where the store lives (boot.ts)', () => {
 		});
 		const page = await openPage();
 		expect(page.kind).toBe('memory');
+		expect(page.cause).toBe('blocked'); // the notice names the browser's setting
 		expect(await page.profiles()).toHaveLength(1);
+		// Its action is Download a backup, which reads the settings keys too.
+		const { buildEnvelope } = await import('$lib/utils/settingsBackup');
+		expect(buildEnvelope(0).data).toEqual({});
+		Reflect.deleteProperty(globalThis, 'localStorage');
+	});
+
+	it('IndexedDB refusing and localStorage blocked (blocked site data in Chrome) reads as blocked', async () => {
+		vi.stubGlobal('indexedDB', {
+			open: () => {
+				throw new DOMException('denied', 'SecurityError');
+			}
+		});
+		Object.defineProperty(globalThis, 'localStorage', {
+			configurable: true,
+			get() {
+				throw new DOMException('blocked', 'SecurityError');
+			}
+		});
+		const page = await openPage();
+		expect(page.cause).toBe('blocked');
 		Reflect.deleteProperty(globalThis, 'localStorage');
 	});
 });
