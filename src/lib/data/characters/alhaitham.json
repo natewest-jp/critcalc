@@ -75,7 +75,8 @@
 				"plungeFrames sourced from gcsim's lowPlungeFramesAL — alhaitham's only standard-rotation plunge variant, accessible only after a Hold E in gcsim (post-hold-skill predicate). Airborne (Xianyun) low/high plunge variants exist (lowPlungeFramesXY, highPlungeFramesXY) but require external launch; not represented per recipe.",
 				"Mirror-gated infusion: while Alhaitham possesses ≥1 Chisel-Light Mirror, Normal/Charged/Plunge attacks are converted to Dendro DMG. Schema's `infusion` field on a normal ability is unconditional; the closest existing condition (`state: inStance`) doesn't fit because there is no stance — N/C/P frames are unchanged. Reviewer to wire conditional infusion when the schema supports a mirror-count or holds-mirror condition.",
 				"Projection Attack proc: while ≥1 mirror is active, each N/C/P hit triggers an AoE Dendro Projection Attack scaling on talent and EM. Per-hit count = current mirror count (1/2/3); 1.6s ICD between procs (gcsim projectionICDKey = 96f). Snapshot timings per mirror count: [20, 22, 26]f. Multi-hit hitmark slices in gcsim — mirror1HitmarkLeft/Right, mirror2HitmarksLeft/Right, mirror3Hitmarks. Effect not authored — needs reviewer pass once schema supports mirror-state-conditional damage effects.",
-				"A1 (Four-Causal Correction) extra mirror-gen on C/P hit, 12s ICD — flagged on the passive."
+				"A1 (Four-Causal Correction) extra mirror-gen on C/P hit, 12s ICD — flagged on the passive.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the Mirror-gated infusion is authored — `infusion: dendro` held by `infusionWhileStacks: mirrors`, asked per swing at its start against the simulated pool. gcsim alhaitham.go Snapshot converts AttackTagNormal/Extra/Plunge to Dendro while mirrorCount > 0 (\"weapon infusion can't be overriden\"); a stance infusion already wins over a granted one. ⚠️ gcsim decides at the hit's snapshot, we at the swing's start: a Mirror leaving mid-swing differs by that swing. The Projection Attack note above is superseded by the skill's damage effect."
 			],
 			"lowPlungeFrames": {
 				"anim": 70,
@@ -85,7 +86,9 @@
 				"Q": 50,
 				"D": 40,
 				"swap": 58
-			}
+			},
+			"infusion": "dendro",
+			"infusionWhileStacks": "mirrors"
 		},
 		{
 			"id": "alhaitham__skill__universality_an_elaboration_on_form",
@@ -96,7 +99,146 @@
 			"cooldown": 18,
 			"cooldownStartDelay": 15,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E", "tE"]
+					},
+					"key": "mirrors",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 0.25
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E", "tE"]
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 0,
+						"max": 0
+					},
+					"key": "mirrors",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 0.25
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"key": "mirrors",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 0.383
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 0,
+						"max": 0
+					},
+					"key": "mirrors",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 0.383
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge"],
+						"armedWhileStacks": "mirrors",
+						"icdGate": {
+							"timer": 720,
+							"every": 2,
+							"cap": 12
+						}
+					},
+					"procCooldown": 1.6,
+					"scaling": 121,
+					"stat": "atk",
+					"flatScaling": {
+						"stat": "em",
+						"ratio": 241.9
+					},
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 39,
+							"element": "dendro",
+							"units": 1,
+							"atStacks": 1
+						},
+						{
+							"frame": 28,
+							"element": "dendro",
+							"units": 1,
+							"atStacks": 2
+						},
+						{
+							"frame": 37,
+							"element": "dendro",
+							"units": 1,
+							"atStacks": 2
+						},
+						{
+							"frame": 32,
+							"element": "dendro",
+							"units": 1,
+							"atStacks": 3
+						},
+						{
+							"frame": 41,
+							"element": "dendro",
+							"units": 1,
+							"atStacks": 3
+						},
+						{
+							"frame": 51,
+							"element": "dendro",
+							"units": 1,
+							"atStacks": 3
+						}
+					],
+					"attribution": "Chisel-Light Mirror: Projection Attack",
+					"_curatorNotes": [
+						"Authored Mirrors round, 2026-10-30. gcsim skill.go projectionAttack, the callback on every Normal, Charged and Plunging hit: refused on its 96f ICD (procCooldown 1.6), off field, or at mirrorCount 0 (armedWhileStacks, asked of the hit's post-A1 snapshot); otherwise one attack per Mirror, Durability 25, ICDTagElementalArt on ICDGroupAlhaithamProjectionAttack (720f, 1/0 alternating, 24 entries → timer 720, every 2, cap 12). Talent row at level 10: 121.0% ATK + 241.9% EM per instance.",
+						"Landings per count (atStacks), frames from the triggering hit: 1 Mirror [39], 2 [28, 37], 3 [32, 41, 51]. ⚠️ gcsim rolls left or right for one and two Mirrors (mirror1HitmarkRight [40], mirror2HitmarksRight [26, 35]) at 50%; the left lists are authored, never a coin flip.",
+						"⏭ C1 (a Projection hit takes 1.2s off the skill) is not wired: a proc's landing feeds notifyDamage, not dispatchHit, where cooldownReduce listens. Particles are not modelled corpus-wide."
+					]
+				}
+			],
 			"variants": [
 				{
 					"label": "Hold",
@@ -128,7 +270,8 @@
 				"Tap E mirror-gain delay = 15f from cast (matches cooldownStartDelay). Hold E mirror-gain delay = 23f. Hitmarks: tap = 19, hold = 28.",
 				"Particle generation: Dendro particle on first Projection Attack hit per cast (1.5s ICD on particleICDKey). Not authored as an explicit effect — particle generation is not currently modeled in character JSONs.",
 				"C1 (Intuition) reduces this skill's CD by 1.2s per Projection Attack hit, 1s ICD. Flagged on C1.",
-				"Per-character pattern note: alhaitham was flagged 'most complex Tier B case' in recipe-tier-b.md. Tap/Hold E authored as variants per the note's guidance; mirror-count gating intentionally not authored as conditions/effects — schema cannot represent stack-keyed buffs and per-mirror lifetimes. All mirror-dependent mechanics flagged here and on consuming abilities."
+				"Per-character pattern note: alhaitham was flagged 'most complex Tier B case' in recipe-tier-b.md. Tap/Hold E authored as variants per the note's guidance; mirror-count gating intentionally not authored as conditions/effects — schema cannot represent stack-keyed buffs and per-mirror lifetimes. All mirror-dependent mechanics flagged here and on consuming abilities.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the Mirror economy is simulated, and the \"schema cannot encode\" notes above are superseded. Key `mirrors`, segment-scoped (the swap clears it, gcsim's alhaitham-exit), max 3, `lifetime: 3.883` (gcsim mirrorInterval 233f) with `lifetimeChain`: one leaves every 233f on a clock that starts from empty and restarts on an overflow (lastInfusionSrc). The tap grant lands 15f after the press and the hold's 23f (`grantDelay`, gcsim Tasks.Add(skillMirrorGain, 15 / 23)); \"2 from none\" is a second +1 gated on an empty pool at the cast. ⚠️ Kit text gives the Removal Interval as 4.0s; gcsim's 233f is authored and the gap is flagged to Nate."
 			],
 			"application": [{ "frame": 19, "element": "dendro", "units": 1 }]
 		},
@@ -141,7 +284,92 @@
 			"cooldown": 18,
 			"tags": [],
 			"energyCost": 70,
-			"effects": [],
+			"effects": [
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"key": "mirrors",
+					"amount": "all"
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 0,
+						"max": 0
+					},
+					"key": "mirrors",
+					"amount": 3,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 3.067
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 1,
+						"max": 1
+					},
+					"key": "mirrors",
+					"amount": 2,
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
+						"amount": 3
+					},
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 3.067
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 2,
+						"max": 2
+					},
+					"key": "mirrors",
+					"amount": 1,
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
+						"amount": 3
+					},
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 3.067
+				}
+			],
 			"description": "Creates a Particular Binding Field and deals multiple instances of AoE Dendro DMG.\nIf Chisel-Light Mirrors exist when this ability is unleashed, all such Mirrors will be consumed and increase the number of DMG instances dealt.\n2s after this ability is unleashed, if 0/1/2/3 Mirrors were consumed, Alhaitham will generate 3/2/1/0 new Mirrors in turn.",
 			"behavior": "instant",
 			"_curatorNotes": [
@@ -149,7 +377,8 @@
 				"Burst consumes all current mirrors immediately on cast, then queues a regeneration of (3 - consumed) new mirrors at frame 184 (so 0/1/2/3 consumed → 3/2/1/0 new). C6 forces 3 fresh mirrors regardless of consumed.",
 				"C4 (Elucidation) grants stacking team EM and self Dendro DMG bonus per mirror consumed/generated (15s, fixed duration, refresh on next burst). Existing skeletons in C4 use single-stack values (30 EM team, 10% Dendro self) — they assume max-mirror baseline; reviewer to encode the per-mirror-count gating.",
 				"energyCost = 70 (data_gen.textproto burst_energy_cost: 70).",
-				"ConsumeEnergy(6) on cast — gcsim convention; not relevant to JSON encoding."
+				"ConsumeEnergy(6) on cast — gcsim convention; not relevant to JSON encoding.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): the consume and the refill are authored. gcsim burst.go: mirrorLoss(lastInfusionSrc, consumed)() spends every Mirror at the cast (consumeStacks all, after the cast's snapshot); QueueCharTask at 184f, returning if he is no longer active, gains 3 − consumed — three `grantDelay: 3.067` grants gated on the count at the cast (0/1/2 → 3/2/1), each raised to 3 at C6 by constellationScaling; C6 carries the fourth (3 consumed → 3). ⏭ The burst's own hit count (4 + 2 × Mirrors) is still the 0-Mirror list."
 			],
 			"application": [
 				{ "frame": 94, "element": "dendro", "units": 1 },
@@ -166,7 +395,24 @@
 			"abilityType": "passive",
 			"description": "When Alhaitham's Charged or Plunging Attacks hit opponents, they will generate 1 Chisel-Light Mirror. This effect can be triggered once every 12s.",
 			"_curatorNotes": [
-				"Mirror-gen passive — affects the skill's mirror economy, not a buff per se. Trigger: onHit with abilityType in (charged, plunge) and Target = enemy. ICD: 12s (a1IcdKey = 720 frames). Effect not authored — mirror state isn't a buff in the current schema."
+				"Mirror-gen passive — affects the skill's mirror economy, not a buff per se. Trigger: onHit with abilityType in (charged, plunge) and Target = enemy. ICD: 12s (a1IcdKey = 720 frames). Effect not authored — mirror state isn't a buff in the current schema.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): authored as an onHit gainStacks on `mirrors` with procCooldown 12 (gcsim asc.go makeA1CB, a1IcdKey 720f). It lands before the hit's snapshot, so the Projection Attack that hit fires counts it, as gcsim's comment says."
+			],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["charged", "plunge"]
+					},
+					"procCooldown": 12,
+					"key": "mirrors",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true
+				}
 			]
 		},
 		{
@@ -351,35 +597,6 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onHit",
-						"abilityType": ["charged", "plunge"]
-					},
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "ascension",
-								"min": 1
-							},
-							{
-								"type": "stacks",
-								"key": "mirrors",
-								"min": 3
-							}
-						]
-					},
-					"procCooldown": 12,
-					"duration": 6,
-					"durationType": "refresh",
-					"source": "character",
-					"stat": "critRate",
-					"value": 10,
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
 						"type": "onCast",
 						"ability": "skill"
 					},
@@ -396,33 +613,23 @@
 					"snapshottable": false
 				},
 				{
-					"type": "buff",
+					"type": "gainStacks",
 					"target": "self",
 					"trigger": {
-						"type": "onHit",
-						"abilityType": ["charged", "plunge"]
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "ascension",
-								"min": 1
-							},
-							{
-								"type": "stacks",
-								"key": "mirrors",
-								"min": 3
-							}
-						]
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 3
 					},
-					"procCooldown": 12,
-					"duration": 6,
-					"durationType": "refresh",
-					"source": "character",
-					"stat": "critDmg",
-					"value": 70,
-					"snapshottable": false
+					"key": "mirrors",
+					"amount": 3,
+					"max": 3,
+					"lifetime": 3.883,
+					"lifetimeChain": true,
+					"grantDelay": 3.067
 				}
 			],
 			"description": "Alhaitham gains the following effects:\n· 2 seconds after Particular Field: Fetters of Phenomena is unleashed, he will generate 3 Chisel-Light Mirrors regardless of the number of mirrors consumed.\n· If Alhaitham generates Chisel-Light Mirrors when their numbers have already maxed out, his CRIT Rate and CRIT DMG will increase by 10% and 70% respectively for 6s. If this effect is triggered again during its initial duration, the duration remaining will be increased by 6s.",
@@ -431,7 +638,8 @@
 				"Inherited trigger: `manual` — likely 'on mirror overflow' (gcsim: triggered when mirrorGain pushes mirrorCount > 3, applies per overflow stack). No schema equivalent; reviewer to extend. Approximation via `onCast` { ability: 'skill' } would miss the overflow gating entirely (only fires when at-cap and gaining more) — reviewer to handle.",
 				"Description says 'duration remaining will be increased by 6s' on re-trigger; gcsim implements via ExtendStatus(c6key, 360). durationType set to 'refresh' as the closest approximation; the actual semantic is additive-extend, which the schema doesn't model.",
 				"C6 also forces the post-burst regeneration to spawn 3 fresh mirrors regardless of consumed count — flagged on the burst.",
-				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6: Structuration — effects[0] (buff, stat `critRate`, value 10) RE-TRIGGERED. gcsim: `cons.go:103-119` — `c6(generated)` adds CR +0.1 / CD +0.7 for 360f, called from `skill.go:151-153` ONLY on overflow (`if c.mirrorCount > 3 { if Cons >= 6 { c.c6(c.mirrorCount - 3) } }`), i.e. when a generation happens while already at the 3-Mirror cap. The Burst can never reach it: it consumes all Mirrors first, then regenerates at most 3 (`burst.go:48-53`, `burst.go:62`), so `mirrorCount` never exceeds 3. that the trigger is Mirror OVERFLOW (generating at the 3-Mirror cap), that the Burst cannot cause it at any constellation, and that the re-trigger semantic is gcsim's `ExtendStatus(c6key, 360)` — additive extension, which `durationType: \"refresh\"` approximates. ⚠️ This mints a `mirrors` assertion key that nothing else in Alhaitham's data reads — C2 and C4 deliberately do not gate on it — so the model is coherent only for C6. Invisible by default in the planner; in the Team Builder it surfaces as a `stacks:mirrors` conditional capability, which is strictly more than `manual` gave. ⏭ If Nate does not want a new asserted key, the fallback is RETIRE: an ungated `onCast {ability:'skill'}` would print +10% CRIT Rate / +70% CRIT DMG on the first E of every rotation, where 0 Mirrors → gain 2 → no overflow, which is a flat over-claim. The two effects share `stat: \"critRate\"` but sit in different pools.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6: Structuration — effects[1] (buff, stat `critDmg`, value 70) RE-TRIGGERED. gcsim: `cons.go:106` — `m[attributes.CD] = 0.7`, same `c6()` body and same overflow gate as effects[0]. that the generator stub's `value: 10` was corrected to 70 against both the description and gcsim `cons.go:106` — that correction is already recorded and must survive. ⚠️ Same as effects[0]. Four effects for one constellation is the cost of the two stats × two sources; trimming to the skill-cast pair alone is acceptable and loses only the Charged/Plunging path."
+				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6: Structuration — effects[0] (buff, stat `critRate`, value 10) RE-TRIGGERED. gcsim: `cons.go:103-119` — `c6(generated)` adds CR +0.1 / CD +0.7 for 360f, called from `skill.go:151-153` ONLY on overflow (`if c.mirrorCount > 3 { if Cons >= 6 { c.c6(c.mirrorCount - 3) } }`), i.e. when a generation happens while already at the 3-Mirror cap. The Burst can never reach it: it consumes all Mirrors first, then regenerates at most 3 (`burst.go:48-53`, `burst.go:62`), so `mirrorCount` never exceeds 3. that the trigger is Mirror OVERFLOW (generating at the 3-Mirror cap), that the Burst cannot cause it at any constellation, and that the re-trigger semantic is gcsim's `ExtendStatus(c6key, 360)` — additive extension, which `durationType: \"refresh\"` approximates. ⚠️ This mints a `mirrors` assertion key that nothing else in Alhaitham's data reads — C2 and C4 deliberately do not gate on it — so the model is coherent only for C6. Invisible by default in the planner; in the Team Builder it surfaces as a `stacks:mirrors` conditional capability, which is strictly more than `manual` gave. ⏭ If Nate does not want a new asserted key, the fallback is RETIRE: an ungated `onCast {ability:'skill'}` would print +10% CRIT Rate / +70% CRIT DMG on the first E of every rotation, where 0 Mirrors → gain 2 → no overflow, which is a flat over-claim. The two effects share `stat: \"critRate\"` but sit in different pools.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6: Structuration — effects[1] (buff, stat `critDmg`, value 70) RE-TRIGGERED. gcsim: `cons.go:106` — `m[attributes.CD] = 0.7`, same `c6()` body and same overflow gate as effects[0]. that the generator stub's `value: 10` was corrected to 70 against both the description and gcsim `cons.go:106` — that correction is already recorded and must survive. ⚠️ Same as effects[0]. Four effects for one constellation is the cost of the two stats × two sources; trimming to the skill-cast pair alone is acceptable and loses only the Charged/Plunging path.",
+				"↻ 2026-10-30 (Mirrors round, 2026-10-30): `mirrors` is simulated now, so the gate reads the real count and no notation asserts it. The skill-cast pair stays exact — the E's Mirror lands 15f after the cast, so the cast's snapshot is the pre-grant count and min 3 is precisely the overflow. The Charged/Plunging pair is RETIRED: a hit's snapshot is taken after A1's grant, so min 3 also passed at 2 Mirrors, where nothing overflows — an over-claim on the commonest A1 hit. ⏭ An overflow trigger would restore that path (and the refill's own overflow). The third effect is the refill's C6 case: 3 Mirrors consumed still regenerate 3."
 			]
 		}
 	],

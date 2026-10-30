@@ -126,6 +126,7 @@ import {
 	dispatchGainStacksOnHit,
 	syncOnHitToStackState,
 	dispatchGainStacksOnSwapIn,
+	segmentStackKeysOf,
 	syncRotationStacksToStackState,
 	syncOnReactionToStackState,
 	syncSourceLifetimeToStackState
@@ -157,7 +158,7 @@ import {
 	retireSummonsOnCast,
 	scheduleSummonTicks
 } from './aura';
-import { armCastProcs } from './procs';
+import { armCastProcs, armStackProcs } from './procs';
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
@@ -213,6 +214,10 @@ export function runRotation(
 ): number {
 	const clock = createClock();
 	ctx.stackClock = () => clock.now;
+	// ⚓ A proc whose window is a stack (`onHit.armedWhileStacks`, Alhaitham's
+	// Projection Attacks) listens for the whole rotation; each hit asks the count.
+	for (const holder of ctx.team.teamChars)
+		armStackProcs(ctx, holder, ctx.team.constellationByHolder.get(holder.id) ?? 0);
 	// ⚓ WHICH TURN IS ON FIELD, observed live (cast hit-record round, 2026-09-21).
 	// A cast's hit can land after its caster's turn is over — a closure queued in
 	// turn `i` asks `liveSegment === i` before it touches that turn's stack pool.
@@ -439,6 +444,8 @@ export function runRotation(
 		// drops expired instances and updates `stackState[key]` to match the
 		// remaining instance count. Per-turn scope (matching `stackState`).
 		const stackInstances: Map<string, number[]> = carried?.stackInstances ?? new Map();
+		// A fresh turn knows its own keys are empty (`segmentStackKeysOf`).
+		if (!carried) for (const key of segmentStackKeysOf(char)) stackState.set(key, 0);
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
 		// (from stationary persistent casts), inStance (from stanceWindows), and any
@@ -535,6 +542,21 @@ export function runRotation(
 			// ↻ And the rotation-scoped keys, which is what makes a mark applied in
 			// a PREVIOUS segment readable in this one (summon-tick stacks round).
 			syncRotationStacksToStackState(char, t, stackState, stackInstances, ctx.getCharState);
+		};
+
+		// The character's OWN infusion on `ab` at `t` — a stance's, which needs no
+		// tracking, or one held only while a stack is (`infusionWhileStacks`,
+		// Alhaitham's Mirrors; Mirrors round, 2026-10-30), asked of this turn's
+		// pool settled to `t`. ⚠️ Per swing, at its start: a Mirror running out
+		// mid-`N5` leaves the rest of the string physical.
+		const ownInfusion = (ab: NormalAbility | undefined, t: number): Element | undefined => {
+			if (ab?.infusion === undefined) return undefined;
+			const key = ab.infusionWhileStacks;
+			if (key !== undefined) {
+				settleStacksAt(t);
+				if (!((stackState.get(key) ?? 0) >= 1)) return undefined;
+			}
+			return resolveElementRef(ab.infusion, variantCtx);
 		};
 
 		// Dispatches a parser-private hit: gains → stacks snapshot → consumes →
@@ -993,7 +1015,19 @@ export function runRotation(
 					stackState,
 					cs.drainAnchors,
 					tok.text,
-					stackInstances
+					stackInstances,
+					// ⚓ A `grantDelay` grant (Mirrors round, 2026-10-30) lands as a TICK
+					// task — before a swing starting on its frame reads the pool — and
+					// only into THIS turn's pool: after the swap it has nowhere to go
+					// (gcsim's refill "returns if he is no longer on field").
+					(at, grant) =>
+						clock.schedule(at, Band.TICK, () => {
+							const live = liveSegment === turn;
+							const pools = live ? { state: stackState, instances: stackInstances } : null;
+							if (live) settleStacksAt(at);
+							grant(pools);
+							checkStackThresholds(ctx, clock, at, pools ? { charId: char.id, pools } : null);
+						})
 				);
 				// Snapshot stack state at cast time (only when non-empty) so the
 				// timeline can filter stack-gated effects per-cast.
@@ -2006,7 +2040,6 @@ export function runRotation(
 					// ⚓ A non-hitting normal string lands nothing (charged-forms round,
 					// 2026-09-16): no element, and no hit record below.
 					const nNonHitting = activeNormal?.nonHitting?.normal === true;
-					const stanceInfusion = resolveElementRef(activeNormal?.infusion, variantCtx);
 					const swingElement = (): Element | undefined =>
 						nNonHitting
 							? undefined
@@ -2015,7 +2048,7 @@ export function runRotation(
 									t,
 									char.weapon,
 									char.element,
-									stanceInfusion ?? infusionAt(ctx, char, clock.now)
+									ownInfusion(activeNormal, clock.now) ?? infusionAt(ctx, char, clock.now)
 								);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
@@ -2170,7 +2203,7 @@ export function runRotation(
 					const ab = spinAbility()!;
 					const sp = ab.chargeSpin!;
 					const spinStates = computeCurrentStates(clock.now);
-					const element = resolveElementRef(ab.infusion, variantCtx) ?? char.element;
+					const element = ownInfusion(ab, clock.now) ?? char.element;
 					const prev = actionTextAt(j, -1);
 					const next = actionTextAt(j, 1);
 					if (!prev || !/^C\d*$/.test(prev)) spin = null;
@@ -2294,7 +2327,7 @@ export function runRotation(
 						t,
 						char.weapon,
 						char.element,
-						resolveElementRef(ab.infusion, variantCtx) ?? infusionAt(ctx, char, start)
+						ownInfusion(ab, start) ?? infusionAt(ctx, char, start)
 					);
 					// gcsim rolls the windup into a preceding cast, Normal, Charged or
 					// plunge; out of a dash, a jump, a swap or a wait it is paid.
@@ -2547,8 +2580,7 @@ export function runRotation(
 									t,
 									char.weapon,
 									char.element,
-									resolveElementRef(activeNormal?.infusion, variantCtx) ??
-										infusionAt(ctx, char, blockStart)
+									ownInfusion(activeNormal, blockStart) ?? infusionAt(ctx, char, blockStart)
 								);
 					const cGaugeElement = cOwnElement?.applies === false ? undefined : cElement;
 					const chargedEv = emitAction({
@@ -2783,8 +2815,7 @@ export function runRotation(
 									t,
 									char.weapon,
 									char.element,
-									resolveElementRef(activeNormal?.infusion, variantCtx) ??
-										infusionAt(ctx, char, blockStart)
+									ownInfusion(activeNormal, blockStart) ?? infusionAt(ctx, char, blockStart)
 								);
 						const plungeEv = emitAction({
 							action: 'plunge',

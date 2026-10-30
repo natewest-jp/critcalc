@@ -93,6 +93,7 @@ import { getChainIndexMap } from './cooldowns';
 import { convertReaction, toReactions } from './reactionBridge';
 import {
 	armSummonProcs,
+	heldCountFor,
 	takeHitProcs,
 	takeReactionProcs,
 	takeWaveFires,
@@ -468,7 +469,15 @@ function emitReaction(
  * (`takeHitProcs`), which is Raiden's own stated exclusion and the thing that
  * bounds the loop.
  */
-function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number): void {
+function fireProc(
+	ctx: SimContext,
+	clock: Clock,
+	l: ProcListener,
+	time: number,
+	/** The count a stack-armed proc fired at (`heldCountFor`): only the entries
+	 *  of that count land (`ElementalApplication.atStacks`). */
+	held?: number
+): void {
 	// ⚓ THE PROC'S OWN ICD, and it is NOT `procCooldown`: the cooldown says how
 	// often this proc FIRES, the gate says how often a fire APPLIES. Raiden's Eye
 	// fires every 0.9 s and applies every third strike; Dehya's Sanctum fires every
@@ -485,6 +494,7 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 
 	let earliest = Infinity;
 	for (const app of l.effect.application) {
+		if (app.atStacks !== undefined && app.atStacks !== held) continue;
 		const at = time + app.frame;
 		if (at < earliest) earliest = at;
 		// ⛔ A physical (element-less) entry applies nothing — the same rule a
@@ -613,7 +623,8 @@ function scheduleReactionProcs(
  */
 export function notifyDamage(ctx: SimContext, clock: Clock, dmg: DamageEvent): void {
 	if (ctx.procs.size === 0) return;
-	for (const l of takeHitProcs(ctx, dmg, dmg.time)) fireProc(ctx, clock, l, dmg.time);
+	for (const l of takeHitProcs(ctx, dmg, dmg.time))
+		fireProc(ctx, clock, l, dmg.time, heldCountFor(l, dmg));
 }
 
 /**

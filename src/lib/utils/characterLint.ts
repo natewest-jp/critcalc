@@ -2112,6 +2112,13 @@ function lintNormal(
 		if (a.infusion === undefined)
 			push('strict', 'invalid-element', 'coInfusion without infusion', a.id);
 	}
+	// (C.19c) infusionWhileStacks names a key, and gates an infusion that exists.
+	if (a.infusionWhileStacks !== undefined) {
+		if (typeof a.infusionWhileStacks !== 'string' || a.infusionWhileStacks.length === 0)
+			push('strict', 'invalid-element', 'infusionWhileStacks must name a stack key', a.id);
+		if (a.infusion === undefined)
+			push('strict', 'invalid-element', 'infusionWhileStacks without infusion', a.id);
+	}
 }
 
 /**
@@ -3646,12 +3653,46 @@ function lintEffect(
 				location
 			);
 		}
+		// ⚓ A STACK IS THE OTHER WINDOW (Mirrors round, 2026-10-30): armed for the
+		// rotation, asked of each hit's own snapshot — so the hit must be the
+		// holder's, and it never sits beside a timed window or on a summon.
+		const armedWhileStacks = eff.trigger.armedWhileStacks;
+		if (armedWhileStacks !== undefined) {
+			const source = eff.trigger.source ?? 'self';
+			if (
+				typeof armedWhileStacks !== 'string' ||
+				armedWhileStacks.length === 0 ||
+				!isDamageProc ||
+				ctx.isSummon ||
+				armedFor !== undefined ||
+				source !== 'self'
+			) {
+				push(
+					'strict',
+					'hit-proc-stack-window-invalid',
+					`onHit armedWhileStacks names a stack key on an ability-hosted damage proc with source self, in place of armedFor`,
+					location
+				);
+			}
+		}
+		if (eff.type === 'damage') {
+			for (const app of eff.application ?? []) {
+				if (app.atStacks === undefined) continue;
+				if (armedWhileStacks === undefined || !Number.isInteger(app.atStacks) || app.atStacks < 1)
+					push(
+						'strict',
+						'hit-proc-at-stacks-invalid',
+						`application atStacks must be a whole count of at least 1, on a proc armed by armedWhileStacks (got ${JSON.stringify(app.atStacks)})`,
+						location
+					);
+			}
+		}
 		if (isDamageProc) {
-			if (!ctx.isSummon && armedFor === undefined) {
+			if (!ctx.isSummon && armedFor === undefined && armedWhileStacks === undefined) {
 				push(
 					'strict',
 					'hit-proc-unarmed',
-					`onHit damage effect with application[] needs trigger.armedFor (how long the proc listens, in seconds) unless it is hosted on a summon`,
+					`onHit damage effect with application[] needs trigger.armedFor (how long the proc listens, in seconds) or armedWhileStacks, unless it is hosted on a summon`,
 					location
 				);
 			}
@@ -4137,6 +4178,41 @@ function lintEffect(
 					'strict',
 					'gainstacks-lifetime-refresh-invalid',
 					`gainStacks lifetimeRefresh must be true and sit beside a lifetime (got ${JSON.stringify(eff.lifetimeRefresh)}, lifetime ${JSON.stringify(eff.lifetime)})`,
+					location
+				);
+			}
+		}
+		// (B.13f3) lifetimeChain — the ONE-AT-A-TIME model is a queue `lifetime`
+		// apart that a grant past `max` restarts, so it needs both, and it is a
+		// third model beside the shared one, never combined with it.
+		if (eff.lifetimeChain !== undefined) {
+			if (
+				eff.lifetimeChain !== true ||
+				eff.lifetime === undefined ||
+				eff.max === undefined ||
+				eff.lifetimeRefresh !== undefined
+			) {
+				push(
+					'strict',
+					'gainstacks-lifetime-chain-invalid',
+					`gainStacks lifetimeChain must be true, beside a lifetime and a max, and never with lifetimeRefresh`,
+					location
+				);
+			}
+		}
+		// (B.13f4) grantDelay — seconds from an onCast trigger to the grant. The
+		// cast pipeline is the one dispatcher that defers; every other trigger
+		// would silently land it at once.
+		if (eff.grantDelay !== undefined) {
+			if (
+				!isPositiveNumber(eff.grantDelay) ||
+				eff.trigger.type !== 'onCast' ||
+				eff.accrual !== undefined
+			) {
+				push(
+					'strict',
+					'gainstacks-grant-delay-invalid',
+					`gainStacks grantDelay must be a positive number of seconds on an onCast grant, never beside accrual (got ${JSON.stringify(eff.grantDelay)} on ${eff.trigger.type})`,
 					location
 				);
 			}

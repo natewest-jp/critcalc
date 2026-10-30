@@ -151,25 +151,41 @@ function mirrorKey(target: { write: StackPools; mirror: StackPools | null }, key
 }
 
 /**
- * Appends `amount` lifetime instances expiring at `expiry`, oldest dropped past
- * `max` — the ONE instance write every lifetime site shares.
+ * Appends `amount` instances of `fx`'s lifetime key granted at `now`, oldest
+ * dropped past `max` — the ONE instance write every lifetime site shares.
  *
- * ⚓ `refresh` is the SHARED duration model (`gainStacks.lifetimeRefresh`): the
- * grant first moves every LIVE instance to the new expiry, so the stacks rise
- * one at a time and fall together. ⚠️ LIVE only — an instance that ran out
- * before `now` and has not been swept yet (a threshold fire has no settle point
- * in front of it) is dropped, never resurrected.
+ * ⚓ `lifetimeRefresh` is the SHARED duration model: the grant first moves every
+ * LIVE instance to the new expiry, so the stacks rise one at a time and fall
+ * together. ⚠️ LIVE only — an instance that ran out before `now` and has not been
+ * swept yet (a threshold fire has no settle point in front of it) is dropped,
+ * never resurrected.
+ *
+ * ⚓ `lifetimeChain` is the ONE-AT-A-TIME model (Mirrors round, 2026-10-30): the
+ * instances are a queue `lifetime` apart, so a grant into a live pool joins the
+ * back of it, a grant into an empty one starts the clock at `now`, and a grant
+ * past `max` restarts the clock — a full queue from `now`. gcsim's `mirrorLoss`
+ * chain is exactly this: one loss per 233f, re-queued while any remain, and an
+ * overflow stamps a new `lastInfusionSrc` that orphans the old chain.
  */
 function grantInstances(
 	instances: number[],
+	fx: Extract<Effect, { type: 'gainStacks' }>,
 	amount: number,
-	now: number,
-	expiry: number,
-	max: number | undefined,
-	refresh: boolean
+	now: number
 ): number[] {
+	const life = framesOf(fx.lifetime ?? 0);
+	const max = fx.max;
+	if (fx.lifetimeChain === true) {
+		const live = instances.filter((e) => e > now);
+		if (max !== undefined && live.length + amount > max)
+			return Array.from({ length: max }, (_, i) => now + (i + 1) * life);
+		const back = live.length > 0 ? live[live.length - 1] : now;
+		for (let i = 1; i <= amount; i++) live.push(back + i * life);
+		return live;
+	}
+	const expiry = now + life;
 	let list = instances;
-	if (refresh) list = list.filter((e) => e > now).map(() => expiry);
+	if (fx.lifetimeRefresh === true) list = list.filter((e) => e > now).map(() => expiry);
 	for (let i = 0; i < amount; i++) list.push(expiry);
 	if (max !== undefined && list.length > max) list.splice(0, list.length - max);
 	return list;
@@ -311,7 +327,11 @@ export function dispatchGainStacks(
 	stackState: Map<string, number>,
 	drainLastUpdate: Map<string, number> | undefined,
 	castInput?: string,
-	stackInstances?: Map<string, number[]>
+	stackInstances?: Map<string, number[]>,
+	/** Where a `grantDelay` grant goes: the caller schedules `grant` at `at` and
+	 *  hands it the holder's pools if their turn is still running, else null.
+	 *  Absent, a delayed grant lands at the cast. */
+	defer?: (at: number, grant: (pools: StackPools | null) => void) => void
 ): void {
 	const sources = effectSourcesAtConstellation(char, constellationLevel);
 	for (const src of sources) {
@@ -358,45 +378,87 @@ export function dispatchGainStacks(
 				);
 				if (csResult === true) effAmount = fx.constellationScaling.amount;
 			}
-			// ⚓ THE SCOPE PICKS THE CONTAINER, and nothing below it changes: a
-			// rotation-scoped key writes `CharState` and is mirrored straight back
-			// into the segment pool, so the cast's own post-grant snapshot (taken
-			// one line after this call returns) sees it either way.
-			const seg: StackPools | null = stackInstances
-				? { state: stackState, instances: stackInstances }
-				: null;
-			const target = poolsFor(hcs, char, fx.key, seg);
-			if (fx.lifetime !== undefined && target) {
-				// E3 v2.x lifetime: each granted instance lives independently
-				// for `lifetime` seconds. Append `amount` instances all at the
-				// same expiry-time (cast time + lifetime). Saturation drops
-				// oldest first when total would exceed `max`.
-				const expiry = castTime + framesOf(fx.lifetime);
-				const instances = grantInstances(
-					target.write.instances.get(fx.key) ?? [],
-					effAmount,
-					castTime,
-					expiry,
-					fx.max,
-					fx.lifetimeRefresh === true
+			// ⚓ A DELAYED GRANT (Mirrors round): judged here, landed later — the
+			// caller owns the clock and decides which pool, if any, is still live.
+			if (fx.grantDelay !== undefined && defer) {
+				const at = castTime + framesOf(fx.grantDelay);
+				defer(at, (pools) =>
+					applyCastGrant(
+						char,
+						hcs,
+						fx,
+						effAmount,
+						at,
+						pools?.state ?? null,
+						pools?.instances,
+						drainLastUpdate
+					)
 				);
-				target.write.instances.set(fx.key, instances);
-				target.write.state.set(fx.key, instances.length);
-				mirrorKey(target, fx.key);
-			} else if (stackScopeOf(char, fx.key) === 'rotation') {
-				const current = hcs.rotationStacks.get(fx.key) ?? 0;
-				const next = current + effAmount;
-				hcs.rotationStacks.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
-				stackState.set(fx.key, hcs.rotationStacks.get(fx.key)!);
-			} else {
-				const current = stackState.get(fx.key) ?? 0;
-				const next = current + effAmount;
-				const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
-				stackState.set(fx.key, capped);
+				continue;
 			}
-			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
+			applyCastGrant(
+				char,
+				hcs,
+				fx,
+				effAmount,
+				castTime,
+				stackState,
+				stackInstances,
+				drainLastUpdate
+			);
 		}
 	}
+}
+
+/**
+ * Lands ONE onCast grant at `castTime` — the cast, or a `grantDelay` after it.
+ * `stackState` is null when the holder's turn is over by then: a segment-scoped
+ * key has no pool left to land in and the grant is dropped, while a
+ * rotation-scoped one still writes `CharState`.
+ */
+function applyCastGrant(
+	char: CharacterData,
+	hcs: CharState,
+	fx: Extract<Effect, { type: 'gainStacks' }>,
+	effAmount: number,
+	castTime: number,
+	stackState: Map<string, number> | null,
+	stackInstances: Map<string, number[]> | undefined,
+	drainLastUpdate: Map<string, number> | undefined
+): void {
+	// ⚓ THE SCOPE PICKS THE CONTAINER, and nothing below it changes: a
+	// rotation-scoped key writes `CharState` and is mirrored straight back
+	// into the segment pool, so the cast's own post-grant snapshot (taken
+	// one line after this call returns) sees it either way.
+	const seg: StackPools | null =
+		stackState && stackInstances ? { state: stackState, instances: stackInstances } : null;
+	const target = poolsFor(hcs, char, fx.key, seg);
+	if (fx.lifetime !== undefined && target) {
+		// E3 v2.x lifetime: each granted instance lives independently
+		// for `lifetime` seconds. Append `amount` instances all at the
+		// same expiry-time (cast time + lifetime). Saturation drops
+		// oldest first when total would exceed `max`.
+		const instances = grantInstances(
+			target.write.instances.get(fx.key) ?? [],
+			fx,
+			effAmount,
+			castTime
+		);
+		target.write.instances.set(fx.key, instances);
+		target.write.state.set(fx.key, instances.length);
+		mirrorKey(target, fx.key);
+	} else if (stackScopeOf(char, fx.key) === 'rotation') {
+		const current = hcs.rotationStacks.get(fx.key) ?? 0;
+		const next = current + effAmount;
+		hcs.rotationStacks.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+		stackState?.set(fx.key, hcs.rotationStacks.get(fx.key)!);
+	} else if (stackState) {
+		const current = stackState.get(fx.key) ?? 0;
+		const next = current + effAmount;
+		const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
+		stackState.set(fx.key, capped);
+	} else return;
+	if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
 }
 
 /**
@@ -590,15 +652,12 @@ export function dispatchGainStacksOnReaction(
 				}
 				const holderState = hcs.onReactionStacks;
 				if (fx.lifetime !== undefined) {
-					const expiry = castTime + framesOf(fx.lifetime);
 					const holderInstances = hcs.onReactionStackInstances;
 					const instances = grantInstances(
 						holderInstances.get(fx.key) ?? [],
+						fx,
 						effAmount,
-						castTime,
-						expiry,
-						fx.max,
-						fx.lifetimeRefresh === true
+						castTime
 					);
 					holderInstances.set(fx.key, instances);
 					holderState.set(fx.key, instances.length);
@@ -811,14 +870,11 @@ export function dispatchGainStacksOnHit(
 					const target = poolsFor(hcs, holder, fx.key, segPools);
 					if (!target) continue;
 					if (fx.lifetime !== undefined) {
-						const expiry = hit.time + framesOf(fx.lifetime);
 						const instances = grantInstances(
 							target.write.instances.get(fx.key) ?? [],
+							fx,
 							effAmount,
-							hit.time,
-							expiry,
-							fx.max,
-							fx.lifetimeRefresh === true
+							hit.time
 						);
 						target.write.instances.set(fx.key, instances);
 						target.write.state.set(fx.key, instances.length);
@@ -831,14 +887,11 @@ export function dispatchGainStacksOnHit(
 					if (fx.drain) hcs.drainAnchors.set(fx.key, hit.time);
 				} else if (fx.lifetime !== undefined) {
 					// team/others — rotation-wide instance accrual (onReaction shape).
-					const expiry = hit.time + framesOf(fx.lifetime);
 					const instances = grantInstances(
 						hcs.onHitStackInstances.get(fx.key) ?? [],
+						fx,
 						effAmount,
-						hit.time,
-						expiry,
-						fx.max,
-						fx.lifetimeRefresh === true
+						hit.time
 					);
 					hcs.onHitStackInstances.set(fx.key, instances);
 					hcs.onHitStacks.set(fx.key, instances.length);
@@ -1198,6 +1251,29 @@ export function homeOf(holder: CharacterData, key: string): Home {
 	return 'segment';
 }
 
+const segmentKeysCache = new WeakMap<CharacterData, readonly string[]>();
+
+/** Every key this character's own grants write into the TURN's pool — the
+ *  keys whose count the sim knows, so a fresh turn starts them at 0 rather than
+ *  unknown (Mirrors round, 2026-10-30).
+ *
+ *  ⚠️⚠️ AN EMPTY POOL AND AN UNKNOWN ONE ARE NOT THE SAME ANSWER — the
+ *  `rotationStackSnapshot` rule, on the segment side. With no key in the map a
+ *  cast's snapshot was `undefined`, a `stacks` gate on it unresolvable, and
+ *  the buff passes drew it: Alhaitham's C6 crit on a fresh E, whose 2 Mirrors
+ *  overflow nothing. Constellation-ungated, the key-space rule. */
+export function segmentStackKeysOf(char: CharacterData): readonly string[] {
+	const cached = segmentKeysCache.get(char);
+	if (cached) return cached;
+	const keys = new Set<string>();
+	for (const src of [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])])
+		for (const fx of src.effects ?? [])
+			if (fx.type === 'gainStacks' && homeOf(char, fx.key) === 'segment') keys.add(fx.key);
+	const list = [...keys];
+	segmentKeysCache.set(char, list);
+	return list;
+}
+
 /** The container a home names on `hcs` — `seg` for a segment home, which is
  *  null wherever the holder's own live pool is not in hand. A `sourceLifetime`
  *  home is a per-SOURCE slot map, not a count, and has no pools to hand back. */
@@ -1280,14 +1356,7 @@ export function dispatchGainStacksOnStackFire(
 		const target = poolsFor(hcs, holder, fx.key, segPools);
 		if (!target) continue;
 		if (fx.lifetime !== undefined) {
-			const instances = grantInstances(
-				target.write.instances.get(fx.key) ?? [],
-				amount,
-				time,
-				time + framesOf(fx.lifetime),
-				fx.max,
-				fx.lifetimeRefresh === true
-			);
+			const instances = grantInstances(target.write.instances.get(fx.key) ?? [], fx, amount, time);
 			target.write.instances.set(fx.key, instances);
 			target.write.state.set(fx.key, instances.length);
 		} else {
@@ -1430,14 +1499,7 @@ export function dispatchGainStacksOnSwapIn(
 					if (at >= 0) live.splice(at, 1);
 				}
 				hcs.swapInGrantExpiry.set(fxKey, time + framesOf(fx.lifetime));
-				const instances = grantInstances(
-					live,
-					fx.amount,
-					time,
-					time + framesOf(fx.lifetime),
-					fx.max,
-					fx.lifetimeRefresh === true
-				);
+				const instances = grantInstances(live, fx, fx.amount, time);
 				pools.instances.set(fx.key, instances);
 				pools.state.set(fx.key, instances.length);
 			} else {
