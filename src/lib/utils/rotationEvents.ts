@@ -500,6 +500,21 @@ export type TimelineWindow =
 			 */
 			naturalEnd?: number;
 	  } & WindowProvenance)
+	/** A drawn stack count's span (`Ability.drawsStacks`, Mirror row round,
+	 *  2026-10-30): each instant the count changes, from the first stack to the
+	 *  last one leaving. `max` is the key's cap, the count drawn at full
+	 *  strength. */
+	| ({
+			kind: 'stacks';
+			characterId: string;
+			key: string;
+			label: string;
+			source: 'skill' | 'burst';
+			start: number;
+			end: number;
+			steps: { at: number; count: number }[];
+			max?: number;
+	  } & WindowProvenance)
 	/** A tracked shield's span (cast → scheduled expiry). */
 	| ({
 			kind: 'shield';

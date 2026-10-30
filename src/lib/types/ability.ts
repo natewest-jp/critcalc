@@ -2477,6 +2477,15 @@ export type DurationExtension = {
 export type AbilityCommon = {
 	id: string;
 	name: string;
+	/**
+	 * ⚓ THIS ABILITY'S STACK COUNT IS DRAWN AS A ROW (Mirror row round,
+	 * 2026-10-30): one stepped bar in the summon lane for each span the key is
+	 * held, named `label` — the kit's own name for the thing, never invented.
+	 * Alhaitham's Chisel-Light Mirrors. Only on a skill or burst, on a
+	 * segment-scoped `lifetime` key the character grants (lint D.57); the steps
+	 * are rebuilt from the expiry lists (`sim/stackLanes.ts`).
+	 */
+	drawsStacks?: { key: string; label: string };
 	shortName?: string;
 	/** In-game description text from the game source (genshin-db / wiki).
 	 *  Canonical only — do NOT place implementation notes, planner caveats,

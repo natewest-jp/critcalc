@@ -288,6 +288,9 @@ export type SimContext = {
 	 * refuses lifetime keys for that reason rather than draw a wrong step.
 	 */
 	stackHistory: Map<string, { at: number; count: number }[]>;
+	/** Every write of a DRAWN key's expiry list, per `charId::key`, and the
+	 *  swap that drops it (`sim/stackLanes.ts`). */
+	stackLaneHistory: Map<string, { at: number; expiries: number[] }[]>;
 	/** The clock the ledger stamps with; `runRotation` points it at `clock.now`. */
 	stackClock: () => number;
 	/** Per-character cast events emitted so far — the mid-parse record
@@ -550,6 +553,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 			return cs;
 		},
 		stackHistory: new Map(),
+		stackLaneHistory: new Map(),
 		stackClock: () => 0,
 		castsByChar: new Map(),
 		castKindsByChar: new Map(),

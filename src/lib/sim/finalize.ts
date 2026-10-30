@@ -22,6 +22,7 @@
 
 import type { Element, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
+import { stackLaneWindows } from './stackLanes';
 import { framesOf } from '$lib/utils/frames';
 import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type {
@@ -793,6 +794,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			// projections re-order their subset by window id regardless.
 			windows.sort((a, b) => a.start - b.start || a.end - b.end);
 		}
+	}
+
+	// 8b. Drawn stack counts (`Ability.drawsStacks`, Mirror row round) — one
+	//     `stacks` window per span a key was held, rebuilt from the ledger.
+	if (ctx.stackLaneHistory.size > 0) {
+		const lanes = stackLaneWindows(ctx, (id) => ctx.team.teamChars.find((c) => c.id === id));
+		for (const w of lanes) windows.push(w);
+		if (lanes.length > 0) windows.sort((a, b) => a.start - b.start || a.end - b.end);
 	}
 
 	// 9. The gauge's own two projections, HOISTED out of the return literal

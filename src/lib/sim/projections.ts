@@ -20,6 +20,7 @@ import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 import { computeSummonSubrows } from '$lib/timeline/summonSubrows';
 import { computeShieldSubrows } from '$lib/timeline/shieldRows';
+import { computeStackSubrows } from '$lib/timeline/stackRows';
 import { computeNBBars } from '$lib/timeline/nbRows';
 import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
 import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
@@ -77,6 +78,10 @@ export function projectAll(r: ParsedRotation, input: ProjectionInput) {
 			input.getCharacter
 		),
 		shield: computeShieldSubrows(r.windows, (id) => {
+			const i = slots.indexOf(id);
+			return i === -1 ? undefined : i;
+		}),
+		stacks: computeStackSubrows(r.windows, (id) => {
 			const i = slots.indexOf(id);
 			return i === -1 ? undefined : i;
 		}),

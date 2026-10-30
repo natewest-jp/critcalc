@@ -1587,6 +1587,7 @@ function lintAbility(
 			lintEndsStance(c, a, push);
 			lintHoldsField(a, push);
 			lintStanceTimeCooldown(a, push);
+			lintDrawsStacks(c, a, push);
 			break;
 		case 'passive':
 		case 'constellation':
@@ -2184,6 +2185,33 @@ function lintEndsStance(
 				a.id
 			);
 		}
+	}
+}
+
+// (D.57) A drawn stack count (Mirror row round, 2026-10-30): a skill or burst
+// naming a label and a key its character grants as a segment-scoped lifetime
+// key. The row is rebuilt from the turn pool's expiry lists, which only such a
+// key has — a count without a lifetime would draw nothing, and a
+// rotation-scoped one never reaches that pool.
+function lintDrawsStacks(
+	c: CharacterData,
+	a: Ability,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	const d = (a as { drawsStacks?: { key?: unknown; label?: unknown } }).drawsStacks;
+	if (d === undefined) return;
+	const bad = (why: string) =>
+		push('strict', 'draws-stacks-invalid', `${a.id} drawsStacks: ${why}`, a.id);
+	if (typeof d.label !== 'string' || d.label.length === 0) bad("needs a label, the kit's own name");
+	if (typeof d.key !== 'string' || d.key.length === 0) return bad('needs a stack key');
+	const grants = [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].flatMap(
+		(src) => (src.effects ?? []).filter((fx) => fx.type === 'gainStacks' && fx.key === d.key)
+	);
+	if (grants.length === 0) bad(`no gainStacks grants ${d.key}`);
+	for (const fx of grants) {
+		if (fx.type !== 'gainStacks') continue;
+		if (fx.lifetime === undefined || fx.scope === 'rotation')
+			bad(`every grant of ${d.key} must be a segment-scoped lifetime grant`);
 	}
 }
 
