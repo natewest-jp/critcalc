@@ -31,10 +31,26 @@ The old working memories carried about 60 open items that `docs/todo.md` didn't 
 - The brand logo's opacity hover (the top bar changes paint only), the BETA explainer page, and the phone landing composition.
 - Alhaitham C4's `mirrors` gate: it never had one. Only C6 does (see §4).
 
-## 4. The clear-out (in progress)
+## 4. The clear-out
 
-Nothing visible, so it runs while Nate works on other things.
+Nothing visible changed, so it ran while Nate worked on other things.
 
-- **Engine fix bundle**: Alhaitham C6 (its four effects need a `mirrors` stack nothing grants, so they never fire) · Ifa's stance ending early through `endsStance` · Chongyun C2's cooldown reduction, if the schema can express it · Wriothesley's Revelation against gcsim · `CA`/`CS` as charged-attack aliases · a `MAX_NOTATION_CHARS` test and bounded scans · stale notes.
-- **Housekeeping**: a banned-Unicode convention test · retire `DerivedCapability.summon` and the unused `monotone` role-icon variant · the library's bucket numbering · Resonance and Weapon Infusion docs.
-- **Then Kokomi A1**, on its own branch.
+### The engine bundle (`fix/triage-engine-bundle`)
+
+- **Ifa's Skill ends his hover** (`624169cb`). gcsim `ifa/skill.go`: a Tap in Nightsoul's Blessing exits at the press, and a Hold is the Nightsoul plunge, which exits at its 39f landing. Either way the 7.5s cooldown starts at the exit. Authored as an `inStance` sibling with a Hold variant, Mizuki's End Dreamdrifter shape. Dashes still don't shorten the hover, and the caveat now names only them. Test: `notationParser.test.ts` "Ifa ends his hover with the Skill".
+- **Hold variants start their cooldown at their own frame** (`6c69619f`). The stale "no cooldownStartDelay field" notes turned out to be missing data: 14 Hold variants (and Furina's Pneuma) inherited the tap's delay, because the variant field came later (Alyosha, 2026-10-16). Each value is re-read from gcsim, at the minimum hold where the hold is parametric. Test: `sim/holdCooldownDelay.test.ts`.
+- **Wriothesley's Witch's Revelation** cross-checked against gcsim (`64ce1608`, notes only): gcsim now implements it and agrees with everything we draw.
+- **The share link's length cap** is pinned at its edge (`36d7cbda`). Test: `rotationUrl.test.ts`.
+- **Collei's and Sucrose's contradicted notes** are marked superseded (`69749b16`).
+
+### Dropped or held back, and why
+
+- **Alhaitham C6 was never broken.** `mirrors` is a stack the player asserts in the notation (`{mirrors:3}`), chosen in the manual-trigger retirement (2026-09-21) because his Mirror economy can't be modelled; the old memory, and the triage's own check, missed the assertion. The triage proposal to Nate called it a real bug; that was wrong. Whether the planner should hint that the assertion exists is a copy question for Nate.
+- **Chongyun C2 needs a new primitive.** gcsim's C2 is a cooldown modifier on whoever is active, for as long as the field's infusion lasts. The schema has an ability's own modifiers and static team ones (Anemo Resonance), but nothing timed and cross-character. Back to the engine leftovers.
+- **`CA`/`CS` aliases wait for Nate.** `CA` already tokenizes as a charged attack followed by an aimed shot, so an alias would change what existing documents and shared links mean.
+- **Bounding the tokenizer's group scans was reverted.** The two open-ended scans are quadratic on unclosed openers (about 190ms at the 16,384-character cap). Stopping them at a second opener brings that to 7ms, but `Bennett (E (Q) N)` would then absorb "(E" into the character name. The cost is bounded by the cap, so it stays.
+- **Yun Jin's Hold Lv.2 is unreachable**: both levels read `hE`. Found along the way, not fixed.
+
+### Housekeeping (`chore/triage-housekeeping`)
+
+See §5.
