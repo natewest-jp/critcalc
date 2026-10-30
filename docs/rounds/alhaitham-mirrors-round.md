@@ -87,6 +87,6 @@ Corpus, the previous commit against this one: 11 of 1,152 rotations differ, 9 of
 ## 7. Rulings and what stays open (2026-10-30)
 
 - ⚓ Nate approved the wording and the rest of §6, and ruled the 233f interval and the C6 deferral (§5).
-- **A Mirror count on the timeline**: recommended as Odette's stepped bar; waiting on Nate.
-- **Arlecchino's two C2 clocks**: not a quick fix, recommended deferred; waiting on Nate. Her Q copy (cast pool) and Charged copy (swing surface) are two effects judged in two separate passes, and the passes do not run in time order. A shared clock therefore needs both triggers' instants merged per holder in time order first, plus a data field saying two effects are one ICD. She is the only author of the shape.
+- **A Mirror count on the timeline**: ⚓ Nate chose Odette's stepped bar; built in `docs/rounds/mirror-row-round.md`.
+- **Arlecchino's two C2 clocks**: ⚓ Nate deferred them to the to-do's Queue. Her Q copy (cast pool) and Charged copy (swing surface) are two effects judged in two separate passes, and the passes do not run in time order. A shared clock therefore needs both triggers' instants merged per holder in time order first, plus a data field saying two effects are one ICD. She is the only author of the shape.
 - The Electro Traveler's Falling Thunder is two damage effects with one ICD, authored before arrays existed in `onHit.abilityType`. Neither carries an `application[]`, so neither reaches a sim, and merging them would change nothing on screen.

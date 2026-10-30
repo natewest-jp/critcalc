@@ -16,6 +16,7 @@ Budget: about 10,000 characters. `src/lib/timeline/` holds pure projection modul
 ## Bars
 
 - Shields ride the summon lane (`shieldRows.ts` projects into `SummonSubrow`), so lane heights, block layout and the PNG export pick them up unchanged. Rows sort skill before burst, so each sits beside the cast that raised it; shields join that sort rather than being appended.
+- A drawn stack count (`stacks` window, `stackRows.ts`) rides the summon lane the same way, as one stepped bar mixed toward the chart ground so it stays opaque (`stackStepMix`).
 - There is one summon resolver, `findSummonsForBar` (`summonSubrows` re-exports it as `findCastSummons`).
 - Bars refresh-merge per row at the projection (`mergeRefreshedBars.ts`): a buff re-applied before it expires is one covered span with one label. No interior seams (Nate). The 2px lit edge stays and means "the buff changed", because only same-shape overlaps merge. Eligibility is "windows that mean the same buff re-applied", never "bars that touch". NB is excluded: its bar width is its cooldown, so its bars only abut.
 - Bar layering: E/Q, summon and buff bars at z 2, swap connectors at z 1, cooldown ghosts at z 0.
