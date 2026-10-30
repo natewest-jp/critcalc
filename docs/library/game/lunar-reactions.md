@@ -107,7 +107,10 @@ gcsim include it. See [`elevation.md`](elevation.md).)
 ### The buckets
 
 Five contribution points — confirmed by gcsim's `AttackInfo` (separate `BaseDmgBonus`,
-`Elevation`, and `ReactBonus` fields) and the wiki formula:
+`Elevation`, and `ReactBonus` fields) and the wiki formula. These numbers are the library's
+one bucket numbering ([`elevation.md`](elevation.md), [`stellar-reactions.md`](stellar-reactions.md)
+and the corpus's curator notes cite them). Bucket 5 is numbered last but sits inside bucket
+2's bracket, as gcsim's `CalcSpecialReactionDmg` (`pkg/core/combat/reaction.go`) shows:
 
 1. **Base / Level** — `M × BaseDmg(Level)` for Reaction type (`M` = 3 LC / 1.6 LCrys); the
    ability's own Base DMG for Direct type.

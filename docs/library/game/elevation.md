@@ -47,23 +47,29 @@ gcsim models it as `atk.Info.Elevation += value/100`, applied as
 ## The three reaction-DMG mechanics — don't conflate them
 
 This is the distinction that kept biting curation. For a reaction, three separate
-things can raise its damage, in three different buckets:
+things can raise its damage, in three different buckets. The bucket numbers are the
+five of [`lunar-reactions.md`](lunar-reactions.md) § The buckets (1 is Base / Level, 2 the
+EM Bonus), which the Stellar doc and the corpus's curator notes cite too:
 
-| #   | Mechanic                    | Bucket                          | Game wording                                                    | Our primitive                                       |
-| --- | --------------------------- | ------------------------------- | --------------------------------------------------------------- | --------------------------------------------------- |
-| 1   | **Reaction Base DMG Bonus** | additive                        | "…Lunar Reaction DMG **Bonus**…" / "…DMG increased by…"         | `lunar*DmgBonus` **Stat** (a `buff` effect)         |
-| 2   | **Elevation**               | multiplicative                  | "…**elevated** by X%…"                                          | `elevate` **Effect**                                |
-| 3   | **Reaction Bonus**          | additive, inside the EM bracket | "…Lunar Reaction DMG will **increase**…" (e.g. Columbina Burst) | — **gap** — (gcsim `ReactBonus`/`AddReactBonusMod`) |
+| Bucket | Mechanic                    | Kind                                       | Game wording                                                    | Our primitive                                             |
+| ------ | --------------------------- | ------------------------------------------ | --------------------------------------------------------------- | --------------------------------------------------------- |
+| 3      | **Reaction Base DMG Bonus** | its own `(1 + Base DMG Bonus)` multiplier  | "…Lunar Reaction DMG **Bonus**…" / "…DMG increased by…"         | `lunar*DmgBonus` **Stat** (a `buff` effect)               |
+| 4      | **Elevation**               | multiplicative, outermost                  | "…**elevated** by X%…"                                          | `elevate` **Effect**                                      |
+| 5      | **Reaction Bonus**          | additive, inside the EM bracket (bucket 2) | "…Lunar Reaction DMG will **increase**…" (e.g. Columbina Burst) | `lunar*ReactionBonus` **Stat** (gcsim `AddReactBonusMod`) |
+
+gcsim's order, in `CalcSpecialReactionDmg` (`pkg/core/combat/reaction.go`):
+`(M × (1 + 6·EM/(2000+EM) + reactBonus) × BaseDmg(lvl) × (1 + BaseDmgBonus) + FlatDmg) × (1 + Elevation)`.
 
 Rules of thumb for curators:
 
 - Talent says **"elevated"** → author an **`elevate`** effect (`reactions: […]`, `value`).
 - Talent says the reaction's **"DMG Bonus"** / **"DMG is increased"** → author a **buff** on
   the matching `lunar*DmgBonus` **Stat**.
-- A character granting a **Reaction Bonus** (bucket 3 here) has **no clean primitive**
-  yet — flag it. **Columbina resolved (2026-07-14, gcsim + wiki):** her **benediction** is a
-  **Base DMG Bonus** (bucket 1, HP-scaled); her **C2** is **`+40% Max HP`** (a stat that
-  feeds bucket 1); her **Burst** is the **Reaction Bonus** (bucket 3, gcsim `AddReactBonusMod`,
+- A character granting a **Reaction Bonus** (bucket 5) → author a **buff** on the matching
+  `lunar*ReactionBonus` **Stat** (its own family since Nate's 2026-07-29 ruling).
+  **Columbina resolved (2026-07-14, gcsim + wiki):** her **benediction** is a
+  **Base DMG Bonus** (bucket 3, HP-scaled); her **C2** is **`+40% Max HP`** (a stat that
+  feeds bucket 3); her **Burst** is the **Reaction Bonus** (bucket 5, gcsim `AddReactBonusMod`,
   ~13–31% by talent). Three effects, three buckets — full callout in
   [`lunar-reactions.md`](lunar-reactions.md).
 
@@ -74,14 +80,14 @@ Rules of thumb for curators:
 This is the **correct** shape and the schema was right to keep it distinct from the
 `lunar*DmgBonus` stats (different bucket). What's incomplete is everything _around_ it:
 
-| Area                                    | Current state                                                                                | Needed                                                                                                                       |
-| --------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Render (single lunar reaction)          | ✅ converted to synthetic `lunar*DmgBonus` buff (`effectCollection.normalizeBuffLikeEffect`) | Relabel so it reads **"elevated"**, not the additive-bonus label (the `docs/rounds/elevate-visualization.md` memory's point) |
-| Render (multi-reaction)                 | ❌ returns `null`, unrendered (Columbina "all lunar")                                        | Decide: one row labelled by the reaction set, or one row per reaction                                                        |
-| Render (non-lunar reaction)             | ❌ `elevateReactionToDisplayStat` only maps the 3 lunar reactions                            | Extend when Stellar lands (Stellar-Conduct, …)                                                                               |
-| Capabilities (Team Builder)             | ❌ `elevate` skipped as "kit mechanic"                                                       | Consider surfacing "elevates \<reaction\> DMG" as a capability facet                                                         |
-| Per-cast elevation (Zibai Spirit Steed) | ❌ flagged as "may not fit `reactions[]`"                                                    | Model per-cast/event-driven elevation — may need a trigger-based variant                                                     |
-| `Reaction` union                        | has lunar variants; **missing `stellarConduct`**                                             | Add Stellar reactions when they ship                                                                                         |
+| Area                                    | Current state                                                                                                                                                     | Needed                                                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Render (single lunar reaction)          | ✅ converted to synthetic `lunar*DmgBonus` buff (`effectCollection.normalizeBuffLikeEffect`)                                                                      | Relabel so it reads **"elevated"**, not the additive-bonus label (the `docs/rounds/elevate-visualization.md` memory's point) |
+| Render (multi-reaction)                 | ✅ a whole family maps to its umbrella stat (`familyElevationStat`: all three Lunar → `lunarDmgBonus`, both Stellar → `stellarGlimmerDmgBonus`), since 2026-08-31 | A partial set (two of three Lunar) still returns `null`; no character authors one                                            |
+| Render (non-lunar reaction)             | ✅ `elevateReactionToDisplayStat` maps the Stellar pair too (`stellarConduct`, `stellarSwirl`)                                                                    | none                                                                                                                         |
+| Capabilities (Team Builder)             | ❌ `elevate` skipped as "kit mechanic"                                                                                                                            | Consider surfacing "elevates \<reaction\> DMG" as a capability facet                                                         |
+| Per-cast elevation (Zibai Spirit Steed) | ❌ flagged as "may not fit `reactions[]`"                                                                                                                         | Model per-cast/event-driven elevation — may need a trigger-based variant                                                     |
+| `Reaction` union                        | has lunar variants; **missing `stellarConduct`**                                                                                                                  | Add Stellar reactions when they ship                                                                                         |
 
 **Authoring caveat wording:** because elevation is multiplicative and reaction-scoped,
 its `caveat` should say something like _"elevates \<reaction\> DMG by X% (a multiplier,
@@ -90,9 +96,9 @@ in-game "elevated" language.
 
 ## Open decisions (for the reaction/elevation work, once Nate is ready)
 
-1. ~~**Columbina bucket** — is her benediction's "+40%" bucket 1 or bucket 3?~~
-   ✅ **RESOLVED (2026-07-14, gcsim + wiki):** benediction = **bucket 1** (Base DMG Bonus,
-   HP-scaled); C2 = **`+40% Max HP`** (a stat feeding bucket 1); Burst = **bucket 3** (Reaction
+1. ~~**Columbina bucket** — is her benediction's "+40%" bucket 3 or bucket 5?~~
+   ✅ **RESOLVED (2026-07-14, gcsim + wiki):** benediction = **bucket 3** (Base DMG Bonus,
+   HP-scaled); C2 = **`+40% Max HP`** (a stat feeding bucket 3); Burst = **bucket 5** (Reaction
    Bonus, `AddReactBonusMod`). See [`lunar-reactions.md`](lunar-reactions.md).
 2. **Elevate render** — relabel "elevated" + handle multi-reaction; is a distinct visual
    treatment wanted, or label-only? (`docs/rounds/elevate-visualization.md` says label is enough)

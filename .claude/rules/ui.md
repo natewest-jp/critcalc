@@ -53,7 +53,7 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 ## Sub-pixel laws
 
 - Alpha belongs in the paint (a translucent `background-color` or `fill-opacity`), never in element `opacity`, on anything transform-placed. WebKit rasterizes an opacity subtree at rounded coordinates and it visibly dances.
-- Symbol marks are inline geometry (`<Mark name="…">`), never unicode characters, because engines pick different fallback faces at different sizes. They come from Lucide as a devDependency through `scripts/generate-marks.mjs` → `src/lib/marks.generated.ts`. Never import `@lucide/svelte` at runtime.
+- Symbol marks are inline geometry (`<Mark name="…">`), never unicode characters, because engines pick different fallback faces at different sizes (`conventions.test.ts` checks the source, `e2e/marks.spec.ts` the rendered page). They come from Lucide as a devDependency through `scripts/generate-marks.mjs` → `src/lib/marks.generated.ts`. Never import `@lucide/svelte` at runtime.
 - Centering a label centers its box, not its ink. Measure with `scripts/probe-ink-centering.mjs` and tune optical nudges against Chrome (WebKit snaps glyphs to whole pixels).
 - ⚠️ An inlined SVG's `fill-opacity` with no `fill` inherits `currentColor`. Always state `fill="#000"` on a wash path.
 - Match a glyph's optical size by ink area, never height. Override per button.

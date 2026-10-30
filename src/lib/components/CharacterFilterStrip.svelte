@@ -116,8 +116,8 @@
 {/snippet}
 
 {#snippet roleIcons(cat: RoleCategory)}
-	{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
-	<img src={functionIcon(cat.function, 'color')} alt="" />
+	{#if cat.position}<img src={positionIcon(cat.position)} alt="" />{/if}
+	<img src={functionIcon(cat.function)} alt="" />
 {/snippet}
 
 {#snippet elementBar()}
