@@ -55,6 +55,7 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 
 ## Off-field damage and proc listeners
 
+- A proc's landing reaches the `onHit` cooldown reducer, once per fire; the summon-tick stream does not.
 - `source: 'active'` refuses a hit delivered by an entity (`Offer.viaEntity` / `HitEvent.viaEntity`). Never use an id comparison: a tick carries its owner's id.
 - A listener belongs to the entity (`holder::host::index`), not to the authored object, and never fires off its own output.
 - 1.5U is an ICD-group multiplier, not a durability.

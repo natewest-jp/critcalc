@@ -48,8 +48,38 @@ Branch `feat/alhaitham-mirrors`. The to-do's Next item (⚓ Nate 2026-10-30, "be
 ## 5. Open (⏭)
 
 - ⏭ Nate: the 4.0s kit text against gcsim's 233f. Keep gcsim's?
-- ⏭ The burst's own hit count, 4 + 2 × Mirrors consumed: the application list is still the 0-Mirror one, so a 3-Mirror burst feeds the aura 4 hits rather than 10.
-- ⏭ C1: a Projection hit takes 1.2s off the skill. A proc's landing feeds `notifyDamage`, not `dispatchHit`, where `cooldownReduce` listens.
-- ⏭ An overflow trigger would restore C6's Charged/Plunging path and the refill's own overflow. C2's stacks per Mirror and C4's per-count values could read the simulated count now (C4's EM is `30 × consumed`, the burst cast's own pre-consume snapshot), but their caveats are copy, so they wait for Nate's wording.
+- ✅ The burst's hit count, C1, C2 and C4 shipped the same day (§6).
+- ⏭ An overflow trigger would restore C6's Charged/Plunging path and the refill's own overflow.
+- ⏭ C2's and C4's caveats describe the old one-Mirror bars. Replacement wording is proposed to Nate (§6) and lands on his ruling.
 - ⏭ A Mirror count on the timeline. The stack ledger and `whileStacks` rows cover rotation-scoped keys only. Today the pool is visible as Dendro-tinted swings and Projection pips on the aura lane. Whether it deserves its own row is a visual call (Nate).
 - A typed `{mirrors:N}` still writes the pool and has no instances behind it, so it holds until the swap. That falls under the to-do's typed-count re-examination.
+
+## 6. Follow-ups, same day (⚓ Nate: "can we knock those out, too?")
+
+**Engine.**
+
+1. **`ElementalApplication.minStacksAtCast {key, min}`**: a cast's own entry that lands only when the caster held `min` of `key` at the press. It is read in the cast pipeline against the cast's snapshot (post-gain, pre-consume) before anything reads `castApps` (lint D.56). The frames audit's empty-core replay drops every gated entry, the `whileStance` precedent.
+2. **A proc's landing reaches the `onHit` cooldown reducer** (`fireProc` in `sim/aura.ts`), once per fire at its first landing. Before, only `dispatchHit`'s hits did. The other reducer authors (Arlecchino, Kujou Sara, Raiden, Varka) cannot hear a proc: none of them listens to the class a proc lands as, or owns one. The summon-tick stream still does not reach the reducer.
+3. **`BuffEffect.opensAfter`**: a cast-anchored window that opens that many seconds after its `onCast` trigger, and only if its holder is on field then (`partitionCastPool` in `buffWindows.ts`, the one anchor of every cast pool; lint B.14b). ⚠️ The Mirror refill's grant checks the turn and this checks who is on field, so a swap out and back inside the 184f drops the grant and keeps the bar. That case is too narrow to unify for.
+4. **An `onHit` buff's `procCooldown` holds on the swing surfaces.** All four block loops in `buffWindows.ts` now keep it, as the hit pass and the cast pools already did. One Charged Attack's two landings drew Alhaitham's A1-gated C2 stack twice. Arlecchino's C2 RES drew again off a second Charged Attack 311f after the first, inside gcsim's 10s ICD; it no longer does (`buffWindows.test.ts`). ⏭ Her Q's copy and the Charged copy still keep separate clocks, one per surface.
+
+**Data.**
+
+- **Burst:** instances five to ten (178 … 283), gated 1, 1, 2, 2, 3, 3. Units on 220 and 262, where the standard window applies.
+- **C1:** `cooldownReduce` 1.2s off the skill on a hit attributed to the Projection Attack, `procCooldown 1` (gcsim's 60f).
+- **C2:** the E draws +100 from an empty pool or +50, opening 15f after a tap and 23f after a hold. A1 draws +50 at its hit. The refill draws 50 × (3 − consumed) at 184f, on field only, and +150 at C6.
+- **C4:** the party's EM is `perStack` 30 per Mirror on the burst's pre-consume snapshot, gated min 1. His Dendro DMG Bonus is 10% per refilled Mirror in three tiers, opening at 184f, on field only, and 30% at C6.
+
+**Measured.** `mirrors.test.ts` grows to 14 tests:
+
+- burst instances for 0, 2 and 3 Mirrors (94/157; 122/185/248; 231/294/357/399);
+- C1, four fires taking 288f off the next E;
+- C2 at 15/+100, then 184/+150, 222/+50 and 270/+50 with no bar at 278, and nothing after a swap;
+- C4's party EM reading 2 Mirrors, the Dendro bonus at 212/10% (30% at C6), and no party EM with none consumed.
+
+Corpus, the previous commit against this one: 11 of 1,152 rotations differ, 9 of them Alhaitham's and 2 Arlecchino's (item 4).
+
+**Caveat wording proposed to Nate** (lands on his ruling):
+
+1. C2: "Each bar is one trigger's Mirrors. In game only four stacks run at once, so where bars overlap their total can read higher than in game."
+2. C4: delete. Every value and start now matches, so no pixel is wrong.
