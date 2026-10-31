@@ -49,7 +49,8 @@ Drawn or rendered for critcalc. It is not covered by either license above: you m
 - **The social card**: `static/assets/og/`
 - **The scene plates** (the rendered sky and floor): `static/assets/landing/sky-*`, `static/assets/landing/floor-*`
 - **The landing card artwork**: the path data in `src/lib/landing/heroArt.ts`
-- **The site chrome's About and Help glyphs**: their inline SVG artwork in `src/lib/components/SiteChrome.svelte`
+- **The top bar's Help glyph**: its inline SVG artwork in `src/lib/components/TopBar.svelte`
+- **The bench ribbon's tail**: its path data in `src/lib/benchBand.svelte.ts`
 - **The capability glyphs drawn for critcalc**: `static/assets/effects/Icon_Attribute_Cleanse.svg`, `Icon_Attribute_Taunt.svg`, `Icon_Attribute_DMG_Buff.svg` (DMG%), `Icon_Attribute_RES_Shred.svg`, `Icon_Attribute_Grouping.svg`, `Icon_Attribute_Infusion.svg` and `Icon_Attribute_Interruption_Res.svg`, and their paths in `src/lib/fingerprintGlyphs.generated.ts`
 - **The constellation marks**: `static/assets/constellations/` and `src/lib/constellationMarks.generated.ts`. The glyphs are cut from IBM Plex Sans (SIL OFL 1.1; see `THIRD_PARTY_NOTICES.md`).
 - **The vortex plate** from the retired portal transition: `static/assets/transitions/`
@@ -68,7 +69,8 @@ critcalc's licenses do not cover HoYoverse's material. It is used here as fan co
 - `static/assets/elements/` — element icons, including the `tinted/` set generated from them, and the `lunar`, `omni` and `stellar` icons traced from art the game uses
 - `static/assets/effects/` — attribute icons. The `.webp` files are the game's own icons. The other `.svg` files (and their paths in `src/lib/fingerprintGlyphs.generated.ts`) are traced from the game's own icons; the seven drawn for critcalc are listed above.
 - `static/assets/roles/` — the Imaginarium Theater role icons
-- The site chrome's Settings glyph (inline in `src/lib/components/SiteChrome.svelte`), traced from the game's settings icon
+- The top bar's Settings, navigation and Teams glyphs (inline in `src/lib/components/TopBar.svelte`), traced from the game's own icons
+- The Artifact odds instrument's notification mark (inline in `src/routes/(scene)/(tools)/visualizers/lib/ArtifactInstrument.svelte`), drawn after one of the game's marks
 - `static/assets/endgame/` — Spiral Abyss and Stygian Onslaught boss art, sprites and blessing art
 
 Game numbers (scalings, cooldowns, frame counts) are facts about the game. They appear in the data as measurements.

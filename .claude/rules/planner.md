@@ -44,7 +44,7 @@ Budget: about 10,000 characters. Records: `docs/rounds/planner-slots-round.md`, 
 ## The aside
 
 - `plannerView.aside` is `'notes' | 'log' | 'inspector' | null`. The exclusivity lives in that state, never in button handlers.
-- In the live layout the occupants are the aura Log and the Inspector (Notes is old-layout only). Log disables when there is no aura log; the Inspector is never disabled and is wider (`--rp-inspector-w`).
+- The occupants are the aura Log and the Inspector. The `'notes'` value is unreachable and goes with the old document model (`docs/todo.md`). Log disables when there is no aura log; the Inspector is never disabled and is wider (`--rp-inspector-w`).
 
 ## The bench
 

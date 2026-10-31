@@ -102,7 +102,7 @@ export type BenchHostRegistration = {
  *  236.47 — trailing letter-spacing + the p's side bearing), so the ribbon
  *  measured 203. 🎛️ tune(nate): 210 by eye (205 → 207 → 208 → 210), so
  *  the card is 210 − 2 × RIBBON_CHROME = 186 — his value, ⛔ never re-derived. ⚠ RE-MEASURE if the
- *  wordmark's face, size or tracking moves (SiteChrome `.chrome-wordmark`),
+ *  wordmark's face, size or tracking moves (TopBar `.tb-wordmark`),
  *  or if the mark is redrawn.
  *
  *  The portrait round first cut it 200 → 165: The side portrait

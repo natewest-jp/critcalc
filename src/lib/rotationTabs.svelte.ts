@@ -56,8 +56,8 @@
  * store's write land as a CodeMirror transaction).
  *
  * SSR/hydration safety: the module initializes the same deterministic default
- * on server and client (one empty tab); localStorage state is restored by the
- * tools layout's onMount (pre-paint). Persistence is an $effect in the tools
+ * on server and client (one empty tab); the storage session restores the real
+ * state (`restoreFrom`). Persistence is an $effect in the tools
  * layout too — it must run for EVERY tool, since the TB edits this state while
  * the planner page is unmounted. Nothing here reads a store or the DOM, and
  * SSR only ever reads this state, so module-level state is safe under
@@ -136,10 +136,8 @@ export { TEAM_SIZE, seatsOfSaved };
  * Notation → the four slot ids it implies: the first four distinct character
  * names in segment order, padded with 'blank'. THE team, since single truth.
  *
- * ⚠ ONE COPY, and it is here because two already existed (prewarmPlanner
- * hand-rolled a mirror to run before this store is restored). It is a pure
- * string → string[] with no runes, so the pre-restore caller can use it as
- * freely as the reactive one.
+ * ⚠ ONE COPY, and it is here because two already existed. It is a pure
+ * string → string[] with no runes.
  *
  * ↻ 2026-08-13: resolution moved to the TOKENIZER (notationEdit.orderedCharacterIds)
  * from a word-prefix scan of `notation.split('>')`. The two agreed on every
@@ -155,8 +153,7 @@ export function slotsFromNotation(notation: string): string[] {
 }
 
 /** The character ids a tab actually needs loaded. 'blank' is not a character.
- *  Still tolerates a legacy `manualSlots`: the planner's navigation-start
- *  prewarm reads RAW localStorage, before restore() has migrated anything. */
+ *  Still tolerates a legacy `manualSlots` (the type allows one). */
 export function tabCharacterIds(
 	tab: Pick<RotationTab, 'notation' | 'slots'> & LegacyTeam
 ): string[] {
@@ -336,7 +333,7 @@ class RotationTabsState {
 		return out;
 	}
 
-	/** Flips true once restore() has run. Gates the persist effect so the
+	/** Flips true once restoreFrom() has run. Gates the persist effect so the
 	 *  pre-restore default state can never clobber saved tabs. */
 	restored = $state(false);
 

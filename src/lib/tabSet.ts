@@ -100,7 +100,7 @@ export function createRecentlyClosed<T extends { id: string }>(key: string) {
 }
 
 /**
- * What band A's tab strip (`DocumentTabs`) needs from a kind of document — so
+ * What the old layout's tab strip needed from a kind of document — so
  * the Planner's rotations and the Team Builder's boards share ONE strip, in
  * the same grammar (⚓ Nate §2.2: "so people already know how they behave").
  * Implementations expose `tabs`/`activeId` as getters over their own state.

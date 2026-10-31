@@ -100,8 +100,8 @@
 	});
 
 	// Auto-persist: persist() reads every persisted field, so this effect
-	// re-runs on any tab-state change. Writes only to localStorage — never to
-	// $state — so there's no circular reactivity.
+	// re-runs on any tab-state change. Writes only to the session's sink —
+	// never to $state — so there's no circular reactivity.
 	$effect(() => {
 		rotationTabs.persist();
 	});
@@ -1087,10 +1087,6 @@
 	{/key}
 {/if}
 
-<!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing
-     the ascend reveals and fades, and nothing about a settings panel belongs
-     to that choreography. -->
-
 <style>
 	.tool-shell {
 		position: absolute;
@@ -1208,7 +1204,7 @@
 
 	/* ── Chrome strip ──────────────────────────────────────────────────────── */
 
-	/* Fixed mount for the shared chrome (SiteChrome renders in flow; every host
+	/* Fixed mount for the shared chrome (the top bar renders in flow; every host
 	   pins it — the scene layout's .scene-chrome is the counterpart).
 	   Fixed strip, take two (scroll-under round, 2026-07-24): originally backed
 	   by the dire border's top waves + scrim; the border retired 2026-08-05, so

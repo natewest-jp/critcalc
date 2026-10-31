@@ -1600,7 +1600,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		bx += lw + BRAND_GAP;
 	}
 	base.font = `${BRAND_WEIGHT_PNG} ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
-	// --ls-tight (0.02em), as `.chrome-wordmark` tracks it. ⚠ Set it here and
+	// --ls-tight (0.02em), as TopBar's `.tb-wordmark` tracks it. ⚠ Set it here and
 	// not through `type()`: unset, the wordmark drew untracked (or kept a stale
 	// spacing from the label before it), which read as a HEAVIER wordmark than
 	// the chrome's (⚓ Nate, 2026-10-18).

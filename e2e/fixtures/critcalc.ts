@@ -10,7 +10,8 @@ import { test as base, expect, type Page } from '@playwright/test';
  * isolation and what the old one-long-script probes could not offer.
  */
 
-/** localStorage keys the app restores from on mount (see src/lib/stores.ts). */
+/** localStorage keys from before the profiles layout: the migration reads them
+ *  once, into IndexedDB (see src/lib/storage/migrate.ts). */
 export const KEYS = {
 	tabs: 'critcalc:rotationTabs',
 	constellations: 'critcalc:constellations',

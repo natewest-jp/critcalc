@@ -96,11 +96,9 @@ Nothing else on the site could disobey the ink contract that completely.
   math, `buffDisplay` strings). The law is about code points the text font
   doesn't cover, **not about punctuation**. A blind find-and-replace mangles copy.
 
-↻ **2026-10-23 (Nate): under `?next` every slate surface closes with the INSPECTOR's ✕** (`btn btn--icon` + `<Mark name="close" size={16}/>`: InspectModal, the menu state, the phone drawer). Nothing in the new layout uses the drawn close art now; `CloseMark` + `assets-src/tools/close.svg` live only in the old layout (ChromeOverlay, the old DetailCard, the drawer off-switch) and retire at step 5. Also 2026-10-23: `library` = Lucide `Library` (filled, live too), `help` = `CircleQuestionMark`, `about` = `Info` (the `?` menu). Nate keeps redrawing the disc glyphs in `assets-src/tools/` (incl. an unused `about.svg`): a "swap them in" = copy each file's path `d` into its inlined `<svg>` (TopBar share/help; MenuState no longer has one).
-⚠️ **`CloseMark` is NOT a duplicate of `close`** and must not be merged: it is
-Nate's filled disc-with-a-hole artwork for the heavy overlay/modal dismiss
-(28px), a different role from the 11px inline stroke close. Same for the
-planner's notes badge (two-fill artwork).
+↻ **2026-10-23 (Nate): every slate surface closes with the INSPECTOR's ✕** (`btn btn--icon` + `<Mark name="close" size={16}/>`: InspectModal, the menu state, the phone drawer). The drawn close art (`CloseMark`, `assets-src/tools/close.svg`) retired with the old layout. Also 2026-10-23: `library` = Lucide `Library` (filled, live too), `help` = `CircleQuestionMark`, `about` = `Info` (the `?` menu). Nate keeps redrawing the disc glyphs in `assets-src/tools/` (incl. an unused `about.svg`): a "swap them in" = copy each file's path `d` into its inlined `<svg>` (TopBar share/help; MenuState no longer has one).
+⚠️ **The planner's notes badge is NOT a duplicate of a Lucide mark** and must
+not be merged: it is two-fill artwork.
 
 `BenchBand`'s hand-cut ⇄/✕ paths joined the set; **`BB_GLYPH` (17) is the one
 size knob** — ⚓ NATE, since the proportions are Lucide's now, not the hand-cut
@@ -159,4 +157,4 @@ selector can't read as a pass.
 - ⚠⚠ **Inlined SVG ART (not Lucide) needs per-INSTANCE gradient ids.**
   - Affinity names every export's gradients `_Linear1`/`_Linear2`, and inlined ids are page-global. A clash, or a copy inside a `display:none` subtree (which Chrome won't paint), hands `url(#…)` the wrong gradient.
   - Use `$props.id()`. Pin `fill-opacity="1"` on shading layers so the chrome's inherited 0.85 doesn't dim the artwork.
-  - The chrome Roster marks (Aether/Lumine, SiteChrome.svelte) are the worked example. They are sized by luminous ink per height² (the compass method), and Lumine is aligned to Aether by nose tip + chin read from the path data.
+  - The worked example was the old chrome's Roster marks (Aether/Lumine), retired with the old layout: sized by luminous ink per height² (the compass method), Lumine aligned to Aether by nose tip + chin read from the path data. `VeilGround.svelte` is a live user of `$props.id()`.

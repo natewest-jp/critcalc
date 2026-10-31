@@ -80,10 +80,9 @@ import { TOOL_GUTTER } from './toolGutter.ts';
  * view row. With no ground there is nothing for a control to be inset from, so
  * the row is exactly its contents.
  *
- * ⚠ RE-MEASURE THIS IF A BAND A CONTROL'S TYPE OR PADDING MOVES. The row no
- * longer has slack to absorb a taller control: it would simply overflow, and
- * the first thing you would see is the bench ribbon's head landing 1–2px off
- * (`ribbonHead` derives from BAND_STACK_TO_SURFACE, below).
+ * ↻ 2026-10-31: band A retired with the old layout. The constant survives
+ * only inside BAND_STACK_TO_SURFACE, which `ribbonHead` subtracts it back
+ * out of, so changing it moves nothing.
  */
 export const BAND_A_H = 29;
 

@@ -1273,8 +1273,7 @@
 {/snippet}
 
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
-     teams at once, so it cannot hold the Planner's one working team; band A is
-     the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
+     teams at once, so it cannot hold the Planner's one working team. -->
 <ToolStack fill>
 	<!-- ── BAND B, CUT AT THE DOCK (§11.6) ───────────────────────────────────
 	     The Visualizers' shape: band B paints no ground and lays its cells on

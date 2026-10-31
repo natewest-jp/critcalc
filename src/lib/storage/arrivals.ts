@@ -12,8 +12,10 @@
 let settle!: (viaStore: boolean) => void;
 
 /** Settles once the tools layout has decided where documents live: `true`
- *  when the storage session took over, `false` when it fell back to
- *  localStorage (no IndexedDB), where arrivals take today's path. */
+ *  when the storage session took over (on IndexedDB, the localStorage
+ *  stand-in, or a store in memory), `false` only when even the store in
+ *  memory failed, where arrivals land in the tools' defaults and persist
+ *  nowhere. */
 export const documentsReady: Promise<boolean> = new Promise((r) => (settle = r));
 
 export const settleDocuments = (viaStore: boolean): void => settle(viaStore);

@@ -1674,7 +1674,7 @@
 				</div>
 				{@render spec(
 					'.tab · .active · .tab--lg · .tab--closeable',
-					'ONE tab system, body face — drops Bitter and the 5px radius. ⚠ No .tab renders in the new layout: the document tabs lived in band A, which is gone (the document is the top bar’s), and AreaTabs serves only the old modal Help. The class stays until step 5 retires the old layout; --lg has had no consumer since 2026-08-09'
+					'ONE tab system, body face — drops Bitter and the 5px radius. ⚠ No .tab renders in the live site: the document tabs lived in band A, which is gone (the document is the top bar’s). The class stays until step 5 retires the old layout; --lg has had no consumer since 2026-08-09'
 				)}
 			</div>
 		</div>
@@ -2010,11 +2010,8 @@
 						mangles copy.
 					</li>
 					<li>
-						<strong>Two marks are deliberately NOT in the set.</strong>
-						<code>CloseMark</code> is Nate's filled disc-with-a-hole artwork for the heavy overlay
-						dismiss — a different role from the inline stroke <code>close</code>, not a duplicate of
-						it. The planner's notes badge is two-fill artwork rather than a
-						<code>currentColor</code> stroke.
+						<strong>One mark is deliberately NOT in the set.</strong> The planner's notes badge is
+						two-fill artwork rather than a <code>currentColor</code> stroke.
 					</li>
 					<li>
 						<code>marks.test.ts</code> proves the set is coherent; it cannot prove the site stopped

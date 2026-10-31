@@ -227,8 +227,9 @@
 		   band gap. Published for a surface that has to know where it begins on
 		   screen — the planner's sticky aside (ToolColumns `asideSticky`, sweep
 		   2026-10-15 §3 item 11). Here rather than inline because the row form
-		   overrides it from a media query. ⚠ It counts band A: a tool that hides
-		   band A (the Visualizers, via bandAClass) must not read it. */
+		   overrides it from a media query. ⚠ BAND_STACK_TO_SURFACE (JS) still
+		   carries band A's height, which `ribbonHead` subtracts; this form has
+		   none. */
 		--stack-to-surface: calc(var(--band-b-h) + var(--band-stack-gap));
 	}
 

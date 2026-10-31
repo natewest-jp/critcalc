@@ -304,8 +304,7 @@
 								>
 							</button>
 						{/if}
-						<!-- Per TILE, because band A (the workspace's) is absent below
-						     1360px, and so the report carries this instrument's link. -->
+						<!-- Per TILE, so the report carries this instrument's link. -->
 						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
 							{#snippet items(close)}
 								{#if handles[id]?.reset}
@@ -446,8 +445,8 @@
 
 	/* THE FOLD, reaching band B (responsive sweep, 2026-10-15). Below
 	   BP.compact ($lib/breakpoints.ts — 40rem) Defaults and Share drop their
-	   WORDS and keep their marks, the same fold band A's DocumentActions has
-	   had since 2026-09-05. The picker shrinks first and these plates never
+	   WORDS and keep their marks, the fold the old document actions had
+	   since 2026-09-05. The picker shrinks first and these plates never
 	   do, so at 320 the one label saying WHICH instrument you are looking at
 	   read "DAMA…" beside two worded buttons (Damage Breakdown ellipsised by
 	   104px). The `title`s still carry the words. A FAILED share keeps its

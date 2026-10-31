@@ -30,7 +30,7 @@
  * follow the roster live; a shared board arrives with every value filled in.
  *
  * SSR/hydration: the same deterministic default (one empty board) on server
- * and client; `restore()` runs from the tools layout's onMount.
+ * and client; the storage session restores the real state (`restoreFrom`).
  */
 
 import { characterKey } from './data/characterLookup';
