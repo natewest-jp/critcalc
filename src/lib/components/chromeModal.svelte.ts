@@ -17,8 +17,6 @@
 
 import { resolve } from '$app/paths';
 import type { ChromeAreaId } from '$lib/help/areas';
-import { get } from 'svelte/store';
-import { nextLayout } from '$lib/nextLayout';
 import { chapterSection, menu } from '$lib/menuState.svelte';
 
 export type ChromeModalState =
@@ -40,13 +38,11 @@ export function openArea(area: ChromeAreaId, chapter: string): void {
 	// ⚓ Under the switch (build plan §13, 2c) Help and About are sections of
 	// the menu state, so every door into them — a chapter's link, Coverage's
 	// opener — goes there.
-	if (get(nextLayout)) return menu.show(chapterSection(area, chapter));
-	state = { kind: 'area', area, chapter };
+	menu.show(chapterSection(area, chapter));
 }
 
 export function openSettings(): void {
-	if (get(nextLayout)) return menu.show('settings');
-	state = { kind: 'settings' };
+	menu.show('settings');
 }
 
 /**
@@ -68,8 +64,7 @@ export function openSettings(): void {
  * Derivation: docs/rounds/responsive-survey-2026-09-01.md § 8.2.
  */
 export function openNav(): void {
-	if (get(nextLayout)) return menu.show('index');
-	state = { kind: 'nav' };
+	menu.show('index');
 }
 
 export function closeChromeModal(): void {

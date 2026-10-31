@@ -32,7 +32,6 @@
 	import CompositionChips from '$lib/components/CompositionChips.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, ownership, type SavedNotation } from '$lib/stores';
-	import { nextLayout } from '$lib/nextLayout';
 	import {
 		effectiveCon,
 		heldElsewhere,
@@ -392,8 +391,7 @@
 	function teamFacts(team: BoardTeam) {
 		const ids = team.slots.filter((s): s is string => !!s);
 		const own = teamCon(team, bank);
-		const conOf = (id: string) =>
-			effectiveCon(own, $constellations, id, $nextLayout ? $ownership : undefined);
+		const conOf = (id: string) => effectiveCon(own, $constellations, id, $ownership);
 		return { ids, own, conOf, fingerprint: ids.length ? teamFingerprint(ids, conOf) : null };
 	}
 	/** The team a pick of `previewId` would make — the pick is the game's

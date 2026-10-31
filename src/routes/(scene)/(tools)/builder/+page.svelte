@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
-	import { nextLayout } from '$lib/nextLayout';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -12,13 +11,11 @@
 		siteSettings,
 		ownership,
 		savedBoards,
-		savedNotations,
 		type SavedNotation
 	} from '$lib/stores';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
 		FACETS,
-		OWNERSHIP_VIEWS,
 		conCapFor,
 		facetBadges,
 		splitRoster,
@@ -52,7 +49,7 @@
 	import { library } from '$lib/library.svelte';
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
-	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
+	import { FOLD_LENS_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
@@ -227,7 +224,7 @@
 	 *  old bank otherwise. */
 	let sessionMod = $state<typeof import('$lib/storage/session.svelte') | null>(null);
 	onMount(() => {
-		if ($nextLayout) void import('$lib/storage/session.svelte').then((m) => (sessionMod = m));
+		void import('$lib/storage/session.svelte').then((m) => (sessionMod = m));
 	});
 	let storeRotations = $state<SavedNotation[]>([]);
 	$effect(() => {
@@ -238,15 +235,13 @@
 		void s.profile?.id;
 		void s.savedRotations().then((list) => (storeRotations = list));
 	});
-	const bank = $derived($nextLayout ? storeRotations : $savedNotations);
+	const bank = $derived(storeRotations);
 
 	/** The Theorycraft profile has NO roster (↻ 2026-10-25): nothing is owned,
 	 *  wishlisted or levelled there, so the controls that read a roster go —
 	 *  Owned/Wishlist, the "My constellations" lens and the empty-roster hint.
 	 *  Undecided (false) until the lazy session has loaded. */
-	const theorycraft = $derived(
-		$nextLayout && sessionMod?.storageSession.profile?.kind === 'theorycraft'
-	);
+	const theorycraft = $derived(sessionMod?.storageSession.profile?.kind === 'theorycraft');
 
 	/** A team placed from Teams' Add to a lineup (design §3) arrives selected,
 	 *  on the Lineup, so you see where it went. */
@@ -270,22 +265,20 @@
 		if (pendingSwapSlot === null && !errandOpen && boardHasAnyone) tab = 'lineup';
 	});
 
-	/** The character cell's width in band B — it folds Show, then the lens,
-	 *  into More when the cell runs out (`FOLD_*_W`, lib/dock). 0 before the
-	 *  first measure, so the first paint is the folded one. */
+	/** The character cell's width in band B — it folds the lens into More
+	 *  when the cell runs out (`FOLD_LENS_W`, lib/dock). 0 before the first
+	 *  measure, so the first paint is the folded one. */
 	let charCellW = $state(0);
-	const foldShow = $derived(charCellW < FOLD_SHOW_W);
 	const foldLens = $derived(charCellW < FOLD_LENS_W);
-	/** Where Owned/Wishlist live. Under the switch: the filter strip's first
-	 *  group at width, More below `compact` (where the strip is plates), and
-	 *  nowhere in Theorycraft. The old layout: band B's Show segment until the
-	 *  cell folds it into More. */
-	const ownershipInMore = $derived($nextLayout ? below('compact') && !theorycraft : foldShow);
+	/** Where Owned/Wishlist live: the filter strip's first group at width,
+	 *  More below `compact` (where the strip is plates), and nowhere in
+	 *  Theorycraft. */
+	const ownershipInMore = $derived(below('compact') && !theorycraft);
 	/** ↻ 2026-10-25 demo: first tried as the filter strip's first group, which
 	 *  wrapped the strip to two rows at a 1456px window (the column is ~715px
 	 *  and the strip was already full). Now a two-mark pair in the band, after
 	 *  Search. */
-	const ownershipInBand = $derived($nextLayout && !below('compact') && !theorycraft);
+	const ownershipInBand = $derived(!below('compact') && !theorycraft);
 	const OWN_TOGGLES = [
 		{ key: 'owned', mark: 'check', label: 'Owned' },
 		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
@@ -507,28 +500,15 @@
 	 *  seated and resting (§10.2; design §8.1). Either opens in a NEW tab, so
 	 *  nothing open is replaced. */
 	function openInPlanner(team: BoardTeam): void {
-		// ⚓ Under the switch (build plan §13, phase 3) the team plans in the
-		// CURRENT profile: an arriving document would open in Theorycraft.
-		if ($nextLayout) {
-			void (async () => {
-				const { storageSession } = await import('$lib/storage/session.svelte');
-				const pin = team.pinnedRotationId;
-				if (pin && (await storageSession.exists(pin))) await storageSession.open(pin);
-				else await storageSession.planTeam(team.slots, team.con);
-				void goto(resolve('/planner'));
-			})();
-			return;
-		}
-		const pinned = pinnedRotation(team, $savedNotations);
-		if (pinned) documentBar.loadNewTab(pinned);
-		else {
-			// The board's own slot positions, gaps included: slots are keys now.
-			documentBar.receive(
-				{ ...rt.teamDocument(team.slots, board.label), tabCon: { ...(team.con ?? {}) } },
-				'Team opened'
-			);
-		}
-		void goto(resolve('/planner'));
+		// ⚓ The team plans in the CURRENT profile (build plan §13, phase 3): an
+		// arriving document would open in Theorycraft.
+		void (async () => {
+			const { storageSession } = await import('$lib/storage/session.svelte');
+			const pin = team.pinnedRotationId;
+			if (pin && (await storageSession.exists(pin))) await storageSession.open(pin);
+			else await storageSession.planTeam(team.slots, team.con);
+			void goto(resolve('/planner'));
+		})();
 	}
 
 	/**
@@ -1078,8 +1058,7 @@
 	const swapConOf = $derived.by(() => {
 		const own = swapTeam ? teamCon(swapTeam, bank) : {};
 		const roster = mounted ? $constellations : {};
-		const owned = $nextLayout ? $ownership : undefined;
-		return (id: string) => effectiveCon(own, roster, id, owned);
+		return (id: string) => effectiveCon(own, roster, id, $ownership);
 	});
 	/** The battlefield's checks, when the team stands on one. */
 	const swapChecks = $derived.by(() => {
@@ -1098,7 +1077,7 @@
 	const detailDelta = $derived.by(() => {
 		const id = selectedId;
 		const team = selectedTeam;
-		if (!$nextLayout || !id || !team || swapping) return null;
+		if (!id || !team || swapping) return null;
 		const ids = team.slots.filter((x): x is string => !!x);
 		const inTeam = ids.includes(id);
 		if (!inTeam && !team.slots.includes(null)) return null;
@@ -1400,7 +1379,7 @@
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
-<ToolStack fill noBandA={$nextLayout}>
+<ToolStack fill noBandA>
 	{#snippet bandALeft()}
 		<DocumentTabs model={tabStrip} newItems={presetItems} />
 	{/snippet}
@@ -1463,20 +1442,6 @@
 		<div class="tb-band" class:tb-band--tabbed={tabbed}>
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
-					{#if !foldShow && !$nextLayout}
-						<div class="segment tb-show" role="radiogroup" aria-label="Show">
-							{#each OWNERSHIP_VIEWS as v (v.key)}
-								<button
-									class="btn"
-									class:is-active={ownershipView === v.key}
-									role="radio"
-									aria-checked={ownershipView === v.key}
-									title={v.hint}
-									onclick={() => (ownershipView = v.key)}>{v.label}</button
-								>
-							{/each}
-						</div>
-					{/if}
 					<!-- The mark is painted OVER the field, so .field keeps owning its
 						     inset stroke and focus ring (the old rail's search, same reasoning). -->
 					<div class="tb-search">
@@ -1541,19 +1506,17 @@
 							{/snippet}
 						</BandMenu>
 					{/if}
-					{#if $nextLayout}
-						<!-- ↻ 2026-10-25: Clear stands in the band, always, as the
-						     lineup's does — at the strip's end it came and went, and
-						     took a row of its own when it came. -->
-						<button
-							class="btn btn--glass tb-clear"
-							aria-label="Clear every filter"
-							title="Clear every filter"
-							disabled={!anyFilterActive}
-							onclick={clearAllFilters}
-							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
-						>
-					{/if}
+					<!-- ↻ 2026-10-25: Clear stands in the band, always, as the
+					     lineup's does — at the strip's end it came and went, and
+					     took a row of its own when it came. -->
+					<button
+						class="btn btn--glass tb-clear"
+						aria-label="Clear every filter"
+						title="Clear every filter"
+						disabled={!anyFilterActive}
+						onclick={clearAllFilters}
+						><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+					>
 					<!-- TRIAL (responsive sweep 2026-10-15 item 26, D2): "Lineup" ends
 					     the band, beside the edge its pane docks on (panelRight);
 					     "Characters" still leads the Lineup cell, on the left. -->
@@ -1617,21 +1580,19 @@
 							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
 							>
 						</button>
-						{#if $nextLayout}
-							<!-- ⚓ SHARE, at the toolbar's end over the lineup it shares (Nate
-							     2026-10-25): a DOCUMENT verb, so it left the top bar. One action
-							     here (the link), so a plate, not a menu; the mark alone below
-							     `compact`, like every band control. -->
-							<button
-								class="btn btn--glass tb-share"
-								aria-label="Share this lineup"
-								title="Copy a link to this lineup"
-								disabled={!boardHasAnyone}
-								onclick={() => void boardBar.shareLink().then((o) => sayOutcome(o, shareAnswer))}
-								><Mark name={shareAnswer.now ? (shareAnswer.now.ok ? 'check' : 'warn') : 'share'} />
-								<span class="tb-band-label">{shareAnswer.now?.short ?? 'Share'}</span></button
-							>
-						{/if}
+						<!-- ⚓ SHARE, at the toolbar's end over the lineup it shares (Nate
+						     2026-10-25): a DOCUMENT verb, so it left the top bar. One action
+						     here (the link), so a plate, not a menu; the mark alone below
+						     `compact`, like every band control. -->
+						<button
+							class="btn btn--glass tb-share"
+							aria-label="Share this lineup"
+							title="Copy a link to this lineup"
+							disabled={!boardHasAnyone}
+							onclick={() => void boardBar.shareLink().then((o) => sayOutcome(o, shareAnswer))}
+							><Mark name={shareAnswer.now ? (shareAnswer.now.ok ? 'check' : 'warn') : 'share'} />
+							<span class="tb-band-label">{shareAnswer.now?.short ?? 'Share'}</span></button
+						>
 					{/if}
 				</div>
 			{/if}
@@ -1700,7 +1661,6 @@
 		count={swapping || selectedTeam ? undefined : split.matches.length}
 		{countNote}
 		anyActive={anyFilterActive}
-		onClear={$nextLayout ? undefined : clearAllFilters}
 	/>
 	<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
 	     filter and the "My constellations" lens read the roster, and do

@@ -83,8 +83,6 @@ import {
 import { safeSetItem, type LoadoutEntry } from '$lib/stores';
 import type { TeamRecord } from '$lib/storage/records';
 import { teamOfSlots } from '$lib/storage/teamLoadout';
-import { get } from 'svelte/store';
-import { nextLayout } from '$lib/nextLayout';
 import { TAB_LIMIT } from '$lib/tabSet';
 import { pickSample } from '$lib/data/plannerSamples';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -311,23 +309,20 @@ class RotationTabsState {
 	team = $derived(this.rosterless ? null : (teamOfSlots(this.teams, this.seats) ?? null));
 
 	/**
-	 * ⚓ THE ONE RESOLVER for the layer a rotation's own loadout sits on. Under
-	 * the switch it is the rotation's TEAM's (the roster's default retired
-	 * into teams, Nate 2026-10-24) and nothing without one; off it, today's
-	 * roster default.
+	 * ⚓ THE ONE RESOLVER for the layer a rotation's own loadout sits on: the
+	 * rotation's TEAM's (the roster's default retired into teams, Nate
+	 * 2026-10-24), and nothing without one.
 	 */
-	inheritedLoadout(roster: Record<string, LoadoutEntry>): Record<string, LoadoutEntry> {
-		if (!get(nextLayout)) return roster;
+	inheritedLoadout(): Record<string, LoadoutEntry> {
 		return this.team?.loadout ?? {};
 	}
 
 	/**
 	 * ⚓ THE ONE RESOLVER for a character's constellation in this rotation
-	 * (design §2.4). Under the switch an OWNED character reads the roster, live:
-	 * a level of its own would be a what-if, and a what-if is a Theorycraft copy
-	 * (§4.6), never an edit. An unowned character keeps the document's own value.
-	 * A guest reads only its own. Off the switch, today's two layers: the tab's
-	 * value, else the roster's.
+	 * (design §2.4). An OWNED character reads the roster, live: a level of its
+	 * own would be a what-if, and a what-if is a Theorycraft copy (§4.6), never
+	 * an edit. An unowned character keeps the document's own value, else the
+	 * roster's. A guest reads only its own.
 	 */
 	levelOf(
 		id: string,
@@ -335,7 +330,7 @@ class RotationTabsState {
 		owned: Record<string, 'owned' | 'wishlist'>
 	): number {
 		if (this.rosterless) return this.tabCon[id] ?? 0;
-		if (get(nextLayout) && owned[id] === 'owned') return roster[id] ?? 0;
+		if (owned[id] === 'owned') return roster[id] ?? 0;
 		return this.tabCon[id] ?? roster[id] ?? 0;
 	}
 

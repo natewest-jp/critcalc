@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from './rotationTabs.svelte';
 import { documentBar as db, recentlyClosedRotations, worthKeeping } from './documentBar.svelte';
 import { closeCandidate } from './tabSet';
 import { savedNotations } from './stores';
 import { notices } from './notices.svelte';
+import { documentsReady, settleDocuments } from './storage/arrivals';
 
 /**
  * `adopt` — where an INCOMING document goes (a shared `?r=` link, a `?team=`
@@ -113,14 +114,22 @@ describe('rotationTabs.adopt', () => {
  */
 describe('documentBar.receive — the make-room confirm', () => {
 	const closed = () => get(recentlyClosedRotations).map((e) => e.tab);
+	// The local path: the storage session never took over (it failed to
+	// start), so arrivals settle on the tools' own tab models.
+	beforeAll(() => settleDocuments(false));
+	const receive = async (...args: Parameters<typeof db.receive>) => {
+		db.receive(...args);
+		await documentsReady;
+		await Promise.resolve();
+	};
 	beforeEach(() => {
 		recentlyClosedRotations.clear();
 		db.room = null;
 	});
 
-	it('lands directly when there is room', () => {
+	it('lands directly when there is room', async () => {
 		seed(busy(2));
-		db.receive(rt.teamDocument(['bennett', 'xiangling']), 'Team loaded');
+		await receive(rt.teamDocument(['bennett', 'xiangling']), 'Team loaded');
 		expect(db.room).toBeNull();
 		expect(rt.tabs).toHaveLength(3);
 		// ⚓ §8.1: a team arrives SEATED, resting, in an empty notation — ⛔ the
@@ -129,19 +138,19 @@ describe('documentBar.receive — the make-room confirm', () => {
 		expect(rt.seats).toEqual(['bennett', 'xiangling', null, null]);
 	});
 
-	it('at the limit, ASKS — and changes nothing until answered', () => {
+	it('at the limit, ASKS — and changes nothing until answered', async () => {
 		seed(busy(TAB_LIMIT), 't2');
 		const shape = () => rt.tabs.map((t) => [t.id, t.label, t.notation]);
 		const before = shape();
-		db.receive({ ...doc }, 'Loaded shared rotation');
+		await receive({ ...doc }, 'Loaded shared rotation');
 		expect(db.room).not.toBeNull();
 		expect(shape()).toEqual(before);
 		expect(rt.activeTabId).toBe('t2');
 	});
 
-	it('confirming closes the chosen tab INTO Recently closed, then lands', () => {
+	it('confirming closes the chosen tab INTO Recently closed, then lands', async () => {
 		seed(busy(TAB_LIMIT), 't2');
-		db.receive({ ...doc }, 'Loaded shared rotation');
+		await receive({ ...doc }, 'Loaded shared rotation');
 		db.confirmRoom('t5');
 		expect(rt.tabs).toHaveLength(TAB_LIMIT);
 		expect(rt.tabs.some((t) => t.id === 't5')).toBe(false);
@@ -149,9 +158,9 @@ describe('documentBar.receive — the make-room confirm', () => {
 		expect(closed().map((t) => t.id)).toEqual(['t5']);
 	});
 
-	it('cancelling keeps the ARRIVING document in Recently closed', () => {
+	it('cancelling keeps the ARRIVING document in Recently closed', async () => {
 		seed(busy(TAB_LIMIT), 't2');
-		db.receive({ ...doc }, 'Loaded shared rotation');
+		await receive({ ...doc }, 'Loaded shared rotation');
 		db.cancelRoom();
 		expect(rt.tabs).toHaveLength(TAB_LIMIT);
 		expect(closed().map((t) => t.notation)).toEqual([doc.notation]);

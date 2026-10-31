@@ -14,7 +14,6 @@
 	import { storageSession } from '$lib/storage/session.svelte';
 	import type { TeamRecord } from '$lib/storage/records';
 	import { menu } from '$lib/menuState.svelte';
-	import { loadout } from '$lib/stores';
 	import { resolveEntry } from '$lib/storage/teamLoadout';
 
 	/** The folded phone bench's rail: the mark alone, the words in its title. */
@@ -43,7 +42,7 @@
 	async function save(): Promise<void> {
 		const ids = seats.filter((id): id is string => !!id);
 		const lo = Object.fromEntries(
-			ids.map((id) => [id, resolveEntry(rt.inheritedLoadout($loadout)[id], rt.tabLoadout[id])])
+			ids.map((id) => [id, resolveEntry(rt.inheritedLoadout()[id], rt.tabLoadout[id])])
 		);
 		const r = await storageSession.saveTeam(seats, '', lo);
 		if (!r) return;

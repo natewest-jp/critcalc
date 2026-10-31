@@ -471,7 +471,7 @@ describe('team loadouts', () => {
 		const A = await tab();
 		await A.s.open('d3');
 		await wait(50);
-		const inherited = () => A.rt.inheritedLoadout({ bennett: { artifactSetId: 'ROSTER' } });
+		const inherited = () => A.rt.inheritedLoadout();
 		expect(inherited().xingqiu?.weaponId).toBe('sacrificial_sword');
 		expect(A.rt.team?.id).toBe('t1');
 		await A.s.setTeamLoadout('t1', 'bennett', { artifactSetId: 'noblesse_oblige' });

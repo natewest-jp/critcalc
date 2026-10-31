@@ -15,14 +15,13 @@
 	import { forTwin } from '$lib/data/twin';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar } from '$lib/utils/getAvatar';
-	import { constellations, ownership, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
+	import { constellations, ownership, siteSettings, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { resolveEntry } from '$lib/storage/teamLoadout';
-	import { nextLayout } from '$lib/nextLayout';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip, { type TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -619,9 +618,9 @@
 	// pure filter of the event stream.
 	let nbBars = $derived(showBuffs ? computeNBBars(rotation.events) : []);
 
-	// The layer under the tab's own: its team's loadout under the switch, the
-	// roster default off it (rotationTabs.inheritedLoadout).
-	let inheritedLoadout = $derived(rotationTabs.inheritedLoadout($loadout));
+	// The layer under the tab's own: its team's loadout
+	// (rotationTabs.inheritedLoadout).
+	let inheritedLoadout = $derived(rotationTabs.inheritedLoadout());
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys(inheritedLoadout), ...Object.keys(tabLoadout)]);
 		const result: Record<string, LoadoutEntry> = {};
@@ -2527,7 +2526,7 @@
 	 *  the edit that triggered this rebuild took it away. */
 	let inspectedTip = $derived.by((): InspectedBar | null => {
 		const t = pv.target;
-		if (!$nextLayout || t?.kind !== 'bar') return null;
+		if (t?.kind !== 'bar') return null;
 		if (t.lane === 'received') {
 			const row = charReceivedBuffRows.find((r) => r.key === t.row);
 			const bar = row?.bars.find((b) => b.start === t.start);
@@ -2560,7 +2559,7 @@
 	// gone. ⚠ Only a BAR pick is dropped — a character pick is the bench's.
 	$effect(() => {
 		pv.inspectedTip = inspectedTip;
-		if ($nextLayout && pv.target?.kind === 'bar' && !inspectedTip) pv.target = null;
+		if (pv.target?.kind === 'bar' && !inspectedTip) pv.target = null;
 	});
 
 	// ── Casts (stage 2) ─────────────────────────────────────────────────────
@@ -2584,7 +2583,7 @@
 
 	let pickedCastEvent = $derived.by((): CastEv | null => {
 		const t = pv.target;
-		if (!$nextLayout || t?.kind !== 'cast') return null;
+		if (t?.kind !== 'cast') return null;
 		for (const ev of rotation.events)
 			if (
 				ev.kind === 'cast' &&
@@ -2640,7 +2639,7 @@
 
 	$effect(() => {
 		pv.inspectedCast = inspectedCast;
-		if ($nextLayout && pv.target?.kind === 'cast' && !inspectedCast) pv.target = null;
+		if (pv.target?.kind === 'cast' && !inspectedCast) pv.target = null;
 	});
 
 	// The token that made the picked cast wears the ring in the editor too.
@@ -2654,7 +2653,7 @@
 	});
 
 	function inspectCast(char: string | undefined, ability: 'skill' | 'burst', start: number) {
-		if (!$nextLayout || !char) return;
+		if (!char) return;
 		hideTooltip();
 		pv.inspect({ kind: 'cast', char, ability, start });
 	}
@@ -2672,7 +2671,6 @@
 	}
 
 	function inspectBar(e: MouseEvent, lane: BarLane, row: string, start: number, end: number) {
-		if (!$nextLayout) return;
 		hideTooltip();
 		pv.inspect({ kind: 'bar', lane, row, start, at: frameUnder(e, start, end) });
 	}
@@ -3389,8 +3387,7 @@
 												{#if seg.role === 'uptime'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-uptime"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-uptime rp-inspectable"
 														class:rp-inspected={pv.inspectedCastKey ===
 															castKey(char?.id ?? '', 'skill', bar.start)}
 														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
@@ -3407,8 +3404,7 @@
 												{:else if seg.role === 'uptimeFlush'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-uptime"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-uptime rp-inspectable"
 														class:rp-inspected={pv.inspectedCastKey ===
 															castKey(char?.id ?? '', 'skill', bar.start)}
 														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
@@ -3428,8 +3424,7 @@
 											     ink only sits on full-strength fills. -->
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-uptime rp-bar-uptime--dim"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-uptime rp-bar-uptime--dim rp-inspectable"
 														class:rp-inspected={pv.inspectedCastKey ===
 															castKey(char?.id ?? '', 'skill', bar.start)}
 														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
@@ -3448,8 +3443,7 @@
 													{#if g.width > 0}
 														<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 														<div
-															class="rp-bar-cd rp-bar-cd--overflow"
-															class:rp-inspectable={$nextLayout}
+															class="rp-bar-cd rp-bar-cd--overflow rp-inspectable"
 															onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 															style:left="{g.left}px"
 															style:width="{g.width}px"
@@ -3460,8 +3454,7 @@
 												{:else if seg.role === 'ghost'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-cd rp-bar-cd--ghost"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-cd rp-bar-cd--ghost rp-inspectable"
 														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
@@ -3499,8 +3492,7 @@
 											     behind this lane can't show through. -->
 												<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 												<div
-													class="rp-summon-bar"
-													class:rp-inspectable={$nextLayout}
+													class="rp-summon-bar rp-inspectable"
 													onclick={() => inspectRaised(srow.characterId, sbar.source, sbar.start)}
 													onmouseenter={(e) => sbar.steps && showStepTooltip(e, sbar, srow.label)}
 													onmousemove={(e) => sbar.steps && showStepTooltip(e, sbar, srow.label)}
@@ -3589,8 +3581,7 @@
 												{#if seg.role === 'uptime'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-uptime"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-uptime rp-inspectable"
 														class:rp-inspected={pv.inspectedCastKey ===
 															castKey(char?.id ?? '', 'burst', bar.start)}
 														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
@@ -3607,8 +3598,7 @@
 												{:else if seg.role === 'uptimeFlush'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-uptime"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-uptime rp-inspectable"
 														class:rp-inspected={pv.inspectedCastKey ===
 															castKey(char?.id ?? '', 'burst', bar.start)}
 														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
@@ -3624,8 +3614,7 @@
 												{:else if seg.role === 'uptimeDim'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-uptime rp-bar-uptime--dim"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-uptime rp-bar-uptime--dim rp-inspectable"
 														class:rp-inspected={pv.inspectedCastKey ===
 															castKey(char?.id ?? '', 'burst', bar.start)}
 														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
@@ -3644,8 +3633,7 @@
 													{#if g.width > 0}
 														<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 														<div
-															class="rp-bar-cd rp-bar-cd--overflow"
-															class:rp-inspectable={$nextLayout}
+															class="rp-bar-cd rp-bar-cd--overflow rp-inspectable"
 															onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 															style:left="{g.left}px"
 															style:width="{g.width}px"
@@ -3656,8 +3644,7 @@
 												{:else if seg.role === 'ghost'}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-bar-cd rp-bar-cd--ghost"
-														class:rp-inspectable={$nextLayout}
+														class="rp-bar-cd rp-bar-cd--ghost rp-inspectable"
 														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
@@ -3778,8 +3765,7 @@
 												rampingBackground(bar) ?? decayingBackground(bar) ?? steppedBackground(bar)}
 											<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 											<div
-												class="rp-team-buff-bar"
-												class:rp-inspectable={$nextLayout}
+												class="rp-team-buff-bar rp-inspectable"
 												class:rp-inspected={pv.inspectedBar ===
 													barKey('received', recRow.key, bar.start)}
 												style:left="{g.left}px"
@@ -3836,8 +3822,7 @@
 													{@const icon = subrow.icon ?? BUFF_STAT_ICON[subrow.primaryStat]}
 													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
-														class="rp-team-buff-bar"
-														class:rp-inspectable={$nextLayout}
+														class="rp-team-buff-bar rp-inspectable"
 														class:rp-inspected={pv.inspectedBar ===
 															barKey('team', subrow.key, bar.start)}
 														style:left="{g.left}px"
@@ -3915,8 +3900,7 @@
 												{@const g = barGeom(win.start, win.duration)}
 												<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 												<div
-													class="rp-moonsign-bar"
-													class:rp-inspectable={$nextLayout}
+													class="rp-moonsign-bar rp-inspectable"
 													class:rp-inspected={pv.inspectedBar ===
 														barKey('moonsign', String(row.slotIdx), win.start)}
 													style:left="{g.left}px"
@@ -4123,12 +4107,7 @@
 		     is the only thing tying the box to the instrument above it; controls
 		     in front of the box would indent the notation away from the tracks it
 		     describes. -->
-			<div
-				class="rp-history"
-				class:rp-history--clear={$nextLayout}
-				role="group"
-				aria-label="Notation history"
-			>
+			<div class="rp-history rp-history--clear" role="group" aria-label="Notation history">
 				<button
 					class="btn btn--sm"
 					type="button"
@@ -4154,19 +4133,17 @@
 				<!-- ⚓ Phase 2e (Nate 2026-10-22): Clear beside its own undo, so a
 				     mistaken clear is one click back. Under the switch only; band
 				     A's ⋯ still carries Reset with it off. -->
-				{#if $nextLayout}
-					<button
-						class="btn btn--sm"
-						type="button"
-						aria-label="Clear this rotation"
-						title="Clear this rotation (Undo brings it back)"
-						disabled={!rotationTabs.notation.trim() && rotationTabs.seats.every((s) => !s)}
-						onclick={() => {
-							rotationTabs.clearWithUndo();
-							historyTick++;
-						}}><Mark name="clear" /><span class="rp-history-word">Clear</span></button
-					>
-				{/if}
+				<button
+					class="btn btn--sm"
+					type="button"
+					aria-label="Clear this rotation"
+					title="Clear this rotation (Undo brings it back)"
+					disabled={!rotationTabs.notation.trim() && rotationTabs.seats.every((s) => !s)}
+					onclick={() => {
+						rotationTabs.clearWithUndo();
+						historyTick++;
+					}}><Mark name="clear" /><span class="rp-history-word">Clear</span></button
+				>
 			</div>
 		</div>
 		{#if dockOn && dockOpen && dockKeys.length}

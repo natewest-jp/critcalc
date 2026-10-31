@@ -36,7 +36,7 @@ describe('the returning-visitor signal (flip-readiness §1 item 4)', () => {
 	});
 
 	it('a key outside the backup set does not count', () => {
-		expect(hadLegacyData(storage({ 'critcalc:nextLayout': '1' }))).toBe(false);
+		expect(hadLegacyData(storage({ 'critcalc:persistAsked': '1' }))).toBe(false);
 	});
 
 	it('the Visualizers layout alone does not count (it is saved on load)', () => {

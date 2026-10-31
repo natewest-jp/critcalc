@@ -35,7 +35,6 @@
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
-	import { nextLayout } from '$lib/nextLayout';
 
 	/**
 	 * 🎛️ Bare scene BETWEEN two instruments — the widest gap inside this tool.
@@ -268,7 +267,7 @@
 <!-- ↻ Under the switch (phase 2e, design §5.3) band A retires here too: the
      layout becomes ONE control at the toolbar's right end, and each tile's
      Defaults moves into its ⋯. -->
-<ToolStack bandAClass="ws-lineup-band" noBandA={$nextLayout}>
+<ToolStack bandAClass="ws-lineup-band" noBandA>
 	{#snippet bandALeft()}
 		<span class="kicker ws-title">Workspace</span>
 	{/snippet}
@@ -295,16 +294,6 @@
 						onPick={(next) => pick(slot, next)}
 					/>
 					<span class="ws-band-actions">
-						{#if handles[id]?.reset && !$nextLayout}
-							<button
-								class="btn btn--sm btn--glass"
-								onclick={() => handles[id]?.reset?.()}
-								title="Reset this instrument's controls to their defaults"
-							>
-								<Mark name="reset" size={12} />
-								<span class="ws-band-word">Defaults</span>
-							</button>
-						{/if}
 						{#if handles[id]?.getShareState}
 							<button
 								class="btn btn--sm btn--glass"
@@ -312,20 +301,14 @@
 								onclick={() => shareTile(id)}
 								title="Copy a link that reopens this instrument as it looks now"
 							>
-								<Mark
-									name={copiedTile === id ? 'check' : $nextLayout ? 'link' : 'share'}
-									size={12}
-								/>
-								<!-- ⚓ Under the switch "Share" means the top bar's one menu
-								     site-wide (§5.3), so the tile's says what it does. -->
+								<Mark name={copiedTile === id ? 'check' : 'link'} size={12} />
+								<!-- ⚓ The tile's button says what it does (§5.3). -->
 								<span class="ws-band-word" class:ws-band-word--keep={failedTile === id}
 									>{failedTile === id
 										? 'Copy failed'
 										: copiedTile === id
 											? 'Copied'
-											: $nextLayout
-												? 'Copy link'
-												: 'Share'}</span
+											: 'Copy link'}</span
 								>
 							</button>
 						{/if}
@@ -333,7 +316,7 @@
 						     1360px, and so the report carries this instrument's link. -->
 						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
 							{#snippet items(close)}
-								{#if $nextLayout && handles[id]?.reset}
+								{#if handles[id]?.reset}
 									<button
 										class="band-menu-item"
 										role="menuitem"
@@ -355,7 +338,7 @@
 								</ReportLink>
 							{/snippet}
 						</BandMenu>
-						{#if $nextLayout && slot === slotCount - 1}
+						{#if slot === slotCount - 1}
 							<!-- The workspace's own control (§5.3): how many instruments,
 							     and Reset layout, as one plate at the toolbar's right. -->
 							<BandMenu glass size="sm" mark="layout" label="Layout" role="dialog" align="end">

@@ -13,18 +13,8 @@
 	import { notices, announceAfterReload } from '$lib/notices.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import {
-		constellations,
-		HUMAN_TIMING_DEFAULTS,
-		loadout,
-		ownership,
-		savedBoards,
-		savedNotations,
-		siteSettings,
-		SWAP_PING_DEFAULT
-	} from '$lib/stores';
+	import { HUMAN_TIMING_DEFAULTS, siteSettings, SWAP_PING_DEFAULT } from '$lib/stores';
 	import Mark from './Mark.svelte';
-	import { nextLayout } from '$lib/nextLayout';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import { playback } from '$lib/playback/playback.svelte';
@@ -43,13 +33,7 @@
 		VOICE_LABELS,
 		noteSetNotes
 	} from '$lib/playback/tones';
-	import {
-		downloadBackup,
-		downloadEnvelope,
-		parseBackup,
-		applyBackup,
-		type BackupCounts
-	} from '$lib/utils/settingsBackup';
+	import { downloadEnvelope } from '$lib/utils/settingsBackup';
 	import type { StoreCounts, StoreParse } from '$lib/storage/backup';
 	import {
 		isSafari,
@@ -84,7 +68,7 @@
 	 *  link names the active profile. */
 	let store = $state<Awaited<ReturnType<typeof session>> | null>(null);
 	$effect(() => {
-		if ($nextLayout) void session().then((s) => (store = s));
+		void session().then((s) => (store = s));
 	});
 	const realProfile = $derived(store?.profile?.kind === 'real' ? store.profile : null);
 	const anySeen = $derived($siteSettings.seenGuestNotice || $siteSettings.seenLinksNotice);
@@ -124,14 +108,12 @@
 
 	async function exportBackup() {
 		const at = Date.now();
-		if ($nextLayout) {
-			const file = await (await session()).backup(at);
-			if (!file) {
-				importError = 'This browser isn’t letting critcalc read its data.';
-				return;
-			}
-			downloadEnvelope(file, at);
-		} else downloadBackup(at);
+		const file = await (await session()).backup(at);
+		if (!file) {
+			importError = 'This browser isn’t letting critcalc read its data.';
+			return;
+		}
+		downloadEnvelope(file, at);
 		lastBackup = at;
 	}
 
@@ -140,16 +122,11 @@
 	let storeSince = $state(0);
 	$effect(() => {
 		const at = lastBackup ?? 0;
-		if ($nextLayout)
-			void session()
-				.then((s) => s.changedSince(at))
-				.then((n) => (storeSince = n));
+		void session()
+			.then((s) => s.changedSince(at))
+			.then((n) => (storeSince = n));
 	});
-	let savedSince = $derived(
-		$nextLayout
-			? storeSince
-			: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > (lastBackup ?? 0)).length
-	);
+	let savedSince = $derived(storeSince);
 	/** ⚓ Colour only when it is a problem (Nate 2026-10-26), so it keeps
 	 *  meaning something: never, or older than the window, with work since. */
 	const stale = $derived(backupIsStale(lastBackup, savedSince));
@@ -161,34 +138,10 @@
 		return `${days} days ago`;
 	}
 
-	// Two-click confirm shared across the reset buttons: a button is "armed" on
-	// first click, fires on the second, and disarms on blur or when another arms.
-	let armedReset = $state<string | null>(null);
-	function reset(key: string, fn: () => void) {
-		if (armedReset !== key) {
-			armedReset = key;
-			return;
-		}
-		fn();
-		armedReset = null;
-	}
-
-	// The old layout's resets (it has no Profile page). ↻ Under the switch
-	// they moved to the profile's own page, its Clear data (2026-10-26).
-	function clearEverything() {
-		constellations.clear();
-		ownership.clear();
-		loadout.clear();
-		savedNotations.clear();
-		savedBoards.clear();
-	}
-
-	// Import flow: pick file → parse+validate → show a summary → confirm → apply
-	// + reload (stores only read localStorage at module init, so a reload is the
-	// clean way to re-hydrate the whole app at once).
+	// Import flow: pick file → parse → confirm → restore + reload (the page
+	// re-reads the whole store at once).
 	let fileInput: HTMLInputElement | undefined = $state();
-	let pending = $state<{ data: ReturnType<typeof parseBackup>; counts: BackupCounts } | null>(null);
-	/** The same, under the switch: any backup file, read for the new storage. */
+	/** The parsed file, waiting on its restore. */
 	let pendingStore = $state<Extract<StoreParse, { ok: true }> | null>(null);
 	let importError = $state<string | null>(null);
 
@@ -198,50 +151,26 @@
 		input.value = ''; // allow re-picking the same file
 		if (!file) return;
 		importError = null;
-		pending = null;
 		pendingStore = null;
-		if ($nextLayout) {
-			const [{ parseAnyBackup }, { newId }] = await Promise.all([
-				import('$lib/storage/backup'),
-				import('$lib/storage/records')
-			]);
-			const res = parseAnyBackup(await file.text(), { newId });
-			if (!res.ok) {
-				importError = res.error;
-				return;
-			}
-			// ↻ A DIALOG (notices §3.4): it replaces everything in the browser.
-			const ok = await notices.ask({
-				title: 'Replace everything with this backup?',
-				body: `It holds ${storeSummary(res.counts)}. Everything in this browser is replaced with it, and the page reloads.`,
-				confirm: 'Replace and reload',
-				danger: true
-			});
-			if (!ok) return;
-			pendingStore = res;
-			await confirmStoreImport();
-			return;
-		}
-		const res = parseBackup(await file.text());
+		const [{ parseAnyBackup }, { newId }] = await Promise.all([
+			import('$lib/storage/backup'),
+			import('$lib/storage/records')
+		]);
+		const res = parseAnyBackup(await file.text(), { newId });
 		if (!res.ok) {
 			importError = res.error;
 			return;
 		}
-		pending = { data: res, counts: res.counts };
-	}
-
-	function confirmImport() {
-		if (!pending || !pending.data.ok) return;
-		// applyBackup throws when the browser blocks site data or the quota is
-		// full — say so rather than reload into the data the file was meant to replace.
-		try {
-			applyBackup(pending.data.data);
-		} catch {
-			pending = null;
-			importError = 'This browser isn’t letting critcalc save data.';
-			return;
-		}
-		location.reload();
+		// ↻ A DIALOG (notices §3.4): it replaces everything in the browser.
+		const ok = await notices.ask({
+			title: 'Replace everything with this backup?',
+			body: `It holds ${storeSummary(res.counts)}. Everything in this browser is replaced with it, and the page reloads.`,
+			confirm: 'Replace and reload',
+			danger: true
+		});
+		if (!ok) return;
+		pendingStore = res;
+		await confirmStoreImport();
 	}
 
 	async function confirmStoreImport() {
@@ -256,12 +185,6 @@
 		// Said after the reload (`announceAfterReload`): nothing else would.
 		announceAfterReload('Restored from your backup');
 		location.reload();
-	}
-
-	function cancelImport() {
-		pending = null;
-		pendingStore = null;
-		importError = null;
 	}
 
 	/** "Main and Alt", "Main, Alt, and Spare". */
@@ -367,25 +290,6 @@
 		<!-- ⚓ The Traveler twin is an ACCOUNT fact (2026-10-26): under the new
 		     layout it lives on each profile's page; the old layout has no
 		     profiles and keeps it here. -->
-		{#if !$nextLayout}
-			<div class="sp-row">
-				<span class="sp-name">Traveler</span>
-				<span class="sp-ctl">
-					<span class="segment sp-segment" role="radiogroup" aria-label="Traveler variant">
-						{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
-							<button
-								class="btn"
-								class:is-active={$siteSettings.travelerVariant === value}
-								role="radio"
-								aria-checked={$siteSettings.travelerVariant === value}
-								onclick={() => siteSettings.setTravelerVariant(value)}>{label}</button
-							>
-						{/each}
-					</span>
-				</span>
-				<span class="sp-note">Which twin takes the role of Traveler on the site.</span>
-			</div>
-		{/if}
 	</section>
 
 	<section class="sp-section" id="settings-planner">
@@ -564,9 +468,9 @@
 				</button>
 			</span>
 			<span class="sp-note">
-				<strong>Play</strong> in the {$nextLayout ? 'Planner’s toolbar' : 'Planner’s view bar'} counts
-				you in and plays a note at each press, so you can follow along with your eyes on the game. Metronome
-				uses one pitch; Melodic gives attacks, skills, and bursts their own notes.
+				<strong>Play</strong> in the Planner’s toolbar counts you in and plays a note at each press, so
+				you can follow along with your eyes on the game. Metronome uses one pitch; Melodic gives attacks,
+				skills, and bursts their own notes.
 			</span>
 		</div>
 
@@ -778,40 +682,14 @@
 				/>
 			</span>
 			<span class="sp-note">
-				{#if $nextLayout}
-					Replaces every profile in this browser, and your settings, with the ones in a backup file.
-					Older backups work too.
-				{:else}
-					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
-					open tabs, and settings on this device.
-				{/if}
+				Replaces every profile in this browser, and your settings, with the ones in a backup file.
+				Older backups work too.
 			</span>
 		</div>
 
 		{#if importError}
 			<div class="sp-feedback">
 				<p class="sp-import-error" role="alert">{importError}</p>
-			</div>
-		{/if}
-
-		{#if pending}
-			<div class="sp-feedback">
-				<div class="sp-import-confirm">
-					<p class="sp-import-summary">
-						This backup holds
-						<strong>{pending.counts.owned}</strong> owned characters,
-						<strong>{pending.counts.loadouts}</strong> loadouts,
-						<strong>{pending.counts.rotations}</strong> saved rotations,
-						<strong>{pending.counts.lineups}</strong> saved lineups, and
-						<strong>{pending.counts.openTabs}</strong> open tabs. Replace your current data?
-					</p>
-					<div class="sp-import-actions">
-						<button class="btn btn--danger is-confirming" onclick={confirmImport}>
-							<Mark name="warn" /> Replace &amp; reload
-						</button>
-						<button class="btn" onclick={cancelImport}>Cancel</button>
-					</div>
-				</div>
 			</div>
 		{/if}
 
@@ -838,62 +716,21 @@
 			<span class="sp-note">Brings back the one-time notices you’ve dismissed.</span>
 		</div>
 
-		{#if $nextLayout}
-			<div class="sp-row">
-				<span class="sp-name">Delete everything</span>
-				<span class="sp-ctl">
-					<button class="btn btn--danger" onclick={() => void deleteEverything()}>
-						<Mark name="delete" /> Delete everything…
-					</button>
-				</span>
-				<span class="sp-note">
-					Removes every profile, the Trash, and your settings, as if you were visiting for the first
-					time.
-				</span>
-			</div>
-		{/if}
+		<div class="sp-row">
+			<span class="sp-name">Delete everything</span>
+			<span class="sp-ctl">
+				<button class="btn btn--danger" onclick={() => void deleteEverything()}>
+					<Mark name="delete" /> Delete everything…
+				</button>
+			</span>
+			<span class="sp-note">
+				Removes every profile, the Trash, and your settings, as if you were visiting for the first
+				time.
+			</span>
+		</div>
 	</section>
 
 	<!-- The old layout keeps its resets here: it has no Profile page. -->
-	{#if !$nextLayout}
-		<section class="sp-section sp-section--danger" id="settings-reset">
-			<h2 class="kicker sp-section-title">Reset saved data</h2>
-
-			{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation and team saved in your library.', () => savedNotations.clear()], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', () => savedBoards.clear()]] as const as [key, name, desc, fn] (key)}
-				<div class="sp-row">
-					<span class="sp-name">{name}</span>
-					<span class="sp-ctl">
-						<button
-							class="btn btn--danger"
-							class:is-confirming={armedReset === key}
-							onclick={() => reset(key, fn)}
-							onblur={() => armedReset === key && (armedReset = null)}
-						>
-							{#if armedReset === key}<Mark name="warn" />{/if}
-							{armedReset === key ? 'Confirm' : 'Clear'}
-						</button>
-					</span>
-					<span class="sp-note">{desc}</span>
-				</div>
-			{/each}
-
-			<div class="sp-row">
-				<span class="sp-name">Everything</span>
-				<span class="sp-ctl">
-					<button
-						class="btn btn--danger"
-						class:is-confirming={armedReset === 'all'}
-						onclick={() => reset('all', clearEverything)}
-						onblur={() => armedReset === 'all' && (armedReset = null)}
-					>
-						{#if armedReset === 'all'}<Mark name="warn" />{/if}
-						{armedReset === 'all' ? 'Confirm clear all' : 'Clear all'}
-					</button>
-				</span>
-				<span class="sp-note">Clears all of the above at once. Display settings are kept.</span>
-			</div>
-		</section>
-	{/if}
 </div>
 
 <style>
@@ -951,25 +788,6 @@
 		margin: 0;
 		font-size: var(--fs-md);
 		color: var(--ui-danger);
-	}
-	.sp-import-confirm {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-		padding: 0.7rem 0.8rem;
-		border: 1px solid color-mix(in srgb, var(--ui-danger) 45%, var(--border));
-		border-radius: var(--r-md);
-		background: color-mix(in srgb, var(--ui-danger) 8%, transparent);
-	}
-	.sp-import-summary {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: var(--lh-snug);
-		color: var(--text);
-	}
-	.sp-import-actions {
-		display: flex;
-		gap: 0.5rem;
 	}
 
 	/* The row's own folds live in app.css (§ THE SETTING ROW); these are the

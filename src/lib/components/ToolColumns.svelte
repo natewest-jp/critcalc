@@ -4,9 +4,7 @@
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { ASIDE_W, COLUMN_GAP } from '$lib/toolColumns';
 	import { portal } from '$lib/actions/portal';
-	import CloseMark from '$lib/components/CloseMark.svelte';
 	import Mark from '$lib/components/Mark.svelte';
-	import { nextLayout } from '$lib/nextLayout';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 
 	// ---------------------------------------------------------------------------
@@ -140,15 +138,9 @@
 				<h2 class="tc-sheet-title">{asideTitle}</h2>
 				<!-- Under the switch, the inspector modal's ✕ (Nate 2026-10-23); the
 				     drawn CloseMark stays with the old layout until step 5. -->
-				{#if $nextLayout}
-					<button class="btn btn--icon" onclick={() => onCloseAside?.()} aria-label="Close"
-						><Mark name="close" size={16} /></button
-					>
-				{:else}
-					<button class="tc-sheet-close" onclick={() => onCloseAside?.()} aria-label="Close">
-						<CloseMark />
-					</button>
-				{/if}
+				<button class="btn btn--icon" onclick={() => onCloseAside?.()} aria-label="Close"
+					><Mark name="close" size={16} /></button
+				>
 			</header>
 			<div class="tc-sheet-body" class:tc-sheet-body--bare={asideBare}>
 				{@render aside()}
@@ -347,19 +339,6 @@
 		margin: 0;
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
-	}
-	/* The hit target; CloseMark is the mark and owns its own states. */
-	.tc-sheet-close {
-		width: 30px;
-		height: 30px;
-		flex: none;
-		display: grid;
-		place-items: center;
-		padding: 0;
-		border: none;
-		background: none;
-		color: var(--text);
-		cursor: pointer;
 	}
 	/* The occupant's box: the same flex column the aside box gives it, so a
 	   scroller sized against the column is sized against the drawer. */

@@ -40,7 +40,6 @@ import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
 import { ownership, safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
 import { get } from 'svelte/store';
-import { nextLayout } from './nextLayout';
 
 export type TeamSlot = string | null;
 
@@ -178,9 +177,8 @@ export function effectiveCon(
 	return own[id] ?? roster[id] ?? 0;
 }
 
-/** The ownership `effectiveCon` reads, or none off the switch. */
-export const strictOwnership = (): Record<string, 'owned' | 'wishlist'> | undefined =>
-	get(nextLayout) ? get(ownership) : undefined;
+/** The ownership `effectiveCon` reads. */
+export const strictOwnership = (): Record<string, 'owned' | 'wishlist'> => get(ownership);
 
 /**
  * ⚓ "No repeats" — ONE TEAM PER CHARACTER (Nate 2026-10-11; ↻ it used to

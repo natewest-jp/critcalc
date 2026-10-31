@@ -46,7 +46,6 @@ import {
 	type Seats
 } from './utils/notationEdit';
 import { isTeamEntry, teamNotation } from './library';
-import { nextLayout } from './nextLayout';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 import { resolveEntry } from './storage/teamLoadout';
 
@@ -335,18 +334,14 @@ class DocumentBarState {
 	 * the document in Recently closed, so the link is never lost.
 	 */
 	receive(doc: Omit<RotationTab, 'id'>, notice: string) {
-		// ⚓ Under the switch (build plan §13, 2d) an arriving document opens in
-		// THEORYCRAFT as its own new document (§9.3), once the session is up.
-		if (get(nextLayout)) {
-			void documentsReady.then(async (viaStore) => {
-				if (!viaStore) return this.#adoptOrMakeRoom(doc, notice);
-				const { storageSession } = await import('./storage/session.svelte');
-				const { switched, id, movable } = await storageSession.receiveRotation(doc);
-				this.arrived(switched, notice, id, movable);
-			});
-			return;
-		}
-		this.#adoptOrMakeRoom(doc, notice);
+		// ⚓ An arriving document opens in THEORYCRAFT as its own new document
+		// (§9.3), once the session is up.
+		void documentsReady.then(async (viaStore) => {
+			if (!viaStore) return this.#adoptOrMakeRoom(doc, notice);
+			const { storageSession } = await import('./storage/session.svelte');
+			const { switched, id, movable } = await storageSession.receiveRotation(doc);
+			this.arrived(switched, notice, id, movable);
+		});
 	}
 
 	#adoptOrMakeRoom(doc: Omit<RotationTab, 'id'>, notice: string) {
@@ -436,39 +431,23 @@ class DocumentBarState {
 	 *  the Team Builder's "Try in Planner" after a swap. ⚓ §10.2: the saved
 	 *  rotation is never rewritten; Save keeps the trial as its own. */
 	tryWithSwap(entry: SavedNotation, fromId: string, toId: string, label: string) {
-		// ⚓ Under the switch (phase 3) the try is a new rotation in the
-		// current profile; the pinned one is untouched.
-		if (get(nextLayout)) {
-			const seating = seatingOfSaved(entry);
-			void import('./storage/session.svelte').then(({ storageSession }) =>
-				storageSession.createRotation(
-					{
-						notation: renameCharacterInNotation(entry.notation, fromId, toId),
-						slots: seating.seats.map((id) => (id === fromId ? toId : id)),
-						placed: seating.placed,
-						...(entry.tabLoadout && Object.keys(entry.tabLoadout).length
-							? { loadout: entry.tabLoadout }
-							: {}),
-						...(entry.tabCon && Object.keys(entry.tabCon).length ? { con: entry.tabCon } : {})
-					},
-					label
-				)
-			);
-			return;
-		}
-		this.withRoom(() => {
-			// The swap keeps the SLOT: the incoming character takes the outgoing
-			// one's seat and segments (§8.1).
-			const seating = seatingOfSaved(entry);
-			rt.openTab({
-				label,
-				notation: renameCharacterInNotation(entry.notation, fromId, toId),
-				slots: seating.seats.map((id) => (id === fromId ? toId : id)),
-				placed: seating.placed,
-				tabLoadout: entry.tabLoadout ?? {},
-				tabCon: entry.tabCon ?? {}
-			});
-		});
+		// ⚓ The try is a new rotation in the current profile; the pinned one
+		// is untouched.
+		const seating = seatingOfSaved(entry);
+		void import('./storage/session.svelte').then(({ storageSession }) =>
+			storageSession.createRotation(
+				{
+					notation: renameCharacterInNotation(entry.notation, fromId, toId),
+					slots: seating.seats.map((id) => (id === fromId ? toId : id)),
+					placed: seating.placed,
+					...(entry.tabLoadout && Object.keys(entry.tabLoadout).length
+						? { loadout: entry.tabLoadout }
+						: {}),
+					...(entry.tabCon && Object.keys(entry.tabCon).length ? { con: entry.tabCon } : {})
+				},
+				label
+			)
+		);
 	}
 
 	loadNewTab(entry: SavedNotation) {
@@ -593,7 +572,7 @@ class DocumentBarState {
 	async shareUrl(): Promise<string | null> {
 		if (!this.hasContent) return null;
 		// Its team's under the switch, so a link carries what the team supplies.
-		const rosterLoadout = rt.inheritedLoadout(get(loadout));
+		const rosterLoadout = rt.inheritedLoadout();
 		const rosterCons = get(constellations);
 		// Scope the build snapshot to the resolved team (this handles inferred
 		// slots too), plus any character carrying a tab-level loadout override.

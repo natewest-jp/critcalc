@@ -8,7 +8,6 @@
 	 log, the view bar / document bar. ⚓ A limit is the TOOL's ("The Rotation
 	 Planner doesn't…"); "we" only for a choice that isn't a limit. -->
 <script lang="ts">
-	import { nextLayout } from '$lib/nextLayout';
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
@@ -72,19 +71,11 @@
 		as you type. Actions can be run together (<code>QEN2</code>), and pasted rotations are cleaned
 		up for you: footnote marks dropped, line breaks joined.
 	</p>
-	{#if $nextLayout}
-		<p>
-			Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on
-			a Mac). They work for edits made from the bench and the team builder too. Each rotation keeps
-			its own edit history until the page reloads.
-		</p>
-	{:else}
-		<p>
-			Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on
-			a Mac). They work for edits made from the bench and the team builder too. Each tab keeps its
-			own edit history until the page reloads.
-		</p>
-	{/if}
+	<p>
+		Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on a
+		Mac). They work for edits made from the bench and the team builder too. Each rotation keeps its
+		own edit history until the page reloads.
+	</p>
 	<p>
 		A skill or burst written before it’s ready waits for its cooldown, and everything after it waits
 		too. Charges come back one at a time, as in the game.
@@ -124,23 +115,14 @@
 		the character from the team and deletes their notation. Clicking an empty slot’s portrait adds
 		someone instead. On a phone, <strong>Remove from team</strong> is on the character’s page in the inspector.
 	</p>
-	{#if $nextLayout}
-		<p>
-			The chip on the portrait is the character’s constellation, and the pill beside it sets their
-			weapon and artifact set for this rotation. A character you own is at your roster’s level.
-			Choosing another level for them makes a what-if: a copy of the rotation in Theorycraft at that
-			level, paired with this one so you can switch between the two. A character you don’t own keeps
-			the level this rotation gives them, and their chip is drawn hollow. In Theorycraft every level
-			belongs to the rotation.
-		</p>
-	{:else}
-		<p>
-			The chip on the portrait sets the character’s constellation for this tab, and the pill beside
-			it sets their weapon and artifact set. Neither touches your roster: A tab keeps its own levels
-			and loadouts, so one rotation can be written at C6 while your roster says C0. When the tab
-			uses a constellation you don’t own the chip is drawn hollow.
-		</p>
-	{/if}
+	<p>
+		The chip on the portrait is the character’s constellation, and the pill beside it sets their
+		weapon and artifact set for this rotation. A character you own is at your roster’s level.
+		Choosing another level for them makes a what-if: a copy of the rotation in Theorycraft at that
+		level, paired with this one so you can switch between the two. A character you don’t own keeps
+		the level this rotation gives them, and their chip is drawn hollow. In Theorycraft every level
+		belongs to the rotation.
+	</p>
 	<p>
 		A character without curated frame data carries a mark beside their name, and their actions are
 		drawn with generic timing. The
@@ -167,34 +149,17 @@
 		always-on bonuses: resonances, faction bonuses, and permanent passives.
 	</p>
 	<p>Energy isn’t modeled: A burst is ready whenever its cooldown is.</p>
-	{#if $nextLayout}
-		<p>
-			<strong>Zoom</strong> in the toolbar opens a slider and <strong>Reset</strong>; the mouse
-			wheel over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
-		</p>
-	{:else}
-		<p>
-			<strong>Zoom</strong> in the view bar opens a slider and <strong>Reset</strong>; the mouse
-			wheel over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
-		</p>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			<strong>Buffs</strong> and <strong>Auras</strong> in the toolbar are layers. Buffs hides every bar
-			that says what a cast grants — buff rows, weapon procs, the team lanes, and the always-on strip
-			— and Auras hides the aura lane. Skills, bursts, summons, and shields stay, since they say when
-			an ability is happening. With both off, the timeline is ability timings and nothing else. If you
-			change either one, your choice is remembered. On a small screen both are off to begin with.
-		</p>
-	{:else}
-		<p>
-			<strong>Buffs</strong> and <strong>Auras</strong> in the view bar are layers. Buffs hides every
-			bar that says what a cast grants — buff rows, weapon procs, the team lanes, and the always-on strip
-			— and Auras hides the aura lane. Skills, bursts, summons, and shields stay, since they say when
-			an ability is happening. With both off, the timeline is ability timings and nothing else. If you
-			change either one, your choice is remembered. On a small screen both are off to begin with.
-		</p>
-	{/if}
+	<p>
+		<strong>Zoom</strong> in the toolbar opens a slider and <strong>Reset</strong>; the mouse wheel
+		over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
+	</p>
+	<p>
+		<strong>Buffs</strong> and <strong>Auras</strong> in the toolbar are layers. Buffs hides every bar
+		that says what a cast grants — buff rows, weapon procs, the team lanes, and the always-on strip —
+		and Auras hides the aura lane. Skills, bursts, summons, and shields stay, since they say when an ability
+		is happening. With both off, the timeline is ability timings and nothing else. If you change either
+		one, your choice is remembered. On a small screen both are off to begin with.
+	</p>
 </section>
 
 <section>
@@ -206,28 +171,16 @@
 		into normal and normal into charged are exempt, because the game allows queuing of those inputs. A
 		bow’s charged shot is the exception: It always takes the reaction time.
 	</p>
-	{#if $nextLayout}
-		<p>
-			Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
-			This is 10 frames to start with (the KQM starting point), and you can adjust it there.
-			<strong>Animations</strong> lets each action play out in full instead of canceling.
-			<strong>Both</strong> enables both. The padding shows as hatched slivers on the active row,
-			which
-			<strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the
-			frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside
-			<strong>Total</strong> says so and opens Settings.
-		</p>
-	{:else}
-		<p>
-			Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
-			This is 10 frames to start with (the KQM starting point), and you can adjust it there.
-			<strong>Animations</strong> lets each action play out in full instead of canceling.
-			<strong>Both</strong>
-			enables both. The padding shows as hatched slivers on the active row, which
-			<strong>Mark padding</strong>
-			turns off. Turn Human timing off in the view bar to see the frame-perfect rotation.
-		</p>
-	{/if}
+	<p>
+		Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
+		This is 10 frames to start with (the KQM starting point), and you can adjust it there.
+		<strong>Animations</strong> lets each action play out in full instead of canceling.
+		<strong>Both</strong> enables both. The padding shows as hatched slivers on the active row,
+		which
+		<strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the
+		frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside
+		<strong>Total</strong> says so and opens Settings.
+	</p>
 	<p>
 		Swaps take time either way: your ping plus about 90 ms, set under <strong>Swap ping</strong> in
 		Settings. If you write the same character on both sides of a <code>&gt;</code> it costs no swap time,
@@ -300,19 +253,11 @@
 		Cryo and Electro bonus moves: The field counts the Cryo and Electro hits that applied an element,
 		resets every 4s, and boosts based on that count — 20% with none, 29% at one, up to 40% at twelve.
 	</p>
-	{#if $nextLayout}
-		<p>
-			<strong>Log</strong> in the toolbar opens the aura log beside the timeline. Hovering a row highlights
-			that moment on the aura lane, clicking one scrolls there, and clicking a pill or marker on the aura
-			lane opens the log at its row. The log also works with the Auras layer off.
-		</p>
-	{:else}
-		<p>
-			<strong>Log</strong> in the view bar opens the aura log beside the timeline. Hovering a row highlights
-			that moment on the aura lane, clicking one scrolls there, and clicking a pill or marker on the aura
-			lane opens the log at its row. The log also works with the Auras layer off.
-		</p>
-	{/if}
+	<p>
+		<strong>Log</strong> in the toolbar opens the aura log beside the timeline. Hovering a row highlights
+		that moment on the aura lane, clicking one scrolls there, and clicking a pill or marker on the aura
+		lane opens the log at its row. The log also works with the Auras layer off.
+	</p>
 	<p>
 		The model behind it is the gauge explorer’s: the ×0.8 aura tax, decay rates, how much each
 		reaction consumes, and the Crystallize cooldown. It assumes one enemy without a permanent aura
@@ -325,22 +270,13 @@
 
 <section>
 	<h2 id="inspector">The inspector</h2>
-	{#if $nextLayout}
-		<p>
-			<strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character
-			with the caveats on their kit, where the timeline knowingly differs from the game, with constellation
-			notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon
-			or shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing
-			again closes it. A character’s page links to their coverage.
-		</p>
-	{:else}
-		<p>
-			<strong>Notes</strong> opens the notes panel: the caveats on each character’s kit, where the timeline
-			knowingly differs from the game, with constellation notes shown from the level the tab uses. Each
-			character ends with a link to their coverage. The button is disabled when the team’s kits have nothing
-			to note.
-		</p>
-	{/if}
+	<p>
+		<strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character
+		with the caveats on their kit, where the timeline knowingly differs from the game, with constellation
+		notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon or
+		shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing again
+		closes it. A character’s page links to their coverage.
+	</p>
 	<p>
 		Turn on <strong>Coverage strips</strong> in Settings to draw each character’s coverage under the composer
 		and dim the parts of the kit this rotation doesn’t use.
@@ -348,70 +284,30 @@
 </section>
 
 <section>
-	{#if $nextLayout}
-		<h2 id="saving">Saving, comparing, and sharing</h2>
-	{:else}
-		<h2 id="tabs">Tabs, saving, and sharing</h2>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			The planner shows one rotation at a time and saves it as you work, in the profile you’re in.
-			The rotation’s name in the top bar opens <strong>Rotations</strong> in the Library, where
-			<strong>New rotation</strong> starts another and each one can be pinned, renamed, or deleted.
-		</p>
-		<p>
-			A rotation in Theorycraft can go to one of your profiles with <strong
-				>Move to a profile</strong
-			>. Before it moves, you see which levels change, since the profile’s roster decides them for
-			characters you own.
-		</p>
-		<p>
-			<strong>Compare</strong>, under the bench, pairs two rotations.
-			<strong>Duplicate and compare</strong>
-			copies this one so you can change the copy, and <strong>Compare with…</strong> picks another from
-			the Library. The button that takes Compare’s place, or ⌃`, switches between them.
-		</p>
-	{:else}
-		<p>
-			Each tab holds one rotation with its own team, constellations, and loadouts. You can keep up
-			to twelve tabs open. Double-click a tab to rename it, and drag to reorder them. A closed tab
-			with anything in it goes to <strong>Recently closed</strong> in the Library.
-		</p>
-	{/if}
-	{#if !$nextLayout}
-		<p>
-			<strong>Save</strong> puts the rotation in the Library and links the tab to it, after which
-			the button reads <strong>Save changes</strong>. <strong>Save as new</strong> in the
-			<strong>⋯</strong> menu forks a copy of the rotation. A saved rotation keeps the
-			constellations it was saved with. Once you’ve marked characters as owned,
-			<strong>Sync</strong> in the Library makes a rotation follow your roster instead. Setting a constellation
-			on a bench card ends the sync, and the rotation keeps its own levels again.
-		</p>
-	{/if}
-	{#if !$nextLayout}
-		<p>
-			The Library groups saved rotations by team. Its search turns a character, element, or reaction
-			into a tag, and tags combine. Its <strong>Roster</strong> tab is where you mark who you own, which
-			the team builder shares.
-		</p>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			<strong>Share</strong> in the toolbar copies a link, the KQM notation, or an image of the timeline.
-			The link opens the rotation with its constellations and loadouts in Theorycraft, so it doesn’t change
-			the reader’s profiles. The KQM copy removes inputs that are specific to critcalc — time tokens,
-			optional marks, and stack counts — and keeps the rest as you wrote it. The image is the whole timeline,
-			not only the part on screen, with the notation written above it.
-		</p>
-	{:else}
-		<p>
-			<strong>Share</strong> copies a link, the KQM notation, or an image of the timeline. The link opens
-			the rotation with its constellations and loadouts in a new tab without touching the reader’s roster.
-			The KQM copy removes inputs that are specific to critcalc — time tokens, optional marks, and stack
-			counts — and keeps the rest as you wrote it. The image is the whole timeline, not only the part
-			on screen, with the notation written above it.
-		</p>
-	{/if}
+	<h2 id="saving">Saving, comparing, and sharing</h2>
+	<p>
+		The planner shows one rotation at a time and saves it as you work, in the profile you’re in. The
+		rotation’s name in the top bar opens <strong>Rotations</strong> in the Library, where
+		<strong>New rotation</strong> starts another and each one can be pinned, renamed, or deleted.
+	</p>
+	<p>
+		A rotation in Theorycraft can go to one of your profiles with <strong>Move to a profile</strong
+		>. Before it moves, you see which levels change, since the profile’s roster decides them for
+		characters you own.
+	</p>
+	<p>
+		<strong>Compare</strong>, under the bench, pairs two rotations.
+		<strong>Duplicate and compare</strong>
+		copies this one so you can change the copy, and <strong>Compare with…</strong> picks another from
+		the Library. The button that takes Compare’s place, or ⌃`, switches between them.
+	</p>
+	<p>
+		<strong>Share</strong> in the toolbar copies a link, the KQM notation, or an image of the timeline.
+		The link opens the rotation with its constellations and loadouts in Theorycraft, so it doesn’t change
+		the reader’s profiles. The KQM copy removes inputs that are specific to critcalc — time tokens, optional
+		marks, and stack counts — and keeps the rest as you wrote it. The image is the whole timeline, not
+		only the part on screen, with the notation written above it.
+	</p>
 </section>
 
 <section>
@@ -421,17 +317,9 @@
 		the rotation. Tap it to open it with the keyboard, and tap anywhere else to close it. A row of
 		keys above the keyboard offers the inputs that fit where the cursor is.
 	</p>
-	{#if $nextLayout}
-		<p>
-			The bench becomes a row above the timeline, which the <strong>Bench</strong> button in the toolbar
-			hides. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers are
-			turned off by default and the zoom starts wider than on desktop.
-		</p>
-	{:else}
-		<p>
-			The bench becomes a row above the timeline, which the <strong>Bench</strong> button in the view
-			bar hides. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers
-			are turned off by default and the zoom starts wider than on desktop.
-		</p>
-	{/if}
+	<p>
+		The bench becomes a row above the timeline, which the <strong>Bench</strong> button in the toolbar
+		hides. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers are
+		turned off by default and the zoom starts wider than on desktop.
+	</p>
 </section>

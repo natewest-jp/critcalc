@@ -7,7 +7,6 @@
 	import NoticeRegion from '$lib/components/NoticeRegion.svelte';
 	import { sayAfterReload } from '$lib/notices.svelte';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
-	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
 	import type MenuStateT from '$lib/components/MenuState.svelte';
 	import type MoveDialogT from '$lib/components/MoveDialog.svelte';
@@ -18,8 +17,6 @@
 	import { menu, rememberSurface } from '$lib/menuState.svelte';
 	import { resolve } from '$app/paths';
 	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
-	import { nextLayout } from '$lib/nextLayout';
-	import { get } from 'svelte/store';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import {
@@ -100,8 +97,7 @@
 	// so it claims the veil on tool cold loads too — the tool's own claim
 	// still gates its content; the veil lifts when both have painted.
 	const releaseVeil = claimVeilReady();
-	/** The top bar, loaded only while the switch is on. */
-	const nextOn = get(nextLayout);
+	/** The top bar, loaded on mount. */
 	let TopBarC = $state<typeof TopBarT | null>(null);
 	/** The menu state (phase 2c): ONE host for every surface — the landing, a
 	 *  section's own route, and over a tool, which it covers without
@@ -137,7 +133,6 @@
 			raiseFlipNotice();
 			return;
 		}
-		if (!nextOn) return;
 		// ⚓ The SCENE layout, not the tools one, so it shows on the landing
 		// too; the root layout has already started the open (memoized).
 		void (async () => {
@@ -156,7 +151,6 @@
 	// A restore says so once the page is back (notices round).
 	onMount(sayAfterReload);
 	onMount(() => {
-		if (!nextOn) return;
 		void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
 		void import('$lib/components/MenuState.svelte').then((m) => (MenuStateC = m.default));
 	});
@@ -374,16 +368,15 @@
 			 (revealDelayMs = 0 when there's no transition, e.g. hydration).
 			 Transitions are LOCAL on purpose — they play only when this {#if}
 			 toggles, never on the layout's initial mount. -->
-		{#if !isToolPath(pathname) && !(nextOn && !TopBarC)}
-			<!-- Under the switch the TOP BAR (build plan §13, 2b), once loaded:
-			     nothing until then, rather than a flash of the old bar. -->
+		{#if !isToolPath(pathname) && TopBarC}
+			<!-- The TOP BAR (build plan §13, 2b), once loaded: nothing until then. -->
 			<div
 				class="scene-chrome"
 				use:publishBrandBox
 				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 				out:fade={{ duration: FADE_OUT_MS }}
 			>
-				{#if nextOn && TopBarC}<TopBarC />{:else}<SiteChrome />{/if}
+				<TopBarC />
 			</div>
 			<div
 				class="scene-footer-gradient"

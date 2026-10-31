@@ -18,14 +18,11 @@
 export const TB_WIPE_MS = 320;
 
 /**
- * Below these CELL widths the character cell's band B folds its controls into
- * More, in this order (measured on the cell, not the viewport: the cell is
- * the roster column beside the dock and the whole band below it).
- * ↻ 2026-10-12, re-measured with the lens on its WIDEST label ("My
- * constellations", 172px): Show + lens need a 671px cell, the lens alone
- * 463px, each + 8px slack for font differences across engines. ⚠ The old
- * 560 / 420 were already short with "My roster" (the band ran 40px over at
- * 600–640px viewports). Re-measure if a band B control or a lens label grows.
+ * Below this CELL width the character cell's band B folds the constellation
+ * lens into More (measured on the cell, not the viewport: the cell is the
+ * roster column beside the dock and the whole band below it). Measured with
+ * the lens on its WIDEST label ("My constellations", 172px): 463px, + 8px
+ * slack for font differences across engines. Re-measure if a band B control
+ * or a lens label grows.
  */
-export const FOLD_SHOW_W = 680;
 export const FOLD_LENS_W = 472;

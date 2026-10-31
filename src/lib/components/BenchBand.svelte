@@ -70,7 +70,7 @@
 		ribbonFramePathRect
 	} from '$lib/benchBand.svelte';
 	import { narrowForm } from '$lib/media.svelte';
-	import { constellations, loadout, ownership, type LoadoutEntry } from '$lib/stores';
+	import { constellations, ownership, type LoadoutEntry } from '$lib/stores';
 	import { isEmptyEntry, ownChoice, resolveEntry } from '$lib/storage/teamLoadout';
 	import type { LoadoutSource } from './LoadoutPanel.svelte';
 
@@ -78,7 +78,6 @@
 	import { awakeIds, setTwinInNotation } from '$lib/utils/notationEdit';
 	import { plannerGuest, rotationTwin, travelerTwin, twinRoutes } from '$lib/travelerTwin.svelte';
 	import type { Twin } from '$lib/storage/records';
-	import { nextLayout } from '$lib/nextLayout';
 	import { plannerView } from '$lib/plannerView.svelte';
 	import type SaveTeamButtonT from './SaveTeamButton.svelte';
 	import type CompareControlT from './CompareControl.svelte';
@@ -129,16 +128,16 @@
 	const row = $derived(narrowForm());
 	/** Under the switch the planner's row wears a RAIL on its top edge (ToolStack
 	 *  `benchRail`): one object, so the row's top corners are the rail's. */
-	const railed = $derived(row && $nextLayout && mode === 'rp');
+	const railed = $derived(row && mode === 'rp');
 
 	/** Save as team (phase 3, design §3) rides the ribbon's head under the
 	 *  switch; loaded on demand, since it brings the storage session. */
 	let SaveTeamC = $state<typeof SaveTeamButtonT | null>(null);
 	let CompareC = $state<typeof CompareControlT | null>(null);
 	$effect(() => {
-		if ($nextLayout && mode === 'rp' && !row && !SaveTeamC)
+		if (mode === 'rp' && !row && !SaveTeamC)
 			void import('./SaveTeamButton.svelte').then((m) => (SaveTeamC = m.default));
-		if ($nextLayout && mode === 'rp' && !row && !CompareC)
+		if (mode === 'rp' && !row && !CompareC)
 			void import('./CompareControl.svelte').then((m) => (CompareC = m.default));
 	});
 
@@ -146,9 +145,7 @@
 	 *  past the tail's straight run (⚓ Nate: "it can push the foot down"). The
 	 *  foot is absolutely placed, so its height never depends on the box. */
 	let footH = $state(0);
-	const footGrow = $derived(
-		$nextLayout && mode === 'rp' && !row ? Math.max(0, footH - RIBBON_TAIL_LEAD) : 0
-	);
+	const footGrow = $derived(mode === 'rp' && !row ? Math.max(0, footH - RIBBON_TAIL_LEAD) : 0);
 
 	const boxW = $derived(row ? benchBand.dockW : RIBBON_W);
 	const boxH = $derived(
@@ -189,7 +186,7 @@
 	 * opens a Theorycraft copy beside it (§4.6). A guest's levels are its own.
 	 */
 	function setCon(id: string, level: number): void {
-		if ($nextLayout && !rt.rosterless && $ownership[id] === 'owned') {
+		if (!rt.rosterless && $ownership[id] === 'owned') {
 			if (level === ($constellations[id] ?? 0)) return;
 			void import('$lib/storage/session.svelte').then((m) => m.storageSession.whatIf(id, level));
 			return;
@@ -218,7 +215,7 @@
 	}
 	/** What this rotation's own choices sit on: its team's (under the switch)
 	 *  or the roster default. */
-	const inherited = $derived(rt.inheritedLoadout($loadout));
+	const inherited = $derived(rt.inheritedLoadout());
 	function effectiveLoadout(id: string): LoadoutEntry {
 		return resolveEntry(inherited[id], rt.tabLoadout[id]);
 	}
@@ -337,7 +334,7 @@
 			<path d={ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
 		{/if}
 	</svg>
-	{#if SaveTeamC && CompareC && $nextLayout && mode === 'rp' && !row}
+	{#if SaveTeamC && CompareC && mode === 'rp' && !row}
 		<!-- Under the last card, where the tail begins (⚓ Nate 2026-10-23: the
 		     bottom, not the head): the team's own verbs (§3). ↻ 2026-10-24
 		     (⚓ Nate): Compare joins them, FIRST — Save as team comes and goes
@@ -387,10 +384,7 @@
 							: 'Choose a character for this slot'}
 					emptyLabel=""
 					resting={mode === 'rp' && !!char && !awake.includes(char.id)}
-					picked={mode === 'rp' &&
-						$nextLayout &&
-						!!char &&
-						plannerView.inspectedCharacter === char.id}
+					picked={mode === 'rp' && !!char && plannerView.inspectedCharacter === char.id}
 				>
 					{#snippet actions()}
 						<!-- ⇄ hands the slot to the Builder's swap mode; ✕ empties it and
