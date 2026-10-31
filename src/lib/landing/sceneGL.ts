@@ -95,7 +95,6 @@ export const PAN_DVH = ((MASTER_H_SRC - 2 * BLEED_V_SRC - VIEWPORT_H_SRC) / VIEW
  *  transition module re-exports it as TRANSITION_MS). */
 // ↻ tune(nate) 2026-10-19: 2400 → 2100, a little brisker for launch (−12.5%).
 export const PAN_MS = 2100;
-const SIDE_LEAN_DEG = 16;
 
 /**
  * 🎛️ THE NARROW-SCREEN COMPOSITION SHIFT — Nate's to tune (2026-10-18). The
@@ -117,21 +116,11 @@ const TILT_BEZ = [0.58, 0, 0.42, 1] as const;
 
 /**
  * Camera pose for a crest (tool-state) stop, in CSS px at the current
- * viewport. `lean` cranes the camera toward a side tool's hero: +1 shifts the
- * world right (left tool), −1 left (right tool), 0 = straight tilt-up. The
- * horizontal travel is tan(SIDE_LEAN_DEG) × pan distance, clamped to 0.9 × the
- * plate's per-side overflow beyond the viewport so the plate edge never enters
- * frame — on ultrawide the overflow shrinks and the crane degrades gracefully
- * to a straight tilt-up. Poses are point-in-time px: recompute, don't cache,
- * across viewport resizes.
+ * viewport: a straight tilt-up (every tool sits at one pose, design §5.5).
+ * Poses are point-in-time px: recompute, don't cache, across viewport resizes.
  */
-export function crestPose(lean: -1 | 0 | 1, vw: number, vh: number): { x: number; y: number } {
-	const panPx = (PAN_DVH / 100) * vh;
-	if (lean === 0) return { x: 0, y: panPx };
-	const frameW = vh * VIEWPORT_ASPECT;
-	const overflow = Math.max(0, (frameW - vw) / 2) * 0.9;
-	const mag = Math.min(Math.tan((SIDE_LEAN_DEG * Math.PI) / 180) * panPx, overflow);
-	return { x: lean * mag, y: panPx };
+export function crestPose(vh: number): { x: number; y: number } {
+	return { x: 0, y: (PAN_DVH / 100) * vh };
 }
 
 // --- Small helpers ----------------------------------------------------------

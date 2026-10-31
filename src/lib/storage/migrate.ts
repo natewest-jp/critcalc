@@ -6,7 +6,7 @@
  * browser's own `localStorage` (read through `buildEnvelope` → `parseBackup`)
  * meet the same rules. ⚓ It only ever COPIES: this module returns records and
  * touches nothing, and the `localStorage` keys it read are left as they are
- * until well after the switch is the default (§13.1).
+ * (§13.1).
  *
  * Pure: the clock and the id source are handed in, so a test can pin both.
  */

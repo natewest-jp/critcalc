@@ -1,5 +1,5 @@
 /**
- * Where an ARRIVING document goes under the switch (design §9.3; build plan
+ * Where an ARRIVING document goes (design §9.3; build plan
  * §13, phase 2d). A shared link is read by its tool page as soon as the page
  * navigates, which on a cold load is BEFORE the storage session has loaded the
  * profile's documents — so applied straight away, it would be overwritten a

@@ -18,7 +18,6 @@
 	import { resolve } from '$app/paths';
 	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
-	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import {
 		initScenePath,
 		startSceneTransition,
@@ -398,7 +397,6 @@
 				 because the tools layout hosts its own copy (it is the one
 				 painting over this scene). onScene keeps the translucent
 				 over-the-starfield panel styling. -->
-			<ChromeModals onScene />
 		{/if}
 
 		<!-- Above the pages and the tools, below both top-bar hosts (z 10). -->
@@ -606,8 +604,7 @@
 		right: 0;
 		z-index: 3;
 	}
-	/* Under the switch (2c): above the menu state (z 9), which the top bar sits
-	   on. Scoped, so nothing moves with the switch off. */
+	/* Phase 2c: above the menu state (z 9), which the top bar sits on. */
 	:global(:root[data-next]) .scene-chrome {
 		z-index: 10;
 	}

@@ -1,6 +1,6 @@
 /**
  * Opening the store, and migrating into it the first time (§10, §13.1).
- * Browser-only; called while the switch is on.
+ * Browser-only.
  *
  * ⚓ Where the store lives, in order:
  * 1. IndexedDB, the real home.
@@ -30,7 +30,7 @@ import { newId } from './records';
  * or Builder (the old tools layout writes `rotationTabs` on any visit); misses
  * a visitor who only saw the landing, About, Help or Visualizers, accepted.
  * ⛔ `vizWorkspace` never counts: the Visualizers page saves its layout on
- * LOAD, outside the switch, and its onMount runs before the root layout's
+ * LOAD, outside the storage, and its onMount runs before the root layout's
  * boot — so a brand-new visitor landing there would read as returning.
  */
 const NOT_A_SIGNAL: ReadonlySet<string> = new Set(['critcalc:vizWorkspace']);
@@ -53,6 +53,14 @@ export function ensureStorage(): Promise<Db | null> {
 	return opening;
 }
 
+/** The storage session's fallback (⚓ Nate 2026-10-31): a store in memory,
+ *  for this tab only, when the store that opened could not be started on.
+ *  Later `ensureStorage()` calls get it too, so the whole page agrees. */
+export function openInMemory(): Promise<Db | null> {
+	opening = ready(LocalDb.inMemory('unopened'), null).catch(() => null);
+	return opening;
+}
+
 /** Open it again: the connection was lost (WebKit drops one under a tab
  *  left in the background) or closed for a newer version elsewhere. */
 export function reopenStorage(): Promise<Db | null> {
@@ -61,7 +69,7 @@ export function reopenStorage(): Promise<Db | null> {
 }
 
 /** One retry: an open can fail once and succeed a moment later, and a tab
- *  that gives up drops to the old layout for the rest of its life. */
+ *  that gives up keeps its work in memory for the rest of its life. */
 async function openWithRetry(): Promise<IDBDatabase> {
 	try {
 		return await openDb();

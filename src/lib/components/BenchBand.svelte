@@ -126,7 +126,7 @@
 	// too (`narrowForm()`, breakpoints.ts § THE HEIGHT AXIS) — the column costs
 	// height a landscape phone does not have. ToolStack's @media says the same.
 	const row = $derived(narrowForm());
-	/** Under the switch the planner's row wears a RAIL on its top edge (ToolStack
+	/** The planner's row wears a RAIL on its top edge (ToolStack
 	 *  `benchRail`): one object, so the row's top corners are the rail's. */
 	const railed = $derived(row && mode === 'rp');
 
@@ -213,8 +213,7 @@
 			twin === $travelerTwin && !plannerGuest() ? null : twin
 		);
 	}
-	/** What this rotation's own choices sit on: its team's (under the switch)
-	 *  or the roster default. */
+	/** What this rotation's own choices sit on: its team's. */
 	const inherited = $derived(rt.inheritedLoadout());
 	function effectiveLoadout(id: string): LoadoutEntry {
 		return resolveEntry(inherited[id], rt.tabLoadout[id]);

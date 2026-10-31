@@ -22,7 +22,7 @@
 
   The sides are named by their PROFILES when the pair crosses one (a what-if:
   your profile and Theorycraft's white copy), else A and B in the order made.
-  Loaded under the switch only. Strings are working copy.
+  Strings are working copy.
 -->
 <script lang="ts">
 	import Mark from './Mark.svelte';

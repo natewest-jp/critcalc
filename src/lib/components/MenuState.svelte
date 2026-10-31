@@ -518,11 +518,7 @@
 					<!-- Keyed on the profile: its undo history belongs to one roster, and
 					     replayed into another it would overwrite that one. -->
 					{#key storageSession.profile?.id}
-						<RosterTab
-							inMenu
-							focus={library.rosterFocus}
-							onFocused={() => (library.rosterFocus = null)}
-						/>
+						<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
 					{/key}
 				{:else if section === 'settings'}
 					<SettingsPanel />

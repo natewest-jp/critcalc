@@ -36,7 +36,7 @@
 		teamCon,
 		type BoardTeam
 	} from '$lib/boards.svelte';
-	import { boardBar, LINEUP_FULL } from '$lib/boardBar.svelte';
+	import { boardBar } from '$lib/boardBar.svelte';
 	import { library } from '$lib/library.svelte';
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
@@ -208,9 +208,8 @@
 		tab = 'lineup';
 	}
 
-	/** The saved rotations a team can pin (phase 3): under the switch, the
-	 *  profile's rotation DOCUMENTS (a pin names a document since 2a); the
-	 *  old bank otherwise. */
+	/** The saved rotations a team can pin (phase 3): the profile's rotation
+	 *  DOCUMENTS (a pin names a document since 2a). */
 	let sessionMod = $state<typeof import('$lib/storage/session.svelte') | null>(null);
 	onMount(() => {
 		void import('$lib/storage/session.svelte').then((m) => (sessionMod = m));
@@ -498,41 +497,6 @@
 		})();
 	}
 
-	/**
-	 * THE LIBRARY'S TARGET (§10.1a): opened from here, a library pick puts its
-	 * team on THIS board — the selected team if there is one (a rotation
-	 * pinned), else the first empty team, else a new one. Registered while the
-	 * page is mounted; `selectedLabel` is read live, so the library's hover hint
-	 * follows the selection.
-	 */
-	onMount(() =>
-		library.registerTarget({
-			get selectedLabel() {
-				if (!chosenTeamId) return null;
-				const i = board.teams.findIndex((t) => t.id === chosenTeamId);
-				return i >= 0 ? teamLabel(board, i) : null;
-			},
-			place(slots, pinnedRotationId) {
-				// The Planner's swap hides the board: a pick ends it, as a tab click
-				// does, so the team lands where it can be seen.
-				if (errandOpen) leaveErrand();
-				const target =
-					board.teams.find((t) => t.id === chosenTeamId) ??
-					board.teams.find((t) => t.slots.every((s) => s === null)) ??
-					// A battlefield board's teams are the game's — only Custom grows.
-					(board.preset === 'custom' ? boards.addTeam(board.id) : undefined);
-				if (!target) {
-					notices.toast('warning', LINEUP_FULL);
-					return;
-				}
-				boards.setTeam(board.id, target.id, slots);
-				if (pinnedRotationId) boards.pin(board.id, target.id, pinnedRotationId);
-				chosenTeamId = null;
-				showLineup();
-			}
-		})
-	);
-
 	/** ⚓ An UNTOUCHED Stygian board follows the game's season; an edited one
 	 *  never changes under you (§11.6 item 4). The first character placed pins
 	 *  the season the reader was looking at. */
@@ -684,14 +648,6 @@
 		chosenTeamId = ERRAND_ID;
 		swapping = { teamId: ERRAND_ID, slot, incumbent };
 	});
-
-	/** Leave the errand IN the Builder — a board tab, or a new board, was
-	 *  asked for. The board was never touched, so it simply shows again. */
-	function leaveErrand(): void {
-		errandOpen = false;
-		swapping = null;
-		chosenTeamId = null;
-	}
 
 	function cancelErrand(): void {
 		errandOpen = false;
@@ -1993,14 +1949,11 @@
 		justify-content: flex-end;
 		border-radius: var(--r-sm);
 	}
-	/* ↻ 2026-10-25 (Builder toolbar round), under the switch: the rail
+	/* ↻ 2026-10-25 (Builder toolbar round): the rail
 	   RETIRES, as the Planner's middle did the day before — a readout (the
 	   notice) stands on the night, only a control gets glass. The span stays
 	   as layout: it still takes what the controls leave and pushes them to
-	   the pane's end. Step 5 deletes the `:not` half. */
-	:global(:where(:root:not([data-next]))) .tb-rail {
-		background: var(--surface);
-	}
+	   the pane's end. */
 	.tb-norepeat {
 		flex: none;
 	}

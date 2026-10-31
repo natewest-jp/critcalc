@@ -136,8 +136,7 @@
 		>
 			<header class="tc-sheet-head">
 				<h2 class="tc-sheet-title">{asideTitle}</h2>
-				<!-- Under the switch, the inspector modal's ✕ (Nate 2026-10-23); the
-				     drawn CloseMark stays with the old layout until step 5. -->
+				<!-- The inspector modal's ✕ (Nate 2026-10-23). -->
 				<button class="btn btn--icon" onclick={() => onCloseAside?.()} aria-label="Close"
 					><Mark name="close" size={16} /></button
 				>

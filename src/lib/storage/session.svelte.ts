@@ -1,5 +1,5 @@
 /**
- * The storage session (build plan §13, phase 2a): under the switch, the
+ * The storage session (build plan §13, phase 2a): the
  * Planner and the Builder open the active profile's CURRENT documents from
  * IndexedDB and AUTOSAVE to them (§4.1), instead of reading and writing their
  * localStorage tab keys.
@@ -43,7 +43,7 @@ import {
 } from '$lib/notices.svelte';
 import { colourValue, isReservedName, pictureUrl } from '$lib/profileLook';
 import { get as readStore } from 'svelte/store';
-import { ensureStorage, reopenStorage } from './boot';
+import { ensureStorage, openInMemory, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
 	lineupLabel,
@@ -211,22 +211,32 @@ class StorageSession {
 	#page = newId();
 
 	/** Open the store and load the active profile's current documents. The
-	 *  store is always there (`boot.ts`: IndexedDB, else a stand-in); if
-	 *  loading throws, the tools restore their own state, so they never wait
-	 *  on a session that died. */
+	 *  store is always there (`boot.ts`: IndexedDB, else a stand-in). ⚓ If
+	 *  starting on it fails, the session starts again on a store in memory
+	 *  (Nate 2026-10-31): one document model whatever happens, and the memory
+	 *  notice tells the player their work won't survive the tab. Only if that
+	 *  fails too do the tools stay on their defaults, so they never wait on a
+	 *  session that died. */
 	async start(): Promise<void> {
 		try {
-			if (await this.#start()) return;
+			if (await this.#start(await ensureStorage())) return;
 		} catch (err) {
 			console.warn('[critcalc] the storage session failed to start', err);
 		}
-		rotationTabs.restore();
-		boards.restore();
+		for (const lock of this.#locks.values()) lock.release();
+		this.#locks.clear();
+		try {
+			if (await this.#start(await openInMemory())) return;
+		} catch (err) {
+			console.warn('[critcalc] the storage session failed to start in memory', err);
+		}
+		// The defaults, in memory, persisted nowhere (no sink is set).
+		rotationTabs.restoreFrom(null);
+		boards.restoreFrom(null);
 		settleDocuments(false);
 	}
 
-	async #start(): Promise<boolean> {
-		const db = await ensureStorage();
+	async #start(db: Db | null): Promise<boolean> {
 		if (!db) return false;
 		const meta = await getMeta(db);
 		const profile = await this.#activeProfile(db, meta);
@@ -1204,8 +1214,7 @@ class StorageSession {
 	 * does: the stores are emptied and critcalc's `localStorage` cleared, so
 	 * the reload migrates nothing and opens on Theorycraft alone — the boot
 	 * path, ⛔ not a second way of building an empty site. Pending work is
-	 * DROPPED, not written. The switch's own key stays (a tester's, not the
-	 * player's data). ⚠ The stores go first: if that fails nothing is lost,
+	 * DROPPED, not written. ⚠ The stores go first: if that fails nothing is lost,
 	 * where clearing `localStorage` first would lose the settings and keep
 	 * the work. The caller reloads.
 	 */
@@ -1521,7 +1530,7 @@ class StorageSession {
 	 * character that disagrees with the roster was a what-if waiting for this
 	 * phase. Each gets its Theorycraft copy at the stored levels, paired, so
 	 * nothing changes silently: ⇅ shows both. The stored levels are left where
-	 * they are (copy-only; under the switch an owned character reads the roster).
+	 * they are (copy-only; an owned character reads the roster).
 	 */
 	async #makeGuests(db: Db): Promise<void> {
 		// ⚓ Once, however many tabs open at the same moment after the migration
@@ -1648,8 +1657,8 @@ class StorageSession {
 	/**
 	 * ⚓ THE ROSTER'S LOADOUT RETIRES INTO TEAMS (teamLoadout.ts), once per
 	 * profile that still holds one: after the migration, after a restore of a
-	 * backup made before teams carried loadouts, or for a profile made under
-	 * the switch before this. Read from the data, not a flag, so a restore
+	 * backup made before teams carried loadouts, or for a profile made
+	 * before this. Read from the data, not a flag, so a restore
 	 * brings it back round. Under a lock, as the guests are (two tabs opening
 	 * together must not both move it).
 	 */

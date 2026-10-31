@@ -1,19 +1,15 @@
 <script lang="ts">
 	/**
 	 * About | Help — the static pages as ONE place (⚓ Nate 2026-09-23). The
-	 * heading of the area overlay and of the area routes is these two tabs, the
-	 * current one lit: whichever of the chrome's ⓘ / ? opened it is the lit tab,
-	 * and the other area is one click away. Each area's chapters stay in its own
+	 * heading of the area routes is these two tabs, the current one lit, and
+	 * the other area is one click away. Each area's chapters stay in its own
 	 * sidebar below, so the nav keeps two levels (chapter, then its sections).
 	 * Settings stays out on purpose — it is a control you reach for mid-task, not
 	 * something you go and read.
-	 *
-	 * In the overlay a tab switches in place; on a route it is a link.
 	 */
-	import { AREAS, defaultChapter, type ChromeAreaId } from '$lib/help/areas';
-	import { openArea } from './chromeModal.svelte';
+	import { AREAS, type ChromeAreaId } from '$lib/help/areas';
 
-	let { current, mode }: { current: ChromeAreaId; mode: 'modal' | 'page' } = $props();
+	let { current }: { current: ChromeAreaId } = $props();
 
 	// About first: the chrome's marks read ⓘ then ?.
 	const ORDER: ChromeAreaId[] = ['about', 'help'];
@@ -25,22 +21,12 @@
 <nav class="area-tabs" aria-label="Help and About">
 	{#each ORDER as id (id)}
 		{@const area = AREAS[id]}
-		{#if mode === 'modal'}
-			<button
-				type="button"
-				class="area-tab"
-				class:is-current={id === current}
-				aria-current={id === current ? 'page' : undefined}
-				onclick={() => openArea(id, defaultChapter(id))}>{area.title}</button
-			>
-		{:else}
-			<a
-				class="area-tab"
-				class:is-current={id === current}
-				aria-current={id === current ? 'page' : undefined}
-				href={area.chapters[0].path}>{area.title}</a
-			>
-		{/if}
+		<a
+			class="area-tab"
+			class:is-current={id === current}
+			aria-current={id === current ? 'page' : undefined}
+			href={area.chapters[0].path}>{area.title}</a
+		>
 	{/each}
 </nav>
 

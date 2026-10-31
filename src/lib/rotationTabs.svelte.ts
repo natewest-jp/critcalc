@@ -80,7 +80,7 @@ import {
 	type Seating,
 	type Seats
 } from '$lib/utils/notationEdit';
-import { safeSetItem, type LoadoutEntry } from '$lib/stores';
+import { type LoadoutEntry } from '$lib/stores';
 import type { TeamRecord } from '$lib/storage/records';
 import { teamOfSlots } from '$lib/storage/teamLoadout';
 import { TAB_LIMIT } from '$lib/tabSet';
@@ -127,7 +127,6 @@ export type LegacyTeam = { manualSlots?: string[] | null };
 
 /** ONE limit for every tabbed document — see `tabSet.ts`. */
 export { TAB_LIMIT };
-export const TABS_KEY = 'critcalc:rotationTabs';
 
 /** Re-exported so a consumer reading the team from this module does not have to
  *  know the notation layer defines it. ONE definition, in notationEdit. */
@@ -222,24 +221,10 @@ function arrivingWithDocument(): boolean {
 	return q.has('r') || q.has('team') || q.has('swap');
 }
 
-function loadFromStorage(): { tabs: RotationTab[]; activeTabId: string } | null {
-	if (!browser) return null;
-	try {
-		const raw = localStorage.getItem(TABS_KEY);
-		if (!raw) return null;
-		const data = JSON.parse(raw);
-		if (!Array.isArray(data.tabs) || data.tabs.length === 0 || !data.activeTabId) return null;
-		return data;
-	} catch {
-		return null;
-	}
-}
-
 class RotationTabsState {
 	// Server and client both initialize to the same deterministic default (one
-	// empty tab) so SSR markup and the hydrating component always agree. Real
-	// localStorage state is restored via restore() — called from the tools
-	// layout's onMount, after hydration, before the next paint.
+	// empty tab) so SSR markup and the hydrating component always agree. The
+	// storage session restores the real state (`restoreFrom`) after hydration.
 	tabs = $state<RotationTab[]>([makeTab('Tab 1')]);
 	activeTabId = $state<string>(this.tabs[0].id);
 
@@ -298,7 +283,7 @@ class RotationTabsState {
 	rosterless = $state(false);
 
 	/** The profile's teams, handed over by the storage session (empty in
-	 *  Theorycraft and off the switch), each with its display label. */
+	 *  Theorycraft), each with its display label. */
 	teams = $state<(TeamRecord & { label: string })[]>([]);
 
 	/**
@@ -366,16 +351,11 @@ class RotationTabsState {
 		return this.tabs.find((t) => t.id === this.activeTabId) ?? this.tabs[0];
 	}
 
-	/** Restore saved tabs from localStorage. Idempotent; call once, pre-paint. */
-	restore(): void {
-		this.restoreFrom(loadFromStorage());
-	}
-
 	/**
 	 * Take a stored tab set — or, given `null`, the first visit's sample (no
 	 * sample when `sample` is false or a link is arriving) — and mark the
-	 * state restored. `restore()` hands it localStorage; under the switch the
-	 * storage session hands it the profile's current document (build plan §13).
+	 * state restored. The storage session hands it the profile's current
+	 * document (build plan §13).
 	 */
 	restoreFrom(stored: { tabs: RotationTab[]; activeTabId: string } | null, sample = true): void {
 		if (stored) {
@@ -414,9 +394,9 @@ class RotationTabsState {
 		this.restored = true;
 	}
 
-	/** Write the current state to localStorage. Reads every persisted field, so
-	 *  an $effect wrapping this call tracks all of them. Never writes $state —
-	 *  no circular reactivity. */
+	/** Hand the current state to the storage session's sink. Reads every
+	 *  persisted field, so an $effect wrapping this call tracks all of them.
+	 *  Never writes $state — no circular reactivity. */
 	persist(): void {
 		const snapshot = this.tabs.map((t) =>
 			t.id === this.activeTabId
@@ -431,16 +411,11 @@ class RotationTabsState {
 				: t
 		);
 		if (!this.restored) return;
-		if (this.persistSink) {
-			this.persistSink(snapshot, this.activeTabId);
-			return;
-		}
-		safeSetItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId: this.activeTabId }));
+		this.persistSink?.(snapshot, this.activeTabId);
 	}
 
-	/** Under the switch (build plan §13) the tabs persist to the new store
-	 *  instead, and ⚓ localStorage is left exactly as the migration found it
-	 *  (copy-only). A plain field, not `$state`: it is set once, before
+	/** The tabs persist to the store (build plan §13), and ⚓ localStorage is
+	 *  left exactly as the migration found it (copy-only). A plain field, not `$state`: it is set once, before
 	 *  `restored`, and must not become a dependency of the persist effect. */
 	persistSink: ((tabs: RotationTab[], activeTabId: string) => void) | null = null;
 

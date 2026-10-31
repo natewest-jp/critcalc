@@ -144,7 +144,7 @@
 	}
 
 	/** A new document; a lineup takes the shape chosen from New lineup's menu
-	 *  (Stygian, Abyss or Custom, as band A's + offered off the switch). */
+	 *  (Stygian, Abyss or Custom). */
 	async function create(preset?: BoardPreset): Promise<void> {
 		await storageSession.create(place, preset);
 		arrive();

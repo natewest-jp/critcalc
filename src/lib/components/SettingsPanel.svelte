@@ -60,8 +60,8 @@
 		persistDeclined = !persisted;
 	}
 
-	/** ⚓ Under the switch the work lives in the new storage, so a backup is
-	 *  v3: every profile (design §10, §12 Q11). The session is loaded only then. */
+	/** ⚓ The work lives in the store, so a backup is v3: every profile
+	 *  (design §10, §12 Q11). */
 	const session = () => import('$lib/storage/session.svelte').then((m) => m.storageSession);
 
 	/** The session itself, once loaded (the new layout only): the Profile
@@ -287,9 +287,8 @@
 			<span class="sp-note">Show characters in their newest outfit if they have one.</span>
 		</label>
 
-		<!-- ⚓ The Traveler twin is an ACCOUNT fact (2026-10-26): under the new
-		     layout it lives on each profile's page; the old layout has no
-		     profiles and keeps it here. -->
+		<!-- ⚓ The Traveler twin is an ACCOUNT fact (2026-10-26): it lives on
+		     each profile's page. -->
 	</section>
 
 	<section class="sp-section" id="settings-planner">
@@ -729,8 +728,6 @@
 			</span>
 		</div>
 	</section>
-
-	<!-- The old layout keeps its resets here: it has no Profile page. -->
 </div>
 
 <style>
