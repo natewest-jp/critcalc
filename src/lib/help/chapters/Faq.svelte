@@ -8,7 +8,6 @@
 	 describe the thing. The home-screen links go to Google's and Apple's own
 	 help pages. -->
 <script lang="ts">
-	import { nextLayout } from '$lib/nextLayout';
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
@@ -40,43 +39,23 @@
 	<h2 id="your-data">Your data</h2>
 
 	<h3>Do I need an account?</h3>
-	{#if $nextLayout}
-		<p>
-			No. Everything you set up (your profiles with their rosters, teams, rotations, and lineups,
-			and your settings) is stored in this browser and nowhere else. <a href={resolve('/privacy')}
-				>Privacy</a
-			>
-			lists exactly what is kept in your browser and what leaves it. Because nothing is kept anywhere
-			else, clearing this site’s data in your browser erases it, so it’s worth downloading a backup now
-			and then.
-		</p>
-	{:else}
-		<p>
-			No. Everything you set up (your roster, loadouts, saved rotations and lineups, and settings)
-			is stored in this browser and nowhere else. <a href={resolve('/privacy')}>Privacy</a> lists exactly
-			what is kept in your browser and what leaves it. Because nothing is kept anywhere else, clearing
-			this site’s data in your browser erases it, so it’s worth downloading a backup now and then.
-		</p>
-	{/if}
+	<p>
+		No. Everything you set up (your profiles with their rosters, teams, rotations, and lineups, and
+		your settings) is stored in this browser and nowhere else. <a href={resolve('/privacy')}
+			>Privacy</a
+		>
+		lists exactly what is kept in your browser and what leaves it. Because nothing is kept anywhere else,
+		clearing this site’s data in your browser erases it, so it’s worth downloading a backup now and then.
+	</p>
 
 	<h3>How do I move my data to another device?</h3>
-	{#if $nextLayout}
-		<p>
-			In <a href={resolve('/settings')}>Settings</a> under <strong>Backup</strong>, click
-			<strong>Export…</strong> to download all your data as one file. Move that file to the other
-			device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
-			file’s data. The file carries every profile in this browser, each with its roster, teams, rotations,
-			and lineups, plus your settings and the visualizers’ layout.
-		</p>
-	{:else}
-		<p>
-			In <a href={resolve('/settings')}>Settings</a> under <strong>Backup</strong>, click
-			<strong>Export…</strong> to download all your data as one file. Move that file to the other
-			device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
-			file’s data. The file carries your settings, roster, constellations, loadouts, saved rotations and
-			lineups, open tabs, and the visualizers’ layout.
-		</p>
-	{/if}
+	<p>
+		In <a href={resolve('/settings')}>Settings</a> under <strong>Backup</strong>, click
+		<strong>Export…</strong> to download all your data as one file. Move that file to the other
+		device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
+		file’s data. The file carries every profile in this browser, each with its roster, teams, rotations,
+		and lineups, plus your settings and the visualizers’ layout.
+	</p>
 
 	<h3>What does a share link carry?</h3>
 	<p>
@@ -128,24 +107,12 @@
 	<h2 id="timing">Timing</h2>
 
 	<h3>Why is the timeline faster or slower than the timing I know?</h3>
-	{#if $nextLayout}
-		<p>
-			Check <strong>Human timing</strong> (it’s on by default). This pads every input the game
-			doesn’t buffer with a few frames of reaction time — 10 to start with, which is the KQM
-			starting point. Normal attack into normal attack is queued up by the game, so no padding is
-			added there. Turn it off in <a href={resolve('/settings')}>Settings</a> to see the frame-perfect
-			rotation, or tune it there.
-		</p>
-	{:else}
-		<p>
-			Check <strong>Human timing</strong> (it’s on by default). This pads every input the game
-			doesn’t buffer with a few frames of reaction time — 10 to start with, which is the KQM
-			starting point. Normal attack into normal attack is queued up by the game, so no padding is
-			added there. Turn it off in the rotation planner’s view bar to see the frame-perfect rotation,
-			or tune it in
-			<a href={resolve('/settings')}>Settings</a>.
-		</p>
-	{/if}
+	<p>
+		Check <strong>Human timing</strong> (it’s on by default). This pads every input the game doesn’t
+		buffer with a few frames of reaction time — 10 to start with, which is the KQM starting point.
+		Normal attack into normal attack is queued up by the game, so no padding is added there. Turn it
+		off in <a href={resolve('/settings')}>Settings</a> to see the frame-perfect rotation, or tune it there.
+	</p>
 	<p>
 		Swapping characters costs time either way. Swaps are calculated as your ping plus about 90 ms.
 		At critcalc’s default ping setting (60 ms), that results in nine frames for every swap. Set your

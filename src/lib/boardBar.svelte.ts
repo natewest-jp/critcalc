@@ -30,7 +30,6 @@ import {
 } from './boards.svelte';
 import { closeCandidate, TAB_LIMIT, type TabStripModel } from './tabSet';
 import { encodeBoard, type SharedBoard } from './utils/boardUrl';
-import { nextLayout } from './nextLayout';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 
 /** A team that found no room: what to do about it, too. */
@@ -151,20 +150,16 @@ class BoardBarState {
 	 *  a new tab; cancelling the confirm keeps it in Recently closed. */
 	receive(shared: SharedBoard, isValidId: (id: string) => boolean) {
 		const doc = fromSharedBoard(shared, isValidId);
-		// ⚓ Under the switch (2d): a new document in THEORYCRAFT (§9.3).
-		if (get(nextLayout)) {
-			void documentsReady.then(async (viaStore) => {
-				if (!viaStore) return this.#receiveLocal(doc);
-				const { storageSession } = await import('./storage/session.svelte');
-				const { switched, id, movable } = await storageSession.receiveLineup({
-					...makeBoard(doc.label),
-					...doc
-				});
-				documentBar.arrived(switched, 'Loaded shared lineup', id, movable);
+		// ⚓ A new document in THEORYCRAFT (§9.3).
+		void documentsReady.then(async (viaStore) => {
+			if (!viaStore) return this.#receiveLocal(doc);
+			const { storageSession } = await import('./storage/session.svelte');
+			const { switched, id, movable } = await storageSession.receiveLineup({
+				...makeBoard(doc.label),
+				...doc
 			});
-			return;
-		}
-		this.#receiveLocal(doc);
+			documentBar.arrived(switched, 'Loaded shared lineup', id, movable);
+		});
 	}
 
 	#receiveLocal(doc: ReturnType<typeof fromSharedBoard>) {
@@ -189,23 +184,19 @@ class BoardBarState {
 	 * the active board", taken.)
 	 */
 	receiveTeam(ids: string[]) {
-		// ⚓ Under the switch (2d): onto THEORYCRAFT's lineup (§9.3).
-		if (get(nextLayout)) {
-			void documentsReady.then(async (viaStore) => {
-				let switched = false;
-				if (viaStore) {
-					const { storageSession } = await import('./storage/session.svelte');
-					switched = await storageSession.toTheorycraft();
-				}
-				// One slot: the arrival's notice would replace a refusal said a
-				// moment before, so a team that didn't fit is said LAST.
-				const added = this.#placeTeam(ids, switched);
-				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
-				if (!added && switched) notices.toast('warning', LINEUP_FULL);
-			});
-			return;
-		}
-		this.#placeTeam(ids);
+		// ⚓ Onto THEORYCRAFT's lineup (§9.3).
+		void documentsReady.then(async (viaStore) => {
+			let switched = false;
+			if (viaStore) {
+				const { storageSession } = await import('./storage/session.svelte');
+				switched = await storageSession.toTheorycraft();
+			}
+			// One slot: the arrival's notice would replace a refusal said a
+			// moment before, so a team that didn't fit is said LAST.
+			const added = this.#placeTeam(ids, switched);
+			if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
+			if (!added && switched) notices.toast('warning', LINEUP_FULL);
+		});
 	}
 
 	/** False when the lineup had no room. `quiet` leaves the notices to the
@@ -247,12 +238,8 @@ class BoardBarState {
 	async shareUrl(): Promise<string | null> {
 		const board = boards.activeBoard;
 		if (!boardWorthKeeping(board)) return null;
-		// ⚓ Under the switch a pin names a rotation in the NEW storage: the old
-		// bank would miss it and the link would carry the team's own levels
-		// rather than the pinned rotation's the Builder shows.
-		const saved = get(nextLayout)
-			? await (await import('./storage/session.svelte')).storageSession.savedRotations()
-			: get(savedNotations);
+		// ⚓ A pin names a rotation in the profile's storage.
+		const saved = await (await import('./storage/session.svelte')).storageSession.savedRotations();
 		const param = await encodeBoard(toSharedBoard(board, saved, get(constellations)));
 		return `${location.origin}/builder?b=${param}`;
 	}

@@ -35,7 +35,6 @@
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
-	import { nextLayout } from '$lib/nextLayout';
 
 	/**
 	 * 🎛️ Bare scene BETWEEN two instruments — the widest gap inside this tool.
@@ -265,17 +264,9 @@
 	</button>
 {/snippet}
 
-<!-- ↻ Under the switch (phase 2e, design §5.3) band A retires here too: the
-     layout becomes ONE control at the toolbar's right end, and each tile's
-     Defaults moves into its ⋯. -->
-<ToolStack bandAClass="ws-lineup-band" noBandA={$nextLayout}>
-	{#snippet bandALeft()}
-		<span class="kicker ws-title">Workspace</span>
-	{/snippet}
-
-	{#snippet bandARight()}
-		{@render layoutControls()}
-	{/snippet}
+<!-- ↻ Phase 2e (design §5.3): the layout is ONE control at the toolbar's right
+     end, and each tile's Defaults is in its ⋯. -->
+<ToolStack>
 	{#snippet bandBFull()}
 		<!-- One row of cells on the tile grid's own columns, so each picker sits
 		     over the instrument it switches — and, since 2026-08-13, so does the
@@ -295,16 +286,6 @@
 						onPick={(next) => pick(slot, next)}
 					/>
 					<span class="ws-band-actions">
-						{#if handles[id]?.reset && !$nextLayout}
-							<button
-								class="btn btn--sm btn--glass"
-								onclick={() => handles[id]?.reset?.()}
-								title="Reset this instrument's controls to their defaults"
-							>
-								<Mark name="reset" size={12} />
-								<span class="ws-band-word">Defaults</span>
-							</button>
-						{/if}
 						{#if handles[id]?.getShareState}
 							<button
 								class="btn btn--sm btn--glass"
@@ -312,20 +293,14 @@
 								onclick={() => shareTile(id)}
 								title="Copy a link that reopens this instrument as it looks now"
 							>
-								<Mark
-									name={copiedTile === id ? 'check' : $nextLayout ? 'link' : 'share'}
-									size={12}
-								/>
-								<!-- ⚓ Under the switch "Share" means the top bar's one menu
-								     site-wide (§5.3), so the tile's says what it does. -->
+								<Mark name={copiedTile === id ? 'check' : 'link'} size={12} />
+								<!-- ⚓ The tile's button says what it does (§5.3). -->
 								<span class="ws-band-word" class:ws-band-word--keep={failedTile === id}
 									>{failedTile === id
 										? 'Copy failed'
 										: copiedTile === id
 											? 'Copied'
-											: $nextLayout
-												? 'Copy link'
-												: 'Share'}</span
+											: 'Copy link'}</span
 								>
 							</button>
 						{/if}
@@ -333,7 +308,7 @@
 						     1360px, and so the report carries this instrument's link. -->
 						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
 							{#snippet items(close)}
-								{#if $nextLayout && handles[id]?.reset}
+								{#if handles[id]?.reset}
 									<button
 										class="band-menu-item"
 										role="menuitem"
@@ -355,7 +330,7 @@
 								</ReportLink>
 							{/snippet}
 						</BandMenu>
-						{#if $nextLayout && slot === slotCount - 1}
+						{#if slot === slotCount - 1}
 							<!-- The workspace's own control (§5.3): how many instruments,
 							     and Reset layout, as one plate at the toolbar's right. -->
 							<BandMenu glass size="sm" mark="layout" label="Layout" role="dialog" align="end">
@@ -410,14 +385,6 @@
 </ToolStack>
 
 <style>
-	/* Band A's left zone: the workspace's name. It is the one tool whose band A
-	   has no document tabs — there is nothing to switch between — so the kicker
-	   holds the zone rather than leaving the band lopsided, the way an empty
-	   left half read before. */
-	.ws-title {
-		font-size: var(--fs-sm);
-	}
-
 	/* The numerals are single characters; without a floor they'd render three
 	   noticeably narrower targets than "Auto". */
 	.ws-slots .btn {
@@ -545,41 +512,6 @@
 		--scroll-fade: 24px;
 	}
 
-	/* ══ BAND A ONLY WHERE THERE IS A LINEUP (⚓ Nate 2026-10-02) ══════════════
-	   Band A holds the lineup — Auto / 1 / 2 / 3 and Reset layout — and below
-	   1360px the window fits ONE instrument (viewportCapacity), so every one of
-	   those controls is a no-op: 2 and 3 disable, and Reset layout only puts the
-	   default instrument back in the slot, which the picker does in one click.
-	   On a phone it also collided with itself (the kicker under Auto). So the
-	   band is shown from 1360px up and is simply absent below.
-	   ⚠ CSS, not `capacity`: vw is 0 until hydration, so a JS gate would paint
-	   the band on every desktop's first frame and then pull it — or the reverse.
-	   ⚠ 1360px is the literal of viewportCapacity's `vw >= 1360` (innerWidth
-	   and a width query both include the scrollbar), registered as a named
-	   content stop in breakpoints.test.ts. Move one, move both.
-	   ⚠ The band's height and gap leave .ws's height budget with it
-	   (--ws-band-a). The asymmetry with the benched tools is accepted: this one
-	   has no document and no bench, so its band A was never their band A. */
-	.ws {
-		--ws-band-a: 0px;
-	}
-
-	:global(.bands > .band-a.ws-lineup-band) {
-		display: none;
-	}
-
-	@media (min-width: 1360px) {
-		.ws {
-			/* ToolStack's own reserve: band A's height and gap, or 0 under the
-			   switch, where band A retires (phase 2e). */
-			--ws-band-a: var(--band-a-reserve);
-		}
-
-		:global(.bands > .band-a.ws-lineup-band) {
-			display: flex;
-		}
-	}
-
 	@media (min-width: 1024px) {
 		/* Fill the viewport below the bands. The band stack and its gap come out
 		   of the budget — BAND_STACK_TO_SURFACE, passed down by ToolStack.
@@ -594,8 +526,7 @@
 		.ws {
 			height: calc(
 				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -
-					var(--tool-pad-bottom, 1.5rem) - var(--ws-band-a) - var(--band-b-h) -
-					var(--band-stack-gap)
+					var(--tool-pad-bottom, 1.5rem) - var(--band-b-h) - var(--band-stack-gap)
 			);
 			/* 🐛 THE ROW HAD TO BE PINNED, and this one declaration is the whole
 			   fix (⚓ NATE 2026-08-17: the Visualizers should not page-scroll).

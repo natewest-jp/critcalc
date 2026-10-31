@@ -1,6 +1,5 @@
 import { browser } from '$app/environment';
 import { get, writable } from 'svelte/store';
-import { nextLayout } from '$lib/nextLayout';
 import { getSceneGL, crestPose, PAN_MS } from '$lib/landing/sceneGL';
 import { SCENE_DIM } from '$lib/landing/sceneDim';
 
@@ -98,28 +97,11 @@ export const XFADE_TRANSITION_MS = 700;
 export const TILT_EASING_CSS = 'cubic-bezier(0.58, 0, 0.42, 1)';
 
 /**
- * Side-tool crane direction per path: +1 shifts the world right (the LEFT
- * hero — Team Builder leads the card order), −1 left (the right hero,
- * Visualizers), 0 = no lean (center tool, landing, anything else). The
- * magnitude/clamp math lives in sceneGL's crestPose.
- */
-function sideSign(path: string): -1 | 0 | 1 {
-	// ⚓ ONE PLACE FOR EVERY TOOL (design §5.5, Nate 2026-10-22): under the
-	// switch every tool sits at the Planner's pose, so the rise from the
-	// landing goes one way whichever card you pick, and a tool changes in
-	// place. The crane below is the switch-off site's until the release.
-	if (get(nextLayout)) return 0;
-	if (path === '/builder') return 1;
-	if (path === '/visualizers') return -1;
-	return 0;
-}
-
-/**
  * ⚠ /lab IS IN THIS LIST ON PURPOSE (2026-08-10). It is the dev-only specimen
  * board, and the ONE thing it exists to provide is the real crest under the
  * real wash — a specimen judged against a simulated backdrop is the reason the
- * styleguide could not do this job. sideSign returns 0 for it, so it gets the
- * centre crest rather than either tool's side; nothing sets sceneOccluded for
+ * styleguide could not do this job. It gets the centre crest, as every tool
+ * does; nothing sets sceneOccluded for
  * it (that is the tools layout's doing and /lab is not in that group), so the
  * world keeps rendering behind it, which is the entire point.
  */
@@ -133,13 +115,16 @@ const TOOL_PATHS = ['/visualizers', '/planner', '/builder', '/lab'];
 export const isToolPath = (path: string) =>
 	TOOL_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
-/** Camera pose for a path: tools sit at the crest (with their crane), the
- *  landing and content pages at rest. Point-in-time px — never cache. */
+/** Camera pose for a path: tools sit at the crest, the landing and content
+ *  pages at rest. ⚓ ONE PLACE FOR EVERY TOOL (design §5.5, Nate 2026-10-22):
+ *  every tool sits at the Planner's centred pose, so the rise from the landing
+ *  goes one way whichever card you pick, and a tool changes in place.
+ *  Point-in-time px — never cache. */
 function poseForPath(path: string): { x: number; y: number } {
 	if (!isToolPath(path)) return { x: 0, y: 0 };
 	// The scene's own box (100lvh), so the pose and the drawn geometry agree.
 	const v = getSceneGL()?.viewport() ?? { w: window.innerWidth, h: window.innerHeight };
-	return crestPose(sideSign(path), v.w, v.h);
+	return crestPose(0, v.w, v.h);
 }
 
 /**

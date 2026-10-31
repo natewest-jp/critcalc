@@ -21,7 +21,7 @@
  */
 
 import { get } from 'svelte/store';
-import { goto, pushState } from '$app/navigation';
+import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { resolve } from '$app/paths';
 import {
@@ -40,7 +40,6 @@ import { seatingOfSaved, seatsOfSaved } from './utils/notationEdit';
 import { encodeRotation } from './utils/rotationUrl';
 import { encodeBoard } from './utils/boardUrl';
 import { teamNotation, type LibraryTeam } from './library';
-import { nextLayout } from './nextLayout';
 import { menu } from './menuState.svelte';
 
 export type LibraryFrom = 'planner' | 'builder';
@@ -86,34 +85,16 @@ class LibraryState {
 	}
 
 	show(from: LibraryFrom, tab: LibraryTab = 'teams') {
-		// ⚓ Under the switch (build plan §13, 2c) the Library is the menu
-		// state's: Rotations, Lineups and the Roster are sections of it.
-		if (get(nextLayout)) {
-			menu.show(tab === 'roster' ? 'roster' : from === 'builder' ? 'lineups' : 'rotations');
-			return;
-		}
-		this.from = from;
-		this.tab = tab;
-		this.#away = false;
-		if (this.open) return;
-		this.open = true;
-		pushState('', { ...page.state, library: true });
+		// ⚓ The Library is the menu state's (build plan §13, 2c): Rotations,
+		// Lineups and the Roster are sections of it.
+		menu.show(tab === 'roster' ? 'roster' : from === 'builder' ? 'lineups' : 'rotations');
 	}
 
-	/** The chrome's Roster button and a details card's link: the Library on its
-	 *  Roster tab, from whichever page we are on, optionally arriving on one
-	 *  character. Already open, it just switches tab. */
+	/** The chrome's Roster button and a details card's link: the Roster
+	 *  section, optionally arriving on one character. */
 	openRoster(focusId: string | null = null) {
-		if (get(nextLayout)) {
-			this.rosterFocus = focusId;
-			menu.show('roster');
-			return;
-		}
-		const path = page.url.pathname;
-		const builder = path.startsWith(resolve('/builder'));
-		this.show(builder ? 'builder' : 'planner', 'roster');
-		this.#away = !builder && !path.startsWith(resolve('/planner'));
 		this.rosterFocus = focusId;
+		menu.show('roster');
 	}
 
 	/** True when no tool is here to take a Planner pick (the `/library` page,

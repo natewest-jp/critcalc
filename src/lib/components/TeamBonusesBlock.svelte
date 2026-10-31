@@ -37,7 +37,6 @@
 		resShredDisplayStat
 	} from '$lib/timeline/buffDisplay';
 	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
-	import { nextLayout } from '$lib/nextLayout';
 	import { plannerView as pv, type InspectedBonus } from '$lib/plannerView.svelte';
 	import { computeTeamFactionCounts, computeHolderElementCounts } from '$lib/utils/teamComposition';
 	import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from '$lib/sim/conditions';
@@ -163,7 +162,7 @@
 
 	let inspectedBonus = $derived.by((): InspectedBonus | null => {
 		const t = pv.target;
-		if (!$nextLayout || t?.kind !== 'bonus') return null;
+		if (t?.kind !== 'bonus') return null;
 		for (const res of resonance.active)
 			if (resKey(res) === t.key)
 				return { sourceLabel: `${res.label} — Resonance`, effects: res.rows };
@@ -181,10 +180,9 @@
 	});
 	$effect(() => {
 		pv.inspectedBonus = inspectedBonus;
-		if ($nextLayout && pv.target?.kind === 'bonus' && !inspectedBonus) pv.target = null;
+		if (pv.target?.kind === 'bonus' && !inspectedBonus) pv.target = null;
 	});
 	function inspectChip(key: string) {
-		if (!$nextLayout) return;
 		tooltip = null;
 		pv.inspect({ kind: 'bonus', key });
 	}
@@ -255,8 +253,7 @@
 			{#each resonance.active as res (res.key)}
 				<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 				<span
-					class="faction-badge res-badge"
-					class:tb-inspectable={$nextLayout}
+					class="faction-badge res-badge tb-inspectable"
 					class:tb-inspected={pv.inspectedBonusKey === resKey(res)}
 					style={resonanceBadgeStyle(res)}
 					onmouseenter={(e) => showResonanceTooltip(e, res)}
@@ -280,7 +277,7 @@
 					<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 					<span
 						class="bonus-chip"
-						class:tb-inspectable={$nextLayout && !!owner}
+						class:tb-inspectable={!!owner}
 						class:tb-inspected={!!owner && pv.inspectedBonusKey === chipKey(owner, bonus)}
 						style:border-left-color={elementPalette(owner?.element).main}
 						onmouseenter={(e) => owner && showChipTooltip(e, owner, bonus, owner.displayName)}

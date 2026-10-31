@@ -257,57 +257,31 @@ export const savedBoards = createSavedBoardsStore();
 // ---------------------------------------------------------------------------
 //
 // Keyed by characterId (e.g. "bennett"), value is 0–6 (C0–C6).
-// Persists across page loads and is shared across all tools.
+// Shared across all tools, and held per profile (above).
 
-const CONSTELLATION_KEY = 'critcalc:constellations';
-
-// ── The roster under the switch (build plan §13, phase 2d) ─────────────────
+// ── The roster ─────────────────────────────────────────────────────────────
 // ⚓ Each PROFILE has its own roster (design §2.1), held in its IndexedDB
-// record. Under the switch the three roster stores start EMPTY and the storage
-// session fills them from the active profile (`bindRoster`); their writes go
-// to its sink, ⚓ never to localStorage, which stays as the migration found it
-// (copy-only, §13.1). Read straight off the switch's own key: importing
-// `nextLayout` here would be circular (it imports this module). ⚠ Since the
-// flip (2026-10-27) the switch is ON unless the key holds '0', and ON where
-// the key cannot be read — the same test as `nextLayout.ts` `read()`, and the
-// two must change together.
+// record. The three roster stores start EMPTY and the storage session fills
+// them from the active profile (`bindRoster`); their writes go to its sink,
+// ⚓ never to localStorage, which stays as the migration found it (copy-only,
+// §13.1).
 
 export type RosterPart = 'constellations' | 'ownership' | 'loadout';
 let rosterSink: ((part: RosterPart, value: object) => void) | null = null;
-const underSwitch = (): boolean => {
-	if (!browser) return false;
-	try {
-		return localStorage.getItem('critcalc:nextLayout') !== '0';
-	} catch {
-		return true;
-	}
-};
-
-/** Write a roster part to the active profile, or (switch off) localStorage. */
-function persistRoster(part: RosterPart, key: string, value: object): void {
-	if (!browser) return;
+/** Write a roster part to the active profile, if one is bound. */
+function persistRoster(part: RosterPart, value: object): void {
 	if (rosterSink) rosterSink(part, value);
-	else if (!underSwitch()) safeSetItem(key, JSON.stringify(value));
-}
-
-function loadConstellations(): Record<string, number> {
-	if (!browser || underSwitch()) return {};
-	try {
-		return JSON.parse(localStorage.getItem(CONSTELLATION_KEY) ?? '{}');
-	} catch {
-		return {};
-	}
 }
 
 function createConstellationStore() {
-	const store = writable<Record<string, number>>(loadConstellations());
+	const store = writable<Record<string, number>>({});
 
 	return {
 		subscribe: store.subscribe,
 		setLevel(characterId: string, level: number) {
 			store.update((prev) => {
 				const next = { ...prev, [characterId]: level };
-				persistRoster('constellations', CONSTELLATION_KEY, next);
+				persistRoster('constellations', next);
 				return next;
 			});
 		},
@@ -315,12 +289,11 @@ function createConstellationStore() {
 		 *  its undo, which would otherwise persist once per character. */
 		replaceAll(next: Record<string, number>) {
 			store.set({ ...next });
-			persistRoster('constellations', CONSTELLATION_KEY, next);
+			persistRoster('constellations', next);
 		},
 		clear() {
 			store.set({});
-			if (rosterSink) rosterSink('constellations', {});
-			else if (browser && !underSwitch()) safeRemoveItem(CONSTELLATION_KEY);
+			persistRoster('constellations', {});
 		},
 		/** The active profile's levels, set without writing anything back. */
 		load(next: Record<string, number>) {
@@ -340,50 +313,13 @@ export const constellations = createConstellationStore();
 // as the roster ledger. Distinct from a constellation level: implicit-C0 no
 // longer means "unowned" now that ownership is tracked explicitly.
 
-const OWNERSHIP_KEY = 'critcalc:ownership';
-
 export type OwnershipMark = 'owned' | 'wishlist';
 
-/**
- * One-time migration seed: anyone who set an explicit constellation level did so
- * deliberately, which only makes sense for a character they own — so pre-existing
- * `constellations` entries imply ownership. Pure, so it's unit-testable without
- * localStorage.
- */
-export function deriveInitialOwnership(
-	cons: Record<string, number>
-): Record<string, OwnershipMark> {
-	const out: Record<string, OwnershipMark> = {};
-	for (const id of Object.keys(cons)) out[id] = 'owned';
-	return out;
-}
-
-function loadOwnership(): Record<string, OwnershipMark> {
-	if (!browser || underSwitch()) return {};
-	try {
-		const raw = localStorage.getItem(OWNERSHIP_KEY);
-		if (raw) {
-			const parsed = JSON.parse(raw);
-			return typeof parsed === 'object' && parsed !== null ? parsed : {};
-		}
-	} catch {
-		return {};
-	}
-	// No stored ownership yet — seed once from existing constellation entries so
-	// returning users don't start with an empty roster, then persist so a later
-	// explicit un-mark isn't re-seeded on every reload.
-	const seeded = deriveInitialOwnership(loadConstellations());
-	if (Object.keys(seeded).length > 0) {
-		safeSetItem(OWNERSHIP_KEY, JSON.stringify(seeded));
-	}
-	return seeded;
-}
-
 function createOwnershipStore() {
-	const store = writable<Record<string, OwnershipMark>>(loadOwnership());
+	const store = writable<Record<string, OwnershipMark>>({});
 
 	function persist(next: Record<string, OwnershipMark>) {
-		persistRoster('ownership', OWNERSHIP_KEY, next);
+		persistRoster('ownership', next);
 		return next;
 	}
 
@@ -404,8 +340,7 @@ function createOwnershipStore() {
 		},
 		clear() {
 			store.set({});
-			if (rosterSink) rosterSink('ownership', {});
-			else if (browser && !underSwitch()) safeRemoveItem(OWNERSHIP_KEY);
+			persistRoster('ownership', {});
 		},
 		load(next: Record<string, OwnershipMark>) {
 			store.set({ ...next });
@@ -423,34 +358,17 @@ export const ownership = createOwnershipStore();
 // Layer 2 (tab overrides) — lives in Tab.tabLoadout in the rotation planner page.
 // Resolution: tab override wins over character default.
 
-const LOADOUT_KEY = 'critcalc:loadout';
-
 export type LoadoutEntry = {
 	weaponId?: string;
 	weaponRefinement?: 1 | 2 | 3 | 4 | 5;
 	artifactSetId?: string;
 };
 
-function loadLoadout(): Record<string, LoadoutEntry> {
-	if (!browser || underSwitch()) return {};
-	try {
-		const raw = localStorage.getItem(LOADOUT_KEY);
-		if (!raw) return {};
-		const parsed = JSON.parse(raw);
-		// Migrate: old free-text { weapon, artifact } entries are silently dropped
-		// since they won't have weaponId/artifactSetId fields.
-		if (typeof parsed !== 'object' || parsed === null) return {};
-		return parsed;
-	} catch {
-		return {};
-	}
-}
-
 function createLoadoutStore() {
-	const store = writable<Record<string, LoadoutEntry>>(loadLoadout());
+	const store = writable<Record<string, LoadoutEntry>>({});
 
 	function persist(next: Record<string, LoadoutEntry>) {
-		persistRoster('loadout', LOADOUT_KEY, next);
+		persistRoster('loadout', next);
 		return next;
 	}
 
@@ -473,8 +391,7 @@ function createLoadoutStore() {
 		},
 		clear() {
 			store.set({});
-			if (rosterSink) rosterSink('loadout', {});
-			else if (browser && !underSwitch()) safeRemoveItem(LOADOUT_KEY);
+			persistRoster('loadout', {});
 		},
 		load(next: Record<string, LoadoutEntry>) {
 			store.set({ ...next });

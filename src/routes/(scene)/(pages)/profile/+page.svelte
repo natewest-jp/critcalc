@@ -1,6 +1,2 @@
-<script lang="ts">
-	import { resolve } from '$app/paths';
-	import MenuRoute from '$lib/components/MenuRoute.svelte';
-</script>
-
-<MenuRoute fallback={resolve('/')} />
+<!-- A menu-state section with no page of its own: the pages layout hands this
+     address to the menu state, which renders the section. -->

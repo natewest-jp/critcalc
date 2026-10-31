@@ -47,20 +47,14 @@
 	import '../app.css';
 	import { dev } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { nextLayout } from '$lib/nextLayout';
 
 	let { children } = $props();
 
-	// The switch (build plan §13.1; `?next` / `?next=0`, read by the module).
-	// While it is on, the new storage opens and migrates (copy-only). Loaded on
-	// demand, so a visitor with the switch off downloads none of it.
+	// The storage opens and migrates (copy-only, build plan §13.1).
 	onMount(() => {
-		return nextLayout.subscribe((on) => {
-			// The new layout's own geometry keys off this (app.css § THE NEW LAYOUT).
-			if (on) document.documentElement.dataset.next = '';
-			else delete document.documentElement.dataset.next;
-			if (on) void import('$lib/storage/boot').then((m) => m.ensureStorage());
-		});
+		// The layout's own geometry keys off this (app.css § THE NEW LAYOUT).
+		document.documentElement.dataset.next = '';
+		void import('$lib/storage/boot').then((m) => m.ensureStorage());
 	});
 
 	// Dev-only grayscale review toggle (Cmd/Ctrl+Shift+G): hierarchy must

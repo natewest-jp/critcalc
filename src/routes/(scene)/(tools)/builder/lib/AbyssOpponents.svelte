@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { nextLayout } from '$lib/nextLayout';
 	import InspectModal from '$lib/components/InspectModal.svelte';
 	/**
 	 * One half of Floor 12's opponents (Nate 2026-10-09). The game's "Opponent
@@ -10,10 +9,7 @@
 	 * leaves out and a player wants. ⏭ Working copy (copy step 8).
 	 */
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from '$lib/components/Mark.svelte';
-	import { portal } from '$lib/actions/portal';
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { inLang, monsterImage, type AbyssCycle } from '$lib/endgame';
 
@@ -28,8 +24,6 @@
 		() => onClose()
 	);
 </script>
-
-<svelte:window onkeydown={(e) => !$nextLayout && e.key === 'Escape' && onClose()} />
 
 {#snippet body(withClose: boolean)}
 	<header class="op-head">
@@ -67,37 +61,11 @@
 	</div>
 {/snippet}
 
-{#if $nextLayout}
-	<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
-	     Builder's one shell, a margin that closes it. -->
-	<InspectModal label="Opponents, {half === 0 ? 'first' : 'second'} half" width="40rem" {onClose}>
-		<div class="op-in">{@render body(false)}</div>
-	</InspectModal>
-{:else}
-	<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
-	     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div
-		class="op-scrim"
-		use:portal
-		onclick={onClose}
-		transition:fade={{ duration: motion(T_QUICK) }}
-		onintrostart={introLive}
-		onoutrostart={outroInert}
-	></div>
-	<div
-		class="op ctx-dark"
-		use:portal
-		role="dialog"
-		aria-modal="true"
-		aria-label="Opponents, {half === 0 ? 'first' : 'second'} half"
-		transition:fade={{ duration: motion(T_QUICK) }}
-		onintrostart={introLive}
-		onoutrostart={outroInert}
-	>
-		{@render body(true)}
-	</div>
-{/if}
+<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
+     Builder's one shell, a margin that closes it. -->
+<InspectModal label="Opponents, {half === 0 ? 'first' : 'second'} half" width="40rem" {onClose}>
+	<div class="op-in">{@render body(false)}</div>
+</InspectModal>
 
 <style>
 	/* Inside the InspectModal shell (inspector round): the shell is the ground
@@ -132,28 +100,6 @@
 	.op-in .op-body {
 		overflow: visible;
 		padding: 1.2rem var(--im-pad-x) 1.5rem;
-	}
-	.op-scrim {
-		position: fixed;
-		inset: 0;
-		z-index: 70;
-		background: rgb(0 0 0 / 0.5);
-	}
-	/* Centred by margins, ⛔ not a translate (the sub-pixel law). */
-	.op {
-		position: fixed;
-		z-index: 71;
-		inset: 0;
-		margin: auto;
-		height: fit-content;
-		width: min(40rem, calc(100vw - 2rem));
-		max-height: calc(100svh - 5rem);
-		display: flex;
-		flex-direction: column;
-		border-radius: var(--r-md);
-		background: var(--surface);
-		color: var(--text);
-		overflow: hidden;
 	}
 	.op-head {
 		display: flex;

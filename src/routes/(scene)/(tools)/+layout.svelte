@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { onMount, untrack } from 'svelte';
-	import { get } from 'svelte/store';
-	import { resolve } from '$app/paths';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
 		FADE_DURATION_MS,
 		FADE_OUT_MS,
-		TOOL_NAV_MS,
 		TILT_EASING_CSS,
 		toolPoseShift,
 		sceneTransitionStart,
@@ -17,7 +14,6 @@
 		revealDelayMs,
 		prefersReducedMotion
 	} from '$lib/landing/transition';
-	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import BenchBand from '$lib/components/BenchBand.svelte';
 	import LibraryOverlay from '$lib/components/LibraryOverlay.svelte';
@@ -25,7 +21,6 @@
 	import { registerRosterOpener } from '$lib/components/chromeModal.svelte';
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import { notices, heldKey } from '$lib/notices.svelte';
-	import { nextLayout } from '$lib/nextLayout';
 	import { T_QUICK } from '$lib/motion';
 	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
@@ -93,21 +88,13 @@
 	 *  and it has not arrived, the chrome mount shows NOTHING rather than
 	 *  flashing the old bar. */
 	let TopBarC = $state<typeof TopBarT | null>(null);
-	const nextOn = get(nextLayout);
 
 	onMount(() => {
-		benchBand.noBandA = nextOn;
-		if (nextOn) {
-			void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
-			void import('$lib/storage/session.svelte').then(async ({ storageSession }) => {
-				await storageSession.start();
-				session = storageSession;
-			});
-		} else {
-			rotationTabs.restore();
-			// After the tabs: a board team's link is checked against them.
-			boards.restore();
-		}
+		void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
+		void import('$lib/storage/session.svelte').then(async ({ storageSession }) => {
+			await storageSession.start();
+			session = storageSession;
+		});
 
 		// The breakpoint flags (responsive round, 2026-09-05) — what the bench
 		// ribbon reads to pick its orientation and the Team Builder reads to
@@ -252,24 +239,14 @@
 	const XFADE_MS = T_QUICK;
 	const INPLACE_FADE_OUT_MS = T_QUICK;
 	const INPLACE_FADE_IN_MS = 200;
-	/** This leg crossfades (under the switch): both fades share one start. */
-	const crossfade = nextOn && INPLACE_CROSSFADE;
-	const TOOL_FADE_OUT_MS = crossfade
-		? XFADE_MS
-		: nextOn
-			? INPLACE_FADE_OUT_MS
-			: Math.round(TOOL_NAV_MS / 3);
-	const TOOL_FADE_IN_MS = crossfade
-		? XFADE_MS
-		: nextOn
-			? INPLACE_FADE_IN_MS
-			: Math.round(TOOL_NAV_MS / 3);
-	const TOOL_FADE_IN_DELAY_MS = crossfade ? 0 : nextOn ? TOOL_FADE_OUT_MS : TOOL_FADE_OUT_MS + 150;
-	// The world clock for tool↔tool legs (TOOL_NAV_MS in transition.ts — it
-	// drives the camera's crane on these legs too; retune it there and the
-	// camera, drift, underline and dependent timers all move together). Under
-	// the switch there is no crane, so the leg is just its two fades.
-	const SLIDE_MS = crossfade ? XFADE_MS : nextOn ? TOOL_FADE_OUT_MS + TOOL_FADE_IN_MS : TOOL_NAV_MS;
+	/** This leg crossfades: both fades share one start. */
+	const crossfade = INPLACE_CROSSFADE;
+	const TOOL_FADE_OUT_MS = crossfade ? XFADE_MS : INPLACE_FADE_OUT_MS;
+	const TOOL_FADE_IN_MS = crossfade ? XFADE_MS : INPLACE_FADE_IN_MS;
+	const TOOL_FADE_IN_DELAY_MS = crossfade ? 0 : TOOL_FADE_OUT_MS;
+	// The clock for tool↔tool legs. There is no crane (every tool sits at one
+	// pose), so the leg is just its two fades.
+	const SLIDE_MS = crossfade ? XFADE_MS : TOOL_FADE_OUT_MS + TOOL_FADE_IN_MS;
 
 	/** No tool-to-tool motion: the reader asked for less motion. The landing ↔
 	 *  tool rise is not a tool-to-tool leg and keeps its own rule. ↻ 2026-10-25
@@ -580,40 +557,13 @@
 		}
 	}
 
-	// Sliding nav underline: the current link's position within the nav, kept
-	// fresh per route (and after webfont load — Bitter's metrics shift the
-	// offsets). w=0 until first measurement → the bar is invisible and the
-	// static ::after fallback shows instead, so SSR paints an underline with no
-	// flash. The FIRST measurement places the bar untransitioned (it must not
-	// glide in from x=0); transitions arm one frame later.
-	let navEl: HTMLElement | undefined = $state();
-	let underline = $state({ x: 0, w: 0 });
-	let underlineAnimates = $state(false);
-
-	function measureUnderline() {
-		const cur = navEl?.querySelector<HTMLElement>('.chrome-nav-link.is-current');
-		if (!cur) return;
-		underline = { x: cur.offsetLeft, w: cur.offsetWidth };
-	}
-
-	$effect(() => {
-		void tool; // re-measure on every route change
-		measureUnderline();
-		if (!underlineAnimates && !prefersReducedMotion()) {
-			requestAnimationFrame(() => (underlineAnimates = true));
-		}
-	});
-
 	onMount(() => {
 		// First bench-band placement — the page subtree mounted before us, so
 		// the anchor is measurable; this runs pre-paint.
 		snapBench();
-		// Font swap after hydration re-metrics the labels; re-measure once
-		// settled (Bitter's metrics shift both the underline and the frame top).
-		document.fonts?.ready.then(() => {
-			measureUnderline();
-			snapBench();
-		});
+		// Font swap after hydration re-metrics the labels; re-place once
+		// settled (Bitter's metrics shift the frame top).
+		document.fonts?.ready.then(() => snapBench());
 		return () => {
 			benchRO?.disconnect();
 			benchRO = undefined;
@@ -1125,9 +1075,7 @@
 	</div>
 </div>
 
-<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
-     center slot. Identical across all tools — and, apart from the switcher,
-     identical to the landing's. -->
+<!-- Tool chrome strip: the top bar, as on the landing. -->
 <!-- ↻ 2026-10-14 (the chrome-fade round): OUTSIDE .tool-shell. The shell is
      the page's scroller and now wears a mask that rolls content off under
      this strip — a mask on the scroller would fade the strip with it. It
@@ -1140,40 +1088,7 @@
 	style:--tool-fade="{FADE_DURATION_MS}ms"
 	out:plainExit|global
 >
-	{#if nextOn}
-		{#if TopBarC}<TopBarC />{/if}
-	{:else}
-		<SiteChrome>
-			{#snippet center()}
-				<nav
-					class="chrome-nav"
-					class:nav-measured={underline.w > 0}
-					aria-label="Tools"
-					bind:this={navEl}
-				>
-					{#each TOOLS as t (t.path)}
-						{#if t === tool}
-							<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
-						{:else}
-							<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
-						{/if}
-					{/each}
-					<!-- The shared "you are here" underline: one bar gliding between links
-				     on navigation, riding the page pan's own duration + easing. The
-				     per-link ::after below is the SSR/pre-measure fallback; it hides
-				     once this bar has a measured position (nav-measured). -->
-					<span
-						class="chrome-nav-underline"
-						style:transform="translateX({underline.x}px)"
-						style:width="{underline.w}px"
-						style:transition={underlineAnimates
-							? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
-							: 'none'}
-					></span>
-				</nav>
-			{/snippet}
-		</SiteChrome>
-	{/if}
+	{#if TopBarC}<TopBarC />{/if}
 </div>
 
 <svelte:window onresize={snapBench} />
@@ -1346,76 +1261,6 @@
 		left: 0;
 		right: 0;
 		z-index: 10;
-		pointer-events: none;
-	}
-
-	/* Centered tool switcher — every tool in Bitter. It renders into the shared
-	   chrome's center slot, so the grid centering lives there; this only needs
-	   position:relative, for the sliding underline to position against the nav
-	   rather than the links. */
-	.chrome-nav {
-		position: relative;
-		display: flex;
-		align-items: center;
-		gap: 1.5rem;
-		pointer-events: auto;
-	}
-
-	/* Chrome voice (Genshin-UI archetype): the switcher is site chrome, so it
-	   speaks --chrome white and follows the chrome state contract (SiteChrome:
-	   rest 0.85-translucent, hover/current opaque). Alpha on TEXT is fine —
-	   the alpha law governs surfaces. */
-	.chrome-nav-link {
-		position: relative;
-		font-family: var(--font-display);
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-tight);
-		color: color-mix(in srgb, var(--chrome) 85%, transparent);
-		padding: 0.15rem 0;
-		transition: color var(--t-quick);
-	}
-
-	a.chrome-nav-link:hover,
-	a.chrome-nav-link:focus-visible {
-		color: var(--chrome);
-	}
-
-	/* The page you're on: brighter, non-interactive, and set apart from the
-	   navigable tools by an accent underline — "you are here", not a link. */
-	.chrome-nav-link.is-current {
-		color: var(--chrome);
-		cursor: default;
-	}
-
-	/* SSR/pre-measure fallback underline — identical geometry to the sliding
-	   bar; hides the moment the bar has a measured position. */
-	.chrome-nav-link.is-current::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 1px;
-		height: 2px;
-		border-radius: 1px;
-		background: var(--accent);
-	}
-	.chrome-nav.nav-measured .chrome-nav-link.is-current::after {
-		content: none;
-	}
-
-	/* The sliding underline. transform/width come inline (measured); the
-	   transition is inline too, so it shares SLIDE_MS/SLIDE_EASE with the page
-	   pan — chrome and content glide as one move. The nav's content box bottom
-	   coincides with the links' (flex row, natural heights, no nav padding),
-	   so bottom: 1px lands exactly where the ::after fallback sits. */
-	.chrome-nav-underline {
-		position: absolute;
-		left: 0;
-		bottom: 1px;
-		height: 2px;
-		border-radius: 1px;
-		background: var(--accent);
 		pointer-events: none;
 	}
 

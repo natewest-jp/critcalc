@@ -1224,7 +1224,7 @@ class StorageSession {
 		this.#locks.clear();
 		try {
 			for (const k of Object.keys(localStorage))
-				if (k.startsWith('critcalc:') && k !== 'critcalc:nextLayout') localStorage.removeItem(k);
+				if (k.startsWith('critcalc:')) localStorage.removeItem(k);
 		} catch {
 			/* storage blocked: the stores are already empty */
 		}

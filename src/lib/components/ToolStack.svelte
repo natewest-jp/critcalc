@@ -1,16 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import NoticeBanners from './NoticeBanners.svelte';
-	import {
-		BAND_A_H,
-		BAND_B_H,
-		BAND_CTRL_H,
-		BAND_GAP,
-		BAND_ITEM_GAP,
-		BAND_PAD_X,
-		BAND_RADIUS,
-		BAND_STACK_GAP
-	} from '$lib/toolBands';
+	import { BAND_GAP, BAND_ITEM_GAP, BAND_PAD_X, BAND_RADIUS, BAND_STACK_GAP } from '$lib/toolBands';
 	import {
 		BENCH_ROW_H,
 		RIBBON_GAP,
@@ -52,10 +43,6 @@
 		benchRail,
 		fill = false,
 		floor = false,
-		bandALeft,
-		bandARight,
-		bandAClass = '',
-		noBandA = false,
 		bandBLeft,
 		bandBCenter,
 		bandBRight,
@@ -101,21 +88,6 @@
 		 * the rotation). Above `toolMin` only.
 		 */
 		floor?: boolean;
-		bandALeft?: Snippet;
-		bandARight?: Snippet;
-		/**
-		 * A class for band A's row, so a tool can address it from its own
-		 * stylesheet — the Visualizers hides it where its controls do nothing.
-		 * ⚠ A tool that hides band A must also stop reserving --band-a-h and
-		 * --band-gap in any height it computes from them.
-		 */
-		bandAClass?: string;
-		/**
-		 * No band A at all: under the switch the TOP BAR carries the document
-		 * (profiles and surfaces design §5.1, §5.4). Its reserve goes with it
-		 * (`--band-a-reserve`), so every height computed below starts at band B.
-		 */
-		noBandA?: boolean;
 		bandBLeft?: Snippet;
 		/**
 		 * A middle RAIL for band B. Opting in splits the band into three separate
@@ -134,12 +106,11 @@
 	} = $props();
 
 	// ⚓ ONE CONTROL SIZE FOR BOTH BARS (phase 2e, §12 Q21; ⚓ Nate 2026-10-22):
-	// under the switch (band A gone, `noBandA`) the toolbar's row and controls
-	// are the interface size's (`--ui-ctl-h`, app.css), so the bench ribbon,
+	// the toolbar's row and controls are the interface size's (`--ui-ctl-h`, app.css), so the bench ribbon,
 	// whose head counts the stack, reads the height as rendered.
 	let bandBH = $state(0);
 	$effect(() => {
-		if (noBandA && bandBH > 0) benchBand.bandBH = bandBH;
+		if (bandBH > 0) benchBand.bandBH = bandBH;
 	});
 </script>
 
@@ -151,15 +122,13 @@
 	class:tool-stack--bench-hidden={benched && benchHidden}
 	class:tool-stack--bench-collapsed={benched && benchCollapsed}
 	class:tool-stack--railed={benched && !!benchRail}
-	style:--band-a-h="{BAND_A_H}px"
-	style:--band-b-h={noBandA ? 'var(--ui-ctl-h)' : `${BAND_B_H}px`}
-	style:--band-ctrl-h={noBandA ? 'var(--ui-ctl-h)' : `${BAND_CTRL_H}px`}
+	style:--band-b-h="var(--ui-ctl-h)"
+	style:--band-ctrl-h="var(--ui-ctl-h)"
 	style:--band-item-gap="{BAND_ITEM_GAP}px"
 	style:--band-pad-x="{BAND_PAD_X}px"
 	style:--band-radius="{BAND_RADIUS}px"
 	style:--band-gap="{BAND_GAP}px"
 	style:--band-stack-gap="{BAND_STACK_GAP}px"
-	style:--band-a-reserve={noBandA ? '0px' : `${BAND_A_H + BAND_GAP}px`}
 	style:--stack-inset="{benched ? TOOL_INSET : 0}px"
 	style:--bench-row-h="{BENCH_ROW_H}px"
 	style:--dock-overhang="{RIBBON_OVERHANG_Y}px"
@@ -192,12 +161,6 @@
 	     others. See the CSS for why the ctx-glass class stays on rows that no
 	     longer paint. -->
 	<div class="bands">
-		{#if !noBandA}
-			<div class="band band-a ctx-glass {bandAClass}">
-				<div class="band-zone">{@render bandALeft?.()}</div>
-				<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
-			</div>
-		{/if}
 		<div
 			class="band band-b ctx-glass"
 			bind:clientHeight={bandBH}
@@ -266,7 +229,7 @@
 		   2026-10-15 §3 item 11). Here rather than inline because the row form
 		   overrides it from a media query. ⚠ It counts band A: a tool that hides
 		   band A (the Visualizers, via bandAClass) must not read it. */
-		--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-stack-gap));
+		--stack-to-surface: calc(var(--band-b-h) + var(--band-stack-gap));
 	}
 
 	/* Viewport-fit tools (the Team Builder): the surface takes whatever the
@@ -387,9 +350,7 @@
 			padding-left: 0;
 			--stack-gap: var(--band-gap);
 			/* bands (A · gap · B), gap, the bench row, gap. */
-			--stack-to-surface: calc(
-				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--bench-row-h)
-			);
+			--stack-to-surface: calc(var(--band-b-h) + 2 * var(--band-gap) + var(--bench-row-h));
 		}
 		.tool-stack--benched .bands {
 			order: 0;
@@ -416,8 +377,8 @@
 		.tool-stack--railed {
 			--rail-tuck: 2px;
 			--stack-to-surface: calc(
-				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--ui-ctl-h) +
-					var(--bench-row-h) - var(--rail-tuck)
+				var(--band-b-h) + 2 * var(--band-gap) + var(--ui-ctl-h) + var(--bench-row-h) -
+					var(--rail-tuck)
 			);
 		}
 		.tool-stack--railed .tool-stack-rail {
@@ -436,7 +397,7 @@
 		   surface snugs up to band B at the band gap. The ribbon measures a
 		   0×0 dock and the layout hides it on the same condition. */
 		.tool-stack--bench-hidden {
-			--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-gap));
+			--stack-to-surface: calc(var(--band-b-h) + var(--band-gap));
 		}
 		.tool-stack--bench-hidden .tool-stack-dock {
 			display: none;
@@ -444,9 +405,7 @@
 		/* ↻ 2026-10-24: COLLAPSED, the row goes the way a hidden one does —
 		   reserve and all — and the rail above it stays. */
 		.tool-stack--bench-collapsed {
-			--stack-to-surface: calc(
-				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--ui-ctl-h)
-			);
+			--stack-to-surface: calc(var(--band-b-h) + 2 * var(--band-gap) + var(--ui-ctl-h));
 		}
 		.tool-stack--bench-collapsed .tool-stack-dock {
 			display: none;
@@ -456,7 +415,7 @@
 		   to band B at the same band gap, as the planner's bench row does. */
 		.tool-stack--fill {
 			--stack-gap: var(--band-gap);
-			--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-gap));
+			--stack-to-surface: calc(var(--band-b-h) + var(--band-gap));
 		}
 	}
 
@@ -515,32 +474,6 @@
 		border-radius: var(--band-radius);
 	}
 
-	/* ── BAND A HAS NO BAND (⚓ NATE 2026-08-09) ────────────────────────────
-	   "It loses its backing band, and instead the buttons themselves become
-	   glass over the scene."
-
-	   So this is a bare 36px row that positions things and nothing else: no
-	   ground, no radius that matters, and NO HORIZONTAL PADDING — the padding
-	   existed to hold controls off a rail's ends, and with no rail an inset is
-	   just the document tabs failing to line up with the tool surface below
-	   them. Save/Load/Share now touch the same right edge the surface does.
-
-	   ⚠ THE CLASS STAYS, THE GROUND DOESN'T. `ctx-glass` is still worn because it
-	   is what re-points --surface/--fill-rest/the lines at the translucent stops,
-	   and the CONTROLS need those values to paint themselves as glass (see the
-	   .band-a rules in app.css). The band itself paints nothing.
-	   ⛔ 2026-08-11: the `backdrop-filter: none` that used to sit here went with
-	   the property it was cancelling (⚓ Nate retired --glass-blur). The hazard it
-	   guarded is worth keeping though, because it is not obvious and it will
-	   apply to any filter this box ever gets: A FILTER ON A BOX WITH NO
-	   BACKGROUND STILL AFFECTS ITS WHOLE RECTANGLE — it would have drawn a ghost
-	   of exactly the band we removed. */
-	.band-a {
-		height: var(--band-a-h);
-		padding: 0;
-		background: none;
-	}
-
 	/* ↻ ⚓ NATE 2026-08-10: the SAME glass as band A — "the lighter of the two".
 	   It was --surface-well, one rung down, on the reasoning that the VIEW band
 	   should read as recessed relative to the DOCUMENT band. There is no
@@ -570,13 +503,6 @@
 	.band-zone--end {
 		justify-content: flex-end;
 		flex-shrink: 0;
-	}
-
-	/* Band A's start zone takes the room the actions leave, so the document
-	   tabs can MEASURE it and fold into a dropdown when the strip will not fit
-	   (lineups design §9.3). Band A paints nothing, so growing it shows nothing. */
-	.band-a > .band-zone:not(.band-zone--end) {
-		flex: 1;
 	}
 
 	/* ── THE 3-UP SPLIT (⚓ NATE 2026-08-10) ────────────────────────────────

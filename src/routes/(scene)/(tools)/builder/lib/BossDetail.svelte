@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { nextLayout } from '$lib/nextLayout';
 	import InspectModal from '$lib/components/InspectModal.svelte';
 	/**
 	 * A battlefield's boss, in full (Nate 2026-10-09) — opened from the
@@ -15,10 +14,6 @@
 	 * (`**x**`) are set as <strong>.
 	 */
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
-	import Mark from '$lib/components/Mark.svelte';
-	import { portal } from '$lib/actions/portal';
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import {
 		BOSSES,
@@ -85,8 +80,6 @@
 	);
 </script>
 
-<svelte:window onkeydown={(e) => !$nextLayout && e.key === 'Escape' && onClose()} />
-
 {#snippet body()}
 	<!-- THE HERO (Nate 2026-10-09, second arrangement): the boss stands at the
      top right corner, fading leftward and down into the panel; the name and
@@ -151,40 +144,11 @@
 	</div>
 {/snippet}
 
-{#if $nextLayout}
-	<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
-	     Builder's one shell, a margin that closes it. -->
-	<InspectModal label={fullName} width="52rem" {onClose}>
-		<div class="bd-in">{@render body()}</div>
-	</InspectModal>
-{:else}
-	<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
-	     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div
-		class="bd-scrim"
-		use:portal
-		onclick={onClose}
-		transition:fade={{ duration: motion(T_QUICK) }}
-		onintrostart={introLive}
-		onoutrostart={outroInert}
-	></div>
-	<div
-		class="bd ctx-dark"
-		use:portal
-		role="dialog"
-		aria-modal="true"
-		aria-label={fullName}
-		transition:fade={{ duration: motion(T_QUICK) }}
-		onintrostart={introLive}
-		onoutrostart={outroInert}
-	>
-		<button class="btn btn--icon bd-close" bind:this={closeBtn} aria-label="Close" onclick={onClose}
-			><Mark name="close" size={16} /></button
-		>
-		{@render body()}
-	</div>
-{/if}
+<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
+     Builder's one shell, a margin that closes it. -->
+<InspectModal label={fullName} width="52rem" {onClose}>
+	<div class="bd-in">{@render body()}</div>
+</InspectModal>
 
 <style>
 	/* Inside the InspectModal shell (inspector round): the shell is the ground
@@ -199,35 +163,6 @@
 	}
 	.bd-in .bd-body {
 		padding: 1.2rem var(--im-pad-x) 1.5rem;
-	}
-	.bd-scrim {
-		position: fixed;
-		inset: 0;
-		z-index: 70;
-		background: rgb(0 0 0 / 0.5);
-	}
-	/* Centred by margins, ⛔ not a translate: a transform at a fractional
-	   offset rasterises its text soft (the sub-pixel law). */
-	.bd {
-		position: fixed;
-		z-index: 71;
-		inset: 0;
-		margin: auto;
-		height: fit-content;
-		width: min(52rem, calc(100vw - 2rem));
-		max-height: calc(100svh - 5rem);
-		display: flex;
-		flex-direction: column;
-		border-radius: var(--r-md);
-		background: var(--surface);
-		color: var(--text);
-		overflow: hidden auto;
-	}
-	.bd-close {
-		position: absolute;
-		top: 0.75rem;
-		right: 0.75rem;
-		z-index: 2;
 	}
 
 	/* ── The hero: the boss in the top right corner, the name beside it ── */

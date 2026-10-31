@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { nextLayout } from '$lib/nextLayout';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { below, benchRowHidden, narrowForm } from '$lib/media.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
-	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
-	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
@@ -30,7 +27,7 @@
 	import type CompareControlT from '$lib/components/CompareControl.svelte';
 	import type SaveTeamButtonT from '$lib/components/SaveTeamButton.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
-	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
+	import { documentBar as db } from '$lib/documentBar.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
 	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
@@ -120,13 +117,10 @@
 		warmAvatars();
 		return benchBand.registerHost({
 			tool: 'rp',
-			// ⚓ Under the switch the portrait opens the INSPECTOR, beside the
-			// timeline it labels (inspector round, 2026-10-23): the modal covered
-			// the very rotation you were reading the character for.
-			onOpenDetail: (id) => {
-				if ($nextLayout) pv.inspect({ kind: 'character', id });
-				else detailId = id;
-			},
+			// ⚓ The portrait opens the INSPECTOR, beside the timeline it labels
+			// (inspector round, 2026-10-23): the modal covered the very rotation
+			// you were reading the character for.
+			onOpenDetail: (id) => pv.inspect({ kind: 'character', id }),
 			// ⇄ LEAVES THE TOOL (2026-08-13). The planner's own Source could only
 			// ever fill the LOWEST EMPTY SLOT — it had no way to say "replace THIS
 			// one" — while the Team Builder's SWAP MODE groups every candidate by
@@ -235,24 +229,6 @@
 	// UI state
 	// ---------------------------------------------------------------------------
 
-	/** The character whose Detail card is open, from a bench portrait click.
-	 *  ⚓ NATE 2026-08-12: the planner reads characters through the SAME modal the
-	 *  Team Builder does. It is the one deliberate modal in either tool (a
-	 *  focused single-character read; see the non-modal-tools principle). */
-	let detailId = $state<string | null>(null);
-
-	/** The Detail card, fetched on first open (see its render site for why it is
-	 *  lazy here and static on the Team Builder). */
-	let DetailCardComp = $state<typeof import('$lib/components/DetailCard.svelte').default | null>(
-		null
-	);
-	$effect(() => {
-		if (!detailId || DetailCardComp) return;
-		void import('$lib/components/DetailCard.svelte').then((m) => {
-			DetailCardComp = m.default;
-		});
-	});
-
 	// ---------------------------------------------------------------------------
 	// The ASIDE COLUMN (aside-column round, 2026-08-08)
 	//
@@ -285,7 +261,6 @@
 	let CompareC = $state<typeof CompareControlT | null>(null);
 	let SaveTeamC = $state<typeof SaveTeamButtonT | null>(null);
 	onMount(() => {
-		if (!$nextLayout) return;
 		void import('$lib/components/CompareControl.svelte').then((m) => (CompareC = m.default));
 		void import('$lib/components/SaveTeamButton.svelte').then((m) => (SaveTeamC = m.default));
 	});
@@ -506,22 +481,7 @@
 	     band A's left zone now, and the view controls that rode the ruler's
 	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
 	     content margin below the strip's bottom end. -->
-	<ToolStack
-		benched
-		floor={$nextLayout}
-		noBandA={$nextLayout}
-		benchHidden={!$nextLayout && benchRowHidden($siteSettings.showBenchRow)}
-		benchCollapsed={$nextLayout && benchFolded}
-		benchRail={$nextLayout ? phoneRail : undefined}
-	>
-		{#snippet bandALeft()}
-			<DocumentTabs model={rotationTabStrip} />
-		{/snippet}
-
-		{#snippet bandARight()}
-			<DocumentActions />
-		{/snippet}
-
+	<ToolStack benched floor benchCollapsed={benchFolded} benchRail={phoneRail}>
 		{#snippet bandBLeft()}
 			<!-- ══ THE LEFT ZONE (⚓ NATE 2026-09-14) ═════════════════════════════
 			     The zoom cluster, ahead of the rail. Band B had gone right-heavy —
@@ -552,7 +512,7 @@
 				     zoom steppers' rule at their limits. -->
 				<!-- ↻ 2026-10-24: below BP.compact Rewind folds into ⋯ (Home still
 				     does it), so the row keeps Play. -->
-				{#if !(bandFolded && $nextLayout)}
+				{#if !bandFolded}
 					<button
 						class="btn btn--sm btn--icon rp-rewind"
 						type="button"
@@ -578,7 +538,7 @@
 					<Mark name={playback.playing ? 'pause' : 'play'} size={13} filled />
 					<!-- Folded, the speed plate is in ⋯: a slowed chart still says so
 					     on the plate that plays it. -->
-					{#if bandFolded && $nextLayout && playback.rate !== 1}<span class="rp-play-rate"
+					{#if bandFolded && playback.rate !== 1}<span class="rp-play-rate"
 							>{rateLabel(playback.rate)}</span
 						>{/if}
 				</button>
@@ -727,51 +687,22 @@
 			     Settings; whether it applies is something an advanced player flips
 			     to see the frame-perfect length. Always shown, so off has a way
 			     back on. Gold when on. -->
-				{#if $nextLayout}
-					<button
-						class="rp-human-tag"
-						class:is-on={$siteSettings.humanTiming}
-						type="button"
-						aria-pressed={$siteSettings.humanTiming}
-						aria-label="Human timing"
-						title={$siteSettings.humanTiming
-							? 'Human timing is on: the Total includes the pauses a person takes. Turn it off for frame-perfect timing.'
-							: 'Frame-perfect timing. Turn Human timing on to include the pauses a person takes (set it up in Settings).'}
-						onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
-						><Mark name={$siteSettings.humanTiming ? 'hand' : 'handOff'} size={14} /></button
-					>
-				{/if}
+				<button
+					class="rp-human-tag"
+					class:is-on={$siteSettings.humanTiming}
+					type="button"
+					aria-pressed={$siteSettings.humanTiming}
+					aria-label="Human timing"
+					title={$siteSettings.humanTiming
+						? 'Human timing is on: the Total includes the pauses a person takes. Turn it off for frame-perfect timing.'
+						: 'Frame-perfect timing. Turn Human timing on to include the pauses a person takes (set it up in Settings).'}
+					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+					><Mark name={$siteSettings.humanTiming ? 'hand' : 'handOff'} size={14} /></button
+				>
 			</span>
 		{/snippet}
 
 		{#snippet bandBRight()}
-			{#if !bandFolded && !$nextLayout}
-				<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
-			     Its own group, NOT a third layer plate: the layers change what the
-			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate, over
-			     three tries: it sits FIRST in the right zone, ahead of Buffs — after
-			     the layers it split Auras from the Log, which belong together, and
-			     on the left beside the rail it read as part of the zoom cluster.
-			     Same laws as
-			     the layers — never disabled, nothing resets it, per taste
-			     (`siteSettings`), ⛔ never in the `?r=` codec — and a lit plate is
-			     the announcement that the chart is padded. What it does is set in
-			     Settings (a three-way choice, so it can never be lit and idle);
-			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
-				<div class="rp-layers" role="group" aria-label="Human timing">
-					<button
-						class="btn btn--sm"
-						class:is-active={$siteSettings.humanTiming}
-						type="button"
-						aria-pressed={$siteSettings.humanTiming}
-						title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
-						onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
-					>
-						<Mark name="hand" />
-						<span class="rp-band-label">Human timing</span>
-					</button>
-				</div>
-			{/if}
 			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
 			     What the chart draws besides ability timings. Band B is the VIEW,
 			     so this is where they belong; ⛔ NOT the Settings modal, and ⛔ not
@@ -812,19 +743,6 @@
 			<div class="rp-layers">
 				<!-- ↻ 2026-10-24: under the switch the bench row collapses from its
 				     own handle (BenchBand), so the plate retires there. -->
-				{#if narrowForm() && !$nextLayout}
-					<button
-						class="btn btn--sm"
-						class:is-active={$siteSettings.showBenchRow}
-						type="button"
-						aria-pressed={$siteSettings.showBenchRow}
-						title="The bench: your team's constellations and loadouts"
-						onclick={() => siteSettings.setShowBenchRow(!$siteSettings.showBenchRow)}
-					>
-						<Mark name="bench" />
-						<span class="rp-band-label">Bench</span>
-					</button>
-				{/if}
 				<div class="rp-layers" role="group" aria-label="Timeline layers">
 					<button
 						class="btn btn--sm"
@@ -861,24 +779,22 @@
 					compact
 					mark="more"
 					ariaLabel="Playback, timing and panels"
-					dot={$nextLayout && (playback.rate !== 1 || pv.repeat || pv.showLog || pv.showInspector)}
+					dot={playback.rate !== 1 || pv.repeat || pv.showLog || pv.showInspector}
 				>
 					{#snippet items(close)}
-						{#if $nextLayout}
-							<button
-								class="band-menu-item"
-								role="menuitem"
-								disabled={!playback.canRewind}
-								onclick={() => {
-									playback.rewind();
-									close();
-								}}
-							>
-								<Mark name="rewind" filled />
-								<span class="rp-fold-label">Back to the start</span>
-							</button>
-							<div class="band-menu-rule"></div>
-						{/if}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							disabled={!playback.canRewind}
+							onclick={() => {
+								playback.rewind();
+								close();
+							}}
+						>
+							<Mark name="rewind" filled />
+							<span class="rp-fold-label">Back to the start</span>
+						</button>
+						<div class="band-menu-rule"></div>
 						<div class="rp-fold-head" aria-hidden="true">Speed</div>
 						{#each PLAYBACK_RATES as rate (rate)}
 							<button
@@ -915,7 +831,7 @@
 						<button
 							class="band-menu-item"
 							role="menuitemcheckbox"
-							hidden={$nextLayout}
+							hidden
 							aria-checked={$siteSettings.humanTiming}
 							onclick={() => {
 								siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming });
@@ -944,40 +860,23 @@
 								>{#if pv.showLog}<Mark name="check" size={12} />{/if}</span
 							>
 						</button>
-						{#if $nextLayout}
-							<button
-								class="band-menu-item"
-								role="menuitem"
-								onclick={() => {
-									pv.togglePanel('inspector');
-									close();
-								}}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								pv.togglePanel('inspector');
+								close();
+							}}
+						>
+							<Mark name="search" />
+							<span class="rp-fold-label">Inspector</span>
+							<span class="rp-fold-check"
+								>{#if pv.showInspector}<Mark name="check" size={12} />{/if}</span
 							>
-								<Mark name="search" />
-								<span class="rp-fold-label">Inspector</span>
-								<span class="rp-fold-check"
-									>{#if pv.showInspector}<Mark name="check" size={12} />{/if}</span
-								>
-							</button>
-						{:else}
-							<button
-								class="band-menu-item"
-								role="menuitem"
-								disabled={!pv.hasCaveats}
-								onclick={() => {
-									pv.togglePanel('notes');
-									close();
-								}}
-							>
-								<Mark name="note" />
-								<span class="rp-fold-label">Notes</span>
-							</button>
-						{/if}
-						{#if $nextLayout}
-							<div class="band-menu-rule"></div>
-							<div class="rp-fold-head" aria-hidden="true">Share</div>
-							{@render shareItems(close, null)}
-						{/if}
+						</button>
+						<div class="band-menu-rule"></div>
+						<div class="rp-fold-head" aria-hidden="true">Share</div>
+						{@render shareItems(close, null)}
 					{/snippet}
 				</BandMenu>
 			{:else}
@@ -1002,50 +901,23 @@
 					<Mark name="log" />
 					<span class="rp-band-label">Log</span>
 				</button>
-				{#if $nextLayout}
-					<!-- ⚓ THE INSPECTOR (inspector round, 2026-10-23): what Notes became.
-					     ⛔ Never disabled — its team page always has the team, which is
-					     the point (⚓ Nate: Notes was dead weight until it had a caveat).
-					     The magnifier, because the Builder's details door wears it. -->
-					<button
-						class="btn btn--sm rp-notes-btn"
-						class:is-active={pv.showInspector}
-						type="button"
-						aria-pressed={pv.showInspector}
-						title="The team, and anything you click on the timeline or the bench"
-						onclick={() => pv.togglePanel('inspector')}
-					>
-						<Mark name="search" />
-						<span class="rp-band-label">Inspector</span>
-					</button>
-				{:else}
-					<button
-						class="btn btn--sm rp-notes-btn"
-						class:is-active={pv.showNotes}
-						type="button"
-						aria-label="Toggle notes panel"
-						disabled={!pv.hasCaveats}
-						onclick={() => pv.togglePanel('notes')}
-					>
-						<Mark name="note" />
-						<span class="rp-band-label">Notes</span>
-						<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
-				     that its job was taken over by its NEIGHBOURS. It existed because
-				     Notes stood alone at the end of band B and a reader might never look
-				     there; with Auras and Buffs beside it the eye goes to that cluster
-				     anyway, so the mark was charging for attention already bought —
-				     ⚓ Nate: it "does trigger some people with OCD". The button still
-				     disables itself when there is nothing to annotate, which is the
-				     honest half of the signal and the half that never nagged.
-				     ⚠ The artwork survives at assets-src/tools/notification.svg. If a
-				     badge is ever wanted again, ⛔ don't redraw it: it is Nate's, its two
-				     fills were wired to --ui-danger/--chrome rather than the SVG's baked
-				     hexes, and it carried a 6° rotation so it read as stuck on rather
-				     than typeset. -->
-					</button>
-				{/if}
+				<!-- ⚓ THE INSPECTOR (inspector round, 2026-10-23): what Notes became.
+				     ⛔ Never disabled — its team page always has the team, which is
+				     the point (⚓ Nate: Notes was dead weight until it had a caveat).
+				     The magnifier, because the Builder's details door wears it. -->
+				<button
+					class="btn btn--sm rp-notes-btn"
+					class:is-active={pv.showInspector}
+					type="button"
+					aria-pressed={pv.showInspector}
+					title="The team, and anything you click on the timeline or the bench"
+					onclick={() => pv.togglePanel('inspector')}
+				>
+					<Mark name="search" />
+					<span class="rp-band-label">Inspector</span>
+				</button>
 			{/if}
-			{#if $nextLayout && !bandFolded}
+			{#if !bandFolded}
 				<!-- ⚓ SHARE, at the toolbar's end (Nate 2026-10-25): it acts on the
 				     DOCUMENT, not on the site, so it left the top bar for the bar over
 				     the rotation it shares. On a phone it is a section of the ⋯. -->
@@ -1095,30 +967,6 @@
 	     snippet so the page keeps owning `slots` while the instrument decides
 	     placement. See that prop for why. -->
 </section>
-
-<!-- The one deliberate modal, and now the same one in both tools: a focused
-     single-character read, opened by clicking a bench portrait.
-     LAZY, unlike the Team Builder's static import of the same component — the
-     TB is the character tool and would load it anyway; the planner would be
-     paying for the capability-derivation graph on first paint for a card most
-     sessions never open. One frame's delay on first open, and the character
-     payload it renders is a lazy chunk regardless. -->
-{#if detailId && DetailCardComp}
-	<!-- ⚓ On the phone the bench has no rail, so Remove from team lives here
-	     (bench-buttons round, Nate 2026-10-22); on the desk the rail's ✕ is it. -->
-	{@const seat = rt.seats.indexOf(detailId)}
-	<DetailCardComp
-		id={detailId}
-		conMode="mine"
-		onClose={() => (detailId = null)}
-		defaultBuild={false}
-		teamState={narrowForm() && seat >= 0 ? 'in' : undefined}
-		onToggleTeam={() => {
-			rt.takeOff(seat);
-			detailId = null;
-		}}
-	/>
-{/if}
 
 <!-- ── The main column: the timeline instrument ───────────────────────────── -->
 {#snippet main()}

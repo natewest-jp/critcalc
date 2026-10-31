@@ -83,7 +83,7 @@ import { TOOL_GUTTER } from './toolGutter.ts';
  * ⚠ RE-MEASURE THIS IF A BAND A CONTROL'S TYPE OR PADDING MOVES. The row no
  * longer has slack to absorb a taller control: it would simply overflow, and
  * the first thing you would see is the bench ribbon's head landing 1–2px off
- * (RIBBON_HEAD derives from BAND_STACK_TO_SURFACE, below).
+ * (`ribbonHead` derives from BAND_STACK_TO_SURFACE, below).
  */
 export const BAND_A_H = 29;
 
@@ -188,7 +188,7 @@ export const BAND_STACK_H = BAND_A_H + BAND_GAP + BAND_B_H;
 /**
  * How far a tool's SURFACE starts below the top of its band stack — the number
  * every vertical alignment in the round derives from. The bench ribbon's head
- * adds it (see RIBBON_HEAD), and the Team Builder tunes its own tab-row gap
+ * adds it (see `ribbonHead`), and the Team Builder tunes its own tab-row gap
  * against it so both frame tops still land on the same y.
  */
 export const BAND_STACK_TO_SURFACE = BAND_STACK_H + BAND_STACK_GAP;

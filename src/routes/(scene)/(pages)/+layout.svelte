@@ -1,59 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
-	import { goto } from '$app/navigation';
-	import { fade } from 'svelte/transition';
-	import { FADE_DURATION_MS, FADE_OUT_MS, revealDelayMs } from '$lib/landing/transition';
-	import { motion, T_QUICK } from '$lib/motion';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
-	import { get } from 'svelte/store';
-	import { nextLayout } from '$lib/nextLayout';
+	import { browser } from '$app/environment';
 	import { menu, sectionForPath } from '$lib/menuState.svelte';
 
 	let { children } = $props();
 	const pathname = $derived(page.url.pathname);
 
-	// ⚓ Under the switch (build plan §13, 2c) every page here is a SECTION of
-	// the menu state, which the scene layout renders: the address names it,
-	// and the floating panel is not drawn (nor the page's component mounted —
-	// the old /library page would restore and persist the old tab models).
-	const nextOn = get(nextLayout);
+	// ⚓ Every page here is a SECTION of the menu state (build plan §13, 2c),
+	// which the scene layout renders in the browser: the address names it, and
+	// the floating panel below is not drawn there. ⚠ The SERVER still draws the
+	// panel with the page inside it, so the prerendered HTML carries each
+	// page's text for search engines and readers without JavaScript; the
+	// browser drops it at hydration.
 	$effect(() => {
-		if (!nextOn) return;
 		menu.routed = sectionForPath(pathname, page.url.search) ?? 'index';
 		return () => (menu.routed = null);
 	});
-
-	// Content pages behave like a modal on the live scene: a fixed panel between
-	// the chrome and footer (its content scrolls INSIDE it, so the frame stays
-	// put), parallaxed like a giant hero card; clicking the backdrop or pressing
-	// Escape returns to the landing. The parallax controller itself is owned by
-	// the scene layout, so it doesn't reset when you arrive here.
-	function toLanding() {
-		goto(resolve('/'));
-	}
-	function onBackdropClick(event: MouseEvent) {
-		// Only a click on the backdrop itself (the scene around the panel), never
-		// one that bubbled up from the panel.
-		if (event.target === event.currentTarget) toLanding();
-	}
-	function onKeydown(event: KeyboardEvent) {
-		// A page that spent the Escape on something of its own (the Library
-		// dismissing a menu or a search) marks it defaultPrevented.
-		if (event.key === 'Escape' && !event.defaultPrevented && !nextOn) toLanding();
-	}
 </script>
 
-<svelte:window onkeydown={onKeydown} />
-
-{#if !nextOn}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div
-		class="pages-shell"
-		onclick={onBackdropClick}
-		in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
-		out:fade|global={{ duration: FADE_OUT_MS }}
-	>
+{#if !browser}
+	<div class="pages-shell">
 		<!-- NOT .prose. Every route in this group renders either HelpAreaShell —
 	     which wraps its chapter in its own <article class="prose"> — or
 	     SettingsPanel, which is not prose at all. The outer class was redundant
@@ -65,7 +32,7 @@
 				<!-- Full height, so an area page can fill the panel and scroll inside
 			     (HelpAreaShell's `.area-page`). Taller content (the Library) just
 			     overflows it, and the panel scrolls as before. -->
-				<div class="pages-page" in:fade={{ duration: motion(T_QUICK) }}>
+				<div class="pages-page">
 					{@render children()}
 				</div>
 			{/key}
@@ -77,7 +44,7 @@
 {/if}
 
 <style>
-	/* Full-viewport backdrop: catches "click outside the panel" → landing. */
+	/* Full-viewport backdrop. */
 	.pages-shell {
 		position: absolute;
 		inset: 0;

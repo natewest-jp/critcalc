@@ -8,7 +8,6 @@
 	 Abyss banner + Opponents need a CURRENT cycle in season-dates.json, so the
 	 copy says "when a cycle is listed". -->
 <script lang="ts">
-	import { nextLayout } from '$lib/nextLayout';
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
@@ -27,16 +26,10 @@
 
 <section>
 	<h2 id="lineups">Lineups</h2>
-	{#if $nextLayout}
-		<p>
-			<strong>New lineup</strong>, in the Library under <strong>Lineups</strong>, starts a lineup in
-			one of three shapes:
-		</p>
-	{:else}
-		<p>
-			<strong>+</strong> in the document bar starts a new lineup in one of three shapes:
-		</p>
-	{/if}
+	<p>
+		<strong>New lineup</strong>, in the Library under <strong>Lineups</strong>, starts a lineup in
+		one of three shapes:
+	</p>
 	<ul>
 		<li>
 			<strong>Stygian Onslaught</strong>: three teams, one per battlefield, each with its boss and
@@ -46,32 +39,17 @@
 			<strong>Spiral Abyss</strong>: two teams for Floor 12’s first and second half. While a current
 			cycle is live, each half shows its blessing and <strong>Opponents</strong> list.
 		</li>
-		{#if $nextLayout}
-			<li>
-				<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the toolbar for more,
-				up to twelve.
-			</li>
-		{:else}
-			<li>
-				<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the view bar for
-				more, up to twelve.
-			</li>
-		{/if}
+		<li>
+			<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the toolbar for more,
+			up to twelve.
+		</li>
 	</ul>
-	{#if $nextLayout}
-		<p>
-			<strong>New lineup</strong> on a team in <strong>Teams</strong> does the same, and the lineup
-			starts with that team. The builder shows one lineup at a time and saves it as you work. The
-			lineup’s name in the top bar opens <strong>Lineups</strong>, where each one can be pinned,
-			renamed, or deleted.
-		</p>
-	{:else}
-		<p>
-			Each lineup is a tab: Double-click to rename it and drag to reorder. You can keep up to twelve
-			tabs open at a time. A closed lineup with anyone in it goes to <strong>Recently closed</strong
-			> in the Library.
-		</p>
-	{/if}
+	<p>
+		<strong>New lineup</strong> on a team in <strong>Teams</strong> does the same, and the lineup
+		starts with that team. The builder shows one lineup at a time and saves it as you work. The
+		lineup’s name in the top bar opens <strong>Lineups</strong>, where each one can be pinned,
+		renamed, or deleted.
+	</p>
 	<p>
 		A new Stygian lineup follows the current season until you place someone in it; from then on it
 		stays on that season. The season menu in its header has every earlier season.
@@ -98,12 +76,6 @@
 		grants it, its constellation and any condition it needs, plus their cooldowns and Energy cost.
 		Ownership is shown there but is edited in the Roster (see <a href="#roster">below</a>).
 	</p>
-	{#if !$nextLayout}
-		<p>
-			From the Library, a saved team or rotation can go straight onto the selected team, replacing
-			its members. With no team selected it goes to the first empty one.
-		</p>
-	{/if}
 </section>
 
 <section>
@@ -116,37 +88,19 @@
 		the grid into sections: Damage roles are sorted by element, while Support and Survivability roles
 		are sorted by capability.
 	</p>
-	{#if $nextLayout}
-		<p>
-			The toolbar narrows further: a name search, <strong>Owned</strong> and
-			<strong>Wishlist</strong>, and <strong>More</strong> for weapon, rarity, region, and factions like
-			Hexerei or Moonsign.
-		</p>
-	{:else}
-		<p>
-			The view bar narrows further: <strong>Show</strong> for owned or wishlisted characters, a name
-			search, and <strong>More</strong> for weapon, rarity, region, and factions like Hexerei or Moonsign.
-		</p>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			The column of icons on a card is that character’s own capabilities. Each is lit if it’s
-			available at the constellations you’ve specified and dimmed if it needs a higher one (hover
-			over it to find out what would unlock it). The constellation lens in the toolbar sets that
-			level: C0 through C6, or <strong>My constellations</strong>, the default, which reads your
-			roster. It changes the Characters grid only. A team reads your roster for characters you own
-			and its own level for anyone else.
-		</p>
-	{:else}
-		<p>
-			The column of icons on a card is that character’s own capabilities. Each is lit if it’s
-			available at the constellations you’ve specified and dimmed if it needs a higher one (hover
-			over it to find out what would unlock it). The constellation lens in the view bar sets that
-			level: C0 through C6, or <strong>My constellations</strong>, the default, which reads your
-			roster. It changes the Characters grid display only; the teams are read at their own
-			constellations.
-		</p>
-	{/if}
+	<p>
+		The toolbar narrows further: a name search, <strong>Owned</strong> and
+		<strong>Wishlist</strong>, and <strong>More</strong> for weapon, rarity, region, and factions like
+		Hexerei or Moonsign.
+	</p>
+	<p>
+		The column of icons on a card is that character’s own capabilities. Each is lit if it’s
+		available at the constellations you’ve specified and dimmed if it needs a higher one (hover over
+		it to find out what would unlock it). The constellation lens in the toolbar sets that level: C0
+		through C6, or <strong>My constellations</strong>, the default, which reads your roster. It
+		changes the Characters grid only. A team reads your roster for characters you own and its own
+		level for anyone else.
+	</p>
 	<p>
 		Some kits have no capability data yet. While you filter by capability they are listed separately
 		under “Not yet curated”, because a missing icon there means unknown rather than no. The
@@ -226,77 +180,35 @@
 
 <section>
 	<h2 id="rotations">Rotations</h2>
-	{#if $nextLayout}
-		<p>
-			If this profile has a rotation for exactly the four characters in a team (in any order), you
-			will see the pin under <strong>Planner</strong> become a menu, which you can use to pin a
-			specific rotation to that team. Characters you don’t own then read that rotation’s
-			constellations.
-			<strong>Planner</strong> opens the pinned rotation, or, if nothing is pinned, a new rotation with
-			the team already on the bench. Changing the team’s members drops the pin; the rotation itself stays
-			in the Library.
-		</p>
-	{:else}
-		<p>
-			If you have already saved a rotation to your library for exactly the four characters in a team
-			(in any order), you will see the pin under <strong>Planner</strong> become a menu, which you
-			can use to pin a specific rotation to that team. The team will then read its capabilities at
-			that rotation’s constellations.
-			<strong>Planner</strong> opens the pinned rotation, or a new tab with the team’s names if nothing
-			is pinned. Changing the team’s members drops the pin; the rotation itself stays in the Library under
-			its original team.
-		</p>
-	{/if}
+	<p>
+		If this profile has a rotation for exactly the four characters in a team (in any order), you
+		will see the pin under <strong>Planner</strong> become a menu, which you can use to pin a
+		specific rotation to that team. Characters you don’t own then read that rotation’s
+		constellations.
+		<strong>Planner</strong> opens the pinned rotation, or, if nothing is pinned, a new rotation with
+		the team already on the bench. Changing the team’s members drops the pin; the rotation itself stays
+		in the Library.
+	</p>
 </section>
 
 <section>
-	{#if $nextLayout}
-		<h2 id="roster">Your roster and sharing</h2>
-	{:else}
-		<h2 id="roster">Your roster, saving and sharing</h2>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			Your roster is under <strong>Roster</strong> in the profile menu (your picture in the top
-			bar), and <strong>Edit in Roster</strong> in a character’s details goes there too. Mark who
-			you own, who you’re wishing for, and at what constellation. <strong>Owned</strong>,
-			<strong>Wishlist</strong>, <strong>My constellations</strong>, and the constellation chips all
-			read it. In Theorycraft there is no roster: every character is there at every level.
-		</p>
-	{:else}
-		<p>
-			Your roster lives in the Library’s <strong>Roster</strong> tab, also reached from
-			<strong>Edit in Roster</strong> in a character’s details. Mark who you own, who you’re wishing
-			for, and at what constellation. <strong>Show</strong>, <strong>My constellations</strong> and the
-			constellation chips all read it, so filling in your roster makes the tools more useful.
-		</p>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			The chip on a team portrait is the constellation that team uses. A character you own is at
-			your roster’s level; the chip is hollow for a character you don’t own.
-		</p>
-	{:else}
-		<p>
-			The chip on a team portrait is the constellation that team uses. If it is filled, you own at
-			least that constellation. If it's hollow, the team uses a constellation higher than you have
-			(or a character you don’t own).
-		</p>
-	{/if}
-	{#if $nextLayout}
-		<p>
-			<strong>Share</strong> in the toolbar copies a link with the lineup’s teams, preset, season, No
-			repeats setting, and constellations. (Pinned rotations are not included.) It opens in Theorycraft
-			for the reader.
-		</p>
-	{:else}
-		<p>
-			An unsaved lineup follows your roster as it changes. <strong>Save</strong> puts the lineup in
-			the Library and fixes each member’s constellation as it was, so a saved lineup stays put.
-			<strong>Share</strong> copies a link with the lineup’s teams, preset, season, No repeats setting
-			and constellations. (Pinned rotations are not included.)
-		</p>
-	{/if}
+	<h2 id="roster">Your roster and sharing</h2>
+	<p>
+		Your roster is under <strong>Roster</strong> in the profile menu (your picture in the top bar),
+		and <strong>Edit in Roster</strong> in a character’s details goes there too. Mark who you own,
+		who you’re wishing for, and at what constellation. <strong>Owned</strong>,
+		<strong>Wishlist</strong>, <strong>My constellations</strong>, and the constellation chips all
+		read it. In Theorycraft there is no roster: every character is there at every level.
+	</p>
+	<p>
+		The chip on a team portrait is the constellation that team uses. A character you own is at your
+		roster’s level; the chip is hollow for a character you don’t own.
+	</p>
+	<p>
+		<strong>Share</strong> in the toolbar copies a link with the lineup’s teams, preset, season, No repeats
+		setting, and constellations. (Pinned rotations are not included.) It opens in Theorycraft for the
+		reader.
+	</p>
 </section>
 
 <section>
