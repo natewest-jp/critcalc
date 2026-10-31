@@ -564,3 +564,42 @@ describe('a shared link leaves Theorycraft for its own tab (flip-readiness §3)'
 		expect(B.s.profile?.id).toBe(THEORYCRAFT_ID);
 	});
 });
+
+describe('a store the session cannot start on (⚓ Nate 2026-10-31)', () => {
+	it('starts again on a store in memory, and says so', async () => {
+		vi.resetModules();
+		vi.doMock('$app/environment', () => ({
+			browser: true,
+			dev: false,
+			building: false,
+			version: 't'
+		}));
+		// The real store opens, then the first read on it fails.
+		vi.doMock('./db', async (importOriginal) => {
+			const real = await importOriginal<typeof import('./db')>();
+			let failed = false;
+			return {
+				...real,
+				getMeta: (d: Parameters<typeof real.getMeta>[0]) => {
+					if (failed) return real.getMeta(d);
+					failed = true;
+					return Promise.reject(new Error('the store went away'));
+				}
+			};
+		});
+		const { storageSession: s } = await import('./session.svelte');
+		const { rotationTabs: rt } = await import('$lib/rotationTabs.svelte');
+		const { ensureStorage } = await import('./boot');
+		const { LocalDb } = await import('./localDb');
+		const { notices } = await import('$lib/notices.svelte');
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+		await s.start();
+		const store = await ensureStorage();
+		expect(store instanceof LocalDb && store.kind).toBe('memory');
+		expect(s.active).toBe(true);
+		expect(s.profile?.id).toBe(THEORYCRAFT_ID);
+		expect(rt.restored).toBe(true);
+		expect(notices.banners.some((b) => b.key === 'memory-store')).toBe(true);
+		vi.doUnmock('./db');
+	});
+});

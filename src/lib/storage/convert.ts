@@ -1,9 +1,8 @@
 /**
  * Documents ↔ the tools' working shapes. Pure.
  *
- * Until the new bars land (phase 2b), the Planner and the Builder still run on
- * their tab models (`RotationTab`, `Board`); under the switch each tab IS a
- * document, keyed by the document's id. These are the two directions.
+ * The Planner and the Builder run on their tab models (`RotationTab`,
+ * `Board`), and each tab IS a document, keyed by the document's id. These are the two directions.
  */
 
 import type { Board } from '$lib/boards.svelte';
@@ -107,8 +106,8 @@ export function nameToStore(
 }
 
 /** A rotation document in the old bank's shape, for the Builder's pins and
- *  lists, which still speak it (phase 3 closes 2a's gap: under the switch a
- *  team's pin names a DOCUMENT). */
+ *  lists, which still speak it (phase 3 closes 2a's gap: a team's pin names
+ *  a DOCUMENT). */
 export function rotationAsSaved(doc: RotationDocument): SavedNotation {
 	return {
 		id: doc.id,

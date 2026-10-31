@@ -254,10 +254,10 @@
 	 *  roster's Layer-1 default, the same resolution `RotationTimeline` feeds the
 	 *  parser. A caveat is gated by its constellation entry (2026-08-18), so the
 	 *  panel must be told which entries the reader actually has. */
-	// ↻ Phase 4: one resolver (`rt.levelOf`, design §2.4) — under the switch an
+	// ↻ Phase 4: one resolver (`rt.levelOf`, design §2.4) — an
 	// owned character reads the roster, and a guest reads only its own.
 	/** Compare (phase 4) and Save as team, the phone bench rail's two jobs,
-	 *  loaded under the switch only: they bring the session. */
+	 *  loaded on demand: they bring the session. */
 	let CompareC = $state<typeof CompareControlT | null>(null);
 	let SaveTeamC = $state<typeof SaveTeamButtonT | null>(null);
 	onMount(() => {
@@ -741,8 +741,6 @@
 			     ignored (`benchRowHidden`). Not rendered before hydration either:
 			     the flags attach in onMount, so first paint is the default. -->
 			<div class="rp-layers">
-				<!-- ↻ 2026-10-24: under the switch the bench row collapses from its
-				     own handle (BenchBand), so the plate retires there. -->
 				<div class="rp-layers" role="group" aria-label="Timeline layers">
 					<button
 						class="btn btn--sm"

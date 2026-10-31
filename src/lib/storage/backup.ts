@@ -1,5 +1,5 @@
 /**
- * BACKUP v3 (design §10, §12 Q11; build plan §13): under the switch the
+ * BACKUP v3 (design §10, §12 Q11; build plan §13): the
  * player's work lives in IndexedDB, which the v1/v2 backup (`settingsBackup`,
  * the `critcalc:*` localStorage keys) never reads. v3 carries the store.
  *
@@ -297,7 +297,7 @@ export function countsOf(store: MigrationResult): StoreCounts {
 /**
  * Any backup file, for the new storage. A v3 file restores its store; a v1 or
  * v2 file restores through the migration, exactly as the browser's own
- * localStorage did on the first visit under the switch (§10).
+ * localStorage did on its first visit to the profiles layout (§10).
  */
 export function parseAnyBackup(
 	text: string,

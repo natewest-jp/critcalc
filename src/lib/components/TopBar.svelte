@@ -1,6 +1,6 @@
 <!--
   THE TOP BAR (profiles and surfaces design §5.1–5.2; build plan §13, phase 2b).
-  Rendered instead of SiteChrome while the switch is on. Form 5 with the tabs
+  Form 5 with the tabs
   gone (⚓ Nate 2026-10-21/22): three equal tool buttons, centred; the current
   one names its document and is the LIBRARY's door. Brand left, profile right.
 

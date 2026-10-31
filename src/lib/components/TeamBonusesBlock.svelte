@@ -154,7 +154,7 @@
 	let tooltip = $state<BuffTooltipData | null>(null);
 
 	// ══ CLICK INSPECTS (inspector round, 2026-10-23) ═══════════════════════════
-	// Under the switch a chip opens in the Planner's inspector, printing what its
+	// A chip opens in the Planner's inspector, printing what its
 	// tooltip prints. The pick is a KEY resolved here on every change, so a chip
 	// the team no longer has drops the page back to the team.
 	const resKey = (res: Resonance) => `res:${res.key}`;

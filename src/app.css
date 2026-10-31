@@ -1015,7 +1015,7 @@
 	   travel 0.85 → 1.0 alpha, a change so slight there is no edge to smear, so
 	   the ramp reads as an ambient brightening rather than as a control
 	   answering you. Size is the rule; amplitude is why this one is filed under
-	   surfaces. (SiteChrome ×3 + CloseMark + .chrome-nav-link.)
+	   surfaces.
 
 	   ⛔ NOT FOR THE SCENE. TOOL_NAV_MS, the camera crane, the star clock, the
 	   loading veil and the world-locked tool fade are Nate-tuned and own their
@@ -1188,9 +1188,7 @@
 
 	   ⚠ WHAT STAYS WHITE: branding and top-level chrome — the site nav, the
 	   ?/i/gear glyphs. ⚓ NATE. Those are the site speaking as itself rather
-	   than the tool speaking, and --chrome is that voice; see .site-chrome
-	   below, which re-declares --accent (and must re-declare the derived
-	   tokens with it — the substituted-at-declaration law).
+	   than the tool speaking, and --chrome is that voice.
 
 	   ⚠ gold sits ΔH 0.5° from --el-geo-main. That is fine and deliberate:
 	   geo is an identity colour at C.150 while the accent is ornament at C.066,
@@ -1592,7 +1590,7 @@
 		--ui-bar-h: 64px;
 	}
 }
-/* ⚓ THE NEW LAYOUT (build plan §13): under the switch the top bar is
+/* ⚓ THE NEW LAYOUT (build plan §13): the top bar is
    --ui-bar-h tall, and everything that reserves the bar reads --chrome-h. */
 :root[data-next] {
 	--chrome-h: var(--ui-bar-h);
@@ -1636,40 +1634,6 @@
 	   white. The block survives the accent decision because the DERIVED tokens
 	   still have to be re-declared wherever --accent is — see the law above. */
 	--accent: var(--gold-400);
-	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
-	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
-}
-
-/* Over-scene chrome strips: the site chrome floats directly over the live
-   scene, so its control fills lift with CHROME white rather than the neutral
-   tint (a neutral wash grays out over the cosmic ground). Re-declared (not
-   routed through a tint variable) per the substituted-at-declaration law
-   documented above.
-
-   ↻ TOOLBAR ROUND 2026-08-07: the four tool toolbars (.rp-tab-bar, .tb-tabs,
-   .ws-toolbar, .ws-bar) left this list. They are no longer over-scene — each
-   is a zone of a BAND now, and a band has its own opaque ground and its own
-   context, so its controls must lift with the CONTEXT's fills. Leaving them
-   here would have painted chrome-white fills onto a beige band. The site
-   chrome is the only genuinely groundless strip left.
-
-   ↻ 2026-08-09 (Genshin Night): this is also where the accent STAYS WHITE.
-   ⚓ NATE: gold everywhere except branding and top-level chrome — the site nav,
-   the ?/i/gear. The site chrome is the site speaking as itself, and --chrome is
-   that voice; the accent is the TOOL's emphasis and has no business in it.
-   ⚠ The derived tokens are re-declared with it (substituted-at-declaration).
-   Note this block is INSIDE .tool-shell on tool routes, so without these four
-   lines the chrome bar would inherit the shell's gold. */
-.site-chrome {
-	--fill-rest: color-mix(in srgb, var(--chrome) 13%, transparent);
-	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
-	--accent: var(--chrome);
-	/* The one gold thing in the bar: the BETA tag (⚓ Nate 2026-09-16, trying
-	   the accent's rung first; a darker gold is the fallback). Its own role
-	   because --accent is white in here by the rule above, and a component
-	   may not name the primitive. */
-	--chrome-tag: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
@@ -2177,9 +2141,6 @@
    card, Settings) --fill-rest is the RIGHT track and this would flatten it, and
    band B has no segment to speak for. If one ever lands there it joins this list
    the way `.btn--glass` did: on demand, with a caller. */
-.band-a .tab:not(.active),
-.band-a .btn,
-.band-a .segment,
 .band--3up > .band-zone .btn,
 .btn.btn--glass {
 	background: var(--surface); /* = --glass-panel, via .ctx-glass */
@@ -2211,20 +2172,10 @@
    no arithmetic at all, so the hazard simply leaves. */
 /* ↻ 2026-10-24: only where a pointer can HOVER — a tap leaves :hover stuck
    on the last plate touched, and a stuck ring reads as a state.
-   ⚠ UNDER THE SWITCH ONLY until the flip: each half is scoped with
-   `:where(:root[data-next])` / `:where(:root:not([data-next]))`, which add
-   NO specificity, so both forms keep exactly the weights they always had.
-   Step 5 deletes the `:not` halves and unwraps the rest. */
-:where(:root:not([data-next])) .band-a .tab:not(.active):hover,
-:where(:root:not([data-next])) .band-a .btn:hover:not(:disabled),
-:where(:root:not([data-next])) .band--3up > .band-zone .btn:hover:not(:disabled),
-:where(:root:not([data-next])) .btn.btn--glass:hover:not(:disabled) {
-	background: var(--surface-hover);
-	box-shadow: inset 0 0 0 1px var(--glass-ring);
-}
+   Scoped with `:where(:root[data-next])`, which adds NO specificity, so the
+   rule keeps exactly the weight it always had (the root layout sets the
+   attribute on mount). */
 @media (hover: hover) {
-	:where(:root[data-next]) .band-a .tab:not(.active):hover,
-	:where(:root[data-next]) .band-a .btn:hover:not(:disabled),
 	:where(:root[data-next]) .band--3up > .band-zone .btn:hover:not(:disabled),
 	:where(:root[data-next]) .btn.btn--glass:hover:not(:disabled) {
 		background: var(--surface-hover);
@@ -2260,13 +2211,6 @@
    `.tab.active`, so a selected pane would have been the one plate the world came
    through sharp. Every exclusion like that is a rule you have to remember to
    mirror; deleting the property deleted the obligation. */
-.band-a .tab.active,
-.band-a .btn.is-active,
-:where(:root:not([data-next])) .band--3up > .band-zone .btn.is-active {
-	background: var(--surface-hover);
-	box-shadow: inset 0 0 0 1px var(--sel-ring);
-	color: var(--text);
-}
 /* ── ON IS A DIM GOLD FILL, NOT A RING (toolbar refinement, ⚓ Nate
    2026-10-24, from the bars demo) ─────────────────────────────────────────
    A RING means "you are here" (hover, focus); a FILL means "it is on". The
@@ -2276,8 +2220,8 @@
    restated here because the band's glass rule above outranks it.
    ⚠ A PROPERTY, not a custom property: the nesting law polices declared
    tokens (a mix of a mix INHERITED by a large tree), and this is consumed
-   where it is written, as `.btn.is-active` always has been.
-   Under the switch only (see the hover rule above). */
+   where it is written, as `.btn.is-active` always has been. Scoped as the
+   hover rule above is. */
 :where(:root[data-next]) .band--3up > .band-zone .btn.is-active,
 :where(:root[data-next]) .band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
@@ -2288,15 +2232,8 @@
    which is where the Reset confirm arms itself mid-row; a standalone plate at
    the end of a band-B row is not in that situation.
    ↻ Its `backdrop-filter: none` went with the property it was cancelling. */
-.band-a .btn--danger {
-	background: none;
-}
 /* :not(:disabled) only to out-specify the .band-a .btn hover above it — a
    danger button that lit up would lose its ghost on hover. */
-.band-a .btn--danger:hover:not(:disabled),
-.band-a .btn--danger.is-confirming {
-	background: var(--ui-danger-soft);
-}
 
 /* ── ONE HEIGHT, IN BAND B ONLY (⚓ NATE 2026-08-10, then again) ────────────
    The row height is filled by the controls that stand ON a rail — band B's
@@ -2328,7 +2265,7 @@
 	height: var(--band-ctrl-h);
 	min-width: var(--band-ctrl-h);
 }
-/* ⚓ ONE CONTROL SIZE (phase 2e): under the switch the toolbar's type is the
+/* ⚓ ONE CONTROL SIZE (phase 2e): the toolbar's type is the
    interface size's, as the top bar's is. */
 :root[data-next] .band-b .tab,
 :root[data-next] .band-b .btn {
@@ -2677,9 +2614,10 @@ img {
    (~310 occurrences) and folded its survivors — the slider set, .panels and
    .chip--sm — in below.
 
-   Chip/button VOICE — ↻ 2026-10-24: every control is SENTENCE CASE under
-   the switch. The old "verbs shout, nouns don't" (UPPERCASE + ls-wide on
-   .btn and .chip--control) holds with it off until the flip.
+   Chip/button VOICE — ↻ 2026-10-24 (⚓ Nate): every control is SENTENCE
+   CASE. The old "verbs shout, nouns don't" (UPPERCASE + ls-wide) was an
+   arbitrary rule, the nouns were uppercase only to match it, and the caps
+   cost a band its width.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Focus: one ring for every interactive control. Most of the current
@@ -2727,15 +2665,6 @@ img {
 		color var(--t-snap),
 		box-shadow var(--t-snap),
 		opacity var(--t-snap);
-}
-/* ↻ 2026-10-24 (⚓ Nate): SENTENCE CASE under the switch. "Verbs shout,
-   nouns don't" was an arbitrary rule, the nouns were uppercase only to match
-   it, and the caps cost a band its width. Until the flip the old voice holds
-   with the switch OFF: `:where` adds no weight, so this is `.btn` exactly
-   where it always was. Step 5 deletes it (and its .chip--control twin). */
-:where(:root:not([data-next])) .btn {
-	letter-spacing: var(--ls-wide);
-	text-transform: uppercase;
 }
 .btn:hover {
 	background: var(--btn-face-hover);
@@ -2861,15 +2790,7 @@ img {
 	border-radius: var(--r-xs);
 	background: transparent;
 }
-:where(:root:not([data-next])) .segment > .btn:hover {
-	background: var(--fill-hover);
-}
-:where(:root:not([data-next])) .segment > .btn.is-active {
-	background: var(--sel-fill);
-	box-shadow: inset 0 0 0 1px var(--sel-ring);
-	color: var(--ink-active);
-}
-/* ↻ 2026-10-25 (Builder toolbar round), under the switch: the chosen side
+/* ↻ 2026-10-25 (Builder toolbar round): the chosen side
    is a FILL, the toolbar's "on" (see ON IS A DIM GOLD FILL) — a ring means
    "you are here", and a chosen segment is not where your hand is. The fill
    is `.btn.is-active`'s plate recipe rather than --sel-fill: without its ring
@@ -2914,16 +2835,7 @@ img {
 		box-shadow var(--t-snap),
 		opacity var(--t-snap);
 }
-:where(:root:not([data-next])) .chip:hover {
-	background: var(--accent-hover-fill);
-	color: var(--ink-active);
-}
-:where(:root:not([data-next])) .chip.active {
-	background: var(--sel-fill);
-	box-shadow: inset 0 0 0 1px var(--sel-ring);
-	color: var(--ink-active);
-}
-/* ↻ 2026-10-25 (Builder toolbar round), under the switch: a chosen chip is
+/* ↻ 2026-10-25 (Builder toolbar round): a chosen chip is
    a FILL, as a chosen segment and an on plate are (see ON IS A DIM GOLD
    FILL) — the ring is the hand's, and a chip only shows one where a hand
    can hover. The plate recipe, not --sel-fill: a bare 20% wash with no
@@ -2945,14 +2857,9 @@ img {
 	padding: 0.35rem 0.75rem;
 	font-size: var(--fs-lg);
 }
-/* The switch-off voice (see the .btn twin above). */
-:where(:root:not([data-next])) .chip--control {
-	letter-spacing: var(--ls-wide);
-	text-transform: uppercase;
-}
 /* ↻ 2026-10-25 (Builder toolbar round): a control chip's label is AUTHORED
-   in sentence case ("Single aura", "Melt on Frozen"), so under the switch it
-   is shown as written. `.chip`'s capitalize is for raw ids (element, weapon),
+   in sentence case ("Single aura", "Melt on Frozen"), so it is shown as
+   written. `.chip`'s capitalize is for raw ids (element, weapon),
    and on these it turned every sentence into Title Case. */
 :where(:root[data-next]) .chip--control {
 	text-transform: none;
@@ -2977,9 +2884,6 @@ img {
 	background: color-mix(in srgb, var(--chip-color) 20%, transparent);
 	color: color-mix(in srgb, var(--chip-color) 75%, white);
 }
-:where(:root:not([data-next])) .chip--element.active {
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 55%, transparent);
-}
 :where(:root[data-next]) .chip--element.active,
 :where(:root[data-next]) .chip--element.active:hover {
 	background: color-mix(in srgb, var(--chip-color) 24%, var(--btn-face));
@@ -3001,9 +2905,6 @@ img {
 .chip--icon.active {
 	opacity: 1;
 	background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-}
-:where(:root:not([data-next])) .chip--icon.active {
-	box-shadow: inset 0 0 0 1px var(--chip-color);
 }
 :where(:root[data-next]) .chip--icon.active,
 :where(:root[data-next]) .chip--icon.active:hover {
@@ -4078,10 +3979,6 @@ img {
 	.band button::before,
 	.band .toggle::before {
 		--hit-x: calc(var(--band-item-gap, 4px) / 2);
-	}
-	.band-a button::before {
-		--hit-top: 8px;
-		--hit-bottom: 3px;
 	}
 	.band-b button::before,
 	.band-b .toggle::before {

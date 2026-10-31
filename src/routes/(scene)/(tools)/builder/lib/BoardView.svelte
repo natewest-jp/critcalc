@@ -117,8 +117,7 @@
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
-		/** The saved rotations a team can pin: the profile's documents under
-		 *  the switch, the old bank otherwise. */
+		/** The saved rotations a team can pin: the profile's documents. */
 		bank: readonly SavedNotation[];
 		/** The card the pointer rests on — the SELECTED team's fingerprint
 		 *  previews the team its pick would make (§11.2). */

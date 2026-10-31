@@ -564,7 +564,7 @@
 		position: sticky;
 		/* It scrolls inside the menu state's main column, which says where a
 		   sticky header stands (clear of its ✕); top: 0 is the scrollport's edge
-		   in the old layout's overlay and route panel. */
+		   in the route panel. */
 		top: var(--menu-sticky-top, 0px);
 		z-index: 1;
 		padding: 0.4rem 0;

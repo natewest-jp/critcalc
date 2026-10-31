@@ -60,7 +60,6 @@
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
 	let {
-		inMenu = false,
 		focus = null,
 		onFocused
 	}: {
@@ -68,9 +67,6 @@
 		focus?: string | null;
 		/** Called once the arrival has been made, so the caller can clear it. */
 		onFocused?: () => void;
-		/** Hosted by the menu state: the bar's controls go up into its page
-		 *  head's row (`menu.headActions`) instead of a row of their own. */
-		inMenu?: boolean;
 	} = $props();
 
 	/** ⚓ Blank stays in the Planner (a generic stand-in to test a rotation
@@ -315,9 +311,8 @@
 	}
 	const anyBulk = $derived(!!(unownedShown.length || belowC6Shown.length || ownedShown.length));
 
-	// ── The head (the menu state's page head, when hosted there) ────────────
+	// ── The head (the menu state's page head) ───────────────────────────────
 	$effect(() => {
-		if (!inMenu) return;
 		menu.headActions = barActions;
 		return () => {
 			if (menu.headActions === barActions) menu.headActions = null;
@@ -460,8 +455,7 @@
 
 <svelte:window onkeydown={onWindowKey} />
 
-<!-- The bar's controls: in the menu state's page head (inMenu), else a row
-     of their own. ONE group: mark, undo and redo while editing, the lock. -->
+<!-- The bar's controls, in the menu state's page head. ONE group: mark, undo and redo while editing, the lock. -->
 {#snippet barActions()}
 	{#if editing}
 		{#if anyBulk}
@@ -541,7 +535,6 @@
 		onfocusin={trackKeys}
 		onfocusout={() => queueMicrotask(trackKeys)}
 	>
-		{#if !inMenu}<div class="ros-bar">{@render barActions()}</div>{/if}
 		{#if editing && keysOn}
 			<p
 				class="ros-keys"
@@ -807,18 +800,6 @@
 		display: inline-grid;
 		place-items: center;
 		width: 13px;
-	}
-	.ros-bar {
-		flex: none;
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0 6px 8px 4px;
-	}
-	/* The old layout's bar: the head's group, at the right. */
-	.ros-bar {
-		justify-content: flex-end;
 	}
 	/* Its own gap, wherever it is rendered (the head or the bar). */
 	.ros-lock {

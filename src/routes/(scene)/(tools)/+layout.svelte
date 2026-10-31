@@ -14,18 +14,13 @@
 		revealDelayMs,
 		prefersReducedMotion
 	} from '$lib/landing/transition';
-	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import BenchBand from '$lib/components/BenchBand.svelte';
-	import LibraryOverlay from '$lib/components/LibraryOverlay.svelte';
-	import { library } from '$lib/library.svelte';
-	import { registerRosterOpener } from '$lib/components/chromeModal.svelte';
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import { notices, heldKey } from '$lib/notices.svelte';
 	import { T_QUICK } from '$lib/motion';
 	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
 	import { TOOLS } from './lib/toolChrome';
-	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { boards } from '$lib/boards.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
@@ -50,9 +45,8 @@
 	// paint stay deterministic.
 	// ---------------------------------------------------------------------------
 
-	// ⚓ Under the switch (build plan §13, phase 2a) the documents come from the
-	// new store instead: the profile's current rotation and lineup, autosaved.
-	// Loaded on demand, so with the switch off none of it is downloaded.
+	// ⚓ The documents come from the store (build plan §13, phase 2a): the
+	// profile's current rotation and lineup, autosaved.
 	let session = $state<typeof StorageSessionT | null>(null);
 
 	// ⚓ THE TWO-TAB RULE (§13.3), as a BANNER (notices §3.3): the document on
@@ -84,9 +78,8 @@
 			rotationTabs.held = null;
 		};
 	});
-	/** The top bar (phase 2b), loaded with the session. While the switch is on
-	 *  and it has not arrived, the chrome mount shows NOTHING rather than
-	 *  flashing the old bar. */
+	/** The top bar (phase 2b), loaded with the session. Until it arrives the
+	 *  chrome mount shows NOTHING. */
 	let TopBarC = $state<typeof TopBarT | null>(null);
 
 	onMount(() => {
@@ -215,10 +208,10 @@
 	// restore parity if it ever grates). Plus a 150ms beat of pure world
 	// between the outgoing clearing and the incoming's entrance.
 	//
-	// ↻ UNDER THE SWITCH (phase 2f, design §5.5; ⚓ Nate 2026-10-22): every tool
+	// ↻ Phase 2f (design §5.5; ⚓ Nate 2026-10-22): every tool
 	// sits at the Planner's pose, so a tool-to-tool leg has no camera move and
 	// no drift — a tool CHANGES IN PLACE, on a short fade of its own (the
-	// crane-era values above stay the switch-off site's). 🎛️ Knobs for Nate:
+	// crane-era story above is how it got here). 🎛️ Knobs for Nate:
 	// out on the SURFACE band (--t-quick), in a touch slower so the new tool
 	// settles rather than pops, no beat between them.
 	//
@@ -692,11 +685,7 @@
 		node.dataset.page = page.url.pathname;
 	}
 
-	// Kick the planner's character-payload fetches at click time so they land
-	// before the cross-fade instead of re-parsing the rotation mid-fade
-	// (see prewarmPlanner.ts).
-	beforeNavigate((nav) => {
-		if (nav.to?.url.pathname.startsWith('/planner')) prewarmPlannerCharacters();
+	beforeNavigate(() => {
 		// Cover the URL-flip → afterNavigate window (see the watchdog note).
 		lastNavAt = performance.now();
 		navSettleDeadline = watchdogDeadline(performance.now());
@@ -984,16 +973,6 @@
 		requestAnimationFrame(tick);
 	});
 
-	// The chrome's Roster button opens the Library, which lives here — so it
-	// exists exactly while a tool is mounted (chromeModal.svelte.ts).
-	onMount(() => registerRosterOpener(() => library.openRoster()));
-
-	// ⚓ Back closes the library (Nate 2026-10-08): opening it pushed a shallow
-	// history entry, so when that entry's state goes away, so does the overlay.
-	$effect(() => {
-		if (library.open && !page.state.library) library.open = false;
-	});
-
 	/** The share link a crash report carries: the document's, where the tool
 	 *  keeps one in a store that outlives its page (the boundary only sees the
 	 *  page fail, so the Visualizers' tile state is out of reach — its URL it
@@ -1093,12 +1072,6 @@
 
 <svelte:window onresize={snapBench} />
 
-<!-- THE LIBRARY (lineups design §10.1a). Rendered by the LAYOUT, not by a
-     tool: Load opens it in both tools, and it must outlive a tool pan. -->
-{#if library.open}
-	<LibraryOverlay />
-{/if}
-
 <!-- The make-room confirm: the tab limit is reached and something wants to
      open. Rendered HERE for the same reason as the bank — it acts on the
      DOCUMENTS, and it must outlive a tool pan mid-dialog. Keyed on the request
@@ -1117,7 +1090,6 @@
 <!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing
      the ascend reveals and fades, and nothing about a settings panel belongs
      to that choreography. -->
-<ChromeModals />
 
 <style>
 	.tool-shell {

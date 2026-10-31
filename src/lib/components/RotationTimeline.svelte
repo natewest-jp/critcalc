@@ -2453,7 +2453,7 @@
 	}
 
 	// ══ HOVER PEEKS, CLICK INSPECTS (inspector round, 2026-10-23; design §7) ══
-	// Under the switch a click on a buff bar opens it in the inspector pane. The
+	// A click on a buff bar opens it in the inspector pane. The
 	// pane prints what the tooltip prints — ONE payload builder per lane, read by
 	// both — plus where the bar sits and who it lands on.
 	//
@@ -4131,8 +4131,7 @@
 					}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
 				>
 				<!-- ⚓ Phase 2e (Nate 2026-10-22): Clear beside its own undo, so a
-				     mistaken clear is one click back. Under the switch only; band
-				     A's ⋯ still carries Reset with it off. -->
+				     mistaken clear is one click back. -->
 				<button
 					class="btn btn--sm"
 					type="button"
@@ -4757,7 +4756,7 @@
 		pointer-events: none;
 	}
 	/* ══ PICKED (inspector round, 2026-10-23) ══════════════════════════════════
-	   Under the switch a buff bar is a door into the inspector, so it says so
+	   A buff bar is a door into the inspector, so it says so
 	   with the cursor; the bar the pane is showing wears the GOLD ring — the
 	   glass grammar's "selected", ⛔ never a fill change, which would read as a
 	   different buff. An INSET shadow: paint inside the bar's own box, so it

@@ -33,12 +33,11 @@
  * and client; `restore()` runs from the tools layout's onMount.
  */
 
-import { browser } from '$app/environment';
 import { characterKey } from './data/characterLookup';
 import { TEAM_SIZE, notationHasActions, seatsOfSaved, teamKey } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
-import { ownership, safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
+import { ownership, type SavedBoardTeam, type SavedNotation } from './stores';
 import { get } from 'svelte/store';
 
 export type TeamSlot = string | null;
@@ -90,8 +89,6 @@ export const BOARD_TEAM_LIMIT = 12;
  *  the menu state's Add to a lineup (design §3), which runs while the Builder
  *  may not be mounted. The Builder clears it once it has taken it. */
 export const boardFocus = $state<{ teamId: string | null }>({ teamId: null });
-
-export const BOARDS_KEY = 'critcalc:boards';
 
 export const recentlyClosedBoards = createRecentlyClosed<Board>('critcalc:recentlyClosedBoards');
 
@@ -166,7 +163,7 @@ export function teamCon(team: BoardTeam, saved: readonly SavedNotation[]): Recor
 
 /** A character's level: the team's own value, else the roster's, else C0.
  *  ONE resolution, the Planner tab's (§9.5). ↻ Phase 4 (design §2.4): given
- *  `owned` (the switch is on), an OWNED character reads the roster. */
+ *  `owned`, an OWNED character reads the roster. */
 export function effectiveCon(
 	own: Record<string, number>,
 	roster: Record<string, number>,
@@ -242,19 +239,6 @@ export function withoutRepeats(
 	return out;
 }
 
-function loadFromStorage(): { boards: Board[]; activeBoardId: string } | null {
-	if (!browser) return null;
-	try {
-		const raw = localStorage.getItem(BOARDS_KEY);
-		if (!raw) return null;
-		const data = JSON.parse(raw);
-		if (!Array.isArray(data.boards) || data.boards.length === 0 || !data.activeBoardId) return null;
-		return data;
-	} catch {
-		return null;
-	}
-}
-
 class BoardsState {
 	/** ⚓ The cold start is the CURRENT Stygian Onslaught (§11.2): the tool at
 	 *  its most useful, the mode most players come for. No `season` is stored, so
@@ -271,14 +255,9 @@ class BoardsState {
 		return this.boards.find((b) => b.id === this.activeBoardId) ?? this.boards[0];
 	}
 
-	/** Restore from localStorage. Idempotent; call once, pre-paint. */
-	restore(): void {
-		this.restoreFrom(loadFromStorage());
-	}
-
 	/** Take a stored board set (`null` keeps the cold start) and mark the state
-	 *  restored — localStorage's, or under the switch the profile's current
-	 *  lineup (build plan §13). */
+	 *  restored: the profile's current lineup, from the storage session
+	 *  (build plan §13). */
 	restoreFrom(stored: { boards: Board[]; activeBoardId: string } | null): void {
 		if (stored) {
 			this.boards = stored.boards.map((b) => ({
@@ -293,19 +272,15 @@ class BoardsState {
 		this.restored = true;
 	}
 
-	/** Write to localStorage. Reads every persisted field; never writes $state. */
+	/** Hand the boards to the storage session's sink. Reads every persisted
+	 *  field; never writes $state. */
 	persist(): void {
 		const snapshot = { boards: this.boards, activeBoardId: this.activeBoardId };
 		if (!this.restored) return;
-		if (this.persistSink) {
-			this.persistSink(snapshot.boards, snapshot.activeBoardId);
-			return;
-		}
-		safeSetItem(BOARDS_KEY, JSON.stringify(snapshot));
+		this.persistSink?.(snapshot.boards, snapshot.activeBoardId);
 	}
 
-	/** Under the switch, persist to the new store instead (see
-	 *  `rotationTabs.persistSink`, the same rule). */
+	/** The store's sink (see `rotationTabs.persistSink`, the same rule). */
 	persistSink: ((boards: Board[], activeBoardId: string) => void) | null = null;
 
 	// ── Board tabs ──────────────────────────────────────────────────────────

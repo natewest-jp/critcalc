@@ -185,7 +185,7 @@ class DocumentBarState {
 		return !!rt.notation.trim() || rt.seats.some((id) => id !== null);
 	}
 
-	/** An arrival under the switch: its notice, or — the first time a link
+	/** An arrival: its notice, or — the first time a link
 	 *  moves someone out of a real profile — the dialog that teaches the rule
 	 *  once. `id` is the arrived document, when there is one to move. */
 	arrived(switched: boolean, notice: string, id?: string, movable = false) {
@@ -571,7 +571,7 @@ class DocumentBarState {
 	 *  a problem report carries ($lib/feedback.ts). `null` with nothing to share. */
 	async shareUrl(): Promise<string | null> {
 		if (!this.hasContent) return null;
-		// Its team's under the switch, so a link carries what the team supplies.
+		// Its team's, so a link carries what the team supplies.
 		const rosterLoadout = rt.inheritedLoadout();
 		const rosterCons = get(constellations);
 		// Scope the build snapshot to the resolved team (this handles inferred
@@ -587,7 +587,7 @@ class DocumentBarState {
 			// ⚓ EVERY member's level, an explicit 0 included (lineups design §9.5):
 			// a shared document never falls back to the recipient's roster, so
 			// the sender's C0 must travel or the recipient's own C6 shows instead.
-			// ⚓ Under the switch an owned character's level is the roster's (§12 Q31).
+			// ⚓ An owned character's level is the roster's (§12 Q31).
 			if (slotted.has(id)) cons[id] = rt.levelOf(id, rosterCons, get(ownership));
 			// Mirror RotationTimeline's effective-loadout merge so a shared link
 			// renders identically regardless of the recipient's own defaults.

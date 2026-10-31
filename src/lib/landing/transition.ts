@@ -124,7 +124,7 @@ function poseForPath(path: string): { x: number; y: number } {
 	if (!isToolPath(path)) return { x: 0, y: 0 };
 	// The scene's own box (100lvh), so the pose and the drawn geometry agree.
 	const v = getSceneGL()?.viewport() ?? { w: window.innerWidth, h: window.innerHeight };
-	return crestPose(0, v.w, v.h);
+	return crestPose(v.h);
 }
 
 /**

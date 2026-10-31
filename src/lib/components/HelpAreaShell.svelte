@@ -3,15 +3,13 @@
 	import type { Area } from '$lib/help/areas';
 	import { findChapter } from '$lib/help/areas';
 	import { scrollBehavior } from '$lib/motion';
-	import { setChapter } from './chromeModal.svelte';
 	import AreaTabs from './AreaTabs.svelte';
 	import HRule from './HRule.svelte';
 
-	// One area, two presentations. In `modal` mode the chapter list switches
-	// panes in place (the URL never moves — see chromeModal.svelte.ts); in
-	// `page` mode the same list is ordinary navigation between the prerendered
-	// chapter routes. Either way the entries are real <a href> elements, so
-	// middle-click and "copy link" behave, and only the modal intercepts.
+	// One area on its own route: the chapter list is ordinary navigation
+	// between the prerendered chapter routes, real <a href> elements. ⚠ Drawn
+	// by the server only (the pages layout's `!browser` panel): in the browser
+	// the menu state renders Help and About.
 	//
 	// Wide: a sidebar, with the CURRENT chapter expanded to show its contents.
 	// Narrow: the chapters become tabs across the top and the table of contents
@@ -27,15 +25,12 @@
 	let {
 		area,
 		chapter,
-		mode = 'page',
 		chapterComponent
 	}: {
 		area: Area;
 		chapter: string;
-		mode?: 'modal' | 'page';
-		/** Routes pass their chapter statically so it prerenders; the modal omits
-		    it and the chapter is fetched on demand. */
-		chapterComponent?: Component;
+		/** The chapter, passed statically so it prerenders. */
+		chapterComponent: Component;
 	} = $props();
 
 	const current = $derived(findChapter(area.id, chapter));
@@ -51,15 +46,6 @@
 		}));
 		// A fresh chapter starts at its own top, not wherever the last one was.
 		if (bodyEl) bodyEl.scrollTop = 0;
-	}
-
-	function onChapterClick(event: MouseEvent, id: string) {
-		if (mode !== 'modal') return; // page mode: let the browser navigate
-		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-			return; // leave open-in-new-tab to the browser
-		}
-		event.preventDefault();
-		setChapter(id);
 	}
 
 	function jumpTo(event: MouseEvent, id: string) {
@@ -80,14 +66,10 @@
      only the chapter body scrolls. Now the page fills the panel too
      (`.area-page`, height 100%) and the nav and body scroll on their own. -->
 <div class="area-page">
-	{#if mode === 'page'}
-		<!-- On a route the tabs head the page, as they head the overlay — one
-	     place, whichever way you arrived. -->
-		<header class="area-page-head">
-			<AreaTabs current={area.id} mode="page" />
-			<HRule />
-		</header>
-	{/if}
+	<header class="area-page-head">
+		<AreaTabs current={area.id} />
+		<HRule />
+	</header>
 	<div class="area-shell">
 		<nav class="area-nav" aria-label="{area.title} sections">
 			<ul class="area-chapters">
@@ -97,8 +79,7 @@
 							class="area-chapter"
 							class:is-current={ch.id === current.id}
 							href={ch.path}
-							aria-current={ch.id === current.id ? 'page' : undefined}
-							onclick={(event) => onChapterClick(event, ch.id)}>{ch.title}</a
+							aria-current={ch.id === current.id ? 'page' : undefined}>{ch.title}</a
 						>
 
 						<!-- Contents of the chapter you are actually reading. Wide only. -->
@@ -120,24 +101,11 @@
 
 		<div class="area-body" bind:this={bodyEl}>
 			{#key current.id}
-				{#if chapterComponent}
-					{@const Chapter = chapterComponent}
-					{#if current.bare}
-						<div use:collectToc><Chapter /></div>
-					{:else}
-						<article class="prose" use:collectToc><Chapter /></article>
-					{/if}
+				{@const Chapter = chapterComponent}
+				{#if current.bare}
+					<div use:collectToc><Chapter /></div>
 				{:else}
-					{#await current.load()}
-						<p class="area-loading">Loading…</p>
-					{:then mod}
-						{@const Chapter = mod.default}
-						{#if current.bare}
-							<div use:collectToc><Chapter /></div>
-						{:else}
-							<article class="prose" use:collectToc><Chapter /></article>
-						{/if}
-					{/await}
+					<article class="prose" use:collectToc><Chapter /></article>
 				{/if}
 			{/key}
 		</div>
@@ -254,10 +222,6 @@
 		display: grid;
 		gap: 0.6rem;
 		margin-bottom: 1.2rem;
-	}
-
-	.area-loading {
-		color: var(--muted);
 	}
 
 	/* Narrow: chapters become tabs, the table of contents goes away. */

@@ -4,8 +4,8 @@
   named by its members until you rename it in Teams; only with all four slots
   filled; a set that is already a team says so quietly instead, and opens Teams.
 
-  Loaded by the bench only under the switch, so the storage session stays out
-  of the bench's bundle. Real profiles only (§2.2): Theorycraft has no teams.
+  Loaded by the bench on demand, so the storage session stays out of the
+  bench's bundle. Real profiles only (§2.2): Theorycraft has no teams.
   Strings are working copy.
 -->
 <script lang="ts">

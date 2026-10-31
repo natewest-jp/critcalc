@@ -5,7 +5,6 @@ paths:
   - 'src/lib/components/ToolColumns.svelte'
   - 'src/lib/components/BandMenu.svelte'
   - 'src/lib/components/MenuState.svelte'
-  - 'src/lib/components/NavPanel.svelte'
   - 'src/lib/toolBands.ts'
   - 'src/lib/toolColumns.ts'
   - 'src/lib/tools.ts'
@@ -19,7 +18,7 @@ Budget: about 8,000 characters. The design is `docs/design/profiles-and-surfaces
 
 ## What is left of the old layout
 
-The old layout's switch, band A and its chrome are deleted. A few modules it reached are still wired in but can no longer act (the `chromeModal` overlays, `NavPanel`, the old Library overlay, `app.css` rules under `:root:not([data-next])`); they are listed for removal in `docs/todo.md`. Build nothing new on them.
+Its switch, band A, chrome and overlays are deleted. Its multi-tab document model (`documentBar`, `boardBar`, `rotationTabs`' tabs, Recently closed, the saved banks) is still wired in and listed for removal in `docs/todo.md`; build nothing new on it. `data-next` on `<html>` is set on mount, and the rules scoped to it wait for hydration.
 
 ## The top bar (`TopBar.svelte`)
 

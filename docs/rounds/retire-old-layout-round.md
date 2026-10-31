@@ -25,9 +25,20 @@
 
 - A visitor whose last visit predates ownership tracking gets constellations but no ownership from the migration: the old loader seeded ownership from constellations, and `migrate.ts` reads `critcalc:ownership` raw. This was already true since the flip.
 
-## Left (pass C, on the to-do list)
+## Pass C (same day, `refactor/old-layout-pass-c`)
 
-Still wired in but unable to act: `chromeModal` and its hosts, `NavPanel`, the old Library overlay, the `:root:not([data-next])` CSS, the session-failure fallback's tab models, `crestPose`'s lean, and the comments that still say "under the switch". The CSS part moves first paint and needs Nate's eye.
+- ⚓ **A storage failure falls back to the in-memory stand-in** (Nate 2026-10-31). `storageSession.start()` used to drop the tools onto their old localStorage tab models when starting on the store failed. It now releases any locks the attempt took and starts again on `boot.ts` `openInMemory()`, so there is one document model whatever happens, and the memory notice tells the player. Only if that fails too do the tools take their defaults, persisted nowhere. Test: `session.test.ts` › "a store the session cannot start on". With it went `rotationTabs`/`boards` `restore()` and their localStorage writes, and the keys' constants.
+- The navigation-start Planner prewarm: it read the localStorage tabs the migration froze, so it warmed the pre-flip rotation. The idle warmer for open tabs stays.
+- The overlays nothing could open any more: `chromeModal.svelte.ts` (its one live job, Coverage's opener, is inlined in `openCoverage`), `ChromeModals`, `ChromeOverlay`, `NavPanel`, `LibraryOverlay`, `LibraryView`, `CloseMark`; the Help shell's and AreaTabs' `modal` mode; RosterTab's `inMenu=false` form; `library.svelte.ts` down to the Roster's focus; `/library` a placeholder like the other section routes.
+- CSS: every rule that applied only without `data-next`, and every `.band-a` rule. ⚠ The `:not([data-next])` rules also painted the frames before hydration, so first paint changes: controls paint in sentence case from the first frame instead of flashing the old uppercase voice. `.site-chrome` and `--chrome-tag` went with SiteChrome.
+- `crestPose` lost its lean and `SIDE_LEAN_DEG` (the side crane is gone).
+- The comments that still described the switch were rewritten.
+- ⚠ A line-based CSS script split a comment that mentioned `.band-a` into a selector list; `app.css` was restored and the cut redone with a comment-aware parser. Any CSS rewrite by script parses comments first.
+
+## Left (on the to-do list)
+
+- **The old multi-tab document model.** Most of `documentBar`, `boardBar` and `rotationTabs`' tab machinery is the old layout's: up to twelve tabs per tool, Recently closed, the saved banks (`savedNotations`, `savedBoards`), the make-room confirm. The profiles layout holds one document per tool; only a few paths are live (arrivals, sharing, Try in Planner, the guests' pairs). It needs a call-graph read rather than a substitution.
+- **`data-next` itself**, on its own branch for Nate to compare: unwrapping the `:where(:root[data-next])` rules makes the profiles layout's CSS apply from the first frame.
 
 ## Gates
 

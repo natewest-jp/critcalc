@@ -2,8 +2,8 @@
  * Which Traveler twin the site shows. ⚓ An ACCOUNT fact (profiles design
  * §13.5; Nate 2026-10-26): every Genshin account chose Aether or Lumine once,
  * so under the new layout it is the ACTIVE profile's `twin`, set on its
- * Profile page (Theorycraft's too). The old layout has no profiles and keeps
- * reading Settings' `travelerVariant`.
+ * Profile page (Theorycraft's too). Until the session has a profile, it
+ * reads Settings' `travelerVariant`.
  *
  * ⚠ The ONE reader: every portrait, the chrome's roster mark and the avatar
  * warmer read this, ⛔ never `siteSettings.travelerVariant` directly — that

@@ -6,9 +6,8 @@
 	 ⚠️ Every claim here is checked against the code: the key list is
 	 stores.ts + boards + rotationTabs + documentBar + visualizers/workspace +
 	 storageDurability (the last-backup stamp, and the persist ask on save);
-	 Backup is settingsBackup.ts BACKUP_KEYS; Reset is SettingsPanel's
-	 clearEverything (old layout), Clear data is ProfileForm's clearData and
-	 Delete everything is storageSession.wipe (new layout). What Cloudflare collects is stated AS CLOUDFLARE STATES
+	 Backup is settingsBackup.ts BACKUP_KEYS; Clear data is ProfileForm's
+	 clearData and Delete everything is storageSession.wipe. What Cloudflare collects is stated AS CLOUDFLARE STATES
 	 IT (its Web Analytics FAQ) — we have not measured the beacon. Update
 	 "Last updated" with any change. -->
 <script lang="ts">

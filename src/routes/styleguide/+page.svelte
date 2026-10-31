@@ -798,8 +798,7 @@
 			inside the tools layout's <code>data-zone="tool"</code>, so its accent is gold. It stays white
 			by naming no accent: the tool words are <code>--chrome</code> (70% at rest), the current tool
 			is a glass fill (<code>--glass-hover</code>, never gold), and the one gold thing, BETA, reads
-			<code>--accent</code> directly. <code>.site-chrome</code> and its re-declared accent belong to
-			<code>SiteChrome.svelte</code>, the old layout's bar. Record:
+			<code>--accent</code> directly. Record:
 			<code>docs/rounds/title-bar-round.md</code>. ⚠ Gold sits ΔH 0.5° from
 			<code>--el-geo-main</code>, which is fine and deliberate: geo is identity chroma at C.150, the
 			accent is ornament at C.066, so <em>chroma</em> is what separates them. Don't "fix" it by rotating
@@ -837,8 +836,7 @@
 			About and Settings are sections of the <strong>menu state</strong> (<code
 				>MenuState.svelte</code
 			>), a screen of slate rather than a modal, so they take the dark context's accent like any
-			slate surface. (The old layout mounted them as <code>ChromeModals</code> outside
-			<code>.tool-shell</code>, in the world's voice.)
+			slate surface.
 		</p>
 	</section>
 
@@ -2709,7 +2707,7 @@
 						>
 						+
 						<code>--sel-ink</code>, Genshin's Stygian selected row) has one consumer left,
-						<code>HelpAreaShell</code>, which only the old layout renders; the Team Builder's
+						<code>HelpAreaShell</code>, which only the server renders; the Team Builder's
 						Atlas/Roster/Compare plate it was built for is gone. Gray and beige both remain
 						available to this site.
 					</li>
@@ -2805,10 +2803,8 @@
 						<strong>On is a fill; a ring is the hand</strong> (↻ 2026-10-25, ⚓ Nate). A plate that
 						is on and a chip, segment or filter that is chosen fill with the accent at 20% over the
 						face (an element in its own hue). Rings are for hover and keyboard focus. The rules are
-						written <code>:where(:root[data-next])</code> in app.css, beside a
-						<code>:where(:root:not([data-next]))</code> half that serves only the old layout until
-						step 5 deletes it; <code>:where</code> adds no weight, so both keep the specificity that was
-						tested.
+						written <code>:where(:root[data-next])</code> in app.css; <code>:where</code> adds no weight,
+						so they keep the specificity that was tested.
 					</li>
 					<li>
 						<strong>Hover only where a pointer can hover.</strong> A hover ring or wash is written
