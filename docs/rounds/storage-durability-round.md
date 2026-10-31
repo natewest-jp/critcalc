@@ -17,6 +17,10 @@ A streamer asked for saved data that survives past a browser clear. Nate weighed
 
 ## Open
 
-- ⏭ Confirm on an iPhone that the site opened from the Home Screen reports storage as kept.
-- The FAQ's iPhone claim rests on WebKit's published policy that home-screen web apps are not subject to the 7-day storage cap; not tested on a device.
+- The FAQ's iPhone claim rests on WebKit's published policy that home-screen web apps are not subject to the 7-day storage cap. The grant itself is confirmed on a device (below); the cap's absence is not tested.
 - Desktop Safari's Add to Dock web apps may get the same treatment; unverified, so the copy names only the Home Screen.
+
+## iPhone check (Nate, 2026-10-31)
+
+- Added to the Home Screen from **Safari**, the web app reports storage as **kept**.
+- Added from **Chrome**, it still reports **not kept** after several days of use. The FAQ only promises the Safari route, so the copy stands. Nate reports if Chrome's answer changes.

@@ -5,7 +5,7 @@
 		"seenUpstream": "fcc117b31",
 		"date": "2026-10-30",
 		"tag": "v2.49.0",
-		"note": "clone fast-forwarded 2350be9e8 → fcc117b31; Wriothesley Revelation (#3212) agrees with our wiki-authored data (queued cross-check), Mavuika no-target fix, rest weapons/artifacts"
+		"note": "no new upstream commits on 2026-10-31; clone fast-forwarded 2350be9e8 → fcc117b31; Wriothesley Revelation (#3212) agrees with our wiki-authored data (queued cross-check), Mavuika no-target fix, rest weapons/artifacts"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-10-30T00:00:00Z"
+		"lastSeen": "2026-10-31T00:00:00Z"
 	},
 	"genshinDb": "5.2.14",
 	"endgame": {
@@ -25,6 +25,6 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "185ee3ff"
+		"lastSwept": "b24fc1a1"
 	}
 }
