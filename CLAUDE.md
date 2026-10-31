@@ -13,7 +13,7 @@ The tools show how the game's mechanics work and leave the judgment to the playe
 - **Visualizers** (`/visualizers`): eight graph instruments in a tiled workspace.
 - Around them, full-screen sections: Roster, Teams, Library, Help, Settings, Profile, Trash.
 
-Since 2026-10-27 the site runs the profiles layout: each profile holds its own documents in IndexedDB, under a top bar and per-tool toolbars. The previous layout survives only as the switch's off state (`src/lib/nextLayout.ts`, reached by `?next=0` in dev) until it is deleted. Build nothing new on the old layout.
+Since 2026-10-27 the site runs the profiles layout: each profile holds its own documents in IndexedDB, under a top bar and per-tool toolbars. The previous layout's switch is retired; a few of its modules still wait to be deleted (`.claude/rules/tool-chrome.md`). Build nothing new on them.
 
 ## How we work
 

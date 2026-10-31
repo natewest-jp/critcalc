@@ -2040,9 +2040,8 @@
 			document: the current tool's button names it and opens its Library, with the save status
 			beside it. The toolbar is <code>ToolStack</code>'s one row, still called band B in the code:
 			the view, what you are looking at inside this tool and how. ↻ The old layout had a second
-			band, band A, for the document (tabs · save · load · share · reset); ToolStack's
-			<code>noBandA</code>
-			drops it in all three tools, and the old form lives on only until step 5 retires it. Geometry knobs:
+			band, band A, for the document (tabs · save · load · share · reset); step 5 retired it.
+			Geometry knobs:
 			<code>src/lib/toolBands.ts</code>. Records: <code>docs/rounds/top-bar-round.md</code>,
 			<code>docs/rounds/toolbar-refine-round.md</code>,
 			<code>docs/rounds/builder-toolbar-round.md</code>.
@@ -2972,9 +2971,9 @@
 					<li>
 						<strong>The bench ribbon opens on the top edge of the tool's stack</strong> (↻
 						2026-08-17, ⚓ Nate; written for band A's top edge, and with band A gone that edge is
-						the toolbar's). Its head is <code>ribbonHead(trackTop, noBandA, bandBH)</code>, which
-						reads the toolbar's measured height (<code>benchBand.bandBH</code>, published by
-						ToolStack) because the row follows the interface size. It used to stand
+						the toolbar's). Its head is <code>ribbonHead(trackTop, bandBH)</code>, which reads the
+						toolbar's measured height (<code>benchBand.bandBH</code>, published by ToolStack)
+						because the row follows the interface size. It used to stand
 						<code>RIBBON_OVERHANG_Y</code>
 						(12px) proud at <em>both</em> ends so it read as the object in front; the tail round
 						took the bottom half of that away (a point terminates, it does not overhang), and the
@@ -2982,11 +2981,11 @@
 						topmost horizontal in the tool lining up with nothing. The constant survives at
 						<strong>0</strong>: it is still the one knob for this relationship, and the cards do not
 						move when it changes, because
-						<code>RIBBON_HEAD</code> adds back exactly what the dock subtracts. Consequences to
+						<code>ribbonHead</code> adds back exactly what the dock subtracts. Consequences to
 						respect: nothing may live in the column beneath the strip (the planner's lane names
 						moved into their own lanes; the Team Builder's team readout moved to the work zone's top
 						strip), and the cards stay aligned to the planner's track groups via
-						<code>RIBBON_HEAD</code>.
+						<code>ribbonHead</code>.
 					</li>
 					<li>
 						<strong>The ribbon's frame is TWO strokes on one box</strong> — same inset, same color,

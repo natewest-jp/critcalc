@@ -310,7 +310,7 @@ export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
  * tall-bench idea was that the ribbon extends past whatever height its tool
  * happens to have, so it always reads as the taller object. The bottom half of
  * that retired with the stretch: the strip ends in a POINT now, and a point
- * does not overhang anything, it just stops. Only RIBBON_HEAD reads this.
+ * does not overhang anything, it just stops. Only `ribbonHead` reads this.
  *
  * ↻ 12 → 0 (⚓ NATE 2026-08-17): THE TOP EDGE MEETS BAND A'S. The last thing
  * the overhang was still doing was the tall-bench idea's other half — reading
@@ -321,8 +321,8 @@ export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
  * the row of document controls it stands beside.
  *
  * ⚠ THE CARDS DO NOT MOVE, and the algebra is why this is safe to change on
- * its own: the card column sits at `ribbon top + RIBBON_CHROME + RIBBON_HEAD`,
- * RIBBON_HEAD adds this value back, and the dock subtracts it from the stack
+ * its own: the card column sits at `ribbon top + RIBBON_CHROME + ribbonHead()`,
+ * `ribbonHead` adds this value back, and the dock subtracts it from the stack
  * top — so it cancels exactly. Zero is not a special case of that; it is the
  * same sum with the term gone.
  *
@@ -368,22 +368,14 @@ export const RIBBON_FRAME_TOP_INSET = 28;
  * ↻ 2026-08-17: A FUNCTION OF THE PUBLISHED TRACK TOP, not a constant. Called
  * with `benchBand.trackTop`, which the planner's timeline publishes.
  */
-export function ribbonHead(trackTop: number, noBandA = false, bandBH = BAND_B_H): number {
-	// Under the switch the top bar carries the document and band A is gone
-	// (ToolStack `noBandA`), so the surface starts that much higher. ↻ 2e: and
-	// the toolbar follows the interface size, so its height is MEASURED
-	// (`benchBand.bandBH`, published by ToolStack) rather than BAND_B_H.
-	const stack = BAND_STACK_TO_SURFACE - (noBandA ? BAND_A_H + BAND_GAP : 0) - BAND_B_H + bandBH;
+export function ribbonHead(trackTop: number, bandBH = BAND_B_H): number {
+	// The top bar carries the document, so there is no band A and the surface
+	// starts that much higher. ↻ 2e: the toolbar follows the interface size,
+	// so its height is MEASURED (`benchBand.bandBH`, published by ToolStack)
+	// rather than BAND_B_H.
+	const stack = BAND_STACK_TO_SURFACE - (BAND_A_H + BAND_GAP) - BAND_B_H + bandBH;
 	return stack + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
 }
-
-/** The head at rest — no timeline mounted, so no published track top. */
-export const RIBBON_HEAD = ribbonHead(RIBBON_FRAME_TOP_INSET);
-
-/** Resting ribbon interior above/below the card column — retained as the
- *  content-height reference for a bench with four baseline slots. Since the
- *  tail round the box is content-sized, so nothing measures against a dock. */
-export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // THE ROW (responsive round, 2026-09-05) — below BP.toolMin the ribbon turns
@@ -405,7 +397,7 @@ export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME
 // `--stack-inset`, which already switched on `benched`.
 //
 // ⚠ IN THE ROW THE CARDS STOP LABELLING TRACK GROUPS. The column's whole
-// geometry (RIBBON_HEAD, the published slotHeights) exists to land card k on
+// geometry (`ribbonHead`, the published slotHeights) exists to land card k on
 // the planner's k-th track group; a row has no rows to land on, so every card
 // takes the same height and the head is nothing. That is the one genuine loss
 // of the narrow form, and it is bounded: the bench is still the team editor,
@@ -738,11 +730,8 @@ class BenchBandState {
 	 */
 	trackTop = $state<number>(RIBBON_FRAME_TOP_INSET);
 
-	/** Band A is absent (the new layout, build plan §13): the tools layout
-	 *  sets it with the switch, and the head reads it (`ribbonHead`). */
-	noBandA = $state(false);
-	/** Band B's rendered height — the toolbar's, which under the switch follows
-	 *  the interface size (phase 2e). Published by ToolStack. */
+	/** Band B's rendered height — the toolbar's, which follows the interface
+	 *  size (phase 2e). Published by ToolStack. */
 	bandBH = $state(BAND_B_H);
 
 	/**

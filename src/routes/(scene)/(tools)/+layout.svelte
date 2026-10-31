@@ -90,7 +90,6 @@
 	let TopBarC = $state<typeof TopBarT | null>(null);
 
 	onMount(() => {
-		benchBand.noBandA = true;
 		void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
 		void import('$lib/storage/session.svelte').then(async ({ storageSession }) => {
 			await storageSession.start();

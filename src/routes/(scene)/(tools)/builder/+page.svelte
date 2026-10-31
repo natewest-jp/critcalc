@@ -6,13 +6,7 @@
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { newestFirst } from '$lib/utils/release';
-	import {
-		constellations,
-		siteSettings,
-		ownership,
-		savedBoards,
-		type SavedNotation
-	} from '$lib/stores';
+	import { constellations, siteSettings, ownership, type SavedNotation } from '$lib/stores';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
 		FACETS,
@@ -32,7 +26,6 @@
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
 	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
 	import {
-		BOARD_PRESETS,
 		BOARD_TEAM_LIMIT,
 		boardFocus,
 		boards,
@@ -41,11 +34,9 @@
 		slotOfCharacter,
 		pinnedRotation,
 		teamCon,
-		type BoardPreset,
 		type BoardTeam
 	} from '$lib/boards.svelte';
-	import { boardBar, boardTabStrip, LINEUP_FULL } from '$lib/boardBar.svelte';
-	import type { TabStripModel } from '$lib/tabSet';
+	import { boardBar, LINEUP_FULL } from '$lib/boardBar.svelte';
 	import { library } from '$lib/library.svelte';
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
@@ -55,9 +46,7 @@
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import SeasonPicker from './lib/SeasonPicker.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
-	import ReportLink from '$lib/components/ReportLink.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type CardGlyph } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
@@ -308,8 +297,6 @@
 		id === ERRAND_ID ? (errandTeam ?? undefined) : board.teams.find((t) => t.id === id);
 
 	const boardHasAnyone = $derived(board.teams.some((t) => t.slots.some((s) => s !== null)));
-	/** Linked to a saved board that still exists (Save → Save changes). */
-	const boardLinked = $derived(!!board.savedId && $savedBoards.some((b) => b.id === board.savedId));
 
 	/** THE TEAM the roster's picks fill (Nate 2026-10-09, the game's own model):
 	 *  a ROW is selected, never a slot, and picks land in its earliest empty
@@ -546,14 +533,6 @@
 		})
 	);
 
-	function newBoard(preset: BoardPreset): void {
-		// ↻ §11.6: no season is stored — a new Stygian lineup FOLLOWS the season
-		// running now until its first edit pins it (the effect below).
-		leaveErrand();
-		boardBar.newBoard(preset);
-		chosenTeamId = null;
-	}
-
 	/** ⚓ An UNTOUCHED Stygian board follows the game's season; an edited one
 	 *  never changes under you (§11.6 item 4). The first character placed pins
 	 *  the season the reader was looking at. */
@@ -713,28 +692,6 @@
 		swapping = null;
 		chosenTeamId = null;
 	}
-
-	/** Band A's tabs, as the board strip — except that during the errand NO
-	 *  tab is active (the Lineup isn't showing any board), and clicking one
-	 *  ends the errand and shows that board (Nate 2026-10-13: a state of its
-	 *  own, not a temporary tab — it never takes one of the twelve, lands in
-	 *  Recently closed, or asks to make room). */
-	const tabStrip: TabStripModel = {
-		get tabs() {
-			return boardTabStrip.tabs;
-		},
-		get activeId() {
-			return errandOpen ? '' : boardTabStrip.activeId;
-		},
-		newLabel: boardTabStrip.newLabel,
-		switchTo: (id) => {
-			leaveErrand();
-			boardTabStrip.switchTo(id);
-		},
-		close: (id) => boardTabStrip.close(id),
-		rename: (id, label) => boardTabStrip.rename(id, label),
-		reorder: (from, to, side) => boardTabStrip.reorder(from, to, side)
-	};
 
 	function cancelErrand(): void {
 		errandOpen = false;
@@ -1359,79 +1316,10 @@
 	{/each}
 {/snippet}
 
-<!-- The + on the board tabs: a new board from a preset (§10.5). -->
-{#snippet presetItems(close: () => void)}
-	{#each BOARD_PRESETS as p (p.key)}
-		<button
-			class="band-menu-item"
-			role="menuitem"
-			onclick={() => {
-				close();
-				newBoard(p.key);
-			}}
-		>
-			<span class="tb-conmode-label">{p.label}</span>
-			<span class="tb-conmode-hint">{p.hint}</span>
-		</button>
-	{/each}
-{/snippet}
-
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
-<ToolStack fill noBandA>
-	{#snippet bandALeft()}
-		<DocumentTabs model={tabStrip} newItems={presetItems} />
-	{/snippet}
-
-	{#snippet bandARight()}
-		<div class="tb-doc-actions">
-			<button
-				class="btn"
-				disabled={!boardHasAnyone || errandOpen}
-				onclick={() => boardBar.save()}
-				title={boardBar.linked
-					? `Save changes to “${board.label}”`
-					: 'Save this lineup to your library'}
-			>
-				<Mark name="save" />
-				<span class="tb-band-label">{boardLinked ? 'Save changes' : 'Save'}</span>
-			</button>
-			<!-- ↻ §11.6 item 1: "Load" was the only door to the library, and nobody
-			     looks under Load to mark what they own — the button is named for the
-			     place it opens. -->
-			<button class="btn" onclick={() => library.show('builder')} title="Open the library">
-				<Mark name="library" />
-				<span class="tb-band-label">Library</span>
-			</button>
-			<button
-				class="btn"
-				disabled={!boardHasAnyone || errandOpen}
-				onclick={() => void boardBar.shareLink().then((o) => sayOutcome(o, null))}
-				title="Copy a link to this lineup"
-			>
-				<Mark name="share" />
-				<span class="tb-band-label">Share</span>
-			</button>
-			<!-- The Planner's ⋯, holding what is not a document action: the
-			     feedback form, carrying this lineup's share link. -->
-			<BandMenu compact mark="more" ariaLabel="More lineup actions">
-				{#snippet items(close)}
-					<ReportLink
-						class="band-menu-item"
-						role="menuitem"
-						prefill={{ category: 'broken', tool: 'builder', includeTech: true }}
-						shareUrl={() => boardBar.shareUrl()}
-						onclick={close}
-					>
-						<Mark name="report" />
-						Report a problem
-					</ReportLink>
-				{/snippet}
-			</BandMenu>
-		</div>
-	{/snippet}
-
+<ToolStack fill>
 	<!-- ── BAND B, CUT AT THE DOCK (§11.6) ───────────────────────────────────
 	     The Visualizers' shape: band B paints no ground and lays its cells on
 	     the columns below it, so each cell's plates sit over the pane they

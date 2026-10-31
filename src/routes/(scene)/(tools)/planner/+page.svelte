@@ -3,8 +3,6 @@
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { below, benchRowHidden, narrowForm } from '$lib/media.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
-	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
-	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
@@ -29,7 +27,7 @@
 	import type CompareControlT from '$lib/components/CompareControl.svelte';
 	import type SaveTeamButtonT from '$lib/components/SaveTeamButton.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
-	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
+	import { documentBar as db } from '$lib/documentBar.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
 	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
@@ -483,15 +481,7 @@
 	     band A's left zone now, and the view controls that rode the ruler's
 	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
 	     content margin below the strip's bottom end. -->
-	<ToolStack benched floor noBandA benchCollapsed={benchFolded} benchRail={phoneRail}>
-		{#snippet bandALeft()}
-			<DocumentTabs model={rotationTabStrip} />
-		{/snippet}
-
-		{#snippet bandARight()}
-			<DocumentActions />
-		{/snippet}
-
+	<ToolStack benched floor benchCollapsed={benchFolded} benchRail={phoneRail}>
 		{#snippet bandBLeft()}
 			<!-- ══ THE LEFT ZONE (⚓ NATE 2026-09-14) ═════════════════════════════
 			     The zoom cluster, ahead of the rail. Band B had gone right-heavy —

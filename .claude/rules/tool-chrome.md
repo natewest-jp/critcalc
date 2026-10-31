@@ -5,12 +5,10 @@ paths:
   - 'src/lib/components/ToolColumns.svelte'
   - 'src/lib/components/BandMenu.svelte'
   - 'src/lib/components/MenuState.svelte'
-  - 'src/lib/components/SiteChrome.svelte'
   - 'src/lib/components/NavPanel.svelte'
   - 'src/lib/toolBands.ts'
   - 'src/lib/toolColumns.ts'
   - 'src/lib/tools.ts'
-  - 'src/lib/nextLayout.ts'
   - 'src/routes/(scene)/+layout.svelte'
   - 'src/routes/(scene)/(tools)/+layout.svelte'
 ---
@@ -19,9 +17,9 @@ paths:
 
 Budget: about 8,000 characters. The design is `docs/design/profiles-and-surfaces-design.md`; the records are `docs/rounds/title-bar-round.md`, `docs/rounds/toolbar-refine-round.md`, `docs/rounds/edges-round.md` and `docs/rounds/builder-toolbar-round.md`.
 
-## The old layout
+## What is left of the old layout
 
-`SiteChrome.svelte`, `NavPanel.svelte` (the compass), band A (`DocumentTabs`, `DocumentActions`, `BAND_A_H`, `BAND_CTRL_H`) and the tab strip render only when the switch is off (`src/lib/nextLayout.ts`). Keep them working until they are deleted, and build nothing new on them. The switch is read in two places, `nextLayout.ts` and `stores.ts` `underSwitch()`, which must change together.
+The old layout's switch, band A and its chrome are deleted. A few modules it reached are still wired in but can no longer act (the `chromeModal` overlays, `NavPanel`, the old Library overlay, `app.css` rules under `:root:not([data-next])`); they are listed for removal in `docs/todo.md`. Build nothing new on them.
 
 ## The top bar (`TopBar.svelte`)
 
