@@ -59,8 +59,7 @@
 	const releaseVeil = claimVeilReady();
 
 	// Tab operations, save/load, share links and the reset confirm all moved out
-	// in the toolbar round: the tab strip is <DocumentTabs>, the actions are
-	// <DocumentActions>, and the flows behind them live in $lib/documentBar —
+	// in the toolbar round: the flows live in $lib/documentBar —
 	// because they act on the shared working DOCUMENT, which the Team Builder
 	// edits too. What is left here is the planner-only part: importing a `?r=`
 	// link.

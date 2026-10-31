@@ -1,7 +1,7 @@
 /**
  * src/lib/boardBar.svelte.ts
  *
- * The Team Builder's band A — the BOARD document's flows (lineups design §2.2,
+ * The Team Builder's document flows — the BOARD's (lineups design §2.2,
  * §9.3, §10), as `documentBar` is the rotation's. Boards copy the rotation
  * tabs completely (⚓ Nate §9.6a): the same limit, the same make-room confirm
  * (raised on `documentBar.room`, so ONE dialog serves both kinds of tab), the

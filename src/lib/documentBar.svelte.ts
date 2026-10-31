@@ -1,14 +1,14 @@
 /**
  * src/lib/documentBar.svelte.ts
  *
- * THE DOCUMENT BAR — the Planner's band A: the flows of its document, the
+ * THE DOCUMENT BAR — the Planner's document flows: the
  * active rotation tab (rotationTabs.svelte.ts), which carries the team, the
  * per-tab loadout/constellation overrides and the notation.
  *
  * The toolbar round (2026-08-07) hoisted save/load/share out of the planner
  * PAGE so the Team Builder, which edited the same tab then, could keep a team
  * it built. ↻ Since the lineups round (2026-10-08) the Builder's document is
- * the BOARD, with its own band A (boardBar.svelte.ts), which raises its
+ * the BOARD, with its own flows (boardBar.svelte.ts), which raises its
  * make-room confirm and its notices here so one dialog serves both.
  *
  * What deliberately stays out: anything about how a tool DISPLAYS the
@@ -51,7 +51,7 @@ import { resolveEntry } from './storage/teamLoadout';
 
 /**
  * The planner's timeline registers its two chart-bound exporters here on
- * mount, so the Share menu in band A can offer them alongside the link. Same
+ * mount, so the toolbar's Share menu can offer them alongside the link. Same
  * registration idiom as benchBand.registerHost, and for the same reason: the
  * exporter needs the live chart (a KQM round-trip of the notation; a PNG of
  * the rendered timeline), which only the timeline component has. Absent —

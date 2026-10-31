@@ -156,7 +156,7 @@
 >
 	{#if mark}<Mark name={mark} />{/if}
 	<!-- The label in its own box so a host can fold it away at narrow widths
-	     (DocumentActions does, below BP.compact) while the mark stays. -->
+	     below BP.compact) while the mark stays. -->
 	{#if face}{@render face()}{:else if label}<span class="band-menu-label"
 			><span class="band-menu-word">{label}</span>{#if count > 0}<span class="band-menu-sep"
 					>&nbsp;·&nbsp;</span

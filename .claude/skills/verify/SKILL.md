@@ -97,7 +97,8 @@ Perf probes that worked:
   fade itself is causing them (WebKit layerization/raster at transition start
   — fixed by `will-change` pre-promotion + freezing at opacity 0.001, not 0).
 - **Seed planner state before perf probes:** `page.addInitScript` writing
-  `critcalc:rotationTabs` — an empty planner misses whole block classes
+  `critcalc:rotationTabs` into a FRESH context, which the first load migrates
+  into IndexedDB once (the e2e `seed` fixture does this) — an empty planner misses whole block classes
   (probes on the 2026-07-10 fade work only reproduced the user-visible
   stutter with a saved 4-character rotation).
 - **CPU attribution (Chrome only):** CDP `Profiler.start/stop` around the nav
@@ -115,7 +116,7 @@ Perf probes that worked:
 - **Slotted names:** `document.querySelectorAll('.rp-char-name')` → the timeline label column's character names (the old `.rcp-name` character panels were pruned 2026-07-19).
 - **Autocomplete popup:** `.cm-tooltip-autocomplete li`.
 - **Network watch:** `page.on('request', ...)` — character payloads fetch as `/_app/immutable/chunks/*.js` on first reference (lazy loading, 2026-07-06).
-- **Persistence probe:** reload the page — tabs/notation restore from localStorage (`critcalc:rotationTabs`).
+- **Persistence probe:** reload the page — the notation comes back from IndexedDB (the storage session autosaves; `critcalc:rotationTabs` is only the migration's input).
 - Screenshot the timeline to confirm bars/summon rows/team-buffs render; panel names alone don't prove the Gantt built.
 
 ## Gotchas

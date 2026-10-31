@@ -205,7 +205,7 @@
 	   Measured against a star at the new dim: panel 4.74:1, well 5.22:1 —
 	   and /styleguide's census computes both from these tokens, so it is the
 	   number to trust if this comment ever drifts. */
-	--glass-panel: rgb(54 62 77 / 0.58); /* slate-700 — band A, menus, panels */
+	--glass-panel: rgb(54 62 77 / 0.58); /* slate-700 — toolbar plates, menus, panels */
 	/* THE DOCK (⚓ Nate 2026-10-14, on his phone: "up the opacity a little").
 	   The panel's rung, denser: the phone's notation dock sits over the
 	   CHART's bars rather than over sky, and at .58 the bars read through the
@@ -758,7 +758,7 @@
 	--chart-rule: color-mix(in srgb, var(--border) 38%, transparent);
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
-	   content pages and the tools all render the same bar (SiteChrome.svelte),
+	   content pages and the tools all render the same bar (TopBar.svelte),
 	   so this is its single definition — the tools layout no longer sets its
 	   own. 64px is the midpoint of the two bars it replaced (site 70 / tool
 	   56). ↻ 2026-10-14: the tools start right at it (--tool-pad-top 0) and
@@ -1199,9 +1199,8 @@
 	   The [data-zone='tool'] rung below is for PORTALLED nodes:
 	   $lib/actions/portal appends popovers to <body>, which drops them out of
 	   .tool-shell and would otherwise flip a tool popover to the world accent.
-	   Meta overlays (ChromeModals) are mounted OUTSIDE .tool-shell
-	   deliberately, so Help/About/Settings read the world's voice in BOTH
-	   zones. That is intended: they are meta surfaces, not tool surfaces. */
+	   Help, About and Settings are menu-state sections on slate
+	   (MenuState.svelte), so they take the dark context's accent. */
 	--accent: var(--gold-400);
 
 	/* ══ ELEMENT PALETTE — GENSHIN'S OWN, TRANSCRIBED ═══════════════════════════
@@ -2085,15 +2084,14 @@
 /* ══ THE BAND PLATES (⚓ NATE 2026-08-09, extended 08-10) ═══════════════════
    The bands' grounds came off (ToolStack) and moved onto the CONTROLS: each
    one is its own pane of glass standing on the scene rather than a fill inside
-   a rail. Band A is all of them; in band B it is the two controls a 3-up split
-   detaches from the rail. (A control that still sits ON a rail — the planner's
+   a rail: the two controls a 3-up split of band B detaches from the rail. (A control that still sits ON a rail — the planner's
    and the Visualizers' band B — keeps --btn-face: glass on glass would double
    the alpha and read as one of the two panes being dirty.)
 
    Why the paint lives at app.css rather than in ToolStack: these are the
-   pattern layer's own `.tab` / `.btn`, rendered by DocumentTabs and
-   DocumentActions, and a scoped rule in ToolStack could not reach them without
-   :global — which is the same thing as this, spelled worse.
+   pattern layer's own `.btn`, rendered by each tool's toolbar, and a scoped
+   rule in ToolStack could not reach them without :global — which is the same
+   thing as this, spelled worse.
 
    ⛔ 2026-08-11: the per-control BLUR is gone with the property (see
    --glass-blur). The note that stood here — "each one carries its own blur, and
@@ -2117,30 +2115,6 @@
    rest while its HOVER worked, because the hover selector happened to carry
    enough pseudo-classes to get over the line. A treatment that is right only on
    hover is the signature of exactly this. */
-/* ⚓ NATE 2026-08-13: THE SEGMENTED GROUP'S TRACK JOINS THE LIST — "it's a
-   slightly different glass from all the other glass in band A/B, it's grayer."
-   It was, and by a lot more than grey: `.segment` grounds itself in
-   --fill-rest, which on glass is --glass-parch — PARCHMENT FROST at .10, where
-   every plate beside it is slate at .58. Five times more world coming through,
-   and a warm cast on top of it.
-
-   ⚠ WHY THE TRACK IS NOT AN EXCEPTION TO "a control on glass keeps --btn-face".
-   That rule is about a control sitting ON a rail, where the two alphas stack.
-   Band A has no rail; the segment IS a plate standing on the scene, exactly like
-   the buttons either side of it, so it takes the plate's ground for the same
-   reason they do.
-
-   ⚠ AND IT IS THE TRACK ONLY. `.segment > .btn` still zeroes its children to
-   transparent further down this file — it ties with `.band-a .btn` on
-   specificity and wins on source order — so the group keeps reading as one
-   recessed object with a chosen pill in it, rather than as three plates that
-   happen to be touching. Don't "fix" that tie; it is what the affordance is
-   made of.
-   ⛔ SCOPED TO BAND A, deliberately — the only place a segment currently stands
-   on the scene. In an opaque context (the Team Builder's filter rail, the Detail
-   card, Settings) --fill-rest is the RIGHT track and this would flatten it, and
-   band B has no segment to speak for. If one ever lands there it joins this list
-   the way `.btn--glass` did: on demand, with a caller. */
 .band--3up > .band-zone .btn,
 .btn.btn--glass {
 	background: var(--surface); /* = --glass-panel, via .ctx-glass */
@@ -2186,31 +2160,6 @@
 		box-shadow: inset 0 0 0 1px var(--glass-ring);
 	}
 }
-/* ── SELECTED GLASS: THE HOVER DENSITY + A GOLD EDGE (⚓ NATE 2026-08-10) ───
-   ONE idiom for every selected pane, and the ladder reads without a legend:
-
-     rest      --surface       (.58)  translucent
-     hover     --surface-hover (.80)  + an INK ring   — "here"
-     selected  --surface-hover (.80)  + a GOLD ring   — "chosen"
-
-   DENSITY separates resting from engaged; HUE separates the two engaged states.
-   That is a cleaner split than the one shipped an hour earlier, which took
-   selected all the way to opaque: three densities meant the eye had to measure
-   how solid a pane was to know what it was looking at, when the ring was
-   already saying it in colour. ⚓ Nate: "the same .80 opacity as hover, just
-   with the gold ring instead."
-
-   ⚓ The document tab landed here too — "make band A's tab buttons follow the
-   new selected dense fill with gold border" — so the tabs and the band-B
-   controls stop being two treatments. What the tab gave up is the opaque slate
-   from the density round; what the accent WASH gave up is its job, since the
-   ring says it better without lifting the ground.
-
-   ⛔ 2026-08-11: the blur is gone here too, and the reason it once needed its
-   OWN copy is instructive enough to keep — the base glass rule excludes
-   `.tab.active`, so a selected pane would have been the one plate the world came
-   through sharp. Every exclusion like that is a rule you have to remember to
-   mirror; deleting the property deleted the obligation. */
 /* ── ON IS A DIM GOLD FILL, NOT A RING (toolbar refinement, ⚓ Nate
    2026-10-24, from the bars demo) ─────────────────────────────────────────
    A RING means "you are here" (hover, focus); a FILL means "it is on". The
@@ -2227,28 +2176,12 @@
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--text);
 }
-/* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
-   other controls must not sit on screen looking pressable. Scoped to band A,
-   which is where the Reset confirm arms itself mid-row; a standalone plate at
-   the end of a band-B row is not in that situation.
-   ↻ Its `backdrop-filter: none` went with the property it was cancelling. */
-/* :not(:disabled) only to out-specify the .band-a .btn hover above it — a
-   danger button that lit up would lose its ghost on hover. */
 
 /* ── ONE HEIGHT, IN BAND B ONLY (⚓ NATE 2026-08-10, then again) ────────────
    The row height is filled by the controls that stand ON a rail — band B's
    navigation and the two plates flanking it — so that row reads as a run of
-   objects at one height. --band-ctrl-h is set on .tool-stack from BAND_CTRL_H
-   and inherits down.
-
-   ↻ BAND A IS BACK TO ITS NATURAL HEIGHT. It was pulled up to 36px the same day
-   to match band B, and Nate undid it the next morning: the document tabs and
-   Save/Load/Share are ~27px of type and padding, and stretching them to fill a
-   row they merely sit in made them read as the heavier row of the two — which
-   is backwards, since band B carries the tool's navigation. They centre in
-   BAND_A_H again, exactly as they did before the match.
-   ⚠ So --band-ctrl-h is a BAND B number now, not a stack-wide one. BAND_A_H is
-   still 36 and deliberately so: it is the ROW, not the control.
+   objects at one height. --band-ctrl-h is set on .tool-stack (the interface
+   size's --ui-ctl-h) and inherits down.
 
    ↻ ⚓ NATE 2026-09-14: THE ICON-ONLY EXCEPTION IS WITHDRAWN. It was stated
    as "except for their slightly smaller + and ... buttons", because a square
@@ -2271,15 +2204,6 @@
 :root[data-next] .band-b .btn {
 	font-size: var(--ui-ctl-fs);
 }
-
-/* THE SELECTED DOCUMENT TAB moved UP into the shared selected-glass rule (see
-   "SELECTED GLASS" above) on 2026-08-10 — it is not a special case any more.
-   The history worth keeping: it was the beige --sel-surface plate (the 2026-08-01
-   Stygian pilot), which marked the selected document loudly enough but became
-   the one lit object in a row of glass and pulled the eye off the tool. Density
-   replaced brightness, and then the gold edge joined it when every selected pane
-   got one. The pilot itself did not die — it MOVED to the Team Builder's
-   navigation, which is what Genshin actually uses it for. */
 
 *,
 *::before,
@@ -3890,8 +3814,6 @@ img {
    ⚠ `pointer: coarse` is not a width — not in the breakpoint table. */
 @media (pointer: coarse) {
 	:where(
-		.chrome-btn,
-		.overlay-close,
 		.band button,
 		.band .toggle,
 		.tab-close,
@@ -3907,8 +3829,6 @@ img {
 		position: relative;
 	}
 	:where(
-		.chrome-btn,
-		.overlay-close,
 		.band button,
 		.band .toggle,
 		.tab-close,
@@ -3969,13 +3889,8 @@ img {
 		);
 	}
 
-	/* The site chrome: Navigate and Settings sit 6px apart. */
-	.chrome-btn::before {
-		--hit-x: 3px;
-	}
-	/* Band controls sit --band-item-gap apart. Band A's buttons are 7px over
-	   band B's (its tabs, 28px, only ~4.5) and ~16px under the chrome; band B
-	   has the bench row or the surface 7px or more below it. */
+	/* Band controls sit --band-item-gap apart; band B has the bench row or
+	   the surface 7px or more below it. */
 	.band button::before,
 	.band .toggle::before {
 		--hit-x: calc(var(--band-item-gap, 4px) / 2);

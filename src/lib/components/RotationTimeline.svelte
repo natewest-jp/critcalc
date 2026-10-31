@@ -1737,7 +1737,7 @@
 	// ── Chart-bound exports ────────────────────────────────────────────────
 	// Both exports need THIS component: the PNG renders a snapshot of the chart
 	// as drawn, and the KQM copy canonicalizes the notation the composer holds.
-	// The buttons, though, belong with the share link in band A — one family,
+	// The buttons, though, belong with the share link in the toolbar — one family,
 	// one menu (toolbar round). So the timeline REGISTERS them, exactly as it
 	// registers its bench-slot metrics, and the band offers them only while a
 	// planner is mounted to serve them.
@@ -4033,7 +4033,7 @@
 
 	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
 	     is gone from here. Both are EXPORTS, and exports are one family with the
-	     share link — they live in band A's Share menu now. -->
+	     share link — they live in the toolbar's Share menu now. -->
 	<!-- The dock's room in the page: the chart's end has to scroll clear of
 	     the collapsed strip. -->
 	{#if dockOn}

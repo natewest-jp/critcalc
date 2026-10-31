@@ -12,4 +12,4 @@
 
 The instructions for working in this repo are the root `CLAUDE.md` and `.claude/rules/`.
 
-Reading an older record: the tools' routes were renamed on 2026-10-14, so `/rotation-planner` means `/planner` and `/team-builder` means `/builder`. Records from before 2026-10-27 describe the layout before the profiles flip (tabs, band A, `SiteChrome`), which survives only as the switch's off state.
+Reading an older record: the tools' routes were renamed on 2026-10-14, so `/rotation-planner` means `/planner` and `/team-builder` means `/builder`. Records from before 2026-10-27 describe the layout before the profiles flip (tabs, band A, `SiteChrome`), which was retired on 2026-10-31.

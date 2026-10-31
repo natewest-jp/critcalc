@@ -33,7 +33,7 @@
 export const BP = {
 	/**
 	 * `compact` — 40rem / 640px. The narrow form of a surface that folds.
-	 * ChromeOverlay's padding step; the Team Builder's band-B fold (measured:
+	 * The Team Builder's band-B fold (measured:
 	 * with the bench horizontal its full band B needs 120 + 4 + 229 + 4 + 110
 	 * = 467px plus the tool's 32px of pads, so 531px is the content stop and
 	 * 40rem is the first rung above it).
