@@ -566,7 +566,9 @@ describe('a shared link leaves Theorycraft for its own tab (flip-readiness §3)'
 });
 
 describe('a store the session cannot start on (⚓ Nate 2026-10-31)', () => {
-	it('starts again on a store in memory, and says so', async () => {
+	/** A tab whose session meets a store that fails once: `failing` says
+	 *  which call on the real store throws (the first time it is met). */
+	async function failingTab(failing: (name: string, args: unknown[]) => boolean) {
 		vi.resetModules();
 		vi.doMock('$app/environment', () => ({
 			browser: true,
@@ -574,18 +576,19 @@ describe('a store the session cannot start on (⚓ Nate 2026-10-31)', () => {
 			building: false,
 			version: 't'
 		}));
-		// The real store opens, then the first read on it fails.
 		vi.doMock('./db', async (importOriginal) => {
 			const real = await importOriginal<typeof import('./db')>();
 			let failed = false;
-			return {
-				...real,
-				getMeta: (d: Parameters<typeof real.getMeta>[0]) => {
-					if (failed) return real.getMeta(d);
-					failed = true;
-					return Promise.reject(new Error('the store went away'));
-				}
-			};
+			const trap =
+				<A extends unknown[], R>(name: string, fn: (...a: A) => Promise<R>) =>
+				(...a: A): Promise<R> => {
+					if (!failed && failing(name, a)) {
+						failed = true;
+						return Promise.reject(new Error('the store went away'));
+					}
+					return fn(...a);
+				};
+			return { ...real, getMeta: trap('getMeta', real.getMeta), get: trap('get', real.get) };
 		});
 		const { storageSession: s } = await import('./session.svelte');
 		const { rotationTabs: rt } = await import('$lib/rotationTabs.svelte');
@@ -594,12 +597,53 @@ describe('a store the session cannot start on (⚓ Nate 2026-10-31)', () => {
 		const { notices } = await import('$lib/notices.svelte');
 		vi.spyOn(console, 'warn').mockImplementation(() => {});
 		await s.start();
+		vi.doUnmock('./db');
 		const store = await ensureStorage();
-		expect(store instanceof LocalDb && store.kind).toBe('memory');
+		return { s, rt, notices, inMemory: store instanceof LocalDb && store.kind === 'memory' };
+	}
+
+	it('starts again on a store in memory, and says so', async () => {
+		const { s, rt, notices, inMemory } = await failingTab((name) => name === 'getMeta');
+		expect(inMemory).toBe(true);
 		expect(s.active).toBe(true);
 		expect(s.profile?.id).toBe(THEORYCRAFT_ID);
 		expect(rt.restored).toBe(true);
 		expect(notices.banners.some((b) => b.key === 'memory-store')).toBe(true);
-		vi.doUnmock('./db');
+	});
+
+	/** The real profile's lineup will not read: the store opens, and the
+	 *  session's start on it fails partway. */
+	async function brokenLineup() {
+		const p1 = (await get(db, 'profiles', 'p1')) as ProfileRecord;
+		await put(db, 'profiles', { ...p1, current: { planner: 'd1', builder: 'L1' } });
+		return (name: string, args: unknown[]) => name === 'get' && args[2] === 'L1';
+	}
+
+	it('backs up, and deletes, the browser’s own store, not the one in memory', async () => {
+		const { s, inMemory } = await failingTab(await brokenLineup());
+		expect(inMemory).toBe(true);
+		const file = await s.backup(T);
+		expect(file?.store.documents.map((d) => d.id)).toEqual(expect.arrayContaining(['d1', 'd2']));
+		await s.wipe();
+		expect(await getAll(db, 'documents', 'p1')).toEqual([]);
+	});
+
+	it('gives up the waits the failed start began, so it takes no other tab’s lock', async () => {
+		// The start fails after the Planner has already found d1 held by tab A
+		// and begun waiting for it.
+		const failing = await brokenLineup();
+		const A = await tab();
+		expect(A.rt.activeTabId).toBe('d1');
+		const B = await failingTab(failing);
+		expect(B.inMemory).toBe(true);
+		expect(B.s.readOnly).toEqual([]);
+		// A lets d1 go. Without the fix B's wait took the lock and kept it, so a
+		// new tab on the real store found d1 held by no tab it could see.
+		await A.s.open('d2');
+		await wait(50);
+		const C = await tab();
+		await C.s.open('d1');
+		await wait(50);
+		expect(C.s.readOnly).not.toContain('d1');
 	});
 });
