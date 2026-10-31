@@ -218,13 +218,20 @@ class StorageSession {
 	 *  fails too do the tools stay on their defaults, so they never wait on a
 	 *  session that died. */
 	async start(): Promise<void> {
+		let opened: Db | null = null;
 		try {
-			if (await this.#start(await ensureStorage())) return;
+			opened = await ensureStorage();
+			if (await this.#start(opened)) return;
 		} catch (err) {
 			console.warn('[critcalc] the storage session failed to start', err);
+			// A session already running stays on its store: falling back would
+			// swap working documents for an empty store in memory.
+			if (this.active) return;
 		}
-		for (const lock of this.#locks.values()) lock.release();
-		this.#locks.clear();
+		this.#abandon();
+		// The browser's own store stays the target of the actions that mean
+		// "everything in this browser" (`#everything`).
+		if (opened && !(opened instanceof LocalDb && opened.kind === 'memory')) this.#home = opened;
 		try {
 			if (await this.#start(await openInMemory())) return;
 		} catch (err) {
@@ -234,6 +241,29 @@ class StorageSession {
 		rotationTabs.restoreFrom(null);
 		boards.restoreFrom(null);
 		settleDocuments(false);
+	}
+
+	/** The store the browser keeps, when this session fell back to one in
+	 *  memory. ⚓ Backup, Restore and Delete everything act on it: they are
+	 *  the way out of a store that will not start, and in memory they would
+	 *  export nothing and delete nothing. */
+	#home: Db | null = null;
+
+	/** The store the "everything in this browser" actions act on. */
+	async #everything(): Promise<Db | null> {
+		return this.#home ?? this.#db ?? (await ensureStorage());
+	}
+
+	/** Give up everything a failed start took: the locks, the waits for
+	 *  documents another tab holds (one would otherwise take its lock later
+	 *  and replay that tab's journal into the wrong store), the read-only
+	 *  marks. */
+	#abandon(): void {
+		for (const lock of this.#locks.values()) lock.release();
+		this.#locks.clear();
+		for (const ac of this.#waiters.values()) ac.abort();
+		this.#waiters.clear();
+		this.readOnly = [];
 	}
 
 	async #start(db: Db | null): Promise<boolean> {
@@ -1156,18 +1186,27 @@ class StorageSession {
 
 	/** Every profile's live records and the person's settings, as a v3 file. */
 	async backup(exportedAt: number): Promise<StoreBackup | null> {
-		const db = this.#db ?? (await ensureStorage());
+		const db = await this.#everything();
 		if (!db) return null;
 		if (this.active) await this.flush();
 		await this.#flushRoster();
-		return buildStoreBackup(await readAll(db), buildEnvelope(exportedAt).data, exportedAt);
+		let all;
+		try {
+			all = await readAll(db);
+		} catch (err) {
+			// A store that will not read gives no backup, never an empty one.
+			console.warn('[critcalc] the store would not read for a backup', err);
+			return null;
+		}
+		return buildStoreBackup(all, buildEnvelope(exportedAt).data, exportedAt);
 	}
 
 	/** Documents changed since a time — the Settings line under "Last backup". */
 	async changedSince(at: number): Promise<number> {
-		const db = this.#db ?? (await ensureStorage());
+		const db = await this.#everything();
 		if (!db) return 0;
-		const all = await readAll(db);
+		const all = await readAll(db).catch(() => null);
+		if (!all) return 0;
 		// ⚓ A real profile's work only: Theorycraft's is scratch (and where a
 		// first visit's samples live), so it never makes a backup look stale.
 		return all.documents.filter(
@@ -1182,7 +1221,7 @@ class StorageSession {
 	 * to reload; the caller reloads this one.
 	 */
 	async restore(parsed: Extract<StoreParse, { ok: true }>): Promise<void> {
-		const db = this.#db ?? (await ensureStorage());
+		const db = await this.#everything();
 		if (!db) throw new Error('storage unavailable');
 		// What is pending is written first, so a restore that fails has lost
 		// nothing; then saving stops.
@@ -1219,7 +1258,7 @@ class StorageSession {
 	 * the work. The caller reloads.
 	 */
 	async wipe(): Promise<void> {
-		const db = this.#db ?? (await ensureStorage());
+		const db = await this.#everything();
 		if (!db) throw new Error('storage unavailable');
 		this.#freeze();
 		await this.#profileQueue;

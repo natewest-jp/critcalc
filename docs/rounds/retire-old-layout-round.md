@@ -35,6 +35,17 @@
 - The comments that still described the switch were rewritten.
 - ⚠ A line-based CSS script split a comment that mentioned `.band-a` into a selector list; `app.css` was restored and the cut redone with a comment-aware parser. Any CSS rewrite by script parses comments first.
 
+## The review (same day, `fix/retirement-review`)
+
+A twelve-agent review of `561e09b7..943335d6`, six dimensions each checked by a skeptic: 21 findings held, 3 were refuted as older than the range. After hydration the text is identical to before on every route, with no hydration warnings, and no collapsed branch behaves differently. Fixed on Nate's go (items 1–4):
+
+1. The scene footer (the HoYoverse notice) shared the top bar's gate, so the server stopped rendering it. It has its own gate now, `!isToolPath && (!browser || TopBarC)`: the server renders it, and the browser waits for the top bar as before.
+2. After the memory fallback, Backup, Restore and Delete everything acted on the memory store, so the way out of a store that will not start did nothing. They act on the browser's own store (`#home`); a store that will not read gives no backup rather than an empty one.
+3. The failed start's waits for documents another tab held survived the fallback; one could later take that tab's lock and replay its journal into memory. `#abandon()` gives up locks, waits and read-only marks.
+4. A throw after the session is running no longer falls back (it would swap working documents for an empty store). No test: it needs a throw after `active`, which nothing reachable produces now.
+
+Tests: `session.test.ts` › "a store the session cannot start on" (the last two fail without the fix). The docs and comments the review found stale are waiting on Nate.
+
 ## Left (on the to-do list)
 
 - **The old multi-tab document model.** Most of `documentBar`, `boardBar` and `rotationTabs`' tab machinery is the old layout's: up to twelve tabs per tool, Recently closed, the saved banks (`savedNotations`, `savedBoards`), the make-room confirm. The profiles layout holds one document per tool; only a few paths are live (arrivals, sharing, Try in Planner, the guests' pairs). It needs a call-graph read rather than a substitution.

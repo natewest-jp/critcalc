@@ -13,7 +13,7 @@
 	import type LinksDialogT from '$lib/components/LinksDialog.svelte';
 	import type FlipNoticeDialogT from '$lib/components/FlipNoticeDialog.svelte';
 	import { flipNotice, raiseFlipNotice } from '$lib/flipNotice.svelte';
-	import { dev } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 	import { menu, rememberSurface } from '$lib/menuState.svelte';
 	import { resolve } from '$app/paths';
 	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
@@ -377,6 +377,12 @@
 			>
 				<TopBarC />
 			</div>
+		{/if}
+		<!-- ⚠ The footer has its own gate: the SERVER renders it, so the
+		     prerendered HTML carries the legal notice for crawlers and readers
+		     without JavaScript; in the browser it waits for the top bar, as the
+		     pair always has. -->
+		{#if !isToolPath(pathname) && (!browser || TopBarC)}
 			<div
 				class="scene-footer-gradient"
 				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
@@ -389,14 +395,6 @@
 			>
 				<SiteFooter />
 			</div>
-
-			<!-- Meta overlays (help / about / settings), a SIBLING of the chrome
-				 rather than a child of it (historically the chrome carried a
-				 parallax transform, which is a containing block for
-				 position:fixed descendants). Rendered only off the tool routes
-				 because the tools layout hosts its own copy (it is the one
-				 painting over this scene). onScene keeps the translucent
-				 over-the-starfield panel styling. -->
 		{/if}
 
 		<!-- Above the pages and the tools, below both top-bar hosts (z 10). -->
