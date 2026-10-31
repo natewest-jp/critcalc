@@ -2861,13 +2861,6 @@
 						<strong>No gradient inside the hero card plate</strong> — it bands. Grain is not the fix.
 						Hover raises the toplight, never the fill's opacity.
 					</li>
-					<li>
-						Prefer <code>background-image</code> to a per-item <code>&lt;img&gt;</code> on
-						roster-scale grids that mount during a transition: <code>CharacterCard</code> measured
-						222ms → 2ms. ↻ A grid that mounts at rest is fine with <code>&lt;img&gt;</code> (the Roster
-						and team details, checked in real Safari, ⚓ Nate 2026-10-27), so convert one only if it shows
-						a cost.
-					</li>
 				</ul>
 			</div>
 
