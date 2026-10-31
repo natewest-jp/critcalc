@@ -32,3 +32,8 @@ The perceived slowness is the **loading pattern**:
 
 - ✅ `devAssetCache` plugin in `vite.config.ts` — dev-only `max-age=3600` on `/assets/*`. **Gotcha: must `middlewares.stack.unshift`, not `use()` — SvelteKit's dev middleware serves static/ without calling next(); also must pin the header (override res.setHeader) or sirv's later no-cache wins.** Verified in real Chrome: 2nd load = 0 network requests, all from disk cache.
 - ✅ warmAvatars rIC now `{timeout: 400}` + BATCH 24 — without timeout, a busy page starved idle callbacks (41/117 after 6s). NB hidden tabs still throttle rIC — irrelevant in real use, but don't chase it in headless/backgrounded probes.
+
+**Round 4 (2026-10-31): Safari 27 fixed the `<img>` regression, so the cards draw `<img>` again.** The same measurement in real Safari 27.0.1 (122 cards, 5 runs, insert plus a forced layout, on the live landing): `<img>` 137–141ms, `background-image` 130–138ms. That's level, where 26.5.2 had 222ms against 2ms. Nate found the Builder and the Roster snappy on the branch. `CharacterCard`'s portrait and element icon are `<img>` again (`object-fit`, `alt`, `draggable="false"`), and the `background-image` rule left `.claude/rules/ui.md` and `/styleguide`.
+
+- ⏭ Open: both methods cost ~135ms in real Safari against 1–3ms in headless Chrome and WebKit. It's shared, so it didn't bear on the choice. It may be the forced layout of the whole landing page rather than the insert; a split measurement would tell.
+- Time-sliced mounting (`progressiveReveal.svelte.ts`) stays, as round 3 ruled.

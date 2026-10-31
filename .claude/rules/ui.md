@@ -80,7 +80,6 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - A component's custom-property default is a `var(--x, default)` fallback at each use site, never a declaration on its root: a property set on the element beats the caller's inherited value. And a custom property built from `var()` resolves where it is declared, so a `:root` token made of other tokens doesn't re-resolve per context.
 - `--r-round` is `999px`, never `50%`: a percentage radius is per axis and draws an ellipse on an oblong box.
 - The global `img { display: block; max-width: 100% }` squashes art meant to overhang its box; give such art `max-width: none`.
-- Roster-scale grids avoid a per-item `<img>` and use `background-image` (Safari pays about 2ms per dynamically created image).
 - ⚠️ A malformed comment in `app.css` silently deletes the rule after it, and no gate catches it. After editing comments there, strip them and look for a stray `*/`.
 - Avatars come from `getAvatar(id, preferNewfit, size, traveler)`, with the Traveler from the profile's `travelerTwin`. The availability manifest (`hasAvatar`) prevents server-rendered 404 images, which fail prerendering. Regenerate with `npm run generate-newfit`.
 - Notices (toasts, banners, confirms, save status) follow `docs/design/notices-design.md`. ⚠️ An Undo toast must check that its document and profile are still active.

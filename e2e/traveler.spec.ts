@@ -19,13 +19,13 @@ import { test, expect, openSection, openTool, openRoster } from './fixtures/crit
  */
 const TRAVELER_VARIANTS = 7;
 
-/** The traveler cards' background-image URLs — one per element variant. */
+/** The traveler cards' portrait URLs — one per element variant. */
 async function travelerPortraits(page: import('@playwright/test').Page) {
 	await openRoster(page);
 	await page.locator('.tb-search-field').fill('traveler');
 	const imgs = page.locator('.cg-grid .cc-img');
 	await imgs.first().waitFor();
-	return imgs.evaluateAll((els) => els.map((e) => (e as HTMLElement).style.backgroundImage));
+	return imgs.evaluateAll((els) => els.map((e) => (e as HTMLImageElement).src));
 }
 
 test('defaults to Aether across every traveler card', async ({ page }) => {

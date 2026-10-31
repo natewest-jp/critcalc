@@ -55,9 +55,7 @@ export function warmAvatars(): void {
 	const pump = () => {
 		if (controller.signal.aborted) return;
 		for (const src of queue.splice(0, BATCH)) {
-			// fetch(), not new Image(): warming only needs the HTTP cache filled,
-			// and Safari 26.x charges ~2ms of main-thread setup per img-with-src
-			// (the same engine regression the grids' background-image divs dodge).
+			// fetch(), not new Image(): warming only needs the HTTP cache filled.
 			fetch(src, { signal: controller.signal }).catch(() => {});
 		}
 		if (queue.length) idle(pump);
