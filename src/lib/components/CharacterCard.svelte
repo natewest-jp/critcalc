@@ -149,9 +149,7 @@
 	const chip = $derived(
 		ownedCon !== undefined && ownedCon > 0 && !entry.noConstellations ? ownedCon : null
 	);
-	// Known-missing art renders initials, gated by the build-time manifest. No
-	// <img> elements: Safari 26.x pays ~2ms per dynamically created img, and a
-	// background-image div dodges it (122 cards: 222ms → 2ms).
+	// Known-missing art renders initials, gated by the build-time manifest.
 	const fallback = $derived(!hasAvatar(entry.id));
 </script>
 
@@ -183,20 +181,24 @@
 			<span class="cc-notch ctx-light" aria-hidden="true"></span>
 			<span class="cc-art">
 				{#if !fallback}
-					<span
+					<img
 						class="cc-img"
-						style:background-image="url('{getAvatar(entry.id, preferNewfit, 'full', traveler)}')"
-					></span>
+						src={getAvatar(entry.id, preferNewfit, 'full', traveler)}
+						alt=""
+						decoding="async"
+						draggable="false"
+					/>
 				{:else}
 					<span class="cc-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
 				{/if}
 				{#if entry.element}
-					<span
+					<img
 						class="cc-el"
-						role="img"
-						aria-label={entry.element}
-						style:background-image="url('{elementIcon(entry.element)}')"
-					></span>
+						src={elementIcon(entry.element)}
+						alt={entry.element}
+						decoding="async"
+						draggable="false"
+					/>
 				{/if}
 			</span>
 			{#if chip !== null}
@@ -325,11 +327,11 @@
 		);
 	}
 	.cc-img {
+		display: block;
 		width: 100%;
 		height: 100%;
-		background-size: cover;
-		background-position: top center;
-		background-repeat: no-repeat;
+		object-fit: cover;
+		object-position: top center;
 	}
 	.cc-initials {
 		align-self: center;
@@ -344,9 +346,7 @@
 		left: 4px;
 		width: 22px;
 		height: 22px;
-		background-size: contain;
-		background-position: center;
-		background-repeat: no-repeat;
+		object-fit: contain;
 		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 	}
 	/* The lineup slot's constellation chip, on the WELL (⚓ Nate: it reads as a
