@@ -1230,16 +1230,4 @@
 		left: 0;
 		z-index: 3;
 	}
-
-	/* (A narrow block tightened .chrome-nav's gap and label size at 40rem, for
-	   a version of this bar where the switcher stayed in the centre and the
-	   wordmark left. RETIRED 2026-09-04: the compass round inverted that trade,
-	   so below 40rem SiteChrome collapses .chrome-center entirely and these
-	   links are rendered by NavPanel instead. The rule could no longer fire —
-	   ⛔ and a media query that cannot match is worse than none, because the
-	   next reader will believe the switcher still has a narrow form. */
-
-	/* (A reduced-motion block for .chrome-nav-link stood here. Retired with the
-	   motion round — it spends --t-quick, and the band is zeroed at :root under
-	   the same query. See app.css § MOTION.) */
 </style>

@@ -12,7 +12,7 @@
 	//
 	// SvelteKit resolves an unmatched URL against no route, so no route group
 	// applies: only the ROOT layout wraps this, which means no GL canvas, no
-	// SiteChrome, no footer. Rather than fight that, lean on it — an error page
+	// top bar, no footer. Rather than fight that, lean on it — an error page
 	// should not boot a WebGL scene to tell you a link was mistyped.
 	//
 	// ↻ ⚓ Nate 2026-09-26, the design pass (the COPY is the text round's —
@@ -20,9 +20,9 @@
 	// - The ground is VeilGround, the loading veil's night gradient + grain.
 	// - The identity is the CHROME'S OWN LOCKUP (mark + critcalc.app), centred,
 	//   as the home link — ⛔ not the favicon, which is an app-icon tile cropped
-	//   for 16px, and ⛔ not the full SiteChrome: its About / Help / Settings
-	//   open overlays hosted by the scene layout this page is outside of, and
-	//   its tool switcher would duplicate the tool links below.
+	//   for 16px, and ⛔ not the full top bar: its menus and sections are
+	//   hosted by the scene layout this page is outside of, and its tool
+	//   links would duplicate the ones below.
 	// - Everything sits INSIDE two of Nate's capped rules (the veil's own
 	//   device), headed by the lockup, which is the home link. No "Back to
 	//   critcalc" button, no "Looking for a tool?" label and no visible status
@@ -46,7 +46,7 @@
 		<div class="rule"><HRule /></div>
 
 		<!-- The chrome's lockup heads the block and IS the home link (same
-		     proportions as SiteChrome .chrome-brand — the mark 1.5714× the
+		     proportions as TopBar's .tb-logo — the mark 1.5714× the
 		     wordmark, lifted −0.18em). -->
 		<a class="brand" href={resolve('/')} aria-label="critcalc.app home">
 			<img src="/critcalc-logo-white.svg" alt="" />
@@ -187,7 +187,7 @@
 		font-size: var(--fs-lg);
 	}
 
-	/* ── The lockup: SiteChrome's .chrome-brand, heading the block ──────── */
+	/* ── The lockup: the top bar's, heading the block ───────────────────── */
 	/* At the chrome's own size, and it is the home link. Same knobs and the
 	   same chrome state contract (rest at .85, hover to opaque, --t-quick).
 	   ⚠ If the chrome's proportions move, move these. */

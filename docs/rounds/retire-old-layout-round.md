@@ -1,4 +1,4 @@
-# Retiring the old layout (step 5, passes A to E) — 2026-10-31 and 2026-11-01
+# Retiring the old layout (step 5, passes A to F) — 2026-10-31 and 2026-11-01
 
 ⚓ Nate, 2026-10-31: retire it now rather than wait out the quiet week after the flip. Rollback was already ruled out and the stand-in covers browsers without IndexedDB, so the off state helped no player and every round paid for both branches.
 
@@ -72,8 +72,15 @@ The root layout no longer sets `data-next` on `<html>`, and every rule scoped to
 - 23 rules were `:where(:root[data-next]) …` (app.css, CharacterFilterStrip, ToolStack, the Builder page, InstrumentPicker). `:where` adds no weight, so dropping the prefix is exact.
 - Three had weight and were folded by hand. `--chrome-h` is `var(--ui-bar-h)` in the base `:root` (it was 64px until mount). Band B's `font-size: var(--ui-ctl-fs)` joined `.band-b .tab, .band-b .btn`, going from (0,4,0) to (0,2,0); no rule that could then outrank it reaches a band B control (component rules setting `font-size` on a `.btn` were read: the error page, the menu places, the dock and the board). The scene chrome's z-index 10 is its base rule.
 - **Measured, not assumed.** A computed-style snapshot of every element on all 22 routes at 1600 and 390 wide, with `Math.random` seeded (unseeded, the Planner's sample made two runs of `main` differ in 1,219 places). After hydration: 0 differences against `main`. Without JavaScript: no structural differences; what changed is the hydrated look arriving early. The bar reserve is the bar's height (56px at the default size, so pages and tools sit 8px higher), toolbar type is at control size, lit plates and chosen segments fill gold, the planner's centre zone loses the rail it no longer has, and the Visualizers' picker is in sentence case.
-- For Nate's eye: a cold load in real Safari and Chrome (with JavaScript the frames before hydration are behind the loading veil, so nothing should change), and a page with JavaScript turned off.
+- For Nate's eye: a cold load in real Safari and Chrome (with JavaScript the frames before hydration are behind the loading veil, so nothing should change), and a page with JavaScript turned off. ⚓ Nate 2026-11-01: looks good.
+
+## Pass F, what band A left behind (2026-11-01, `refactor/old-layout-cleanup`)
+
+- **The toolbar maths.** `BAND_A_H`, `BAND_STACK_H` and `BAND_STACK_TO_SURFACE` existed only so `ribbonHead` could add band A's height and take it back out; it is `bandBH + BAND_STACK_GAP` now, the same number. `BAND_CTRL_H` had no reader. `toolBands.ts`'s header describes the one toolbar.
+- **The dead CSS.** `.tab`, `.tab--lg`, `.tab--closeable`, `.tab-close` (with their focus and hit-box entries) rendered only on `/lab` and `/styleguide`, whose specimens went with them; the Builder's `.tb-doc-actions` (band A's end zone) rendered nowhere. The centre zone's two rules, the second undoing the first's padding and ground, are one rule. A sweep of every component's scoped classes against its own markup found no other dead selector (the rest are built as `x--{variant}`).
+- **Comments that described band A, SiteChrome, NavPanel or document tabs as present**, across ToolStack, toolBands, toolColumns, benchBand, TopBar, the Planner, Builder and Visualizers pages, the tools layout (two tombstones for rules SiteChrome made unreachable), the error page and the style guide. Rulings that still govern a value keep their reason.
+- Measured as in pass E: 0 differences against `main` after hydration and without JavaScript.
 
 ## Gates
 
-Passes A–C: vitest (2692; −3 for the deleted seed tests), svelte-check 0/0, lint, build; e2e as in the merge commit. Pass D: vitest 2664 (−28 with the deleted code, +2), svelte-check 0/0, lint, build; e2e Chrome 71 passed at each commit.
+Passes A–C: vitest (2692; −3 for the deleted seed tests), svelte-check 0/0, lint, build; e2e as in the merge commit. Pass D: vitest 2664 (−28 with the deleted code, +2), svelte-check 0/0, lint, build; e2e Chrome 71 passed at each commit. Passes E and F: vitest 2664, svelte-check 0/0, lint, build; e2e Chrome 71 passed, both engines 142 before E's merge.

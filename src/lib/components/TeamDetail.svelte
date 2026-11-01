@@ -737,7 +737,7 @@
 	}
 	/* ── The top bar: the name with the work made from it · the team's verbs
 	   and the way out, as ONE right-hand group (Nate 2026-10-25). ⚠ Each zone
-	   names its own grid column (the SiteChrome lesson). ── */
+	   names its own grid column (see TopBar). ── */
 	.td-top {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;

@@ -221,12 +221,12 @@
      what finally stops the toolbar jumping 192px sideways across a tool→tool
      fade.
 
-     Band A is this tool's DOCUMENT row: the workspace is what you'd save and
-     reset, and the lineup size is a property of the workspace, not of any one
-     instrument. Band B is the VIEW row — and here it was already right: the
-     per-tile picker bar predates the round and is the shape the other two
-     tools were rebuilt toward. It subdivides by the tile grid instead of
-     splitting left/right, which is what bandBFull is for. -->
+     Band B is the VIEW row — and here it was already right: the per-tile
+     picker bar predates the round and is the shape the other two tools were
+     rebuilt toward. It subdivides by the tile grid instead of splitting
+     left/right, which is what bandBFull is for. The lineup size is a property
+     of the workspace, not of any one instrument, so it and Reset layout are
+     the Layout plate on the last tile (below). -->
 {#snippet layoutControls()}
 	<!-- Lineup size. Options wider than the window DISABLE rather than
 	     silently clamping — a control that accepts a press and does nothing
@@ -398,8 +398,8 @@
 		cursor: not-allowed;
 	}
 
-	/* The quieter of band A's two actions — resetting a layout is not what you
-	   came for. */
+	/* The quieter of the Layout plate's two controls — resetting a layout is
+	   not what you came for. */
 	.ws-reset {
 		color: color-mix(in srgb, var(--muted) 75%, transparent);
 	}
@@ -419,7 +419,7 @@
 
 	/* A cell is a RUN OF PLATES, not a rail with things in it: the picker takes
 	   the slack, the actions sit at the far end, and --band-item-gap between them
-	   is the same distance band A puts between two of its buttons. So the ladder
+	   is the gap between controls. So the ladder
 	   across the header reads 4px between plates in one instrument · 32px between
 	   instruments, with nothing painted underneath either. */
 	.ws-band-cell {
@@ -512,16 +512,13 @@
 	}
 
 	@media (min-width: 1024px) {
-		/* Fill the viewport below the bands. The band stack and its gap come out
-		   of the budget — BAND_STACK_TO_SURFACE, passed down by ToolStack.
-		   🐛 --band-gap WAS MISSING from this sum (2026-08-17). The bands stopped
-		   abutting on 2026-08-09 and this calc was never told, so the workspace
-		   was 4px taller than its slot for eight days — a permanent 4px of page
-		   scroll that the 213px overflow above was hiding. ⚠ Every term of
-		   BAND_STACK_TO_SURFACE has to be here, and the reason they are spelled
-		   out rather than passed as one number is that ToolStack publishes the
-		   parts, not the total; if a third band ever appears, this is the sum
-		   that has to learn about it. */
+		/* Fill the viewport below the toolbar. The toolbar and its gap come out
+		   of the budget, as ToolStack's --stack-to-surface counts them.
+		   ⚠ Every term has to be here: a missing gap once left the workspace
+		   4px taller than its slot, a permanent 4px of page scroll. They are
+		   spelled out rather than passed as one number because ToolStack
+		   publishes the parts; a row added to the stack is a term this sum has
+		   to learn. */
 		.ws {
 			height: calc(
 				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -

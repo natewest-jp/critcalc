@@ -1,11 +1,10 @@
 /**
  * THE TOOL COLUMNS (⚓ NATE 2026-08-08) — the aside-column round.
  *
- * The horizontal counterpart to $lib/toolBands: where the bands split a tool's
- * chrome into two stacked tiers, this splits its SURFACE into two side-by-side
- * boxes with bare scene between them.
+ * The horizontal counterpart to $lib/toolBands: where that stacks the toolbar
+ * over a tool's surface, this splits the SURFACE into two side-by-side boxes
+ * with bare scene between them.
  *
- *     ▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ← band A — spans BOTH columns
  *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ← band B — spans BOTH columns
  *     ▓▓▓▓▓▓▓▓
  *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░ ▒▒▒▒▒▒▒▒▒▒     ← main box · GAP · aside box

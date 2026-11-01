@@ -126,7 +126,7 @@
 		menu = menu === m ? null : m;
 	}
 
-	/** A report carries the document's share link, as band A's ⋯ did. */
+	/** A report carries the document's share link. */
 	function reportShareUrl(): Promise<string | null> {
 		if (docTool === 'planner') return documentBar.shareUrl();
 		if (docTool === 'builder') return boardBar.shareUrl();
@@ -482,7 +482,7 @@
 		padding: 0 var(--site-pad-x);
 		color: var(--chrome);
 		/* ⚠ The strip passes clicks through and its three children catch their
-		   own (SiteChrome's contract): both hosts mount it in a click-transparent
+		   own: both hosts mount it in a click-transparent
 		   wrapper, so without the `auto` below NOTHING in the bar is clickable. */
 		pointer-events: none;
 	}
@@ -508,7 +508,7 @@
 		color: inherit;
 		text-decoration: none;
 	}
-	/* THE CHROME STATE CONTRACT (SiteChrome, ⚓ Nate 2026-08-05): every
+	/* THE CHROME STATE CONTRACT (⚓ Nate 2026-08-05): every
 	   chrome mark rests at 0.85 and hovers (and focus-visibles) to opaque, on
 	   --t-quick. The logo and wordmark brighten together on the home link;
 	   BETA brightens on its own. ⚠ The alpha is in the PAINT, never element
@@ -543,7 +543,7 @@
 	   (`--ui-bar-h / 2 − 1.05rem`) while the wordmark is centred in its
 	   group, so it sat 7.2 / 11.2 / 15.1px below the word's top at Small /
 	   Medium / Large and moved with the interface size. 🎛️ ⚓ NATE 2026-09-16:
-	   −0.5em, his superscript lift from SiteChrome, carried over. */
+	   −0.5em, his superscript lift from the old bar, carried over. */
 	.tb-beta {
 		position: relative;
 		top: -0.5em;
@@ -762,7 +762,7 @@
 	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 → 2026-10-25: 1px up, the old bar's
 	   value. The hanging loop puts ink at the top the disc doesn't balance
 	   below, so a box-centred compass sits low. `position: relative` moves
-	   paint by a whole pixel (SiteChrome's reasoning). */
+	   paint by a whole pixel. */
 	.tb-glyph--menu svg {
 		position: relative;
 		top: -1px;
@@ -783,7 +783,7 @@
 	}
 	/* ⚠ Dimmed in the PAINT, never element opacity: the bar rides the cursor
 	   parallax at fractional x, and WebKit rasterises an opacity subtree at
-	   rounded coordinates (the ⓘ jitter, SiteChrome; /styleguide § Laws). */
+	   rounded coordinates (the ⓘ jitter; /styleguide § Laws). */
 	.tb-glyph:disabled {
 		cursor: default;
 	}
