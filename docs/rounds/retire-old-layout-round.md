@@ -23,7 +23,7 @@
 
 ## Noticed, not changed
 
-- A visitor whose last visit predates ownership tracking gets constellations but no ownership from the migration: the old loader seeded ownership from constellations, and `migrate.ts` reads `critcalc:ownership` raw. This was already true since the flip.
+- A visitor whose last visit predates ownership tracking gets constellations but no ownership from the migration: the old loader seeded ownership from constellations, and `migrate.ts` reads `critcalc:ownership` raw. ⚓ Nate 2026-11-01: a non-issue. Ownership tracking arrived on 2026-07-20, before the site was live, so no visitor and no backup file predates it.
 
 ## Pass C (same day, `refactor/old-layout-pass-c`)
 
