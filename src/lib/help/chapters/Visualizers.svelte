@@ -77,16 +77,17 @@
 <section>
 	<h2 id="gauge-explorer">Gauge explorer</h2>
 	<p>
-		How auras attach, decay and get consumed, over up to 15s and eight applications. The band above
-		the chart is the editor: Click on the empty band above the chart to add an application, drag a
-		pill to move it, and use the toolbar to change its element and size or remove it. A focused pill
-		moves with the arrow keys, 0.1s at a time or 1s with Shift, and Delete removes it. The menu
-		contains fourteen examples that each demonstrate an interesting aspect of Genshin’s elemental
-		gauge system.
+		How auras attach, decay and get consumed, over up to 15s and eight applications. Each element
+		button over the chart adds a 1U application 1s after the last one, and a click on the empty band
+		above the chart adds one at that moment instead. Drag a pill to move it, or tap it to change its
+		element, size or time, or to remove it. A focused pill moves with the arrow keys, 0.1s at a time
+		or 1s with Shift. Enter opens its editor, and Delete removes it. <strong>Clear</strong> empties the
+		chart, and the menu contains fourteen examples that each demonstrate an interesting aspect of Genshin’s
+		elemental gauge system.
 	</p>
 	<p>
 		The chart draws each aura’s gauge over time, and marks each reaction above the application that
-		triggered it. Point at the chart to read that moment in the Readout, or play it through. The
+		triggered it. Point at the chart to read that moment in the Readout, or click to pin it. The
 		aura log below lists every application and reaction with what each took off the gauge.
 	</p>
 	<p>

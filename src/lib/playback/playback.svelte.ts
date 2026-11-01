@@ -9,9 +9,8 @@
  * (`LOOKAHEAD_S`). A hidden tab freezes requestAnimationFrame and throttles
  * timers to once a second, but queued Web Audio plays on schedule — so the
  * player can alt-tab into the game and the beats keep time; when they come back
- * the cursor is where the sound is. That is why this is NOT the Gauge Explorer's
- * `createPlayhead` (rAF deltas, clamped): the two want opposite things from a
- * hidden tab, and a flag on one would be a lie about the other.
+ * the cursor is where the sound is. That is why it is not driven by rAF deltas,
+ * which a hidden tab freezes.
  *
  * ⚓ THE CURSOR FOLLOWS WHAT YOU HEAR (2026-10-19, ⚓ Nate). The audio clock
  * says when a tone is HANDED to the device; the device then holds it for its

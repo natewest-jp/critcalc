@@ -2,9 +2,8 @@
  * The transport's pure core (playback round, 2026-09-29; plan
  * docs/rounds/playback-round-plan.md §5–§6). Rune-free so vitest exercises it.
  *
- * ⚓ ONE CLOCK, READ ABSOLUTELY. The Gauge Explorer's playhead advances by rAF
- * DELTAS and clamps a long absence, so a hidden tab suspends it in place — the
- * right behaviour for reading a chart. This transport does the opposite on
+ * ⚓ ONE CLOCK, READ ABSOLUTELY. A playhead that advanced by rAF DELTAS would
+ * suspend in place in a hidden tab. This transport does the opposite on
  * purpose: its job is to keep time with a GAME the player is looking at instead
  * of the tab, so position is `elapsed since the anchor`, taken from a wall clock
  * (the AudioContext's when sound is on, `performance.now()` otherwise). rAF

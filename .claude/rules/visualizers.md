@@ -26,9 +26,9 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 
 ## The Gauge Explorer
 
-- The chart owns when, the panel owns what. Drag an application's pill along the marker band; click bare band to add one; ←/→ nudge 0.1s (Shift: 1s); Delete or Backspace removes.
-- The Applications panel is one fixed-height inspector for the selected application, not a block per row.
-- `appRows` is sorted by time with stable ids, so the log's numbering and the panel agree.
+- The toolbar adds and the pill edits: an element button appends a 1U application 1s after the latest, and only the editor a tap on a pill opens changes an existing one, so no control both adds and edits. Drag a pill to move it; a click on bare band adds the toolbar's last element there; ←/→ nudge 0.1s (Shift: 1s), Enter opens the editor, Delete or Backspace removes.
+- It has no playback. A press on the plot pins a moment for the Readout, which is the only way to read one on touch.
+- `appRows` is sorted by time with stable ids, so the log's numbering and the editor agree.
 - ⚠️ The axis freezes during a drag (`dragDomain`), or the domain grows out from under the pill.
 - It holds at most `MAX_GAUGE_APPS` (8) applications, so it can't take a real rotation, which makes about 230. That is settled.
 - Its markers share the planner's application-marker grammar (`.claude/rules/timeline.md`).

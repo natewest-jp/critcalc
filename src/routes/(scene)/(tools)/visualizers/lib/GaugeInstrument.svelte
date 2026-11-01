@@ -15,11 +15,7 @@
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import Emphasis from '$lib/components/Emphasis.svelte';
 	import EventLog, { type EventLogRow } from '$lib/components/EventLog.svelte';
-	import { createPlayhead } from './playhead.svelte';
-	import { PLAYHEAD_SPEEDS } from './playhead';
-
-	// Workspace visibility: benched tiles suspend playback's rAF entirely
-	let { active = true }: { active?: boolean } = $props();
+	import { tick } from 'svelte';
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
@@ -263,29 +259,26 @@
 	// little overlapping icons inside the scenario chips
 	const presetElements = (p: PresetDef): ElementId[] => [...new Set(p.apps.map(([, e]) => e))];
 
-	// ══ THE APPLICATION LIST (rebuilt 2026-08-17, ⚓ NATE) ═════════════════════
+	// ══ THE APPLICATION LIST ══════════════════════════════════════════════════
 	//
-	// ⚓ THE CHART OWNS **WHEN**, THE PANEL OWNS **WHAT**. An application's time is
-	// a position on the time axis, and it used to be set by a slider in a list
-	// hundreds of pixels below that axis — ⚓ Nate: "as you add more elemental
-	// applications you have to keep going downwards, but then to see the results
-	// you have to scroll upwards." Each row cost three stacked lines, so eight
-	// applications was ~800px of editor under a chart you had to keep looking at.
-	// Time is dragged on the marker band now; the panel is ONE inspector for the
-	// SELECTED application, so it no longer grows with the list at all.
+	// ⚓ THE TOOLBAR ADDS, THE PILL EDITS (2026-11-01, ⚓ Nate). The chart owns
+	// WHEN (drag a pill along the band); the toolbar's element buttons only ever
+	// ADD; and an existing application changes only in the small editor that a
+	// tap on its pill opens beside it. ↻ This replaced a toolbar that was the
+	// inspector of an always-selected pill AND the brush for the next one, so a
+	// reader who picked Hydro meaning "the next one is Hydro" re-coloured the
+	// pill they had just placed (a streamer's first session showed it). Two
+	// rulings went with it: a new application no longer copies the selected one,
+	// and nothing is selected unless its editor is open.
 	//
-	// 🐛 AND IT CLOSES A REAL DISAGREEMENT. Every row's slider ranged over the
-	// whole domain independently, so an application could be dragged past its
-	// neighbours — ⚠ the SIMULATION was never wrong (`simulateGauge` sorts its
-	// input), but it hands `apply` events an `appIndex` in TIME order while the
-	// editor listed rows in INSERTION order, so the event log's #1 could be the
-	// panel's third row. Sorting the list by time makes the chart, the panel and
-	// the log one story.
+	// 🐛 The list is kept SORTED BY TIME. `simulateGauge` hands `apply` events an
+	// `appIndex` in time order, so a list in insertion order let the log's #1 be
+	// some other row. Sorting makes the chart, the editor and the log one story.
 	type AppRow = Application & { id: number };
 	/** ⚠ IDENTITY, NOT POSITION. The list re-sorts under a drag, so every consumer
-	 *  — the selection, the in-flight drag, the keyed `{#each}` over the markers —
-	 *  has to name a row by something that survives the row moving. A bare index
-	 *  would hand the drag to whichever application it swapped past. */
+	 *  — the open editor, the in-flight drag, the keyed `{#each}` over the
+	 *  markers — has to name a row by something that survives the row moving. A
+	 *  bare index would hand the drag to whichever application it swapped past. */
 	let nextAppId = 0;
 	const makeRows = (apps: Application[]): AppRow[] =>
 		apps.map((a) => ({ ...a, id: nextAppId++ })).sort((a, b) => a.time - b.time);
@@ -293,23 +286,12 @@
 		makeRows(p.apps.map(([time, element, gauge]) => ({ time, element, gauge })));
 
 	let preset = $state('single');
-	// ⚠ Built once into a plain array first: `selectedId` needs the first row's id
-	// at init, and reading it back off the `$state` array is the "only captures
-	// the initial value" warning — which is exactly what is wanted here, but is
-	// better said than suppressed.
-	const initialRows = presetRows(PRESETS[0]);
-	let appRows = $state<AppRow[]>(initialRows);
+	let appRows = $state<AppRow[]>(presetRows(PRESETS[0]));
 	let scrubbing = $state(false);
-	/**
-	 * ⚓ SOMETHING IS ALWAYS SELECTED while there is anything to select. The
-	 * inspector is the only editor now, so an empty one would be a panel that
-	 * changes height and a reader with no obvious way in; selecting the first
-	 * application by default means the panel is populated from first paint and
-	 * the ring on the chart teaches what the panel is pointed at.
-	 * ⛔ It is not an INDEX — see AppRow's note.
-	 */
-	let selectedId = $state<number>(initialRows[0]?.id ?? -1);
-	const selected = $derived(appRows.find((r) => r.id === selectedId) ?? null);
+	/** The application whose editor is open, or null. It is also the only thing
+	 *  the gold ring marks. ⛔ Not an INDEX — see AppRow's note. */
+	let editId = $state<number | null>(null);
+	const editing = $derived(appRows.find((r) => r.id === editId) ?? null);
 
 	/** Keep the list in time order. ⚠ The comparator MUST match the one inside
 	 *  `simulateGauge`, and both must be stable, or `appIndex` stops addressing
@@ -320,46 +302,48 @@
 
 	function setRows(apps: Application[]) {
 		appRows = makeRows(apps);
-		selectedId = appRows[0]?.id ?? -1;
+		editId = null;
 	}
 
 	function loadPreset(p: PresetDef) {
 		preset = p.id;
 		appRows = presetRows(p);
-		selectedId = appRows[0]?.id ?? -1;
-		playhead.stop();
+		editId = null;
+		pinT = null;
 	}
 	const markCustom = () => {
 		preset = 'custom';
-		playhead.stop();
 	};
 
-	/**
-	 * ⚓ A NEW APPLICATION IS A COPY OF THE SELECTED ONE (2026-10-02, ⚓ Nate).
-	 * Both ways in — a click on bare band, the toolbar's ＋ — used to make Pyro
-	 * 1U every time, so building a run of Hydro hits was add-then-retype, per
-	 * hit. The selected application is the brush: its element and its size.
-	 * Pyro 1U only when there is nothing to copy.
-	 */
-	const brush = (): Pick<Application, 'element' | 'gauge'> => ({
-		element: selected?.element ?? 'pyro',
-		gauge: selected?.gauge ?? 1
-	});
+	/** 🎛️ What the toolbar adds (⚓ Nate, 2026-11-01): 1U, 1s after the latest
+	 *  application, or at 0s on an empty chart. ⛔ Not "remember the last size":
+	 *  1U is the size most hits are, and a size that silently carried over from
+	 *  an editor would be the hidden state this design removed. */
+	const NEW_GAUGE = 1;
+	const NEW_SPACING_S = 1;
 
-	/** The ＋ in the toolbar — the keyboard's way in: a copy, 1s after the selected. */
-	function addRow() {
+	/** The element a click on bare band places: the one the toolbar added last.
+	 *  The band's ghost wears it, which is the only place it shows. */
+	let bandElement = $state<ElementId>('pyro');
+
+	function insertRow(time: number, element: ElementId) {
 		if (appRows.length >= MAX_APPS) return;
-		const after = selected ?? appRows[appRows.length - 1];
-		const row: AppRow = {
-			id: nextAppId++,
-			time: snapTime((after?.time ?? -1) + 1),
-			...brush()
-		};
-		appRows.push(row);
+		appRows.push({ id: nextAppId++, time: snapTime(time), element, gauge: NEW_GAUGE });
 		resort();
-		// The new one is what you are about to edit — and its marker carries the
-		// selection ring, which is the only thing saying WHERE on the chart it went.
-		selectedId = row.id;
+		markCustom();
+	}
+
+	/** A toolbar element button: append one after the latest. */
+	function addElement(element: ElementId) {
+		bandElement = element;
+		const last = appRows[appRows.length - 1];
+		insertRow(last ? last.time + NEW_SPACING_S : 0, element);
+	}
+
+	function clearAll() {
+		appRows = [];
+		editId = null;
+		pinT = null;
 		markCustom();
 	}
 
@@ -404,7 +388,7 @@
 		setRows(apps);
 		preset =
 			typeof s.preset === 'string' && PRESETS.some((p) => p.id === s.preset) ? s.preset : 'custom';
-		playhead.stop();
+		pinT = null;
 	}
 
 	export function receiveHandoff(kind: string, payload: unknown) {
@@ -413,18 +397,18 @@
 		if (!apps) return;
 		setRows(apps);
 		preset = 'custom';
-		playhead.stop();
+		pinT = null;
 	}
 
-	/** Remove by identity, then hand the selection to the neighbour that took its
-	 *  place — so a run of deletes never has to be re-aimed, and the panel never
-	 *  empties while applications remain. */
-	function removeRow(id: number) {
+	/** Remove by identity. Returns the neighbour that took its place, so a
+	 *  keyboard delete can hand focus on rather than drop it to the page. */
+	function removeRow(id: number): number | null {
 		const i = appRows.findIndex((r) => r.id === id);
-		if (i < 0) return;
+		if (i < 0) return null;
 		appRows.splice(i, 1);
-		selectedId = (appRows[i] ?? appRows[i - 1])?.id ?? -1;
+		if (editId === id) editId = null;
 		markCustom();
+		return (appRows[i] ?? appRows[i - 1])?.id ?? null;
 	}
 
 	/** Clamp to the axis and snap to the 0.1s the whole instrument quantises to. */
@@ -446,7 +430,8 @@
 		setTime(row, row.time + seconds);
 	}
 
-	const presetNote = $derived(PRESETS.find((p) => p.id === preset)?.note ?? null);
+	const CUSTOM_NOTE =
+		'Your own sequence. Tap a pill to change it, or pick a scenario to load an example.';
 
 	const sim = $derived(simulateGauge(appRows));
 	const lastAppTime = $derived(appRows.reduce((m, a) => Math.max(m, a.time), 0));
@@ -470,7 +455,29 @@
 	const stripMods = $derived(MOD_ORDER.filter((mod) => sim.series.some((s) => s.key === mod)));
 	// everything in the svg that is not the plot
 	const chromeH = $derived(TOP + AXIS_H + stripMods.length * ROW_H + 6);
-	const plotH = $derived(Math.max(PLOT_MIN, graphH - chromeH));
+	/**
+	 * 🎛️ THE PLOT HOLDS STILL AS AURAS COME AND GO (2026-11-01, ⚓ Nate: the
+	 * chart changed height with every application). Each aura on the target
+	 * adds a strip row under the axis, and in a box with spare height those rows
+	 * came out of the PLOT, 18px a time. So the plot is sized as if this many
+	 * rows were always there, and an unused row is bare night at the bottom of
+	 * the box. 3 covers every scenario but Burning (4) and most sequences a
+	 * reader builds; past it, a row comes out of the plot again. Each reserved
+	 * row is 18px of plot given up for good, which is why it is not 4.
+	 * ⛔ The scenario NOTE's height is not reserved the same way (tried): the
+	 * longest note took ~90px from a two-up chart for good, and a note changes
+	 * only when a scenario replaces the whole chart, where nothing on it is
+	 * being followed across the resize.
+	 * ⚠ The box's FLOOR (`--graph-min`) keeps the real count, so a box with no
+	 * spare height (a phone) gains no empty rows.
+	 */
+	const STRIP_RESERVE_ROWS = 3;
+	const plotH = $derived(
+		Math.max(
+			PLOT_MIN,
+			graphH - (TOP + AXIS_H + Math.max(stripMods.length, STRIP_RESERVE_ROWS) * ROW_H + 6)
+		)
+	);
 	const plotY1 = $derived(TOP + plotH);
 	const stripY0 = $derived(plotY1 + AXIS_H);
 
@@ -492,23 +499,28 @@
 	let dragDomain = $state<number | null>(null);
 	const domain = $derived(dragDomain ?? liveDomain);
 
-	// ── Playback ─────────────────────────────────────────────────────────────
-	const playhead = createPlayhead(() => domain);
-	$effect(() => playhead.setActive(active));
-	// The single time cursor: the playhead (playing, scrubbed, or parked)
-	const displayT = $derived(
-		playhead.playing || scrubbing || playhead.t > 0 ? Math.min(playhead.t, domain) : null
-	);
+	// ── Reading a moment: hover and the pin ──────────────────────────────────
+	/**
+	 * ⚓ NO PLAYBACK (2026-11-01, ⚓ Nate). Play, its speeds and the time counter
+	 * retired: watching a gauge drain in real time shows nothing the curve does
+	 * not, and a viewer asked what the speed chips were. (The planner's playback
+	 * is a different thing, with a job: following a rotation in game, by ear.)
+	 *
+	 * What stayed is the PIN. A press or drag on the plot leaves a cursor at
+	 * that moment and the Readout reads it. A touch has no hover, so on a phone
+	 * the pin is the only way to read a moment; on a desktop it holds a reading
+	 * while the pointer travels to the Readout, where hover would have let go.
+	 */
+	let pinT = $state<number | null>(null);
+	const displayT = $derived(pinT === null ? null : Math.min(pinT, domain));
 	/**
 	 * ⚓ HOVER READS (2026-10-02, ⚓ Nate). Pointing at the plot reads that moment
-	 * into the Readout — reading used to need Play or a drag of the playhead.
-	 * The pointer wins while it is over the plot; leaving hands the Readout back
-	 * to the playhead (if one is parked) and then to the summary. ⚠ Not while
-	 * playing (the playhead is the thing being watched) and not during a drag.
-	 * A touch has no hover: a tap or drag there scrubs, as before.
+	 * into the Readout. The pointer wins while it is over the plot; leaving
+	 * hands the Readout back to the pin, then to the summary. ⚠ Not during a
+	 * pin drag, where the pin is the thing being moved.
 	 */
 	let hoverT = $state<number | null>(null);
-	const readT = $derived(playhead.playing || scrubbing ? displayT : (hoverT ?? displayT));
+	const readT = $derived(scrubbing ? displayT : (hoverT ?? displayT));
 	// ⚓ ONE CEILING, SHARED WITH THE PLANNER'S AURA LANE (2026-08-17). This was a
 	// byte-identical copy of `auraUMax`, with nothing keeping the two in step —
 	// and the duplication had already caused a real misreading, because the two
@@ -829,13 +841,11 @@
 		return rows;
 	});
 
-	// ══ POINTER: THE BAND EDITS, THE PLOT SCRUBS ══════════════════════════════
+	// ══ POINTER: THE BAND EDITS, THE PLOT PINS ════════════════════════════════
 	// One spatial rule, and it is the grammar's own: everything ABOVE the plot
-	// (y < TOP) belongs to the APPLICATIONS — drag a pill to move it, click bare
-	// band to add one there — and the plot and the strip below it belong to the
-	// PLAYHEAD. ⚠ The band used to scrub too; losing it costs 64px of a ~280px
-	// tall scrub target and buys direct manipulation of the thing the band is
-	// made of.
+	// (y < TOP) belongs to the APPLICATIONS — drag a pill to move it, tap it to
+	// edit it, click bare band to add one there — and the plot and the strip
+	// below it belong to the PIN.
 	let svgEl = $state<SVGSVGElement | null>(null);
 
 	/** Client x → seconds, in the FROZEN domain if a drag is in flight. */
@@ -847,13 +857,14 @@
 	}
 
 	function onScrubDown(e: PointerEvent) {
-		if (playhead.playing) return;
+		if (e.button !== 0) return;
+		editId = null;
 		scrubbing = true;
-		playhead.seek(timeAtX(e.clientX));
+		pinT = timeAtX(e.clientX);
 		(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
 	}
 	function onScrubMove(e: PointerEvent) {
-		if (scrubbing) playhead.seek(timeAtX(e.clientX));
+		if (scrubbing) pinT = timeAtX(e.clientX);
 		else if (e.pointerType === 'mouse' && dragId === null) hoverT = timeAtX(e.clientX);
 	}
 	const onPlotLeave = () => (hoverT = null);
@@ -863,67 +874,143 @@
 		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
 	}
 
-	// ── Dragging an application along the band ────────────────────────────────
+	// ── A pill: a press that moves drags it, a press that doesn't edits it ─────
+	/**
+	 * 🎛️ How far a press may wander and still count as a tap. ⚠ Wider for a
+	 * finger: a fingertip jitters a few pixels on contact, and below the slop a
+	 * jittery tap would nudge the application by a tenth instead of opening it.
+	 */
+	const TAP_SLOP_PX = { mouse: 4, touch: 10 };
+	let pressId: number | null = null;
+	let pressX = 0;
+	let pressSlop = TAP_SLOP_PX.mouse;
+	/** Set once a press has moved past the slop — the drag proper. */
 	let dragId = $state<number | null>(null);
 
 	function onMarkerDown(e: PointerEvent, m: Marker) {
-		// ⛔ The SVG's scrub handler must not also see this — a marker press would
-		// otherwise fling the playhead to wherever you grabbed.
+		// ⛔ The SVG's pin handler must not also see this — a marker press would
+		// otherwise fling the pin to wherever you grabbed.
 		e.stopPropagation();
-		if (!m.row) return;
-		selectedId = m.id;
-		if (e.button !== 0) return;
-		dragId = m.id;
+		if (!m.row || e.button !== 0) return;
+		pressId = m.id;
+		pressX = e.clientX;
+		pressSlop = e.pointerType === 'mouse' ? TAP_SLOP_PX.mouse : TAP_SLOP_PX.touch;
 		dragDomain = domain;
-		playhead.stop();
 		(e.currentTarget as Element).setPointerCapture(e.pointerId);
 	}
 	function onMarkerMove(e: PointerEvent) {
-		if (dragId === null) return;
+		if (pressId === null) return;
+		if (dragId === null) {
+			if (Math.abs(e.clientX - pressX) <= pressSlop) return;
+			// The editor would cover the plot the drag is changing.
+			dragId = pressId;
+			editId = null;
+		}
 		const row = appRows.find((r) => r.id === dragId);
 		if (row) setTime(row, timeAtX(e.clientX));
 	}
 	function onMarkerUp(e: PointerEvent) {
 		const el = e.currentTarget as Element;
 		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+		// ⚠ pointercancel shares this handler: a cancelled press is not a tap.
+		if (e.type === 'pointerup' && pressId !== null && dragId === null) {
+			editId = editId === pressId ? null : pressId;
+		}
+		pressId = null;
 		dragId = null;
 		dragDomain = null;
 	}
+
+	const markerEl = (id: number) =>
+		svgEl?.querySelector<SVGGElement>(`[data-app-id="${id}"]`) ?? null;
+	async function focusMarker(id: number | null) {
+		await tick();
+		if (id !== null) markerEl(id)?.focus();
+	}
+
 	/** ⌨ The drag's equal, not its consolation: ← → nudge by the same 0.1s the
-	 *  pointer snaps to, Shift by a second, and Delete removes. */
-	function onMarkerKey(e: KeyboardEvent, m: Marker) {
+	 *  pointer snaps to, Shift by a second, Delete removes, Enter or Space opens
+	 *  the editor. */
+	async function onMarkerKey(e: KeyboardEvent, m: Marker) {
 		if (!m.row) return;
 		const step = e.shiftKey ? 1 : 0.1;
 		if (e.key === 'ArrowLeft') nudge(m.row, -step);
 		else if (e.key === 'ArrowRight') nudge(m.row, step);
-		else if (e.key === 'Delete' || e.key === 'Backspace') removeRow(m.id);
-		else return;
+		else if (e.key === 'Delete' || e.key === 'Backspace') focusMarker(removeRow(m.id));
+		else if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			editId = m.id;
+			await tick();
+			editorEl?.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
+			return;
+		} else return;
 		e.preventDefault();
 		e.stopPropagation();
 	}
 
-	/** Bare band → a copy of the selected application at that instant (see
-	 *  `brush`). ⚠ Guarded on the cap so the click cannot silently do nothing. */
+	// ── The editor ─────────────────────────────────────────────────────────────
+	let editorEl = $state<HTMLDivElement | null>(null);
+	let editorW = $state(0);
+	/** 🎛️ The editor's gap below its pill. */
+	const EDITOR_GAP = 8;
+	/** Centred under its pill, kept inside the chart's box. */
+	const editorX = $derived.by(() => {
+		const m = markers.find((k) => k.id === editId);
+		if (!m) return 0;
+		return Math.max(4, Math.min(graphW - editorW - 4, m.x - editorW / 2));
+	});
+
+	function closeEditor(refocus: boolean) {
+		const id = editId;
+		editId = null;
+		if (refocus) focusMarker(id);
+	}
+	function onEditorKey(e: KeyboardEvent) {
+		if (e.key !== 'Escape') return;
+		e.preventDefault();
+		e.stopPropagation();
+		closeEditor(true);
+	}
+	function removeEditing() {
+		if (!editing) return;
+		const hadFocus = editorEl?.contains(document.activeElement) ?? false;
+		const next = removeRow(editing.id);
+		if (hadFocus) focusMarker(next);
+	}
+
+	/** A press anywhere outside the editor closes it. ⚠ Not presses on the chart
+	 *  itself: the chart's own handlers decide those (a tap on another pill
+	 *  opens that one, a tap on bare band only closes, a drag closes). */
+	$effect(() => {
+		if (editId === null) return;
+		const onDown = (e: PointerEvent) => {
+			const t = e.target as Node;
+			if (editorEl?.contains(t) || svgEl?.contains(t)) return;
+			editId = null;
+		};
+		window.addEventListener('pointerdown', onDown, true);
+		return () => window.removeEventListener('pointerdown', onDown, true);
+	});
+
+	// ── The band: click bare band to add one at that instant ──────────────────
 	/** Where a click on bare band would add, for the ghost marker that says so. */
 	let bandT = $state<number | null>(null);
 	function onBandMove(e: PointerEvent) {
 		e.stopPropagation();
 		hoverT = null;
-		bandT = appRows.length < MAX_APPS && dragId === null ? snapTime(timeAtX(e.clientX)) : null;
+		bandT = appRows.length < MAX_APPS && pressId === null ? snapTime(timeAtX(e.clientX)) : null;
 	}
 
 	function onBandDown(e: PointerEvent) {
 		e.stopPropagation();
-		if (appRows.length >= MAX_APPS || e.button !== 0) return;
-		const row: AppRow = {
-			id: nextAppId++,
-			time: snapTime(timeAtX(e.clientX)),
-			...brush()
-		};
-		appRows.push(row);
-		resort();
-		selectedId = row.id;
-		markCustom();
+		if (e.button !== 0) return;
+		// With an editor open, the first press on bare band only closes it — a
+		// dismissal should never also add something.
+		if (editId !== null) {
+			editId = null;
+			return;
+		}
+		insertRow(timeAtX(e.clientX), bandElement);
 	}
 	const hoverGauges = $derived(
 		readT === null
@@ -937,136 +1024,41 @@
 
 <div class="instrument">
 	<div class="gx-chart instrument-chart ctx-dark">
-		<!-- ══ THE TOOLBAR (2026-10-02, ⚓ Nate) ════════════════════════════════════
-		     The transport, then the SELECTED application's what — element, size,
-		     the fine time step, remove — and ＋. It replaced the Applications
-		     panel, which sat ~270px below the chart it edited, so every edit was a
-		     scroll down and a scroll back up to see what it did. ⚓ The chart still
-		     owns WHEN (drag a pill; click bare band to add a copy of the selected);
-		     this row owns WHAT, directly over it. Wraps onto a second line in a
-		     narrow tile rather than shrinking anything. -->
+		<!-- ══ THE TOOLBAR ADDS (2026-11-01, ⚓ Nate) ═══════════════════════════════
+		     One element button per element, each adding a 1U application 1s after
+		     the latest, and Clear. ⛔ Nothing here edits an existing application:
+		     that is the pill's own editor (see THE APPLICATION LIST). -->
 		<div class="panel gx-toolbar">
-			<div class="gx-tb-group">
-				<button
-					class="btn btn--primary btn--icon gx-play"
-					aria-pressed={playhead.playing}
-					aria-label={playhead.playing ? 'Pause' : 'Play'}
-					onclick={() => playhead.toggle()}
-				>
-					<!-- FILLED — see Mark's `filled` prop. An outlined triangle reads as
-					     "insert" before it reads as "play"; the solid form is the idiom
-					     every media transport on earth uses. -->
-					<Mark name={playhead.playing ? 'pause' : 'play'} size={12} filled />
-				</button>
-				{#each PLAYHEAD_SPEEDS as sp (sp)}
+			<div class="gx-adds" role="group" aria-label="Add an application">
+				<span class="gx-add-label" aria-hidden="true">
+					<Mark name="plus" />
+					<span class="gx-add-word">Add</span>
+				</span>
+				{#each ELEMENTS as e (e)}
 					<button
-						class="chip chip--control chip--sm"
-						class:active={playhead.speed === sp}
-						onclick={() => playhead.setSpeed(sp)}
-					>
-						{sp}×
-					</button>
-				{/each}
-				<span class="gx-transport-time">{Math.min(playhead.t, domain).toFixed(1)}s / {domain}s</span
-				>
-			</div>
-
-			<div class="gx-tb-group gx-tb-app">
-				{#if selected}
-					<div class="gx-elements" role="radiogroup" aria-label="Element">
-						{#each ELEMENTS as e (e)}
-							<button
-								class="chip chip--icon gx-el"
-								class:active={selected.element === e}
-								style:--chip-color="var(--el-{e}-main)"
-								role="radio"
-								aria-checked={selected.element === e}
-								aria-label={elName(e)}
-								title={elName(e)}
-								onclick={() => {
-									selected.element = e;
-									markCustom();
-								}}
-							>
-								<img src={elementIcon(e)} alt="" width="16" height="16" />
-							</button>
-						{/each}
-					</div>
-					<div
-						class="gx-gauges"
-						role="radiogroup"
-						aria-label="Gauge units"
-						title="Gauge units (U): the strength of an elemental application. Most hits are 1U."
-					>
-						{#each GAUGE_OPTIONS as g (g)}
-							<button
-								class="chip chip--control chip--sm"
-								class:active={selected.gauge === g}
-								role="radio"
-								aria-checked={selected.gauge === g}
-								onclick={() => {
-									selected.gauge = g;
-									markCustom();
-								}}
-							>
-								{g}U
-							</button>
-						{/each}
-					</div>
-				{/if}
-				<!-- The MARKER group: when, remove, and add — one group, so the
-				     toolbar has four (see .gx-toolbar). -->
-				<div class="gx-tb-marker">
-					{#if selected}
-						<!-- ⚠ THE STEPPER IS THE FINE TIME CONTROL, not a second one: a
-						     drag lands within a tenth, these land ON it — and a touch has
-						     no arrow keys. -->
-						<div class="gx-stepper">
-							<button
-								class="btn btn--sm btn--icon"
-								aria-label="Move earlier"
-								title="Move earlier — hold Shift for 1s"
-								disabled={selected.time <= 0}
-								onclick={(e) => nudge(selected, e.shiftKey ? -1 : -0.1)}
-							>
-								<Mark name="back" />
-							</button>
-							<span class="gx-time-value">{selected.time.toFixed(1)}s</span>
-							<button
-								class="btn btn--sm btn--icon"
-								aria-label="Move later"
-								title="Move later — hold Shift for 1s"
-								disabled={selected.time >= MAX_GAUGE_TIME}
-								onclick={(e) => nudge(selected, e.shiftKey ? 1 : 0.1)}
-							>
-								<Mark name="forward" />
-							</button>
-						</div>
-						<button
-							class="btn btn--sm btn--icon"
-							aria-label="Remove this application"
-							title="Remove this application"
-							onclick={() => removeRow(selected.id)}
-						>
-							<Mark name="delete" />
-						</button>
-					{/if}
-					<!-- ⚠ DISABLED AT THE CAP rather than hidden, with the limit in its
-				     tooltip — a control that vanishes reads as having moved. -->
-					<button
-						class="btn btn--sm gx-add"
-						aria-label="Add application"
+						class="chip chip--icon gx-el"
+						style:--chip-color="var(--el-{e}-main)"
+						aria-label="Add {elName(e)}"
 						title={appRows.length >= MAX_APPS
 							? `${MAX_APPS} applications is the most`
-							: 'Add a copy of the selected application'}
+							: `Add ${elName(e)}`}
 						disabled={appRows.length >= MAX_APPS}
-						onclick={addRow}
+						onclick={() => addElement(e)}
 					>
-						<Mark name="plus" />
-						<span class="gx-add-word">Add</span>
+						<img src={elementIcon(e)} alt="" width="16" height="16" />
 					</button>
-				</div>
+				{/each}
 			</div>
+			<button
+				class="btn btn--sm"
+				aria-label="Clear"
+				title="Remove every application"
+				disabled={appRows.length === 0}
+				onclick={clearAll}
+			>
+				<Mark name="clear" />
+				<span class="gx-add-word">Clear</span>
+			</button>
 		</div>
 		<div
 			class="gx-graph instrument-graph"
@@ -1085,7 +1077,7 @@
 				onpointerup={onScrubUp}
 				onpointercancel={onScrubUp}
 				onpointerleave={onPlotLeave}
-				style:cursor={playhead.playing ? 'default' : 'ew-resize'}
+				style:cursor="ew-resize"
 			>
 				<!-- Time grid -->
 				{#each ticks as s (s)}
@@ -1157,10 +1149,10 @@
 				/>
 
 				<!-- The GHOST: where a click on bare band would add, wearing the
-				     selected application's element and size — the band's whole
+				     element the toolbar added last, at 1U — the band's whole
 				     instruction, said by showing rather than by a paragraph. -->
-				{#if bandT !== null}
-					{@const b = brush()}
+				{#if bandT !== null && editId === null}
+					{@const b = { element: bandElement, gauge: NEW_GAUGE }}
 					<g class="gx-ghost" aria-hidden="true">
 						<text
 							class="gx-word"
@@ -1190,6 +1182,21 @@
 							{b.gauge}
 						</text>
 					</g>
+				{/if}
+
+				<!-- An empty chart says where to start. Painted only while the ghost is
+				     away, so the two never overlap. -->
+				{#if appRows.length === 0 && bandT === null}
+					<text
+						class="gx-word"
+						x={PADL + (graphW - PADL - PADR) / 2}
+						y={MARKER_PILL_CY + 3.5}
+						fill="var(--chart-ink)"
+						font-size="10"
+						text-anchor="middle"
+					>
+						Pick an element above to add an application
+					</text>
 				{/if}
 
 				<!-- ⚠ KEYED BY `m.id`, NOT BY POSITION OR BY `m.n`. Dragging one
@@ -1242,17 +1249,19 @@
 						class:gx-marker--held={dragId === m.id}
 						role="button"
 						tabindex="0"
+						data-app-id={m.id}
 						aria-label="{elName(m.element)} {m.gauge}U at {m.time.toFixed(1)} seconds"
+						aria-haspopup="dialog"
+						aria-expanded={m.id === editId}
 						onpointerdown={(e) => onMarkerDown(e, m)}
 						onpointermove={onMarkerMove}
 						onpointerup={onMarkerUp}
 						onpointercancel={onMarkerUp}
-						onfocus={() => (selectedId = m.id)}
 						onkeydown={(e) => onMarkerKey(e, m)}
 					>
-						{#if m.id === selectedId}
-							<!-- GOLD for selected — the site's rule, and the only thing
-							     that says which application the panel below is editing. -->
+						{#if m.id === editId}
+							<!-- GOLD for selected — the site's rule, and what ties the
+							     editor to the pill it is editing. -->
 							<circle
 								cx={m.x}
 								cy={MARKER_PILL_CY}
@@ -1273,7 +1282,7 @@
 						     ⚠ INSIDE THE GROUP since the pill became draggable, and inert to
 						     the pointer: as a sibling it painted on top of the hit target, so
 						     a press landing on the digit fell through to the SVG and flung
-						     the playhead instead of grabbing the marker.
+						     the pin instead of grabbing the marker.
 						     ↻ ⚓ NATE 2026-08-17: WHITE ON A HALO, matching the log's pip and
 						     the planner's bars — the disc took `bar` and the digit takes the
 						     chart's own two-shadow recipe. ⚠ `text-shadow` on SVG text, which
@@ -1367,7 +1376,7 @@
 				{/each}
 
 				<!-- The hover cursor: the moment the Readout is reading, fainter than the
-				     playhead because nothing is parked there. -->
+				     pin because nothing is parked there. -->
 				{#if hoverT !== null && readT === hoverT}
 					<line
 						x1={xOf(hoverT)}
@@ -1381,7 +1390,7 @@
 					/>
 				{/if}
 
-				<!-- Playhead: the one time cursor — drag it while paused -->
+				<!-- The pin: a press or drag on the plot leaves it -->
 				{#if displayT !== null}
 					<line
 						x1={xOf(displayT)}
@@ -1393,6 +1402,98 @@
 					/>
 				{/if}
 			</svg>
+
+			<!-- ══ THE PILL'S EDITOR (2026-11-01, ⚓ Nate) ══════════════════════════
+			     The one place an existing application changes: its element, its
+			     size, the fine time step (a drag lands within a tenth, these land on
+			     it, and a touch has no arrow keys), and Remove. Hangs under its
+			     pill, inside the chart's box. Esc, a press outside, or a second tap
+			     on the pill closes it. -->
+			{#if editing}
+				<div
+					class="gx-editor ctx-dark"
+					role="dialog"
+					aria-label="{elName(editing.element)} {editing.gauge}U at {editing.time.toFixed(
+						1
+					)} seconds"
+					tabindex="-1"
+					bind:this={editorEl}
+					bind:offsetWidth={editorW}
+					style:left="{editorX}px"
+					style:top="{MARKER_PILL_CY + MARKER_PILL_R + EDITOR_GAP}px"
+					onkeydown={onEditorKey}
+				>
+					<div class="gx-elements" role="radiogroup" aria-label="Element">
+						{#each ELEMENTS as e (e)}
+							<button
+								class="chip chip--icon gx-el"
+								class:active={editing.element === e}
+								style:--chip-color="var(--el-{e}-main)"
+								role="radio"
+								aria-checked={editing.element === e}
+								aria-label={elName(e)}
+								title={elName(e)}
+								onclick={() => {
+									editing.element = e;
+									markCustom();
+								}}
+							>
+								<img src={elementIcon(e)} alt="" width="16" height="16" />
+							</button>
+						{/each}
+					</div>
+					<div class="gx-editor-row">
+						<div
+							class="gx-gauges"
+							role="radiogroup"
+							aria-label="Gauge units"
+							title="Gauge units (U): the strength of an elemental application. Most hits are 1U."
+						>
+							{#each GAUGE_OPTIONS as g (g)}
+								<button
+									class="chip chip--control chip--sm"
+									class:active={editing.gauge === g}
+									role="radio"
+									aria-checked={editing.gauge === g}
+									onclick={() => {
+										editing.gauge = g;
+										markCustom();
+									}}
+								>
+									{g}U
+								</button>
+							{/each}
+						</div>
+					</div>
+					<div class="gx-editor-row">
+						<div class="gx-stepper">
+							<button
+								class="btn btn--sm btn--icon"
+								aria-label="Move earlier"
+								title="Move earlier — hold Shift for 1s"
+								disabled={editing.time <= 0}
+								onclick={(e) => nudge(editing, e.shiftKey ? -1 : -0.1)}
+							>
+								<Mark name="back" />
+							</button>
+							<span class="gx-time-value">{editing.time.toFixed(1)}s</span>
+							<button
+								class="btn btn--sm btn--icon"
+								aria-label="Move later"
+								title="Move later — hold Shift for 1s"
+								disabled={editing.time >= MAX_GAUGE_TIME}
+								onclick={(e) => nudge(editing, e.shiftKey ? 1 : 0.1)}
+							>
+								<Mark name="forward" />
+							</button>
+						</div>
+						<button class="btn btn--sm" onclick={removeEditing}>
+							<Mark name="delete" />
+							Remove
+						</button>
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -1415,20 +1516,32 @@
 			{/each}
 		</div>
 		<p class="note">
-			<Emphasis text={presetNote ?? 'Custom sequence — edit applications or pick a scenario.'} />
+			<Emphasis text={PRESETS.find((p) => p.id === preset)?.note ?? CUSTOM_NOTE} />
 		</p>
 	</div>
 
 	<!-- ⚓ ONE PAPER CARD PER INSTRUMENT (2026-08-13). This was two panels —
 	     Enemy Status and Event Log — and the Gauge is the case that showed why
 	     the rule has to be a rule: they say ONE thing at two speeds (what is
-	     true at the playhead, and how it got there), and as two sheets of the
+	     true at the pin, and how it got there), and as two sheets of the
 	     brightest material on the page they competed to be the answer. One
 	     card, the state on top, the transcript under a quiet label. -->
 	<div class="panel panel--paper gx-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		{#if hoverGauges}
-			<p class="note">at {fmtT(readT!)}</p>
+			<div class="gx-read-at">
+				<p class="note">at {fmtT(readT!)}</p>
+				{#if pinT !== null}
+					<button
+						class="btn btn--sm btn--icon"
+						aria-label="Unpin"
+						title="Unpin"
+						onclick={() => (pinT = null)}
+					>
+						<Mark name="close" />
+					</button>
+				{/if}
+			</div>
 			{#if hoverGauges.length === 0}
 				<p class="gx-meta">No aura — the next element applies fresh.</p>
 			{:else}
@@ -1442,7 +1555,7 @@
 			{/if}
 		{:else}
 			<p class="note">
-				Point at the chart or press play to read the enemy’s aura state at a moment in time.
+				Point at the chart to read the enemy’s aura state at a moment in time, or click to pin it.
 			</p>
 			{#each stripRows as row (row.mod)}
 				<p class="gx-meta gx-status-row">
@@ -1488,21 +1601,13 @@
 
 	/* ── The toolbar ─────────────────────────────────────────────────────────── */
 
-	/* ══ FOUR GROUPS, EVEN GAPS (2026-10-02, ⚓ Nate) ════════════════════════════
-	   Playback (+ time) · elements · gauge sizes · the marker's time, remove and
-	   add. ONE ROW when they fit, spaced evenly across it; otherwise playback
-	   keeps its own line and the three marker groups take the next, spaced
-	   evenly across THAT.
-	   ⚠ The switch is a measured width, not wherever flex-wrap breaks — a free
-	   wrap would put the elements up on the playback line. 🎛️ 55rem: the groups
-	   measured 248 + 195 + 153 + 202 = 798px, plus the plate's 22px of padding
-	   and three gaps of at least 1.25rem (2026-10-02). Re-measure if a group
-	   gains a control.
-	   ⚠ The TOOLBAR is the container, not the tile: in the wide layout it shares
-	   the tile's width with the Readout column, so the tile's width says
-	   nothing about whether four groups fit here. */
+	/* ══ ONE ROW: THE ADD BUTTONS, THEN CLEAR (2026-11-01) ══════════════════════
+	   ↻ Was four groups (playback, then the selected application's element,
+	   size, time and remove, then Add) on one or two rows by a measured 55rem
+	   container switch. Playback retired and the editing moved into the pill's
+	   editor, so what is left fits one row; it wraps only in the narrowest
+	   tiles. */
 	.gx-toolbar {
-		container: gx-toolbar / inline-size;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -1512,43 +1617,45 @@
 		margin-bottom: 0.5rem;
 	}
 
-	.gx-tb-group {
+	.gx-adds {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.4rem 0.6rem;
+		gap: 0.35rem;
 		min-width: 0;
 	}
 
-	/* Narrow: the marker groups are a line of their own, spaced evenly. */
-	.gx-tb-app {
-		flex: 1 1 100%;
-		justify-content: space-between;
-		row-gap: 0.6rem;
-		column-gap: 1.25rem;
+	/* ⚠ An ADD button, not a filter. `.chip--icon` is the site's on/off idiom
+	   (dim at .35 means "off"), and at that dim the seven read as disabled. They
+	   are actions: full strength at rest, the element's tint under the pointer,
+	   and dim only when the cap really does disable them. */
+	.gx-adds .gx-el {
+		opacity: 1;
+	}
+	.gx-adds .gx-el:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--chip-color) 22%, transparent);
+	}
+	.gx-adds .gx-el:disabled {
+		opacity: 0.35;
 	}
 
-	/* Wide: the wrapper dissolves and its three groups join playback as four
-	   items of one evenly spaced row. */
-	@container gx-toolbar (min-width: 55rem) {
-		.gx-tb-app {
-			display: contents;
-		}
+	/* The group's label: the plus says what every button after it does. */
+	.gx-add-label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		margin-right: 0.25rem;
+		font-size: var(--fs-md);
+		color: var(--muted);
 	}
 
-	/* Below `compact` the Add plate keeps its MARK and drops its WORD — the
-	   site's narrow rule for band controls ($lib/breakpoints.ts: 40rem). Its
-	   aria-label still names it. */
+	/* Below `compact` the label and Clear keep their MARK and drop their WORD —
+	   the site's narrow rule for band controls ($lib/breakpoints.ts: 40rem).
+	   Their aria-labels still name them. */
 	@media (max-width: 40rem) {
 		.gx-add-word {
 			display: none;
 		}
-	}
-
-	.gx-tb-marker {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
 	}
 
 	.gx-stepper {
@@ -1557,12 +1664,34 @@
 		gap: 0.3rem;
 	}
 
-	.gx-transport-time {
-		margin-left: 0.3rem;
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		color: var(--muted);
-		font-variant-numeric: tabular-nums;
+	/* ── The pill's editor ──────────────────────────────────────────────────── */
+
+	/* The containing block for the editor, which hangs under its pill. */
+	.gx-graph {
+		position: relative;
+	}
+
+	/* A popover's surface: the band menu's ground, edge and shadow (the
+	   `--surface` role is the overlay ground; app.css's token notes). ⛔ Not
+	   glass: the chart's curves would read through it. */
+	.gx-editor {
+		position: absolute;
+		z-index: 2;
+		display: grid;
+		gap: 0.5rem;
+		padding: 0.55rem 0.6rem;
+		border: 1px solid var(--border);
+		border-radius: var(--r-md);
+		background: var(--surface);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+		outline: none;
+	}
+
+	.gx-editor-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem;
 	}
 
 	/* Chart text: Mono for numbers (ticks, gauge tags), Condensed for word
@@ -1600,7 +1729,7 @@
 		cursor: copy;
 	}
 	/* At the cap the strip still swallows the press (so it cannot fall through
-	   and fling the playhead) but stops claiming it will do something. */
+	   and fling the pin) but stops claiming it will do something. */
 	.gx-add-zone--full {
 		cursor: default;
 	}
@@ -1666,9 +1795,7 @@
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
-	/* ⛔ The application INSPECTOR panel RETIRED (2026-10-02) — its element row,
-	   size row and time stepper live in the toolbar over the chart now (see the
-	   markup). `.gx-elements` / `.gx-gauges` / `.gx-time-value` came with them. */
+	/* The editor's element and size rows. */
 
 	.gx-elements {
 		display: flex;
@@ -1678,22 +1805,6 @@
 	.gx-gauges {
 		display: flex;
 		gap: 0.3rem;
-	}
-
-	/* .btn--primary .btn--icon, but round: a transport control, not a chip. */
-	/* ↻ 2026-08-13: the ▶/⏸ inside became <Mark>s, which retires the type
-	   metrics this button used to be balanced against — a glyph sat on the
-	   baseline with its own side bearings, so the round plate needed no help to
-	   look centred. An SVG is a box, so it does: `display: grid` + `place-items`
-	   centres the mark's BOX, and the mark's own viewBox is symmetric, so its
-	   ink lands centred too. (The retired-glyph hazard is the reverse case — an
-	   optical nudge left behind after a swap; there was none here to leave.) */
-	.gx-play {
-		display: grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		border-radius: var(--r-round);
 	}
 
 	/* 🎛️ Exactly as wide as the widest time it can show — "15.0s", measured IN
@@ -1741,6 +1852,14 @@
 		display: block;
 	}
 
+	/* "at 2.40s" and, while a pin is set, the button that lifts it. */
+	.gx-read-at {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
 	.gx-strong {
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
@@ -1781,6 +1900,33 @@
 		   it takes one ink and derives the rest, precisely so this is a single
 		   declaration rather than three overrides. */
 		--el-ink: var(--muted);
+	}
+
+	/* ══ SIDE BY SIDE: THE READOUT TAKES THE SCENARIOS' HEIGHT (2026-11-01) ═══
+	   Under the chart, beside the scenarios. The chart's height is what this
+	   row leaves, and the Readout was the row's tallest item: its aura log grew
+	   a line per application, and its top half changed size between reading a
+	   moment and the summary, so the chart shrank as you added applications
+	   and jumped as you pointed at it (⚓ Nate). ↻ So here the Readout gives the
+	   row no height of its own (`contain: size`), stretches to the height the
+	   scenarios set, and its log scrolls inside, as it does in the wide column.
+	   ⚠ This overrides app.css's "each keeps its natural height" for this
+	   instrument alone: a short log leaves paper below it. */
+	@container instrument (38rem <= width < 60rem) {
+		.gx-readout {
+			align-self: stretch;
+			contain: size;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.gx-log {
+			flex: 1 1 auto;
+			align-content: start;
+			min-height: 0;
+			max-height: none;
+			overflow-y: auto;
+		}
 	}
 
 	/* ══ WIDE: THE READOUT IS A COLUMN (2026-10-02, ⚓ Nate) ════════════════════

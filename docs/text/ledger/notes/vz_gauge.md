@@ -7,10 +7,10 @@ pass.
 
 ## The surface
 
-A chart of the enemy's elemental gauges over time, a toolbar over it (playback, then the
-selected application's element, size, time and remove, then Add), the example
-scenarios, and a Readout card with the aura log. ⚠️ The toolbar is **tight** — its four
-groups share one row from 55rem and wrap below.
+A chart of the enemy's elemental gauges over time, a toolbar over it (an Add button per
+element, then Clear), a small editor that a tap on a pill opens (element, size, time,
+Remove), the example scenarios, and a Readout card with the aura log. ⚠️ The editor is
+**tight** at phone widths: its rows hold their controls on one line each.
 
 - **Element and reaction names are 🎮 game terms** — the game's own word per locale.
   ⚓ **Frozen** and **Overloaded**, never the community "Freeze" / "Overload"
