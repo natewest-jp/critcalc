@@ -1,6 +1,6 @@
 # Gauge Explorer: the toolbar adds, the pill edits (2026-11-01)
 
-**Status:** branch `polish/gauge-edit-flow`. The first instrument from the streamer list
+**Status:** ✅ merged to `main` and pushed 2026-11-01 (branch `polish/gauge-edit-flow`), with two What's new entries: this one and the October 30 character work. The first instrument from the streamer list
 (`docs/todo.md` item 1); Artifact Odds and Wish Odds are next. Nate signed off on the flow,
 the copy and the height fix in the dev server. ⏭ Real Safari and an iPhone (tap versus drag,
 the editor at phone width, a tap to pin).
