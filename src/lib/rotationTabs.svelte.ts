@@ -1,14 +1,14 @@
 /**
  * src/lib/rotationTabs.svelte.ts
  *
- * The planner's tab model, hoisted to a shared module (bench-band round,
- * 2026-08-05) so it outlives the planner page. The Rotation Planner reads and
- * writes it as its tab state; the bench band displays the active tab's team
- * and writes Layer-2 overrides (tabCon/tabLoadout); the Team Builder writes it
- * only through the planner's ⇄ errand (swap mode, `setSlot`). ↻ Since the
- * lineups round (2026-10-08) the Builder's own document is the BOARD, not
- * this. The `?team=` cross-injection is retired — the planner's deep link
- * opens a tab via teamDocument() and documentBar.receive().
+ * The Planner's document, in a shared module (bench-band round, 2026-08-05)
+ * so it outlives the planner page. The storage session hands it the
+ * profile's current rotation as a single tab (`restoreFrom`) and saves it
+ * through `persistSink`. The Rotation Planner reads and writes it; the bench
+ * displays its team and writes Layer-2 overrides (tabCon/tabLoadout); the
+ * Team Builder writes it only through the planner's ⇄ errand (swap mode,
+ * `setSlot`). The planner's `?team=` deep link makes a document with
+ * teamDocument() and hands it to documentBar.receive().
  *
  * Layer discipline (unchanged in shape, re-routed at the bench):
  *   Layer 1 = the roster (`constellations`/`loadout` stores) — edited in the
@@ -58,7 +58,7 @@
  * SSR/hydration safety: the module initializes the same deterministic default
  * on server and client (one empty tab); the storage session restores the real
  * state (`restoreFrom`). Persistence is an $effect in the tools
- * layout too — it must run for EVERY tool, since the TB edits this state while
+ * layout — it must run for EVERY tool, since the TB edits this state while
  * the planner page is unmounted. Nothing here reads a store or the DOM, and
  * SSR only ever reads this state, so module-level state is safe under
  * prerendering.
@@ -68,7 +68,6 @@ import { browser } from '$app/environment';
 import {
 	deleteCharacterFromNotation,
 	emptySeating,
-	emptySeats,
 	makeSeating,
 	orderedCharacterIds,
 	placedSeating,
@@ -83,7 +82,6 @@ import {
 import { type LoadoutEntry } from '$lib/stores';
 import type { TeamRecord } from '$lib/storage/records';
 import { teamOfSlots } from '$lib/storage/teamLoadout';
-import { TAB_LIMIT } from '$lib/tabSet';
 import { pickSample } from '$lib/data/plannerSamples';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { notices } from '$lib/notices.svelte';
@@ -103,30 +101,10 @@ export type RotationTab = {
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/** Per-tab constellation overrides (Layer 2), parallel to tabLoadout. */
 	tabCon?: Record<string, number>;
-	savedId?: string;
-	/** Synced to the roster (§10.4) — see `SavedNotation.synced`. */
-	synced?: boolean;
-	/** When this tab was last on screen (ms). The room-making rule closes the
-	 *  one viewed longest ago (`tabSet.closeCandidate`); absent on tabs that
-	 *  predate the field, which count as the oldest. */
-	viewedAt?: number;
 	/** The first-visit sample this tab opened on (`plannerSamples.ts`), whose
-	 *  source the Notes panel credits while the notation is still its own. */
+	 *  source the Inspector credits while the notation is still its own. */
 	sample?: string;
 };
-
-/**
- * What a pre-single-truth tab carried alongside its notation. Never written
- * again; read once, at the boundary where old state arrives (localStorage
- * restore, a saved-bank entry, a settings backup), and folded into the notation
- * by {@link foldTeamIntoNotation}. ⚓ Nate 2026-08-13: no backwards
- * compatibility is REQUIRED — nobody but him has used the site — so this is a
- * courtesy to his own open tabs, not a contract.
- */
-export type LegacyTeam = { manualSlots?: string[] | null };
-
-/** ONE limit for every tabbed document — see `tabSet.ts`. */
-export { TAB_LIMIT };
 
 /** Re-exported so a consumer reading the team from this module does not have to
  *  know the notation layer defines it. ONE definition, in notationEdit. */
@@ -152,21 +130,13 @@ export function slotsFromNotation(notation: string): string[] {
 	return seen;
 }
 
-/** The character ids a tab actually needs loaded. 'blank' is not a character.
- *  Still tolerates a legacy `manualSlots` (the type allows one). */
-export function tabCharacterIds(
-	tab: Pick<RotationTab, 'notation' | 'slots'> & LegacyTeam
-): string[] {
+/** The character ids a tab actually needs loaded. 'blank' is not a character. */
+export function tabCharacterIds(tab: Pick<RotationTab, 'notation' | 'slots'>): string[] {
 	// A plain array scan, not a Set: the list is four-ish entries and nothing
 	// here is state — `svelte/prefer-svelte-reactivity` would rather see a
-	// SvelteSet, which would be wrong for a pure function (documentBar.copyName
-	// makes the same call for the same reason).
+	// SvelteSet, which would be wrong for a pure function.
 	const ids: string[] = [];
-	for (const id of [
-		...(tab.slots ?? []),
-		...slotsFromNotation(tab.notation ?? ''),
-		...(tab.manualSlots ?? [])
-	]) {
+	for (const id of [...(tab.slots ?? []), ...slotsFromNotation(tab.notation ?? '')]) {
 		if (id && id !== 'blank' && !ids.includes(id)) ids.push(id);
 	}
 	return ids;
@@ -176,12 +146,12 @@ function genId(): string {
 	return Math.random().toString(36).slice(2, 10);
 }
 
-/** A fresh tab id, for a document kept in Recently closed before it ever
- *  had a tab (a shared link cancelled at the make-room confirm). */
+/** A fresh tab id: a document the storage session makes, or an arrival
+ *  with no store to make it in. */
 export const newTabId = genId;
 
 function makeTab(label: string): RotationTab {
-	return { id: genId(), label, notation: '', viewedAt: Date.now() };
+	return { id: genId(), label, notation: '' };
 }
 
 /** A tab's seating: its stored slots and flags, or — saved before slots
@@ -196,18 +166,6 @@ export function seatingOf(tab: Pick<RotationTab, 'notation' | 'slots' | 'placed'
 /** A tab's seats alone. */
 export const seatsOf = (tab: Pick<RotationTab, 'notation' | 'slots' | 'placed'>): Seats =>
 	seatingOf(tab).seats;
-
-/** Strip a restored tab of its retired field. ↻ 2026-10-22: a legacy
- *  `manualSlots` becomes the tab's SLOTS, in its own order, rather than being
- *  folded into the notation as bare names — slots can hold a team the text
- *  does not name, which is what the field was for. See {@link LegacyTeam}. */
-function migrateTab(tab: RotationTab & LegacyTeam): RotationTab {
-	const { manualSlots, ...rest } = tab;
-	if (!manualSlots) return rest;
-	// A manual team was a deliberate one: its seats are PLACED, so they rest.
-	const seating = seatTeam(placedSeating(seatsFromLegacy(manualSlots)), rest.notation ?? '');
-	return { ...rest, slots: seating.seats, placed: seating.placed };
-}
 
 /** A link that brings its own document — a shared rotation, a team, the
  *  Team Builder's swap errand — lands in the empty first tab, so a first visit
@@ -334,7 +292,7 @@ class RotationTabsState {
 	}
 
 	/** Flips true once restoreFrom() has run. Gates the persist effect so the
-	 *  pre-restore default state can never clobber saved tabs. */
+	 *  pre-restore default state can never clobber the stored document. */
 	restored = $state(false);
 
 	/** THE working team in its consumers' long-standing shape: four ids, an
@@ -356,10 +314,7 @@ class RotationTabsState {
 	 */
 	restoreFrom(stored: { tabs: RotationTab[]; activeTabId: string } | null, sample = true): void {
 		if (stored) {
-			// Migrate at the boundary — every tab that still carries a retired
-			// `manualSlots` has its team folded into its notation here, once, and
-			// nothing downstream ever sees the field again.
-			const tabs = stored.tabs.map(migrateTab);
+			const tabs = stored.tabs;
 			const activeId = tabs.some((t) => t.id === stored.activeTabId)
 				? stored.activeTabId
 				: tabs[0].id;
@@ -411,186 +366,11 @@ class RotationTabsState {
 		this.persistSink?.(snapshot, this.activeTabId);
 	}
 
-	/** The tabs persist to the store (build plan §13), and ⚓ localStorage is
-	 *  left exactly as the migration found it (copy-only). A plain field, not `$state`: it is set once, before
-	 *  `restored`, and must not become a dependency of the persist effect. */
+	/** The tab persists to the store (build plan §13), and ⚓ localStorage is
+	 *  left exactly as the migration found it (copy-only). A plain field, not
+	 *  `$state`: it is set once, before `restored`, and must not become a
+	 *  dependency of the persist effect. */
 	persistSink: ((tabs: RotationTab[], activeTabId: string) => void) | null = null;
-
-	/** Flush live working state back into the tabs array before any switch. */
-	flush(): void {
-		this.tabs = this.tabs.map((t) =>
-			t.id === this.activeTabId
-				? {
-						...t,
-						notation: this.notation,
-						slots: [...this.seats],
-						placed: [...this.seating.placed],
-						tabLoadout: this.tabLoadout,
-						tabCon: this.tabCon
-					}
-				: t
-		);
-	}
-
-	/** The tab being LEFT was on screen until now — that, not when it was
-	 *  opened, is what "viewed longest ago" measures. */
-	#stampLeaving(): void {
-		const now = Date.now();
-		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, viewedAt: now } : t));
-	}
-
-	private loadWorkingState(tab: RotationTab): void {
-		this.setDocument(tab.notation, seatingOf(tab));
-		this.tabLoadout = tab.tabLoadout ?? {};
-		this.tabCon = tab.tabCon ?? {};
-	}
-
-	/** Switching tabs switches the working team — site-wide. */
-	switchTab(id: string): void {
-		if (id === this.activeTabId) return;
-		this.flush();
-		this.#stampLeaving();
-		this.activeTabId = id;
-		const tab = this.tabs.find((t) => t.id === id);
-		if (tab) this.loadWorkingState(tab);
-	}
-
-	addTab(): boolean {
-		if (this.tabs.length >= TAB_LIMIT) return false;
-		this.flush();
-		this.#stampLeaving();
-		const newTab = makeTab(`Tab ${this.tabs.length + 1}`);
-		this.tabs = [...this.tabs, newTab];
-		this.activeTabId = newTab.id;
-		this.loadWorkingState(newTab);
-		return true;
-	}
-
-	/** Open a new tab from a snapshot (a saved entry, a shared rotation) and
-	 *  make it active. Returns false at the tab limit — the caller makes room
-	 *  first (`documentBar.withRoom`). `id` may be passed to reopen a closed tab
-	 *  under its own id; it is ignored if an open tab already holds it. */
-	openTab(partial: Omit<RotationTab, 'id'> & { id?: string }): boolean {
-		if (this.tabs.length >= TAB_LIMIT) return false;
-		this.flush();
-		this.#stampLeaving();
-		const id = partial.id && !this.tabs.some((t) => t.id === partial.id) ? partial.id : genId();
-		const newTab: RotationTab = { ...partial, id, viewedAt: Date.now() };
-		this.tabs = [...this.tabs, newTab];
-		this.activeTabId = newTab.id;
-		this.loadWorkingState(newTab);
-		return true;
-	}
-
-	/**
-	 * Take an INCOMING document (a shared `?r=` link, a `?team=` hand-off) into a
-	 * tab, without ever destroying work. Returns false when there is nowhere for
-	 * it to go — the caller then parks it somewhere non-destructive.
-	 *
-	 * ⚓ ONE RULE, in one sentence: **an incoming document fills an EMPTY tab if
-	 * there is one, else opens a new tab, else does not land.**
-	 *
-	 * 🐛 WHAT THIS REPLACED, because it was silently destructive (2026-08-17).
-	 * Both callers used to reuse the ACTIVE tab when `tabs.length >= TAB_LIMIT` —
-	 * overwriting its notation, label, loadout and constellations, and telling
-	 * you afterwards with a 2.2s toast. At six tabs, clicking a friend's link
-	 * replaced whatever you were looking at, and if that tab was unsaved the work
-	 * was gone: there is no tab-level undo, and the composer's ⌘Z does not reach
-	 * a label or a loadout. ⚠️ It also picked the worst possible victim — the
-	 * ACTIVE tab is by definition the one you are working in.
-	 *
-	 * ⚠️ The empty-tab search is deliberately not limited to the at-limit case.
-	 * "Fill the empty tab I already have" is what a reader expects at any count,
-	 * and one rule that always holds is worth more than a cheaper rule with an
-	 * exception in it. An empty tab is a slot waiting for content.
-	 *
-	 * ⚠️ EMPTY means no notation AND no `savedId`. A tab linked to a bank entry
-	 * is not spare even when blank — the link is a thing the user made.
-	 */
-	adopt(partial: Omit<RotationTab, 'id'>): boolean {
-		// ⚠️ The active tab's typed text lives in `notation` until a flush, so its
-		// stored copy can read empty while it holds work. Test the LIVE text.
-		const live = (t: RotationTab) => (t.id === this.activeTabId ? this.notation : t.notation);
-		// ↻ 2026-10-22: a tab holding a SEATED team with no notation yet (Plan a
-		// rotation) is not spare either — the team is a thing the user chose.
-		const seated = (t: RotationTab) =>
-			(t.id === this.activeTabId ? this.seats : seatsOf(t)).some((id) => id !== null);
-		const spare = this.tabs.find((t) => !live(t).trim() && !t.savedId && !seated(t));
-		if (spare) {
-			this.flush();
-			this.#stampLeaving();
-			this.tabs = this.tabs.map((t) => (t.id === spare.id ? { ...partial, id: t.id } : t));
-			this.activeTabId = spare.id;
-			this.loadWorkingState({ ...partial, id: spare.id });
-			return true;
-		}
-		if (this.tabs.length >= TAB_LIMIT) return false;
-		this.openTab(partial);
-		return true;
-	}
-
-	/** Close a tab and hand it back (with its live state flushed in), so the
-	 *  caller can keep it in Recently closed. Undefined when it is the last
-	 *  tab, which never closes. */
-	closeTab(id: string): RotationTab | undefined {
-		if (this.tabs.length <= 1) return undefined;
-		this.flush();
-		const idx = this.tabs.findIndex((t) => t.id === id);
-		if (idx < 0) return undefined;
-		const closed = this.tabs[idx];
-		const wasActive = id === this.activeTabId;
-		this.tabs = this.tabs.filter((t) => t.id !== id);
-		if (wasActive) {
-			const next = this.tabs[Math.min(idx, this.tabs.length - 1)];
-			this.activeTabId = next.id;
-			this.loadWorkingState(next);
-		}
-		return closed;
-	}
-
-	/** Rename a tab. Returns the tab (pre-rename) so the caller can propagate
-	 *  to the save bank when it's linked. */
-	renameTab(id: string, label: string): RotationTab | undefined {
-		const trimmed = label.trim();
-		if (!trimmed) return undefined;
-		const tab = this.tabs.find((t) => t.id === id);
-		this.tabs = this.tabs.map((t) => (t.id === id ? { ...t, label: trimmed } : t));
-		return tab;
-	}
-
-	reorderTabs(fromId: string, toId: string, side: 'left' | 'right'): void {
-		if (fromId === toId) return;
-		this.flush();
-		const arr = [...this.tabs];
-		const fromIdx = arr.findIndex((t) => t.id === fromId);
-		const [dragged] = arr.splice(fromIdx, 1);
-		const toIdx = arr.findIndex((t) => t.id === toId);
-		arr.splice(side === 'left' ? toIdx : toIdx + 1, 0, dragged);
-		this.tabs = arr;
-	}
-
-	resetActiveTab(): void {
-		if (!this.canEdit()) return;
-		this.setDocument('', emptySeating());
-		this.tabLoadout = {};
-		this.tabCon = {};
-		this.tabs = this.tabs.map((t, i) =>
-			t.id === this.activeTabId
-				? {
-						...t,
-						label: `Tab ${i + 1}`,
-						notation: '',
-						slots: emptySeats(),
-						placed: undefined,
-						tabLoadout: {},
-						tabCon: {},
-						savedId: undefined,
-						synced: undefined,
-						sample: undefined
-					}
-				: t
-		);
-	}
 
 	/**
 	 * Empty the working rotation — its notation and team — and KEEP its name
@@ -605,13 +385,6 @@ class RotationTabsState {
 		if (!this.canEdit()) return;
 		this.setDocument('', emptySeating());
 		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, sample: undefined } : t));
-	}
-
-	resetAll(): void {
-		const first = makeTab('Tab 1');
-		this.tabs = [first];
-		this.activeTabId = first.id;
-		this.loadWorkingState(first);
 	}
 
 	// -------------------------------------------------------------------------
@@ -655,11 +428,11 @@ class RotationTabsState {
 	}
 
 	/** The text and seats as they are now, to put back (an Undo toast).
-	 *  ⚠️ The toast outlives the tab it was made for: `setDocument` writes the
-	 *  ACTIVE tab, so an Undo pressed after a switch would put this tab's text
-	 *  and seats over another one (and leave this one as it is). It does
-	 *  nothing unless the tab is still the one in front, and works again if
-	 *  you switch back while the toast is up. */
+	 *  ⚠️ The toast outlives the document it was made for: `setDocument` writes
+	 *  the one on screen, so an Undo pressed after the session switched
+	 *  documents (Library, a profile switch) would put this one's text and
+	 *  seats over another. It does nothing unless this document is still the
+	 *  one in front, and works again if it comes back while the toast is up. */
 	#snapshot(): () => void {
 		const tabId = this.activeTabId;
 		const text = this.notation;
@@ -700,22 +473,6 @@ class RotationTabsState {
 	setTabCon(charId: string, level: number): void {
 		if (!this.canEdit()) return;
 		this.tabCon = { ...this.tabCon, [charId]: level };
-		// ⚓ A level set by hand ends a sync — the badge reads itself (§10.4).
-		if (this.activeTab.synced) {
-			this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, synced: false } : t));
-		}
-	}
-
-	/** A saved rotation was synced in the library: every open tab linked to it
-	 *  drops its owned characters' levels (they follow the roster now). */
-	applySync(savedId: string, owned: readonly string[]): void {
-		const drop = (con: Record<string, number> = {}) =>
-			Object.fromEntries(Object.entries(con).filter(([id]) => !owned.includes(id)));
-		this.flush();
-		this.tabs = this.tabs.map((t) =>
-			t.savedId === savedId ? { ...t, tabCon: drop(t.tabCon), synced: true } : t
-		);
-		if (this.activeTab.savedId === savedId) this.tabCon = drop(this.tabCon);
 	}
 
 	setTabLoadout(charId: string, update: Partial<LoadoutEntry>): void {

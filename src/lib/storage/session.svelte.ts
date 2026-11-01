@@ -4,10 +4,10 @@
  * IndexedDB and AUTOSAVE to them (§4.1), instead of reading and writing their
  * localStorage tab keys.
  *
- * ⚓ Until the new bars land (2b), each tool still runs on its tab model and
- * each tab IS a document, keyed by the document's id (`convert.ts`). The tab
- * models are untouched apart from a persistence SINK: `persist()` hands this
- * module its snapshot rather than writing localStorage, so ⚓ localStorage is
+ * Each tool holds ONE document at a time in its working shape (`rotationTabs`
+ * as a single tab, `boards` as a single board), keyed by the document's id
+ * (`convert.ts`). Each hands this module its snapshot through a persistence
+ * SINK (`persist()`) rather than writing localStorage, so ⚓ localStorage is
  * left as the migration found it (copy-only, §13.1).
  *
  * ⚓ The two-tab rule (§13.3): a document is SAVED only by the tab holding its
@@ -861,7 +861,7 @@ class StorageSession {
 	#showBlank(tool: DocTool): void {
 		if (tool === 'planner') {
 			const label = rotationLabel([]);
-			const tab: RotationTab = { id: newTabId(), label, notation: '', viewedAt: Date.now() };
+			const tab: RotationTab = { id: newTabId(), label, notation: '' };
 			this.#derived.set(tab.id, label);
 			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
 			this.#plannerContext(null);
@@ -2267,7 +2267,7 @@ class StorageSession {
 		const switched = await this.toTheorycraft();
 		await this.flush();
 		this.#release('planner');
-		const tab: RotationTab = { ...doc, id: newTabId(), viewedAt: Date.now() };
+		const tab: RotationTab = { ...doc, id: newTabId() };
 		this.#fromLink.add(tab.id);
 		// ⚓ Unnamed (§4.2): "Shared rotation" is the planner's word for an
 		// arrival, not the sender's name for it, so the label stays derived.
@@ -2280,7 +2280,7 @@ class StorageSession {
 		const switched = await this.toTheorycraft();
 		await this.flush();
 		this.#release('builder');
-		const b: Board = { ...board, id: newTabId(), viewedAt: Date.now() };
+		const b: Board = { ...board, id: newTabId() };
 		this.#fromLink.add(b.id);
 		boards.restoreFrom({ boards: [b], activeBoardId: b.id });
 		return { switched, id: b.id, movable: this.moveTargets.length > 0 };

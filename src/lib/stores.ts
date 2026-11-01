@@ -22,20 +22,19 @@ import {
 } from '$lib/playback/tones';
 import { browser } from '$app/environment';
 import { narrowFormQuery } from '$lib/breakpoints';
-import { askOnFirstSave } from '$lib/utils/storageDurability';
 
 // ---------------------------------------------------------------------------
 // Guarded writes
 // ---------------------------------------------------------------------------
 //
-// Every read below sits in a try/catch; these are the writes' half. A browser
+// Every read below sits in a try/catch; this is the writes' half. A browser
 // that blocks site data throws from the localStorage accessor itself, and a
 // full quota throws from setItem — and a persist runs INSIDE store.update's
 // updater, so an unguarded throw aborts the update and leaves a dead control.
 // Without storage the site still works; it just forgets at the end of the
 // session (the Visualizers' workspace.ts made the same call first).
 
-export function safeSetItem(key: string, value: string): void {
+function safeSetItem(key: string, value: string): void {
 	try {
 		localStorage.setItem(key, value);
 	} catch {
@@ -43,214 +42,28 @@ export function safeSetItem(key: string, value: string): void {
 	}
 }
 
-export function safeRemoveItem(key: string): void {
-	try {
-		localStorage.removeItem(key);
-	} catch {
-		/* storage blocked — nothing was persisted to remove */
-	}
-}
-
 // ---------------------------------------------------------------------------
-// Saved notations (save bank)
+// A saved rotation, in the old bank's shape
 // ---------------------------------------------------------------------------
 //
-// A persistent bank of named rotations the user has explicitly saved.
-// Shared across tools — the Library lists it, and the Builder pins rotations from it.
-
-const SAVED_NOTATIONS_KEY = 'critcalc:savedNotations';
+// The Builder's pins and a team's rotation list still speak this shape: the
+// storage session hands them the profile's rotations through
+// `storage/convert.ts` `rotationAsSaved`.
 
 export type SavedNotation = {
 	id: string;
 	name: string;
 	notation: string;
-	/** ⛔ RETIRED (single truth, 2026-08-13) — never written again. Entries saved
-	 *  before the round still carry it, and documentBar.load folds it into the
-	 *  notation on the way in (rotationTabs.LegacyTeam). */
-	manualSlots?: string[] | null;
-	/** ⚓ The party's slots (design §8.1; `null` = empty). Absent on an entry
-	 *  saved before 2026-10-22, whose team is derived (`seatsOfSaved`). */
+	/** ⚓ The party's slots (design §8.1; `null` = empty). */
 	slots?: (string | null)[];
 	/** Per slot: placed on purpose (rests) rather than typed (empties). */
 	placed?: boolean[];
 	tabLoadout?: Record<string, LoadoutEntry>;
-	/**
-	 * Per-tab constellation overrides (Layer 2), snapshot alongside the notation.
-	 * Densified on save (resolved effective level for every slotted character) so
-	 * a saved rotation stays faithful even if the roster's constellations change
-	 * later — see the planner page's handleSave.
-	 */
+	/** The rotation's own constellation levels (Layer 2). */
 	tabCon?: Record<string, number>;
-	savedAt: number; // Unix timestamp (ms)
-	/**
-	 * ⚓ "Synced to my roster" (lineups design §10.4): the characters you OWN
-	 * are left out of `tabCon`, so they follow the roster live; a character you
-	 * do not own keeps its stored level. Saving a synced document keeps it so.
-	 * Setting an owned character's level by hand ends it — the badge reads
-	 * itself.
-	 */
-	synced?: boolean;
-	/** Last loaded from the bank (ms). The bank sorts by the newer of this and
-	 *  `savedAt` (⚓ Nate 2026-10-08) — see {@link lastTouched}. */
-	openedAt?: number;
-};
-
-/** When an entry was last saved OR opened — the bank's sort key. */
-export function lastTouched(e: Pick<SavedNotation, 'savedAt' | 'openedAt'>): number {
-	return Math.max(e.savedAt, e.openedAt ?? 0);
-}
-
-function loadSavedNotations(): SavedNotation[] {
-	if (!browser) return [];
-	try {
-		const raw = localStorage.getItem(SAVED_NOTATIONS_KEY);
-		if (!raw) return [];
-		const parsed = JSON.parse(raw);
-		return Array.isArray(parsed) ? parsed : [];
-	} catch {
-		return [];
-	}
-}
-
-function createSavedNotationsStore() {
-	const store = writable<SavedNotation[]>(loadSavedNotations());
-
-	function persist(items: SavedNotation[]): SavedNotation[] {
-		if (browser) safeSetItem(SAVED_NOTATIONS_KEY, JSON.stringify(items));
-		return items;
-	}
-
-	return {
-		subscribe: store.subscribe,
-
-		/** Create a new entry. Returns the generated id. */
-		save(entry: Omit<SavedNotation, 'id' | 'savedAt'>): string {
-			const id = Math.random().toString(36).slice(2, 10);
-			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
-			askOnFirstSave();
-			return id;
-		},
-
-		/** Update an existing entry's content and/or name in-place. */
-		update(
-			id: string,
-			fields: Partial<
-				Pick<
-					SavedNotation,
-					'name' | 'notation' | 'slots' | 'placed' | 'tabLoadout' | 'tabCon' | 'synced'
-				>
-			>
-		) {
-			store.update((items) =>
-				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
-			);
-		},
-
-		/** Loaded from the bank — moves it to the top of the list. */
-		markOpened(id: string) {
-			store.update((items) =>
-				persist(items.map((e) => (e.id === id ? { ...e, openedAt: Date.now() } : e)))
-			);
-		},
-
-		/** Rename only — does not bump savedAt so sort order is stable. */
-		rename(id: string, name: string) {
-			store.update((items) => persist(items.map((e) => (e.id === id ? { ...e, name } : e))));
-		},
-
-		delete(id: string) {
-			store.update((items) => persist(items.filter((e) => e.id !== id)));
-		},
-
-		clear() {
-			store.set([]);
-			if (browser) safeRemoveItem(SAVED_NOTATIONS_KEY);
-		}
-	};
-}
-
-export const savedNotations = createSavedNotationsStore();
-
-// ---------------------------------------------------------------------------
-// Saved boards (the Team Builder's bank — lineups design §9.6a)
-// ---------------------------------------------------------------------------
-//
-// ⚓ Boards copy the rotation tabs completely (Nate 2026-10-08): open tabs, a
-// saved list with Save/Load, and Recently closed. An entry stores each team's
-// view at save time with every member's level pinned (as a saved rotation is
-// densified), and keeps a team's pinned rotation (lineups design §10.2).
-
-const SAVED_BOARDS_KEY = 'critcalc:savedBoards';
-
-export type SavedBoardTeam = {
-	id: string;
-	slots: (string | null)[];
-	con?: Record<string, number>;
-	pinnedRotationId?: string;
-};
-
-export type SavedBoard = {
-	id: string;
-	name: string;
-	preset: 'stygian' | 'abyss' | 'custom';
-	/** A Stygian lineup's season (`Board.season`). */
-	season?: string;
-	teams: SavedBoardTeam[];
-	noRepeats: boolean;
+	/** When the rotation last changed (ms). */
 	savedAt: number;
-	openedAt?: number;
 };
-
-function createSavedBoardsStore() {
-	function load(): SavedBoard[] {
-		if (!browser) return [];
-		try {
-			const parsed = JSON.parse(localStorage.getItem(SAVED_BOARDS_KEY) ?? '[]');
-			return Array.isArray(parsed) ? parsed : [];
-		} catch {
-			return [];
-		}
-	}
-	const store = writable<SavedBoard[]>(load());
-	const persist = (items: SavedBoard[]) => {
-		if (browser) safeSetItem(SAVED_BOARDS_KEY, JSON.stringify(items));
-		return items;
-	};
-	return {
-		subscribe: store.subscribe,
-		save(entry: Omit<SavedBoard, 'id' | 'savedAt'>): string {
-			const id = Math.random().toString(36).slice(2, 10);
-			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
-			askOnFirstSave();
-			return id;
-		},
-		update(
-			id: string,
-			fields: Partial<Pick<SavedBoard, 'name' | 'teams' | 'noRepeats' | 'season'>>
-		) {
-			store.update((items) =>
-				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
-			);
-		},
-		markOpened(id: string) {
-			store.update((items) =>
-				persist(items.map((e) => (e.id === id ? { ...e, openedAt: Date.now() } : e)))
-			);
-		},
-		rename(id: string, name: string) {
-			store.update((items) => persist(items.map((e) => (e.id === id ? { ...e, name } : e))));
-		},
-		delete(id: string) {
-			store.update((items) => persist(items.filter((e) => e.id !== id)));
-		},
-		clear() {
-			store.set([]);
-			if (browser) safeRemoveItem(SAVED_BOARDS_KEY);
-		}
-	};
-}
-
-export const savedBoards = createSavedBoardsStore();
 
 // ---------------------------------------------------------------------------
 // Constellation levels

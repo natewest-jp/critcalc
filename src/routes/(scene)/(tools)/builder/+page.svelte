@@ -140,8 +140,8 @@
 			} else notices.toast('warning', NO_TEAM_IN_LINK);
 		}
 		if (boardParam) {
-			// A shared lineup (`?b=`). Async decode; an empty active board takes it,
-			// else a new tab (with the make-room confirm at the limit).
+			// A shared lineup (`?b=`). Async decode, then a new document in
+			// Theorycraft (boardBar.receive).
 			void decodeBoard(boardParam).then((shared) => {
 				if (!shared) {
 					notices.toast('error', INVALID_SHARE_LINK);

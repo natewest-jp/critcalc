@@ -15,7 +15,6 @@
 		prefersReducedMotion
 	} from '$lib/landing/transition';
 	import BenchBand from '$lib/components/BenchBand.svelte';
-	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import { notices, heldKey } from '$lib/notices.svelte';
 	import { T_QUICK } from '$lib/motion';
 	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
@@ -26,7 +25,7 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import RenderCrash from '$lib/components/RenderCrash.svelte';
 	import { feedbackToolForPath } from '$lib/feedback';
-	import { savedNotations, siteSettings } from '$lib/stores';
+	import { siteSettings } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { attachMediaFlags, below, benchRowHidden } from '$lib/media.svelte';
@@ -37,10 +36,10 @@
 	let { children } = $props();
 
 	// ---------------------------------------------------------------------------
-	// Working-team lifecycle (bench-band round). The tab model lives in the
-	// shared rotationTabs module; its restore + persistence belong HERE — the
-	// layout stays mounted across every tool, and the Team Builder's ⇄ errand
-	// writes the Planner's tab while the planner page is unmounted. Restore runs in onMount
+	// Working-team lifecycle (bench-band round). The Planner's document lives
+	// in the shared rotationTabs module; its restore + persistence belong HERE —
+	// the layout stays mounted across every tool, and the Team Builder's ⇄
+	// errand writes the Planner's document while the planner page is unmounted. Restore runs in onMount
 	// (after hydration, before the next paint) so SSR markup and first client
 	// paint stay deterministic.
 	// ---------------------------------------------------------------------------
@@ -100,27 +99,13 @@
 	});
 
 	// Auto-persist: persist() reads every persisted field, so this effect
-	// re-runs on any tab-state change. Writes only to the session's sink —
+	// re-runs on any change to the document. Writes only to the session's sink —
 	// never to $state — so there's no circular reactivity.
 	$effect(() => {
 		rotationTabs.persist();
 	});
 	$effect(() => {
 		boards.persist();
-	});
-
-	// Sync tab labels when save-bank entries are renamed from the overlay.
-	// untrack() on the tabs read means only $savedNotations is a reactive
-	// dependency, so a tab rename (which also calls savedNotations.rename)
-	// doesn't re-enter this.
-	$effect(() => {
-		const bank = $savedNotations;
-		rotationTabs.tabs = untrack(() => rotationTabs.tabs).map((t) => {
-			if (!t.savedId) return t;
-			const entry = bank.find((e) => e.id === t.savedId);
-			if (!entry || entry.name === t.label) return t;
-			return { ...t, label: entry.name };
-		});
 	});
 
 	// Chrome identity derives from the route; the nav lists every tool and marks
@@ -1071,21 +1056,6 @@
 </div>
 
 <svelte:window onresize={snapBench} />
-
-<!-- The make-room confirm: the tab limit is reached and something wants to
-     open. Rendered HERE for the same reason as the bank — it acts on the
-     DOCUMENTS, and it must outlive a tool pan mid-dialog. Keyed on the request
-     so a second one re-seeds the pre-selection. -->
-{#if documentBar.room}
-	{#key documentBar.room}
-		<TabLimitDialog
-			tabs={documentBar.room.tabs}
-			candidateId={documentBar.room.candidateId}
-			onConfirm={(id) => documentBar.confirmRoom(id)}
-			onCancel={() => documentBar.cancelRoom()}
-		/>
-	{/key}
-{/if}
 
 <style>
 	.tool-shell {

@@ -13,8 +13,6 @@ import {
 	withoutRepeats,
 	toSharedBoard,
 	fromSharedBoard,
-	toSavedTeams,
-	fromSavedTeams,
 	type Board
 } from './boards.svelte';
 import { teamKey } from './utils/notationEdit';
@@ -145,13 +143,6 @@ describe('constellations — one model with the Planner (§9.5)', () => {
 		expect(opened.teams[1].slots).toEqual(['furina', null, null, null]);
 		expect(opened.teams[1].con).toEqual({ furina: 2 });
 		expect(opened.teams.every((t) => !t.pinnedRotationId)).toBe(true);
-	});
-
-	it('a saved board pins levels and keeps the pin', () => {
-		const saved = toSavedTeams(boards.activeBoard, library, {});
-		expect(saved[0].pinnedRotationId).toBe('vape');
-		expect(saved[1].con).toEqual({ furina: 0, kaedehara_kazuha: 0 });
-		expect(fromSavedTeams(saved)[0].pinnedRotationId).toBe('vape');
 	});
 });
 

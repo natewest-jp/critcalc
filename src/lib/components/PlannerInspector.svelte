@@ -276,9 +276,9 @@
 </div>
 
 <style>
-	/* Fills the aside box and scrolls inside it — RotationNotes' arrangement, for
-	   its reason: the box is the main column's height (sticky, `asideSticky`),
-	   so a long page scrolls in place and can never grow the tool. */
+	/* Fills the aside box and scrolls inside it: the box is the main column's
+	   height (sticky, `asideSticky`), so a long page scrolls in place and can
+	   never grow the tool. */
 	.pi {
 		flex: 1;
 		min-height: 0;

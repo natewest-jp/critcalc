@@ -2303,8 +2303,8 @@
 	}
 
 	// The caveat panel left in the aside-column round (2026-08-08): the notes are
-	// the surface's ASIDE COLUMN now — <RotationNotes>, a box beside this one,
-	// fed by the planner page. Nothing about them was ever chart geometry, and
+	// the surface's ASIDE COLUMN now — the Inspector's team page, a box beside
+	// this one, fed by the planner page. Nothing about them was ever chart geometry, and
 	// keeping them here is what forced the panel to be an absolute overlay with
 	// a matching margin on the tracks. The only publication left is the readout
 	// below, which genuinely is the chart's to make (see plannerView for the

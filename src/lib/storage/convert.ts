@@ -1,8 +1,9 @@
 /**
  * Documents ↔ the tools' working shapes. Pure.
  *
- * The Planner and the Builder run on their tab models (`RotationTab`,
- * `Board`), and each tab IS a document, keyed by the document's id. These are the two directions.
+ * The Planner and the Builder hold their document in a working shape
+ * (`RotationTab`, `Board`), keyed by the document's id. These are the two
+ * directions.
  */
 
 import type { Board } from '$lib/boards.svelte';
@@ -42,7 +43,6 @@ export function rotationToTab(doc: RotationDocument): RotationTab {
 		tabCon: doc.body.con ?? {}
 	};
 	if (doc.body.sample) tab.sample = doc.body.sample;
-	if (doc.openedAt) tab.viewedAt = doc.openedAt;
 	return tab;
 }
 
@@ -67,7 +67,6 @@ export function lineupToBoard(doc: LineupDocument): Board {
 		teams: doc.body.teams.map((t) => ({ ...t, slots: [...t.slots] }))
 	};
 	if (doc.body.season) board.season = doc.body.season;
-	if (doc.openedAt) board.viewedAt = doc.openedAt;
 	return board;
 }
 
