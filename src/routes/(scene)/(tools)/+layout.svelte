@@ -56,9 +56,9 @@
 		const s = session;
 		const id =
 			tool?.path === '/builder'
-				? boards.activeBoardId
+				? boards.board.id
 				: tool?.path === '/planner'
-					? rotationTabs.activeTabId
+					? rotationTabs.tab.id
 					: null;
 		if (!s || !id || !s.readOnly.includes(id)) return;
 		const key = heldKey(id);

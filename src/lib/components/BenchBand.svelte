@@ -1,7 +1,7 @@
 <script lang="ts">
 	/**
 	 * BenchBand — THE bench RIBBON: a self-contained box holding the four slot
-	 * cards of the Planner's active tab, rendered ONCE at the (tools) layout
+	 * cards of the Planner's document, rendered ONCE at the (tools) layout
 	 * level and docked over the planner's [data-bench-anchor]. ↻ The Team
 	 * Builder left the bench in the lineups round (2026-10-08). The layout owns
 	 * its position and travel; this component owns its content.

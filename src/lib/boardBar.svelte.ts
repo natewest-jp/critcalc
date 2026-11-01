@@ -38,7 +38,7 @@ class BoardBarState {
 		const doc = { ...makeBoard(shared.label), ...fromSharedBoard(shared, isValidId) };
 		void documentsReady.then(async (viaStore) => {
 			if (!viaStore) {
-				boards.restoreFrom({ boards: [doc], activeBoardId: doc.id });
+				boards.restoreFrom(doc);
 				notices.toast('info', 'Loaded shared lineup');
 				return;
 			}
@@ -49,7 +49,7 @@ class BoardBarState {
 	}
 
 	/**
-	 * An arriving team (`?team=`): onto the ACTIVE board — the first team with
+	 * An arriving team (`?team=`): onto the board on screen — the first team with
 	 * nobody in it, else a new team. (Lineups design §9.7's "probably a team on
 	 * the active board", taken.)
 	 */
@@ -72,7 +72,7 @@ class BoardBarState {
 	/** False when the lineup had no room. `quiet` leaves the notices to the
 	 *  caller, which has an arrival to say as well. */
 	#placeTeam(ids: string[], quiet = false): boolean {
-		const board = boards.activeBoard;
+		const board = boards.board;
 		const slots: TeamSlot[] = ids.slice(0, 4);
 		const empty = board.teams.find((t) => t.slots.every((s) => s === null));
 		if (empty) boards.setTeam(board.id, empty.id, slots);
@@ -85,10 +85,10 @@ class BoardBarState {
 		return true;
 	}
 
-	/** Copy a `?b=` link to the active board. Teams and levels travel, pins
+	/** Copy a `?b=` link to the board. Teams and levels travel, pins
 	 *  never (§9.4). */
 	async shareLink(): Promise<Outcome | null> {
-		if (!boardWorthKeeping(boards.activeBoard)) return null;
+		if (!boardWorthKeeping(boards.board)) return null;
 		try {
 			const url = await this.shareUrl();
 			if (!url) return null;
@@ -103,10 +103,10 @@ class BoardBarState {
 		}
 	}
 
-	/** The `?b=` link to the active board — what Share copies, and what a
+	/** The `?b=` link to the board — what Share copies, and what a
 	 *  problem report carries ($lib/feedback.ts). `null` for an empty board. */
 	async shareUrl(): Promise<string | null> {
-		const board = boards.activeBoard;
+		const board = boards.board;
 		if (!boardWorthKeeping(board)) return null;
 		// ⚓ A pin names a rotation in the profile's storage.
 		const saved = await (await import('./storage/session.svelte')).storageSession.savedRotations();

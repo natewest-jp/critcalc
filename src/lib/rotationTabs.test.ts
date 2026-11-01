@@ -16,7 +16,7 @@ const work = (n: number): RotationTab => ({
 });
 
 function show(tab: RotationTab) {
-	rt.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+	rt.restoreFrom(tab, false);
 }
 
 /**
@@ -35,8 +35,7 @@ describe('documentBar.receive — with no store', () => {
 	it('puts the arriving document in front', async () => {
 		show(work(1));
 		await receive({ label: 'Shared rotation', notation: 'Nahida E Q > Raiden E Q' }, 'Loaded');
-		expect(rt.tabs).toHaveLength(1);
-		expect(rt.activeTab.label).toBe('Shared rotation');
+		expect(rt.tab.label).toBe('Shared rotation');
 		expect(rt.notation).toBe('Nahida E Q > Raiden E Q');
 	});
 

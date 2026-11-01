@@ -233,45 +233,38 @@ class BoardsState {
 	/** ⚓ The cold start is the CURRENT Stygian Onslaught (§11.2): the tool at
 	 *  its most useful, the mode most players come for. No `season` is stored, so
 	 *  the board FOLLOWS the season (the Team Builder reads an unset season as
-	 *  the current one) until its first edit pins it (§11.6 item 4). */
-	boards = $state<Board[]>([makeBoard('Lineup 1', 'stygian')]);
-	activeBoardId = $state<string>(this.boards[0].id);
+	 *  the current one) until its first edit pins it (§11.6 item 4). The
+	 *  storage session replaces it with the profile's current lineup. */
+	board = $state<Board>(makeBoard('Lineup 1', 'stygian'));
 	/** ⚓ May this board be changed? False while another tab holds it
 	 *  (rotationTabs.canEdit's rule). Set by the storage session. */
 	canEdit: (id: string) => boolean = () => true;
 	restored = $state(false);
 
-	get activeBoard(): Board {
-		return this.boards.find((b) => b.id === this.activeBoardId) ?? this.boards[0];
-	}
-
-	/** Take a stored board set (`null` keeps the cold start) and mark the state
+	/** Show a stored board (`null` keeps the cold start) and mark the state
 	 *  restored: the profile's current lineup, from the storage session
 	 *  (build plan §13). */
-	restoreFrom(stored: { boards: Board[]; activeBoardId: string } | null): void {
+	restoreFrom(stored: Board | null): void {
 		if (stored) {
-			this.boards = stored.boards.map((b) => ({
-				...b,
-				preset: b.preset ?? 'custom',
-				teams: b.teams.map((t) => ({ ...t, slots: normalizeSlots(t.slots ?? []) }))
-			}));
-			this.activeBoardId = this.boards.some((b) => b.id === stored.activeBoardId)
-				? stored.activeBoardId
-				: this.boards[0].id;
+			this.board = {
+				...stored,
+				preset: stored.preset ?? 'custom',
+				teams: stored.teams.map((t) => ({ ...t, slots: normalizeSlots(t.slots ?? []) }))
+			};
 		}
 		this.restored = true;
 	}
 
-	/** Hand the boards to the storage session's sink. Reads every persisted
+	/** Hand the board to the storage session's sink. Reads every persisted
 	 *  field; never writes $state. */
 	persist(): void {
-		const snapshot = { boards: this.boards, activeBoardId: this.activeBoardId };
+		const snapshot = this.board;
 		if (!this.restored) return;
-		this.persistSink?.(snapshot.boards, snapshot.activeBoardId);
+		this.persistSink?.(snapshot);
 	}
 
 	/** The store's sink (see `rotationTabs.persistSink`, the same rule). */
-	persistSink: ((boards: Board[], activeBoardId: string) => void) | null = null;
+	persistSink: ((board: Board) => void) | null = null;
 
 	// ── The board ───────────────────────────────────────────────────────────
 
@@ -303,7 +296,7 @@ class BoardsState {
 
 	#updateBoard(id: string, fn: (b: Board) => Board): void {
 		if (!this.canEdit(id)) return;
-		this.boards = this.boards.map((b) => (b.id === id ? fn(b) : b));
+		if (this.board.id === id) this.board = fn(this.board);
 	}
 
 	#updateTeam(boardId: string, teamId: string, fn: (t: BoardTeam) => BoardTeam): void {
@@ -314,7 +307,7 @@ class BoardsState {
 	}
 
 	addTeam(boardId: string, slots?: TeamSlot[]): BoardTeam | undefined {
-		const board = this.boards.find((b) => b.id === boardId);
+		const board = this.board.id === boardId ? this.board : undefined;
 		if (!board || board.teams.length >= BOARD_TEAM_LIMIT) return undefined;
 		const team = makeTeam(slots);
 		this.#updateBoard(boardId, (b) => ({ ...b, teams: [...b.teams, team] }));
@@ -358,7 +351,7 @@ class BoardsState {
 
 	/** The OTHER teams `id` sits on, when the board forbids repeats. */
 	#teamsHolding(boardId: string, id: TeamSlot, exceptTeamId: string): string[] {
-		const board = this.boards.find((b) => b.id === boardId);
+		const board = this.board.id === boardId ? this.board : undefined;
 		if (!id || !board?.noRepeats) return [];
 		return board.teams
 			.filter((t) => t.id !== exceptTeamId && slotOfCharacter(t.slots, id) >= 0)

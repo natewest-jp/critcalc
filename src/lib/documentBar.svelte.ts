@@ -99,7 +99,7 @@ class DocumentBarState {
 		void documentsReady.then(async (viaStore) => {
 			if (!viaStore) {
 				const id = newTabId();
-				rt.restoreFrom({ tabs: [{ ...doc, id }], activeTabId: id }, false);
+				rt.restoreFrom({ ...doc, id }, false);
 				notices.toast('info', notice);
 				return;
 			}

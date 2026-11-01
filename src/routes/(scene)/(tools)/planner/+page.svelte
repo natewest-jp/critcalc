@@ -14,7 +14,6 @@
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
-	import { warmOpenTabCharacters } from '../lib/prewarmPlanner';
 	import { onMount } from 'svelte';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -84,8 +83,8 @@
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
-	// affordances. Tab restore lives in the (tools) layout now — it must run for
-	// every tool.
+	// affordances. The document's restore lives in the (tools) layout — it must
+	// run for every tool.
 	//
 	// ⚓ NATE 2026-08-12 — the two affordances used to be ONE here: the portrait
 	// and ⇄ both opened the Source, which meant the planner had a permanent
@@ -93,21 +92,6 @@
 	// makes the bench behave identically in both tools: a filled portrait reads
 	// the character (Detail card), ⇄ changes who fills the slot, and an empty
 	// portrait — with no character to read — falls through to ⇄'s job.
-	// Warm every open tab's characters, so switching to one you have not opened
-	// this session does not stall on a cold payload (⚓ Nate 2026-08-12).
-	//
-	// ⚠ AN $effect GATED ON `restored`, NOT onMount — and the gate is the whole
-	// point. The tabs are restored by the (tools) LAYOUT's onMount, and in Svelte
-	// a CHILD's onMount runs BEFORE its parent's: warming from this page's
-	// onMount read the default single empty tab and warmed nothing, which is
-	// exactly the bug it was meant to fix (measured — a cold switch still pulled
-	// both of the target tab's chunks). Depending on `restored` is robust to that
-	// ordering whichever way it falls, and it also covers landing on another tool
-	// first, where the layout mounted long ago. warmOpenTabCharacters is
-	// once-per-session guarded, so a re-run is free.
-	$effect(() => {
-		if (rt.restored) warmOpenTabCharacters();
-	});
 
 	onMount(() => {
 		warmAvatars();
@@ -285,7 +269,7 @@
 	 *  Inspector's team page for as long as the notation is still the sample's
 	 *  own — once it is edited, the rotation is the reader's. */
 	let sampleCredit = $derived.by(() => {
-		const sample = sampleById(rt.activeTab.sample);
+		const sample = sampleById(rt.tab.sample);
 		return sample && sample.notation === rt.notation ? sample : null;
 	});
 
@@ -949,7 +933,7 @@
 	<RotationTimeline
 		bind:notation={rt.notation}
 		bind:seating={rt.seating}
-		tabId={rt.activeTabId}
+		tabId={rt.tab.id}
 		characterSlots={slots}
 		tabLoadout={rt.tabLoadout}
 		tabCon={effectiveCon}

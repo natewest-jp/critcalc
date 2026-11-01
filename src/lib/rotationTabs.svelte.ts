@@ -13,7 +13,7 @@
  * Layer discipline (unchanged in shape, re-routed at the bench):
  *   Layer 1 = the roster (`constellations`/`loadout` stores) — edited in the
  *             Library's Roster + the Detail card only.
- *   Layer 2 = the active tab (`tabCon`/`tabLoadout` here) — edited by the
+ *   Layer 2 = the document (`tabCon`/`tabLoadout` here) — edited by the
  *             bench band. The bench is the plan's team editor; it never marks
  *             ownership.
  *
@@ -177,14 +177,17 @@ function arrivingWithDocument(): boolean {
 }
 
 class RotationTabsState {
-	// Server and client both initialize to the same deterministic default (one
-	// empty tab) so SSR markup and the hydrating component always agree. The
-	// storage session restores the real state (`restoreFrom`) after hydration.
-	tabs = $state<RotationTab[]>([makeTab('Tab 1')]);
-	activeTabId = $state<string>(this.tabs[0].id);
+	/**
+	 * The document on screen: its id (the stored document's), label and
+	 * sample. Its working state lives in the fields below. Server and client
+	 * both initialize to the same deterministic default (one empty tab) so SSR
+	 * markup and the hydrating component always agree; the storage session
+	 * restores the real one (`restoreFrom`) after hydration.
+	 */
+	tab = $state<RotationTab>(makeTab('Tab 1'));
 
-	// Live working state — kept separate from the tabs array so bind:notation
-	// on RotationTimeline works cleanly without circular reactivity.
+	// Live working state — kept separate from `tab` so bind:notation on
+	// RotationTimeline works cleanly without circular reactivity.
 	#notation = $state<string>('');
 	/** ⚓ The party's slots and what each remembers (§8.1): stored, not derived. */
 	seating = $state<Seating>(emptySeating());
@@ -302,43 +305,32 @@ class RotationTabsState {
 	 *  notation — a resting character keeps their slot. */
 	slots = $derived(this.seats.map((id) => id ?? 'blank'));
 
-	get activeTab(): RotationTab {
-		return this.tabs.find((t) => t.id === this.activeTabId) ?? this.tabs[0];
-	}
-
 	/**
-	 * Take a stored tab set — or, given `null`, the first visit's sample (no
+	 * Show a stored document — or, given `null`, the first visit's sample (no
 	 * sample when `sample` is false or a link is arriving) — and mark the
 	 * state restored. The storage session hands it the profile's current
 	 * document (build plan §13).
 	 */
-	restoreFrom(stored: { tabs: RotationTab[]; activeTabId: string } | null, sample = true): void {
+	restoreFrom(stored: RotationTab | null, sample = true): void {
 		if (stored) {
-			const tabs = stored.tabs;
-			const activeId = tabs.some((t) => t.id === stored.activeTabId)
-				? stored.activeTabId
-				: tabs[0].id;
-			const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
-			this.tabs = tabs;
-			this.activeTabId = activeId;
-			this.setDocument(active.notation, seatingOf(active));
-			this.tabLoadout = active.tabLoadout ?? {};
-			this.tabCon = active.tabCon ?? {};
+			this.tab = stored;
+			this.setDocument(stored.notation, seatingOf(stored));
+			this.tabLoadout = stored.tabLoadout ?? {};
+			this.tabCon = stored.tabCon ?? {};
 		} else if (sample && !arrivingWithDocument()) {
 			// ⚓ THE FIRST VISIT (Nate 2026-10-17): no tabs were ever made in this
 			// browser, so the first one opens on a sample rather than empty —
 			// unless a share link is arriving, which must land in the empty tab.
 			const sample = pickSample();
 			const tab: RotationTab = {
-				...this.tabs[0],
+				...this.tab,
 				label: `Sample: ${sample.name}`,
 				notation: sample.notation,
 				tabCon: sample.cons ?? {},
 				tabLoadout: sample.loadout ?? {},
 				sample: sample.id
 			};
-			this.tabs = [tab];
-			this.activeTabId = tab.id;
+			this.tab = tab;
 			this.setDocument(tab.notation, seatingOf(tab));
 			this.tabCon = tab.tabCon ?? {};
 			this.tabLoadout = tab.tabLoadout ?? {};
@@ -350,27 +342,23 @@ class RotationTabsState {
 	 *  persisted field, so an $effect wrapping this call tracks all of them.
 	 *  Never writes $state — no circular reactivity. */
 	persist(): void {
-		const snapshot = this.tabs.map((t) =>
-			t.id === this.activeTabId
-				? {
-						...t,
-						notation: this.notation,
-						slots: [...this.seats],
-						placed: [...this.seating.placed],
-						tabLoadout: this.tabLoadout,
-						tabCon: this.tabCon
-					}
-				: t
-		);
+		const snapshot: RotationTab = {
+			...this.tab,
+			notation: this.notation,
+			slots: [...this.seats],
+			placed: [...this.seating.placed],
+			tabLoadout: this.tabLoadout,
+			tabCon: this.tabCon
+		};
 		if (!this.restored) return;
-		this.persistSink?.(snapshot, this.activeTabId);
+		this.persistSink?.(snapshot);
 	}
 
 	/** The tab persists to the store (build plan §13), and ⚓ localStorage is
 	 *  left exactly as the migration found it (copy-only). A plain field, not
 	 *  `$state`: it is set once, before `restored`, and must not become a
 	 *  dependency of the persist effect. */
-	persistSink: ((tabs: RotationTab[], activeTabId: string) => void) | null = null;
+	persistSink: ((tab: RotationTab) => void) | null = null;
 
 	/**
 	 * Empty the working rotation — its notation and team — and KEEP its name
@@ -384,7 +372,7 @@ class RotationTabsState {
 	clearDocument(): void {
 		if (!this.canEdit()) return;
 		this.setDocument('', emptySeating());
-		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, sample: undefined } : t));
+		this.tab = { ...this.tab, sample: undefined };
 	}
 
 	// -------------------------------------------------------------------------
@@ -434,12 +422,12 @@ class RotationTabsState {
 	 *  seats over another. It does nothing unless this document is still the
 	 *  one in front, and works again if it comes back while the toast is up. */
 	#snapshot(): () => void {
-		const tabId = this.activeTabId;
+		const tabId = this.tab.id;
 		const text = this.notation;
 		const seats = [...this.seats];
 		const placed = [...this.seating.placed];
 		return () => {
-			if (this.activeTabId !== tabId || !this.canEdit()) return;
+			if (this.tab.id !== tabId || !this.canEdit()) return;
 			this.setDocument(text, makeSeating(seats, placed));
 		};
 	}
