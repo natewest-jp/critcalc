@@ -44,6 +44,14 @@ npm run build                      # prebuild regenerates newfit + character ind
 npm run preview -- --port 4998 --strictPort   # serve production build (background)
 ```
 
+**Proving a CSS refactor changes nothing.** Snapshot `getComputedStyle` of
+every element on every route (key each element by its tag, classes and index
+path; skip `svelte-*` hashes), at a desk and a phone width, before and after,
+and diff. Seed `Math.random` with `addInitScript` first: the Planner's sample
+otherwise makes two runs of the same build differ. Take the no-JavaScript paint
+too (`javaScriptEnabled: false`), since that is what a CSS scope change moves.
+The script goes in `scratch/` and is deleted after.
+
 Verify against the **production** build when the change touches bundling or
 code-splitting; `npm run dev` is fine for pure behavior changes.
 

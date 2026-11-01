@@ -8,6 +8,11 @@
  * touches nothing, and the `localStorage` keys it read are left as they are
  * (§13.1).
  *
+ * The site went public on 2026-10-19 (`docs/rounds/round-history.md`), so
+ * weigh a legacy edge case against when its shape was written: a shape older
+ * than the public site reaches no visitor and no backup file (⚓ Nate
+ * 2026-11-01, on ownership tracking, which arrived 2026-07-20).
+ *
  * Pure: the clock and the id source are handed in, so a test can pin both.
  */
 
