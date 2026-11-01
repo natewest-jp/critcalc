@@ -18,7 +18,7 @@ Budget: about 8,000 characters. The design is `docs/design/profiles-and-surfaces
 
 ## What is left of the old layout
 
-Its switch, band A, chrome and overlays are deleted. Its multi-tab document model (`documentBar`, `boardBar`, `rotationTabs`' tabs, Recently closed, the saved banks) is still wired in and listed for removal in `docs/todo.md`; build nothing new on it. `data-next` on `<html>` is set on mount, and the rules scoped to it wait for hydration.
+Only `data-next`: it is set on `<html>` on mount, and the rules scoped to it wait for hydration, so they don't style first paint. Unwrapping them is listed in `docs/todo.md`. Each tool holds one document at a time (`rotationTabs.tab`, `boards.board`), handed over and saved by the storage session.
 
 ## The top bar (`TopBar.svelte`)
 

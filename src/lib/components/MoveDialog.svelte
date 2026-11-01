@@ -6,7 +6,7 @@
   document exists because of those levels, the list is what tells you to leave
   it in Theorycraft. ⚓ Move, not copy (draft 5).
 
-  An `alertdialog` whose backdrop does not dismiss (TabLimitDialog's shape): a
+  An `alertdialog` whose backdrop does not dismiss: a
   stray click must not decide a move. Strings are working copy.
 -->
 <script lang="ts">

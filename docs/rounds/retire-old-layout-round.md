@@ -1,4 +1,4 @@
-# Retiring the old layout (step 5, passes A and B) — 2026-10-31
+# Retiring the old layout (step 5, passes A to D) — 2026-10-31 and 2026-11-01
 
 ⚓ Nate, 2026-10-31: retire it now rather than wait out the quiet week after the flip. Rollback was already ruled out and the stand-in covers browsers without IndexedDB, so the off state helped no player and every round paid for both branches.
 
@@ -46,11 +46,21 @@ A twelve-agent review of `561e09b7..943335d6`, six dimensions each checked by a 
 
 Tests: `session.test.ts` › "a store the session cannot start on" (the last two fail without the fix). Then (`docs/retirement-cleanup`): the stale docs and comments the review found, the orphaned 1360px content stop, the dead hit-box selectors, and COPYRIGHT.md's artwork lists (Nate: only the Help glyph and the bench tail are his own; the cog, compass, Teams figure and notification mark go under HoYoverse).
 
+## Pass D, the old document model (2026-11-01, `refactor/old-layout-pass-d`)
+
+Found by reading every caller of `documentBar`, `boardBar`, `rotationTabs` and `boards` against what the storage session reaches. The session always hands each tool ONE document (`restoreFrom` with a single tab or board), so everything that chose among several was unreachable.
+
+- **`be40e541`, the machinery.** documentBar's Save, Save as new, Load, Close all, the twelve-tab limit and its make-room confirm, Recently closed, the tab strip model and the bank's team entries; boardBar's equivalents; rotationTabs' and boards' switch, add, open, adopt, close, rename, reorder and reset; the `synced` flag and `viewedAt`; the restore-time `manualSlots` fold (nothing that restores carries it now). Whole files: `tabSet.ts`, `TabLimitDialog`, `library.ts`, `RotationNotes`. The `savedNotations` and `savedBoards` stores went; only the `SavedNotation` type stays, the shape the Builder's pins read through `storageSession.savedRotations()`. The Planner's `'notes'` aside went with `plannerView.hasCaveats`: the Inspector's team page carries the same caveats and the sample credit.
+- **`01538e78`, the shape.** `rotationTabs.tabs`/`activeTabId` became `rotationTabs.tab`, `boards.boards`/`activeBoardId` became `boards.board`, and the session's pending write, save collection and journal read one of each. `prewarmPlanner.ts` went too: it warmed tabs you weren't looking at.
+- **What stays:** documentBar is arrivals, Try in Planner and Share (the link and the timeline's KQM and PNG exporters); boardBar is arrivals and Share. The migration and the backup parser still read every legacy key; the backup's two list caps moved into `settingsBackup.ts`.
+- **One behaviour change, in a path nobody should reach:** with no store at all (even the in-memory stand-in failed), an arriving link used to go through `adopt` and the make-room confirm. It now takes the place of the tool's defaults, which persist nowhere either way. Test: `rotationTabs.test.ts` › "documentBar.receive — with no store". The Undo tests now swap documents the way the session does.
+- **Corrected on the to-do list:** `rotationsForTeam`/`pinnedRotation` were listed as old-layout code to retire. They are live: the Builder's team rotations and pins, matched by set over the store's rotations.
+- Not done, deliberately: renaming the `rotationTabs` module and `RotationTab`, which would touch every importer for a word.
+
 ## Left (on the to-do list)
 
-- **The old multi-tab document model.** Most of `documentBar`, `boardBar` and `rotationTabs`' tab machinery is the old layout's: up to twelve tabs per tool, Recently closed, the saved banks (`savedNotations`, `savedBoards`), the make-room confirm. The profiles layout holds one document per tool; only a few paths are live (arrivals, sharing, Try in Planner, the guests' pairs). It needs a call-graph read rather than a substitution.
 - **`data-next` itself**, on its own branch for Nate to compare: unwrapping the `:where(:root[data-next])` rules makes the profiles layout's CSS apply from the first frame.
 
 ## Gates
 
-vitest (2692; −3 for the deleted seed tests), svelte-check 0/0, lint, build; e2e as in the merge commit.
+Passes A–C: vitest (2692; −3 for the deleted seed tests), svelte-check 0/0, lint, build; e2e as in the merge commit. Pass D: vitest 2664 (−28 with the deleted code, +2), svelte-check 0/0, lint, build; e2e Chrome 71 passed at each commit.

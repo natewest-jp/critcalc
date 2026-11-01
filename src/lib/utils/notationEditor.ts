@@ -59,7 +59,7 @@ export function createNotationEditor(
 	/** The text, and the seats it now fills (§8.1), after a change the USER
 	 *  made — typing, ⌘Z, Redo. Not called for setValue/showDocument. */
 	onChange: (value: string, seating: Seating) => void,
-	/** Which document `initialValue` is — the planner's active tab id. */
+	/** Which document `initialValue` is — the planner's document id. */
 	initialKey: string,
 	/** Where the caret is, on every move or edit — the dock's key row reads
 	 *  the segment it sits in. */

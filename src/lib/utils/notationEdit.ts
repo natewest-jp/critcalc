@@ -113,11 +113,6 @@ export function teamKey(ids: readonly (string | null | undefined)[]): string {
 	return set.slice(0, TEAM_SIZE).sort().join('+');
 }
 
-/** The team key of a notation — the first four distinct names it holds. */
-export function teamKeyOfNotation(notation: string): string {
-	return teamKey(orderedCharacterIds(notation));
-}
-
 /** A rotation's four party slots (keys 1–4). `null` is an EMPTY slot; the
  *  string `'blank'` is the Blank character, seated — the two were one value
  *  while the team was derived, and only `benchBand.blankUsed` told them apart. */

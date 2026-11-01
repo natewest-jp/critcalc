@@ -54,12 +54,12 @@
 	/** The current document's label: its stored name, else derived (§4.2). */
 	const docName = $derived.by(() => {
 		if (docTool === 'planner') {
-			const name = storageSession.nameOf(rotationTabs.activeTabId);
+			const name = storageSession.nameOf(rotationTabs.tab.id);
 			return { text: name ?? rotationLabel(rotationTabs.seats), derived: !name };
 		}
 		if (docTool === 'builder') {
-			const name = storageSession.nameOf(boards.activeBoardId);
-			return { text: name ?? lineupLabel(boards.activeBoard), derived: !name };
+			const name = storageSession.nameOf(boards.board.id);
+			return { text: name ?? lineupLabel(boards.board), derived: !name };
 		}
 		return null;
 	});

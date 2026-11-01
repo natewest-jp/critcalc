@@ -145,7 +145,7 @@
 		 *  editor so its history can restore them: ⌘Z after a newcomer took a
 		 *  resting seat gives the seat back. */
 		seating?: Seating;
-		/** Which document `notation` is — the planner's active tab. The editor
+		/** Which document `notation` is — the planner's document. The editor
 		 *  keeps one undo history per id (see `showDocument`). */
 		tabId?: string;
 		tabLoadout?: Record<string, LoadoutEntry>;
@@ -1629,8 +1629,8 @@
 				: $siteSettings.humanTimingMode === 'both'
 					? `Human timing · full animations and ${pad} · ${ping}`
 					: `Human timing · ${pad} · ${ping}`;
-		// The tab's own name, unless it is still a default one.
-		const label = rotationTabs.tabs.find((t) => t.id === tabId)?.label ?? '';
+		// The document's own name, unless it is still a default one.
+		const label = rotationTabs.tab.id === tabId ? rotationTabs.tab.label : '';
 		const tabLabel = /^(Tab \d+|Shared rotation|Imported team)$/.test(label) ? null : label || null;
 		// The bench card's roster comparison (BenchBand's `ownedConOf`): unknown
 		// while nothing is marked owned, null when this character isn't.
@@ -2303,8 +2303,8 @@
 	}
 
 	// The caveat panel left in the aside-column round (2026-08-08): the notes are
-	// the surface's ASIDE COLUMN now — <RotationNotes>, a box beside this one,
-	// fed by the planner page. Nothing about them was ever chart geometry, and
+	// the surface's ASIDE COLUMN now — the Inspector's team page, a box beside
+	// this one, fed by the planner page. Nothing about them was ever chart geometry, and
 	// keeping them here is what forced the panel to be an absolute overlay with
 	// a matching margin on the tracks. The only publication left is the readout
 	// below, which genuinely is the chart's to make (see plannerView for the

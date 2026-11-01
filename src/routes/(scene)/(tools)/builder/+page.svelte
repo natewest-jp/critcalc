@@ -116,7 +116,7 @@
 	// - ?b= — a shared lineup.
 	// - ?swap=N — the planner's bench ⇄: swap mode on slot N of the Planner's
 	//   OWN team, drawn as a temporary row on top of the lineup (§10.3, §11.6
-	//   item 20). The team does not travel — it is the Planner's active tab —
+	//   item 20). The team does not travel — it is the Planner's document —
 	//   so the slot index is the entire payload.
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
@@ -140,8 +140,8 @@
 			} else notices.toast('warning', NO_TEAM_IN_LINK);
 		}
 		if (boardParam) {
-			// A shared lineup (`?b=`). Async decode; an empty active board takes it,
-			// else a new tab (with the make-room confirm at the limit).
+			// A shared lineup (`?b=`). Async decode, then a new document in
+			// Theorycraft (boardBar.receive).
 			void decodeBoard(boardParam).then((shared) => {
 				if (!shared) {
 					notices.toast('error', INVALID_SHARE_LINK);
@@ -274,7 +274,7 @@
 
 	// ── The board ─────────────────────────────────────────────────────────────
 
-	const board = $derived(boards.activeBoard);
+	const board = $derived(boards.board);
 
 	// The Planner's ⇄ row (swap mode, below) — declared here because the
 	// selection reads it.
@@ -1479,7 +1479,7 @@
 					errand={errandTeam
 						? {
 								team: errandTeam,
-								label: `From the Planner: ${rt.activeTab.label}`,
+								label: `From the Planner: ${rt.tab.label}`,
 								onCancel: cancelErrand
 							}
 						: null}

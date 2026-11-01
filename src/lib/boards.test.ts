@@ -13,8 +13,6 @@ import {
 	withoutRepeats,
 	toSharedBoard,
 	fromSharedBoard,
-	toSavedTeams,
-	fromSavedTeams,
 	type Board
 } from './boards.svelte';
 import { teamKey } from './utils/notationEdit';
@@ -64,10 +62,9 @@ beforeEach(() => {
 		pinnedRotationId: 'vape'
 	};
 	board.teams[1] = makeTeam(['furina', null, 'kaedehara_kazuha', null]);
-	boards.boards = [board];
-	boards.activeBoardId = board.id;
+	boards.board = board;
 });
-const team = (i: number) => boards.activeBoard.teams[i];
+const team = (i: number) => boards.board.teams[i];
 
 describe('presets (§10.5)', () => {
 	it('Stygian ×3, Abyss ×2, Custom ×1', () => {
@@ -138,20 +135,13 @@ describe('constellations — one model with the Planner (§9.5)', () => {
 	});
 
 	it('a share pins every member’s level and carries no pin', () => {
-		const shared = toSharedBoard(boards.activeBoard, library, { furina: 2 });
+		const shared = toSharedBoard(boards.board, library, { furina: 2 });
 		expect(shared.teams[1].constellations).toEqual({ furina: 2, kaedehara_kazuha: 0 });
 		expect(shared.teams[0].constellations.xiangling).toBe(4); // the pinned rotation's
 		const opened = fromSharedBoard(shared, (id) => id !== 'kaedehara_kazuha');
 		expect(opened.teams[1].slots).toEqual(['furina', null, null, null]);
 		expect(opened.teams[1].con).toEqual({ furina: 2 });
 		expect(opened.teams.every((t) => !t.pinnedRotationId)).toBe(true);
-	});
-
-	it('a saved board pins levels and keeps the pin', () => {
-		const saved = toSavedTeams(boards.activeBoard, library, {});
-		expect(saved[0].pinnedRotationId).toBe('vape');
-		expect(saved[1].con).toEqual({ furina: 0, kaedehara_kazuha: 0 });
-		expect(fromSavedTeams(saved)[0].pinnedRotationId).toBe('vape');
 	});
 });
 

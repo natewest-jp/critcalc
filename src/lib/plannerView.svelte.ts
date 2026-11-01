@@ -15,8 +15,8 @@
  *
  * Direction of flow, so it stays legible:
  *   scale / aside            — WRITTEN by band B, READ by the timeline + page
- *   hasCaveats / hasAuraLog
- *     / total / auraLog      — WRITTEN by the timeline, READ by band B + page
+ *   hasAuraLog / total
+ *     / auraLog              — WRITTEN by the timeline, READ by band B + page
  *
  * This is view state, deliberately NOT persisted and NOT part of the document:
  * a zoom level is not something you save or share, and nothing here belongs in
@@ -66,7 +66,7 @@ export const restingZoom: number =
  * booleans that must never both be true is a state a caller can get wrong, and
  * the caller here is markup in a different file.
  */
-export type AsidePanel = 'notes' | 'log' | 'inspector' | null;
+export type AsidePanel = 'log' | 'inspector' | null;
 
 /**
  * What the INSPECTOR is showing (inspector round, 2026-10-23; design §7).
@@ -146,9 +146,6 @@ class PlannerViewState {
 	/** ⛔ Not two booleans — see AsidePanel. */
 	aside = $state<AsidePanel>(null);
 
-	get showNotes() {
-		return this.aside === 'notes';
-	}
 	get showLog() {
 		return this.aside === 'log';
 	}
@@ -249,8 +246,6 @@ class PlannerViewState {
 		if (this.aside === panel) this.aside = null;
 	}
 
-	/** Published by the planner page for band B's readout + the notes gate. */
-	hasCaveats = $state(false);
 	/** The rotation put something on the target, so there is a transcript to
 	 *  read. ⚠ Independent of the aura LAYER: the log is a second reading of the
 	 *  same events, and wanting the words without the chart is a real want. */

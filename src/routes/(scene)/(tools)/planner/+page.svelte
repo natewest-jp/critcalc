@@ -6,7 +6,6 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
-	import RotationNotes from '$lib/components/RotationNotes.svelte';
 	import PlannerInspector from '$lib/components/PlannerInspector.svelte';
 	import EventLog from '$lib/components/EventLog.svelte';
 	import { collectSlotCaveats } from '$lib/timeline/slotCaveats';
@@ -15,7 +14,6 @@
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
-	import { warmOpenTabCharacters } from '../lib/prewarmPlanner';
 	import { onMount } from 'svelte';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -80,15 +78,13 @@
 			tabLoadout: shared.loadout,
 			tabCon: importedCon
 		};
-		// ⚓ An empty tab, else a new one, else the make-room confirm — and a
-		// cancelled confirm keeps the link in Recently closed (documentBar.receive;
-		// ↻ 2026-10-08, it used to be parked in the bank behind a modal report).
+		// ⚓ A new document in Theorycraft (documentBar.receive).
 		db.receive(doc, 'Loaded shared rotation');
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
-	// affordances. Tab restore lives in the (tools) layout now — it must run for
-	// every tool.
+	// affordances. The document's restore lives in the (tools) layout — it must
+	// run for every tool.
 	//
 	// ⚓ NATE 2026-08-12 — the two affordances used to be ONE here: the portrait
 	// and ⇄ both opened the Source, which meant the planner had a permanent
@@ -96,21 +92,6 @@
 	// makes the bench behave identically in both tools: a filled portrait reads
 	// the character (Detail card), ⇄ changes who fills the slot, and an empty
 	// portrait — with no character to read — falls through to ⇄'s job.
-	// Warm every open tab's characters, so switching to one you have not opened
-	// this session does not stall on a cold payload (⚓ Nate 2026-08-12).
-	//
-	// ⚠ AN $effect GATED ON `restored`, NOT onMount — and the gate is the whole
-	// point. The tabs are restored by the (tools) LAYOUT's onMount, and in Svelte
-	// a CHILD's onMount runs BEFORE its parent's: warming from this page's
-	// onMount read the default single empty tab and warmed nothing, which is
-	// exactly the bug it was meant to fix (measured — a cold switch still pulled
-	// both of the target tab's chunks). Depending on `restored` is robust to that
-	// ordering whichever way it falls, and it also covers landing on another tool
-	// first, where the layout mounted long ago. warmOpenTabCharacters is
-	// once-per-session guarded, so a re-run is free.
-	$effect(() => {
-		if (rt.restored) warmOpenTabCharacters();
-	});
 
 	onMount(() => {
 		warmAvatars();
@@ -284,36 +265,18 @@
 		)
 	);
 
-	/** ↻ BACK TO CAVEATS ALONE (2026-08-17). Gauge round L6 had added `|| hasAura`
-	 *  so the standing "how the aura is modelled" block could reach a
-	 *  fully-curated team with no caveats — that block lives at the head of the
-	 *  aura LOG now, so this reason left with it, and keeping the second gate
-	 *  would open an EMPTY notes panel. `plannerView.hasAura` retired in the same
-	 *  breath: it existed for this expression and had no other reader. */
 	/** ⚓ The first-visit sample's credit (2026-10-17): shown at the head of the
-	 *  notes for as long as the notation is still the sample's own — once it is
-	 *  edited, the rotation is the reader's. */
+	 *  Inspector's team page for as long as the notation is still the sample's
+	 *  own — once it is edited, the rotation is the reader's. */
 	let sampleCredit = $derived.by(() => {
-		const sample = sampleById(rt.activeTab.sample);
+		const sample = sampleById(rt.tab.sample);
 		return sample && sample.notation === rt.notation ? sample : null;
-	});
-	let hasNotes = $derived(slotCaveats.length > 0 || sampleCredit !== null);
-
-	$effect(() => {
-		pv.hasCaveats = hasNotes;
-		// A rebuild that leaves nothing to annotate closes the panel; the band's
-		// own button is disabled in the same breath by the flag above.
-		// ⛔ `closeIfShowing`, not `aside = null` — a caveat-free team must not
-		// close the LOG panel as a side effect (2026-08-17).
-		if (!hasNotes) pv.closeIfShowing('notes');
 	});
 
 	/** ⚓ ONE COLUMN, TWO POSSIBLE OCCUPANTS — the aside is a slot and this is the
 	 *  single expression that decides what fills it (see ToolColumns' header, and
 	 *  `plannerView.AsidePanel` for why the exclusivity is in the state). */
-	let showAside = $derived(
-		(pv.showNotes && hasNotes) || (pv.showLog && pv.hasAuraLog) || pv.showInspector
-	);
+	let showAside = $derived((pv.showLog && pv.hasAuraLog) || pv.showInspector);
 
 	/** The inspector's team page: the seated characters, each once, in slot
 	 *  order. */
@@ -970,7 +933,7 @@
 	<RotationTimeline
 		bind:notation={rt.notation}
 		bind:seating={rt.seating}
-		tabId={rt.activeTabId}
+		tabId={rt.tab.id}
 		characterSlots={slots}
 		tabLoadout={rt.tabLoadout}
 		tabCon={effectiveCon}
@@ -983,7 +946,7 @@
 	</RotationTimeline>
 {/snippet}
 
-<!-- ── The aside column: the notes ────────────────────────────────────────── -->
+<!-- ── The aside column: the log or the inspector ────────────────────────────────────────── -->
 {#snippet asideColumn()}
 	{#if pv.showLog}
 		<!-- ⚓ THE LANE IN WORDS. The same projection the chart draws (see
@@ -1020,12 +983,6 @@
 						pv.inspectTeam();
 					}
 				: undefined}
-		/>
-	{:else}
-		<RotationNotes
-			sample={sampleCredit}
-			entries={slotCaveats}
-			teamIds={slots.filter((id, i) => id && slots.indexOf(id) === i)}
 		/>
 	{/if}
 {/snippet}
@@ -1382,7 +1339,7 @@
 	}
 
 	/* The log fills the aside box and scrolls inside it — the same arrangement
-	   RotationNotes makes, for the same reason: the box's height is the main
+	   PlannerInspector makes, for the same reason: the box's height is the main
 	   column's (or the screen's below the bands, if shorter — the column is
 	   sticky, `asideSticky`), so a long transcript scrolls in place and can
 	   never grow the tool. */

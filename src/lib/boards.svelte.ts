@@ -3,10 +3,8 @@
  *
  * THE BOARD — the Team Builder's document (lineups design §2.2; rulings §9 and
  * §10, 2026-10-08). A board is a LINEUP of teams: three for Stygian Onslaught,
- * two for Abyss, as many as the player wants. Boards are tabs, in the same
- * grammar as the Planner's rotation tabs (⚓ Nate: "so people already know how
- * they behave"), and share their machinery — the limit, the room-making rule
- * and Recently closed — through `tabSet.ts`.
+ * two for Abyss, as many as the player wants. The Builder shows one board,
+ * the profile's current lineup document.
  *
  * ══ A TEAM'S ROTATIONS ARE DERIVED, NOT LINKED (⚓ Nate, §10.2) ═════════════
  *
@@ -17,10 +15,10 @@
  *
  * ⚓ THE BUILDER NEVER REWRITES A SAVED ROTATION. Swapping on a board changes
  * the board's team and nothing else; carrying a rotation across to a new
- * character is "Try in Planner", which opens a NEW tab. (A first design linked
- * teams to live Planner tabs and renamed in their notation; tabs are scratch
- * space, and the link needed locked tabs, close-snapshots and a "remove from
- * the rotation too?" question to stay honest. Retired the same day.)
+ * character is "Try in Planner", which makes a NEW rotation. (A first design
+ * linked teams to live Planner tabs and renamed in their notation; the link
+ * needed locked tabs, close-snapshots and a "remove from the rotation too?"
+ * question to stay honest. Retired the same day.)
  *
  * ══ CONSTELLATIONS (⚓ Nate, §9.5 + §10.2) ══════════════════════════════════
  *
@@ -35,9 +33,8 @@
 
 import { characterKey } from './data/characterLookup';
 import { TEAM_SIZE, notationHasActions, seatsOfSaved, teamKey } from './utils/notationEdit';
-import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
-import { ownership, type SavedBoardTeam, type SavedNotation } from './stores';
+import { ownership, type SavedNotation } from './stores';
 import { get } from 'svelte/store';
 
 export type TeamSlot = string | null;
@@ -75,10 +72,6 @@ export type Board = {
 	 *  Builder's (`$lib/endgame`), and this module is reached from the Planner
 	 *  too, so it must not import 187 KB of bosses. */
 	season?: string;
-	/** The saved-board entry this tab is linked to, as `RotationTab.savedId`. */
-	savedId?: string;
-	/** When this board was last on screen (ms) — see `tabSet.closeCandidate`. */
-	viewedAt?: number;
 };
 
 /** Teams per board. A SAFETY guard for a decoded link as much as a product
@@ -89,8 +82,6 @@ export const BOARD_TEAM_LIMIT = 12;
  *  the menu state's Add to a lineup (design §3), which runs while the Builder
  *  may not be mounted. The Builder clears it once it has taken it. */
 export const boardFocus = $state<{ teamId: string | null }>({ teamId: null });
-
-export const recentlyClosedBoards = createRecentlyClosed<Board>('critcalc:recentlyClosedBoards');
 
 function genId(): string {
 	return Math.random().toString(36).slice(2, 10);
@@ -114,8 +105,8 @@ export function makeTeam(slots: TeamSlot[] = emptySlots()): BoardTeam {
 	return { id: genId(), slots: normalizeSlots(slots) };
 }
 
-/** The three shapes a new lineup can take, in menu order: band A's + off the
- *  switch, the Library's New lineup under it. */
+/** The three shapes a new lineup can take, in menu order (the Library's,
+ *  Teams' and a team's New lineup menus). */
 export const BOARD_PRESETS: readonly { key: BoardPreset; label: string; hint: string }[] = [
 	{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
 	{ key: 'abyss', label: 'Spiral Abyss', hint: 'Two teams' },
@@ -128,8 +119,7 @@ export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board 
 		label,
 		preset,
 		teams: Array.from({ length: PRESET_TEAMS[preset] }, () => makeTeam()),
-		noRepeats: preset !== 'custom',
-		viewedAt: Date.now()
+		noRepeats: preset !== 'custom'
 	};
 }
 
@@ -224,7 +214,7 @@ export function withoutRepeats(
 ): TeamSlot[][] {
 	const order = [...keepOrder, ...teams.map((_, i) => i).filter((i) => !keepOrder.includes(i))];
 	// A plain array, not a Set: this is a pure function and nothing here is
-	// state (see documentBar.copyName for the lint rule's false alarm).
+	// state (see `tabCharacterIds` for the lint rule's false alarm).
 	const seen: string[] = [];
 	const out = teams.map((slots) => [...slots]);
 	for (const t of order) {
@@ -243,112 +233,40 @@ class BoardsState {
 	/** ⚓ The cold start is the CURRENT Stygian Onslaught (§11.2): the tool at
 	 *  its most useful, the mode most players come for. No `season` is stored, so
 	 *  the board FOLLOWS the season (the Team Builder reads an unset season as
-	 *  the current one) until its first edit pins it (§11.6 item 4). */
-	boards = $state<Board[]>([makeBoard('Lineup 1', 'stygian')]);
-	activeBoardId = $state<string>(this.boards[0].id);
+	 *  the current one) until its first edit pins it (§11.6 item 4). The
+	 *  storage session replaces it with the profile's current lineup. */
+	board = $state<Board>(makeBoard('Lineup 1', 'stygian'));
 	/** ⚓ May this board be changed? False while another tab holds it
 	 *  (rotationTabs.canEdit's rule). Set by the storage session. */
 	canEdit: (id: string) => boolean = () => true;
 	restored = $state(false);
 
-	get activeBoard(): Board {
-		return this.boards.find((b) => b.id === this.activeBoardId) ?? this.boards[0];
-	}
-
-	/** Take a stored board set (`null` keeps the cold start) and mark the state
+	/** Show a stored board (`null` keeps the cold start) and mark the state
 	 *  restored: the profile's current lineup, from the storage session
 	 *  (build plan §13). */
-	restoreFrom(stored: { boards: Board[]; activeBoardId: string } | null): void {
+	restoreFrom(stored: Board | null): void {
 		if (stored) {
-			this.boards = stored.boards.map((b) => ({
-				...b,
-				preset: b.preset ?? 'custom',
-				teams: b.teams.map((t) => ({ ...t, slots: normalizeSlots(t.slots ?? []) }))
-			}));
-			this.activeBoardId = this.boards.some((b) => b.id === stored.activeBoardId)
-				? stored.activeBoardId
-				: this.boards[0].id;
+			this.board = {
+				...stored,
+				preset: stored.preset ?? 'custom',
+				teams: stored.teams.map((t) => ({ ...t, slots: normalizeSlots(t.slots ?? []) }))
+			};
 		}
 		this.restored = true;
 	}
 
-	/** Hand the boards to the storage session's sink. Reads every persisted
+	/** Hand the board to the storage session's sink. Reads every persisted
 	 *  field; never writes $state. */
 	persist(): void {
-		const snapshot = { boards: this.boards, activeBoardId: this.activeBoardId };
+		const snapshot = this.board;
 		if (!this.restored) return;
-		this.persistSink?.(snapshot.boards, snapshot.activeBoardId);
+		this.persistSink?.(snapshot);
 	}
 
 	/** The store's sink (see `rotationTabs.persistSink`, the same rule). */
-	persistSink: ((boards: Board[], activeBoardId: string) => void) | null = null;
+	persistSink: ((board: Board) => void) | null = null;
 
-	// ── Board tabs ──────────────────────────────────────────────────────────
-
-	#stampLeaving(): void {
-		const now = Date.now();
-		this.boards = this.boards.map((b) =>
-			b.id === this.activeBoardId ? { ...b, viewedAt: now } : b
-		);
-	}
-
-	switchBoard(id: string): void {
-		if (id === this.activeBoardId || !this.boards.some((b) => b.id === id)) return;
-		this.#stampLeaving();
-		this.activeBoardId = id;
-	}
-
-	/** Open a board (a new one, a saved one, a shared one, a reopened one) and
-	 *  make it active. False at the limit — the caller makes room first. */
-	openBoard(board: Omit<Board, 'id'> & { id?: string }): boolean {
-		if (this.boards.length >= TAB_LIMIT) return false;
-		this.#stampLeaving();
-		const id = board.id && !this.boards.some((b) => b.id === board.id) ? board.id : genId();
-		this.boards = [...this.boards, { ...board, id, viewedAt: Date.now() }];
-		this.activeBoardId = id;
-		return true;
-	}
-
-	addBoard(preset: BoardPreset = 'custom', season?: string): boolean {
-		return this.openBoard({
-			...makeBoard(`Lineup ${this.boards.length + 1}`, preset),
-			...(season && { season })
-		});
-	}
-
-	/** Close a board and hand it back for Recently closed. The last board
-	 *  never closes. */
-	closeBoard(id: string): Board | undefined {
-		if (this.boards.length <= 1) return undefined;
-		const idx = this.boards.findIndex((b) => b.id === id);
-		if (idx < 0) return undefined;
-		const closed = this.boards[idx];
-		this.boards = this.boards.filter((b) => b.id !== id);
-		if (id === this.activeBoardId) {
-			this.activeBoardId = this.boards[Math.min(idx, this.boards.length - 1)].id;
-		}
-		return closed;
-	}
-
-	renameBoard(id: string, label: string): Board | undefined {
-		const trimmed = label.trim();
-		if (!trimmed) return undefined;
-		const board = this.boards.find((b) => b.id === id);
-		this.#updateBoard(id, (b) => ({ ...b, label: trimmed }));
-		return board;
-	}
-
-	reorderBoards(fromId: string, toId: string, side: 'left' | 'right'): void {
-		if (fromId === toId) return;
-		const arr = [...this.boards];
-		const [dragged] = arr.splice(
-			arr.findIndex((b) => b.id === fromId),
-			1
-		);
-		const toIdx = arr.findIndex((b) => b.id === toId);
-		arr.splice(side === 'left' ? toIdx : toIdx + 1, 0, dragged);
-		this.boards = arr;
-	}
+	// ── The board ───────────────────────────────────────────────────────────
 
 	setSeason(id: string, season: string): void {
 		this.#updateBoard(id, (b) => ({ ...b, season }));
@@ -378,7 +296,7 @@ class BoardsState {
 
 	#updateBoard(id: string, fn: (b: Board) => Board): void {
 		if (!this.canEdit(id)) return;
-		this.boards = this.boards.map((b) => (b.id === id ? fn(b) : b));
+		if (this.board.id === id) this.board = fn(this.board);
 	}
 
 	#updateTeam(boardId: string, teamId: string, fn: (t: BoardTeam) => BoardTeam): void {
@@ -389,7 +307,7 @@ class BoardsState {
 	}
 
 	addTeam(boardId: string, slots?: TeamSlot[]): BoardTeam | undefined {
-		const board = this.boards.find((b) => b.id === boardId);
+		const board = this.board.id === boardId ? this.board : undefined;
 		if (!board || board.teams.length >= BOARD_TEAM_LIMIT) return undefined;
 		const team = makeTeam(slots);
 		this.#updateBoard(boardId, (b) => ({ ...b, teams: [...b.teams, team] }));
@@ -433,7 +351,7 @@ class BoardsState {
 
 	/** The OTHER teams `id` sits on, when the board forbids repeats. */
 	#teamsHolding(boardId: string, id: TeamSlot, exceptTeamId: string): string[] {
-		const board = this.boards.find((b) => b.id === boardId);
+		const board = this.board.id === boardId ? this.board : undefined;
 		if (!id || !board?.noRepeats) return [];
 		return board.teams
 			.filter((t) => t.id !== exceptTeamId && slotOfCharacter(t.slots, id) >= 0)
@@ -547,34 +465,4 @@ export function fromSharedBoard(
 			return { id: genId(), slots, con };
 		})
 	};
-}
-
-// ---------------------------------------------------------------------------
-// The bank — saved boards (stores.ts `savedBoards`)
-// ---------------------------------------------------------------------------
-
-/** Every team with each member's level PINNED (team → roster → 0), so a saved
- *  board stays what it was when the roster changes — a saved rotation's
- *  densify rule. The pin is kept; it counts again only while it still holds. */
-export function toSavedTeams(
-	board: Board,
-	saved: readonly SavedNotation[],
-	roster: Record<string, number>
-): SavedBoardTeam[] {
-	return board.teams.map((t) => ({
-		id: t.id,
-		slots: t.slots,
-		con: denseCon(t, saved, roster),
-		...(t.pinnedRotationId && { pinnedRotationId: t.pinnedRotationId })
-	}));
-}
-
-/** A saved board's teams, ready to open. */
-export function fromSavedTeams(teams: readonly SavedBoardTeam[]): BoardTeam[] {
-	return teams.map((t) => ({
-		id: genId(),
-		slots: normalizeSlots(t.slots),
-		con: { ...(t.con ?? {}) },
-		...(t.pinnedRotationId && { pinnedRotationId: t.pinnedRotationId })
-	}));
 }

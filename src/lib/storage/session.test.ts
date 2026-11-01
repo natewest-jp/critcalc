@@ -196,14 +196,14 @@ describe('two tabs, one store', () => {
 	it('a delete in tab B is not undone by tab A; A moves off it', async () => {
 		const A = await tab();
 		const B = await tab();
-		expect(A.rt.activeTabId).toBe('d1');
+		expect(A.rt.tab.id).toBe('d1');
 		expect(B.s.readOnly).toContain('d1');
 		await B.s.remove('d1');
 		await wait();
 		await A.edit('Bennett E Q > Xiangling Q');
 		await A.s.flush();
 		expect((await get(db, 'documents', 'd1'))?.deleted).toBe(true);
-		expect(A.rt.activeTabId).toBe('d2');
+		expect(A.rt.tab.id).toBe('d2');
 	});
 
 	it('rename + pin in tab B survive tab A autosaving (even before the message lands)', async () => {
@@ -219,7 +219,7 @@ describe('two tabs, one store', () => {
 		expect(d?.pinned).toBe(true);
 		expect((d?.body as RotationBody).notation).toBe('Bennett E Q > Xiangling Q');
 		await wait();
-		expect(A.rt.tabs[0].label).toBe('National');
+		expect(A.rt.tab.label).toBe('National');
 		// And A's later saves keep them.
 		await A.edit('Bennett E Q > Xiangling Q E');
 		await A.s.flush();
@@ -232,7 +232,7 @@ describe('two tabs, one store', () => {
 		const B = await tab();
 		await B.s.rename('d1', 'Renamed in B');
 		expect((await get(db, 'documents', 'd1'))?.name).toBe('Renamed in B');
-		expect(B.rt.tabs[0].label).toBe('Renamed in B');
+		expect(B.rt.tab.label).toBe('Renamed in B');
 	});
 
 	it('one failed write does not end autosave', async () => {
@@ -633,7 +633,7 @@ describe('a store the session cannot start on (⚓ Nate 2026-10-31)', () => {
 		// and begun waiting for it.
 		const failing = await brokenLineup();
 		const A = await tab();
-		expect(A.rt.activeTabId).toBe('d1');
+		expect(A.rt.tab.id).toBe('d1');
 		const B = await failingTab(failing);
 		expect(B.inMemory).toBe(true);
 		expect(B.s.readOnly).toEqual([]);

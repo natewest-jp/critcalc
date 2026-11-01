@@ -4,10 +4,10 @@
  * IndexedDB and AUTOSAVE to them (§4.1), instead of reading and writing their
  * localStorage tab keys.
  *
- * ⚓ Until the new bars land (2b), each tool still runs on its tab model and
- * each tab IS a document, keyed by the document's id (`convert.ts`). The tab
- * models are untouched apart from a persistence SINK: `persist()` hands this
- * module its snapshot rather than writing localStorage, so ⚓ localStorage is
+ * Each tool holds ONE document at a time in its working shape (`rotationTabs`
+ * as a single tab, `boards` as a single board), keyed by the document's id
+ * (`convert.ts`). Each hands this module its snapshot through a persistence
+ * SINK (`persist()`) rather than writing localStorage, so ⚓ localStorage is
  * left as the migration found it (copy-only, §13.1).
  *
  * ⚓ The two-tab rule (§13.3): a document is SAVED only by the tab holding its
@@ -170,8 +170,8 @@ export const recency = (d: Pick<DocumentRecord, 'openedAt' | 'updatedAt'>): numb
 	Math.max(d.openedAt ?? 0, d.updatedAt);
 
 type Pending = {
-	planner?: { tabs: RotationTab[]; activeId: string };
-	builder?: { boards: Board[]; activeId: string };
+	planner?: RotationTab;
+	builder?: Board;
 };
 
 /** One document a write would save, as `#collect` finds it. */
@@ -579,7 +579,7 @@ class StorageSession {
 	 *  `null` for a blank that is not a document yet. */
 	currentId(tool: DocTool): string | null {
 		if (this.active) {
-			const id = tool === 'planner' ? rotationTabs.activeTabId : boards.activeBoardId;
+			const id = tool === 'planner' ? rotationTabs.tab.id : boards.board.id;
 			return this.#records.has(id) ? id : null;
 		}
 		return this.profile?.current[tool] ?? null;
@@ -650,16 +650,16 @@ class StorageSession {
 	/** Put a name on the tab or board showing a document; `null` goes back to
 	 *  the derived label. False when no tool shows it. */
 	#relabel(id: string, name: string | null): boolean {
-		if (rotationTabs.tabs.some((t) => t.id === id)) {
+		if (rotationTabs.tab.id === id) {
 			const label = name ?? this.#derived.get(id) ?? rotationLabel(rotationTabs.seats);
 			if (!name) this.#derived.set(id, label);
-			rotationTabs.tabs = rotationTabs.tabs.map((t) => (t.id === id ? { ...t, label } : t));
+			rotationTabs.tab = { ...rotationTabs.tab, label };
 			return true;
 		}
-		if (boards.boards.some((b) => b.id === id)) {
-			const label = name ?? this.#derived.get(id) ?? lineupLabel(boards.activeBoard);
+		if (boards.board.id === id) {
+			const label = name ?? this.#derived.get(id) ?? lineupLabel(boards.board);
 			if (!name) this.#derived.set(id, label);
-			boards.boards = boards.boards.map((b) => (b.id === id ? { ...b, label } : b));
+			boards.board = { ...boards.board, label };
 			return true;
 		}
 		return false;
@@ -752,7 +752,7 @@ class StorageSession {
 			this.#written.set(id, JSON.stringify({ name: doc.name, body: doc.body }));
 			this.#relabel(id, doc.name);
 		}
-		if (doc.type === 'rotation' && rotationTabs.activeTabId === id) this.#plannerContext(doc);
+		if (doc.type === 'rotation' && rotationTabs.tab.id === id) this.#plannerContext(doc);
 	}
 
 	/** The Profile page's Clear data (⚓ Nate 2026-10-23: the ACTIVE profile's,
@@ -828,7 +828,7 @@ class StorageSession {
 
 	/** Let go of the document a tool is leaving, so another tab may edit it. */
 	#release(tool: DocTool): void {
-		this.#letGo(tool === 'planner' ? rotationTabs.activeTabId : boards.activeBoardId);
+		this.#letGo(tool === 'planner' ? rotationTabs.tab.id : boards.board.id);
 	}
 
 	/** Give a document up: its lock, any wait for it, its read-only mark. */
@@ -844,13 +844,13 @@ class StorageSession {
 			const tab = rotationToTab(doc);
 			this.#remember(doc, tab.label);
 			void this.#hold(doc.id);
-			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+			rotationTabs.restoreFrom(tab, false);
 			this.#plannerContext(doc);
 		} else {
 			const board = lineupToBoard(doc);
 			this.#remember(doc, board.label);
 			void this.#hold(doc.id);
-			boards.restoreFrom({ boards: [board], activeBoardId: board.id });
+			boards.restoreFrom(board);
 		}
 	}
 
@@ -861,9 +861,9 @@ class StorageSession {
 	#showBlank(tool: DocTool): void {
 		if (tool === 'planner') {
 			const label = rotationLabel([]);
-			const tab: RotationTab = { id: newTabId(), label, notation: '', viewedAt: Date.now() };
+			const tab: RotationTab = { id: newTabId(), label, notation: '' };
 			this.#derived.set(tab.id, label);
-			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+			rotationTabs.restoreFrom(tab, false);
 			this.#plannerContext(null);
 		} else {
 			const seed = this.#blankSeed;
@@ -874,7 +874,7 @@ class StorageSession {
 				board.teams[0] = { ...board.teams[0], slots: normalizeSlots(seed.team) };
 				boardFocus.teamId = board.teams[0].id;
 			}
-			boards.restoreFrom({ boards: [board], activeBoardId: board.id });
+			boards.restoreFrom(board);
 		}
 	}
 
@@ -882,7 +882,7 @@ class StorageSession {
 
 	async #loadPlanner(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'planner');
-		rotationTabs.persistSink = (tabs, activeId) => this.#queue({ planner: { tabs, activeId } });
+		rotationTabs.persistSink = (tab) => this.#queue({ planner: tab });
 		rotationTabs.canEdit = () => this.#mayEdit(this.currentId('planner'));
 		if (profile.current.planner === null) {
 			this.#showBlank('planner');
@@ -890,7 +890,7 @@ class StorageSession {
 			const tab = rotationToTab(doc);
 			this.#remember(doc, tab.label);
 			await this.#hold(doc.id);
-			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+			rotationTabs.restoreFrom(tab, false);
 			this.#plannerContext(doc);
 		} else {
 			// No current rotation: Theorycraft's first visit opens on a sample
@@ -905,7 +905,7 @@ class StorageSession {
 
 	async #loadBuilder(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'builder');
-		boards.persistSink = (list, activeId) => this.#queue({ builder: { boards: list, activeId } });
+		boards.persistSink = (board) => this.#queue({ builder: board });
 		boards.canEdit = (id) => this.#mayEdit(id);
 		if (profile.current.builder === null) {
 			this.#showBlank('builder');
@@ -913,7 +913,7 @@ class StorageSession {
 			const board = lineupToBoard(doc);
 			this.#remember(doc, board.label);
 			await this.#hold(doc.id);
-			boards.restoreFrom({ boards: [board], activeBoardId: board.id });
+			boards.restoreFrom(board);
 		} else {
 			// ⚠ Never `restoreFrom(null)`: it keeps the other profile's lineup.
 			this.#showBlank('builder');
@@ -999,23 +999,17 @@ class StorageSession {
 	async #reload(id: string): Promise<void> {
 		const doc = this.#db ? await get(this.#db, 'documents', id) : undefined;
 		if (!doc || doc.deleted) return;
-		if (doc.type === 'rotation' && rotationTabs.tabs.some((t) => t.id === id)) {
+		if (doc.type === 'rotation' && rotationTabs.tab.id === id) {
 			const tab = rotationToTab(doc);
 			this.#remember(doc, this.#derived.get(id) ?? tab.label);
-			rotationTabs.restoreFrom(
-				{ tabs: rotationTabs.tabs.map((t) => (t.id === id ? tab : t)), activeTabId: id },
-				false
-			);
+			rotationTabs.restoreFrom(tab, false);
 			// Its pair too (2026-10-27): a comparison ended or begun in the tab
 			// that holds it showed on here until a reload.
 			this.#plannerContext(doc);
-		} else if (doc.type === 'lineup' && boards.boards.some((b) => b.id === id)) {
+		} else if (doc.type === 'lineup' && boards.board.id === id) {
 			const board = lineupToBoard(doc);
 			this.#remember(doc, this.#derived.get(id) ?? board.label);
-			boards.restoreFrom({
-				boards: boards.boards.map((b) => (b.id === id ? board : b)),
-				activeBoardId: id
-			});
+			boards.restoreFrom(board);
 		}
 	}
 
@@ -1063,18 +1057,22 @@ class StorageSession {
 		const out: (Entry & { fresh: boolean })[] = [];
 		const nameOf = (id: string, label: string) =>
 			nameToStore(label, this.#derived.get(id), this.#records.get(id)?.name ?? null);
-		for (const tab of planner?.tabs ?? []) {
-			const body = tabToRotationBody(tab);
-			const fresh = !this.#records.has(tab.id);
+		if (planner) {
+			const body = tabToRotationBody(planner);
+			const fresh = !this.#records.has(planner.id);
 			// A blank tab is not a document until something is in it.
-			if (fresh && !body.notation.trim() && body.slots.every((s) => !s)) continue;
-			out.push({ id: tab.id, type: 'rotation', name: nameOf(tab.id, tab.label), body, fresh });
+			if (!fresh || body.notation.trim() || body.slots.some((s) => s)) {
+				const name = nameOf(planner.id, planner.label);
+				out.push({ id: planner.id, type: 'rotation', name, body, fresh });
+			}
 		}
-		for (const board of builder?.boards ?? []) {
-			const body = boardToLineupBody(board);
-			const fresh = !this.#records.has(board.id);
-			if (fresh && body.teams.every((t) => t.slots.every((s) => !s))) continue;
-			out.push({ id: board.id, type: 'lineup', name: nameOf(board.id, board.label), body, fresh });
+		if (builder) {
+			const body = boardToLineupBody(builder);
+			const fresh = !this.#records.has(builder.id);
+			if (!fresh || body.teams.some((t) => t.slots.some((s) => s))) {
+				const name = nameOf(builder.id, builder.label);
+				out.push({ id: builder.id, type: 'lineup', name, body, fresh });
+			}
 		}
 		return out;
 	}
@@ -1095,11 +1093,11 @@ class StorageSession {
 			for (const entry of this.#collect(taken)) {
 				wrote = (await this.#save(db, entry, now)) || wrote;
 			}
-			if (planner && this.#records.has(planner.activeId)) {
-				current = { ...current, planner: planner.activeId };
+			if (planner && this.#records.has(planner.id)) {
+				current = { ...current, planner: planner.id };
 			}
-			if (builder && this.#records.has(builder.activeId)) {
-				current = { ...current, builder: builder.activeId };
+			if (builder && this.#records.has(builder.id)) {
+				current = { ...current, builder: builder.id };
 			}
 			if (
 				current.planner !== profile.current.planner ||
@@ -1334,7 +1332,7 @@ class StorageSession {
 		if (!pairId || !this.#db) return;
 		// The store has the last word: another tab may have ended or renamed it.
 		void get(this.#db, 'documents', pairId).then((p) => {
-			if (rotationTabs.activeTabId !== doc!.id) return;
+			if (rotationTabs.tab.id !== doc!.id) return;
 			this.plannerPair = pairOf(p);
 		});
 	}
@@ -1355,7 +1353,7 @@ class StorageSession {
 	async #currentRotation(): Promise<RotationDocument | null> {
 		if (!this.active || !this.#db) return null;
 		await this.flush();
-		const d = await get(this.#db, 'documents', rotationTabs.activeTabId);
+		const d = await get(this.#db, 'documents', rotationTabs.tab.id);
 		return d && !d.deleted && d.type === 'rotation' ? d : null;
 	}
 
@@ -1515,7 +1513,7 @@ class StorageSession {
 	 * was ordered.
 	 */
 	async endPair(home: 'self' | 'other'): Promise<void> {
-		const id = rotationTabs.activeTabId;
+		const id = rotationTabs.tab.id;
 		const pair = this.plannerPair;
 		if (!pair) return;
 		await this.#setPair(id, null);
@@ -2267,12 +2265,12 @@ class StorageSession {
 		const switched = await this.toTheorycraft();
 		await this.flush();
 		this.#release('planner');
-		const tab: RotationTab = { ...doc, id: newTabId(), viewedAt: Date.now() };
+		const tab: RotationTab = { ...doc, id: newTabId() };
 		this.#fromLink.add(tab.id);
 		// ⚓ Unnamed (§4.2): "Shared rotation" is the planner's word for an
 		// arrival, not the sender's name for it, so the label stays derived.
 		this.#derived.set(tab.id, tab.label);
-		rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+		rotationTabs.restoreFrom(tab, false);
 		return { switched, id: tab.id, movable: this.moveTargets.length > 0 };
 	}
 
@@ -2280,9 +2278,9 @@ class StorageSession {
 		const switched = await this.toTheorycraft();
 		await this.flush();
 		this.#release('builder');
-		const b: Board = { ...board, id: newTabId(), viewedAt: Date.now() };
+		const b: Board = { ...board, id: newTabId() };
 		this.#fromLink.add(b.id);
-		boards.restoreFrom({ boards: [b], activeBoardId: b.id });
+		boards.restoreFrom(b);
 		return { switched, id: b.id, movable: this.moveTargets.length > 0 };
 	}
 
@@ -2495,8 +2493,8 @@ class StorageSession {
 			});
 		}
 		const isDoc = (id: string) => this.#records.has(id) || docs.some((d) => d.id === id);
-		const planner = pending.planner && isDoc(pending.planner.activeId);
-		const builder = pending.builder && isDoc(pending.builder.activeId);
+		const planner = pending.planner && isDoc(pending.planner.id);
+		const builder = pending.builder && isDoc(pending.builder.id);
 		const roster = this.#rosterChanges(this.#rosterPending);
 		writeJournal(this.#page, {
 			at,
@@ -2504,8 +2502,8 @@ class StorageSession {
 			...((planner || builder) && {
 				current: {
 					profileId,
-					...(planner && { planner: pending.planner!.activeId }),
-					...(builder && { builder: pending.builder!.activeId })
+					...(planner && { planner: pending.planner!.id }),
+					...(builder && { builder: pending.builder!.id })
 				}
 			}),
 			...(roster && { roster: { profileId, changes: roster } })

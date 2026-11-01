@@ -17,9 +17,13 @@ import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 import { NOTE_SET_IDS, ORDER_IDS, SOUND_MODES, SWAP_STYLES, VOICE_IDS } from '$lib/playback/tones';
 import { notationHasActions } from '$lib/utils/notationEdit';
 import { MAX_NOTATION_CHARS } from '$lib/utils/tokenizer';
-import { RECENTLY_CLOSED_CAP, TAB_LIMIT } from '$lib/tabSet';
 import type { LoadoutEntry } from '$lib/stores';
 import { recordBackup } from '$lib/utils/storageDurability';
+
+/** The caps the old layout kept its lists to: open tabs per tool, and
+ *  Recently closed. An old backup's lists are trimmed to them on import. */
+const TAB_LIMIT = 12;
+const RECENTLY_CLOSED_CAP = 20;
 
 // Must stay in sync with the private key constants in stores.ts.
 export const BACKUP_KEYS = [
