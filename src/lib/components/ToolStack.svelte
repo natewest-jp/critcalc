@@ -552,8 +552,8 @@
 	   bars demo's centre). The zone stays as layout: it still takes the width
 	   the flanks leave and centres what it holds. Its padding went with the
 	   ground: it held controls off a rail's ends, and there are none.
-	   `:where` adds no weight, so this outranks the rule above by order alone. */
-	:global(:where(:root[data-next])) .band--3up > .band-zone--center {
+	   It outranks the rule above by order alone. */
+	.band--3up > .band-zone--center {
 		padding: 0;
 		background: none;
 	}

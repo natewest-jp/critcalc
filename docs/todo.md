@@ -13,7 +13,6 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ⏭ Next (after the streamlining)
 
-- **`data-next`, the old layout's last trace** (`docs/rounds/retire-old-layout-round.md`). On its own branch for Nate's eye: unwrapping the `:where(:root[data-next])` rules makes the profiles layout's CSS apply from the first frame, which moves first paint. It also settles the no-JavaScript paint (control chips in Title Case, selected states with no mark).
 - **Kokomi A1 Tamakushi Casket: Q refreshes her Bake-Kurage (⚓ Nate 2026-10-28: "a little more", so Next; player report, 2026-10-27).** gcsim `asc.go` `a1`: at Q + 46f, if `kokomiskill` is live, it is SET to 12s + 1f remaining; the tick task keeps its phase (it re-checks the status each tick). `durationExtensions` only ADDS a delta, so this needs a new refresh-to-remaining primitive: schema + lint, the summon window end, the live tick chain's liveness (`sim/aura.ts`), and the marker walk (`collectSummonTicks`), which must agree. Same reporter's C4 ATK SPD stays unmodelled (no attack speed anywhere).
 - **Help additions** (three pieces, after the streamlining, which may change what Help needs to show):
   - **The Atlas's roles, explained (from the memory triage).** No user-facing text says the roles come from Imaginarium Theater and are a presence classification, not a ranking (only code comments: `capabilities/roles.ts`, `builder/lib/atlas.ts`). Copy is Nate's; propose it first.

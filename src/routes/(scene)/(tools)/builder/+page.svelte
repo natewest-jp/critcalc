@@ -1968,7 +1968,7 @@
 	/* Clear closes the cell at the pane's edge, past the capped search, so it
 	   lines up with the strip's end (⚓ Nate 2026-10-25). With the pane switch
 	   ending the band it stays beside the lens instead. */
-	:global(:where(:root[data-next])) .tb-band-cell > .tb-clear:last-child {
+	.tb-band-cell > .tb-clear:last-child {
 		margin-left: auto;
 	}
 	/* TRIAL (item 26, D2): the Characters cell's switch is its LAST child,

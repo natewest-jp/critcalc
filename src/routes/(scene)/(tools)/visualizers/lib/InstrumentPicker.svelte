@@ -291,8 +291,8 @@
 	}
 	/* ↻ 2026-10-25 (Builder toolbar round): the picker is a
 	   CONTROL, so it takes the controls' sentence case; kickers stay caps. */
-	:global(:where(:root[data-next])) .ip-trigger,
-	:global(:where(:root[data-next])) .ip-option {
+	.ip-trigger,
+	.ip-option {
 		letter-spacing: normal;
 		text-transform: none;
 	}

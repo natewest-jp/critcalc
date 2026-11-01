@@ -52,8 +52,6 @@
 
 	// The storage opens and migrates (copy-only, build plan §13.1).
 	onMount(() => {
-		// The layout's own geometry keys off this (app.css § THE NEW LAYOUT).
-		document.documentElement.dataset.next = '';
 		void import('$lib/storage/boot').then((m) => m.ensureStorage());
 	});
 
