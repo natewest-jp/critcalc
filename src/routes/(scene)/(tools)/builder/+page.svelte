@@ -405,7 +405,7 @@
 	}
 
 	/** Take `id` off `from` through the ordinary removal (a pin drops as with
-	 *  any member change); band A says so, with Undo. */
+	 *  any member change); a toast says so, with Undo. */
 	function leaveTeam(id: string, from: BoardTeam): void {
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
@@ -584,17 +584,17 @@
 		void tick().then(() => (scroller.scrollTop = key === null ? rosterScrollTop : 0));
 	});
 
-	/** The pick, in swap mode: the swap itself, then out of the mode. Band A
+	/** The pick, in swap mode: the swap itself, then out of the mode. A toast
 	 *  says what happened, with Undo; when the swap broke a pinned rotation it
-	 *  also offers that rotation with the newcomer in it — a NEW tab, never a
-	 *  rewrite of the saved one (§10.2). */
+	 *  also offers that rotation with the newcomer in it — a NEW rotation,
+	 *  never a rewrite of the saved one (§10.2). */
 	function swapIn(id: string): void {
 		const s = swapping;
 		if (!s) return;
 		swapping = null;
 		previewHeld = id;
 		if (s.teamId === ERRAND_ID) {
-			// The Planner's own team: rename in its tab and go back to it.
+			// The Planner's own team: swap the seat there and go back to it.
 			rt.setSlot(s.slot, id);
 			errandOpen = false;
 			chosenTeamId = null;
@@ -1233,9 +1233,9 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<!-- The tool stack: bands + surface (toolbar round). Band A is this tool's
-     DOCUMENT — its lineup tabs and Save/Library/Share. Band B is its VIEW: the
-     panes, the filters, and the constellations you are reading at. -->
+<!-- The tool stack: the toolbar + surface (toolbar round). Band B is the
+     VIEW: the panes, the filters, and the constellations you are reading at.
+     The document (the board) is the top bar's. -->
 <!-- The con lens's options — one list, rendered by the lens's own menu at
      desk width and by band B's fold below BP.compact. -->
 <!-- THE PANE SWITCH below the dock (§11.6, Nate's pick): ONE plate naming
@@ -1746,13 +1746,6 @@
 		   row (the roomy form follows the board's measured width). */
 	}
 
-	/* Band A's end zone: Save, Library and Share. */
-	.tb-doc-actions {
-		display: flex;
-		align-items: center;
-		gap: var(--band-item-gap, 4px);
-	}
-
 	/* ONE frame holding every zone, inside a ToolStack that supplies the
 	   ribbon inset, the band header and the viewport-height budget (toolbar
 	   round). The .tb wrapper is gone with them: it existed to carry the
@@ -1926,7 +1919,7 @@
 		padding-left: calc(0.6rem + 13px + 0.4rem);
 	}
 	/* A segment has no plate of its own — on an unpainted band
-	   they wear the glass a band A segment wears. */
+	   it wears the glass. */
 	.tb-show {
 		flex: none;
 		height: var(--band-ctrl-h);
@@ -1936,7 +1929,7 @@
 	/* ⚠ The SEGMENT'S buttons sit INSIDE its 2px track, so they are the band's
 	   control height less the track — band B's blanket `.btn { height }` made
 	   them 36 in a 36 track, and the selected ring and the hover hung 4px off
-	   the track's foot. The track keeps the glass a band A segment wears. */
+	   the track's foot. The track keeps the glass. */
 	.tb-show > .btn {
 		height: calc(var(--band-ctrl-h) - 4px);
 	}
@@ -1981,9 +1974,9 @@
 	.tb-more {
 		display: contents;
 	}
-	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
-	   their mark and fold their word — one rule for every band control. ↻ The
-	   lineup cell of band B too (pane switch + Add team): on a Custom board
+	/* Below BP.compact ($lib/breakpoints.ts — 40rem) a toolbar control keeps
+	   its mark and folds its word — one rule for every band control. ↻ The
+	   lineup cell too (pane switch + Add team): on a Custom board
 	   below ~407px its flex:none children pushed No repeats off the screen
 	   (87px spill at 320), and the fold returns ~160px. ↻ Except the pane
 	   switch's word, which never folds (↻ 2026-10-20: with No repeats a

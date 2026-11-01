@@ -25,7 +25,7 @@
 // ⚠ Extensions are load-bearing on these two — see toolGutter.ts. This file is
 // a geometry module in the same family, and Node's native type stripping (what
 // scripts/probe-*.mjs run under) does no extension inference.
-import { BAND_A_H, BAND_B_H, BAND_GAP, BAND_STACK_TO_SURFACE } from './toolBands.ts';
+import { BAND_B_H, BAND_STACK_GAP } from './toolBands.ts';
 import { RIBBON_GAP } from './toolGutter.ts';
 
 /**
@@ -312,13 +312,13 @@ export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
  * that retired with the stretch: the strip ends in a POINT now, and a point
  * does not overhang anything, it just stops. Only `ribbonHead` reads this.
  *
- * ↻ 12 → 0 (⚓ NATE 2026-08-17): THE TOP EDGE MEETS BAND A'S. The last thing
+ * ↻ 12 → 0 (⚓ NATE 2026-08-17): THE TOP EDGE MEETS THE TOOLBAR'S. The last thing
  * the overhang was still doing was the tall-bench idea's other half — reading
  * as the taller object — and with a pointed bottom the strip already terminates
  * differently from everything beside it, so the 12px was buying a difference
  * that the silhouette states more clearly on its own. What it COST is an edge
  * that lines up with nothing: the topmost horizontal in the tool, 12px above
- * the row of document controls it stands beside.
+ * the row of controls it stood beside.
  *
  * ⚠ THE CARDS DO NOT MOVE, and the algebra is why this is safe to change on
  * its own: the card column sits at `ribbon top + RIBBON_CHROME + ribbonHead()`,
@@ -369,11 +369,10 @@ export const RIBBON_FRAME_TOP_INSET = 28;
  * with `benchBand.trackTop`, which the planner's timeline publishes.
  */
 export function ribbonHead(trackTop: number, bandBH = BAND_B_H): number {
-	// The top bar carries the document, so there is no band A and the surface
-	// starts that much higher. ↻ 2e: the toolbar follows the interface size,
-	// so its height is MEASURED (`benchBand.bandBH`, published by ToolStack)
-	// rather than BAND_B_H.
-	const stack = BAND_STACK_TO_SURFACE - (BAND_A_H + BAND_GAP) - BAND_B_H + bandBH;
+	// From the stack's top to the surface's: the toolbar, then the gap. The
+	// toolbar follows the interface size, so its height is MEASURED
+	// (`benchBand.bandBH`, published by ToolStack).
+	const stack = bandBH + BAND_STACK_GAP;
 	return stack + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
 }
 

@@ -437,9 +437,8 @@
 <svelte:window onkeydown={onTransportKey} onpointerdowncapture={onPointerFocus} />
 
 <section class="rotation-page">
-	<!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
-	     both (toolbar round). The tab bar that used to float above the frame is
-	     band A's left zone now, and the view controls that rode the ruler's
+	<!-- The tool stack: the toolbar + surface, with the bench ribbon's dock
+	     spanning both (toolbar round). The view controls that rode the ruler's
 	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
 	     content margin below the strip's bottom end. -->
 	<ToolStack benched floor benchCollapsed={benchFolded} benchRail={phoneRail}>
@@ -631,7 +630,7 @@
 		     the rail runs from the zoom cluster to the layer plates. -->
 		{#snippet bandBCenter()}
 			<!-- What the chart is showing: how long the rotation runs. A readout,
-			     not a control — it leads band B the way the tabs lead band A. -->
+			     not a control. -->
 			<!-- ↻ 2026-10-24 (toolbar refinement): Compare left for the bench
 			     (CompareControl's header says why); the centre is the Total and
 			     the hand that lengthens it. -->
@@ -1233,7 +1232,7 @@
 	/* The transport: a bare flex group, NOT a plate — band B's 3-up put these
 	   controls out on the scene, and giving the group its own glass while the
 	   buttons inside it keep theirs would rebuild the stack that was just
-	   removed. Each control paints itself, exactly as band A's buttons do. */
+	   removed. Each control paints itself. */
 	.rp-transport {
 		display: flex;
 		align-items: center;

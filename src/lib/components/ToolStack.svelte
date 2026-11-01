@@ -14,20 +14,20 @@
 	// ---------------------------------------------------------------------------
 	// THE TOOL STACK (toolbar round, ⚓ NATE 2026-08-07) — one component owning
 	// the whole vertical arrangement every tool shares: the bench ribbon's dock,
-	// the two-tier band header, and the tool's own surface below it. The geometry
-	// lives in $lib/toolBands.ts; see its header for the diagram and the rule
-	// that decides which band a control belongs in.
+	// the toolbar, and the tool's own surface below it. The geometry lives in
+	// $lib/toolBands.ts; see its header for the diagram and what the toolbar
+	// holds.
 	//
 	// Why the dock moved HERE from inside each tool's frame: it used to hang off
 	// the frame's padding box, which is why it needed RIBBON_DOCK_LEFT to walk
 	// back out past --tool-pad-x and the frame's own border. The stack's padding
 	// box already starts at the content margin, so the anchor is simply left: 0,
-	// top/bottom: -RIBBON_OVERHANG_Y — and, crucially, it now spans the BANDS
+	// top/bottom: -RIBBON_OVERHANG_Y — and, crucially, it spans the TOOLBAR
 	// TOO, which is the whole point of the round: the ribbon stands beside the
 	// entire tool object, not just its surface.
 	//
-	// ↻ 2026-08-17: RIBBON_OVERHANG_Y is 0 — the strip's top edge is band A's
-	// top edge (⚓ Nate). The insets are still written through the constant
+	// ↻ 2026-08-17: RIBBON_OVERHANG_Y is 0 — the strip's top edge is the
+	// toolbar's top edge (⚓ Nate). The insets are still written through the constant
 	// rather than dropped, because "the dock spans the stack, offset by the
 	// overhang" is the relationship; the overhang merely happens to be nothing.
 	//
@@ -90,9 +90,10 @@
 		floor?: boolean;
 		bandBLeft?: Snippet;
 		/**
-		 * A middle RAIL for band B. Opting in splits the band into three separate
-		 * plates — control · rail · control — and moves the ground off the band
-		 * onto this zone. The planner's band B is its one caller.
+		 * A middle zone for band B. Opting in splits the band into three —
+		 * control · centre · control — and takes the ground off the band: the
+		 * flanks are plates, and the centre stands on the night. The planner's
+		 * band B is its one caller.
 		 */
 		bandBCenter?: Snippet;
 		bandBRight?: Snippet;
@@ -137,9 +138,9 @@
 >
 	{#if benched}
 		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the (tools)
-		     layout measures to place the bench strip. It spans the stack — bands
+		     layout measures to place the bench strip. It spans the stack — toolbar
 		     AND surface — offset by RIBBON_OVERHANG_Y, which is 0 since
-		     2026-08-17: the strip's top edge and band A's are the same line.
+		     2026-08-17: the strip's top edge and the toolbar's are the same line.
 		     Absolute insets resolve against .tool-stack's PADDING box, which
 		     begins at the content margin (the padding-left is what holds the tool
 		     off the ribbon's column), so left: 0 IS the content margin. -->
@@ -154,12 +155,10 @@
 		<div class="tool-stack-dock" data-bench-anchor></div>
 	{/if}
 
-	<!-- The band header. ↻ ⚓ NATE 2026-08-09/10, over two rounds: band A LOSES
-	     ITS BAND, and band B loses it too WHEREVER A TOOL SPLITS IT. Both rows
-	     are runs of glass plates on the scene; the only rail left is the one a
-	     tool asks for by filling bandBCenter, and that rail is a plate like the
-	     others. See the CSS for why the ctx-glass class stays on rows that no
-	     longer paint. -->
+	<!-- The toolbar (band B). ↻ ⚓ NATE 2026-08-09/10: it loses its ground
+	     WHEREVER A TOOL SPLITS IT, and becomes a run of glass plates on the
+	     scene. See the CSS for why the ctx-glass class stays on a row that no
+	     longer paints. -->
 	<div class="bands">
 		<div
 			class="band band-b ctx-glass"
@@ -176,25 +175,21 @@
 			{:else}
 				<!-- 🐛 RENDERED ONLY WHEN FILLED. An empty flex item is still a flex
 				     item, so it takes no width and its GAP anyway — which put the
-				     planner's rail 4px right of the tab above it once band B became a
-				     3-up with nothing in its left zone (⚓ Nate: "the left of the band
-				     B bar looks a little off, from the tabs above it… I think it's
-				     different from the TB's band because the TB has a button on the
-				     far left"; measured 270 against band A's 266, where the TB sits
-				     at 266/266). The invariant this restores is PLATE EDGES align
-				     down the stack — their inks do not, and cannot, since each plate
-				     insets its own label by its own padding. -->
+				     planner's centre zone 4px off the content margin once band B
+				     became a 3-up with nothing in its left zone (⚓ Nate caught it).
+				     The invariant is that PLATE EDGES align down the stack — their
+				     inks do not, and cannot, since each plate insets its own label by
+				     its own padding. -->
 				{#if bandBLeft}<div class="band-zone">{@render bandBLeft()}</div>{/if}
 				{#if bandBCenter}
-					<!-- THE RAIL. In the 3-up split this zone is the only thing in either
-					     band that still paints a ground: the two flanking controls became
-					     their own plates (⚓ Nate 2026-08-10 — "separate them from their
-					     parent band"), so what is left of the band is the strip its
-					     navigation sits on, and that strip is now a plate too. -->
+					<!-- THE CENTRE. In the 3-up split the two flanking controls are their
+					     own plates (⚓ Nate 2026-08-10 — "separate them from their parent
+					     band"), and this zone takes what they leave. It stands on the
+					     night: see `.band--3up > .band-zone--center`. -->
 					<div class="band-zone band-zone--center">{@render bandBCenter()}</div>
 				{/if}
 				<!-- Same guard, same reason: a band whose right zone is empty would
-				     hold a trailing gap its rail should have had. -->
+				     hold a trailing gap its centre should have had. -->
 				{#if bandBRight}<div class="band-zone band-zone--end">{@render bandBRight()}</div>{/if}
 			{/if}
 		</div>
@@ -222,14 +217,13 @@
 		--stack-gap: var(--band-stack-gap);
 		gap: var(--stack-gap);
 		min-width: 0;
-		/* How far the SURFACE starts below the stack's top: BAND_STACK_TO_SURFACE
-		   in this form, and the row form below adds the bench row and a second
-		   band gap. Published for a surface that has to know where it begins on
-		   screen — the planner's sticky aside (ToolColumns `asideSticky`, sweep
+		/* How far the SURFACE starts below the stack's top: the toolbar and the
+		   stack gap in this form (as `ribbonHead` counts it), and the row form
+		   below adds the bench row and a second band gap. Published for a
+		   surface that has to know where it begins on screen — the planner's
+		   sticky aside (ToolColumns `asideSticky`, sweep
 		   2026-10-15 §3 item 11). Here rather than inline because the row form
-		   overrides it from a media query. ⚠ BAND_STACK_TO_SURFACE (JS) still
-		   carries band A's height, which `ribbonHead` subtracts; this form has
-		   none. */
+		   overrides it from a media query. */
 		--stack-to-surface: calc(var(--band-b-h) + var(--band-stack-gap));
 	}
 
@@ -324,10 +318,9 @@
 	   what the ribbon then measures itself against.
 
 	   ↻ ⚓ NATE 2026-10-13 (the portrait round): the row sits BETWEEN BAND B
-	   AND THE SURFACE — beside the timeline it labels, under the controls —
-	   where it used to sit above band A. The upright card made it compact
-	   enough to belong there. `order` moves the dock (first in source, for the
-	   column form) after the bands; the stack's flex gap spaces it on both
+	   AND THE SURFACE — beside the timeline it labels, under the controls.
+	   The upright card made it compact enough to belong there. `order` moves
+	   the dock (first in source, for the column form) after the toolbar; the stack's flex gap spaces it on both
 	   sides.
 
 	   ⚠ THE LITERAL IS THE TABLE'S, BY HAND: custom properties do not work in
@@ -345,12 +338,12 @@
 	   height; the ribbon reads `narrowForm()`, the same list. */
 	@media (max-width: 54rem), (max-height: 30rem) {
 		/* ⚓ Nate 2026-10-14 (the mobile round): band B → bench → surface take
-		   the BAND gap, the one band A and B already keep, so the narrow stack
-		   reads as one tight instrument head rather than three spaced rows. */
+		   the BAND gap, the gap between controls, so the narrow stack reads as
+		   one tight instrument head rather than three spaced rows. */
 		.tool-stack--benched {
 			padding-left: 0;
 			--stack-gap: var(--band-gap);
-			/* bands (A · gap · B), gap, the bench row, gap. */
+			/* the toolbar, gap, the bench row, gap. */
 			--stack-to-surface: calc(var(--band-b-h) + 2 * var(--band-gap) + var(--bench-row-h));
 		}
 		.tool-stack--benched .bands {
@@ -420,12 +413,7 @@
 		}
 	}
 
-	/* ↻ ⚓ NATE 2026-08-09: THE BANDS NO LONGER ABUT — they are split by
-	   --band-gap, the same gutter as everything else. So this is a flex column
-	   of two independent boxes rather than one clipped object: no shared
-	   border-radius, no overflow:hidden, each band rounding its own four
-	   corners. (The clip had a second job — keeping the two tiers inside one
-	   outer radius — which simply stops existing.) */
+	/* `.bands` holds the toolbar; the notice banners float just under it. */
 	.bands :global(.tool-banners) {
 		position: absolute;
 		top: calc(100% + var(--band-gap));
@@ -438,7 +426,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--band-gap);
-		/* Its own stacking context. The bands sit ABOVE the surface in source
+		/* Its own stacking context. The toolbar sits ABOVE the surface in source
 		   order and must not be overlapped by anything the surface raises (the
 		   planner's Source overlay bounds to its frame, so this is
 		   belt-and-braces). */
@@ -447,9 +435,9 @@
 		flex-shrink: 0;
 	}
 
-	/* Each band is a plain two-zone rail; the context supplies the ground.
+	/* A band is a plain two-zone rail; the context supplies the ground.
 
-	   ↻ 2026-08-09 (Genshin Night): BOTH BANDS ARE GLASS — furniture sitting ON
+	   ↻ 2026-08-09 (Genshin Night): THE TOOLBAR IS GLASS — furniture sitting ON
 	   the page rather than being it, which is exactly what the material is for.
 
 	   ⚠ Band B stopped being ctx-light, and it had no choice: there is no light
@@ -458,13 +446,7 @@
 	   toolbar-translucency trial ("band B being paper is the constraint"). This
 	   is the round where that constraint got paid.
 
-	   The A/B distinction is unchanged — A is the DOCUMENT (the shared tabs,
-	   Save/Load/Share), B is the VIEW — and it needs no ground trick to carry it
-	   at all: two rows with air between them are already two things.
-
-	   ↻ 2026-08-10: there is ONE glass stop across both rows now, and most of
-	   what is left of "a band" is this box's height and gap. Band A paints
-	   nothing; band B paints only when a tool has not split it. */
+	   The toolbar paints only when a tool has not split it. */
 	.band {
 		display: flex;
 		align-items: center;
@@ -475,11 +457,9 @@
 		border-radius: var(--band-radius);
 	}
 
-	/* ↻ ⚓ NATE 2026-08-10: the SAME glass as band A — "the lighter of the two".
-	   It was --surface-well, one rung down, on the reasoning that the VIEW band
-	   should read as recessed relative to the DOCUMENT band. There is no
-	   DOCUMENT band any more to be recessed from, and two different glass stops
-	   in one header only read as one of them being dirty. */
+	/* ↻ ⚓ NATE 2026-08-10: the panel glass, "the lighter of the two". It was
+	   --surface-well, one rung down, to read as recessed under a document row
+	   that no longer exists. */
 	.band-b {
 		height: var(--band-b-h);
 		background: var(--surface);
@@ -492,8 +472,8 @@
 		color: var(--text);
 	}
 
-	/* Zones shrink before they overflow — a long document-tab run must ellipsize
-	   inside its own strip rather than push the actions off the band's end. */
+	/* Zones shrink before they overflow, rather than push the end zone off the
+	   band's end. */
 	.band-zone {
 		display: flex;
 		align-items: center;
@@ -509,18 +489,16 @@
 	/* ── THE 3-UP SPLIT (⚓ NATE 2026-08-10) ────────────────────────────────
 	       ████ ███████████████████████████████████ ████
 	   Three objects on one row: a control, the navigation RAIL, a control —
-	   "separate them from their parent band", split by --band-item-gap, the same
-	   gap band A puts between its buttons.
+	   "separate them from their parent band", split by --band-item-gap, the gap
+	   between controls. The band stops painting, and the row is only a layout.
+	   ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): the centre's rail retired too
+	   — a readout stands on the night, only a control gets glass (the bars
+	   demo's centre).
 
-	   So the BAND stops painting and the CENTRE zone starts. What used to be one
-	   rail with things sitting in it is now three plates of the same glass, and
-	   the row itself is only a layout.
-
-	   ⚠ THE RAIL IS NOT CENTRED ON THE BAND, and it cannot be while the two
-	   flanking controls have their own widths (Clear team ≈ 110px, a con lens
-	   that reads "C0" or "My roster"). What IS centred is the navigation inside
-	   the rail, and the rail is the object the eye measures — the few pixels
-	   between the rail's centre and the band's do not read. Forcing them equal
+	   ⚠ THE CENTRE ZONE IS NOT CENTRED ON THE BAND, and it cannot be while the
+	   two flanking controls have their own widths. What IS centred is what the
+	   zone holds — the few pixels between the zone's centre and the band's do
+	   not read. Forcing them equal
 	   would mean pinning both flanks to a hand-tuned width that the con lens's
 	   own label would then break. */
 	.band--3up {
@@ -531,7 +509,9 @@
 	.band--3up > .band-zone {
 		flex: 0 0 auto;
 	}
-	/* The rail takes everything the two controls leave. */
+	/* The centre takes everything the two controls leave, and centres what it
+	   holds. No ground and no padding: it stands on the night, and padding
+	   only held controls off a rail's ends. */
 	.band--3up > .band-zone--center {
 		flex: 1 1 auto;
 		justify-content: center;
@@ -540,42 +520,29 @@
 		   percentage height on a flex item is the shape that has silently failed
 		   in this stack before (see .tool-stack--fill). */
 		align-self: stretch;
-		padding: 0 var(--band-pad-x);
-		border-radius: var(--band-radius);
-		background: var(--surface);
-		/* The selected plate stands PROUD of the rail (Genshin's own tab strip
-		   does this — see the Team Builder's nav), so nothing here may clip. */
-		overflow: visible;
-	}
-	/* ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): the rail
-	   RETIRES — a readout stands on the night, only a control gets glass (the
-	   bars demo's centre). The zone stays as layout: it still takes the width
-	   the flanks leave and centres what it holds. Its padding went with the
-	   ground: it held controls off a rail's ends, and there are none.
-	   It outranks the rule above by order alone. */
-	.band--3up > .band-zone--center {
 		padding: 0;
-		background: none;
+		border-radius: var(--band-radius);
+		/* A selected plate may stand PROUD of the zone, so nothing here may
+		   clip. */
+		overflow: visible;
 	}
 
 	/* ── BAND B GETS CUT BY THE TOOL'S OWN GAP (⚓ NATE 2026-08-13) ─────────
-	   The third and last way a band can lose its ground, and the reason is the
-	   same one that took band A's and split band B three ways: a rail is only
-	   honest when it holds ONE run of controls.
+	   The second way the toolbar can lose its ground, for the reason that split
+	   it three ways: a rail is only honest when it holds ONE run of controls.
 
-	     band A     spans the screen, paints nothing            (2026-08-09)
 	     band B     paints, unless a tool subdivides it
-	       · 3-up   control · RAIL · control                    (2026-08-10)
+	       · 3-up   control · centre · control                  (2026-08-10)
 	       · full   N runs, one per instrument, cut by the
 	                tile gap — the ground goes with them        (2026-08-13)
 
-	   ⚓ Nate: "band A spans the whole screen, while band B responds to how many
-	   instrument surfaces there are." One continuous rail across three
+	   ⚓ Nate: "band B responds to how many instrument surfaces there are."
+	   One continuous rail across three
 	   instruments said the opposite — that the pickers were one row of peers —
 	   when each of them belongs to the tile underneath it. Cutting the ground at
 	   the tile boundary is the only thing in the header that can say so.
 
-	   AND ITS PADDING GOES WITH IT, exactly as band A's did: --band-pad-x exists
+	   AND ITS PADDING GOES WITH IT: --band-pad-x exists
 	   to hold controls off a rail's ends, and with no rail an inset is just the
 	   first plate failing to line up with the surface below. (The Visualizers'
 	   workspace grid drops its matching padding in the same breath — the two

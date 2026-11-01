@@ -462,7 +462,7 @@
 		['tokens', 'Tokens'],
 		['type', 'Typography'],
 		['buttons', 'Buttons'],
-		['chips', 'Chips & tabs'],
+		['chips', 'Chips'],
 		['booleans', 'Toggles'],
 		['surfaces', 'Surfaces'],
 		['insets', 'Inset borders'],
@@ -1134,8 +1134,8 @@
 				<code>BAND_RADIUS</code> in <code>src/lib/toolBands.ts</code>.
 			</li>
 			<li>
-				<code>--r-sm</code> — <strong>everything else.</strong> Controls, chips, tabs, panels, cards,
-				both tool frames.
+				<code>--r-sm</code> — <strong>everything else.</strong> Controls, chips, panels, cards, both tool
+				frames.
 			</li>
 			<li>
 				<code>--r-md</code> — <strong>surfaces that float.</strong> Modals (the Links and Move
@@ -1202,9 +1202,9 @@
 			perceived as <strong>smear</strong> — the border looks like it is catching up with you. A
 			panel's change is a broad area of low-contrast alpha; the eye integrates it, and it needs real
 			time to read as <em>arriving</em> rather than popping. Same milliseconds, opposite verdicts.
-			So: <code>--t-snap</code> = <strong>a control</strong> (buttons, chips, tabs, links, fields,
-			pips, tiles, cards, small marks). <code>--t-quick</code> = <strong>a surface</strong> (modals
-			and their scrims, popovers, menus, the Source takeover). <code>--t-move</code> =
+			So: <code>--t-snap</code> = <strong>a control</strong> (buttons, chips, links, fields, pips,
+			tiles, cards, small marks). <code>--t-quick</code> = <strong>a surface</strong> (modals and
+			their scrims, popovers, menus, the Source takeover). <code>--t-move</code> =
 			<strong>travel</strong>, something crossing a distance because a state changed.
 		</p>
 		<p class="sg-note">
@@ -1324,12 +1324,8 @@
 			36 · 64 from <code>huge</code> (2200px). The control grows a little faster than its type, so
 			the larger sizes are not cramped. Picked by width alone: the Settings pin retired on
 			2026-10-26, since browser zoom already moves the width these queries read. ToolStack sets band
-			B's row and controls to <code>--ui-ctl-h</code>, and band B's <code>.btn</code>/<code
-				>.tab</code
-			>
-			type to
-			<code>--ui-ctl-fs</code>, so <code>BAND_CTRL_H</code> (36) is the old layout's number. 🎛️ Nate's
-			to tune by eye. The swatches show Medium.
+			B's row and controls to <code>--ui-ctl-h</code>, and band B's <code>.btn</code> type to
+			<code>--ui-ctl-fs</code>. 🎛️ Nate's to tune by eye. The swatches show Medium.
 		</p>
 		<div class="sg-swatches">
 			{#each interfaceSize as t (t.name)}{@render swatch(t)}{/each}
@@ -1582,15 +1578,15 @@
 				</div>
 				{@render spec(
 					':focus-visible',
-					'2px accent outline at 2px offset, on .btn / .chip / .tab / .toggle / .check alike'
+					'2px accent outline at 2px offset, on .btn / .chip / .toggle / .check alike'
 				)}
 			</div>
 		</div>
 	</section>
 
-	<!-- ═══════════════════════════════════════════════════════ CHIPS & TABS ══ -->
+	<!-- ════════════════════════════════════════════════════════════════ CHIPS ══ -->
 	<section id="chips">
-		<h2>Chips & tabs <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<h2>Chips <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
 			↻ 2026-10-25 (⚓ Nate): <strong>On and chosen are a fill; a ring is the hand.</strong>
 			A chosen chip, segment or filter, and a plate that is on, takes the accent at 20% over the button
@@ -1652,31 +1648,6 @@
 					'6px · square · glyph-only. Rests at 0.35 opacity; chosen lifts to 1 and fills with its hue (28% over --btn-face), no ring'
 				)}
 			</div>
-
-			<div class="sg-cell">
-				<div class="sg-stage">
-					<div class="tab tab--lg active">Roster</div>
-					<div class="tab tab--lg">Atlas</div>
-					<div class="tab tab--lg">Compare</div>
-				</div>
-				<div class="sg-stage">
-					<div class="tab tab--closeable active">
-						Vape Hu Tao <button class="tab-close" aria-label="close"
-							><Mark name="close" size={11} /></button
-						>
-					</div>
-					<div class="tab tab--closeable">
-						Aggravate <button class="tab-close" aria-label="close"
-							><Mark name="close" size={11} /></button
-						>
-					</div>
-					<button class="btn btn--sm btn--icon"><Mark name="plus" /></button>
-				</div>
-				{@render spec(
-					'.tab · .active · .tab--lg · .tab--closeable',
-					'ONE tab system, body face — drops Bitter and the 5px radius. ⚠ No .tab renders in the live site: the document tabs lived in band A, which is gone (the document is the top bar’s). The class stays until step 5 retires the old layout; --lg has had no consumer since 2026-08-09'
-				)}
-			</div>
 		</div>
 	</section>
 
@@ -1692,7 +1663,7 @@
 		</p>
 		<p class="sg-note">
 			Their "on" colors differ on purpose: <strong>selection is accent everywhere</strong> (chips,
-			tabs, buttons, checkboxes), while a switch reports a <em>state of the world</em> and so speaks
+			buttons, checkboxes), while a switch reports a <em>state of the world</em> and so speaks
 			<code>--ui-positive</code>.
 		</p>
 
@@ -2034,9 +2005,7 @@
 			The top bar (<code>TopBar.svelte</code>, <a href="#redesign">the redesign</a>) holds the
 			document: the current tool's button names it and opens its Library, with the save status
 			beside it. The toolbar is <code>ToolStack</code>'s one row, still called band B in the code:
-			the view, what you are looking at inside this tool and how. ↻ The old layout had a second
-			band, band A, for the document (tabs · save · load · share · reset); step 5 retired it.
-			Geometry knobs:
+			the view, what you are looking at inside this tool and how. Geometry knobs:
 			<code>src/lib/toolBands.ts</code>. Records: <code>docs/rounds/top-bar-round.md</code>,
 			<code>docs/rounds/toolbar-refine-round.md</code>,
 			<code>docs/rounds/builder-toolbar-round.md</code>.
@@ -2090,7 +2059,6 @@
 						<strong>One control size.</strong> The toolbar's row and its controls are
 						<code>--ui-ctl-h</code>, and band B's buttons take <code>--ui-ctl-fs</code> as their
 						type, the same as the top bar's (<a href="#tokens">the interface size</a>).
-						<code>BAND_CTRL_H</code> (36) and <code>BAND_A_H</code> are the old layout's numbers.
 					</li>
 					<li>
 						<strong>Band B re-points <code>--text</code> at <code>--muted</code>.</strong> It is a CONTROL
@@ -2098,11 +2066,10 @@
 						Prose belongs in the surface below.
 					</li>
 					<li>
-						<strong>Chosen is a fill here as everywhere</strong> (<a href="#chips"
-							>Chips &amp; tabs</a
-						>): an on plate takes the accent 20% over its face. Below <code>compact</code> a control keeps
-						its mark and drops its word, and the overflow folds into a ⋯ that carries a gold dot while
-						something in it is on.
+						<strong>Chosen is a fill here as everywhere</strong> (<a href="#chips">Chips</a>): an on
+						plate takes the accent 20% over its face. Below <code>compact</code> a control keeps its mark
+						and drops its word, and the overflow folds into a ⋯ that carries a gold dot while something
+						in it is on.
 					</li>
 					<li>
 						<strong>The phone bench has a rail</strong> (⚓ Nate, the toolbar refinement):
@@ -2527,8 +2494,8 @@
 	<section id="migration">
 		<h2>The exceptions</h2>
 		<p class="sg-note">
-			<code>app.css</code> is the only place a button, chip, tab, toggle, note or field is defined,
-			and components keep locals only for geometry or semantics a global cannot know. These are the
+			<code>app.css</code> is the only place a button, chip, toggle, note or field is defined, and
+			components keep locals only for geometry or semantics a global cannot know. These are the
 			things that deliberately <strong>did not</strong> join it — kept on the page so the line stays visible,
 			and so nobody re-opens the argument every six months:
 		</p>
@@ -2600,8 +2567,7 @@
 						<code>.ctx-*</code> blocks. This was a live bug (chips silently turned gold).
 					</li>
 					<li>
-						<strong>The promoted control ink is per-context.</strong> Chips, tabs and buttons rest
-						on
+						<strong>The promoted control ink is per-context.</strong> Chips and buttons rest on
 						<code>--muted</code> and promote on hover/selection to <code>--ink-active</code>, NOT to
 						<code>--text</code>. The light context deliberately inverts its two inks (labels anchor,
 						prose recedes), so <code>--text</code> is the <em>lighter</em> of them there and every

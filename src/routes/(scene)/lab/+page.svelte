@@ -204,10 +204,6 @@
 						<button class="btn btn--primary" type="button">Apply</button>
 						<button class="btn" type="button" disabled>Off</button>
 					</div>
-					<div class="spec-controls">
-						<button class="tab active" type="button">Selected</button>
-						<button class="tab" type="button">Resting</button>
-					</div>
 					<div class="spec-inset inset inset--plain">inset · gold</div>
 					<div class="spec-lines">
 						{#each LINE_STOPS as stop (stop)}

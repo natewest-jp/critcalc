@@ -450,7 +450,7 @@ const BRAND_SIZE = 24; // --fs-4xl, the wordmark
  *  (⚓ Nate, 2026-10-18: "450 or even 400"), ↻ 450 → 400 the same day: 450
  *  still read heavier. */
 const BRAND_WEIGHT_PNG = 400;
-const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (SiteChrome)
+const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (TopBar `.tb-logo`)
 const BRAND_GAP = 6; // 0.35rem
 const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
 const NOTATION_PX = 12;
