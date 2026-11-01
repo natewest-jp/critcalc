@@ -278,10 +278,10 @@ class PlannerViewState {
 	 * The aura transcript for the side column, built by the timeline from the
 	 * lane it already draws (see `$lib/timeline/auraLog`).
 	 *
-	 * ⚠ IT CROSSES THROUGH HERE FOR THE SAME REASON `hasCaveats` DOES: the aside
-	 * is rendered by the PAGE and the lane lives in the timeline, which is the
-	 * page's `main` column — so there is no prop path between them that is not a
-	 * bind threaded two levels.
+	 * ⚠ IT CROSSES THROUGH HERE BECAUSE the aside is rendered by the PAGE and
+	 * the lane lives in the timeline, which is the page's `main` column — so
+	 * there is no prop path between them that is not a bind threaded two
+	 * levels.
 	 * ⚠ The timeline leaves it EMPTY unless the log panel is open. Projecting a
 	 * few hundred rows on every keystroke for a column nobody has opened is the
 	 * same cost the aura lane is already gated against.

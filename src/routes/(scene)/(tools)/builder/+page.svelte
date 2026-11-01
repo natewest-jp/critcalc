@@ -21,6 +21,7 @@
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
+	import { rotationLabel } from '$lib/storage/convert';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { notices, named, type NoticeAction, type NoticeText } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
@@ -224,6 +225,11 @@
 		void s.savedRotations().then((list) => (storeRotations = list));
 	});
 	const bank = $derived(storeRotations);
+	/** The Planner's document as the top bar names it: its stored name, else
+	 *  derived from its team (§4.2). */
+	const plannerDocName = $derived(
+		sessionMod?.storageSession.nameOf(rt.tab.id) ?? rotationLabel(rt.seats)
+	);
 
 	/** The Theorycraft profile has NO roster (↻ 2026-10-25): nothing is owned,
 	 *  wishlisted or levelled there, so the controls that read a roster go —
@@ -1479,7 +1485,7 @@
 					errand={errandTeam
 						? {
 								team: errandTeam,
-								label: `From the Planner: ${rt.tab.label}`,
+								label: `From the Planner: ${plannerDocName}`,
 								onCancel: cancelErrand
 							}
 						: null}

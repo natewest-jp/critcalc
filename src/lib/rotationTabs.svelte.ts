@@ -130,18 +130,6 @@ export function slotsFromNotation(notation: string): string[] {
 	return seen;
 }
 
-/** The character ids a tab actually needs loaded. 'blank' is not a character. */
-export function tabCharacterIds(tab: Pick<RotationTab, 'notation' | 'slots'>): string[] {
-	// A plain array scan, not a Set: the list is four-ish entries and nothing
-	// here is state — `svelte/prefer-svelte-reactivity` would rather see a
-	// SvelteSet, which would be wrong for a pure function.
-	const ids: string[] = [];
-	for (const id of [...(tab.slots ?? []), ...slotsFromNotation(tab.notation ?? '')]) {
-		if (id && id !== 'blank' && !ids.includes(id)) ids.push(id);
-	}
-	return ids;
-}
-
 function genId(): string {
 	return Math.random().toString(36).slice(2, 10);
 }
@@ -150,8 +138,13 @@ function genId(): string {
  *  with no store to make it in. */
 export const newTabId = genId;
 
-function makeTab(label: string): RotationTab {
-	return { id: genId(), label, notation: '' };
+/** Who the document on screen is: its id (the stored document's), label and
+ *  sample. ⛔ Never its content — that is the working state, and a copy here
+ *  would go stale with the first edit. */
+export type TabMeta = Pick<RotationTab, 'id' | 'label' | 'sample'>;
+
+function metaOf(tab: RotationTab): TabMeta {
+	return { id: tab.id, label: tab.label, ...(tab.sample && { sample: tab.sample }) };
 }
 
 /** A tab's seating: its stored slots and flags, or — saved before slots
@@ -178,13 +171,13 @@ function arrivingWithDocument(): boolean {
 
 class RotationTabsState {
 	/**
-	 * The document on screen: its id (the stored document's), label and
-	 * sample. Its working state lives in the fields below. Server and client
-	 * both initialize to the same deterministic default (one empty tab) so SSR
-	 * markup and the hydrating component always agree; the storage session
-	 * restores the real one (`restoreFrom`) after hydration.
+	 * The document on screen (see `TabMeta`); its content is the working state
+	 * below. Server and client both initialize to the same deterministic
+	 * default (one empty tab) so SSR markup and the hydrating component always
+	 * agree; the storage session restores the real one (`restoreFrom`) after
+	 * hydration.
 	 */
-	tab = $state<RotationTab>(makeTab('Tab 1'));
+	tab = $state<TabMeta>({ id: genId(), label: 'Tab 1' });
 
 	// Live working state — kept separate from `tab` so bind:notation on
 	// RotationTimeline works cleanly without circular reactivity.
@@ -313,7 +306,7 @@ class RotationTabsState {
 	 */
 	restoreFrom(stored: RotationTab | null, sample = true): void {
 		if (stored) {
-			this.tab = stored;
+			this.tab = metaOf(stored);
 			this.setDocument(stored.notation, seatingOf(stored));
 			this.tabLoadout = stored.tabLoadout ?? {};
 			this.tabCon = stored.tabCon ?? {};
@@ -323,14 +316,14 @@ class RotationTabsState {
 			// unless a share link is arriving, which must land in the empty tab.
 			const sample = pickSample();
 			const tab: RotationTab = {
-				...this.tab,
+				id: this.tab.id,
 				label: `Sample: ${sample.name}`,
 				notation: sample.notation,
 				tabCon: sample.cons ?? {},
 				tabLoadout: sample.loadout ?? {},
 				sample: sample.id
 			};
-			this.tab = tab;
+			this.tab = metaOf(tab);
 			this.setDocument(tab.notation, seatingOf(tab));
 			this.tabCon = tab.tabCon ?? {};
 			this.tabLoadout = tab.tabLoadout ?? {};

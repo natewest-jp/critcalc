@@ -214,7 +214,7 @@ export function withoutRepeats(
 ): TeamSlot[][] {
 	const order = [...keepOrder, ...teams.map((_, i) => i).filter((i) => !keepOrder.includes(i))];
 	// A plain array, not a Set: this is a pure function and nothing here is
-	// state (see `tabCharacterIds` for the lint rule's false alarm).
+	// state, so `svelte/prefer-svelte-reactivity`'s SvelteSet would be wrong.
 	const seen: string[] = [];
 	const out = teams.map((slots) => [...slots]);
 	for (const t of order) {

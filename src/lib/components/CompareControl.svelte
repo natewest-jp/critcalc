@@ -98,7 +98,7 @@
 
 	/** An empty blank is not a document yet, so there is nothing to duplicate
 	 *  (the same test the session's save applies). */
-	const blank = $derived(!rt.tab.notation.trim() && (rt.tab.slots ?? []).every((s) => !s));
+	const blank = $derived(!rt.notation.trim() && rt.seats.every((s) => !s));
 
 	function pick(): void {
 		menu.pickFor = rt.tab.id;
