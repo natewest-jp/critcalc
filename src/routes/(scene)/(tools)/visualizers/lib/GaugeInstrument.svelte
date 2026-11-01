@@ -1259,6 +1259,21 @@
 						onpointercancel={onMarkerUp}
 						onkeydown={(e) => onMarkerKey(e, m)}
 					>
+						<title
+							>{`${elName(m.element)} ${m.gauge}U at ${m.time.toFixed(1)}s. Click to edit, or drag to move.`}</title
+						>
+						<!-- The hover ring: the selected ring's shape in the text colour,
+						     faint, so the pill reads as a button before it is pressed.
+						     Gold stays the editor's. Shown by CSS on :hover only. -->
+						<circle
+							class="gx-marker-hover"
+							cx={m.x}
+							cy={MARKER_PILL_CY}
+							r={MARKER_PILL_R + 3}
+							fill="none"
+							stroke="var(--text)"
+							stroke-width="1.5"
+						/>
 						{#if m.id === editId}
 							<!-- GOLD for selected — the site's rule, and what ties the
 							     editor to the pill it is editing. -->
@@ -1556,6 +1571,7 @@
 		{:else}
 			<p class="note">
 				Point at the chart to read the enemy’s aura state at a moment in time, or click to pin it.
+				Tap a pill to edit it.
 			</p>
 			{#each stripRows as row (row.mod)}
 				<p class="gx-meta gx-status-row">
@@ -1723,8 +1739,10 @@
 	   painted to say "this strip adds" or "this pill drags" — the band already
 	   carries reaction names, pills and hairlines, and a dashed outline or a
 	   hover plate under all of that would compete with the chart it annotates.
-	   `copy` and `grab` are the platform's own words for exactly these two acts,
-	   and the panel's note says them once in prose for anyone who never hovers. */
+	   `copy` and `pointer` are the platform's own words for these two acts, and
+	   the Readout's prompt says them in prose for anyone who never hovers. The
+	   pill alone also takes a faint ring under the pointer (below): it is one
+	   small disc, not the band. */
 	.gx-add-zone {
 		cursor: copy;
 	}
@@ -1734,8 +1752,22 @@
 		cursor: default;
 	}
 
+	/* A press is a tap until it travels past `TAP_SLOP_PX`, so the resting
+	   cursor announces the click (the editor) and the drag only shows once it
+	   has begun. `grab` at rest advertised the secondary act and hid the main one. */
 	.gx-marker {
-		cursor: grab;
+		cursor: pointer;
+	}
+	.gx-marker-hover {
+		opacity: 0;
+	}
+	/* 🎛️ The hover ring's strength. Hover-capable pointers only, so a tap
+	   on touch leaves no stuck ring; hidden while held or while its editor's
+	   gold ring is up. */
+	@media (hover: hover) {
+		.gx-marker:hover:not(.gx-marker--held):not([aria-expanded='true']) .gx-marker-hover {
+			opacity: 0.35;
+		}
 	}
 	/* The disc and the ring paint; only the cut target takes the press, so a
 	   neighbour's disc drawn over this pill's half cannot take it back. */
