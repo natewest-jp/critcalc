@@ -83,3 +83,23 @@ scenario to load an example."), and the Help chapter's two Gauge paragraphs. The
 Vitest 2659 passed, svelte-check clean, lint clean, build. Chrome e2e 71 passed. The flow was
 driven in headless Chrome at desk and phone widths (add, edit, drag, band add, dismissals,
 pin, keyboard, cap, scenarios) with no page errors.
+
+## 7. Follow-up: the pill reads as clickable (branch `polish/gauge-pill-affordance`)
+
+⚓ Nate, testing the merged flow: nothing showed that a pill opens an editor, and the `grab`
+hand said "drag". A press is a tap until it passes `TAP_SLOP_PX`, so the cursor advertised the
+secondary act and hid the main one.
+
+- The pill's resting cursor is `pointer`; `grabbing` appears only once a drag has begun.
+- A faint ring (the selected ring's shape, `--text` at 🎛️ .35) shows under the pointer on
+  hover-capable devices, hidden while held or while the pill's editor is open. Gold stays the
+  editor's.
+- An SVG `<title>` tooltip: "Pyro 1U at 2.0s. Click to edit, or drag to move." It is one
+  template string, because Prettier splits a mixed text node across lines and a native tooltip
+  can show that whitespace.
+- The Readout prompt ends "Tap a pill to edit it." (touch has no hover, so words carry it).
+- Alternative not taken: ending each scenario note with the hint (twelve edits, and the Readout
+  prompt is always on screen).
+
+Copy approved by Nate; he signed off on the look in the dev server. ⏭ Real Safari and iPhone.
+Gates: Vitest 2659 passed, svelte-check clean, lint clean, build; e2e both engines 142 passed.
