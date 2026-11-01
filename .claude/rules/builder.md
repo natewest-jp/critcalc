@@ -19,10 +19,10 @@ Budget: about 6,000 characters. Read `docs/design/team-builder-lineups-design.md
 
 ## Shape
 
-- The Builder's document is a board: a lineup of several teams. Teams on a board can be live-linked (`boardBar.svelte.ts`), and each carries a fingerprint (`Fingerprint.svelte`).
+- The Builder's document is a board: a lineup of several teams (`boards.svelte.ts`; arrivals and Share are `boardBar.svelte.ts`). Each team carries a fingerprint (`Fingerprint.svelte`).
 - The board docks beside the roster. Below `toolMin` the two become tabs, Characters and Lineup.
 - The Builder has no bench and no aside.
-- Inbound links: `?team=` lands on the active board, `?b=` opens a board, and `?swap=N` opens swap mode for a planner slot (a commit returns to the planner).
+- Inbound links: `?team=` lands on the board, `?b=` opens a board, and `?swap=N` opens swap mode for a planner slot (a commit returns to the planner).
 
 ## The roster
 
