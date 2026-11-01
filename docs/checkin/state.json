@@ -1,11 +1,11 @@
 {
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
-		"audited": "fcc117b31",
-		"seenUpstream": "fcc117b31",
-		"date": "2026-10-30",
+		"audited": "39d270e54",
+		"seenUpstream": "39d270e54",
+		"date": "2026-11-01",
 		"tag": "v2.49.0",
-		"note": "no new upstream commits on 2026-10-31; clone fast-forwarded 2350be9e8 → fcc117b31; Wriothesley Revelation (#3212) agrees with our wiki-authored data (queued cross-check), Mavuika no-target fix, rest weapons/artifacts"
+		"note": "clone fast-forwarded fcc117b31 → 39d270e54 (1 commit): Alyosha #3256 drops his Moonsign count (we never gave him the faction) and puts the C2 mark on the primary target (one opponent here, so no change); audit delta is Ifa end_hover from our own 2026-10-30 authoring"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-10-31T00:00:00Z"
+		"lastSeen": "2026-11-01T00:00:00Z"
 	},
 	"genshinDb": "5.2.14",
 	"endgame": {
@@ -25,6 +25,6 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "b24fc1a1"
+		"lastSwept": "84eb2ce8"
 	}
 }
