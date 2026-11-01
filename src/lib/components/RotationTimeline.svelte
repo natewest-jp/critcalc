@@ -22,6 +22,7 @@
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { resolveEntry } from '$lib/storage/teamLoadout';
+	import { rotationLabel } from '$lib/storage/convert';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip, { type TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -1629,8 +1630,12 @@
 				: $siteSettings.humanTimingMode === 'both'
 					? `Human timing · full animations and ${pad} · ${ping}`
 					: `Human timing · ${pad} · ${ping}`;
-		// A name the player gave the document; a derived label is not a title.
-		const tabLabel = sessionMod?.storageSession.nameOf(tabId) ?? null;
+		// The document's name as the top bar shows it: the player's, else the
+		// team's (§4.2), so an unnamed export still carries a title. An empty
+		// team has nothing to name.
+		const named = sessionMod?.storageSession.nameOf(tabId) ?? null;
+		const seated = rotationTabs.seats.some((id) => id !== null);
+		const tabLabel = named ?? (seated ? rotationLabel(rotationTabs.seats) : null);
 		// The bench card's roster comparison (BenchBand's `ownedConOf`): unknown
 		// while nothing is marked owned, null when this character isn't.
 		const rosterHasContent = Object.values($ownership).includes('owned');
