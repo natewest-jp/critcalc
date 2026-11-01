@@ -13,7 +13,7 @@ The tools show how the game's mechanics work and leave the judgment to the playe
 - **Visualizers** (`/visualizers`): eight graph instruments in a tiled workspace.
 - Around them, full-screen sections: Roster, Teams, Library, Help, Settings, Profile, Trash.
 
-Since 2026-10-27 the site runs the profiles layout: each profile holds its own documents in IndexedDB, under a top bar and per-tool toolbars. The previous layout is retired; what is left of it is in `.claude/rules/tool-chrome.md`.
+The site runs the profiles layout: each profile holds its own documents in IndexedDB, under a top bar and per-tool toolbars. What is left of the previous layout is in `.claude/rules/tool-chrome.md`.
 
 ## How we work
 

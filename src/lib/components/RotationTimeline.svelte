@@ -1629,9 +1629,8 @@
 				: $siteSettings.humanTimingMode === 'both'
 					? `Human timing · full animations and ${pad} · ${ping}`
 					: `Human timing · ${pad} · ${ping}`;
-		// The document's own name, unless it is still a default one.
-		const label = rotationTabs.tab.id === tabId ? rotationTabs.tab.label : '';
-		const tabLabel = /^(Tab \d+|Shared rotation|Imported team)$/.test(label) ? null : label || null;
+		// A name the player gave the document; a derived label is not a title.
+		const tabLabel = sessionMod?.storageSession.nameOf(tabId) ?? null;
 		// The bench card's roster comparison (BenchBand's `ownedConOf`): unknown
 		// while nothing is marked owned, null when this character isn't.
 		const rosterHasContent = Object.values($ownership).includes('owned');
@@ -1884,8 +1883,12 @@
 	/** The history buttons' shortcut hint. CodeMirror's keymap is `Mod-z`,
 	 *  which is Ctrl off Apple platforms. Mac on the first paint, read at mount. */
 	let isMac = $state(true);
+	/** The storage session, for the export's title (`nameOf`). The tools
+	 *  layout has already loaded it; this only takes the handle. */
+	let sessionMod = $state<typeof import('$lib/storage/session.svelte') | null>(null);
 	onMount(() => {
 		isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+		void import('$lib/storage/session.svelte').then((m) => (sessionMod = m));
 	});
 	/** px a finger may travel and still count as a tap (dock collapse, key row). */
 	const TAP_SLOP = 10;

@@ -227,9 +227,8 @@
 	// own Escape (it is a modal with a close button), so the page needs none.
 	// ---------------------------------------------------------------------------
 
-	/** Caveats for the slotted kits. Computed HERE, not in the timeline and not
-	 *  in the notes column, because band B's Notes button has to know whether any
-	 *  exist before the column is on screen to say so. */
+	/** Caveats for the slotted kits, for the Inspector's team page. Computed
+	 *  HERE, not in the timeline, because the aside is the page's. */
 	/** ⚓ The EFFECTIVE constellation map — the tab's Layer-2 override over the
 	 *  roster's Layer-1 default, the same resolution `RotationTimeline` feeds the
 	 *  parser. A caveat is gated by its constellation entry (2026-08-18), so the
@@ -293,7 +292,7 @@
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
 	// Below BP.compact band B folds the speed, Laps, Human timing, Log and
-	// Notes into one ⋯ plate — the Team Builder's fold, the same rung. With the
+	// Inspector into one ⋯ plate — the Team Builder's fold, the same rung. With the
 	// transport grown to ⏮ ▶ speed, the row ran ~100px past a 320 band. What
 	// folds is what is SET rather than reached for mid-task: a speed, the two
 	// switches that change what is simulated (Laps, Human timing — both still
@@ -843,12 +842,12 @@
 				<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════
 			     ⚓ TWO PEER TOGGLES, NOT A SEGMENTED PICKER. They share the column,
 			     so opening one closes the other — but each is also independently
-			     closeable, and a 3-state segment (Notes | Log | off) has no honest
+			     closeable, and a 3-state segment (Inspector | Log | off) has no honest
 			     form. Two buttons that each toggle, with the exclusivity in the
 			     state, says exactly what happens. Same group as the layer plates
 			     above them and the same tight gap: both answer "what is on screen".
-			     ⚠ Each disables on its OWN content, which is why they are not one
-			     control — a rotation can easily have a log and no caveats. -->
+			     ⚠ Only the Log disables (on its own content); the Inspector is
+			     never disabled, which is another reason they are not one control. -->
 				<button
 					class="btn btn--sm rp-notes-btn"
 					class:is-active={pv.showLog}
@@ -903,10 +902,10 @@
 			     bands above span both. -->
 			<!-- ⛔ `asideBare` went with the filter rail: it was for the RAIL only,
 			     which painted its own groups and wanted the column to be a gutter
-			     of objects. The NOTES keep the box — they are one continuous
-			     reading and would look shredded in rows. -->
+			     of objects. The Log and the Inspector keep the box — each is one
+			     continuous reading and would look shredded in rows. -->
 			<!-- Below BP.toolMin the aside is a DRAWER over the chart rather than a
-			     column beside it (ToolColumns' sheet): the Log/Notes plates open
+			     column beside it (ToolColumns' sheet): the Log/Inspector plates open
 			     it exactly as they open the column, and closing it nulls the same
 			     state they toggle. -->
 			<ToolColumns
@@ -914,7 +913,7 @@
 				aside={showAside ? asideColumn : undefined}
 				asideSticky
 				sheet={below('toolMin')}
-				asideTitle={pv.showLog ? 'Aura log' : pv.showInspector ? 'Inspector' : 'Notes'}
+				asideTitle={pv.showLog ? 'Aura log' : 'Inspector'}
 				asideWidth={pv.showInspector ? 'var(--rp-inspector-w)' : undefined}
 				onCloseAside={() => (pv.aside = null)}
 			/>
@@ -1054,7 +1053,7 @@
 	}
 
 	/* ── Band B: the planner's VIEW controls ─────────────────────
-	   Total · zoom · Notes. They used to ride the ruler strip's right end
+	   Total · zoom · Log · Inspector. They used to ride the ruler strip's right end
 	   inside the frame, over a gradient that faded the ticks out beneath
 	   them; on the band they sit on an opaque ground and need none of that.
 	   The controls are the shared .btn/.slider — only the pieces the global

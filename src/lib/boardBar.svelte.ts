@@ -25,8 +25,8 @@ import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 /** A team that found no room: what to do about it, too. */
 export const LINEUP_FULL =
 	'The lineup is full, so the team wasn’t added. Choose a team to replace, or use a Custom lineup.';
-/** A board is worth sharing when any of its teams holds anyone. */
-export function boardWorthKeeping(board: Board): boolean {
+/** Any of the board's teams holds anyone: a board worth sharing. */
+export function boardHasMembers(board: Board): boolean {
 	return board.teams.some((t) => t.slots.some((s) => s !== null));
 }
 
@@ -88,7 +88,7 @@ class BoardBarState {
 	/** Copy a `?b=` link to the board. Teams and levels travel, pins
 	 *  never (§9.4). */
 	async shareLink(): Promise<Outcome | null> {
-		if (!boardWorthKeeping(boards.board)) return null;
+		if (!boardHasMembers(boards.board)) return null;
 		try {
 			const url = await this.shareUrl();
 			if (!url) return null;
@@ -107,7 +107,7 @@ class BoardBarState {
 	 *  problem report carries ($lib/feedback.ts). `null` for an empty board. */
 	async shareUrl(): Promise<string | null> {
 		const board = boards.board;
-		if (!boardWorthKeeping(board)) return null;
+		if (!boardHasMembers(board)) return null;
 		// ⚓ A pin names a rotation in the profile's storage.
 		const saved = await (await import('./storage/session.svelte')).storageSession.savedRotations();
 		const param = await encodeBoard(toSharedBoard(board, saved, get(constellations)));

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PLANNER_SAMPLES } from './plannerSamples';
 import { characterIndex } from './characterIndex.generated';
-import { tabCharacterIds } from '$lib/rotationTabs.svelte';
+import { slotsFromNotation } from '$lib/rotationTabs.svelte';
 
 /**
  * The first-visit samples' builds (2026-10-18). 🐛 Four of the first batch
@@ -15,7 +15,7 @@ const byId = new Map(characterIndex.map((c) => [c.id, c]));
 
 describe('PLANNER_SAMPLES builds', () => {
 	for (const s of PLANNER_SAMPLES) {
-		const team = tabCharacterIds({ notation: s.notation });
+		const team = slotsFromNotation(s.notation).filter((id) => id !== 'blank');
 
 		it(`${s.id}: every build key is a member of its team, by id`, () => {
 			for (const id of [...Object.keys(s.cons ?? {}), ...Object.keys(s.loadout ?? {})]) {

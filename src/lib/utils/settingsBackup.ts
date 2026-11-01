@@ -25,7 +25,8 @@ import { recordBackup } from '$lib/utils/storageDurability';
 const TAB_LIMIT = 12;
 const RECENTLY_CLOSED_CAP = 20;
 
-// Must stay in sync with the private key constants in stores.ts.
+// The `critcalc:*` localStorage keys a backup envelope carries; `boot.ts`
+// also reads them to decide whether there is anything to migrate.
 export const BACKUP_KEYS = [
 	'critcalc:siteSettings',
 	'critcalc:constellations',
@@ -466,7 +467,7 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 		characters: Object.keys(cons ?? {}).length,
 		owned: Object.values(own ?? {}).filter((m) => m === 'owned').length,
 		loadouts: Object.keys(load ?? {}).length,
-		// A names-only entry is a TEAM (library.isTeamEntry), not a rotation.
+		// A names-only entry was a TEAM in the old bank, not a rotation.
 		rotations: (notes ?? []).filter((e) => notationHasActions(e.notation as string)).length,
 		lineups: (boards ?? []).length,
 		openTabs:
