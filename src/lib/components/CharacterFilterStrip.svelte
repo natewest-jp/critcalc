@@ -306,12 +306,12 @@
 	   is ON is a dim gold FILL, the toolbar's "on" (app.css, ON IS A DIM GOLD
 	   FILL); the ring is left to the hand, and only where a hand can hover. */
 	@media (hover: hover) {
-		:global(:where(:root[data-next])) .rfs-bar > .btn:hover:not(:disabled) {
+		.rfs-bar > .btn:hover:not(:disabled) {
 			background: var(--surface-hover);
 			box-shadow: inset 0 0 0 1px var(--glass-ring);
 		}
 	}
-	:global(:where(:root[data-next])) .rfs-bar > .btn.is-active {
+	.rfs-bar > .btn.is-active {
 		background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 		color: var(--text);
 	}
@@ -356,7 +356,7 @@
 	}
 	/* An element is chosen in its own hue, and FILLS, as gold does for the
 	   rest. */
-	:global(:where(:root[data-next])) .rfs-bar > .rfs-el.is-active {
+	.rfs-bar > .rfs-el.is-active {
 		background: color-mix(in srgb, var(--el) 24%, var(--btn-face));
 	}
 	.rfs-end {

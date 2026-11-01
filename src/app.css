@@ -760,10 +760,10 @@
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (TopBar.svelte),
 	   so this is its single definition — the tools layout no longer sets its
-	   own. 64px is the midpoint of the two bars it replaced (site 70 / tool
-	   56). ↻ 2026-10-14: the tools start right at it (--tool-pad-top 0) and
-	   their content rolls off under it — the strip's own content ends at 53. */
-	--chrome-h: 64px;
+	   own. It is the top bar's own height, --ui-bar-h, which follows the
+	   interface size (below). ↻ 2026-10-14: the tools start right at it
+	   (--tool-pad-top 0) and their content rolls off under it. */
+	--chrome-h: var(--ui-bar-h);
 	--site-footer-h: 64px;
 	/* THE SITE GUTTER: the screen's side margin, ONE number for the bar and
 	   the tools so the wordmark and the toolbar start on the same line (⚓ the
@@ -1589,11 +1589,6 @@
 		--ui-bar-h: 64px;
 	}
 }
-/* ⚓ THE NEW LAYOUT (build plan §13): the top bar is
-   --ui-bar-h tall, and everything that reserves the bar reads --chrome-h. */
-:root[data-next] {
-	--chrome-h: var(--ui-bar-h);
-}
 /* breakpoints.ts `compact` */
 @media (max-width: 40rem) {
 	:root {
@@ -2145,18 +2140,15 @@
    WebKit crash. Replacing the ground outright with a second declared stop needs
    no arithmetic at all, so the hazard simply leaves. */
 /* ↻ 2026-10-24: only where a pointer can HOVER — a tap leaves :hover stuck
-   on the last plate touched, and a stuck ring reads as a state.
-   Scoped with `:where(:root[data-next])`, which adds NO specificity, so the
-   rule keeps exactly the weight it always had (the root layout sets the
-   attribute on mount). */
+   on the last plate touched, and a stuck ring reads as a state. */
 @media (hover: hover) {
-	:where(:root[data-next]) .band--3up > .band-zone .btn:hover:not(:disabled),
-	:where(:root[data-next]) .btn.btn--glass:hover:not(:disabled) {
+	.band--3up > .band-zone .btn:hover:not(:disabled),
+	.btn.btn--glass:hover:not(:disabled) {
 		background: var(--surface-hover);
 		box-shadow: inset 0 0 0 1px var(--glass-ring);
 	}
 	/* An ON plate keeps its gold under the hand and gains the ink ring. */
-	:where(:root[data-next]) .band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
+	.band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
 		box-shadow: inset 0 0 0 1px var(--glass-ring);
 	}
 }
@@ -2169,10 +2161,9 @@
    restated here because the band's glass rule above outranks it.
    ⚠ A PROPERTY, not a custom property: the nesting law polices declared
    tokens (a mix of a mix INHERITED by a large tree), and this is consumed
-   where it is written, as `.btn.is-active` always has been. Scoped as the
-   hover rule above is. */
-:where(:root[data-next]) .band--3up > .band-zone .btn.is-active,
-:where(:root[data-next]) .band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
+   where it is written, as `.btn.is-active` always has been. */
+.band--3up > .band-zone .btn.is-active,
+.band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--text);
 }
@@ -2193,16 +2184,13 @@
 .band-b .tab,
 .band-b .btn {
 	height: var(--band-ctrl-h);
+	/* ⚓ ONE CONTROL SIZE (phase 2e): the toolbar's type is the
+	   interface size's, as the top bar's is. */
+	font-size: var(--ui-ctl-fs);
 }
 .band-b .btn--icon {
 	height: var(--band-ctrl-h);
 	min-width: var(--band-ctrl-h);
-}
-/* ⚓ ONE CONTROL SIZE (phase 2e): the toolbar's type is the
-   interface size's, as the top bar's is. */
-:root[data-next] .band-b .tab,
-:root[data-next] .band-b .btn {
-	font-size: var(--ui-ctl-fs);
 }
 
 *,
@@ -2722,12 +2710,12 @@ img {
    over the face it reads as the raised pill this group was drawn as.
    Hover only where a pointer can hover, for the same reason as the plates. */
 @media (hover: hover) {
-	:where(:root[data-next]) .segment > .btn:hover {
+	.segment > .btn:hover {
 		background: var(--fill-hover);
 	}
 }
-:where(:root[data-next]) .segment > .btn.is-active,
-:where(:root[data-next]) .segment > .btn.is-active:hover {
+.segment > .btn.is-active,
+.segment > .btn.is-active:hover {
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--ink-active);
 }
@@ -2766,13 +2754,13 @@ img {
    ring was too faint to name the choice. The element and icon chips below
    do the same in their own hue. */
 @media (hover: hover) {
-	:where(:root[data-next]) .chip:hover {
+	.chip:hover {
 		background: var(--accent-hover-fill);
 		color: var(--ink-active);
 	}
 }
-:where(:root[data-next]) .chip.active,
-:where(:root[data-next]) .chip.active:hover {
+.chip.active,
+.chip.active:hover {
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--ink-active);
 }
@@ -2785,7 +2773,7 @@ img {
    in sentence case ("Single aura", "Melt on Frozen"), so it is shown as
    written. `.chip`'s capitalize is for raw ids (element, weapon),
    and on these it turned every sentence into Title Case. */
-:where(:root[data-next]) .chip--control {
+.chip--control {
 	text-transform: none;
 }
 /* Dense instrument rows (gauge presets, application chips) — promoted out of
@@ -2808,8 +2796,8 @@ img {
 	background: color-mix(in srgb, var(--chip-color) 20%, transparent);
 	color: color-mix(in srgb, var(--chip-color) 75%, white);
 }
-:where(:root[data-next]) .chip--element.active,
-:where(:root[data-next]) .chip--element.active:hover {
+.chip--element.active,
+.chip--element.active:hover {
 	background: color-mix(in srgb, var(--chip-color) 24%, var(--btn-face));
 }
 .chip--icon {
@@ -2830,8 +2818,8 @@ img {
 	opacity: 1;
 	background: color-mix(in srgb, var(--chip-color) 15%, transparent);
 }
-:where(:root[data-next]) .chip--icon.active,
-:where(:root[data-next]) .chip--icon.active:hover {
+.chip--icon.active,
+.chip--icon.active:hover {
 	background: color-mix(in srgb, var(--chip-color) 28%, var(--btn-face));
 }
 

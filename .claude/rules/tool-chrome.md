@@ -16,9 +16,9 @@ paths:
 
 Budget: about 8,000 characters. The design is `docs/design/profiles-and-surfaces-design.md`; the records are `docs/rounds/title-bar-round.md`, `docs/rounds/toolbar-refine-round.md`, `docs/rounds/edges-round.md` and `docs/rounds/builder-toolbar-round.md`.
 
-## What is left of the old layout
+## Documents
 
-Only `data-next`: it is set on `<html>` on mount, and the rules scoped to it wait for hydration, so they don't style first paint. Unwrapping them is listed in `docs/todo.md`. Each tool holds one document at a time (`rotationTabs.tab`, `boards.board`), handed over and saved by the storage session.
+Each tool holds one document at a time (`rotationTabs.tab`, `boards.board`), handed over and saved by the storage session.
 
 ## The top bar (`TopBar.svelte`)
 

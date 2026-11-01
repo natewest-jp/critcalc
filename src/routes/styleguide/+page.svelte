@@ -1308,8 +1308,8 @@
 			the wordmark, a toolbar and the sidebar's items start on one line. 16px to 800px, 2vw between,
 			32px from 1600, rounded to whole pixels because the bench ribbon docks by measuring inside it
 			and a fractional x sets every label in it a different sub-pixel off in Safari.
-			<code>--chrome-h</code> is the height everything that reserves the bar reads; under the new
-			layout it is <code>var(--ui-bar-h)</code> (<code>:root[data-next]</code>).
+			<code>--chrome-h</code> is the height everything that reserves the bar reads:
+			<code>var(--ui-bar-h)</code>, the bar's own height.
 		</p>
 		<div class="sg-swatches">
 			{#each metrics as t (t.name)}{@render swatch(t)}{/each}
@@ -2797,11 +2797,9 @@
 						its rule.
 					</li>
 					<li>
-						<strong>On is a fill; a ring is the hand</strong> (↻ 2026-10-25, ⚓ Nate). A plate that
-						is on and a chip, segment or filter that is chosen fill with the accent at 20% over the
-						face (an element in its own hue). Rings are for hover and keyboard focus. The rules are
-						written <code>:where(:root[data-next])</code> in app.css; <code>:where</code> adds no weight,
-						so they keep the specificity that was tested.
+						<strong>On is a fill; a ring is the hand</strong> (↻ 2026-10-25, ⚓ Nate). A plate that is
+						on and a chip, segment or filter that is chosen fill with the accent at 20% over the face
+						(an element in its own hue). Rings are for hover and keyboard focus.
 					</li>
 					<li>
 						<strong>Hover only where a pointer can hover.</strong> A hover ring or wash is written

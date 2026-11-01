@@ -600,10 +600,7 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		z-index: 3;
-	}
-	/* Phase 2c: above the menu state (z 9), which the top bar sits on. */
-	:global(:root[data-next]) .scene-chrome {
+		/* Above the menu state (z 9), which the top bar sits on. */
 		z-index: 10;
 	}
 

@@ -1,4 +1,4 @@
-# Retiring the old layout (step 5, passes A to D) — 2026-10-31 and 2026-11-01
+# Retiring the old layout (step 5, passes A to E) — 2026-10-31 and 2026-11-01
 
 ⚓ Nate, 2026-10-31: retire it now rather than wait out the quiet week after the flip. Rollback was already ruled out and the stand-in covers browsers without IndexedDB, so the off state helped no player and every round paid for both branches.
 
@@ -65,9 +65,14 @@ A `/code-review high` of `84eb2ce8..9bbbd6c8`: ten findings, one refuted (`close
 - Dead or stale: the aside's `'Notes'` title fallback and the planner comments describing a Notes button, `tabCharacterIds` (only a test used it), `boardWorthKeeping` → `boardHasMembers`, comments citing `stores.ts` key constants, `library.isTeamEntry` and `hasCaveats`, and the date on CLAUDE.md's layout line.
 - Left, as a judgment: with no store at all, an arriving link replaces the work on screen, where the old `adopt` refused to. That state persists nothing anyway (the work is gone at the next reload), and refusing would need a new notice to say where the link went.
 
-## Left (on the to-do list)
+## Pass E, `data-next` itself (2026-11-01, `refactor/data-next`)
 
-- **`data-next` itself**, on its own branch for Nate to compare: unwrapping the `:where(:root[data-next])` rules makes the profiles layout's CSS apply from the first frame.
+The root layout no longer sets `data-next` on `<html>`, and every rule scoped to it is unwrapped, so the profiles layout's CSS applies from the first frame instead of waiting for hydration.
+
+- 23 rules were `:where(:root[data-next]) …` (app.css, CharacterFilterStrip, ToolStack, the Builder page, InstrumentPicker). `:where` adds no weight, so dropping the prefix is exact.
+- Three had weight and were folded by hand. `--chrome-h` is `var(--ui-bar-h)` in the base `:root` (it was 64px until mount). Band B's `font-size: var(--ui-ctl-fs)` joined `.band-b .tab, .band-b .btn`, going from (0,4,0) to (0,2,0); no rule that could then outrank it reaches a band B control (component rules setting `font-size` on a `.btn` were read: the error page, the menu places, the dock and the board). The scene chrome's z-index 10 is its base rule.
+- **Measured, not assumed.** A computed-style snapshot of every element on all 22 routes at 1600 and 390 wide, with `Math.random` seeded (unseeded, the Planner's sample made two runs of `main` differ in 1,219 places). After hydration: 0 differences against `main`. Without JavaScript: no structural differences; what changed is the hydrated look arriving early. The bar reserve is the bar's height (56px at the default size, so pages and tools sit 8px higher), toolbar type is at control size, lit plates and chosen segments fill gold, the planner's centre zone loses the rail it no longer has, and the Visualizers' picker is in sentence case.
+- For Nate's eye: a cold load in real Safari and Chrome (with JavaScript the frames before hydration are behind the loading veil, so nothing should change), and a page with JavaScript turned off.
 
 ## Gates
 
