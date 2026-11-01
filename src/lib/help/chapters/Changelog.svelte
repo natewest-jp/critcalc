@@ -32,6 +32,25 @@
 </p>
 
 <section>
+	<h2 id="2026-11">November 2026</h2>
+
+	<div class="timeline">
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Editing in the gauge explorer</h3>
+				<time class="entry-date" datetime="2026-11-01">November 1</time>
+			</header>
+			<p>
+				The Gauge Explorer’s controls have been simplified: Now the element buttons on the toolbar
+				add the next application, and editing gauge strength and element can be done by clicking on
+				an existing application. Playback has been removed; it was only confusing users and not
+				providing much.
+			</p>
+		</article>
+	</div>
+</section>
+
+<section>
 	<h2 id="2026-10">October 2026</h2>
 
 	<div class="timeline">
