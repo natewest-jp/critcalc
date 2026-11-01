@@ -365,7 +365,7 @@
 							{:else if inst.id === 'artifact'}
 								<ArtifactInstrument bind:this={handles.artifact} />
 							{:else if inst.id === 'gauge'}
-								<GaugeInstrument bind:this={handles.gauge} active={slotOf('gauge') !== -1} />
+								<GaugeInstrument bind:this={handles.gauge} />
 							{:else if inst.id === 'curves'}
 								<ReactionCurvesInstrument bind:this={handles.curves} />
 							{:else if inst.id === 'defres'}

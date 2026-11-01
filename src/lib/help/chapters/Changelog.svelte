@@ -32,9 +32,48 @@
 </p>
 
 <section>
+	<h2 id="2026-11">November 2026</h2>
+
+	<div class="timeline">
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Editing in the gauge explorer</h3>
+				<time class="entry-date" datetime="2026-11-01">November 1</time>
+			</header>
+			<p>
+				The gauge explorer’s controls have been simplified: Now the element buttons on the toolbar
+				add the next application, and editing gauge strength and element can be done by clicking on
+				an existing application. Playback has been removed; it was only confusing users and not
+				providing much.
+			</p>
+		</article>
+	</div>
+</section>
+
+<section>
 	<h2 id="2026-10">October 2026</h2>
 
 	<div class="timeline">
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Alhaitham’s Mirrors, Ifa’s hover, and held skills</h3>
+				<time class="entry-date" datetime="2026-10-30">October 30</time>
+			</header>
+			<p>
+				Alhaitham’s Chisel-Light Mirrors are now simulated. While he holds a Mirror, his attacks
+				deal Dendro damage and fire Projection Attacks, his burst hits more times for each Mirror it
+				consumes, and his C1, C2, C4, and C6 follow the count. The timeline shows how many Mirrors
+				he has.
+			</p>
+			<p>
+				Ifa’s hover runs on Nightsoul points, so dashing shortens it, and his skill’s cooldown
+				starts sooner.
+			</p>
+			<p>
+				Held skills start their cooldown at the right moment. Fourteen characters’ Hold variants,
+				including Candace’s, Charlotte’s, and Razor’s, were ending their cooldown early.
+			</p>
+		</article>
 		<article class="entry">
 			<header class="entry-head">
 				<h3>The Traveler twins, and Arlecchino’s cooldown</h3>
