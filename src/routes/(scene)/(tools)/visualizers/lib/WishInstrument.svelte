@@ -5,10 +5,26 @@
 		cdfStats,
 		clampPity,
 		copiesCdfs,
+		RADIANCE_CHANCE,
 		sumCdf,
+		worstCasePulls,
 		type BannerDef,
-		type BannerId
+		type BannerId,
+		type RadianceCounter
 	} from './wish';
+	import {
+		RADIANCE_SINCE,
+		radianceMatters,
+		readAnswers,
+		readPaimonExport,
+		type Answer,
+		type ImportError,
+		type ImportResult,
+		type ReplayStep
+	} from './wishHistory';
+	import { formatChance } from './chance';
+	import BandMenu from '$lib/components/BandMenu.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 
 	// ── What you're pulling for ──────────────────────────────────────────────
 	// `pair` is a 5★ character AND their weapon: two banners, two pities, and
@@ -21,9 +37,26 @@
 		{ id: 'pair', label: '5★ and weapon' }
 	];
 
-	/** One banner's state. `have`/`goal` count COPIES: 0 = not owned, 1 = C0 (or R1). */
-	type BannerState = { pity: number; guaranteed: boolean; have: number; goal: number };
-	const fresh = (): BannerState => ({ pity: 0, guaranteed: false, have: 0, goal: 1 });
+	/**
+	 * One banner's state. `have`/`goal` count COPIES: 0 = not owned, 1 = C0 (or
+	 * R1). `counter` is Capturing Radiance's (character banner only); null is
+	 * "Don't know", which takes every 50/50 as the official 55%.
+	 */
+	type BannerState = {
+		pity: number;
+		guaranteed: boolean;
+		have: number;
+		goal: number;
+		counter: RadianceCounter | null;
+	};
+	const fresh = (): BannerState => ({
+		pity: 0,
+		guaranteed: false,
+		have: 0,
+		goal: 1,
+		counter: null
+	});
+	const COUNTERS: (RadianceCounter | null)[] = [null, 0, 1, 2, 3];
 
 	const DEFAULT_PULLS = 90;
 	let target = $state<Target>('character');
@@ -50,17 +83,19 @@
 	const blocks = $derived<BannerId[]>(target === 'pair' ? ['character', 'weapon'] : [target]);
 
 	// ── The curves: one per level up to the goal, or (pair) each goal + both ─
-	type Curve = { label: string; cdf: number[]; primary: boolean };
+	/** `worst`: the most pulls this level can take (null: uncapped), so a chance past it reads as certain. */
+	type Curve = { label: string; cdf: number[]; primary: boolean; worst: number | null };
 
 	function levelCurves(id: BannerId): Curve[] {
 		const s = states[id];
 		const banner = BANNERS[id];
 		const need = s.goal - s.have;
-		const cdfs = copiesCdfs(banner, need, s.pity, s.guaranteed);
+		const cdfs = copiesCdfs(banner, need, s.pity, s.guaranteed, s.counter);
 		return Array.from({ length: need }, (_, i) => ({
 			label: levelName(id, s.have + i + 1),
 			cdf: cdfs[i + 1],
-			primary: i + 1 === need
+			primary: i + 1 === need,
+			worst: worstCasePulls(banner, i + 1, s.pity, s.guaranteed, s.counter)
 		}));
 	}
 
@@ -71,14 +106,162 @@
 		return [
 			{ ...c, primary: false },
 			{ ...w, primary: false },
-			{ label: `${c.label}${w.label}`, cdf: sumCdf(c.cdf, w.cdf), primary: true }
+			{
+				label: `${c.label}${w.label}`,
+				cdf: sumCdf(c.cdf, w.cdf),
+				primary: true,
+				// two banners pulled one after the other: their worst cases add
+				worst: c.worst === null || w.worst === null ? null : c.worst + w.worst
+			}
 		];
 	});
 	const goal = $derived(curves.find((c) => c.primary)!);
+	/** P(done within n pulls); certain once n reaches the level's worst case. */
+	const chanceAt = (c: Curve, n: number) =>
+		c.worst !== null && n >= c.worst ? 1 : cdfAt(c.cdf, n);
 	const rows = $derived(
-		curves.map((c) => ({ ...c, stats: cdfStats(c.cdf), chance: cdfAt(c.cdf, pulls) }))
+		curves.map((c) => ({ ...c, stats: cdfStats(c.cdf), chance: chanceAt(c, pulls) }))
 	);
 	const goalRow = $derived(rows.find((r) => r.primary)!);
+
+	// ── The Radiance counter from a wish history ─────────────────────────────
+	// Two sources, one replay (wishHistory.ts): a Paimon.moe export, or the 5★s
+	// the player lists by hand. Either one sets the counter and the guarantee;
+	// the export also sets pity.
+	const dateFmt = new Intl.DateTimeFormat('en-US', {
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric',
+		timeZone: 'UTC'
+	});
+	/** A wish history's 'YYYY-MM-DD HH:mm:ss' (server time) as "June 14, 2025". */
+	const dayOf = (time: string) => dateFmt.format(new Date(`${time.slice(0, 10)}T00:00:00Z`));
+
+	/** The steps since the last certain Radiance: all the counter depends on. */
+	function sinceRadiance(steps: ReplayStep[]) {
+		const i = steps.findLastIndex((s) => s.kind === 'radiance');
+		return steps.slice(i + 1);
+	}
+
+	let fileInput = $state<HTMLInputElement>();
+	let reading = $state(false);
+	let dropping = $state(false);
+	let importError = $state<ImportError | null>(null);
+	type Imported = {
+		result: ImportResult;
+		before: Pick<BannerState, 'pity' | 'guaranteed' | 'counter'> & { weaponPity: number };
+	};
+	let imported = $state<Imported | null>(null);
+
+	async function importFile(file: File | undefined) {
+		if (!file || reading) return;
+		reading = true;
+		importError = null;
+		try {
+			const r = await readPaimonExport(await file.arrayBuffer());
+			if (typeof r === 'string') {
+				importError = r;
+				return;
+			}
+			const s = states.character;
+			imported = {
+				result: r,
+				before: {
+					pity: s.pity,
+					guaranteed: s.guaranteed,
+					counter: s.counter,
+					weaponPity: states.weapon.pity
+				}
+			};
+			s.pity = clampPity(BANNERS.character, r.pity);
+			if (r.weaponPity !== null) states.weapon.pity = clampPity(BANNERS.weapon, r.weaponPity);
+			s.guaranteed = r.replay.guaranteed;
+			s.counter = r.replay.counter;
+			interviewRestart();
+			closeCounter?.();
+			closeCounter = null;
+		} catch {
+			importError = 'not-a-workbook';
+		} finally {
+			reading = false;
+			if (fileInput) fileInput.value = '';
+		}
+	}
+
+	function undoImport() {
+		if (!imported) return;
+		const { weaponPity, ...character } = imported.before;
+		Object.assign(states.character, character);
+		states.weapon.pity = weaponPity;
+		imported = null;
+	}
+
+	function onDragOver(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'copy';
+		dropping = true;
+	}
+	function onDragLeave(e: DragEvent) {
+		if (!(e.currentTarget as Node).contains(e.relatedTarget as Node | null)) dropping = false;
+	}
+	function onDrop(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		dropping = false;
+		importFile(e.dataTransfer.files[0]);
+	}
+
+	// Find mine's interview (wishHistory.ts `readAnswers`): newest 5★ first,
+	// done as soon as every state that fits the answers ends on one counter.
+	// A featured answer asks about the Radiance animation only when that would
+	// change the counter. The result is written straight into the controls.
+	let answers = $state<Answer[]>([]);
+	/** A featured 5★ was picked and its animation is being asked about. */
+	let askingRadiance = $state(false);
+	const told = $derived(readAnswers(answers));
+	const interviewDone = $derived(answers.length > 0 && told.counters.length === 1);
+
+	function answer(a: Answer) {
+		answers = [...answers, a];
+		askingRadiance = false;
+		const r = readAnswers(answers);
+		if (r.counters.length === 1) {
+			states.character.counter = r.counters[0];
+			states.character.guaranteed = r.guaranteed ?? false;
+			imported = null;
+		}
+	}
+	function answerFeatured() {
+		if (radianceMatters(answers)) askingRadiance = true;
+		else answer('featured');
+	}
+	function interviewBack() {
+		if (askingRadiance) askingRadiance = false;
+		else answers = answers.slice(0, -1);
+	}
+	function interviewRestart() {
+		answers = [];
+		askingRadiance = false;
+	}
+
+	const ANSWER_LABEL: Record<Answer, string> = {
+		featured: 'Featured',
+		'featured-radiance': 'Featured, Radiance',
+		'featured-plain': 'Featured',
+		standard: 'Standard',
+		none: 'None since 5.0'
+	};
+
+	/** The counter popover's close, kept while a file is chosen from inside it. */
+	let closeCounter: (() => void) | null = null;
+
+	const STEP_LABEL: Record<ReplayStep['kind'], string> = {
+		lost: 'Lost',
+		guarantee: 'Guarantee',
+		won: 'Won',
+		radiance: 'Radiance'
+	};
 
 	// The axis runs to where the goal is 99.9% done, in whole tens — the 4★
 	// chain never strictly ends, and the slider's ceiling follows it.
@@ -217,13 +400,17 @@
 
 	// ── Workspace handle (share + reset) ─────────────────────────────────────
 	export function reset() {
+		imported = null;
+		importError = null;
+		answers = [];
+		askingRadiance = false;
 		target = 'character';
 		pulls = DEFAULT_PULLS;
 		for (const id of Object.keys(states) as BannerId[]) states[id] = fresh();
 	}
 
 	export function getShareState() {
-		return { v: 2, target, pulls, banners: $state.snapshot(states) };
+		return { v: 3, target, pulls, banners: $state.snapshot(states) };
 	}
 
 	function readBanner(id: BannerId, raw: unknown) {
@@ -239,12 +426,18 @@
 		s.guaranteed = r.guaranteed === true;
 		s.have = int(r.have, 0, maxCopies(id) - 1) ?? 0;
 		s.goal = Math.max(s.have + 1, int(r.goal, 1, maxCopies(id)) ?? 1);
+		// v3: the Radiance counter (character banner only; absent or null is "Don't know")
+		if (id === 'character') s.counter = (int(r.counter, 0, 3) ?? null) as RadianceCounter | null;
 		states[id] = s;
 	}
 
 	export function applyShareState(state: unknown) {
 		if (typeof state !== 'object' || state === null) return;
 		const s = state as Record<string, unknown>;
+		imported = null;
+		importError = null;
+		answers = [];
+		askingRadiance = false;
 		const readPulls = (v: unknown) => {
 			if (typeof v === 'number' && Number.isFinite(v))
 				pulls = Math.min(2000, Math.max(0, Math.round(v)));
@@ -258,7 +451,7 @@
 			readPulls(s.pulls);
 			return;
 		}
-		if (s.v !== 2) return;
+		if (s.v !== 2 && s.v !== 3) return;
 		if (TARGETS.some((t) => t.id === s.target)) target = s.target as Target;
 		const banners = (s.banners ?? {}) as Record<string, unknown>;
 		for (const id of Object.keys(states) as BannerId[]) readBanner(id, banners[id]);
@@ -266,8 +459,130 @@
 	}
 </script>
 
+{#snippet counterPanel(close: () => void)}
+	{@const s = states.character}
+	<div class="wi-pop">
+		<div class="chips wi-level-chips" role="group" aria-label="Radiance counter">
+			{#each COUNTERS as k (k ?? 'unknown')}
+				<button
+					class="chip chip--control"
+					class:active={s.counter === k}
+					aria-pressed={s.counter === k}
+					onclick={() => (states.character.counter = k)}
+				>
+					{k === null ? 'Don’t know' : k}
+				</button>
+			{/each}
+		</div>
+
+		<p class="wi-pop-head">Find mine</p>
+		<div class="wi-actions">
+			<button
+				class="btn btn--sm"
+				disabled={reading}
+				onclick={() => {
+					closeCounter = close;
+					fileInput?.click();
+				}}
+			>
+				Read a Paimon.moe export
+			</button>
+			<span class="wi-fine">The file stays on your device.</span>
+		</div>
+		{#if importError}
+			<p class="note wi-error" role="alert">
+				{#if importError === 'not-a-workbook'}
+					That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and choose
+					Export to Excel.
+				{:else if importError === 'not-paimon'}
+					That spreadsheet isn’t a Paimon.moe wish history export.
+				{:else}
+					That export has no character banner wishes in it.
+				{/if}
+			</p>
+		{/if}
+
+		<div class="wi-interview" aria-live="polite">
+			<p class="note">Or answer a few questions, starting from your most recent 5★.</p>
+			{#if answers.length > 0}
+				<ol class="wi-strip" aria-label="Your answers, newest first">
+					{#each answers as a, i (i)}
+						<li class="wi-step">{ANSWER_LABEL[a]}</li>
+					{/each}
+				</ol>
+			{/if}
+
+			{#if answers.length > 0 && told.counters.length === 0}
+				<p class="note wi-error">Those answers can’t all be right. Check the last one.</p>
+			{:else if interviewDone}
+				<p class="note wi-done">
+					{#if told.guaranteed}
+						That’s enough: your counter is {told.counters[0]}, and you hold a guarantee.
+					{:else}
+						That’s enough: your counter is {told.counters[0]}.
+					{/if}
+				</p>
+			{:else if askingRadiance}
+				<p class="wi-question">Did it play the Capturing Radiance animation?</p>
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={() => answer('featured-radiance')}>Yes</button>
+					<button class="btn btn--sm" onclick={() => answer('featured-plain')}>No</button>
+					<button class="btn btn--sm" onclick={() => answer('featured')}>Not sure</button>
+				</div>
+			{:else}
+				<p class="wi-question">
+					{answers.length === 0
+						? 'Your most recent 5★ on the character banners was'
+						: 'And the 5★ before that was'}
+				</p>
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={answerFeatured}>The featured character</button>
+					<button class="btn btn--sm" onclick={() => answer('standard')}>A standard 5★</button>
+					<button class="btn btn--sm" onclick={() => answer('none')}>
+						{answers.length === 0 ? 'None yet since 5.0' : 'None before that since 5.0'}
+					</button>
+				</div>
+			{/if}
+
+			{#if answers.length > 0 || askingRadiance}
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={interviewBack}>Back</button>
+					<button class="btn btn--sm" onclick={interviewRestart}>Start over</button>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
+{#snippet strip(steps: ReplayStep[])}
+	<ol class="wi-strip">
+		{#each steps as st, i (i)}
+			<li
+				class="wi-step wi-step--{st.kind}"
+				title={st.name && st.time ? `${st.name}, ${dayOf(st.time)}` : undefined}
+			>
+				{STEP_LABEL[st.kind]}
+			</li>
+		{/each}
+	</ol>
+{/snippet}
+
 <div class="instrument instrument--capped">
 	<div class="wi-chart instrument-chart ctx-dark">
+		<!-- What you're pulling for picks what the chart draws, so it sits on the chart. -->
+		<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
+			{#each TARGETS as t (t.id)}
+				<button
+					class="btn"
+					class:is-active={target === t.id}
+					role="radio"
+					aria-checked={target === t.id}
+					onclick={() => (target = t.id)}
+				>
+					{t.label}
+				</button>
+			{/each}
+		</div>
 		<div
 			class="wi-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
@@ -409,24 +724,11 @@
 		</div>
 	</div>
 
-	<!-- ONE panel, a section per question: what you're pulling for, then each
-	     banner it touches. Sections stack in a shared tile and sit side by side
-	     in a wide one (see the container queries). -->
+	<!-- ONE panel: the pulls you've saved, then each banner the tab touches
+	     (what you're pulling for is the chart's tabs). Sections stack in a shared
+	     tile and sit side by side in a wide one (see the container queries). -->
 	<div class="panel wi-controls instrument-controls">
 		<section class="wi-section">
-			<p class="kicker">Pulling for</p>
-			<div class="chips wi-targets" role="group" aria-label="Pulling for">
-				{#each TARGETS as t (t.id)}
-					<button
-						class="chip chip--control"
-						class:active={target === t.id}
-						aria-pressed={target === t.id}
-						onclick={() => (target = t.id)}
-					>
-						{t.label}
-					</button>
-				{/each}
-			</div>
 			<div class="slider-control">
 				<div class="slider-header">
 					<span class="slider-label">Pulls saved</span>
@@ -448,36 +750,65 @@
 		{#each blocks as id (id)}
 			{@const s = states[id]}
 			{@const b = BANNERS[id]}
-			<section class="wi-section">
+			<!-- Dropping a file on the character banner's section is a pointer shortcut
+			     for "Read a Paimon.moe export", which stays the accessible path. -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<section
+				class="wi-section"
+				class:is-dropping={id === 'character' && dropping}
+				ondragover={id === 'character' ? onDragOver : undefined}
+				ondragleave={id === 'character' ? onDragLeave : undefined}
+				ondrop={id === 'character' ? onDrop : undefined}
+			>
 				<p class="kicker">{RULES[id].kicker}</p>
-				<div class="wi-levels">
-					<span class="slider-label" id="wi-have-{id}">You have</span>
-					<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
-						{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
-							<button
-								class="chip chip--control"
-								class:active={s.have === copies}
-								aria-pressed={s.have === copies}
-								onclick={() => setHave(id, copies)}
+				<div class="wi-row">
+					<span class="slider-label">Goal</span>
+					<BandMenu
+						role="dialog"
+						size="sm"
+						align="end"
+						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+					>
+						{#snippet face()}
+							<span class="wi-face"
+								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
+									id,
+									s.goal
+								)}</span
 							>
-								{haveName(id, copies)}
-							</button>
-						{/each}
-					</div>
-					<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
-					<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
-						{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
-							<button
-								class="chip chip--control"
-								class:active={s.goal === copies}
-								aria-pressed={s.goal === copies}
-								disabled={copies <= s.have}
-								onclick={() => (states[id].goal = copies)}
-							>
-								{levelName(id, copies)}
-							</button>
-						{/each}
-					</div>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-pop wi-levels">
+								<span class="slider-label" id="wi-have-{id}">You have</span>
+								<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
+									{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
+										<button
+											class="chip chip--control"
+											class:active={s.have === copies}
+											aria-pressed={s.have === copies}
+											onclick={() => setHave(id, copies)}
+										>
+											{haveName(id, copies)}
+										</button>
+									{/each}
+								</div>
+								<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+								<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
+									{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
+										<button
+											class="chip chip--control"
+											class:active={s.goal === copies}
+											aria-pressed={s.goal === copies}
+											disabled={copies <= s.have}
+											onclick={() => (states[id].goal = copies)}
+										>
+											{levelName(id, copies)}
+										</button>
+									{/each}
+								</div>
+							</div>
+						{/snippet}
+					</BandMenu>
 				</div>
 				<div class="slider-control">
 					<div class="slider-header">
@@ -500,13 +831,53 @@
 					{RULES[id].guarantee}
 				</label>
 				{#if id === 'character'}
-					<p class="note">
-						Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
-						including Capturing Radiance).
-						<span class="wi-fine"
-							>Capturing Radiance’s exact rules aren’t public, so every 50/50 here is a flat 55%.</span
+					<div class="wi-row">
+						<span class="slider-label">Radiance counter</span>
+						<BandMenu
+							role="dialog"
+							size="sm"
+							align="end"
+							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
 						>
-					</p>
+							{#snippet face()}
+								<span class="wi-face">{s.counter === null ? 'Don’t know' : s.counter}</span>
+							{/snippet}
+							{#snippet items(close)}
+								{@render counterPanel(close)}
+							{/snippet}
+						</BandMenu>
+					</div>
+
+					<!-- One note for the guarantee and the counter together: what comes next. -->
+					{#if s.counter === null}
+						<p class="note">
+							Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
+							including Capturing Radiance).
+						</p>
+					{:else if s.counter === 3 && s.guaranteed}
+						<p class="note">
+							Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
+						</p>
+					{:else if s.counter === 3}
+						<p class="note">
+							Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
+						</p>
+					{:else if s.counter === 2}
+						<p class="note">
+							You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
+							Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
+						</p>
+					{:else}
+						<p class="note">Your next 50/50 is an even one.</p>
+					{/if}
+
+					<input
+						bind:this={fileInput}
+						type="file"
+						accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+						class="wi-file"
+						onchange={(e) => importFile(e.currentTarget.files?.[0])}
+					/>
 				{:else if id === 'fourStar'}
 					<p class="note">
 						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
@@ -530,7 +901,7 @@
 	<div class="panel panel--paper wi-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="wi-big">
-			{fmtPct(goalRow.chance)}<span class="wi-big-unit"
+			{formatChance(goalRow.chance)}<span class="wi-big-unit"
 				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
 			>
 		</p>
@@ -547,7 +918,7 @@
 				{#each rows as r (r.label)}
 					<tr class:is-goal={r.primary}>
 						<th scope="row">{r.label}</th>
-						<td class="wi-num">{fmtPct(r.chance, 0)}</td>
+						<td class="wi-num">{formatChance(r.chance)}</td>
 						<td class="wi-num">{r.stats.median}</td>
 						<td class="wi-num">{r.stats.p90}</td>
 					</tr>
@@ -555,8 +926,14 @@
 			</tbody>
 		</table>
 		<p class="wi-meta">
-			On average, {goalRow.label} would take
-			<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here.
+			{#if goalRow.worst !== null}
+				On average, {goalRow.label} would take
+				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here, and at most
+				<span class="wi-strong">{goalRow.worst}</span>.
+			{:else}
+				On average, {goalRow.label} would take
+				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here.
+			{/if}
 		</p>
 		<p class="note">
 			Half by: half of players get there within this many pulls. Unlucky tenth: the unluckiest 10%
@@ -565,6 +942,40 @@
 				Your character and weapon banners keep separate pity, so this adds the pulls for both.
 			{/if}
 		</p>
+		{#if imported && target !== 'fourStar'}
+			{@const r = imported.result}
+			{@const since = sinceRadiance(r.replay.steps)}
+			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
+			<div class="wi-report" role="status">
+				<span class="wi-report-head">Your wish history</span>
+				<p class="note">
+					Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
+					{dayOf(r.last)}.
+				</p>
+				{#if since.length > 0}
+					<span class="wi-report-head">
+						{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
+					</span>
+					{@render strip(since)}
+				{:else if lastRadiance?.time}
+					<p class="note">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
+				{/if}
+				{#if r.weaponPity !== null}
+					<p class="note">
+						Your weapon banner pity is {r.weaponPity}. Whether you hold a fate point isn’t in the
+						export.
+					</p>
+				{/if}
+				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
+					<p class="note">
+						If you wished on the character banners before {dayOf(r.first)}, the counter may be off.
+					</p>
+				{/if}
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -685,6 +1096,137 @@
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
+	/* The tabs ride in the chart's slot: they choose what it draws (as in
+	   Reaction curves). Four don't fit a narrow tile: wrap rather than scroll. */
+	.wi-chart {
+		gap: 1rem;
+	}
+
+	.wi-tabs {
+		flex-wrap: wrap;
+		align-self: flex-start;
+		max-width: 100%;
+	}
+
+	/* The import's report, at the foot of the Readout */
+	.wi-report {
+		display: grid;
+		gap: 0.4rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+	}
+
+	.wi-report-head {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+
+	/* On paper the strip is ink only: no gold on paper */
+	.wi-report .wi-step--lost {
+		color: color-mix(in srgb, var(--muted) 60%, transparent);
+	}
+
+	.wi-report .wi-step--radiance {
+		box-shadow: inset 0 0 0 1px currentColor;
+		font-weight: var(--fw-semibold);
+	}
+
+	/* ── The Radiance counter's history tools ── */
+	.wi-file {
+		display: none;
+	}
+
+	/* A set-once setting's line: its name, and a summary that opens its popover */
+	.wi-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem;
+	}
+
+	.wi-face {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-family: var(--font-condensed);
+	}
+
+	/* A popover's contents (BandMenu, portalled: the band menu's own surface) */
+	.wi-pop {
+		display: grid;
+		gap: 0.6rem;
+		width: min(22rem, calc(100vw - 2rem));
+		padding: 0.6rem;
+	}
+
+	.wi-pop-head {
+		margin: 0.4rem 0 0;
+		padding-top: 0.6rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+
+	.wi-interview {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.wi-question {
+		margin: 0.2rem 0 0;
+		font-weight: var(--fw-semibold);
+	}
+
+	.wi-done {
+		color: var(--text);
+	}
+
+	.wi-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem 0.6rem;
+	}
+
+	.wi-error {
+		color: var(--ui-warning);
+	}
+
+	/* A file dragged over the section: it takes the drop */
+	.wi-section.is-dropping {
+		border-radius: var(--r-sm);
+		box-shadow: 0 0 0 1px var(--accent);
+	}
+
+	.wi-strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.wi-step {
+		padding: 0.05rem 0.45rem;
+		border-radius: var(--r-round);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 25%, transparent);
+		font-family: var(--font-condensed);
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+
+	.wi-step--lost {
+		color: var(--muted);
+	}
+
+	.wi-step--radiance {
+		box-shadow: inset 0 0 0 1px var(--accent);
+	}
+
 	/* One panel, its sections stacked (⚓ Nate, 2026-10-04: a shared tile
 	   split the banner panels around "Pulling for" when they were separate). */
 	.wi-controls {
@@ -704,15 +1246,10 @@
 	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
 	   side by side under the chart. */
 	@container instrument (min-width: 60rem) {
-		/* "Pulling for" is a narrow column of stacked chips, so each banner
-		   section keeps the width for its eight level chips on one row. */
+		/* "Pulls saved" is a narrow column, so each banner section keeps the
+		   width for its eight level chips on one row. */
 		.wi-controls {
 			grid-template-columns: 11rem repeat(auto-fit, minmax(17.5rem, 1fr));
-		}
-
-		.wi-targets {
-			flex-direction: column;
-			align-items: flex-start;
 		}
 	}
 </style>

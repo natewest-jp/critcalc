@@ -87,6 +87,40 @@
 
 	const MENU_MIN_W = 168;
 	const GAP = 6;
+	/** Kept off the viewport's edge. */
+	const EDGE = 8;
+	/** The trigger's top and bottom at open, and the side the menu hangs on. */
+	let anchorTop = 0;
+	let anchorBottom = 0;
+	let above = false;
+
+	/**
+	 * Fit the menu to the room beside its trigger: below when it fits there,
+	 * otherwise on whichever side has more room, scrolling inside that room
+	 * when even that is short. Re-run as its contents change size (a dialog
+	 * menu can grow while open: Wish Odds' interview), and a menu that has gone
+	 * above stays above, growing upward, so it never jumps sides under the hand.
+	 */
+	function fit() {
+		if (!menuEl) return;
+		const h = menuEl.scrollHeight;
+		const vh = document.documentElement.clientHeight;
+		const roomBelow = vh - anchorBottom - GAP - EDGE;
+		const roomAbove = anchorTop - GAP - EDGE;
+		if (!above && h > roomBelow && roomAbove > roomBelow) above = true;
+		const room = above ? roomAbove : roomBelow;
+		menuMaxH = h > room ? room : null;
+		menuY = above ? anchorTop - GAP - Math.min(h, room) : anchorBottom + GAP;
+	}
+
+	// Contents that change size while open re-fit the menu.
+	$effect(() => {
+		if (!open || !menuEl) return;
+		const ro = new ResizeObserver(() => fit());
+		ro.observe(menuEl);
+		for (const child of menuEl.children) ro.observe(child);
+		return () => ro.disconnect();
+	});
 
 	function openMenu() {
 		if (!triggerEl) return;
@@ -104,6 +138,9 @@
 		// was then placed too far right for its real one. The re-place below
 		// lands in the same frame.
 		menuX = 8;
+		anchorTop = r.top;
+		anchorBottom = r.bottom;
+		above = false;
 		menuY = r.bottom + GAP;
 		menuMaxH = null;
 		open = true;
@@ -114,8 +151,7 @@
 		void tick().then(() => {
 			if (menuEl) {
 				place(menuEl.offsetWidth);
-				const room = document.documentElement.clientHeight - menuY - 8;
-				if (menuEl.offsetHeight > room) menuMaxH = room;
+				fit();
 			}
 			menuEl?.focus();
 		});
@@ -133,6 +169,18 @@
 		() => close(false)
 	);
 </script>
+
+<!-- Escape closes the menu from anywhere inside it, and also when focus has
+     dropped to <body>: a dialog menu's contents can re-render under the hand
+     (Wish Odds' interview replaces its buttons), taking focus with them. -->
+<svelte:window
+	onkeydown={(e) => {
+		if (!open || e.key !== 'Escape') return;
+		if (e.target !== document.body && !menuEl?.contains(e.target as Node)) return;
+		e.preventDefault();
+		close();
+	}}
+/>
 
 <button
 	bind:this={triggerEl}
@@ -196,12 +244,6 @@
 		{role}
 		tabindex="-1"
 		aria-label={ariaLabel ?? label}
-		onkeydown={(e) => {
-			if (e.key === 'Escape') {
-				e.preventDefault();
-				close();
-			}
-		}}
 	>
 		{@render items(() => close(false))}
 	</div>

@@ -5,10 +5,14 @@ import {
 	cdfStats,
 	copiesCdfs,
 	dropPmf,
+	featuredChance,
 	featuredPmf,
+	RADIANCE_CHANCE,
 	rateAt,
 	sumCdf,
-	toCdf
+	toCdf,
+	worstCasePulls,
+	type RadianceCounter
 } from './wish';
 
 const CHAR = BANNERS.character;
@@ -168,6 +172,98 @@ describe('sumCdf — a character and its weapon', () => {
 		for (let n = 1; n < both.length; n++) {
 			expect(both[n]).toBeLessThanOrEqual(cdfAt(c, n) + 1e-12);
 			expect(both[n]).toBeLessThanOrEqual(cdfAt(w, n) + 1e-12);
+		}
+	});
+});
+
+// Oracle: GGanalysis's `capturing_radiance_dp` (gacha_model.py, the counter
+// model behind `CapturingRadianceModel`), ported line for line to a scratch
+// script and run with cr_p = RADIANCE_CHANCE = [0, 0, 1/11, 1]; its
+// five-star counts convolved with the character pity table. A different
+// algorithm from the walk (a DP over 5★s, not pulls), so agreement means
+// something. Each row is [counter, copies, mean, median, p90], from pity 0
+// with no guarantee. Model: docs/library/game/capturing-radiance.md.
+const RADIANCE_ORACLE: [RadianceCounter, number, number, number, number][] = [
+	[0, 1, 93.446, 80, 155],
+	[0, 7, 640.832, 644, 774],
+	[1, 1, 93.446, 80, 155],
+	[1, 2, 185.476, 182, 260],
+	[1, 7, 634.776, 638, 764],
+	[2, 1, 90.614, 79, 155],
+	[2, 2, 169.902, 168, 233],
+	[2, 7, 622.078, 625, 747],
+	[3, 1, 62.297, 76, 80],
+	[3, 2, 155.743, 155, 231],
+	[3, 7, 606.57, 610, 730]
+];
+
+describe('copiesCdfs with the Radiance counter — agrees with GGanalysis', () => {
+	for (const [counter, need, mean, median, p90] of RADIANCE_ORACLE) {
+		it(`counter ${counter}: ${need} cop${need === 1 ? 'y' : 'ies'}`, () => {
+			const s = cdfStats(copiesCdfs(CHAR, need, 0, false, counter)[need]);
+			expect(s.mean).toBeCloseTo(mean, 2);
+			expect(s.median).toBe(median);
+			expect(s.p90).toBe(p90);
+		});
+	}
+
+	it('the next 50/50: plain at 0 and 1, 6/11 at 2, certain at 3', () => {
+		expect(RADIANCE_CHANCE).toEqual([0, 0, 1 / 11, 1]);
+		expect([0, 1, 2, 3].map((k) => featuredChance(CHAR, k as RadianceCounter))).toEqual([
+			0.5,
+			0.5,
+			6 / 11,
+			1
+		]);
+		expect(featuredChance(CHAR, null)).toBe(0.55);
+		// the counter belongs to the character banner alone
+		expect(featuredChance(WEAP, 3)).toBe(WEAP.featured);
+	});
+
+	it('one copy is exactly the closed form at every counter', () => {
+		for (const k of [0, 1, 2, 3] as RadianceCounter[]) {
+			const walked = copiesCdfs(CHAR, 1, 30, false, k)[1];
+			const closed = toCdf(featuredPmf(CHAR, 30, false, k));
+			for (let n = 1; n < closed.length; n++) expect(cdfAt(walked, n)).toBeCloseTo(closed[n], 5);
+		}
+	});
+
+	it('a guarantee leaves the counter alone: guarantee then counter 3 is two featured 5★s in a row', () => {
+		const s = cdfStats(copiesCdfs(CHAR, 2, 0, true, 3)[2]);
+		const one5Star = cdfStats(toCdf(dropPmf(CHAR, 0))).mean;
+		expect(s.mean).toBeCloseTo(2 * one5Star, 6);
+	});
+});
+
+describe('worstCasePulls', () => {
+	it('unknown counter: only the official cap on lost 50/50s in a row', () => {
+		expect(worstCasePulls(CHAR, 1)).toBe(180);
+		// lose three, then a certain Radiance (4 copies, 7 drops), then lose three more
+		expect(worstCasePulls(CHAR, 7)).toBe(13 * 90);
+		// a held guarantee is already one loss of the streak, and pity counts down the first drop
+		expect(worstCasePulls(CHAR, 1, 40, true)).toBe(50);
+		expect(worstCasePulls(CHAR, 7, 0, true)).toBe(12 * 90);
+	});
+
+	it('known counter: the counter model', () => {
+		expect(worstCasePulls(CHAR, 1, 0, false, 3)).toBe(90);
+		expect(worstCasePulls(CHAR, 1, 0, false, 2)).toBe(180);
+		// from 0: three losses and a Radiance, then two losses and a Radiance, then one loss
+		expect(worstCasePulls(CHAR, 7, 0, false, 0)).toBe(12 * 90);
+		expect(worstCasePulls(CHAR, 7, 0, false, 3)).toBe(11 * 90);
+	});
+
+	it('the weapon banner: a fate point makes every second drop certain; a 4★ has no cap', () => {
+		expect(worstCasePulls(WEAP, 1)).toBe(154);
+		expect(worstCasePulls(WEAP, 5, 10, true)).toBe(67 + 8 * 77);
+		expect(worstCasePulls(BANNERS.fourStar, 1)).toBeNull();
+	});
+
+	it('the walk is done by then (to its 10⁻⁶ tail)', () => {
+		for (const k of [null, 0, 1, 2, 3] as (RadianceCounter | null)[]) {
+			const cdf = copiesCdfs(CHAR, 3, 20, false, k)[3];
+			const worst = worstCasePulls(CHAR, 3, 20, false, k)!;
+			expect(cdfAt(cdf, worst)).toBeGreaterThan(1 - 1e-5);
 		}
 	});
 });

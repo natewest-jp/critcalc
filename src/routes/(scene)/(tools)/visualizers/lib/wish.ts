@@ -7,9 +7,10 @@
 // a pity counter, a guarantee flag and a copy count, stepped one pull at a
 // time. Deliberate simplifications, each measured against GGanalysis
 // (docs/rounds/wish-odds-pass-2026-10-04.md §1):
-//   - Capturing Radiance is the OFFICIAL consolidated 55%, independent per 5★
-//     (the interior counter is not fully reverse-engineered; GGanalysis's
-//     conservative counter model differs by <1% at C6).
+//   - Capturing Radiance has two readings. With the counter unknown, every
+//     50/50 is the OFFICIAL consolidated 55%, independent per 5★. With it
+//     known, the community's counter model (docs/library/game/
+//     capturing-radiance.md) runs as a fourth part of the chain.
 //   - A 5★ pushing a 4★ to the next pull is left out (+1 pull at 4★ C6).
 //   - Which of the three featured 4★s you get splits evenly (⚓ Nate).
 
@@ -100,18 +101,61 @@ export function dropPmf(banner: BannerDef, pity = 0): number[] {
  * second, pity restarting at 0 for it. Kept as the cross-check on
  * `copiesCdfs`, which must agree with it exactly.
  */
-export function featuredPmf(banner: BannerDef, pity = 0, guaranteed = false): number[] {
+export function featuredPmf(
+	banner: BannerDef,
+	pity = 0,
+	guaranteed = false,
+	counter: RadianceCounter | null = null
+): number[] {
 	const first = dropPmf(banner, pity);
 	if (guaranteed) return first;
 	const second = dropPmf(banner, 0);
+	const win = featuredChance(banner, counter);
 	const out = new Array<number>(first.length + second.length - 1).fill(0);
 	for (let i = 1; i < first.length; i++) {
-		out[i] += banner.featured * first[i];
+		out[i] += win * first[i];
 		for (let j = 1; j < second.length; j++) {
-			out[i + j] += (1 - banner.featured) * first[i] * second[j];
+			out[i + j] += (1 - win) * first[i] * second[j];
 		}
 	}
 	return out;
+}
+
+// ── Capturing Radiance's counter ────────────────────────────────────────────
+// The community model (docs/library/game/capturing-radiance.md §2): a hidden
+// counter, 0–3, set to 1 when 5.0 went live. A lost 50/50 adds 1, a won one
+// takes 1 off (not below 0), a Radiance sets it to 1, and only 50/50s move it.
+
+export type RadianceCounter = 0 | 1 | 2 | 3;
+
+/**
+ * P(a 50/50 triggers Capturing Radiance) at each counter value. Counter 2's
+ * is an estimate: 1/11 is the value that makes the long-run rate exactly the
+ * official 55%; the community's estimates run from 2% to 20% (§4a).
+ */
+export const RADIANCE_CHANCE: readonly [number, number, number, number] = [0, 0, 1 / 11, 1];
+/** Where a Radiance leaves the counter. */
+export const RADIANCE_RESET: RadianceCounter = 1;
+
+/**
+ * P(a non-guaranteed drop of this banner is featured): the banner's flat rate,
+ * or, for the character banner with a known counter, the counter's. A
+ * Radiance makes the drop featured; otherwise it is a plain 50/50.
+ */
+export function featuredChance(banner: BannerDef, counter: RadianceCounter | null = null): number {
+	if (banner.id !== 'character' || counter === null) return banner.featured;
+	const r = RADIANCE_CHANCE[counter];
+	return r + (1 - r) / 2;
+}
+
+/** The counter after a 50/50: a Radiance resets it, a plain win steps down, a loss steps up. */
+export function nextCounter(
+	counter: RadianceCounter,
+	outcome: 'radiance' | 'won' | 'lost'
+): RadianceCounter {
+	if (outcome === 'radiance') return RADIANCE_RESET;
+	if (outcome === 'won') return Math.max(0, counter - 1) as RadianceCounter;
+	return Math.min(3, counter + 1) as RadianceCounter;
 }
 
 export function clampPity(banner: BannerDef, pity: number): number {
@@ -127,22 +171,28 @@ const MAX_PULLS = 4000;
  * Cumulative chances for 1…`need` more copies. `out[j][n]` = P(at least j
  * copies within n pulls); `out[0]` is unused, every array starts at 0 pulls.
  *
- * One forward walk over (pity, guarantee, copies so far), copies capped at
- * `need` (absorbing). Stops once the last copy is certain to within `TAIL`,
- * or exactly at the walk's end for the finite 5★ chains.
+ * One forward walk over (pity, guarantee, Radiance counter when known, copies
+ * so far), copies capped at `need` (absorbing). Stops once the last copy is
+ * certain to within `TAIL`, or exactly at the walk's end for the finite 5★
+ * chains.
  */
 export function copiesCdfs(
 	banner: BannerDef,
 	need: number,
 	pity = 0,
-	guaranteed = false
+	guaranteed = false,
+	counter: RadianceCounter | null = null
 ): number[][] {
 	const P = banner.hard; // pity states 0…hard−1
 	const C = need + 1; // copies 0…need
-	const idx = (p: number, g: number, c: number) => (p * 2 + g) * C + c;
-	let cur = new Float64Array(P * 2 * C);
-	let nxt = new Float64Array(P * 2 * C);
-	cur[idx(clampPity(banner, pity), guaranteed ? 1 : 0, 0)] = 1;
+	// The Radiance counter is a fourth part of the state only when it is known
+	// (and only on the character banner); otherwise one flat-rate slot.
+	const radiance = banner.id === 'character' && counter !== null;
+	const K = radiance ? 4 : 1;
+	const idx = (p: number, g: number, k: number, c: number) => ((p * 2 + g) * K + k) * C + c;
+	let cur = new Float64Array(P * 2 * K * C);
+	let nxt = new Float64Array(P * 2 * K * C);
+	cur[idx(clampPity(banner, pity), guaranteed ? 1 : 0, radiance ? counter : 0, 0)] = 1;
 
 	const rates = Array.from({ length: P }, (_, p) => rateAt(banner, p + 1));
 	const out: number[][] = Array.from({ length: C }, () => [0]);
@@ -154,18 +204,31 @@ export function copiesCdfs(
 			const r = rates[p];
 			const miss = 1 - r;
 			for (let g = 0; g < 2; g++) {
-				// P(the drop is your target), and where the guarantee goes after it
-				const pTarget = g ? pick : featured * pick;
-				const pFeaturedOther = g ? 1 - pick : featured * (1 - pick);
-				const pLost = g ? 0 : 1 - featured;
-				for (let c = 0; c < C; c++) {
-					const m = cur[idx(p, g, c)];
-					if (m === 0) continue;
-					if (miss > 0 && p + 1 < P) nxt[idx(p + 1, g, c)] += m * miss;
-					const hit = m * r;
-					nxt[idx(0, 0, Math.min(c + 1, need))] += hit * pTarget;
-					nxt[idx(0, 0, c)] += hit * pFeaturedOther;
-					nxt[idx(0, 1, c)] += hit * pLost;
+				for (let k = 0; k < K; k++) {
+					for (let c = 0; c < C; c++) {
+						const m = cur[idx(p, g, k, c)];
+						if (m === 0) continue;
+						if (miss > 0 && p + 1 < P) nxt[idx(p + 1, g, k, c)] += m * miss;
+						const hit = m * r;
+						const got = Math.min(c + 1, need);
+						if (g) {
+							// a guarantee: featured for certain, and the counter stays put
+							nxt[idx(0, 0, k, got)] += hit * pick;
+							nxt[idx(0, 0, k, c)] += hit * (1 - pick);
+						} else if (radiance) {
+							// a 50/50 under the counter model (pick is 1 on this banner)
+							const rad = RADIANCE_CHANCE[k];
+							const coin = (1 - rad) / 2;
+							const kc = k as RadianceCounter;
+							nxt[idx(0, 0, nextCounter(kc, 'radiance'), got)] += hit * rad;
+							nxt[idx(0, 0, nextCounter(kc, 'won'), got)] += hit * coin;
+							nxt[idx(0, 1, nextCounter(kc, 'lost'), c)] += hit * coin;
+						} else {
+							nxt[idx(0, 0, 0, got)] += hit * featured * pick;
+							nxt[idx(0, 0, 0, c)] += hit * featured * (1 - pick);
+							nxt[idx(0, 1, 0, c)] += hit * (1 - featured);
+						}
+					}
 				}
 			}
 		}
@@ -182,6 +245,55 @@ export function copiesCdfs(
 		if (atC[need] >= 1 - TAIL) break;
 	}
 	return out;
+}
+
+/**
+ * The most pulls `need` more copies can take: every drop at hard pity, and
+ * every 50/50 lost that the rules let you lose. `null` where nothing caps it
+ * (a featured 4★: a guarantee can keep landing on the other two).
+ *
+ * The rules: with the Radiance counter known, the counter model's (a loss is
+ * impossible at 3). With it unknown, only what is official: you can't lose
+ * more than three 50/50s in a row (taken from a streak of 0, the worst case).
+ * The weapon banner's fate point makes every second drop certain.
+ */
+export function worstCasePulls(
+	banner: BannerDef,
+	need: number,
+	pity = 0,
+	guaranteed = false,
+	counter: RadianceCounter | null = null
+): number | null {
+	if (need <= 0) return 0;
+	if (banner.pick < 1) return null;
+
+	// Most drops from (copies, guarantee, k): k is the counter when known, else
+	// the current streak of lost 50/50s.
+	const memo = new Map<string, number>();
+	const drops = (c: number, g: boolean, k: number): number => {
+		if (c >= need) return 0;
+		const key = `${c},${g},${k}`;
+		const hit = memo.get(key);
+		if (hit !== undefined) return hit;
+		let best: number;
+		if (g) best = 1 + drops(c + 1, false, k);
+		else if (banner.id !== 'character') best = 1 + drops(c, true, k);
+		else if (counter !== null) {
+			const kc = k as RadianceCounter;
+			const r = RADIANCE_CHANCE[kc];
+			best = 1 + drops(c + 1, false, nextCounter(kc, r > 0 ? 'radiance' : 'won'));
+			if (r > 0 && r < 1) best = Math.max(best, 1 + drops(c + 1, false, nextCounter(kc, 'won')));
+			if (r < 1) best = Math.max(best, 1 + drops(c, true, nextCounter(kc, 'lost')));
+		} else {
+			best = 1 + drops(c + 1, false, 0);
+			if (k < 3) best = Math.max(best, 1 + drops(c, true, k + 1));
+		}
+		memo.set(key, best);
+		return best;
+	};
+	// Unknown counter: a held guarantee means one loss is already in the streak.
+	const d = drops(0, guaranteed, counter ?? (guaranteed ? 1 : 0));
+	return banner.hard - clampPity(banner, pity) + (d - 1) * banner.hard;
 }
 
 /**

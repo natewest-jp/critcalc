@@ -120,3 +120,42 @@ exactly (§3.3 — a reference, not a copy).
 
 Only on the 5★ and weapon target: the combined figure is the SUM of two independent pull
 counts.
+
+## The Radiance counter (2026-11-02, `feat/wish-radiance`; copy approved by Nate)
+
+The Character Event section gained a counter, an import and a by-hand list
+(`docs/rounds/wish-radiance-2026-11-02.md`). Model: `docs/library/game/capturing-radiance.md`.
+🔒 **Paimon.moe** (a site's name), and its own labels **Wish Counter**, **Settings**,
+**Export to Excel** (quoted from Paimon.moe's English UI; a translator uses that locale's
+Paimon.moe labels, not a translation of ours).
+
+- **Goal** (label) and its summary, "{have} → {goal}" (the arrow is a Mark, not a character),
+  which opens **You have** and **Aiming for** in a popover. aria: "Goal: {have} to {goal}".
+- **Radiance counter** (label) and its summary, the counter or "Don’t know", which opens the
+  chips **Don’t know · 0 · 1 · 2 · 3**, then **Find mine**: **Read a Paimon.moe export** and
+  "The file stays on your device.", and the interview.
+- **One note for the guarantee and the counter together**, one sentence per state: the 55% line
+  (Don’t know) · "Your next two featured 5★s are certain: the guarantee, then a Capturing
+  Radiance." (3 with a guarantee) · the Radiance line (3) · counter 2's, whose "we estimate
+  {n}%" is computed from `RADIANCE_CHANCE[2]` · "Your next 50/50 is an even one." (0 or 1).
+  Player's vantage (§1.10). How the counter moves is Help's job.
+- **The interview:** "Or answer a few questions, starting from your most recent 5★." · the first
+  question "Your most recent 5★ on the character banners was" and every later one "And the 5★
+  before that was", answered **The featured character** · **A standard 5★** · **None yet since
+  5.0** / **None before that since 5.0** · "Did it play the Capturing Radiance animation?"
+  **Yes · No · Not sure** · the answers so far as pills (**Featured**, **Featured, Radiance**,
+  **Standard**, **None since 5.0**) · done: "That’s enough: your counter is {n}." / "…, and you
+  hold a guarantee." · "Those answers can’t all be right. Check the last one." · **Back** ·
+  **Start over**. The question sentences end without a colon or a dash: the buttons finish them.
+- **The import's report** (in the Readout, under "Your wish history"): "Read {n} character
+  banner wishes, {first} to {last}." (dates via `Intl`, en-US long form), "Since your last
+  Radiance" / "Since 5.0" (strip label), "No 50/50s since your last Radiance, on {date}.", "If
+  you wished on the character banners before {date}, the counter may be off.", "Your weapon banner
+  pity is {n}. Whether you hold a fate point isn’t in the export.", **Undo**, and the
+  step names **Lost · Guarantee · Won · Radiance**.
+- **Its three errors**, one per `ImportError`. The first tells the player where Paimon.moe's
+  export is.
+- **The target chips are the chart's tabs** (same four labels; "Pulling for" is the tab group's
+  aria-label).
+- **Readout:** "On average, {label} would take {mean} pulls from here, and at most {max}." §1.8.
+  The 4★ has no maximum and keeps the old sentence.

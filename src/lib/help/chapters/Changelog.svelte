@@ -37,6 +37,17 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
+				<h3>Capturing Radiance in Wish Odds</h3>
+				<time class="entry-date" datetime="2026-11-02">November 2</time>
+			</header>
+			<p>
+				Wish odds can follow your Capturing Radiance counter now, using the community’s model of how
+				Radiance works. Find your current Radiance chances from a Paimon.moe export, or by answering
+				a few questions about your recent 5★s.
+			</p>
+		</article>
+		<article class="entry">
+			<header class="entry-head">
 				<h3>Editing in the gauge explorer</h3>
 				<time class="entry-date" datetime="2026-11-01">November 1</time>
 			</header>
