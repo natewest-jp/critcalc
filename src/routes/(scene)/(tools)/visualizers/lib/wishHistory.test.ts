@@ -146,9 +146,10 @@ const row = (name: string, time: string, star: number) => [
 	'Some banner',
 	''
 ];
-const paimon = (rows: string[][]) =>
+const paimon = (rows: string[][], weapon?: string[][]) =>
 	new Map([
 		['Character Event', [HEAD, ...rows]],
+		...(weapon ? ([['Weapon Event', [HEAD, ...weapon]]] as [string, string[][]][]) : []),
 		[
 			'Information',
 			[
@@ -178,6 +179,22 @@ describe('fromPaimonSheets', () => {
 			first: '2025-07-30 15:51:59',
 			last: '2025-08-03 10:00:00'
 		});
+	});
+
+	it('reads the weapon banner’s pity too, and none when it has no wishes', () => {
+		const weapon = [
+			row('The Catch', '2025-08-01 10:00:00', 4),
+			row('Primordial Jade Cutter', '2025-08-02 10:00:00', 5),
+			row('Slingshot', '2025-08-03 10:00:00', 3),
+			row('Slingshot', '2025-08-03 10:00:00', 3),
+			row('Slingshot', '2025-08-03 10:00:00', 3)
+		];
+		const r = fromPaimonSheets(paimon([row('Jean', H, 5)], weapon));
+		if (typeof r === 'string') throw new Error(r);
+		expect(r.weaponPity).toBe(3);
+		const none = fromPaimonSheets(paimon([row('Jean', H, 5)]));
+		if (typeof none === 'string') throw new Error(none);
+		expect(none.weaponPity).toBeNull();
 	});
 
 	it('a history with no 5★ yet: pity is every wish, the counter is the 5.0 start', () => {

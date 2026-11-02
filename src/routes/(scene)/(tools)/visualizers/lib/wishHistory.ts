@@ -188,6 +188,8 @@ export type ImportResult = {
 	replay: Replay;
 	/** Pulls since the last 5★ on the character banners */
 	pity: number;
+	/** Pulls since the last 5★ on the weapon banner; null when the export has none. The fate point isn't recorded. */
+	weaponPity: number | null;
 	/** Character banner wishes read, and the first and last of them */
 	wishes: number;
 	first: string;
@@ -198,12 +200,36 @@ export type ImportError = 'not-a-workbook' | 'not-paimon' | 'no-wishes';
 
 const PAIMON_TITLE = 'Paimon.moe Wish History Export';
 const PAIMON_SHEET = 'Character Event';
+const PAIMON_WEAPON_SHEET = 'Weapon Event';
 
 /** Excel's day number (from 1899-12-30) as 'YYYY-MM-DD HH:mm:ss'. */
 function fromSerial(serial: number): string {
 	const ms = Math.round((serial - 25569) * 86400) * 1000;
 	return new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
 }
+
+type Pull = { name: string; time: string; star: number };
+
+/** A banner sheet's wishes, oldest first; null when its header isn't Paimon.moe's. */
+function pullsOf(sheet: string[][] | undefined): Pull[] | null {
+	if (!sheet) return null;
+	const [head, ...rows] = sheet;
+	const col = (h: string) => head?.indexOf(h) ?? -1;
+	const nameAt = col('Name');
+	const timeAt = col('Time');
+	const starAt = col('⭐');
+	if (nameAt < 0 || timeAt < 0 || starAt < 0) return null;
+	return rows
+		.filter((r) => r[nameAt])
+		.map((r) => {
+			const raw = r[timeAt] ?? '';
+			const time = /^\d+(\.\d+)?$/.test(raw) ? fromSerial(Number(raw)) : raw;
+			return { name: r[nameAt], time, star: Number(r[starAt]) };
+		});
+}
+
+/** Wishes since the last 5★ (every wish when there has been none). */
+const pityOf = (pulls: Pull[]) => pulls.length - 1 - pulls.findLastIndex((p) => p.star === 5);
 
 /**
  * The character banner sheet of a Paimon.moe "Wish History Export" (format
@@ -215,27 +241,15 @@ export function fromPaimonSheets(sheets: Map<string, string[][]>): ImportResult 
 	const info = sheets.get('Information');
 	const sheet = sheets.get(PAIMON_SHEET);
 	if (!sheet || !info?.some((r) => r[0] === PAIMON_TITLE)) return 'not-paimon';
-	const [head, ...rows] = sheet;
-	const col = (h: string) => head?.indexOf(h) ?? -1;
-	const nameAt = col('Name');
-	const timeAt = col('Time');
-	const starAt = col('⭐');
-	if (nameAt < 0 || timeAt < 0 || starAt < 0) return 'not-paimon';
-
-	const pulls = rows
-		.filter((r) => r[nameAt])
-		.map((r) => {
-			const raw = r[timeAt] ?? '';
-			const time = /^\d+(\.\d+)?$/.test(raw) ? fromSerial(Number(raw)) : raw;
-			return { name: r[nameAt], time, star: Number(r[starAt]) };
-		});
+	const pulls = pullsOf(sheet);
+	if (pulls === null) return 'not-paimon';
 	if (pulls.length === 0) return 'no-wishes';
+	const weapon = pullsOf(sheets.get(PAIMON_WEAPON_SHEET));
 
-	const fives = pulls.filter((p) => p.star === 5);
-	const lastFive = pulls.findLastIndex((p) => p.star === 5);
 	return {
-		replay: replayHistory(fives),
-		pity: pulls.length - 1 - lastFive,
+		replay: replayHistory(pulls.filter((p) => p.star === 5)),
+		pity: pityOf(pulls),
+		weaponPity: weapon && weapon.length > 0 ? pityOf(weapon) : null,
 		wishes: pulls.length,
 		first: pulls[0].time,
 		last: pulls[pulls.length - 1].time

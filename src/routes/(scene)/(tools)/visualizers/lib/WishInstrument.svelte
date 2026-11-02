@@ -149,7 +149,7 @@
 	let importError = $state<ImportError | null>(null);
 	type Imported = {
 		result: ImportResult;
-		before: Pick<BannerState, 'pity' | 'guaranteed' | 'counter'>;
+		before: Pick<BannerState, 'pity' | 'guaranteed' | 'counter'> & { weaponPity: number };
 	};
 	let imported = $state<Imported | null>(null);
 
@@ -166,9 +166,15 @@
 			const s = states.character;
 			imported = {
 				result: r,
-				before: { pity: s.pity, guaranteed: s.guaranteed, counter: s.counter }
+				before: {
+					pity: s.pity,
+					guaranteed: s.guaranteed,
+					counter: s.counter,
+					weaponPity: states.weapon.pity
+				}
 			};
 			s.pity = clampPity(BANNERS.character, r.pity);
+			if (r.weaponPity !== null) states.weapon.pity = clampPity(BANNERS.weapon, r.weaponPity);
 			s.guaranteed = r.replay.guaranteed;
 			s.counter = r.replay.counter;
 			interviewRestart();
@@ -184,7 +190,9 @@
 
 	function undoImport() {
 		if (!imported) return;
-		Object.assign(states.character, imported.before);
+		const { weaponPity, ...character } = imported.before;
+		Object.assign(states.character, character);
+		states.weapon.pity = weaponPity;
 		imported = null;
 	}
 
@@ -934,7 +942,7 @@
 				Your character and weapon banners keep separate pity, so this adds the pulls for both.
 			{/if}
 		</p>
-		{#if imported && (target === 'character' || target === 'pair')}
+		{#if imported && target !== 'fourStar'}
 			{@const r = imported.result}
 			{@const since = sinceRadiance(r.replay.steps)}
 			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
@@ -951,6 +959,12 @@
 					{@render strip(since)}
 				{:else if lastRadiance?.time}
 					<p class="note">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
+				{/if}
+				{#if r.weaponPity !== null}
+					<p class="note">
+						Your weapon banner pity is {r.weaponPity}. Whether you hold a fate point isn’t in the
+						export.
+					</p>
 				{/if}
 				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
 					<p class="note">
