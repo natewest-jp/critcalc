@@ -68,6 +68,21 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
   range row (a new interaction, held in case the section still feels heavy).
 - Section height with Find mine closed: 393px at a 1600px tile.
 
+## 4b. Tabs, the report in the Readout, and precise chances (⚓ Nate)
+
+- **What you're pulling for is the chart's tabs**, Reaction curves' `.segment` on the chart
+  (`role="radiogroup"`): they choose what the chart draws. The panel's first section keeps only
+  **Pulls saved**; in a wide tile it is the 11rem column the target chips used to fill.
+- **The import's report is in the Readout** ("Your wish history", under a hairline), shown on the
+  Featured 5★ and 5★ and weapon tabs. Find mine closes after an import. On paper the step pills
+  are ink only (no gold on paper). The counter's one-line note stays by the controls.
+- **Precise chances** (`chance.ts`, `formatChance`, for Artifact Odds too when it gets its pass):
+  two decimals in the middle, three significant figures under 1%, enough decimals over 99% to
+  show what is left, and `<0.0001%` / `>99.9999%` beyond. 🎛️ `FLOOR` (1e-4 of a percent) is the
+  one knob. The Readout's headline and table use it; the chart's marker label stays whole.
+- **A chance past a level's worst case reads 100%** (`chanceAt`): counter 3 at 90 pulls used to
+  print ">99.9%" from a floating-point shortfall.
+
 ## 5. Share links
 
 `v: 3` carries the counter on the character banner; a `v: 2` link opens as "Don’t know".
@@ -75,7 +90,7 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
 ## 6. Gates
 
 Vitest 2692 passed (Wish 42, history 13, reader 4), svelte-check clean, lint clean, build. Chrome
-e2e 71 passed (after §4a: 70 passed and 1 flaky, `site-chrome.spec.ts` "the brand holds still
+e2e 71 passed (after §4b: 71 passed; after §4a: 70 passed and 1 flaky, `site-chrome.spec.ts` "the brand holds still
 from the landing into a tool", passing on retry; it doesn't touch the visualizers). Driven in headless Chrome against the production build: every counter state,
 the import of the real export, Undo, the by-hand list, a wrong file, and 0px overflow at 390px,
 with no page errors.

@@ -20,6 +20,7 @@
 		type ImportResult,
 		type ReplayStep
 	} from './wishHistory';
+	import { formatChance } from './chance';
 
 	// ── What you're pulling for ──────────────────────────────────────────────
 	// `pair` is a 5★ character AND their weapon: two banners, two pities, and
@@ -78,7 +79,8 @@
 	const blocks = $derived<BannerId[]>(target === 'pair' ? ['character', 'weapon'] : [target]);
 
 	// ── The curves: one per level up to the goal, or (pair) each goal + both ─
-	type Curve = { label: string; cdf: number[]; primary: boolean };
+	/** `worst`: the most pulls this level can take (null: uncapped), so a chance past it reads as certain. */
+	type Curve = { label: string; cdf: number[]; primary: boolean; worst: number | null };
 
 	function levelCurves(id: BannerId): Curve[] {
 		const s = states[id];
@@ -88,7 +90,8 @@
 		return Array.from({ length: need }, (_, i) => ({
 			label: levelName(id, s.have + i + 1),
 			cdf: cdfs[i + 1],
-			primary: i + 1 === need
+			primary: i + 1 === need,
+			worst: worstCasePulls(banner, i + 1, s.pity, s.guaranteed, s.counter)
 		}));
 	}
 
@@ -99,27 +102,23 @@
 		return [
 			{ ...c, primary: false },
 			{ ...w, primary: false },
-			{ label: `${c.label}${w.label}`, cdf: sumCdf(c.cdf, w.cdf), primary: true }
+			{
+				label: `${c.label}${w.label}`,
+				cdf: sumCdf(c.cdf, w.cdf),
+				primary: true,
+				// two banners pulled one after the other: their worst cases add
+				worst: c.worst === null || w.worst === null ? null : c.worst + w.worst
+			}
 		];
 	});
 	const goal = $derived(curves.find((c) => c.primary)!);
+	/** P(done within n pulls); certain once n reaches the level's worst case. */
+	const chanceAt = (c: Curve, n: number) =>
+		c.worst !== null && n >= c.worst ? 1 : cdfAt(c.cdf, n);
 	const rows = $derived(
-		curves.map((c) => ({ ...c, stats: cdfStats(c.cdf), chance: cdfAt(c.cdf, pulls) }))
+		curves.map((c) => ({ ...c, stats: cdfStats(c.cdf), chance: chanceAt(c, pulls) }))
 	);
 	const goalRow = $derived(rows.find((r) => r.primary)!);
-
-	// The most the goal can take (null: nothing caps a featured 4★). A pair's
-	// two banners are pulled one after the other, so their worst cases add.
-	function worstOf(id: BannerId) {
-		const s = states[id];
-		return worstCasePulls(BANNERS[id], s.goal - s.have, s.pity, s.guaranteed, s.counter);
-	}
-	const worst = $derived.by(() => {
-		if (target !== 'pair') return worstOf(target);
-		const c = worstOf('character');
-		const w = worstOf('weapon');
-		return c === null || w === null ? null : c + w;
-	});
 
 	// ── The Radiance counter from a wish history ─────────────────────────────
 	// Two sources, one replay (wishHistory.ts): a Paimon.moe export, or the 5★s
@@ -168,7 +167,7 @@
 			s.pity = clampPity(BANNERS.character, r.pity);
 			s.guaranteed = r.replay.guaranteed;
 			s.counter = r.replay.counter;
-			finding = true;
+			finding = false;
 			listed = [];
 		} catch {
 			importError = 'not-a-workbook';
@@ -432,6 +431,20 @@
 
 <div class="instrument instrument--capped">
 	<div class="wi-chart instrument-chart ctx-dark">
+		<!-- What you're pulling for picks what the chart draws, so it sits on the chart. -->
+		<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
+			{#each TARGETS as t (t.id)}
+				<button
+					class="btn"
+					class:is-active={target === t.id}
+					role="radio"
+					aria-checked={target === t.id}
+					onclick={() => (target = t.id)}
+				>
+					{t.label}
+				</button>
+			{/each}
+		</div>
 		<div
 			class="wi-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
@@ -573,24 +586,11 @@
 		</div>
 	</div>
 
-	<!-- ONE panel, a section per question: what you're pulling for, then each
-	     banner it touches. Sections stack in a shared tile and sit side by side
-	     in a wide one (see the container queries). -->
+	<!-- ONE panel: the pulls you've saved, then each banner the tab touches
+	     (what you're pulling for is the chart's tabs). Sections stack in a shared
+	     tile and sit side by side in a wide one (see the container queries). -->
 	<div class="panel wi-controls instrument-controls">
 		<section class="wi-section">
-			<p class="kicker">Pulling for</p>
-			<div class="chips wi-targets" role="group" aria-label="Pulling for">
-				{#each TARGETS as t (t.id)}
-					<button
-						class="chip chip--control"
-						class:active={target === t.id}
-						aria-pressed={target === t.id}
-						onclick={() => (target = t.id)}
-					>
-						{t.label}
-					</button>
-				{/each}
-			</div>
 			<div class="slider-control">
 				<div class="slider-header">
 					<span class="slider-label">Pulls saved</span>
@@ -752,62 +752,29 @@
 								</p>
 							{/if}
 
-							{#if imported}
-								{@const r = imported.result}
-								{@const since = sinceRadiance(r.replay.steps)}
-								{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
-								<div class="wi-find-part" role="status">
-									<p class="note">
-										Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(
-											r.first
-										)} to
-										{dayOf(r.last)}.
-									</p>
-									{#if since.length > 0}
-										<span class="slider-label">
-											{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
-										</span>
-										{@render strip(since)}
-									{:else if lastRadiance?.time}
-										<p class="note">
-											No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.
-										</p>
-									{/if}
-									{#if r.first.slice(0, 10) > RADIANCE_SINCE}
-										<p class="wi-fine">
-											If you wished on the character banners before {dayOf(r.first)}, the counter
-											may be off.
-										</p>
-									{/if}
-									<div class="wi-actions">
-										<button class="btn btn--sm" onclick={undoImport}>Undo</button>
-									</div>
+							<div class="wi-find-part">
+								<p class="note">
+									Or list each 5★ since your last Radiance (or since 5.0), oldest first:
+								</p>
+								<div class="wi-actions">
+									<button class="btn btn--sm" onclick={() => setListed([...listed, true])}>
+										Featured
+									</button>
+									<button class="btn btn--sm" onclick={() => setListed([...listed, false])}>
+										Not featured
+									</button>
+									<button
+										class="btn btn--sm"
+										disabled={listed.length === 0}
+										onclick={() => setListed(listed.slice(0, -1))}
+									>
+										Undo
+									</button>
 								</div>
-							{:else}
-								<div class="wi-find-part">
-									<p class="note">
-										Or list each 5★ since your last Radiance (or since 5.0), oldest first:
-									</p>
-									<div class="wi-actions">
-										<button class="btn btn--sm" onclick={() => setListed([...listed, true])}>
-											Featured
-										</button>
-										<button class="btn btn--sm" onclick={() => setListed([...listed, false])}>
-											Not featured
-										</button>
-										<button
-											class="btn btn--sm"
-											disabled={listed.length === 0}
-											onclick={() => setListed(listed.slice(0, -1))}
-										>
-											Undo
-										</button>
-									</div>
-									{#if listed.length > 0}
-										{@render strip(listedReplay.steps)}
-									{/if}
-								</div>
-							{/if}
+								{#if listed.length > 0}
+									{@render strip(listedReplay.steps)}
+								{/if}
+							</div>
 						</div>
 					{/if}
 				{:else if id === 'fourStar'}
@@ -833,7 +800,7 @@
 	<div class="panel panel--paper wi-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="wi-big">
-			{fmtPct(goalRow.chance)}<span class="wi-big-unit"
+			{formatChance(goalRow.chance)}<span class="wi-big-unit"
 				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
 			>
 		</p>
@@ -850,7 +817,7 @@
 				{#each rows as r (r.label)}
 					<tr class:is-goal={r.primary}>
 						<th scope="row">{r.label}</th>
-						<td class="wi-num">{fmtPct(r.chance, 0)}</td>
+						<td class="wi-num">{formatChance(r.chance)}</td>
 						<td class="wi-num">{r.stats.median}</td>
 						<td class="wi-num">{r.stats.p90}</td>
 					</tr>
@@ -858,10 +825,10 @@
 			</tbody>
 		</table>
 		<p class="wi-meta">
-			{#if worst !== null}
+			{#if goalRow.worst !== null}
 				On average, {goalRow.label} would take
 				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here, and at most
-				<span class="wi-strong">{worst}</span>.
+				<span class="wi-strong">{goalRow.worst}</span>.
 			{:else}
 				On average, {goalRow.label} would take
 				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here.
@@ -874,6 +841,34 @@
 				Your character and weapon banners keep separate pity, so this adds the pulls for both.
 			{/if}
 		</p>
+		{#if imported && (target === 'character' || target === 'pair')}
+			{@const r = imported.result}
+			{@const since = sinceRadiance(r.replay.steps)}
+			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
+			<div class="wi-report" role="status">
+				<span class="wi-report-head">Your wish history</span>
+				<p class="note">
+					Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
+					{dayOf(r.last)}.
+				</p>
+				{#if since.length > 0}
+					<span class="wi-report-head">
+						{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
+					</span>
+					{@render strip(since)}
+				{:else if lastRadiance?.time}
+					<p class="note">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
+				{/if}
+				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
+					<p class="note">
+						If you wished on the character banners before {dayOf(r.first)}, the counter may be off.
+					</p>
+				{/if}
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -994,6 +989,43 @@
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
+	/* The tabs ride in the chart's slot: they choose what it draws (as in
+	   Reaction curves). Four don't fit a narrow tile: wrap rather than scroll. */
+	.wi-chart {
+		gap: 1rem;
+	}
+
+	.wi-tabs {
+		flex-wrap: wrap;
+		align-self: flex-start;
+		max-width: 100%;
+	}
+
+	/* The import's report, at the foot of the Readout */
+	.wi-report {
+		display: grid;
+		gap: 0.4rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+	}
+
+	.wi-report-head {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+
+	/* On paper the strip is ink only: no gold on paper */
+	.wi-report .wi-step--lost {
+		color: color-mix(in srgb, var(--muted) 60%, transparent);
+	}
+
+	.wi-report .wi-step--radiance {
+		box-shadow: inset 0 0 0 1px currentColor;
+		font-weight: var(--fw-semibold);
+	}
+
 	/* ── The Radiance counter's history tools ── */
 	.wi-file {
 		display: none;
@@ -1084,15 +1116,10 @@
 	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
 	   side by side under the chart. */
 	@container instrument (min-width: 60rem) {
-		/* "Pulling for" is a narrow column of stacked chips, so each banner
-		   section keeps the width for its eight level chips on one row. */
+		/* "Pulls saved" is a narrow column, so each banner section keeps the
+		   width for its eight level chips on one row. */
 		.wi-controls {
 			grid-template-columns: 11rem repeat(auto-fit, minmax(17.5rem, 1fr));
-		}
-
-		.wi-targets {
-			flex-direction: column;
-			align-items: flex-start;
 		}
 	}
 </style>

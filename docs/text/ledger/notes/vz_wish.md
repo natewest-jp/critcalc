@@ -137,8 +137,10 @@ Paimon.moe labels, not a translation of ours).
   Radiance." (3 with a guarantee) · the Radiance line (3) · counter 2's, whose "we estimate
   {n}%" is computed from `RADIANCE_CHANCE[2]` · "Your next 50/50 is an even one." (0 or 1).
   Player's vantage (§1.10). How the counter moves is Help's job.
+- **The target chips are the chart's tabs** (same four labels; the "Pulling for" kicker is now
+  only the tab group's aria-label).
 - **Inside Find mine:** **Read a Paimon.moe export** and "The file stays on your device." ·
-  the import's report: "Read {n} character banner wishes, {first} to {last}." (dates via
+  the import's report (in the Readout, under the heading "Your wish history"): "Read {n} character banner wishes, {first} to {last}." (dates via
   `Intl`, en-US long form), "Since your last Radiance" / "Since 5.0" (strip label), "No 50/50s
   since your last Radiance, on {date}.", "If you wished on the character banners before
   {date}, the counter may be off.", **Undo** · otherwise the by-hand list: "Or list each 5★
