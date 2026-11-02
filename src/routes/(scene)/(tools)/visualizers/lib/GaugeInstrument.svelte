@@ -1512,7 +1512,9 @@
 		</div>
 	</div>
 
-	<div class="panel gx-scenarios instrument-controls">
+	<!-- One section: the chips and their note on the control rung (app.css §
+	     THE SPACING LADDER). -->
+	<div class="panel inst-section gx-scenarios instrument-controls">
 		<p class="kicker">Example scenarios</p>
 		<div class="chips gx-chips-dense">
 			{#each PRESETS as p (p.id)}
@@ -1798,7 +1800,7 @@
 		outline-offset: 1px;
 	}
 
-	/* Condensed trial: the 12-chip scenario row is the densest chip cluster */
+	/* Condensed trial: the scenario row (14 chips) is the densest chip cluster */
 	.gx-chips-dense :global(.chip) {
 		font-family: var(--font-condensed);
 	}
@@ -1901,16 +1903,18 @@
 	/* The transcript's label inside the merged readout card. ⚠ DELIBERATELY NOT A
 	   .kicker: a kicker is gold, and gold names a BLOCK — a second one in one card
 	   would say "second panel" exactly where the merge was trying to stop saying
-	   it. This is the LABEL voice (the slider-label rung) with a hairline over it,
-	   which is the section-divider weight, not the rule weight. */
+	   it. A small semibold label in sentence case (the caps voice is the
+	   kicker's alone, design §5) with a hairline over it, which is the
+	   section-divider weight, not the rule weight.
+	   The log is the card's second section, so the space above the hairline is
+	   the section rung: the margin tops up the panel's own 0.7rem gap (app.css
+	   `.panel`) to --inst-gap-section. */
 	.gx-sub {
-		margin: 0.5rem 0 0;
+		margin: calc(var(--inst-gap-section) - 0.7rem) 0 0;
 		padding-top: 0.6rem;
 		border-top: 1px solid var(--line-faint);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
 		color: var(--muted);
 	}
 

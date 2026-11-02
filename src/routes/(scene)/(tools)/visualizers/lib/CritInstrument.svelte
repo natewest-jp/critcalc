@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CritHeatmap from './CritHeatmap.svelte';
 	import Mark from '$lib/components/Mark.svelte';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import {
 		CR_MIN,
 		CR_MAX,
@@ -104,21 +105,6 @@
 
 	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 
-	// ── Editable stat fields (two-way with the sliders) ────────────────────────
-	// The number inputs display percent units, one-way bound from state so slider
-	// drags update them live. While typing, any parseable value commits (clamped)
-	// without rewriting the field; onchange (blur/Enter) normalizes the display —
-	// covering emptied fields and out-of-range entries that clamp to an unchanged
-	// state value (no rerender to fix the text).
-	const crPct = $derived(Number((myCR * 100).toFixed(1)));
-	const cdPct = $derived(Number((myCD * 100).toFixed(1)));
-
-	function commitStat(raw: string, min: number, max: number, apply: (v: number) => void) {
-		const value = Number(raw);
-		if (!Number.isFinite(value) || raw.trim() === '') return;
-		apply(clamp(value / 100, min, max));
-	}
-
 	// ── Workspace handle (share + reset) ───────────────────────────────────────
 
 	export function reset() {
@@ -182,64 +168,32 @@
 
 			<!-- The control strip: the build, then the overlays -->
 			<div class="panel cv-controls">
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">CRIT Rate</span>
-						<span class="cv-value-field">
-							<input
-								class="cv-value-input"
-								type="number"
-								min={CR_MIN * 100}
-								max={CR_MAX * 100}
-								step="0.5"
-								value={crPct}
-								oninput={(e) =>
-									commitStat(e.currentTarget.value, CR_MIN, CR_MAX, (v) => (myCR = v))}
-								onchange={(e) => (e.currentTarget.value = String(crPct))}
-								aria-label="Crit rate percent"
-							/><span class="cv-value-unit">%</span>
-						</span>
-					</div>
-					<input
-						type="range"
-						min={CR_MIN}
-						max={CR_MAX}
-						step="0.005"
-						bind:value={myCR}
-						class="slider"
-						aria-label="Crit rate"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">CRIT DMG</span>
-						<span class="cv-value-field">
-							<input
-								class="cv-value-input"
-								type="number"
-								min={CD_MIN * 100}
-								max={CD_MAX * 100}
-								step="1"
-								value={cdPct}
-								oninput={(e) =>
-									commitStat(e.currentTarget.value, CD_MIN, CD_MAX, (v) => (myCD = v))}
-								onchange={(e) => (e.currentTarget.value = String(cdPct))}
-								aria-label="Crit damage percent"
-							/><span class="cv-value-unit">%</span>
-						</span>
-					</div>
-					<input
-						type="range"
-						min={CD_MIN}
-						max={CD_MAX}
-						step="0.01"
-						bind:value={myCD}
-						class="slider"
-						aria-label="Crit damage"
-					/>
-				</div>
+				<!-- The model holds fractions (0.7); the fields show percent. CRIT DMG
+				     keeps one decimal, as its field always did: a marker dragged on the
+				     heatmap lands between whole percents. -->
+				<InstrumentSlider
+					label="CRIT Rate"
+					aria="Crit rate"
+					bind:value={myCR}
+					min={CR_MIN}
+					max={CR_MAX}
+					step={0.005}
+					scale={100}
+					unit="%"
+				/>
+				<InstrumentSlider
+					label="CRIT DMG"
+					aria="Crit damage"
+					bind:value={myCD}
+					min={CD_MIN}
+					max={CD_MAX}
+					step={0.01}
+					scale={100}
+					decimals={1}
+					unit="%"
+				/>
 
-				<div class="cv-overlays">
+				<div class="inst-section">
 					<label class="check">
 						<input type="checkbox" bind:checked={showCvLine} />
 						<span class="check-box"></span>
@@ -250,26 +204,21 @@
 						<span class="check-box"></span>
 						<span>
 							No-crit risk overlay
-							<span class="note cv-toggle-sub">chance a whole rotation lands zero crits</span>
+							<span class="inst-hint cv-toggle-sub">chance a whole rotation lands zero crits</span>
 						</span>
 					</label>
 				</div>
 
-				<label class="slider-control cv-hits">
-					<div class="slider-header">
-						<span class="slider-label">Hits per rotation</span>
-						<span class="readout">{hitsPerRotation}</span>
-					</div>
-					<input
-						type="range"
-						min={HITS_MIN}
-						max={HITS_MAX}
-						step="1"
-						bind:value={hitsPerRotation}
-						class="slider cv-variance-slider"
-						style:background-image={riskGradient(myCR)}
-					/>
-				</label>
+				<!-- The track is the risk ramp: how the no-crit chance falls as hits
+				     are added, at the current CRIT Rate. -->
+				<InstrumentSlider
+					label="Hits per rotation"
+					bind:value={hitsPerRotation}
+					min={HITS_MIN}
+					max={HITS_MAX}
+					step={1}
+					trackStyle="background-image: {riskGradient(myCR)}"
+				/>
 			</div>
 		</div>
 
@@ -277,7 +226,7 @@
 			<!-- THE ANSWER: the one paper card -->
 			<div class="panel panel--paper cv-build-panel">
 				<p class="kicker">Current build</p>
-				<p class="cv-build-value">{formatMultiplier(myMultiplier)}</p>
+				<p class="readout-head">{formatMultiplier(myMultiplier)}</p>
 				<p class="cv-build-sub">Average DMG per hit. A hit that doesn't crit is ×1.</p>
 
 				<dl class="cv-build-list">
@@ -458,17 +407,13 @@
 		inset: 0;
 	}
 
-	/* The strip: CRIT Rate | CRIT DMG, then the overlays | hits per rotation. */
+	/* The strip: CRIT Rate | CRIT DMG, then the overlays | hits per rotation.
+	   One section, so its rows sit a control apart (app.css § THE SPACING
+	   LADDER); the overlays cell is an `.inst-section` of its own. */
 	.cv-controls {
 		flex: none;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.75rem 1.5rem;
-	}
-
-	.cv-overlays {
-		display: grid;
-		gap: 0.5rem;
-		align-content: start;
+		gap: var(--inst-gap-control) 1.5rem;
 	}
 
 	.cv-panel-stack {
@@ -510,69 +455,21 @@
 
 	/* ── Slider-adjacent (crit-specific) ───────────────────────────────────── */
 
-	/* Editable stat value: styled as a quiet solid chip, spinners hidden
-	   (arrow keys still step it) */
-	.cv-value-field {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 0.2rem;
-	}
+	/* The hits slider's risk ramp arrives as InstrumentSlider's inline
+	   `trackStyle`, which overrides the shared .slider track's background. */
 
-	.cv-value-input {
-		width: 3.9rem;
-		padding: 0.14rem 0.4rem;
-		border: none;
-		border-radius: 3px;
-		background: var(--fill-rest);
-		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		text-align: right;
-		appearance: textfield;
-		-moz-appearance: textfield;
-	}
-
-	.cv-value-input::-webkit-outer-spin-button,
-	.cv-value-input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-
-	.cv-value-input:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
-		outline-offset: 1px;
-	}
-
-	.cv-value-unit {
-		font-family: var(--font-mono);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
-
-	/* The build sliders + the hits slider use the shared .slider (track + thumb
-	   + hover glow). The hits slider adds its risk-ramp gradient track via
-	   inline style, which overrides the shared track background. */
-
-	/* Plain-language second line under a toggle label. */
+	/* A toggle's plain-language second line: the hint's voice, but inside the
+	   label (it is part of the checkbox's name), so on its own line with none
+	   of the sibling hint's pull-up. */
 	.cv-toggle-sub {
 		display: block;
-		font-size: var(--fs-md);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
+		margin: 0;
 	}
 
 	/* ── Build panel ───────────────────────────────────────────────────────── */
 
 	.cv-build-panel {
 		gap: 0.35rem;
-	}
-
-	.cv-build-value {
-		margin: 0;
-		font-family: var(--font-body);
-		font-size: var(--fs-5xl);
-		font-weight: var(--fw-bold);
 	}
 
 	/* Plain-language gloss line under a readout value */
@@ -791,7 +688,7 @@
 		.cv-build-panel > :global(.kicker) {
 			grid-area: kicker;
 		}
-		.cv-build-value {
+		.cv-build-panel > .readout-head {
 			grid-area: value;
 		}
 		.cv-build-sub {

@@ -3622,7 +3622,7 @@ img {
 
 .slider-control {
 	display: grid;
-	gap: 0.5rem;
+	gap: var(--inst-gap-in, 0.5rem);
 }
 
 .slider-header {
@@ -3630,13 +3630,45 @@ img {
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
-	font-size: var(--fs-xl);
+	font-size: var(--fs-lg);
 }
 
+/* ⚓ A CONTROL'S LABEL IS SENTENCE CASE (Nate 2026-11-02, the Visualizers
+   overhaul, round 2). It was 16px, tracked and all caps, so "CURRENT PITY"
+   out-shouted "CHARACTER EVENT", the section it belongs to. The caps voice
+   is the kicker's alone; a label speaks as Settings' row names do
+   (`.sp-name`): the dense-body size, semibold, in the ink. Its own size,
+   not only the header's, because a summary line (Wish odds' Goal) wears it
+   outside a header. */
 .slider-label {
+	font-size: var(--fs-lg);
 	font-weight: var(--fw-semibold);
-	letter-spacing: var(--ls-wider);
-	text-transform: uppercase;
+	color: var(--text);
+}
+
+/* ── THE READOUT'S HEAD (the Visualizers overhaul, round 2) ─────────────────
+   Every instrument's answer leads the same way: the figure on its own line,
+   the sentence that says what it is beneath. Its own line, always, because
+   a sentence beside the number broke mid-phrase in a narrow Readout, and
+   because a two-line head keeps its shape however long the sentence gets.
+   Five instruments had this as five copies (wi-big, ao-big, dr-big, icd-big,
+   cv-build-value). */
+.readout-head {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: var(--fs-5xl);
+	font-weight: var(--fw-bold);
+	line-height: var(--lh-tight);
+	font-variant-numeric: tabular-nums;
+}
+.readout-sentence {
+	display: block;
+	margin-top: 0.15rem;
+	font-size: var(--fs-xl);
+	font-weight: var(--fw-semibold);
+	line-height: var(--lh-snug);
+	color: var(--muted);
+	font-variant-numeric: normal;
 }
 
 /* The numeric value beside a slider label. Named .readout, not .value: this is
@@ -3938,6 +3970,36 @@ img {
 	   DEFAULT lineup draws — the same slider, 651px one-up at 1359 — so only a
 	   lineup the reader chose (one or two up on a wide window) is shortened. */
 	--instrument-slider-max: 41rem;
+	/* 🎛️ THE SPACING LADDER (the Visualizers overhaul, round 2; design §5).
+	   Space is what says what belongs together, so each rung is double the
+	   one inside it. Measured before: controls in one section sat 11–23px
+	   apart and sections 20–26px, too close a ratio to read as grouping.
+	   - in: inside one control (label to track, a control to its hint)
+	   - control: control to control in one section, and a kicker to its first
+	   - section: section to section in one panel */
+	--inst-gap-in: 0.5rem;
+	--inst-gap-control: 1rem;
+	--inst-gap-section: 2rem;
+}
+
+/* A panel's sections, and a section's controls, on the ladder above. */
+.inst-sections {
+	display: grid;
+	gap: var(--inst-gap-section);
+	align-content: start;
+}
+.inst-section {
+	display: grid;
+	gap: var(--inst-gap-control);
+	align-content: start;
+	min-width: 0;
+}
+/* A control's hint belongs to the control: it sits a rung closer. */
+.inst-hint {
+	margin: calc(var(--inst-gap-in) - var(--inst-gap-control)) 0 0;
+	font-size: var(--fs-md);
+	line-height: var(--lh-snug);
+	color: var(--muted);
 }
 
 .instrument {

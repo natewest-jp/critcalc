@@ -12,6 +12,7 @@
 	} from '$lib/utils/icd';
 	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 	import { ICD_EXAMPLES, type IcdExampleId } from './icdExamples';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'] as const;
 	type ElementId = (typeof ELEMENTS)[number];
@@ -27,6 +28,16 @@
 	let source = $state<Source>('even');
 	let interval = $state(0.5);
 	let hitCount = $state(12);
+
+	// A typed value may be finer than its track (frame data gives 0.475s), so
+	// the seconds keep the precision a link carries: an interval to the
+	// millisecond, a timer to the hundredth. The counts are whole. Each snap is
+	// also what keeps ↑/↓ in a field from adding float noise (0.1 + 0.05 × 3),
+	// which would unlight an anchor chip that compares with ===.
+	const INTERVAL_PER = 1000;
+	const TIMER_PER = 100;
+	const toInterval = (v: number) => Math.round(v * INTERVAL_PER) / INTERVAL_PER;
+	const toTimer = (v: number) => Math.round(v * TIMER_PER) / TIMER_PER;
 
 	// Rough real-world anchors so "hit interval" means something before a
 	// player knows their frame data — deliberately approximate (~).
@@ -109,8 +120,9 @@
 		if (typeof state !== 'object' || state === null) return;
 		const s = state as Record<string, unknown>;
 		if (s.v !== 1) return;
-		// Clamped to the slider's range and snapped to its step, `per` steps to
-		// the unit — dividing by it keeps 0.45 from coming back as 0.45000000000000007
+		// Clamped to the slider's range and snapped to what its field takes, `per`
+		// steps to the unit — dividing by it keeps 0.45 from coming back as
+		// 0.45000000000000007
 		const num = (v: unknown, lo: number, hi: number, per = 1) =>
 			typeof v === 'number' && Number.isFinite(v)
 				? Math.round(Math.min(hi, Math.max(lo, v)) * per) / per
@@ -119,10 +131,10 @@
 		// an example brings its own rule and element, as picking it does
 		if (s.source === 'even' || ICD_EXAMPLES.some((e) => e.id === s.source))
 			pickSource(s.source as Source);
-		interval = num(s.interval, 0.1, 3, 20) ?? interval;
+		interval = num(s.interval, 0.1, 3, INTERVAL_PER) ?? interval;
 		hitCount = num(s.hits, 5, 30) ?? hitCount;
 		if (Array.isArray(s.custom)) {
-			customTimer = num(s.custom[0], 0.5, 10, 10) ?? customTimer;
+			customTimer = num(s.custom[0], 0.5, 10, TIMER_PER) ?? customTimer;
 			customHits = num(s.custom[1], 1, COUNTER_OFF) ?? customHits;
 			customCap = num(s.custom[2], 1, NO_LIMIT) ?? customCap;
 		}
@@ -518,8 +530,10 @@
 		</div>
 	</div>
 
+	<!-- Each panel is one section, its controls on the ladder's control rung
+	     (app.css § THE SPACING LADDER). -->
 	<div class="icd-panels panels instrument-controls">
-		<div class="panel">
+		<div class="panel inst-section">
 			<p class="kicker">Attack string</p>
 			<div class="chips">
 				<button
@@ -542,21 +556,17 @@
 			{#if example}
 				<p class="note">{example.note}</p>
 			{:else}
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Hit interval</span>
-						<span class="readout">{interval.toFixed(2)}s</span>
-					</div>
-					<input
-						type="range"
-						min="0.1"
-						max="3"
-						step="0.05"
-						bind:value={interval}
-						class="slider"
-						aria-label="Hit interval in seconds"
-					/>
-				</div>
+				<InstrumentSlider
+					label="Hit interval"
+					aria="Hit interval in seconds"
+					bind:value={interval}
+					min={0.1}
+					max={3}
+					step={0.05}
+					unit="s"
+					decimals={3}
+					snap={toInterval}
+				/>
 				<div class="chips icd-anchors">
 					{#each ANCHORS as a (a.v)}
 						<button
@@ -568,25 +578,19 @@
 						</button>
 					{/each}
 				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Hits</span>
-						<span class="readout">{hitCount}</span>
-					</div>
-					<input
-						type="range"
-						min="5"
-						max="30"
-						step="1"
-						bind:value={hitCount}
-						class="slider"
-						aria-label="Number of hits"
-					/>
-				</div>
+				<InstrumentSlider
+					label="Hits"
+					aria="Number of hits"
+					bind:value={hitCount}
+					min={5}
+					max={30}
+					step={1}
+					snap={Math.round}
+				/>
 			{/if}
 		</div>
 
-		<div class="panel">
+		<div class="panel inst-section">
 			<p class="kicker">ICD rule</p>
 			<p class="note">
 				Internal Cooldown — the hidden rule that stops some hits from applying their element.
@@ -622,60 +626,49 @@
 			{#if rule !== 'custom'}
 				<p class="note">{ruleText}</p>
 			{:else}
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Timer</span>
-						<span class="readout">{customTimer.toFixed(1)}s</span>
-					</div>
-					<input
-						type="range"
-						min="0.5"
-						max="10"
-						step="0.1"
-						bind:value={customTimer}
-						class="slider"
-						aria-label="ICD timer in seconds"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Hit counter</span>
-						<span class="readout">{customHits === COUNTER_OFF ? 'Off' : customHits}</span>
-					</div>
-					<input
-						type="range"
-						min="1"
-						max={COUNTER_OFF}
-						step="1"
-						bind:value={customHits}
-						class="slider"
-						aria-label="ICD hit counter"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Limit per window</span>
-						<span class="readout">{customCap === NO_LIMIT ? 'None' : customCap}</span>
-					</div>
-					<input
-						type="range"
-						min="1"
-						max={NO_LIMIT}
-						step="1"
-						bind:value={customCap}
-						class="slider"
-						aria-label="Applications allowed per ICD timer window"
-					/>
-				</div>
+				<InstrumentSlider
+					label="Timer"
+					aria="ICD timer in seconds"
+					bind:value={customTimer}
+					min={0.5}
+					max={10}
+					step={0.1}
+					unit="s"
+					decimals={2}
+					snap={toTimer}
+				/>
+				<!-- The track's last stop is the word: typed, "off" lands there too. -->
+				<InstrumentSlider
+					label="Hit counter"
+					aria="ICD hit counter"
+					bind:value={customHits}
+					min={1}
+					max={COUNTER_OFF}
+					step={1}
+					snap={Math.round}
+					text={customHits === COUNTER_OFF ? 'Off' : null}
+					words={{ off: COUNTER_OFF }}
+				/>
+				<InstrumentSlider
+					label="Limit per window"
+					aria="Applications allowed per ICD timer window"
+					bind:value={customCap}
+					min={1}
+					max={NO_LIMIT}
+					step={1}
+					snap={Math.round}
+					text={customCap === NO_LIMIT ? 'None' : null}
+					words={{ none: NO_LIMIT }}
+				/>
 			{/if}
 		</div>
 	</div>
 
 	<div class="panel panel--paper icd-readout instrument-readout">
 		<p class="kicker">Readout</p>
-		<p class="icd-big">
-			{apps}<span class="icd-big-unit">
-				of {sim.length}
+		<p class="readout-head">
+			{apps}<span class="readout-sentence"
+				>of {sim.length}
 				{sim.length === 1 ? 'hit applies' : 'hits apply'}</span
 			>
 		</p>
@@ -804,21 +797,6 @@
 	}
 
 	/* ── Readout ───────────────────────────────────────────────────────────── */
-
-	.icd-big {
-		margin: 0;
-		font-family: var(--font-body);
-		font-size: var(--fs-5xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-tight);
-	}
-
-	.icd-big-unit {
-		margin-left: 0.4rem;
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
 
 	.icd-meta {
 		margin: 0;

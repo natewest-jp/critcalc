@@ -31,10 +31,10 @@
 		additiveEmBonus,
 		transformativeEmBonus,
 		specialEmBonus,
-		snapLevel,
-		stepLevel,
-		MAX_LEVEL
+		snapLevel
 	} from './reactionCurves';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import { LEVEL_SLIDER } from './kit/level';
 
 	const FAMILIES: { id: FamilyId; label: string }[] = [
 		{ id: 'direct', label: 'Direct hit' },
@@ -608,38 +608,14 @@
 		}
 	}
 	const usesDef = $derived(family === 'direct' || family === 'additive');
-
-	const fmtSlider = (d: SliderDef) => {
-		const v = sheet[d.key] as number;
-		return `${d.step < 1 ? v.toFixed(1) : v}${d.unit}`;
-	};
+	/** The last of an odd count takes the pair's length, so none sits alone at half width */
+	const isOddLast = (i: number, n: number) => i === n - 1 && n % 2 === 1;
 
 	function commitNumber(raw: string, apply: (v: number) => void, max = 100000) {
 		const v = Number(raw);
 		if (!Number.isFinite(v) || raw.trim() === '') return;
 		apply(Math.min(max, Math.max(0, v)));
 	}
-
-	function onLevel(e: Event & { currentTarget: HTMLInputElement }) {
-		const el = e.currentTarget;
-		sheet.charLevel = snapLevel(Number(el.value));
-		el.value = String(sheet.charLevel);
-	}
-	const STEP_KEYS: Record<string, 1 | -1> = {
-		ArrowRight: 1,
-		ArrowUp: 1,
-		ArrowLeft: -1,
-		ArrowDown: -1
-	};
-	function onLevelKey(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
-		const dir = STEP_KEYS[e.key];
-		if (!dir) return;
-		e.preventDefault();
-		sheet.charLevel = stepLevel(sheet.charLevel, dir);
-		e.currentTarget.value = String(sheet.charLevel);
-	}
-	const LEVEL_MARKS = [90, 95, 100];
-	const markPos = (lv: number) => (lv - 1) / (MAX_LEVEL - 1);
 
 	// ── Workspace handle (share + reset) ─────────────────────────────────────
 	export function reset() {
@@ -712,11 +688,12 @@
 			{/each}
 		</div>
 
-		<div class="chips bd-reactions">
+		<div class="chips bd-reactions" role="group" aria-label="Reaction">
 			{#each REACTIONS[family] as r (r.id)}
 				<button
 					class="chip chip--control"
 					class:active={reactionId === r.id}
+					aria-pressed={reactionId === r.id}
 					onclick={() => (reactionId = r.id)}
 				>
 					{r.id === 'none' ? r.name : `${r.name} ×${r.shown}`}
@@ -870,7 +847,7 @@
 		</p>
 	</div>
 
-	<div class="panel bd-build instrument-controls">
+	<div class="panel inst-section bd-build instrument-controls">
 		<p class="kicker">Build</p>
 		{#if family === 'direct'}
 			<div class="bd-sheet-row">
@@ -907,71 +884,35 @@
 				</label>
 			</div>
 		{/if}
+		<!-- One slider for every SliderDef: the family's and the DEF modifiers' -->
+		<!-- A percent stat types to one decimal, as the game's own sheet shows it
+		     (CRIT Rate 55.5%); the track keeps its coarser step. -->
+		{#snippet slider(d: SliderDef, wide = false)}
+			<InstrumentSlider
+				label={d.label}
+				aria={d.aria}
+				bind:value={sheet[d.key]}
+				min={d.min}
+				max={d.max}
+				step={d.step}
+				unit={d.unit}
+				decimals={d.unit === '%' ? 1 : undefined}
+				class={wide ? 'bd-wide' : ''}
+			/>
+		{/snippet}
 		<div class="bd-sliders">
 			{#each sliders.before as d, i (d.key)}
-				<div
-					class="slider-control"
-					class:bd-wide={i === sliders.before.length - 1 && sliders.before.length % 2 === 1}
-				>
-					<div class="slider-header">
-						<span class="slider-label">{d.label}</span>
-						<span class="readout">{fmtSlider(d)}</span>
-					</div>
-					<input
-						type="range"
-						min={d.min}
-						max={d.max}
-						step={d.step}
-						bind:value={sheet[d.key]}
-						class="slider"
-						aria-label={d.aria}
-					/>
-				</div>
+				{@render slider(d, isOddLast(i, sliders.before.length))}
 			{/each}
-			<div class="slider-control bd-wide">
-				<div class="slider-header">
-					<span class="slider-label">Level</span>
-					<span class="readout">{sheet.charLevel}</span>
-				</div>
-				<div class="bd-level">
-					<input
-						type="range"
-						min="1"
-						max={MAX_LEVEL}
-						step="1"
-						value={sheet.charLevel}
-						oninput={onLevel}
-						onkeydown={onLevelKey}
-						class="slider"
-						aria-label="Character level"
-					/>
-					<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
-					<div class="bd-level-marks" aria-hidden="true">
-						{#each LEVEL_MARKS as lv (lv)}
-							<span class="bd-level-mark" style:--at={markPos(lv)}></span>
-						{/each}
-					</div>
-				</div>
-			</div>
+			<InstrumentSlider
+				label="Level"
+				aria="Character level"
+				bind:value={sheet.charLevel}
+				{...LEVEL_SLIDER}
+				class="bd-wide"
+			/>
 			{#each sliders.after as d, i (d.key)}
-				<div
-					class="slider-control"
-					class:bd-wide={i === sliders.after.length - 1 && sliders.after.length % 2 === 1}
-				>
-					<div class="slider-header">
-						<span class="slider-label">{d.label}</span>
-						<span class="readout">{fmtSlider(d)}</span>
-					</div>
-					<input
-						type="range"
-						min={d.min}
-						max={d.max}
-						step={d.step}
-						bind:value={sheet[d.key]}
-						class="slider"
-						aria-label={d.aria}
-					/>
-				</div>
+				{@render slider(d, isOddLast(i, sliders.after.length))}
 			{/each}
 		</div>
 		{#if usesDef}
@@ -986,21 +927,7 @@
 			{#if defModsOpen}
 				<div class="bd-sliders">
 					{#each defModSliders as d (d.key)}
-						<div class="slider-control">
-							<div class="slider-header">
-								<span class="slider-label">{d.label}</span>
-								<span class="readout">{fmtSlider(d)}</span>
-							</div>
-							<input
-								type="range"
-								min={d.min}
-								max={d.max}
-								step={d.step}
-								bind:value={sheet[d.key]}
-								class="slider"
-								aria-label={d.aria}
-							/>
-						</div>
+						{@render slider(d)}
 					{/each}
 				</div>
 			{/if}
@@ -1506,43 +1433,65 @@
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 	}
 
-	/* ── Build: one full-width box; sliders two to a line, Level alone ──── */
+	/* ── Build: one full-width box; sliders two to a line, Level alone ────
+	   The panel is one `.inst-section`, so the kicker, the sheet row, the
+	   sliders and the DEF switch all sit a control's rung apart
+	   (app.css § THE SPACING LADDER). */
 	.bd-sheet-row {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.6rem 1.5rem;
-		margin-bottom: 0.6rem;
+		gap: var(--inst-gap-control) 1.5rem;
 	}
 
 	.bd-field {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: var(--inst-gap-in);
 	}
 
-	.bd-field-label {
+	/* The label voice (app.css § .slider-label), so these read as the
+	   sliders' labels do */
+	.bd-field-label,
+	.bd-switch-name {
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		color: var(--muted);
+		color: var(--text);
 	}
 
+	/* Dressed as the slider's typeable field (InstrumentSlider's .is-field),
+	   so every typed value in the panel looks one way. Five characters: the
+	   most these take is 50,000. */
 	.bd-input {
-		width: 5.2rem;
-		padding: 0.24rem 0.45rem;
+		box-sizing: content-box;
+		width: 5ch;
+		padding: 0.12rem 0.4rem;
 		border: none;
-		border-radius: 3px;
+		border-radius: var(--r-sm);
 		background: var(--fill-rest);
 		color: var(--text);
 		/* Input field — a sanctioned Mono home */
 		font-family: var(--font-mono);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
 		text-align: right;
 		appearance: textfield;
 		-moz-appearance: textfield;
+		transition: box-shadow var(--t-snap);
+	}
+
+	@media (hover: hover) {
+		.bd-input:hover {
+			box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, var(--border));
+		}
+	}
+
+	/* iOS zooms the page into a focused field under 16px. */
+	@media (pointer: coarse) {
+		.bd-input {
+			font-size: var(--fs-xl);
+		}
 	}
 
 	.bd-input::-webkit-outer-spin-button,
@@ -1560,38 +1509,16 @@
 		display: grid;
 		/* 🎛️ capped columns — see ReactionCurvesInstrument's .rx-sliders */
 		grid-template-columns: repeat(2, minmax(0, var(--instrument-slider-max)));
-		gap: 0.5rem 1.5rem;
+		gap: var(--inst-gap-control) 1.5rem;
 		/* top, not stretch — see ReactionCurvesInstrument's .rx-sliders */
 		align-items: start;
 	}
 
-	/* the pair's length — see ReactionCurvesInstrument's .rx-wide */
-	.slider-control.bd-wide {
+	/* the pair's length — see ReactionCurvesInstrument's .rx-wide. Global,
+	   because the class lands on InstrumentSlider's root. */
+	.bd-sliders :global(.bd-wide) {
 		grid-column: 1 / -1;
 		max-width: none;
-	}
-
-	/* The 90 / 95 / 100 marks — ⚠ mirror the range input's UA 2px side margin
-	   (box AND width), or every mark sits 2px left; see ReactionCurvesInstrument */
-	.bd-level {
-		position: relative;
-		display: grid;
-	}
-
-	.bd-level-marks {
-		position: relative;
-		width: 100%;
-		height: 5px;
-		margin: 3px 2px 0;
-	}
-
-	.bd-level-mark {
-		position: absolute;
-		top: 0;
-		left: calc(7.5px + var(--at) * (100% - 15px) - 0.5px);
-		width: 1px;
-		height: 5px;
-		background: color-mix(in srgb, var(--text) 35%, transparent);
 	}
 
 	.bd-switch {
@@ -1599,14 +1526,6 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		margin: 0.8rem 0 0.4rem;
-	}
-
-	.bd-switch-name {
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
 	}
 
 	/* Phone-width tile: table headings may wrap (they were the last thing

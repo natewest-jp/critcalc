@@ -14,8 +14,10 @@
 		sumPicks,
 		type SourceGroup
 	} from './defres';
-	import { MAX_LEVEL, snapLevel, stepLevel } from './reactionCurves';
+	import { MAX_LEVEL, snapLevel } from './reactionCurves';
 	import DefResChart, { type ChartCurve, type ChartPoint } from './DefResChart.svelte';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import { LEVEL_SLIDER } from './kit/level';
 
 	const ELEMENT_NAME: Record<ShredElement, string> = {
 		pyro: 'Pyro',
@@ -159,27 +161,6 @@
 					? 'whole party'
 					: 'own hits';
 
-	// ── Levels: 1–90, then 95 and 100 ─────────────────────────────────────
-	function onLevel(e: Event & { currentTarget: HTMLInputElement }) {
-		charLevel = snapLevel(Number(e.currentTarget.value));
-		e.currentTarget.value = String(charLevel);
-	}
-	const STEP_KEYS: Record<string, 1 | -1> = {
-		ArrowRight: 1,
-		ArrowUp: 1,
-		ArrowLeft: -1,
-		ArrowDown: -1
-	};
-	function onLevelKey(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
-		const dir = STEP_KEYS[e.key];
-		if (!dir) return;
-		e.preventDefault();
-		charLevel = stepLevel(charLevel, dir);
-		e.currentTarget.value = String(charLevel);
-	}
-	const LEVEL_MARKS = [90, 95, 100];
-	const markPos = (lv: number) => (lv - 1) / (MAX_LEVEL - 1);
-
 	// ── Charts ────────────────────────────────────────────────────────────
 	const RES_X0 = -100;
 	const RES_X1 = 200;
@@ -286,128 +267,107 @@
 
 	<div class="dr-controls panels instrument-controls">
 		<div class="panel dr-hit">
-			<p class="kicker">Your hit</p>
-			<div class="dr-elements" role="radiogroup" aria-label="The hit's element">
-				{#each SHRED_ELEMENTS as e (e)}
-					{#if e === 'physical'}
-						<button
-							class="chip chip--sm chip--element"
-							class:active={element === e}
-							style:--chip-color="var(--text)"
-							role="radio"
-							aria-checked={element === e}
-							onclick={() => (element = e)}
-						>
-							Physical
-						</button>
-					{:else}
-						<button
-							class="chip chip--icon"
-							class:active={element === e}
-							style:--chip-color="var(--el-{e}-main)"
-							role="radio"
-							aria-checked={element === e}
-							aria-label={ELEMENT_NAME[e]}
-							title={ELEMENT_NAME[e]}
-							onclick={() => (element = e)}
-						>
-							<img src={elementIcon(e)} alt="" width="16" height="16" />
-						</button>
-					{/if}
-				{/each}
-			</div>
-			<div class="slider-control">
-				<div class="slider-header">
-					<span class="slider-label">Your level</span>
-					<span class="readout">{charLevel}</span>
+			<section class="inst-section">
+				<p class="kicker">Your hit</p>
+				<div class="dr-elements" role="radiogroup" aria-label="The hit's element">
+					{#each SHRED_ELEMENTS as e (e)}
+						{#if e === 'physical'}
+							<button
+								class="chip chip--sm chip--element"
+								class:active={element === e}
+								style:--chip-color="var(--text)"
+								role="radio"
+								aria-checked={element === e}
+								onclick={() => (element = e)}
+							>
+								Physical
+							</button>
+						{:else}
+							<button
+								class="chip chip--icon"
+								class:active={element === e}
+								style:--chip-color="var(--el-{e}-main)"
+								role="radio"
+								aria-checked={element === e}
+								aria-label={ELEMENT_NAME[e]}
+								title={ELEMENT_NAME[e]}
+								onclick={() => (element = e)}
+							>
+								<img src={elementIcon(e)} alt="" width="16" height="16" />
+							</button>
+						{/if}
+					{/each}
 				</div>
-				<div class="dr-level">
-					<input
-						type="range"
-						min="1"
-						max={MAX_LEVEL}
-						step="1"
-						value={charLevel}
-						oninput={onLevel}
-						onkeydown={onLevelKey}
-						class="slider"
-						aria-label="Character level"
-					/>
-					<div class="dr-level-marks" aria-hidden="true">
-						{#each LEVEL_MARKS as lv (lv)}
-							<span class="dr-level-mark" style:--at={markPos(lv)}></span>
-						{/each}
-					</div>
-				</div>
-			</div>
-			<label class="check">
-				<input type="checkbox" bind:checked={ignoresDef} />
-				<span class="check-box"></span>
-				<span>Transformative, Lunar or Stellar reaction (ignores DEF)</span>
-			</label>
+				<InstrumentSlider
+					label="Your level"
+					aria="Character level"
+					bind:value={charLevel}
+					{...LEVEL_SLIDER}
+				/>
+				<label class="check">
+					<input type="checkbox" bind:checked={ignoresDef} />
+					<span class="check-box"></span>
+					<span>Transformative, Lunar or Stellar reaction (ignores DEF)</span>
+				</label>
+			</section>
 		</div>
 
 		<div class="panel dr-enemy">
-			<p class="kicker">Enemy</p>
-			<div class="slider-control">
-				<div class="slider-header">
-					<span class="slider-label">{ELEMENT_NAME[element]} RES</span>
-					<span class="readout">{immune ? 'Immune' : `${baseRes}%`}</span>
-				</div>
-				<input
-					type="range"
+			<section class="inst-section">
+				<p class="kicker">Enemy</p>
+				<!-- Moving the RES slider leaves Immune. Only a CHANGE does: the field
+				     writes its value back when you tab through it or press Escape, and
+				     that must not quietly drop Immune. -->
+				<InstrumentSlider
+					label="{ELEMENT_NAME[element]} RES"
+					aria="Enemy base resistance percent"
+					bind:value={
+						() => baseRes,
+						(v) => {
+							if (v !== baseRes) immune = false;
+							baseRes = v;
+						}
+					}
 					min={BASE_RES_MIN}
 					max={BASE_RES_MAX}
-					step="5"
-					value={baseRes}
-					oninput={(e) => {
-						immune = false;
-						baseRes = Number(e.currentTarget.value);
-					}}
-					class="slider"
-					aria-label="Enemy base resistance percent"
+					step={5}
+					unit={immune ? '' : '%'}
+					text={immune ? 'Immune' : null}
 				/>
-			</div>
-			<div class="chips dr-rungs" role="group" aria-label="Common RES values">
-				{#each RES_RUNGS as r (r)}
-					<button
-						class="chip chip--sm"
-						class:active={!immune && baseRes === r}
-						onclick={() => {
-							immune = false;
-							baseRes = r;
-						}}
-					>
-						{r}%
+				<div class="chips dr-rungs" role="group" aria-label="Common RES values">
+					{#each RES_RUNGS as r (r)}
+						<button
+							class="chip chip--sm"
+							class:active={!immune && baseRes === r}
+							onclick={() => {
+								immune = false;
+								baseRes = r;
+							}}
+						>
+							{r}%
+						</button>
+					{/each}
+					<button class="chip chip--sm" class:active={immune} onclick={() => (immune = !immune)}>
+						Immune
 					</button>
-				{/each}
-				<button class="chip chip--sm" class:active={immune} onclick={() => (immune = !immune)}>
-					Immune
-				</button>
-			</div>
-			<div class="slider-control">
-				<div class="slider-header">
-					<span class="slider-label">Enemy level</span>
-					<span class="readout">{enemyLevel}</span>
 				</div>
-				<input
-					type="range"
-					min="1"
-					max={ENEMY_LEVEL_MAX}
-					step="1"
+				<InstrumentSlider
+					label="Enemy level"
+					aria="Enemy level"
 					bind:value={enemyLevel}
-					class="slider"
-					aria-label="Enemy level"
+					min={1}
+					max={ENEMY_LEVEL_MAX}
+					step={1}
 				/>
-			</div>
+			</section>
 		</div>
 	</div>
 
 	<div class="dr-side instrument-readout">
 		<div class="panel panel--paper dr-readout">
 			<p class="kicker">Readout</p>
-			<p class="dr-big">
-				{fmtX(total)}<span class="dr-big-unit">of your hit's damage gets through</span>
+			<p class="readout-head">
+				{fmtX(total)}<span class="readout-sentence">of your hit's damage gets through</span>
 			</p>
 			<dl class="dr-rows">
 				<dt>RES</dt>
@@ -462,97 +422,91 @@
 
 		<div class="panel dr-sources">
 			<p class="kicker">Shred</p>
-			{#each SECTIONS as sec (sec.stat)}
-				{@const list = ofStat(sec.stat)}
-				<div class="dr-section">
-					<p class="dr-section-head">
-						<span>{sec.label}{sec.stat === 'res' ? ` · ${ELEMENT_NAME[element]}` : ''}</span>
-						<span class="dr-section-total">
-							{sec.stat === 'res'
-								? minus(resShred)
-								: sec.stat === 'def'
-									? minus(defShred)
-									: `${defIgnore}%`}
-						</span>
-					</p>
-					<ul class="dr-list">
-						{#each list as g (g.key)}
-							{@const on = g.key in picks}
-							{@const who = whoOf(g)}
-							<li class="dr-source" class:is-on={on}>
-								<label class="check" title={g.options.map((o) => o.ability).join(' / ')}>
-									<input type="checkbox" checked={on} onchange={() => toggle(g)} />
-									<span class="check-box"></span>
-									<span class="dr-name">{g.ownerName}</span>
-									{#if conOf(g) > 0}<span class="dr-con">C{conOf(g)}</span>{/if}
-									{#if who}<span class="dr-who">{who}</span>{/if}
-								</label>
-								{#if g.options.length > 1}
-									<span class="dr-options" role="radiogroup" aria-label="{g.ownerName}'s amount">
-										{#each g.options as o (o.amount)}
-											<button
-												class="chip chip--sm"
-												class:active={on && picks[g.key] === o.amount}
-												role="radio"
-												aria-checked={on && picks[g.key] === o.amount}
-												title={o.ability}
-												onclick={() => pickAmount(g, o.amount)}
-											>
-												{o.amount}%
-											</button>
-										{/each}
-									</span>
-								{:else}
-									<span class="dr-amount">{g.options[0].amount}%</span>
-								{/if}
-							</li>
-						{:else}
-							<li class="dr-none">
-								No character or set in the data shreds {ELEMENT_NAME[element]} RES.
-							</li>
-						{/each}
-					</ul>
-					<div class="slider-control dr-other">
-						<div class="slider-header">
-							<span class="slider-label">Other sources</span>
-							<span class="readout">
-								{sec.stat === 'res' ? otherRes : sec.stat === 'def' ? otherDef : otherIgnore}%
+			<div class="inst-sections">
+				{#each SECTIONS as sec (sec.stat)}
+					{@const list = ofStat(sec.stat)}
+					<div class="inst-section">
+						<p class="dr-section-head">
+							<span>{sec.label}{sec.stat === 'res' ? ` · ${ELEMENT_NAME[element]}` : ''}</span>
+							<span class="dr-section-total">
+								{sec.stat === 'res'
+									? minus(resShred)
+									: sec.stat === 'def'
+										? minus(defShred)
+										: `${defIgnore}%`}
 							</span>
-						</div>
+						</p>
+						<ul class="dr-list">
+							{#each list as g (g.key)}
+								{@const on = g.key in picks}
+								{@const who = whoOf(g)}
+								<li class="dr-source" class:is-on={on}>
+									<label class="check" title={g.options.map((o) => o.ability).join(' / ')}>
+										<input type="checkbox" checked={on} onchange={() => toggle(g)} />
+										<span class="check-box"></span>
+										<span class="dr-name">{g.ownerName}</span>
+										{#if conOf(g) > 0}<span class="dr-con">C{conOf(g)}</span>{/if}
+										{#if who}<span class="dr-who">{who}</span>{/if}
+									</label>
+									{#if g.options.length > 1}
+										<span class="dr-options" role="radiogroup" aria-label="{g.ownerName}'s amount">
+											{#each g.options as o (o.amount)}
+												<button
+													class="chip chip--sm"
+													class:active={on && picks[g.key] === o.amount}
+													role="radio"
+													aria-checked={on && picks[g.key] === o.amount}
+													title={o.ability}
+													onclick={() => pickAmount(g, o.amount)}
+												>
+													{o.amount}%
+												</button>
+											{/each}
+										</span>
+									{:else}
+										<span class="dr-amount">{g.options[0].amount}%</span>
+									{/if}
+								</li>
+							{:else}
+								<li class="dr-none">
+									No character or set in the data shreds {ELEMENT_NAME[element]} RES.
+								</li>
+							{/each}
+						</ul>
 						{#if sec.stat === 'res'}
-							<input
-								type="range"
-								min="0"
-								max="100"
-								step="5"
+							<InstrumentSlider
+								label="Other sources"
+								aria="Other resistance shred percent"
 								bind:value={otherRes}
-								class="slider"
-								aria-label="Other resistance shred percent"
+								min={0}
+								max={100}
+								step={5}
+								unit="%"
 							/>
 						{:else if sec.stat === 'def'}
-							<input
-								type="range"
-								min="0"
-								max="100"
-								step="5"
+							<InstrumentSlider
+								label="Other sources"
+								aria="Other defense shred percent"
 								bind:value={otherDef}
-								class="slider"
-								aria-label="Other defense shred percent"
+								min={0}
+								max={100}
+								step={5}
+								unit="%"
 							/>
 						{:else}
-							<input
-								type="range"
-								min="0"
-								max="100"
-								step="5"
+							<InstrumentSlider
+								label="Other sources"
+								aria="Other defense ignore percent"
 								bind:value={otherIgnore}
-								class="slider"
-								aria-label="Other defense ignore percent"
+								min={0}
+								max={100}
+								step={5}
+								unit="%"
 							/>
 						{/if}
 					</div>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>
@@ -616,22 +570,6 @@
 	}
 
 	/* ── Readout ── */
-	.dr-big {
-		margin: 0;
-		font-family: var(--font-body);
-		font-size: var(--fs-5xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-tight);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.dr-big-unit {
-		margin-left: 0.4rem;
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
-
 	.dr-rows {
 		display: grid;
 		grid-template-columns: auto 1fr;
@@ -692,11 +630,12 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.3rem;
-		margin-bottom: 0.75rem;
 	}
 
+	/* The rungs belong to the RES slider above them: a rung closer, as a hint
+	   is (app.css § THE SPACING LADDER) */
 	.dr-rungs {
-		margin: -0.2rem 0 0.75rem;
+		margin: calc(var(--inst-gap-in) - var(--inst-gap-control)) 0 0;
 	}
 
 	.dr-rungs .chip {
@@ -704,44 +643,26 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* The level slider's 90 / 95 / 100 marks — ReactionCurvesInstrument's
-	   construction (the thumb's travel, and the UA's 2px input margin). */
-	.dr-level {
-		position: relative;
-		display: grid;
-	}
-
-	.dr-level-marks {
-		position: relative;
-		width: 100%;
-		height: 5px;
-		margin: 3px 2px 0;
-	}
-
-	.dr-level-mark {
-		position: absolute;
-		top: 0;
-		left: calc(7.5px + var(--at) * (100% - 15px) - 0.5px);
-		width: 1px;
-		height: 5px;
-		background: color-mix(in srgb, var(--text) 35%, transparent);
-	}
-
 	.dr-hit .check {
-		margin-top: 0.6rem;
 		font-size: var(--fs-md);
 	}
 
 	/* ── Shred sources ── */
-	.dr-section + .dr-section {
-		margin-top: 0.9rem;
+	/* The kicker to its first stat is the ladder's control rung; the stats
+	   are its sections, each an .inst-section (app.css § THE SPACING LADDER) */
+	.dr-sources {
+		gap: var(--inst-gap-control);
 	}
 
+	/* A stat's head names its list as a label names its track: a rung closer
+	   than the controls under it */
+	/* A group's head speaks at the label's size (round 2): at 12px it sat under
+	   its own Other sources label, which the kit sets at --fs-lg. */
 	.dr-section-head {
 		display: flex;
 		justify-content: space-between;
-		margin: 0 0 0.3rem;
-		font-size: var(--fs-md);
+		margin: 0 0 calc(var(--inst-gap-in) - var(--inst-gap-control));
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -811,17 +732,6 @@
 	.dr-none {
 		font-size: var(--fs-md);
 		color: var(--muted);
-	}
-
-	.dr-other {
-		margin-top: 0.3rem;
-	}
-
-	/* a remainder, not a headline — the section head above already shouts */
-	.dr-other .slider-label {
-		font-size: var(--fs-md);
-		letter-spacing: normal;
-		text-transform: none;
 	}
 
 	/* ── A shared tile: the shred list under the controls, the Readout beside
