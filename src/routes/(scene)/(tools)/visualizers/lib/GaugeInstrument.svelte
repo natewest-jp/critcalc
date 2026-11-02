@@ -464,10 +464,10 @@
 	 * the box. 3 covers every scenario but Burning (4) and most sequences a
 	 * reader builds; past it, a row comes out of the plot again. Each reserved
 	 * row is 18px of plot given up for good, which is why it is not 4.
-	 * ⛔ The scenario NOTE's height is not reserved the same way (tried): the
-	 * longest note took ~90px from a two-up chart for good, and a note changes
-	 * only when a scenario replaces the whole chart, where nothing on it is
-	 * being followed across the resize.
+	 * The scenario NOTE needs no reserve: it sits in the settings slot, and the
+	 * chart's height is the tile's, never what the controls leave (app.css §
+	 * THE RAIL). ⛔ Reserving it was tried when it did reach the chart: the
+	 * longest note took ~90px from a two-up chart for good.
 	 * ⚠ The box's FLOOR (`--graph-min`) keeps the real count, so a box with no
 	 * spare height (a phone) gains no empty rows.
 	 */
@@ -1512,9 +1512,14 @@
 		</div>
 	</div>
 
-	<!-- One section: the chips and their note on the control rung (app.css §
-	     THE SPACING LADDER). -->
-	<div class="panel inst-section gx-scenarios instrument-controls">
+	<!-- The rail's first panel (round 3, design §3). The live controls are the
+	     chart's own toolbar and pills, so the rail holds the scenarios, then the
+	     Readout. They take the LIVE slot: loading one is where working in the
+	     Gauge starts, and an empty live row would still draw its grid gap above
+	     the rail. ⚓ Out in the open, never folded into a menu: loading one is
+	     how a player learns the reactions. One section: the chips and their
+	     note on the control rung (app.css § THE SPACING LADDER). -->
+	<div class="panel inst-section gx-scenarios instrument-live">
 		<p class="kicker">Example scenarios</p>
 		<div class="chips gx-chips-dense">
 			{#each PRESETS as p (p.id)}
@@ -1613,7 +1618,7 @@
 		-webkit-user-select: none;
 	}
 
-	/* The layout is app.css's .instrument — whose side column is 25rem because
+	/* The layout is app.css's .instrument — whose rail is 25rem wide because
 	   of THIS log: its widest application line holds one line there (see
 	   --instrument-side). Reactions may still wrap. */
 
@@ -1920,14 +1925,17 @@
 
 	/* ⛔ `.gx-log-apply` / `-n` / `-reaction` / `-tick` and `.gx-dim` RETIRED
 	   (2026-08-17): the row grammar moved to the shared <EventLog>, so what is
-	   left here is the BOX that holds it — the height cap this panel wants, which
-	   is the one thing the shared component deliberately does not decide (the
-	   planner hands it a whole column instead). */
+	   left here is the box that holds it.
+	   ↻ Round 3: no height cap and no scroller of its own, at any width. The
+	   Readout is last in the rail (app.css § THE RAIL), so a log that grows a
+	   line per application moves nothing you touch, and it is bounded anyway
+	   (at most MAX_GAUGE_APPS applications, Burning's self-ticks hidden and
+	   Electro-Charged's drains collapsed into runs). The old caps fought that:
+	   the narrow tier's 21rem with `overflow: hidden` clipped a long log, and
+	   the mid and wide tiers gave the Readout a fixed height and scrolled the
+	   log inside it. */
 	.gx-log {
 		display: grid;
-		min-height: 0;
-		max-height: 21rem;
-		overflow: hidden;
 		padding-right: 0.3rem;
 		/* ⚠⚠ THE ANCHOR ON PAPER IS --muted, NOT --text. `.ctx-light` inverts the
 		   ink ladder — measured here, --text is #495366 and --muted #3b4255 — so
@@ -1936,58 +1944,5 @@
 		   it takes one ink and derives the rest, precisely so this is a single
 		   declaration rather than three overrides. */
 		--el-ink: var(--muted);
-	}
-
-	/* ══ SIDE BY SIDE: THE READOUT TAKES THE SCENARIOS' HEIGHT (2026-11-01) ═══
-	   Under the chart, beside the scenarios. The chart's height is what this
-	   row leaves, and the Readout was the row's tallest item: its aura log grew
-	   a line per application, and its top half changed size between reading a
-	   moment and the summary, so the chart shrank as you added applications
-	   and jumped as you pointed at it (⚓ Nate). ↻ So here the Readout gives the
-	   row no height of its own (`contain: size`), stretches to the height the
-	   scenarios set, and its log scrolls inside, as it does in the wide column.
-	   ⚠ This overrides app.css's "each keeps its natural height" for this
-	   instrument alone: a short log leaves paper below it. */
-	@container instrument (38rem <= width < 60rem) {
-		.gx-readout {
-			align-self: stretch;
-			contain: size;
-			display: flex;
-			flex-direction: column;
-		}
-
-		.gx-log {
-			flex: 1 1 auto;
-			align-content: start;
-			min-height: 0;
-			max-height: none;
-			overflow-y: auto;
-		}
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN (2026-10-02, ⚓ Nate) ════════════════════
-	   The Readout runs down the right edge at the tile's full height, where the
-	   aura log — the panel's long part — gets the height a log wants and
-	   scrolls inside it rather than being cut off at 21rem. */
-	@container instrument (min-width: 60rem) {
-		/* The note keeps a reading measure while the chips use the width */
-		.gx-scenarios .note {
-			max-width: 70ch;
-		}
-
-		.gx-readout {
-			display: flex;
-			flex-direction: column;
-			min-height: 0;
-		}
-
-		/* ⚠ align-content: start — a grid given spare height shares it out
-		   between its rows, which spaced the log's lines a column apart. */
-		.gx-log {
-			flex: 1 1 auto;
-			align-content: start;
-			max-height: none;
-			overflow-y: auto;
-		}
 	}
 </style>

@@ -18,6 +18,7 @@
 		type EmCurve
 	} from './reactionCurves';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import SettingLine from './kit/SettingLine.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
 
 	type FamilyId = 'all' | 'amplifying' | 'transformative' | 'additive' | 'lunar' | 'crystallize';
@@ -580,6 +581,53 @@
 		</div>
 	</div>
 
+	<!-- LIVE (design §3): EM is the one control you scrub, so it heads the rail
+	     on its own, beside the chart it moves. -->
+	<div class="panel instrument-live">
+		<InstrumentSlider
+			label="Elemental Mastery"
+			aria="Elemental Mastery"
+			bind:value={em}
+			min={0}
+			max={EM_MAX}
+			step={5}
+		/>
+	</div>
+
+	<!-- SETTINGS: Reaction Bonus per session, then Level set once and folded.
+	     Every family takes one or the other; a family that took neither would
+	     drop the panel rather than leave an empty Build box on the rail. -->
+	{#if takesRb || family.usesLevel}
+		<div class="panel instrument-settings">
+			<section class="inst-section">
+				<p class="kicker">Build</p>
+				{#if takesRb}
+					<InstrumentSlider
+						label="Reaction Bonus"
+						aria="Reaction Bonus in percent"
+						bind:value={rbPct}
+						min={0}
+						max={RB_MAX}
+						step={5}
+						unit="%"
+					/>
+				{/if}
+				{#if family.usesLevel}
+					<SettingLine label="Level" ariaLabel="Level: {level}">
+						{#snippet summary()}{level}{/snippet}
+						<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
+						<InstrumentSlider
+							label="Level"
+							aria="Character level"
+							bind:value={level}
+							{...LEVEL_SLIDER}
+						/>
+					</SettingLine>
+				{/if}
+			</section>
+		</div>
+	{/if}
+
 	<div class="panel panel--paper rx-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="note rx-intro">{family.note}</p>
@@ -633,44 +681,6 @@
 			</p>
 		{/if}
 	</div>
-
-	<div class="panel rx-build instrument-controls">
-		<section class="inst-section">
-			<p class="kicker">Build</p>
-			<div class="rx-sliders">
-				<InstrumentSlider
-					class={takesRb ? '' : 'rx-wide'}
-					label="Elemental Mastery"
-					aria="Elemental Mastery"
-					bind:value={em}
-					min={0}
-					max={EM_MAX}
-					step={5}
-				/>
-				{#if takesRb}
-					<InstrumentSlider
-						label="Reaction Bonus"
-						aria="Reaction Bonus in percent"
-						bind:value={rbPct}
-						min={0}
-						max={RB_MAX}
-						step={5}
-						unit="%"
-					/>
-				{/if}
-				{#if family.usesLevel}
-					<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
-					<InstrumentSlider
-						class="rx-wide"
-						label="Level"
-						aria="Character level"
-						bind:value={level}
-						{...LEVEL_SLIDER}
-					/>
-				{/if}
-			</div>
-		</section>
-	</div>
 </div>
 
 <style>
@@ -705,8 +715,8 @@
 
 	/* ── The readout: one row per curve, the columns' heads do the explaining,
 	   and the reading says the chosen row in words ── */
-	/* The full box, not .note's 56ch measure — the readout is already bounded,
-	   and the lines it saves are height the Build box gets back */
+	/* The full box, not .note's 56ch measure: the readout is already bounded
+	   by its column, and a narrower measure only adds lines */
 	.rx-intro {
 		max-width: none;
 		margin: 0 0 0.6rem;
@@ -826,44 +836,5 @@
 
 	.rx-formula {
 		font-family: var(--font-body);
-	}
-
-	/* ── Build: one full-width box, the sliders side by side ── */
-	.rx-sliders {
-		display: grid;
-		/* EM and Reaction Bonus share a line; Level always takes a line of its
-		   own (⚓ Nate) — a third of the box was too short a track to land a level */
-		/* 🎛️ each column stops at the shared slider length (app.css
-		   --instrument-slider-max, sweep 2026-10-15 §3 item 16), so the pair
-		   stays a pair on a wide tile rather than two halves of the panel */
-		grid-template-columns: repeat(2, minmax(0, var(--instrument-slider-max)));
-		/* a row apart is control to control (app.css § THE SPACING LADDER) */
-		gap: var(--inst-gap-control) 1.5rem;
-		/* top, not stretch: the Level control is taller by its marks, and a
-		   stretched neighbour spreads that height into its own rows, dropping
-		   its label below Level's */
-		align-items: start;
-	}
-
-	/* A line of its own runs under BOTH columns, so it is the pair's length,
-	   not one slider's (the app.css cap is per control). The slider is the
-	   kit's, so its root is out of this file's scope. */
-	.rx-sliders > :global(.slider-control.rx-wide) {
-		grid-column: 1 / -1;
-		max-width: none;
-	}
-
-	/* The sliders take a line each on a phone, and in the Build's half of a
-	   shared tile */
-	@container instrument (max-width: 30rem) {
-		.rx-sliders {
-			grid-template-columns: minmax(0, 1fr);
-		}
-	}
-
-	@container instrument (38rem <= width < 60rem) {
-		.rx-sliders {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 </style>

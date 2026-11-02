@@ -718,7 +718,7 @@
 	</div>
 {/snippet}
 
-<div class="instrument instrument--capped">
+<div class="instrument instrument--capped instrument--settings-first">
 	<div class="ao-chart instrument-chart ctx-dark">
 		<div class="chips ao-views" role="group" aria-label="View">
 			{#each VIEWS as v (v.id)}
@@ -1043,8 +1043,14 @@
 		{/if}
 	</div>
 
-	<!-- ONE panel, a section per question (the Wish Odds layout) -->
-	<div class="panel ao-controls instrument-controls">
+	<!-- SETTINGS: the question you're asking (the piece, your stats), set per
+	     session and kept across the views. ⚓ FIRST, above the live panel
+	     (`.instrument--settings-first`): what the live panel offers depends on
+	     them (a second stat adds The piece's "Has" row), and a control's
+	     dependents sit below it, so nothing moves under the hand that changed
+	     them. Your piece reads the slot and main stat off the card, so only
+	     Your stats shows there. -->
+	<div class="panel instrument-settings inst-sections">
 		{#if view !== 'piece'}
 			<section class="inst-section">
 				<p class="kicker">Piece</p>
@@ -1133,7 +1139,12 @@
 				</div>
 			{/if}
 		</section>
+	</div>
 
+	<!-- LIVE (round 3, design §3): the view's own section, the one you work
+	     with in that view, heads the rail beside the chart it moves. In Your
+	     piece that is the card and, at +20, its Reshape. -->
+	<div class="panel instrument-live inst-sections">
 		{#if view === 'drop'}
 			<section class="inst-section">
 				<p class="kicker">Farming</p>
@@ -1629,13 +1640,10 @@
 
 	/* ── Controls ───────────────────────────────────────────────────────────── */
 
-	/* The panel's sections on the ladder (app.css § THE SPACING LADDER); each
-	   section is an `.inst-section`. */
-	.ao-controls {
-		display: grid;
-		gap: var(--inst-gap-section) 1.5rem;
-		align-content: start;
-	}
+	/* Each panel's sections sit on the ladder through app.css's
+	   `.inst-sections`. One column in the rail, so every row here wraps to fit
+	   ~22rem: five slots, the chip grids, and the card, which goes short below
+	   300px (`tightCard`). */
 
 	.ao-slots {
 		display: flex;
@@ -2060,13 +2068,5 @@
 		color: var(--text);
 		font-weight: var(--fw-semibold);
 		font-variant-numeric: tabular-nums;
-	}
-
-	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
-	   side by side under the chart. */
-	@container instrument (min-width: 60rem) {
-		.ao-controls {
-			grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
-		}
 	}
 </style>

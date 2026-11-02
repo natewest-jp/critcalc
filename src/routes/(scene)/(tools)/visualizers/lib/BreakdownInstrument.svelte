@@ -34,6 +34,7 @@
 		snapLevel
 	} from './reactionCurves';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import SettingLine from './kit/SettingLine.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
 
 	const FAMILIES: { id: FamilyId; label: string }[] = [
@@ -151,20 +152,25 @@
 		color: null,
 		read: `A ${sheet.dmgPct.toFixed(1)}% DMG Bonus would make the hit ${fmtX(dmgFactor(sheet))} as strong.`
 	});
-	const defMods = $derived(sheet.defShredPct > 0 || sheet.defIgnorePct > 0);
+	/** The DEF shred and ignore switch. Off zeroes both, so nothing hidden keeps
+	 *  acting on the hit. The DEF row's long formula follows the switch, not the
+	 *  values: tied to a value above 0, it arrived on the first step of a DEF
+	 *  shred drag, and the longer row (more lines in a narrow tile) pushed the
+	 *  slider down under the pointer (design §4). Now it changes on the click. */
+	let defModsOpen = $state(false);
 	const defRow = $derived<Row>({
 		id: 'def',
 		kind: 'mult',
 		name: 'Enemy DEF',
-		formula: defMods
+		formula: defModsOpen
 			? '(100 + yours) ÷ (100 + yours + (100 + theirs) × (1 − shred) × (1 − ignore))'
 			: '(100 + your level) ÷ (both levels + 200)',
-		real: defMods
+		real: defModsOpen
 			? `Lv ${sheet.charLevel} vs ${sheet.enemyLevel} · −${sheet.defShredPct}% · −${sheet.defIgnorePct}%`
 			: `Lv ${sheet.charLevel} vs ${sheet.enemyLevel}`,
 		value: defFactor(sheet),
 		color: null,
-		read: defMods
+		read: defModsOpen
 			? `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF after ${sheet.defShredPct}% shred and ${sheet.defIgnorePct}% ignore would let ${pct(defFactor(sheet))} of the hit through.`
 			: `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF would let ${pct(defFactor(sheet))} of the hit through.`
 	});
@@ -562,11 +568,12 @@
 			unit: '%'
 		}
 	});
-	/** The sliders that feed the family's formula, before and after Level —
+	/** The sliders that feed the family's formula: the build's, which you
+	 *  scrub, and the enemy's, set once a session (design §3) —
 	 *  ⛔ a slider that changes nothing on screen is noise, so the rest hide. */
 	const sliders = $derived.by(() => {
 		const amp = family === 'direct' && reaction.mult > 1;
-		const before: (keyof typeof S)[] =
+		const build: (keyof typeof S)[] =
 			family === 'direct'
 				? ['statPct', 'dmgPct', 'cr', 'cd', ...(amp ? (['em', 'rbPct'] as const) : [])]
 				: family === 'additive'
@@ -574,9 +581,9 @@
 					: family === 'lunar'
 						? ['em', 'rbPct', 'cr', 'cd', 'baseDmgPct', 'elevationPct']
 						: ['em', 'rbPct'];
-		const after: (keyof typeof S)[] =
+		const enemy: (keyof typeof S)[] =
 			family === 'direct' || family === 'additive' ? ['enemyLevel', 'enemyRes'] : ['enemyRes'];
-		return { before: before.map((k) => S[k]), after: after.map((k) => S[k]) };
+		return { build: build.map((k) => S[k]), enemy: enemy.map((k) => S[k]) };
 	});
 	const defModSliders: SliderDef[] = [
 		{
@@ -598,8 +605,6 @@
 			unit: '%'
 		}
 	];
-	/** Off zeroes both, so nothing hidden keeps acting on the hit */
-	let defModsOpen = $state(false);
 	function toggleDefMods() {
 		defModsOpen = !defModsOpen;
 		if (!defModsOpen) {
@@ -671,6 +676,23 @@
 		rollIdx = 0;
 	}
 </script>
+
+<!-- One slider for every SliderDef: the build's, the enemy's and the DEF
+     modifiers'. A percent stat types to one decimal, as the game's own sheet
+     shows it (CRIT Rate 55.5%); the track keeps its coarser step. -->
+{#snippet slider(d: SliderDef, wide = false)}
+	<InstrumentSlider
+		label={d.label}
+		aria={d.aria}
+		bind:value={sheet[d.key]}
+		min={d.min}
+		max={d.max}
+		step={d.step}
+		unit={d.unit}
+		decimals={d.unit === '%' ? 1 : undefined}
+		class={wide ? 'bd-wide' : ''}
+	/>
+{/snippet}
 
 <div class="instrument">
 	<div class="bd-chart instrument-chart ctx-dark">
@@ -805,6 +827,95 @@
 		</div>
 	</div>
 
+	<!-- LIVE (round 3, design §3 and §6): the stats you scrub, then your level
+	     folded into a line, since it's set once. The waterfall wants width, not
+	     height, so the controls stay under it in its column, and the rail is the
+	     Readout alone. -->
+	<div class="panel inst-section instrument-live">
+		<p class="kicker">Build</p>
+		{#if family === 'direct'}
+			<div class="bd-sheet-row">
+				<div class="segment" role="radiogroup" aria-label="Scaling stat">
+					{#each ['atk', 'hp', 'def'] as const as s (s)}
+						<button
+							class="btn"
+							class:is-active={scaling === s}
+							role="radio"
+							aria-checked={scaling === s}
+							onclick={() => (scaling = s)}
+						>
+							{statName(s)}
+						</button>
+					{/each}
+				</div>
+				<label class="bd-field">
+					<span class="bd-field-label">Base {stat}</span>
+					<input
+						class="bd-input"
+						type="number"
+						value={sheet.base}
+						oninput={(e) => commitNumber(e.currentTarget.value, (v) => (sheet.base = v), 50000)}
+					/>
+				</label>
+				<label class="bd-field">
+					<span class="bd-field-label">Flat {stat}</span>
+					<input
+						class="bd-input"
+						type="number"
+						value={Math.round(sheet.statFlat)}
+						oninput={(e) => commitNumber(e.currentTarget.value, (v) => (sheet.statFlat = v), 50000)}
+					/>
+				</label>
+			</div>
+		{/if}
+		<div class="bd-sliders">
+			{#each sliders.build as d, i (d.key)}
+				{@render slider(d, isOddLast(i, sliders.build.length))}
+			{/each}
+		</div>
+		<SettingLine label="Level" ariaLabel="Level: {sheet.charLevel}">
+			{#snippet summary()}
+				{sheet.charLevel}
+			{/snippet}
+			<InstrumentSlider
+				label="Level"
+				aria="Character level"
+				bind:value={sheet.charLevel}
+				{...LEVEL_SLIDER}
+			/>
+		</SettingLine>
+	</div>
+
+	<!-- SETTINGS: the enemy, set when you sit down. Its own panel, so the EM and
+	     Reaction Bonus sliders a reaction adds to the Build come in above it (a
+	     change of question, made on the chips), never between a slider and the
+	     hand dragging it. -->
+	<div class="panel inst-section instrument-settings">
+		<p class="kicker">Enemy</p>
+		<div class="bd-sliders">
+			{#each sliders.enemy as d, i (d.key)}
+				{@render slider(d, isOddLast(i, sliders.enemy.length))}
+			{/each}
+		</div>
+		{#if usesDef}
+			<label class="bd-switch">
+				<span class="bd-switch-name">DEF shred and ignore</span>
+				<span class="toggle">
+					<input type="checkbox" checked={defModsOpen} onchange={toggleDefMods} />
+					<span class="toggle-track"><span class="toggle-thumb"></span></span>
+					<span class="toggle-label">{defModsOpen ? 'On' : 'Off'}</span>
+				</span>
+			</label>
+			{#if defModsOpen}
+				<div class="bd-sliders">
+					{#each defModSliders as d (d.key)}
+						{@render slider(d)}
+					{/each}
+				</div>
+			{/if}
+		{/if}
+	</div>
+
 	<div class="panel panel--paper bd-readout instrument-readout">
 		<p class="kicker">What the next roll buys</p>
 		<table class="bd-table">
@@ -846,93 +957,6 @@
 			Each row adds one average 5★ roll of that substat to your current sheet.
 		</p>
 	</div>
-
-	<div class="panel inst-section bd-build instrument-controls">
-		<p class="kicker">Build</p>
-		{#if family === 'direct'}
-			<div class="bd-sheet-row">
-				<div class="segment" role="radiogroup" aria-label="Scaling stat">
-					{#each ['atk', 'hp', 'def'] as const as s (s)}
-						<button
-							class="btn"
-							class:is-active={scaling === s}
-							role="radio"
-							aria-checked={scaling === s}
-							onclick={() => (scaling = s)}
-						>
-							{statName(s)}
-						</button>
-					{/each}
-				</div>
-				<label class="bd-field">
-					<span class="bd-field-label">Base {stat}</span>
-					<input
-						class="bd-input"
-						type="number"
-						value={sheet.base}
-						oninput={(e) => commitNumber(e.currentTarget.value, (v) => (sheet.base = v), 50000)}
-					/>
-				</label>
-				<label class="bd-field">
-					<span class="bd-field-label">Flat {stat}</span>
-					<input
-						class="bd-input"
-						type="number"
-						value={Math.round(sheet.statFlat)}
-						oninput={(e) => commitNumber(e.currentTarget.value, (v) => (sheet.statFlat = v), 50000)}
-					/>
-				</label>
-			</div>
-		{/if}
-		<!-- One slider for every SliderDef: the family's and the DEF modifiers' -->
-		<!-- A percent stat types to one decimal, as the game's own sheet shows it
-		     (CRIT Rate 55.5%); the track keeps its coarser step. -->
-		{#snippet slider(d: SliderDef, wide = false)}
-			<InstrumentSlider
-				label={d.label}
-				aria={d.aria}
-				bind:value={sheet[d.key]}
-				min={d.min}
-				max={d.max}
-				step={d.step}
-				unit={d.unit}
-				decimals={d.unit === '%' ? 1 : undefined}
-				class={wide ? 'bd-wide' : ''}
-			/>
-		{/snippet}
-		<div class="bd-sliders">
-			{#each sliders.before as d, i (d.key)}
-				{@render slider(d, isOddLast(i, sliders.before.length))}
-			{/each}
-			<InstrumentSlider
-				label="Level"
-				aria="Character level"
-				bind:value={sheet.charLevel}
-				{...LEVEL_SLIDER}
-				class="bd-wide"
-			/>
-			{#each sliders.after as d, i (d.key)}
-				{@render slider(d, isOddLast(i, sliders.after.length))}
-			{/each}
-		</div>
-		{#if usesDef}
-			<label class="bd-switch">
-				<span class="bd-switch-name">DEF shred and ignore</span>
-				<span class="toggle">
-					<input type="checkbox" checked={defModsOpen} onchange={toggleDefMods} />
-					<span class="toggle-track"><span class="toggle-thumb"></span></span>
-					<span class="toggle-label">{defModsOpen ? 'On' : 'Off'}</span>
-				</span>
-			</label>
-			{#if defModsOpen}
-				<div class="bd-sliders">
-					{#each defModSliders as d (d.key)}
-						{@render slider(d)}
-					{/each}
-				</div>
-			{/if}
-		{/if}
-	</div>
 </div>
 
 <style>
@@ -945,15 +969,39 @@
 		max-width: 100%;
 	}
 
+	/* ══ THE LAYOUT (round 3, design §6's last bullet). The waterfall wants
+	   width, not height, so the live controls and the settings stay under the
+	   chart in its column, and the right column is the Readout alone, at its
+	   natural height. The last row takes the tile's spare height, so it sits as
+	   bare scene under the settings (⚓ Nate 2026-10-06: the waterfall doesn't
+	   stretch), and a Readout taller than the left column grows into it. Mid
+	   and narrow keep app.css's order: chart, live, settings, Readout. */
+	@container instrument (min-width: 60rem) {
+		.instrument {
+			grid-template-rows: auto auto auto 1fr;
+			grid-template-areas:
+				'chart readout'
+				'live readout'
+				'settings readout'
+				'. readout';
+		}
+	}
+
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. The family
 	   tabs ride in the chart's slot: they choose what it draws. A grid, not the
-	   slot's flex column: the waterfall's rows are its height, so it packs to
-	   the top of whatever the slot is given. */
+	   slot's flex column: the waterfall's rows are its height.
+	   ⚓ Its NATURAL height at every width: app.css gives a measured chart the
+	   tile's height (sticky, at the wide tier) or a share of it (mid), but the
+	   waterfall isn't measured, and that height would only be empty night
+	   between its caption and the Build. */
 	.bd-chart {
 		display: grid;
 		gap: 0.7rem;
 		align-content: start;
+		position: static;
+		height: auto;
+		min-height: 0;
 	}
 
 	/* the gap the tabs had as the instrument's own row */
@@ -1066,10 +1114,13 @@
 		color: var(--text);
 	}
 
+	/* Tabular, so a number that changes while you drag (999 → 1,000 ATK, the
+	   shred) keeps its width and the label column holds still */
 	.bd-wf-real {
 		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 
 	.bd-wf-formula {
@@ -1251,11 +1302,16 @@
 		transition: left var(--t-move);
 	}
 
+	/* The value column is max-content, so a value that gained a digit while
+	   you dragged (×9.99 → ×10.0, 9,999 → 10,000) widened it and slid every bar
+	   sideways. A floor of six figures holds it (in its own ch, so the result
+	   row's larger figures get a larger floor). */
 	.bd-wf-value {
 		grid-column: 5;
 		justify-self: end;
 		display: grid;
 		justify-items: end;
+		min-width: 6ch;
 		line-height: var(--lh-snug);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-md);
@@ -1433,9 +1489,9 @@
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 	}
 
-	/* ── Build: one full-width box; sliders two to a line, Level alone ────
-	   The panel is one `.inst-section`, so the kicker, the sheet row, the
-	   sliders and the DEF switch all sit a control's rung apart
+	/* ── Build and Enemy: sliders two to a line ────────────────────────────
+	   Each panel is one `.inst-section`, so the kicker, the sheet row, the
+	   sliders, the Level line and the DEF switch all sit a control's rung apart
 	   (app.css § THE SPACING LADDER). */
 	.bd-sheet-row {
 		display: flex;
@@ -1528,15 +1584,16 @@
 		gap: 1rem;
 	}
 
-	/* Phone-width tile: table headings may wrap (they were the last thing
-	   holding the tile ~20–30px wide at 320px), and the sliders stack */
-	/* In the Build's half of a shared tile the sliders take a line each */
+	/* At the mid tier the panels are the left half, so the sliders take a
+	   line each */
 	@container instrument (38rem <= width < 60rem) {
 		.bd-sliders {
 			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 
+	/* Phone-width tile: table headings may wrap (they were the last thing
+	   holding the tile ~20–30px wide at 320px), and the sliders stack */
 	@container instrument (max-width: 30rem) {
 		.bd-table thead th,
 		.bd-table tbody th {

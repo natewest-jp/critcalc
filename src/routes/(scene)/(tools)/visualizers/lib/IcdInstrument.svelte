@@ -280,6 +280,14 @@
 	const BLOCKED_ALPHA = 0.5;
 	const anyCounterApp = $derived(sim.some((h) => h.applies && !h.viaTimer));
 	const anyCapped = $derived(sim.some((h) => h.capped));
+	// Whether the rule could ever show those two at all: a counter can apply
+	// only on a timer, with a counter, and with room past the timer's own
+	// application; a hit can be capped only under a limit. The key reserves
+	// their places while the rule allows them (see .icd-key-idle).
+	const counterKey = $derived(
+		params.timer > 0 && params.hits !== Infinity && (params.cap ?? Infinity) > 1
+	);
+	const capKey = $derived(params.timer > 0 && params.cap !== undefined);
 	const showCount = (h: IcdHit) => !h.capped && params.hits !== Infinity && params.timer > 0;
 
 	// ── Point to read ────────────────────────────────────────────────────────
@@ -501,16 +509,22 @@
 				{#if params.timer > 0 && params.hits !== Infinity}
 					<li><span class="icd-sw-digits">1 2 3</span>hit counter</li>
 				{/if}
-				{#if anyCounterApp}
-					<li>
+				{#if params.timer > 0}
+					<li><span class="icd-sw-band" style:--sw={el}></span>ICD timer window</li>
+				{/if}
+				<!-- These two come and go with the hits, so scrubbing Hit interval
+				     can add or drop one, and the key wraps. While the rule allows
+				     them they keep their places and only hide (design §4), and they
+				     sit last so a hidden one is trailing space, not a hole. -->
+				{#if counterKey}
+					<li class:icd-key-idle={!anyCounterApp}>
 						<span class="icd-sw-ring" style:--sw={el}>1</span>applied by the counter
 					</li>
 				{/if}
-				{#if anyCapped}
-					<li><span class="icd-sw-digits">–</span>window limit reached</li>
-				{/if}
-				{#if params.timer > 0}
-					<li><span class="icd-sw-band" style:--sw={el}></span>ICD timer window</li>
+				{#if capKey}
+					<li class:icd-key-idle={!anyCapped}>
+						<span class="icd-sw-digits">–</span>window limit reached
+					</li>
 				{/if}
 			</ul>
 			<div class="icd-elements">
@@ -530,138 +544,139 @@
 		</div>
 	</div>
 
-	<!-- Each panel is one section, its controls on the ladder's control rung
-	     (app.css § THE SPACING LADDER). -->
-	<div class="icd-panels panels instrument-controls">
-		<div class="panel inst-section">
-			<p class="kicker">Attack string</p>
-			<div class="chips">
+	<!-- Two panels, each one section, its controls on the ladder's control rung
+	     (app.css § THE SPACING LADDER). LIVE (round 3, design §3): the attack
+	     string is what you scrub, so it heads the rail, beside the chart. -->
+	<div class="panel inst-section instrument-live">
+		<p class="kicker">Attack string</p>
+		<div class="chips">
+			<button
+				class="chip chip--control"
+				class:active={source === 'even'}
+				onclick={() => pickSource('even')}
+			>
+				Even spacing
+			</button>
+			{#each ICD_EXAMPLES as ex (ex.id)}
 				<button
 					class="chip chip--control"
-					class:active={source === 'even'}
-					onclick={() => pickSource('even')}
+					class:active={source === ex.id}
+					onclick={() => pickSource(ex.id)}
 				>
-					Even spacing
+					{ex.label}
 				</button>
-				{#each ICD_EXAMPLES as ex (ex.id)}
+			{/each}
+		</div>
+		{#if example}
+			<p class="note">{example.note}</p>
+		{:else}
+			<InstrumentSlider
+				label="Hit interval"
+				aria="Hit interval in seconds"
+				bind:value={interval}
+				min={0.1}
+				max={3}
+				step={0.05}
+				unit="s"
+				decimals={3}
+				snap={toInterval}
+			/>
+			<div class="chips icd-anchors">
+				{#each ANCHORS as a (a.v)}
 					<button
 						class="chip chip--control"
-						class:active={source === ex.id}
-						onclick={() => pickSource(ex.id)}
+						class:active={interval === a.v}
+						onclick={() => (interval = a.v)}
 					>
-						{ex.label}
+						{a.label}
 					</button>
 				{/each}
 			</div>
-			{#if example}
-				<p class="note">{example.note}</p>
-			{:else}
-				<InstrumentSlider
-					label="Hit interval"
-					aria="Hit interval in seconds"
-					bind:value={interval}
-					min={0.1}
-					max={3}
-					step={0.05}
-					unit="s"
-					decimals={3}
-					snap={toInterval}
-				/>
-				<div class="chips icd-anchors">
-					{#each ANCHORS as a (a.v)}
-						<button
-							class="chip chip--control"
-							class:active={interval === a.v}
-							onclick={() => (interval = a.v)}
-						>
-							{a.label}
-						</button>
-					{/each}
-				</div>
-				<InstrumentSlider
-					label="Hits"
-					aria="Number of hits"
-					bind:value={hitCount}
-					min={5}
-					max={30}
-					step={1}
-					snap={Math.round}
-				/>
-			{/if}
-		</div>
+			<InstrumentSlider
+				label="Hits"
+				aria="Number of hits"
+				bind:value={hitCount}
+				min={5}
+				max={30}
+				step={1}
+				snap={Math.round}
+			/>
+		{/if}
+	</div>
 
-		<div class="panel inst-section">
-			<p class="kicker">ICD rule</p>
-			<p class="note">
-				Internal Cooldown — the hidden rule that stops some hits from applying their element.
-			</p>
-			<div class="chips">
+	<!-- SETTINGS: the rule, picked per session. A Custom rule's sliders grow
+	     this panel, and only the Readout sits below it. -->
+	<div class="panel inst-section instrument-settings">
+		<p class="kicker">ICD rule</p>
+		<p class="note">
+			Internal Cooldown — the hidden rule that stops some hits from applying their element.
+		</p>
+		<div class="chips">
+			<button
+				class="chip chip--control"
+				class:active={rule === 'standard'}
+				onclick={() => (rule = 'standard')}
+			>
+				Standard
+			</button>
+			<button
+				class="chip chip--control"
+				class:active={rule === 'none'}
+				onclick={() => (rule = 'none')}
+			>
+				No ICD
+			</button>
+			{#if example}
 				<button
 					class="chip chip--control"
-					class:active={rule === 'standard'}
-					onclick={() => (rule = 'standard')}
+					class:active={rule === 'own'}
+					onclick={() => (rule = 'own')}
 				>
-					Standard
+					Its own
 				</button>
-				<button
-					class="chip chip--control"
-					class:active={rule === 'none'}
-					onclick={() => (rule = 'none')}
-				>
-					No ICD
-				</button>
-				{#if example}
-					<button
-						class="chip chip--control"
-						class:active={rule === 'own'}
-						onclick={() => (rule = 'own')}
-					>
-						Its own
-					</button>
-				{/if}
-				<button class="chip chip--control" class:active={rule === 'custom'} onclick={pickCustom}>
-					Custom
-				</button>
-			</div>
-			{#if rule !== 'custom'}
-				<p class="note">{ruleText}</p>
-			{:else}
-				<InstrumentSlider
-					label="Timer"
-					aria="ICD timer in seconds"
-					bind:value={customTimer}
-					min={0.5}
-					max={10}
-					step={0.1}
-					unit="s"
-					decimals={2}
-					snap={toTimer}
-				/>
-				<!-- The track's last stop is the word: typed, "off" lands there too. -->
-				<InstrumentSlider
-					label="Hit counter"
-					aria="ICD hit counter"
-					bind:value={customHits}
-					min={1}
-					max={COUNTER_OFF}
-					step={1}
-					snap={Math.round}
-					text={customHits === COUNTER_OFF ? 'Off' : null}
-					words={{ off: COUNTER_OFF }}
-				/>
-				<InstrumentSlider
-					label="Limit per window"
-					aria="Applications allowed per ICD timer window"
-					bind:value={customCap}
-					min={1}
-					max={NO_LIMIT}
-					step={1}
-					snap={Math.round}
-					text={customCap === NO_LIMIT ? 'None' : null}
-					words={{ none: NO_LIMIT }}
-				/>
 			{/if}
+			<button class="chip chip--control" class:active={rule === 'custom'} onclick={pickCustom}>
+				Custom
+			</button>
 		</div>
+		{#if rule !== 'custom'}
+			<p class="note">{ruleText}</p>
+		{:else}
+			<InstrumentSlider
+				label="Timer"
+				aria="ICD timer in seconds"
+				bind:value={customTimer}
+				min={0.5}
+				max={10}
+				step={0.1}
+				unit="s"
+				decimals={2}
+				snap={toTimer}
+			/>
+			<!-- The track's last stop is the word: typed, "off" lands there too. -->
+			<InstrumentSlider
+				label="Hit counter"
+				aria="ICD hit counter"
+				bind:value={customHits}
+				min={1}
+				max={COUNTER_OFF}
+				step={1}
+				snap={Math.round}
+				text={customHits === COUNTER_OFF ? 'Off' : null}
+				words={{ off: COUNTER_OFF }}
+			/>
+			<InstrumentSlider
+				label="Limit per window"
+				aria="Applications allowed per ICD timer window"
+				bind:value={customCap}
+				min={1}
+				max={NO_LIMIT}
+				step={1}
+				snap={Math.round}
+				text={customCap === NO_LIMIT ? 'None' : null}
+				words={{ none: NO_LIMIT }}
+			/>
+		{/if}
 	</div>
 
 	<div class="panel panel--paper icd-readout instrument-readout">
@@ -718,7 +733,9 @@
 	   .ctx-dark stays CLAIMED, because at TOOL_DIM the crest is a dark ground and
 	   --chart-* still needs --frame-bg as its notional reference. */
 	/* The strip and its key keep together and centre in what the strip
-	   can't use (see STALK_GROW) */
+	   can't use (see STALK_GROW). The graph's max-height is what stops the
+	   strip there, so a chart as tall as the tile (the rail, app.css) is the
+	   same strip with more bare scene above and below. */
 	.icd-chart {
 		justify-content: center;
 	}
@@ -759,6 +776,15 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
+	}
+
+	/* A legend item the rule allows but the hits on screen don't show keeps
+	   its place, so the key's height holds while you scrub. Below 1024px the
+	   chart is its natural height and a key that grew a line pushed the Hit
+	   interval slider down mid-drag; above it the chart's height is fixed and
+	   the centred strip jumped half a line. Hidden from assistive tech too. */
+	.icd-key-idle {
+		visibility: hidden;
 	}
 
 	.icd-sw-blocked {

@@ -3977,6 +3977,9 @@ img {
 	   - in: inside one control (label to track, a control to its hint)
 	   - control: control to control in one section, and a kicker to its first
 	   - section: section to section in one panel */
+	/* 🎛️ The chart's share of a mid-width tile (two up, or a narrow window):
+	   the rest is the live controls and the Readout beside them. */
+	--instrument-chart-mid: 0.55;
 	--inst-gap-in: 0.5rem;
 	--inst-gap-control: 1rem;
 	--inst-gap-section: 2rem;
@@ -4006,15 +4009,21 @@ img {
 	min-height: 100%;
 	display: grid;
 	gap: 1rem;
+	align-content: start;
 	/* ⚠ minmax(0, 1fr), never auto: an auto column grows to its widest
 	   unbreakable child, and that put two instruments 40px over a 320px phone
 	   (instrument passes 2026-10-01 §4) */
 	grid-template-columns: minmax(0, 1fr);
-	grid-template-rows: minmax(min-content, 1fr) auto auto;
-	grid-template-areas: 'chart' 'controls' 'readout';
+	grid-template-areas: 'chart' 'live' 'settings' 'readout';
 }
 
-/* ⚠ Named, never auto-placed: a Readout left to auto-placement once landed in
+/* ══ THE RAIL (the Visualizers overhaul, round 3; design §3, §4 and §6) ═════
+   Four slots, in the order of an instrument: the chart; the LIVE controls,
+   the ones you scrub; the SETTINGS (per-session, and set-once folded into
+   summary lines); the Readout. ⚓ The Readout is LAST at every width: it is
+   the one slot whose height follows the values, so nothing you touch sits
+   below it and nothing moves under your hand when the answer grows.
+   ⚠ Named, never auto-placed: a Readout left to auto-placement once landed in
    the chart's row and stretched it (the Wish Odds pass, 2026-10-04). */
 .instrument-chart {
 	grid-area: chart;
@@ -4022,43 +4031,118 @@ img {
 	flex-direction: column;
 	min-width: 0;
 }
-
-.instrument-controls {
-	grid-area: controls;
+.instrument-live {
+	grid-area: live;
 	min-width: 0;
 }
-
+/* `.instrument-controls` is the old name for the settings slot. */
+.instrument-settings,
+.instrument-controls {
+	grid-area: settings;
+	min-width: 0;
+}
 .instrument-readout {
 	grid-area: readout;
 	min-width: 0;
 }
 
-@container instrument (min-width: 38rem) {
+/* Mid: the chart across the top; live over settings on the left, the
+   Readout down the right. The last row takes any height the Readout needs
+   beyond the left column's, so a growing Readout never pushes the settings
+   down (a spanning item's extra goes to the flexible track). Everything
+   keeps its natural height (⚓ Nate 2026-10-06: stretched, a short panel was
+   a tall box of empty glass). */
+@container instrument (38rem <= width < 60rem) {
 	.instrument {
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		grid-template-rows: minmax(min-content, 1fr) auto;
+		grid-template-rows: auto auto 1fr;
 		grid-template-areas:
 			'chart chart'
-			'controls readout';
+			'live readout'
+			'settings readout';
 	}
-}
-
-/* ⚓ Side by side, each keeps its NATURAL height (Nate 2026-10-06): stretched
-   to one height, a short Build panel was a tall box of empty glass. At the wide
-   tier the Readout is a column again and does run to the bottom. */
-@container instrument (38rem <= width < 60rem) {
+	.instrument-live,
+	.instrument-settings,
 	.instrument-controls,
 	.instrument-readout {
 		align-self: start;
 	}
 }
 
+/* Wide: the chart takes the left at the tile's full height; the rail is the
+   right column, live then settings then the Readout, each its natural
+   height. */
 @container instrument (min-width: 60rem) {
 	.instrument {
 		grid-template-columns: minmax(0, 1fr) var(--instrument-side);
+		grid-template-rows: auto auto auto 1fr;
 		grid-template-areas:
+			'chart live'
+			'chart settings'
 			'chart readout'
-			'controls readout';
+			'chart .';
+	}
+	.instrument-live,
+	.instrument-settings,
+	.instrument-controls,
+	.instrument-readout {
+		align-self: start;
+	}
+}
+
+/* ⚓ A CONTROL'S DEPENDENTS SIT BELOW IT (round 3, design §4). Live comes
+   first because, usually, the settings change only the answer. Where the
+   settings decide what the live panel offers (Artifact odds: a second stat
+   adds a row to The piece), the settings come first, so a row that appears
+   never pushes the control that made it out from under the hand. */
+.instrument--settings-first {
+	grid-template-areas: 'chart' 'settings' 'live' 'readout';
+}
+@container instrument (38rem <= width < 60rem) {
+	.instrument--settings-first {
+		grid-template-areas:
+			'chart chart'
+			'settings readout'
+			'live readout';
+	}
+}
+@container instrument (min-width: 60rem) {
+	.instrument--settings-first {
+		grid-template-areas:
+			'chart settings'
+			'chart live'
+			'chart readout'
+			'chart .';
+	}
+}
+
+/* ⚓ THE CHART'S HEIGHT IS THE TILE'S, NEVER WHAT THE CONTROLS LEAVE (round 3,
+   design §4). It used to take the row the controls left it, so a control that
+   grew its panel (a note that changed length, Custom in the ICD rule, the DEF
+   toggle) shrank the chart and lifted the panel under the pointer.
+   - Wide: the full tile, and `sticky`, so a rail taller than the tile scrolls
+     past a chart that holds still.
+   - Mid: 🎛️ --instrument-chart-mid of the tile.
+   `min-height: max-content` keeps each chart's own natural floor
+   (`--graph-min` on its graph): a tile too short for it scrolls, as before.
+   ⚠ Only where the tile is a SIZE container (from 1024px, +page.svelte), or
+   `cqh` would read the viewport. Below that the page scrolls and each chart
+   sits at its natural height, which no control can change either. */
+@media (min-width: 1024px) {
+	@container instrument (38rem <= width < 60rem) {
+		.instrument-chart {
+			height: calc(100cqh * var(--instrument-chart-mid));
+			min-height: max-content;
+		}
+	}
+	@container instrument (min-width: 60rem) {
+		.instrument-chart {
+			position: sticky;
+			top: 0;
+			align-self: start;
+			height: 100cqh;
+			min-height: max-content;
+		}
 	}
 }
 
@@ -4097,14 +4181,16 @@ img {
    the chart is only more distance for the hand. A two-up slider grid caps its COLUMNS
    instead (Reaction Curves, Damage Breakdown), or its second slider would
    start halfway across the panel. */
+.instrument-live .slider-control,
+.instrument-settings .slider-control,
 .instrument-controls .slider-control {
 	max-width: var(--instrument-slider-max);
 }
 
-/* ⚓ THE CHART TAKES THE HEIGHT THE TILE HAS LEFT (2026-10-06, the Enemy RES &
-   DEF layout carried to the other instruments). The box grows into the chart
-   row, and the instrument measures it (`bind:clientHeight`) and draws its plot
-   to fit. `--graph-min` is the chart's natural height — the floor it never
+/* ⚓ THE GRAPH FILLS ITS CHART (2026-10-06; ↻ round 3: the chart's height is
+   now the tile's, above, not what the controls leave). The box grows into the
+   chart slot, and the instrument measures it (`bind:clientHeight`) and draws
+   its plot to fit. `--graph-min` is the chart's natural height — the floor it never
    goes under, so a tile with no height to spare scrolls exactly as before.
    ⚠ `contain: size` is the whole trick: without it the box's min-content is
    the SVG it holds, which is drawn at the box's last height — the row could

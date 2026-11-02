@@ -72,12 +72,21 @@ then control to control, then section to section. Exact values live as named pro
 
 ## 6. The rail
 
-At the wide tier, the chart takes the left at full height, and a right column holds, top to
-bottom: the live controls, the Readout, then the per-session and folded settings. The Crit
-heatmap already has this shape. It keeps the slider beside its answer, gives the chart a
-height of its own, and ends the full-height slab of mostly empty paper the Readout is today.
-Narrow, it stacks chart, live controls, Readout, settings. An instrument whose chart wants
-width rather than height (the Damage breakdown's waterfall) may keep its controls below.
+At the wide tier the chart takes the left at the tile's full height, and a right column holds,
+top to bottom: the live controls, the settings (per-session, then set-once lines), and the
+Readout last. The Crit heatmap already had this shape. It keeps the slider beside the answer,
+gives the chart a height of its own, and ends the full-height slab of mostly empty paper the
+Readout used to be.
+
+- **The Readout is last at every width.** It is the one slot whose height follows the values,
+  so nothing you touch sits below it, and a growing answer moves nothing under your hand.
+- **The chart's height is the tile's** (sticky at the wide tier, so a rail taller than the tile
+  scrolls past a chart that holds still), and a share of it at the mid tier. Never what the
+  controls leave.
+- Mid tier: the chart across the top; live over settings on the left, the Readout on the right.
+  Narrow: chart, live, settings, Readout.
+- An instrument whose chart wants width rather than height (the Damage breakdown's waterfall)
+  keeps its controls under the chart, and its rail is the Readout alone.
 
 ## 7. The kit
 
