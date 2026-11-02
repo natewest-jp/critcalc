@@ -98,6 +98,29 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
   push a later loss onto counter 3.
 - `formatChance`'s middle range is one decimal (63.5%); the ends are unchanged.
 
+## 4d. Set-once settings fold away, and Find mine becomes an interview (⚓ Nate)
+
+- **Set once, folded.** You have and Aiming for become one **Goal** line ("Not owned → C2")
+  whose summary opens them in a popover; the **Radiance counter** line's summary ("1",
+  "Don’t know") opens its chips, the import and the interview. Pity, the guarantee and the
+  one-line note stay in view: they change every session or every 5★. The guarantee stayed
+  inline, not folded in with the counter as first proposed, because it is one checkbox and is
+  the 4★ and weapon banners' only status. The Character Event section went from 393px to 208px.
+- **The interview** (concept A of three; B "which sounds like you" and C "a story strip with a
+  staircase" were not taken; Nate had an idea of his own and preferred A). Newest 5★ first:
+  featured, standard, or none since 5.0, then the Radiance animation only when its answer would
+  change the counter (`radianceMatters`). `readAnswers` replays the answers from every state the
+  counter can be in and is done when they all end on one counter; it writes the counter and the
+  guarantee into the controls. A Radiance or "none since 5.0" settles it in one answer; three
+  featured in a row settle it at 0. Contradictory answers say so ("Check the last one") instead
+  of being blocked, since the answers are recollection. The by-hand list and its rule check
+  (`impossibility`) are gone.
+- **`BandMenu`, shared**, learned two things the interview needed. It re-fits whenever its
+  contents change size (a `ResizeObserver`), and opens upward when there is more room above,
+  staying on that side while it grows. Before, it measured once at open, so a growing dialog
+  ran off the bottom of the screen. And Escape closes it when focus has dropped to `<body>`,
+  which happens when a dialog's buttons are replaced under the hand.
+
 ## 5. Share links
 
 `v: 3` carries the counter on the character banner; a `v: 2` link opens as "Don’t know".

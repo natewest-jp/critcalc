@@ -80,29 +80,85 @@ export function replay(
 	return { counter, guaranteed, steps };
 }
 
+// ── The interview ───────────────────────────────────────────────────────────
+// Find mine's questions, newest 5★ first. Instead of asking where the last
+// Radiance was, it replays the answers from EVERY state the counter could have
+// been in before them and keeps the ones that fit. It is done when all of them
+// end on the same counter. Two facts keep it short: a Radiance always leaves
+// the counter at 1, and two plain wins in a row always leave it at 0.
+
 /**
- * Why a sequence (oldest first, from `start`) can't have happened, or null if
- * it can. Two rules: a standard 5★ is always followed by the featured one it
- * guarantees (`after-standard`), and a 50/50 on counter 3 is always a
- * Radiance (`at-three`).
+ * One 5★, as the player remembers it. `featured` is a featured 5★ whose
+ * animation they don't remember; `none` means there was no 5★ before this
+ * point since 5.0 (so the replay starts at 5.0's 1).
  */
-export type Impossible = 'after-standard' | 'at-three';
-export function impossibility(
-	featured: readonly boolean[],
-	start: { counter: RadianceCounter; guaranteed: boolean } = REPLAY_START
-): Impossible | null {
-	let { counter, guaranteed } = start;
-	for (const isFeatured of featured) {
-		if (guaranteed) {
-			if (!isFeatured) return 'after-standard';
-			guaranteed = false;
-		} else if (!isFeatured) {
-			if (counter === 3) return 'at-three';
-			counter = nextCounter(counter, 'lost');
-			guaranteed = true;
-		} else counter = nextCounter(counter, counter === 3 ? 'radiance' : 'won');
+export type Answer = 'featured' | 'featured-radiance' | 'featured-plain' | 'standard' | 'none';
+
+type State = { counter: RadianceCounter; guaranteed: boolean };
+
+/** Every state the counter can be in (a guarantee comes from a loss, so never on 0). */
+const ANY_STATE: readonly State[] = ([0, 1, 2, 3] as RadianceCounter[]).flatMap(
+	(counter): State[] =>
+		counter === 0
+			? [{ counter, guaranteed: false }]
+			: [
+					{ counter, guaranteed: false },
+					{ counter, guaranteed: true }
+				]
+);
+
+/** One 5★ forward from a state, or null if that 5★ couldn't have happened there. */
+function step(state: State, answer: Exclude<Answer, 'none'>): State | null {
+	const { counter, guaranteed } = state;
+	if (answer === 'standard') {
+		// a guarantee can't be lost, and a 50/50 on 3 is a Radiance
+		if (guaranteed || counter === 3) return null;
+		return { counter: nextCounter(counter, 'lost'), guaranteed: true };
 	}
-	return null;
+	if (guaranteed) {
+		// a guarantee never plays the Radiance animation
+		return answer === 'featured-radiance' ? null : { counter, guaranteed: false };
+	}
+	if (answer === 'featured-radiance') return { counter: RADIANCE_RESET, guaranteed: false };
+	if (counter === 3) {
+		return answer === 'featured-plain' ? null : { counter: RADIANCE_RESET, guaranteed: false };
+	}
+	// counter 2: a plain win and a Radiance both leave it at 1
+	return { counter: nextCounter(counter, 'won'), guaranteed: false };
+}
+
+export type Reading = {
+	/** The counters the answers allow now, ascending; one when the interview is done, none if they contradict. */
+	counters: RadianceCounter[];
+	/** Whether a guarantee is held now; null until the newest 5★ is answered. */
+	guaranteed: boolean | null;
+};
+
+/** What the answers (newest first) allow the counter and the guarantee to be now. */
+export function readAnswers(answers: readonly Answer[]): Reading {
+	const none = answers.indexOf('none');
+	const told = (none < 0 ? answers : answers.slice(0, none)) as Exclude<Answer, 'none'>[];
+	const starts = none < 0 ? ANY_STATE : [REPLAY_START];
+	const ends: State[] = [];
+	for (const start of starts) {
+		let state: State | null = start;
+		for (let i = told.length - 1; i >= 0 && state; i--) state = step(state, told[i]);
+		if (state) ends.push(state);
+	}
+	const counters = [...new Set(ends.map((e) => e.counter))].sort((a, b) => a - b);
+	const held = [...new Set(ends.map((e) => e.guaranteed))];
+	return { counters, guaranteed: held.length === 1 ? held[0] : null };
+}
+
+/**
+ * Is it worth asking whether this featured 5★ (the next, older one) played the
+ * Radiance animation? Only when both answers are possible and lead to
+ * different counters.
+ */
+export function radianceMatters(answers: readonly Answer[]): boolean {
+	const yes = readAnswers([...answers, 'featured-radiance']).counters;
+	const no = readAnswers([...answers, 'featured-plain']).counters;
+	return yes.length > 0 && no.length > 0 && yes.join() !== no.join();
 }
 
 export type FiveStarPull = { name: string; time: string };

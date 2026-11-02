@@ -14,14 +14,17 @@
 	} from './wish';
 	import {
 		RADIANCE_SINCE,
-		impossibility,
+		radianceMatters,
+		readAnswers,
 		readPaimonExport,
-		replay,
+		type Answer,
 		type ImportError,
 		type ImportResult,
 		type ReplayStep
 	} from './wishHistory';
 	import { formatChance } from './chance';
+	import BandMenu from '$lib/components/BandMenu.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 
 	// ── What you're pulling for ──────────────────────────────────────────────
 	// `pair` is a 5★ character AND their weapon: two banners, two pities, and
@@ -168,8 +171,9 @@
 			s.pity = clampPity(BANNERS.character, r.pity);
 			s.guaranteed = r.replay.guaranteed;
 			s.counter = r.replay.counter;
-			finding = false;
-			listed = [];
+			interviewRestart();
+			closeCounter?.();
+			closeCounter = null;
 		} catch {
 			importError = 'not-a-workbook';
 		} finally {
@@ -200,30 +204,49 @@
 		importFile(e.dataTransfer.files[0]);
 	}
 
-	// By hand: every 5★ since the last Radiance (or since 5.0), featured or not.
-	// The replay works out which were 50/50s, so a guarantee can't be entered
-	// as a win. `listed` is always oldest first; entered newest first, each new
-	// 5★ goes in front. A standard 5★ that would break the model's rules can't
-	// be added (`impossibility`), so the list is always one that could happen.
-	let finding = $state(false);
-	let listed = $state<boolean[]>([]);
-	let newestFirst = $state(false);
-	const listedReplay = $derived(replay(listed));
-	const withNext = (featured: boolean) =>
-		newestFirst ? [featured, ...listed] : [...listed, featured];
-	/** Why a standard 5★ can't go next, or null when it can. */
-	const standardBlocked = $derived(impossibility(withNext(false)));
-	/** The steps in the order they were entered. */
-	const listedSteps = $derived(
-		newestFirst ? [...listedReplay.steps].reverse() : listedReplay.steps
-	);
-	function setListed(next: boolean[]) {
-		listed = next;
-		const r = replay(next);
-		states.character.counter = r.counter;
-		states.character.guaranteed = r.guaranteed;
-		imported = null;
+	// Find mine's interview (wishHistory.ts `readAnswers`): newest 5★ first,
+	// done as soon as every state that fits the answers ends on one counter.
+	// A featured answer asks about the Radiance animation only when that would
+	// change the counter. The result is written straight into the controls.
+	let answers = $state<Answer[]>([]);
+	/** A featured 5★ was picked and its animation is being asked about. */
+	let askingRadiance = $state(false);
+	const told = $derived(readAnswers(answers));
+	const interviewDone = $derived(answers.length > 0 && told.counters.length === 1);
+
+	function answer(a: Answer) {
+		answers = [...answers, a];
+		askingRadiance = false;
+		const r = readAnswers(answers);
+		if (r.counters.length === 1) {
+			states.character.counter = r.counters[0];
+			states.character.guaranteed = r.guaranteed ?? false;
+			imported = null;
+		}
 	}
+	function answerFeatured() {
+		if (radianceMatters(answers)) askingRadiance = true;
+		else answer('featured');
+	}
+	function interviewBack() {
+		if (askingRadiance) askingRadiance = false;
+		else answers = answers.slice(0, -1);
+	}
+	function interviewRestart() {
+		answers = [];
+		askingRadiance = false;
+	}
+
+	const ANSWER_LABEL: Record<Answer, string> = {
+		featured: 'Featured',
+		'featured-radiance': 'Featured, Radiance',
+		'featured-plain': 'Featured',
+		standard: 'Standard',
+		none: 'None since 5.0'
+	};
+
+	/** The counter popover's close, kept while a file is chosen from inside it. */
+	let closeCounter: (() => void) | null = null;
 
 	const STEP_LABEL: Record<ReplayStep['kind'], string> = {
 		lost: 'Lost',
@@ -371,8 +394,8 @@
 	export function reset() {
 		imported = null;
 		importError = null;
-		finding = false;
-		listed = [];
+		answers = [];
+		askingRadiance = false;
 		target = 'character';
 		pulls = DEFAULT_PULLS;
 		for (const id of Object.keys(states) as BannerId[]) states[id] = fresh();
@@ -405,8 +428,8 @@
 		const s = state as Record<string, unknown>;
 		imported = null;
 		importError = null;
-		finding = false;
-		listed = [];
+		answers = [];
+		askingRadiance = false;
 		const readPulls = (v: unknown) => {
 			if (typeof v === 'number' && Number.isFinite(v))
 				pulls = Math.min(2000, Math.max(0, Math.round(v)));
@@ -427,6 +450,101 @@
 		readPulls(s.pulls);
 	}
 </script>
+
+{#snippet counterPanel(close: () => void)}
+	{@const s = states.character}
+	<div class="wi-pop">
+		<div class="chips wi-level-chips" role="group" aria-label="Radiance counter">
+			{#each COUNTERS as k (k ?? 'unknown')}
+				<button
+					class="chip chip--control"
+					class:active={s.counter === k}
+					aria-pressed={s.counter === k}
+					onclick={() => (states.character.counter = k)}
+				>
+					{k === null ? 'Don’t know' : k}
+				</button>
+			{/each}
+		</div>
+
+		<p class="wi-pop-head">Find mine</p>
+		<div class="wi-actions">
+			<button
+				class="btn btn--sm"
+				disabled={reading}
+				onclick={() => {
+					closeCounter = close;
+					fileInput?.click();
+				}}
+			>
+				Read a Paimon.moe export
+			</button>
+			<span class="wi-fine">The file stays on your device.</span>
+		</div>
+		{#if importError}
+			<p class="note wi-error" role="alert">
+				{#if importError === 'not-a-workbook'}
+					That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and choose
+					Export to Excel.
+				{:else if importError === 'not-paimon'}
+					That spreadsheet isn’t a Paimon.moe wish history export.
+				{:else}
+					That export has no character banner wishes in it.
+				{/if}
+			</p>
+		{/if}
+
+		<div class="wi-interview" aria-live="polite">
+			<p class="note">Or answer a few questions, starting from your most recent 5★.</p>
+			{#if answers.length > 0}
+				<ol class="wi-strip" aria-label="Your answers, newest first">
+					{#each answers as a, i (i)}
+						<li class="wi-step">{ANSWER_LABEL[a]}</li>
+					{/each}
+				</ol>
+			{/if}
+
+			{#if answers.length > 0 && told.counters.length === 0}
+				<p class="note wi-error">Those answers can’t all be right. Check the last one.</p>
+			{:else if interviewDone}
+				<p class="note wi-done">
+					{#if told.guaranteed}
+						That’s enough: your counter is {told.counters[0]}, and you hold a guarantee.
+					{:else}
+						That’s enough: your counter is {told.counters[0]}.
+					{/if}
+				</p>
+			{:else if askingRadiance}
+				<p class="wi-question">Did it play the Capturing Radiance animation?</p>
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={() => answer('featured-radiance')}>Yes</button>
+					<button class="btn btn--sm" onclick={() => answer('featured-plain')}>No</button>
+					<button class="btn btn--sm" onclick={() => answer('featured')}>Not sure</button>
+				</div>
+			{:else}
+				<p class="wi-question">
+					{answers.length === 0
+						? 'Your most recent 5★ on the character banners was'
+						: 'And the 5★ before that was'}
+				</p>
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={answerFeatured}>The featured character</button>
+					<button class="btn btn--sm" onclick={() => answer('standard')}>A standard 5★</button>
+					<button class="btn btn--sm" onclick={() => answer('none')}>
+						{answers.length === 0 ? 'None yet since 5.0' : 'None before that since 5.0'}
+					</button>
+				</div>
+			{/if}
+
+			{#if answers.length > 0 || askingRadiance}
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={interviewBack}>Back</button>
+					<button class="btn btn--sm" onclick={interviewRestart}>Start over</button>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/snippet}
 
 {#snippet strip(steps: ReplayStep[])}
 	<ol class="wi-strip">
@@ -635,34 +753,54 @@
 				ondrop={id === 'character' ? onDrop : undefined}
 			>
 				<p class="kicker">{RULES[id].kicker}</p>
-				<div class="wi-levels">
-					<span class="slider-label" id="wi-have-{id}">You have</span>
-					<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
-						{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
-							<button
-								class="chip chip--control"
-								class:active={s.have === copies}
-								aria-pressed={s.have === copies}
-								onclick={() => setHave(id, copies)}
+				<div class="wi-row">
+					<span class="slider-label">Goal</span>
+					<BandMenu
+						role="dialog"
+						size="sm"
+						align="end"
+						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+					>
+						{#snippet face()}
+							<span class="wi-face"
+								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
+									id,
+									s.goal
+								)}</span
 							>
-								{haveName(id, copies)}
-							</button>
-						{/each}
-					</div>
-					<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
-					<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
-						{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
-							<button
-								class="chip chip--control"
-								class:active={s.goal === copies}
-								aria-pressed={s.goal === copies}
-								disabled={copies <= s.have}
-								onclick={() => (states[id].goal = copies)}
-							>
-								{levelName(id, copies)}
-							</button>
-						{/each}
-					</div>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-pop wi-levels">
+								<span class="slider-label" id="wi-have-{id}">You have</span>
+								<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
+									{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
+										<button
+											class="chip chip--control"
+											class:active={s.have === copies}
+											aria-pressed={s.have === copies}
+											onclick={() => setHave(id, copies)}
+										>
+											{haveName(id, copies)}
+										</button>
+									{/each}
+								</div>
+								<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+								<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
+									{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
+										<button
+											class="chip chip--control"
+											class:active={s.goal === copies}
+											aria-pressed={s.goal === copies}
+											disabled={copies <= s.have}
+											onclick={() => (states[id].goal = copies)}
+										>
+											{levelName(id, copies)}
+										</button>
+									{/each}
+								</div>
+							</div>
+						{/snippet}
+					</BandMenu>
 				</div>
 				<div class="slider-control">
 					<div class="slider-header">
@@ -685,31 +823,21 @@
 					{RULES[id].guarantee}
 				</label>
 				{#if id === 'character'}
-					<div class="wi-counter">
-						<span class="slider-label" id="wi-counter">Radiance counter</span>
-						<div class="wi-counter-row">
-							<div class="chips wi-level-chips" role="group" aria-labelledby="wi-counter">
-								{#each COUNTERS as k (k ?? 'unknown')}
-									<button
-										class="chip chip--control"
-										class:active={s.counter === k}
-										aria-pressed={s.counter === k}
-										onclick={() => (states.character.counter = k)}
-									>
-										{k === null ? 'Don’t know' : k}
-									</button>
-								{/each}
-							</div>
-							<button
-								class="btn btn--sm"
-								class:is-active={finding}
-								aria-expanded={finding}
-								aria-controls="wi-find"
-								onclick={() => (finding = !finding)}
-							>
-								Find mine
-							</button>
-						</div>
+					<div class="wi-row">
+						<span class="slider-label">Radiance counter</span>
+						<BandMenu
+							role="dialog"
+							size="sm"
+							align="end"
+							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
+						>
+							{#snippet face()}
+								<span class="wi-face">{s.counter === null ? 'Don’t know' : s.counter}</span>
+							{/snippet}
+							{#snippet items(close)}
+								{@render counterPanel(close)}
+							{/snippet}
+						</BandMenu>
 					</div>
 
 					<!-- One note for the guarantee and the counter together: what comes next. -->
@@ -742,95 +870,6 @@
 						class="wi-file"
 						onchange={(e) => importFile(e.currentTarget.files?.[0])}
 					/>
-					{#if finding}
-						<div class="wi-find" id="wi-find">
-							<div class="wi-actions">
-								<button class="btn btn--sm" disabled={reading} onclick={() => fileInput?.click()}>
-									Read a Paimon.moe export
-								</button>
-								<span class="wi-fine">The file stays on your device.</span>
-							</div>
-
-							{#if importError}
-								<p class="note wi-error" role="alert">
-									{#if importError === 'not-a-workbook'}
-										That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings
-										and choose Export to Excel.
-									{:else if importError === 'not-paimon'}
-										That spreadsheet isn’t a Paimon.moe wish history export.
-									{:else}
-										That export has no character banner wishes in it.
-									{/if}
-								</p>
-							{/if}
-
-							<div class="wi-find-part">
-								<p class="note">
-									{#if newestFirst}
-										Or list each 5★, newest first, back to your last Radiance (or to 5.0):
-									{:else}
-										Or list each 5★ since your last Radiance (or since 5.0), oldest first:
-									{/if}
-								</p>
-								<div class="wi-actions">
-									<div class="segment" role="radiogroup" aria-label="Order">
-										<button
-											class="btn btn--sm"
-											class:is-active={!newestFirst}
-											role="radio"
-											aria-checked={!newestFirst}
-											onclick={() => (newestFirst = false)}
-										>
-											Oldest first
-										</button>
-										<button
-											class="btn btn--sm"
-											class:is-active={newestFirst}
-											role="radio"
-											aria-checked={newestFirst}
-											onclick={() => (newestFirst = true)}
-										>
-											Newest first
-										</button>
-									</div>
-								</div>
-								<div class="wi-actions">
-									<button class="btn btn--sm" onclick={() => setListed(withNext(true))}>
-										Featured 5★
-									</button>
-									<button
-										class="btn btn--sm"
-										disabled={standardBlocked !== null}
-										aria-describedby={standardBlocked ? 'wi-why-not' : undefined}
-										onclick={() => setListed(withNext(false))}
-									>
-										Standard 5★
-									</button>
-									<button
-										class="btn btn--sm"
-										disabled={listed.length === 0}
-										onclick={() => setListed(newestFirst ? listed.slice(1) : listed.slice(0, -1))}
-									>
-										Undo
-									</button>
-								</div>
-								{#if standardBlocked === 'after-standard'}
-									<p class="wi-fine" id="wi-why-not">
-										Two standard 5★s can’t come in a row: the one after a standard 5★ is always the
-										featured one.
-									</p>
-								{:else if standardBlocked === 'at-three'}
-									<p class="wi-fine" id="wi-why-not">
-										A standard 5★ here would mean losing a 50/50 on counter 3, where Capturing
-										Radiance always wins.
-									</p>
-								{/if}
-								{#if listed.length > 0}
-									{@render strip(listedSteps)}
-								{/if}
-							</div>
-						</div>
-					{/if}
 				{:else if id === 'fourStar'}
 					<p class="note">
 						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
@@ -1085,27 +1124,50 @@
 		display: none;
 	}
 
-	.wi-counter {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.wi-counter-row {
+	/* A set-once setting's line: its name, and a summary that opens its popover */
+	.wi-row {
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.35rem 0.6rem;
+		justify-content: space-between;
+		gap: 0.6rem;
 	}
 
-	/* "Find mine": the two ways to read the counter, closed until asked for */
-	.wi-find,
-	.wi-find-part {
+	.wi-face {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-family: var(--font-condensed);
+	}
+
+	/* A popover's contents (BandMenu, portalled: the band menu's own surface) */
+	.wi-pop {
+		display: grid;
+		gap: 0.6rem;
+		width: min(22rem, calc(100vw - 2rem));
+		padding: 0.6rem;
+	}
+
+	.wi-pop-head {
+		margin: 0.4rem 0 0;
+		padding-top: 0.6rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+
+	.wi-interview {
 		display: grid;
 		gap: 0.5rem;
 	}
 
-	.wi-find {
-		gap: 0.75rem;
+	.wi-question {
+		margin: 0.2rem 0 0;
+		font-weight: var(--fw-semibold);
+	}
+
+	.wi-done {
+		color: var(--text);
 	}
 
 	.wi-actions {

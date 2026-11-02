@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
 	fromPaimonSheets,
-	impossibility,
 	isLoss,
+	radianceMatters,
+	readAnswers,
 	readPaimonExport,
 	replay,
-	replayHistory
+	replayHistory,
+	type Answer
 } from './wishHistory';
 
 // Model: docs/library/game/capturing-radiance.md. Histories here are made up;
@@ -53,27 +55,55 @@ describe('replay — the counter model', () => {
 	});
 });
 
-describe('impossibility — what a list of 5★s can’t contain', () => {
-	it('every sequence the model allows passes', () => {
-		expect(impossibility([])).toBeNull();
-		expect(impossibility([false, true, false, true, true])).toBeNull();
-		// from 0, three losses in a row
-		expect(impossibility([true, false, true, false, true, false, true, true])).toBeNull();
+describe('readAnswers — the interview, newest 5★ first', () => {
+	const read = (...a: Answer[]) => readAnswers(a);
+
+	it('before any answer, every counter is possible', () => {
+		expect(read().counters).toEqual([0, 1, 2, 3]);
 	});
 
-	it('two standard 5★s in a row: the second was the guarantee', () => {
-		expect(impossibility([false, false])).toBe('after-standard');
+	it('a Radiance pins the counter to 1 in one answer', () => {
+		expect(read('featured-radiance')).toEqual({ counters: [1], guaranteed: false });
 	});
 
-	it('a loss on counter 3: the 50/50 there is a Radiance', () => {
-		expect(impossibility([false, true, false, true, false])).toBe('at-three');
+	it('no 5★ since 5.0 is the 5.0 start', () => {
+		expect(read('none')).toEqual({ counters: [1], guaranteed: false });
+		// a loss, and nothing before it since 5.0: 1 → 2, holding the guarantee
+		expect(read('standard', 'none')).toEqual({ counters: [2], guaranteed: true });
 	});
 
-	it('an older win, added in front, can make a sequence possible again', () => {
-		// newest-first entry adds in front: from 1 this reaches 3 and loses; from 0 it doesn't
-		const recent = [false, true, false, true, false, true];
-		expect(impossibility(recent)).toBe('at-three');
-		expect(impossibility([true, ...recent])).toBeNull();
+	it('a standard 5★ newest means a guarantee held, the counter still open', () => {
+		expect(read('standard')).toEqual({ counters: [1, 2, 3], guaranteed: true });
+	});
+
+	it('three featured 5★s in a row end on 0 whatever came before', () => {
+		expect(read('featured', 'featured', 'featured').counters).toEqual([0]);
+	});
+
+	it('the development history: Radiance, then nothing to add', () => {
+		// newest: Vodyanitsa with the animation
+		expect(read('featured-radiance').counters).toEqual([1]);
+		// without remembering it: Vodyanitsa, Odette (the guarantee), Qiqi lost, Mavuika (a
+		// guarantee), Tighnari lost. Three answers leave 0 or 1; five pin it.
+		expect(read('featured', 'featured', 'standard').counters).toEqual([0, 1]);
+		expect(read('featured', 'featured', 'standard', 'featured', 'standard')).toEqual({
+			counters: [1],
+			guaranteed: false
+		});
+	});
+
+	it('answers that can’t all be true leave nothing', () => {
+		expect(read('standard', 'standard').counters).toEqual([]);
+		// a guarantee never plays the animation
+		expect(read('featured-radiance', 'standard').counters).toEqual([]);
+	});
+
+	it('asks about the animation only when the answer would change the counter', () => {
+		expect(radianceMatters([])).toBe(true);
+		// right after a standard 5★, the older featured one was a 50/50 on any counter: yes → 1+1
+		expect(radianceMatters(['standard'])).toBe(true);
+		// once the counter is pinned, nothing older changes it
+		expect(radianceMatters(['featured-radiance'])).toBe(false);
 	});
 });
 
