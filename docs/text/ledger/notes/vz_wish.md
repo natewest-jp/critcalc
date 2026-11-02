@@ -121,7 +121,7 @@ exactly (§3.3 — a reference, not a copy).
 Only on the 5★ and weapon target: the combined figure is the SUM of two independent pull
 counts.
 
-## The Radiance counter (2026-11-02, `feat/wish-radiance`; copy proposed, awaiting Nate)
+## The Radiance counter (2026-11-02, `feat/wish-radiance`; copy approved by Nate)
 
 The Character Event section gained a counter, an import and a by-hand list
 (`docs/rounds/wish-radiance-2026-11-02.md`). Model: `docs/library/game/capturing-radiance.md`.
@@ -150,7 +150,8 @@ Paimon.moe labels, not a translation of ours).
 - **The import's report** (in the Readout, under "Your wish history"): "Read {n} character
   banner wishes, {first} to {last}." (dates via `Intl`, en-US long form), "Since your last
   Radiance" / "Since 5.0" (strip label), "No 50/50s since your last Radiance, on {date}.", "If
-  you wished on the character banners before {date}, the counter may be off.", **Undo**, and the
+  you wished on the character banners before {date}, the counter may be off.", "Your weapon banner
+  pity is {n}. Whether you hold a fate point isn’t in the export.", **Undo**, and the
   step names **Lost · Guarantee · Won · Radiance**.
 - **Its three errors**, one per `ImportError`. The first tells the player where Paimon.moe's
   export is.

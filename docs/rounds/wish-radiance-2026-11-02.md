@@ -1,8 +1,9 @@
 # Wish Odds: Capturing Radiance's counter (2026-11-02)
 
-**Status:** built on `feat/wish-radiance` (on top of `docs/capturing-radiance`), gates green.
-⏭ Nate: the look in the dev server, the copy (proposed as a list in the session), real Safari
-and an iPhone (the file picker through Files).
+**Status:** ✅ merged to `main` 2026-11-02 (`feat/wish-radiance`, which carries the library
+entry from `docs/capturing-radiance`). Nate approved the copy and the What's new entry ("Capturing
+Radiance in Wish Odds"). ⏭ Real Safari and an iPhone: the popovers (the shared `BandMenu`
+change reaches every dropdown on the site) and the file picker through Files.
 
 ## 1. Why
 
@@ -120,6 +121,13 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
   staying on that side while it grows. Before, it measured once at open, so a growing dialog
   ran off the bottom of the screen. And Escape closes it when focus has dropped to `<body>`,
   which happens when a dialog's buttons are replaced under the hand.
+
+## 4e. The weapon banner's pity from the import (⚓ Nate)
+
+The import also reads the export's Weapon Event sheet and sets the weapon banner's pity (Undo
+restores it); the report says so, and that the fate point isn't in the export. Still left out:
+the fate point and the 4★ guarantee. UIGF exports are queued until a real file can be tested
+(`docs/todo.md`).
 
 ## 5. Share links
 
