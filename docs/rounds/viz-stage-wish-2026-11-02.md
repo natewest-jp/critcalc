@@ -1,6 +1,6 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage` in two passes (§7 is the second), for Nate to look at in the local build. Not merged.
+**Status:** 🔨 built on `feat/viz-wish-stage` in three passes (§7 and §8), for Nate to look at in the local build. Not merged.
 ⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
 §4 are Nate's; real Safari and iPhone.
 
@@ -135,3 +135,31 @@ Copy, as well as §5 (written in, proposed):
 
 ⏭ The materials rule "one paper Readout card per instrument" (`ui.md`, Nate's) holds for the
 rail only now; `ui.md` is unchanged until Nate rules on the stage.
+
+## 8. Third pass: the bar and the head row
+
+Nate: "this is very attractive", and the one-box stage is the target for all eight. Two asks:
+
+- **The instrument tabs go; the picker stays at every width**, capped at 🎛️
+  `--ws-picker-max` (16rem). Eight tabs, more to come, and once an instrument is open the
+  others aren't what you reach for: the Planner's document tabs went behind the Library for
+  the same reason. `InstrumentTabs.svelte` is deleted.
+- **The instrument's view tabs sit right of the picker.** Every cell has a views slot
+  (`viewSlots` in `+page.svelte`), passed to the instrument as `viewsTarget`. Wish odds
+  renders its tabs twice, one copy moved into the slot, and shows one by width: the cell's
+  `@container ws-cell (min-width: 64rem)` for the bar's, the tile's matching `instrument`
+  query to hide the stage's (the cell and the tile are one column). 🎛️ 64rem: the picker,
+  the four tabs and the four action plates measured about 1000px; at the switch (a 1080px
+  window, one up) the row has 51px to spare and the cell never overflows. Two up, or on a
+  phone, the tabs sit in the stage.
+- **The setup bar sits beside the headline**, at the row's far end and bottom aligned;
+  wrapped, it goes under the headline, nearer the chart (`space-between` leaves a lone item
+  at its line's start).
+
+`e2e/viz-workspace.spec.ts` drops its tab assertions for the picker: the first test now
+checks one picker naming Crit heatmap, and the second switches through the picker's menu.
+`e2e/marks.spec.ts` sweeps the picker one up instead of the tab row. Gates: Vitest 2733,
+svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+Copy (proposed): none new. Help's Visualizers chapter still describes the workspace's tabs
+(the "The workspace" section already on the to-do as stale).

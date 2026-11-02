@@ -15,7 +15,6 @@
 	import WishInstrument from './lib/WishInstrument.svelte';
 	import BreakdownInstrument from './lib/BreakdownInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
-	import InstrumentTabs from './lib/InstrumentTabs.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
@@ -144,6 +143,14 @@
 	// Method calls, not mount-time props: with keep-alive a target may already
 	// be mounted when a link or handoff arrives.
 	let handles = $state<Partial<Record<InstrumentId, InstrumentHandle>>>({});
+	/**
+	 * Each cell's VIEWS SLOT, right of its picker (Nate 2026-11-02: "the
+	 * instrument's own tabs sit just right of that instrument selector"). An
+	 * instrument on the stage moves its view tabs into it; the slot exists
+	 * only while the instrument is slotted, so a hidden instrument's tabs leave
+	 * with its cell.
+	 */
+	let viewSlots = $state<Partial<Record<InstrumentId, HTMLElement>>>({});
 
 	// ── Defaults on the bar (the Visualizers overhaul, round 1) ─────────────
 	// Each instrument's share state AS IT MOUNTS is its defaults: a handle
@@ -390,18 +397,10 @@
 		     there is no longer a rail for a button to sit on. -->
 		<div class="ws-band" style:--ws-slots={slotCount} style:--ws-tile-gap="{TILE_GAP}px">
 			{#each assignment.slice(0, slotCount) as id, slot (id)}
-				<div class="ws-band-cell" class:ws-band-cell--one={slotCount === 1}>
-					{#if slotCount === 1}
-						<!-- One up: the eight as tabs where the row fits, else the
-						     dropdown (the container queries below). -->
-						<div class="ws-tabs">
-							<InstrumentTabs
-								current={id}
-								onPick={(next) => pick(slot, next)}
-								panelId="ws-tile-{id}"
-							/>
-						</div>
-					{/if}
+				<div class="ws-band-cell">
+					<!-- The instrument's name, as a dropdown at every width (Nate
+					     2026-11-02: eight tabs, and more to come, is a long row, and once
+					     an instrument is open the others aren't what you reach for). -->
 					<div class="ws-picker">
 						<InstrumentPicker
 							current={id}
@@ -411,6 +410,9 @@
 							onPick={(next) => pick(slot, next)}
 						/>
 					</div>
+					<!-- The instrument's own view tabs land here where they fit (the
+					     instrument decides, by this cell's width). -->
+					<div class="ws-views" bind:this={viewSlots[id]}></div>
 					<span class="ws-band-actions">
 						{#if handles[id]?.reset}
 							<!-- ⚓ On the bar, not in the ⋯ (Nate 2026-11-02): the reset
@@ -518,7 +520,10 @@
 							{:else if inst.id === 'defres'}
 								<DefResInstrument bind:this={() => handles.defres, (h) => register('defres', h)} />
 							{:else if inst.id === 'wish'}
-								<WishInstrument bind:this={() => handles.wish, (h) => register('wish', h)} />
+								<WishInstrument
+									bind:this={() => handles.wish, (h) => register('wish', h)}
+									viewsTarget={viewSlots.wish}
+								/>
 							{:else if inst.id === 'breakdown'}
 								<BreakdownInstrument
 									bind:this={() => handles.breakdown, (h) => register('breakdown', h)}
@@ -578,39 +583,28 @@
 		min-width: 0;
 	}
 
-	/* The picker's wrapper takes the slack the picker itself used to (the
-	   nameplate is the long plate, InstrumentPicker § THE TILE'S NAMEPLATE). */
+	/* Every cell is a size query container, so an instrument can ask whether its
+	   view tabs fit beside the picker and the actions (WishInstrument's
+	   `@container ws-cell` rules). */
+	.ws-band-cell {
+		container: ws-cell / inline-size;
+	}
+
+	/* 🎛️ THE PICKER STOPS AT --ws-picker-max (16rem): the longest name,
+	   "Damage breakdown", with its caret and room to spare. Past that it is
+	   only distance between the name and its views. */
 	.ws-picker {
 		display: flex;
-		flex: 1;
-		min-width: 0;
-	}
-	.ws-tabs {
-		flex: 1;
+		flex: 0 1 var(--ws-picker-max, 16rem);
 		min-width: 0;
 	}
 
-	/* ONE UP: tabs or the dropdown, by the CELL's width. The cell is the
-	   query container, so the question is "does the row fit beside the
-	   actions", whatever the window and the interface size.
-	   🎛️ 73rem, the literal in the query below: measured at the default
-	   interface size, the eight tabs are 850px and the four action plates
-	   300px, so the row needs 1154px of cell. 73rem (1168px) is the first
-	   whole rem above it, and a cell that wide comes with a window of about
-	   1232px. Re-measure if a name or an action changes. */
-	.ws-band-cell--one {
-		container: ws-cell / inline-size;
-	}
-	.ws-band-cell--one .ws-picker {
-		display: none;
-	}
-	@container ws-cell (width < 73rem) {
-		.ws-band-cell--one .ws-tabs {
-			display: none;
-		}
-		.ws-band-cell--one .ws-picker {
-			display: flex;
-		}
+	/* The views take the slack, so the actions stay at the cell's far end. */
+	.ws-views {
+		display: flex;
+		align-items: center;
+		flex: 1;
+		min-width: 0;
 	}
 
 	.ws-layout {

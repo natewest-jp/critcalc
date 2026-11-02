@@ -18,9 +18,13 @@ the answer), and the rest of the design serves that loop.
 - **One up by default.** Side by side is a choice under Layout, and an instrument only has to
   work there (scrolling inside a tile is fine). Interactive chart tools give the one chart you
   work in the screen (Grafana's Explore view, Lightroom, Desmos); multi-up is for monitoring.
-- **Tabs** name all eight where the row fits, so the tool shows what it holds.
-- **The bar:** the instrument tabs (or picker), then Defaults, Copy link, ⋯ (How it works,
-  Report a problem), and Layout on the last tile. Defaults is dimmed at defaults and has Undo.
+- **A picker, not tabs.** The instrument is named on a dropdown at every width, capped at
+  🎛️ `--ws-picker-max` (16rem). ⚓ Nate: eight tabs, and more instruments to come, is a long
+  row, and once an instrument is open the others aren't what you reach for (the Planner's
+  document tabs went behind the Library for the same reason).
+- **The bar:** the picker, then the instrument's own view tabs where they fit (the views
+  slot), then Defaults, Copy link, ⋯ (How it works, Report a problem), and Layout on the last
+  tile. Defaults is dimmed at defaults and has Undo.
 
 ## 3. What is uniform and what varies
 
@@ -77,8 +81,8 @@ and the stage is now **one box** (⚓ Nate: "if we can simplify down to one box,
 many layout issues"):
 
 ```
-[ view tabs ]  [ setup bar: Pity 0 · Guarantee None · Goal C0 · Radiance ? ]
-headline (the chart head)
+[ Wish odds ▾ ] [ view tabs ]                      [ Defaults ] [ Copy link ] [ ⋯ ]
+headline (the chart head)          [ setup bar: Pity 0 · Guarantee None · Goal C0 · … ]
 ┌──────────────────────────────────────────────────────────────────┐
 │ the chart, full width: drag it, it is the control                 │
 │ companion strip, on the same x axis                               │
@@ -86,11 +90,17 @@ headline (the chart head)
 fine print
 ```
 
-- **The controls row.** The view tabs (a recessed track: one is chosen), then the setup bar
-  (a raised glass plate: each segment is a value you set), on one row where they fit. Two
-  materials, so they read as two things. The first build gave every setting its own plate on
-  a row of its own, and with the instrument tabs above that was three rows of identical
-  buttons. Chart tools, where an instrument has them, end the row.
+- **The view tabs** sit in the workspace bar, right of the picker, where the cell holds the
+  picker, the tabs and the actions in one row (⚓ Nate). Where it doesn't (two up, a phone),
+  they come down into the stage's head row, before the setup bar. The instrument renders both
+  copies and a container query on the cell's width shows one.
+- **The head row.** The headline, with the setup bar beside it at the row's far end, bottom
+  aligned. Where they don't fit side by side, the controls wrap under the headline, nearer
+  the chart they change (⚓ Nate).
+- **Two materials.** The view tabs are a recessed track (one is chosen); the setup bar is a
+  raised glass plate (each segment is a value you set). The first build gave every setting
+  its own plate on a row of its own, and with the instrument tabs above that was three rows
+  of identical buttons. Chart tools, where an instrument has them, follow the setup bar.
 - **The setup bar.** Every per-session and set-once setting is a segment that shows its value
   and opens a popover: the guarantee too, as a value ("Held", "None"), not a toggle, so the
   bar has one grammar. A list is one segment that says what is on ("Shred: Chevreuse 40%,
