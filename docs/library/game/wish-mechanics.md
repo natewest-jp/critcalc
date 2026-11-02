@@ -49,11 +49,10 @@ true — the datamined ramp simply saturates before the official ceiling.
     guarantee) on **three consecutive occasions**, radiance is guaranteed on
     the next 5★ — you cannot lose the "50/50" four times in a row.
   - Radiance does not affect guarantees; it only upgrades non-guaranteed wins.
-- ⚠️ The interior counter model (trigger chance at 1/2/3 consecutive losses)
-  is **not fully reverse-engineered**. GGanalysis models it conservatively as
-  `CR_P = [0, 0, 0, 1]` (trigger only at the guaranteed 3-loss cap) and
-  documents that this over-estimates the pulls needed. Any tool should model
-  the official 55% consolidated rate and state the counter as unmodeled.
+- The community's counter model (four states, starting at 1 in 5.0, Radiance
+  certain at 3) and how far it is established: `capturing-radiance.md`. Its one
+  unknown is the Radiance chance at counter 2; the official 55% stays the
+  instrument's default.
 
 ## Featured-weapon rules (Weapon Event Wish + Epitomized Path)
 
