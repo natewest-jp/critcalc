@@ -161,6 +161,11 @@ function profile(v: unknown, now: number): ProfileRecord | null {
 	if (pic) rec.picture = pic;
 	if (v.lastTool === 'planner' || v.lastTool === 'builder' || v.lastTool === 'visualizers')
 		rec.lastTool = v.lastTool;
+	// Each state is checked by its instrument when applied; here only its shape.
+	if (isObj(v.instruments)) {
+		const kept = Object.entries(v.instruments).filter(([, s]) => isObj(s));
+		if (kept.length) rec.instruments = Object.fromEntries(kept);
+	}
 	return rec;
 }
 

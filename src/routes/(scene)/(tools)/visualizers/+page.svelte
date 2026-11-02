@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { named, notices } from '$lib/notices.svelte';
 	import { chapterSection, menu } from '$lib/menuState.svelte';
-	import { onMount, tick } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
+	import { storageSession } from '$lib/storage/session.svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -165,11 +166,14 @@
 		return JSON.stringify(h.getShareState()) === defaults[id];
 	}
 	/** Defaults, with Undo: the toast hands the state back through the share
-	 *  path, which every instrument already sanitizes. */
+	 *  path, which every instrument already sanitizes. ⚠ An Undo checks the
+	 *  profile is still the one it was pressed in (ui.md § notices): after a
+	 *  switch it would write one profile's state into another. */
 	function restoreDefaults(id: InstrumentId) {
 		const h = handles[id];
 		if (!h?.reset) return;
 		const before = h.getShareState?.();
+		const pid = storageSession.profile?.id;
 		h.reset();
 		const name = INSTRUMENTS.find((i) => i.id === id)?.name ?? id;
 		const apply = h.applyShareState;
@@ -177,10 +181,70 @@
 			'success',
 			named`${name} is back to its defaults`,
 			before !== undefined && apply
-				? { actions: [{ label: 'Undo', run: () => apply(before) }] }
+				? {
+						actions: [
+							{
+								label: 'Undo',
+								run: () => {
+									if (storageSession.profile?.id === pid) apply(before);
+								}
+							}
+						]
+					}
 				: {}
 		);
 	}
+
+	// ── Saved per profile (the Visualizers overhaul, round 4) ────────────────
+	// Each instrument keeps its state in the active profile, so a set-once
+	// setting stays set (design §8). The profile's state is applied after the
+	// handle binds (its defaults are snapshotted first, above), and only from
+	// then on is the instrument saved: before, saving would write the defaults
+	// over what the profile holds.
+
+	/** The profile each instrument last showed, so a switch is noticed. */
+	let shownFor = $state<Partial<Record<InstrumentId, string>>>({});
+	/** What was last handed to the session per instrument, so a state that
+	 *  did not change (a restore, a swap back) is not written again. */
+	const lastSaved: Partial<Record<InstrumentId, string>> = {};
+	/** Instruments a link opened before the profile was known: the link wins. */
+	const linked = new SvelteSet<InstrumentId>();
+
+	$effect(() => {
+		const pid = storageSession.profile?.id;
+		if (!pid) return;
+		for (const { id } of INSTRUMENTS) {
+			const h = handles[id];
+			if (!h || shownFor[id] === pid) continue;
+			untrack(() => {
+				const first = shownFor[id] === undefined;
+				if (first && linked.has(id)) {
+					// The link's state is what is on screen, so it is what the
+					// profile keeps, as when a link arrives after the profile.
+				} else {
+					const saved = storageSession.instrumentState(id);
+					if (saved !== undefined) h.applyShareState?.(saved);
+					// Another profile's state is on screen and this one has none.
+					else if (!first) h.reset?.();
+					lastSaved[id] = JSON.stringify(h.getShareState?.());
+				}
+				shownFor[id] = pid;
+			});
+		}
+	});
+
+	$effect(() => {
+		const pid = storageSession.profile?.id;
+		if (!pid) return;
+		for (const { id } of INSTRUMENTS) {
+			const h = handles[id];
+			if (!h?.getShareState || shownFor[id] !== pid) continue;
+			const json = JSON.stringify(h.getShareState());
+			if (json === lastSaved[id]) continue;
+			lastSaved[id] = json;
+			untrack(() => storageSession.saveInstrument(id, JSON.parse(json)));
+		}
+	});
 	/** Help's Visualizers chapter, opened at this instrument's section. */
 	function openHelp(id: InstrumentId) {
 		menu.show(chapterSection('help', 'visualizers'), INSTRUMENTS.find((i) => i.id === id)?.help);
@@ -213,7 +277,11 @@
 		// and the persist effect records the result.
 		pick(0, id);
 		await tick(); // lets the everSlotted effect mount a deferred instrument
-		if (decoded.state !== null) handles[id]?.applyShareState?.(decoded.state);
+		if (decoded.state !== null) {
+			// A link's state wins over the profile's saved one (round 4).
+			linked.add(id);
+			handles[id]?.applyShareState?.(decoded.state);
+		}
 	});
 
 	// ── Per-tile share ─────────────────────────────────────────────────────

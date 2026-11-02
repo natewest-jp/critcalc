@@ -75,6 +75,13 @@ export type ProfileRecord = SyncFields & {
 	 */
 	current: Partial<Record<'planner' | 'builder', string | null>>;
 	lastTool?: ToolId;
+	/**
+	 * The Visualizers' instruments as this profile last left them (the
+	 * overhaul's round 4), by instrument id: each one's share state, which the
+	 * instrument sanitizes when it is applied. Absent is "never moved", and
+	 * the instrument opens on its defaults.
+	 */
+	instruments?: Record<string, unknown>;
 	createdAt: number;
 };
 

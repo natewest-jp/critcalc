@@ -505,6 +505,7 @@ class StorageSession {
 		this.#retryTimer = setTimeout(() => {
 			void this.flush();
 			void this.#flushRoster();
+			void this.#flushInstruments();
 		}, wait);
 	}
 
@@ -1017,6 +1018,7 @@ class StorageSession {
 		// This tab's own roster edits go in first, so loading the stored roster
 		// shows both tabs' changes rather than dropping this one's.
 		await this.#flushRoster();
+		await this.#flushInstruments();
 		const p = this.#db && this.profile ? await get(this.#db, 'profiles', this.profile.id) : null;
 		if (!p) return;
 		// Deleted in another tab: this one goes to Theorycraft too.
@@ -1039,9 +1041,11 @@ class StorageSession {
 		this.#frozen = true;
 		clearTimeout(this.#timer);
 		clearTimeout(this.#rosterTimer);
+		clearTimeout(this.#instrumentTimer);
 		clearTimeout(this.#retryTimer);
 		this.#pending = {};
 		this.#rosterPending = {};
+		this.#instrumentPending.clear();
 		dropJournal(this.#page);
 	}
 
@@ -1188,6 +1192,7 @@ class StorageSession {
 		if (!db) return null;
 		if (this.active) await this.flush();
 		await this.#flushRoster();
+		await this.#flushInstruments();
 		let all;
 		try {
 			all = await readAll(db);
@@ -1225,6 +1230,7 @@ class StorageSession {
 		// nothing; then saving stops.
 		if (this.active) await this.flush();
 		await this.#flushRoster();
+		await this.#flushInstruments();
 		this.#freeze();
 		await this.#profileQueue;
 		try {
@@ -2229,6 +2235,7 @@ class StorageSession {
 			this.#release('builder');
 		}
 		await this.#flushRoster();
+		await this.#flushInstruments();
 		// A switch of the visitor's own ends a pending return; a link's
 		// (`toTheorycraft`) sets it again straight after.
 		await setMeta(db, { activeProfileId: id, returnToProfileId: undefined });
@@ -2379,6 +2386,50 @@ class StorageSession {
 		}
 	}
 
+	// ── The Visualizers' instruments, written to the active profile ───────────
+
+	/** Pending instrument states, by profile, then by instrument. */
+	#instrumentPending = new Map<string, Record<string, unknown>>();
+	#instrumentTimer: ReturnType<typeof setTimeout> | undefined;
+
+	/** An instrument's state as the active profile last left it, if it has one. */
+	instrumentState(id: string): unknown {
+		return this.profile?.instruments?.[id];
+	}
+
+	/**
+	 * Keep an instrument's state in the active profile (round 4 of the
+	 * Visualizers overhaul). Debounced like the roster: a slider sends a state
+	 * on every step, and only where it comes to rest is written.
+	 */
+	saveInstrument(id: string, state: unknown): void {
+		if (this.#frozen || !this.profile) return;
+		const pid = this.profile.id;
+		this.#instrumentPending.set(pid, { ...this.#instrumentPending.get(pid), [id]: state });
+		clearTimeout(this.#instrumentTimer);
+		this.#instrumentTimer = setTimeout(() => void this.#flushInstruments(), SAVE_DELAY_MS);
+	}
+
+	async #flushInstruments(): Promise<void> {
+		clearTimeout(this.#instrumentTimer);
+		if (this.#frozen) return;
+		const pending = [...this.#instrumentPending];
+		this.#instrumentPending.clear();
+		for (const [pid, states] of pending) {
+			try {
+				// ⚓ Instrument by instrument onto what is stored: another tab saving
+				// a different instrument in the same profile keeps its own.
+				await this.#putProfile(pid, (p) => ({
+					...p,
+					instruments: { ...p.instruments, ...states }
+				}));
+			} catch (err) {
+				this.#instrumentPending.set(pid, { ...states, ...this.#instrumentPending.get(pid) });
+				void this.#writeFailed(err);
+			}
+		}
+	}
+
 	/**
 	 * Every profile write goes through here, in order: it re-reads the stored
 	 * record and applies one change, so a roster edit and a current-document
@@ -2460,6 +2511,7 @@ class StorageSession {
 		if (document.visibilityState === 'hidden') {
 			void this.flush();
 			void this.#flushRoster();
+			void this.#flushInstruments();
 		}
 	};
 
@@ -2510,6 +2562,7 @@ class StorageSession {
 		});
 		void this.flush();
 		void this.#flushRoster();
+		void this.#flushInstruments();
 	};
 
 	/** Back from the back/forward cache: the page lives on and saves for itself. */
