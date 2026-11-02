@@ -5,10 +5,21 @@
 		cdfStats,
 		clampPity,
 		copiesCdfs,
+		RADIANCE_CHANCE,
 		sumCdf,
+		worstCasePulls,
 		type BannerDef,
-		type BannerId
+		type BannerId,
+		type RadianceCounter
 	} from './wish';
+	import {
+		RADIANCE_SINCE,
+		readPaimonExport,
+		replay,
+		type ImportError,
+		type ImportResult,
+		type ReplayStep
+	} from './wishHistory';
 
 	// ── What you're pulling for ──────────────────────────────────────────────
 	// `pair` is a 5★ character AND their weapon: two banners, two pities, and
@@ -21,9 +32,26 @@
 		{ id: 'pair', label: '5★ and weapon' }
 	];
 
-	/** One banner's state. `have`/`goal` count COPIES: 0 = not owned, 1 = C0 (or R1). */
-	type BannerState = { pity: number; guaranteed: boolean; have: number; goal: number };
-	const fresh = (): BannerState => ({ pity: 0, guaranteed: false, have: 0, goal: 1 });
+	/**
+	 * One banner's state. `have`/`goal` count COPIES: 0 = not owned, 1 = C0 (or
+	 * R1). `counter` is Capturing Radiance's (character banner only); null is
+	 * "Don't know", which takes every 50/50 as the official 55%.
+	 */
+	type BannerState = {
+		pity: number;
+		guaranteed: boolean;
+		have: number;
+		goal: number;
+		counter: RadianceCounter | null;
+	};
+	const fresh = (): BannerState => ({
+		pity: 0,
+		guaranteed: false,
+		have: 0,
+		goal: 1,
+		counter: null
+	});
+	const COUNTERS: (RadianceCounter | null)[] = [null, 0, 1, 2, 3];
 
 	const DEFAULT_PULLS = 90;
 	let target = $state<Target>('character');
@@ -56,7 +84,7 @@
 		const s = states[id];
 		const banner = BANNERS[id];
 		const need = s.goal - s.have;
-		const cdfs = copiesCdfs(banner, need, s.pity, s.guaranteed);
+		const cdfs = copiesCdfs(banner, need, s.pity, s.guaranteed, s.counter);
 		return Array.from({ length: need }, (_, i) => ({
 			label: levelName(id, s.have + i + 1),
 			cdf: cdfs[i + 1],
@@ -79,6 +107,119 @@
 		curves.map((c) => ({ ...c, stats: cdfStats(c.cdf), chance: cdfAt(c.cdf, pulls) }))
 	);
 	const goalRow = $derived(rows.find((r) => r.primary)!);
+
+	// The most the goal can take (null: nothing caps a featured 4★). A pair's
+	// two banners are pulled one after the other, so their worst cases add.
+	function worstOf(id: BannerId) {
+		const s = states[id];
+		return worstCasePulls(BANNERS[id], s.goal - s.have, s.pity, s.guaranteed, s.counter);
+	}
+	const worst = $derived.by(() => {
+		if (target !== 'pair') return worstOf(target);
+		const c = worstOf('character');
+		const w = worstOf('weapon');
+		return c === null || w === null ? null : c + w;
+	});
+
+	// ── The Radiance counter from a wish history ─────────────────────────────
+	// Two sources, one replay (wishHistory.ts): a Paimon.moe export, or the 5★s
+	// the player lists by hand. Either one sets the counter and the guarantee;
+	// the export also sets pity.
+	const dateFmt = new Intl.DateTimeFormat('en-US', {
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric',
+		timeZone: 'UTC'
+	});
+	/** A wish history's 'YYYY-MM-DD HH:mm:ss' (server time) as "June 14, 2025". */
+	const dayOf = (time: string) => dateFmt.format(new Date(`${time.slice(0, 10)}T00:00:00Z`));
+
+	/** The steps since the last certain Radiance: all the counter depends on. */
+	function sinceRadiance(steps: ReplayStep[]) {
+		const i = steps.findLastIndex((s) => s.kind === 'radiance');
+		return steps.slice(i + 1);
+	}
+
+	let fileInput = $state<HTMLInputElement>();
+	let reading = $state(false);
+	let dropping = $state(false);
+	let importError = $state<ImportError | null>(null);
+	type Imported = {
+		result: ImportResult;
+		before: Pick<BannerState, 'pity' | 'guaranteed' | 'counter'>;
+	};
+	let imported = $state<Imported | null>(null);
+
+	async function importFile(file: File | undefined) {
+		if (!file || reading) return;
+		reading = true;
+		importError = null;
+		try {
+			const r = await readPaimonExport(await file.arrayBuffer());
+			if (typeof r === 'string') {
+				importError = r;
+				return;
+			}
+			const s = states.character;
+			imported = {
+				result: r,
+				before: { pity: s.pity, guaranteed: s.guaranteed, counter: s.counter }
+			};
+			s.pity = clampPity(BANNERS.character, r.pity);
+			s.guaranteed = r.replay.guaranteed;
+			s.counter = r.replay.counter;
+			listing = false;
+			listed = [];
+		} catch {
+			importError = 'not-a-workbook';
+		} finally {
+			reading = false;
+			if (fileInput) fileInput.value = '';
+		}
+	}
+
+	function undoImport() {
+		if (!imported) return;
+		Object.assign(states.character, imported.before);
+		imported = null;
+	}
+
+	function onDragOver(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'copy';
+		dropping = true;
+	}
+	function onDragLeave(e: DragEvent) {
+		if (!(e.currentTarget as Node).contains(e.relatedTarget as Node | null)) dropping = false;
+	}
+	function onDrop(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		dropping = false;
+		importFile(e.dataTransfer.files[0]);
+	}
+
+	// By hand: every 5★ since the last Radiance (or since 5.0), featured or not.
+	// The replay works out which were 50/50s, so a guarantee can't be entered
+	// as a win.
+	let listing = $state(false);
+	let listed = $state<boolean[]>([]);
+	const listedReplay = $derived(replay(listed));
+	function setListed(next: boolean[]) {
+		listed = next;
+		const r = replay(next);
+		states.character.counter = r.counter;
+		states.character.guaranteed = r.guaranteed;
+		imported = null;
+	}
+
+	const STEP_LABEL: Record<ReplayStep['kind'], string> = {
+		lost: 'Lost',
+		guarantee: 'Guarantee',
+		won: 'Won',
+		radiance: 'Radiance'
+	};
 
 	// The axis runs to where the goal is 99.9% done, in whole tens — the 4★
 	// chain never strictly ends, and the slider's ceiling follows it.
@@ -217,13 +358,17 @@
 
 	// ── Workspace handle (share + reset) ─────────────────────────────────────
 	export function reset() {
+		imported = null;
+		importError = null;
+		listing = false;
+		listed = [];
 		target = 'character';
 		pulls = DEFAULT_PULLS;
 		for (const id of Object.keys(states) as BannerId[]) states[id] = fresh();
 	}
 
 	export function getShareState() {
-		return { v: 2, target, pulls, banners: $state.snapshot(states) };
+		return { v: 3, target, pulls, banners: $state.snapshot(states) };
 	}
 
 	function readBanner(id: BannerId, raw: unknown) {
@@ -239,12 +384,18 @@
 		s.guaranteed = r.guaranteed === true;
 		s.have = int(r.have, 0, maxCopies(id) - 1) ?? 0;
 		s.goal = Math.max(s.have + 1, int(r.goal, 1, maxCopies(id)) ?? 1);
+		// v3: the Radiance counter (character banner only; absent or null is "Don't know")
+		if (id === 'character') s.counter = (int(r.counter, 0, 3) ?? null) as RadianceCounter | null;
 		states[id] = s;
 	}
 
 	export function applyShareState(state: unknown) {
 		if (typeof state !== 'object' || state === null) return;
 		const s = state as Record<string, unknown>;
+		imported = null;
+		importError = null;
+		listing = false;
+		listed = [];
 		const readPulls = (v: unknown) => {
 			if (typeof v === 'number' && Number.isFinite(v))
 				pulls = Math.min(2000, Math.max(0, Math.round(v)));
@@ -258,13 +409,26 @@
 			readPulls(s.pulls);
 			return;
 		}
-		if (s.v !== 2) return;
+		if (s.v !== 2 && s.v !== 3) return;
 		if (TARGETS.some((t) => t.id === s.target)) target = s.target as Target;
 		const banners = (s.banners ?? {}) as Record<string, unknown>;
 		for (const id of Object.keys(states) as BannerId[]) readBanner(id, banners[id]);
 		readPulls(s.pulls);
 	}
 </script>
+
+{#snippet strip(steps: ReplayStep[])}
+	<ol class="wi-strip">
+		{#each steps as st, i (i)}
+			<li
+				class="wi-step wi-step--{st.kind}"
+				title={st.name && st.time ? `${st.name}, ${dayOf(st.time)}` : undefined}
+			>
+				{STEP_LABEL[st.kind]}
+			</li>
+		{/each}
+	</ol>
+{/snippet}
 
 <div class="instrument instrument--capped">
 	<div class="wi-chart instrument-chart ctx-dark">
@@ -448,7 +612,16 @@
 		{#each blocks as id (id)}
 			{@const s = states[id]}
 			{@const b = BANNERS[id]}
-			<section class="wi-section">
+			<!-- Dropping a file on the character banner's section is a pointer shortcut
+			     for "Read a Paimon.moe export", which stays the accessible path. -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<section
+				class="wi-section"
+				class:is-dropping={id === 'character' && dropping}
+				ondragover={id === 'character' ? onDragOver : undefined}
+				ondragleave={id === 'character' ? onDragLeave : undefined}
+				ondrop={id === 'character' ? onDrop : undefined}
+			>
 				<p class="kicker">{RULES[id].kicker}</p>
 				<div class="wi-levels">
 					<span class="slider-label" id="wi-have-{id}">You have</span>
@@ -500,13 +673,146 @@
 					{RULES[id].guarantee}
 				</label>
 				{#if id === 'character'}
-					<p class="note">
-						Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
-						including Capturing Radiance).
-						<span class="wi-fine"
-							>Capturing Radiance’s exact rules aren’t public, so every 50/50 here is a flat 55%.</span
-						>
-					</p>
+					<div class="wi-levels">
+						<span class="slider-label" id="wi-counter">Radiance counter</span>
+						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-counter">
+							{#each COUNTERS as k (k ?? 'unknown')}
+								<button
+									class="chip chip--control"
+									class:active={s.counter === k}
+									aria-pressed={s.counter === k}
+									onclick={() => (states.character.counter = k)}
+								>
+									{k === null ? 'Don’t know' : k}
+								</button>
+							{/each}
+						</div>
+					</div>
+					{#if s.counter === null}
+						<p class="note">
+							Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
+							including Capturing Radiance).
+							<span class="wi-fine"
+								>Set your Radiance counter to use the community’s model of how Capturing Radiance
+								works instead.</span
+							>
+						</p>
+					{:else if s.counter === 3}
+						<p class="note">
+							Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
+						</p>
+					{:else if s.counter === 2}
+						<p class="note">
+							You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
+							Capturing Radiance.
+							<span class="wi-fine"
+								>How small isn’t known. We use {Math.round(RADIANCE_CHANCE[2] * 100)}%, which makes
+								the long-run rate the official 55%; community estimates run from 2% to 20%.</span
+							>
+						</p>
+					{:else}
+						<p class="note">
+							Your next 50/50 is an even one.
+							<span class="wi-fine"
+								>Each lost 50/50 adds one to the counter and each win takes one off. At 3, your next
+								50/50 is a Capturing Radiance.</span
+							>
+						</p>
+					{/if}
+
+					<div class="wi-history">
+						<div class="wi-actions">
+							<button class="btn btn--sm" disabled={reading} onclick={() => fileInput?.click()}>
+								Read a Paimon.moe export
+							</button>
+							<button
+								class="btn btn--sm"
+								class:is-active={listing}
+								aria-expanded={listing}
+								onclick={() => (listing = !listing)}
+							>
+								Work it out
+							</button>
+							<input
+								bind:this={fileInput}
+								type="file"
+								accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+								class="wi-file"
+								onchange={(e) => importFile(e.currentTarget.files?.[0])}
+							/>
+						</div>
+
+						{#if importError}
+							<p class="note wi-error" role="alert">
+								{#if importError === 'not-a-workbook'}
+									That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and
+									choose Export to Excel.
+								{:else if importError === 'not-paimon'}
+									That spreadsheet isn’t a Paimon.moe wish history export.
+								{:else}
+									That export has no character banner wishes in it.
+								{/if}
+							</p>
+						{/if}
+
+						{#if imported}
+							{@const r = imported.result}
+							{@const since = sinceRadiance(r.replay.steps)}
+							{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
+							<div class="wi-imported" role="status">
+								<p class="note">
+									Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
+									{dayOf(r.last)}.
+								</p>
+								{#if since.length > 0}
+									<span class="slider-label">
+										{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
+									</span>
+									{@render strip(since)}
+								{:else if lastRadiance?.time}
+									<p class="note">
+										No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.
+									</p>
+								{/if}
+								{#if r.first.slice(0, 10) > RADIANCE_SINCE}
+									<p class="wi-fine">
+										If you wished on the character banners before {dayOf(r.first)}, the counter may
+										be off.
+									</p>
+								{/if}
+								<div class="wi-actions">
+									<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+								</div>
+							</div>
+						{:else if listing}
+							<div class="wi-listing">
+								<p class="note">
+									Add each 5★ you’ve pulled on the character banners since your last Capturing
+									Radiance (or since 5.0, if you haven’t had one), oldest first.
+								</p>
+								<div class="wi-actions">
+									<button class="btn btn--sm" onclick={() => setListed([...listed, true])}>
+										Featured
+									</button>
+									<button class="btn btn--sm" onclick={() => setListed([...listed, false])}>
+										Not featured
+									</button>
+									<button
+										class="btn btn--sm"
+										disabled={listed.length === 0}
+										onclick={() => setListed(listed.slice(0, -1))}
+									>
+										Undo
+									</button>
+								</div>
+								{#if listed.length > 0}
+									{@render strip(listedReplay.steps)}
+								{/if}
+							</div>
+						{:else}
+							<p class="wi-fine">The file is read on your device and isn’t uploaded.</p>
+						{/if}
+					</div>
 				{:else if id === 'fourStar'}
 					<p class="note">
 						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
@@ -555,8 +861,14 @@
 			</tbody>
 		</table>
 		<p class="wi-meta">
-			On average, {goalRow.label} would take
-			<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here.
+			{#if worst !== null}
+				On average, {goalRow.label} would take
+				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here, and at most
+				<span class="wi-strong">{worst}</span>.
+			{:else}
+				On average, {goalRow.label} would take
+				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here.
+			{/if}
 		</p>
 		<p class="note">
 			Half by: half of players get there within this many pulls. Unlucky tenth: the unluckiest 10%
@@ -683,6 +995,60 @@
 		display: block;
 		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
+	}
+
+	/* ── The Radiance counter's history tools ── */
+	.wi-file {
+		display: none;
+	}
+
+	.wi-history,
+	.wi-imported,
+	.wi-listing {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.wi-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+
+	.wi-error {
+		color: var(--ui-warning);
+	}
+
+	/* A file dragged over the section: it takes the drop */
+	.wi-section.is-dropping {
+		border-radius: var(--r-sm);
+		box-shadow: 0 0 0 1px var(--accent);
+	}
+
+	.wi-strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.wi-step {
+		padding: 0.05rem 0.45rem;
+		border-radius: var(--r-round);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 25%, transparent);
+		font-family: var(--font-condensed);
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+
+	.wi-step--lost {
+		color: var(--muted);
+	}
+
+	.wi-step--radiance {
+		box-shadow: inset 0 0 0 1px var(--accent);
 	}
 
 	/* One panel, its sections stacked (⚓ Nate, 2026-10-04: a shared tile

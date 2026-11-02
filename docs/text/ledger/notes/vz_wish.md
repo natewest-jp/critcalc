@@ -120,3 +120,29 @@ exactly (§3.3 — a reference, not a copy).
 
 Only on the 5★ and weapon target: the combined figure is the SUM of two independent pull
 counts.
+
+## The Radiance counter (2026-11-02, `feat/wish-radiance`; copy proposed, awaiting Nate)
+
+The Character Event section gained a counter, an import and a by-hand list
+(`docs/rounds/wish-radiance-2026-11-02.md`). Model: `docs/library/game/capturing-radiance.md`.
+🔒 **Paimon.moe** (a site's name), and its own labels **Wish Counter**, **Settings**,
+**Export to Excel** (quoted from Paimon.moe's English UI; a translator uses that locale's
+Paimon.moe labels, not a translation of ours).
+
+- **Radiance counter** (label, uppercased by CSS) and its chips **Don’t know · 0 · 1 · 2 ·
+  3**. ⚠️ The chip row shares the tight "You have" width; "Don’t know" is the long one.
+- **The four notes under it**, one per state. Player's vantage (§1.10). Counter 2's fine print
+  carries a number computed from `RADIANCE_CHANCE[2]` (9) and two fixed ones (2%, 20%, the
+  community's range).
+- **Read a Paimon.moe export** · **Work it out** (buttons) · "The file is read on your device
+  and isn’t uploaded." (fine print under them until either is used).
+- **The import's report:** "Read {n} character banner wishes, {first} to {last}." (dates via
+  `Intl`, en-US long form) · "Since your last Radiance" / "Since 5.0" (strip label) · "No 50/50s
+  since your last Radiance, on {date}." · "If you wished on the character banners before {date},
+  the counter may be off." · **Undo**.
+- **Its three errors**, one per `ImportError`. The first tells the player where Paimon.moe's
+  export is.
+- **The by-hand list:** its instruction, **Featured** · **Not featured** · **Undo**, and the
+  strip's four step names **Lost · Guarantee · Won · Radiance** (short; pills).
+- **Readout:** "On average, {label} would take {mean} pulls from here, and at most {max}." §1.8.
+  The 4★ has no maximum and keeps the old sentence.
