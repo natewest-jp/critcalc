@@ -1,11 +1,11 @@
 {
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
-		"audited": "39d270e54",
-		"seenUpstream": "39d270e54",
-		"date": "2026-11-01",
-		"tag": "v2.49.0",
-		"note": "clone fast-forwarded fcc117b31 → 39d270e54 (1 commit): Alyosha #3256 drops his Moonsign count (we never gave him the faction) and puts the C2 mark on the primary target (one opponent here, so no change); audit delta is Ifa end_hover from our own 2026-10-30 authoring"
+		"audited": "3877a1a35",
+		"seenUpstream": "3877a1a35",
+		"date": "2026-11-02",
+		"tag": "v2.49.4",
+		"note": "clone fast-forwarded 39d270e54 → 3877a1a35 (5 commits): Mizuki Revelation #3208 (cloud 45→44f; enhanced C2/C4/C6 unauthored here), Diona Revelation #3254 (C6 Radiance split), Varesa #3255 (Kablam ignores burst CD, as we model); curation item at the top of Next"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-01T00:00:00Z"
+		"lastSeen": "2026-11-02T00:00:00Z"
 	},
 	"genshinDb": "5.2.14",
 	"endgame": {
@@ -25,6 +25,6 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "84eb2ce8"
+		"lastSwept": "8ce08585"
 	}
 }
