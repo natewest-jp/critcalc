@@ -14,6 +14,7 @@
 	} from './wish';
 	import {
 		RADIANCE_SINCE,
+		impossibility,
 		readPaimonExport,
 		replay,
 		type ImportError,
@@ -201,10 +202,21 @@
 
 	// By hand: every 5★ since the last Radiance (or since 5.0), featured or not.
 	// The replay works out which were 50/50s, so a guarantee can't be entered
-	// as a win.
+	// as a win. `listed` is always oldest first; entered newest first, each new
+	// 5★ goes in front. A standard 5★ that would break the model's rules can't
+	// be added (`impossibility`), so the list is always one that could happen.
 	let finding = $state(false);
 	let listed = $state<boolean[]>([]);
+	let newestFirst = $state(false);
 	const listedReplay = $derived(replay(listed));
+	const withNext = (featured: boolean) =>
+		newestFirst ? [featured, ...listed] : [...listed, featured];
+	/** Why a standard 5★ can't go next, or null when it can. */
+	const standardBlocked = $derived(impossibility(withNext(false)));
+	/** The steps in the order they were entered. */
+	const listedSteps = $derived(
+		newestFirst ? [...listedReplay.steps].reverse() : listedReplay.steps
+	);
 	function setListed(next: boolean[]) {
 		listed = next;
 		const r = replay(next);
@@ -754,25 +766,67 @@
 
 							<div class="wi-find-part">
 								<p class="note">
-									Or list each 5★ since your last Radiance (or since 5.0), oldest first:
+									{#if newestFirst}
+										Or list each 5★, newest first, back to your last Radiance (or to 5.0):
+									{:else}
+										Or list each 5★ since your last Radiance (or since 5.0), oldest first:
+									{/if}
 								</p>
 								<div class="wi-actions">
-									<button class="btn btn--sm" onclick={() => setListed([...listed, true])}>
-										Featured
+									<div class="segment" role="radiogroup" aria-label="Order">
+										<button
+											class="btn btn--sm"
+											class:is-active={!newestFirst}
+											role="radio"
+											aria-checked={!newestFirst}
+											onclick={() => (newestFirst = false)}
+										>
+											Oldest first
+										</button>
+										<button
+											class="btn btn--sm"
+											class:is-active={newestFirst}
+											role="radio"
+											aria-checked={newestFirst}
+											onclick={() => (newestFirst = true)}
+										>
+											Newest first
+										</button>
+									</div>
+								</div>
+								<div class="wi-actions">
+									<button class="btn btn--sm" onclick={() => setListed(withNext(true))}>
+										Featured 5★
 									</button>
-									<button class="btn btn--sm" onclick={() => setListed([...listed, false])}>
-										Not featured
+									<button
+										class="btn btn--sm"
+										disabled={standardBlocked !== null}
+										aria-describedby={standardBlocked ? 'wi-why-not' : undefined}
+										onclick={() => setListed(withNext(false))}
+									>
+										Standard 5★
 									</button>
 									<button
 										class="btn btn--sm"
 										disabled={listed.length === 0}
-										onclick={() => setListed(listed.slice(0, -1))}
+										onclick={() => setListed(newestFirst ? listed.slice(1) : listed.slice(0, -1))}
 									>
 										Undo
 									</button>
 								</div>
+								{#if standardBlocked === 'after-standard'}
+									<p class="wi-fine" id="wi-why-not">
+										Two standard 5★s can’t come in a row: the one after a standard 5★ is always the
+										featured one.
+									</p>
+								{:else if standardBlocked === 'at-three'}
+									<p class="wi-fine" id="wi-why-not">
+										A standard 5★ here would mean losing a 50/50 on counter 3, where Capturing
+										Radiance always wins.
+									</p>
+								{/if}
 								{#if listed.length > 0}
-									{@render strip(listedReplay.steps)}
+									{@render strip(listedSteps)}
 								{/if}
 							</div>
 						</div>

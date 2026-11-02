@@ -80,6 +80,31 @@ export function replay(
 	return { counter, guaranteed, steps };
 }
 
+/**
+ * Why a sequence (oldest first, from `start`) can't have happened, or null if
+ * it can. Two rules: a standard 5★ is always followed by the featured one it
+ * guarantees (`after-standard`), and a 50/50 on counter 3 is always a
+ * Radiance (`at-three`).
+ */
+export type Impossible = 'after-standard' | 'at-three';
+export function impossibility(
+	featured: readonly boolean[],
+	start: { counter: RadianceCounter; guaranteed: boolean } = REPLAY_START
+): Impossible | null {
+	let { counter, guaranteed } = start;
+	for (const isFeatured of featured) {
+		if (guaranteed) {
+			if (!isFeatured) return 'after-standard';
+			guaranteed = false;
+		} else if (!isFeatured) {
+			if (counter === 3) return 'at-three';
+			counter = nextCounter(counter, 'lost');
+			guaranteed = true;
+		} else counter = nextCounter(counter, counter === 3 ? 'radiance' : 'won');
+	}
+	return null;
+}
+
 export type FiveStarPull = { name: string; time: string };
 
 /**

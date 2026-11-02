@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { formatChance } from './chance';
 
 describe('formatChance', () => {
-	it('two decimals in the middle', () => {
-		expect(formatChance(0.634712)).toBe('63.47%');
-		expect(formatChance(0.5)).toBe('50.00%');
-		expect(formatChance(0.01)).toBe('1.00%');
+	it('one decimal in the middle', () => {
+		expect(formatChance(0.634712)).toBe('63.5%');
+		expect(formatChance(0.5)).toBe('50.0%');
+		expect(formatChance(0.01)).toBe('1.0%');
 	});
 
 	it('three significant figures under 1%', () => {
@@ -15,7 +15,8 @@ describe('formatChance', () => {
 	});
 
 	it('over 99%, enough decimals to show what is left', () => {
-		expect(formatChance(0.99)).toBe('99.00%');
+		expect(formatChance(0.99)).toBe('99.0%');
+		expect(formatChance(0.995)).toBe('99.5%');
 		expect(formatChance(0.99958)).toBe('99.958%');
 		expect(formatChance(0.9999577)).toBe('99.9958%');
 	});

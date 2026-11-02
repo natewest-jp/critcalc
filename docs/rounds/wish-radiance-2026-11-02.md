@@ -83,6 +83,21 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
 - **A chance past a level's worst case reads 100%** (`chanceAt`): counter 3 at 90 pulls used to
   print ">99.9%" from a floating-point shortfall.
 
+## 4c. The by-hand list: names, order, and only possible entries (⚓ Nate)
+
+- The buttons are **Featured 5★** and **Standard 5★**.
+- **Oldest first · Newest first** (a segment). The list is stored oldest first either way;
+  newest first puts each 5★ in front, the strip reads in the order typed, and Undo takes off
+  the end being added to.
+- **An impossible list can't be entered.** `impossibility()` (`wishHistory.ts`) checks the
+  model's two rules: a standard 5★ is always followed by the guaranteed featured one, and a
+  50/50 on counter 3 is always a Radiance. **Standard 5★** is disabled when it would break
+  one, with the reason beside it, because a disabled button's title never shows. Featured is
+  always possible: an older win added in front only lowers the counter. Newest first is why
+  the check is a full replay, not "no two standards in a row": a standard added in front can
+  push a later loss onto counter 3.
+- `formatChance`'s middle range is one decimal (63.5%); the ends are unchanged.
+
 ## 5. Share links
 
 `v: 3` carries the counter on the character banner; a `v: 2` link opens as "Don’t know".

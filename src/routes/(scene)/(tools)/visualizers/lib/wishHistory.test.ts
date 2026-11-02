@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { fromPaimonSheets, isLoss, readPaimonExport, replay, replayHistory } from './wishHistory';
+import {
+	fromPaimonSheets,
+	impossibility,
+	isLoss,
+	readPaimonExport,
+	replay,
+	replayHistory
+} from './wishHistory';
 
 // Model: docs/library/game/capturing-radiance.md. Histories here are made up;
 // the shapes are the ones the threads and the development history show.
@@ -43,6 +50,30 @@ describe('replay — the counter model', () => {
 	it('takes a start, for a sequence counted from a remembered Radiance', () => {
 		expect(replay([], { counter: 1, guaranteed: false })).toMatchObject({ counter: 1 });
 		expect(replay([true], { counter: 3, guaranteed: true }).steps[0].kind).toBe('guarantee');
+	});
+});
+
+describe('impossibility — what a list of 5★s can’t contain', () => {
+	it('every sequence the model allows passes', () => {
+		expect(impossibility([])).toBeNull();
+		expect(impossibility([false, true, false, true, true])).toBeNull();
+		// from 0, three losses in a row
+		expect(impossibility([true, false, true, false, true, false, true, true])).toBeNull();
+	});
+
+	it('two standard 5★s in a row: the second was the guarantee', () => {
+		expect(impossibility([false, false])).toBe('after-standard');
+	});
+
+	it('a loss on counter 3: the 50/50 there is a Radiance', () => {
+		expect(impossibility([false, true, false, true, false])).toBe('at-three');
+	});
+
+	it('an older win, added in front, can make a sequence possible again', () => {
+		// newest-first entry adds in front: from 1 this reaches 3 and loses; from 0 it doesn't
+		const recent = [false, true, false, true, false, true];
+		expect(impossibility(recent)).toBe('at-three');
+		expect(impossibility([true, ...recent])).toBeNull();
 	});
 });
 

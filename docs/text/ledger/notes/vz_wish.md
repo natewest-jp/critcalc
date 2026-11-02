@@ -143,9 +143,13 @@ Paimon.moe labels, not a translation of ours).
   the import's report (in the Readout, under the heading "Your wish history"): "Read {n} character banner wishes, {first} to {last}." (dates via
   `Intl`, en-US long form), "Since your last Radiance" / "Since 5.0" (strip label), "No 50/50s
   since your last Radiance, on {date}.", "If you wished on the character banners before
-  {date}, the counter may be off.", **Undo** · otherwise the by-hand list: "Or list each 5★
-  since your last Radiance (or since 5.0), oldest first:", **Featured** · **Not featured** ·
-  **Undo**, and the step names **Lost · Guarantee · Won · Radiance** (short; pills).
+  {date}, the counter may be off.", **Undo** · the by-hand list: its instruction in two forms ("Or list each 5★
+  since your last Radiance (or since 5.0), oldest first:" / "Or list each 5★, newest first, back
+  to your last Radiance (or to 5.0):"), the order segment **Oldest first · Newest first**,
+  **Featured 5★** · **Standard 5★** · **Undo**, the two reasons Standard 5★ is disabled ("Two
+  standard 5★s can’t come in a row: the one after a standard 5★ is always the featured one." /
+  "A standard 5★ here would mean losing a 50/50 on counter 3, where Capturing Radiance always
+  wins."), and the step names **Lost · Guarantee · Won · Radiance** (short; pills).
 - **Its three errors**, one per `ImportError`. The first tells the player where Paimon.moe's
   export is.
 - **Readout:** "On average, {label} would take {mean} pulls from here, and at most {max}." §1.8.

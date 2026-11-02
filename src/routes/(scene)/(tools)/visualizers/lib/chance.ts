@@ -1,7 +1,7 @@
 // How the odds instruments print a chance (Wish Odds now; Artifact Odds to
 // follow). Precise enough to tell small chances apart, since players care
 // about the exact figure even when it is tiny:
-//   - in the middle, two decimals: 63.47%
+//   - in the middle, one decimal: 63.5%
 //   - under 1%, three significant figures: 0.0423%
 //   - over 99%, enough decimals to show what is left: 99.958%, 99.9958%
 //   - never a certainty the model doesn't have, nor a zero it doesn't either:
@@ -15,7 +15,7 @@ const FLOOR = 1e-4;
 const MAX_DECIMALS = 4;
 
 const fmt = (opts: Intl.NumberFormatOptions) => new Intl.NumberFormat('en-US', opts);
-const MIDDLE = fmt({ minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const MIDDLE = fmt({ minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const SMALL = fmt({ maximumSignificantDigits: 3 });
 const EDGE = fmt({ maximumFractionDigits: MAX_DECIMALS });
 
@@ -29,8 +29,8 @@ export function formatChance(p: number): string {
 	if (pct < 1) return `${SMALL.format(pct)}%`;
 	if (left < 1) {
 		// as many decimals as it takes to show two figures of what is left
-		const decimals = Math.min(MAX_DECIMALS, Math.max(2, Math.ceil(-Math.log10(left)) + 1));
-		const s = fmt({ minimumFractionDigits: 2, maximumFractionDigits: decimals }).format(pct);
+		const decimals = Math.min(MAX_DECIMALS, Math.max(1, Math.ceil(-Math.log10(left)) + 1));
+		const s = fmt({ minimumFractionDigits: 1, maximumFractionDigits: decimals }).format(pct);
 		// rounding up to 100 would print a certainty: keep the last digit short of it
 		return Number(s) >= 100 ? `>${EDGE.format(100 - FLOOR)}%` : `${s}%`;
 	}
