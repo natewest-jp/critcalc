@@ -761,7 +761,7 @@
 
 {#snippet viewTabs()}
 	<!-- What you're pulling for picks what the chart draws: the instrument's
-	     view tabs, under its picker. -->
+	     view tabs, leading the chart's toolbar. -->
 	<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
 		{#each TARGETS as t (t.id)}
 			<button
@@ -790,28 +790,30 @@
 	</ol>
 {/snippet}
 
-<!-- THE STAGE (design §6, the first instrument on it). One box: the head row
-     (the view tabs and the headline), the setup bar, the chart with its
-     companion, and the handle. No answer card: what the card held is
+<!-- THE STAGE (design §6, the first instrument on it). One box: the chart
+     head (the headline), the chart's toolbar on its top edge (the view tabs and
+     the setup bar), the chart with its companion, and the handle on its bottom
+     edge. No answer card: what the card held is
      drawn on the chart, or sits in the popover of the setting it explains. -->
 <div class="wi-root">
 	<div class="wi-stage ctx-dark">
-		<!-- THE HEAD ROW (Nate 2026-11-02): the instrument's view tabs, under its
-		     picker, and the headline at the row's far end; under the tabs where
-		     the tile is too narrow for both. -->
-		<div class="wi-head-row">
-			{@render viewTabs()}
-			<!-- The chart head (design §6): the answer, where the chart is. It
-			     follows the handle and a drag on the chart. -->
-			<p class="readout-head wi-head">
-				{formatChance(goalRow.chance)}<span class="readout-sentence"
-					>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
-				>
-			</p>
-		</div>
+		<!-- THE CHART HEAD (design §6): the answer, on a row of its own at the
+		     stage's top left, the first thing read and the largest type on the
+		     screen. It follows the handle and a drag on the chart. -->
+		<p class="readout-head wi-head">
+			{formatChance(goalRow.chance)}<span class="readout-sentence"
+				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
+			>
+		</p>
 
-		<!-- THE SETUP BAR, right over the chart and centred on it (Nate). -->
-		<div class="wi-controls">
+		<!-- THE CHART'S TOOLBAR, on its top edge (Nate: the bottom edge is the
+		     handle's): everything that changes what the chart draws. The view
+		     tabs where the instrument has them, then the setup bar; chart tools,
+		     where an instrument has them, at the far end. Left aligned on the
+		     stage's one left edge, so an instrument with no tabs starts with its
+		     setup bar and nothing else moves. -->
+		<div class="wi-toolbar">
+			{@render viewTabs()}
 			{#each blocks as id (id)}
 				{@const s = states[id]}
 				{@const b = BANNERS[id]}
@@ -1278,39 +1280,16 @@
 		}
 	}
 
-	/* ── The head row ──
-	   The view tabs under the instrument's picker, and the headline at the
-	   row's far end, right aligned (Nate 2026-11-02). Where the tile is too
-	   narrow for both, the headline goes under the tabs, still at the right.
-	   By the TILE's width, never by whether the content happens to fit: the
-	   headline's length changes as you drag, and a row that rewrapped mid-drag
-	   would move the chart under your hand. 🎛️ 60rem: the four tabs (420px)
-	   and the longest one-line headline (about 505px) with room between. */
-	.wi-head-row {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.75rem;
-	}
-
-	.wi-head {
-		align-self: flex-end;
-		text-align: right;
-	}
-
-	@container instrument (min-width: 60rem) {
-		.wi-head-row {
-			flex-direction: row;
-			align-items: flex-end;
-			justify-content: space-between;
-			gap: 2rem;
-		}
-	}
+	/* ── The stage's head: ONE LEFT EDGE ──
+	   The picker above, the headline, the toolbar and the chart all start on
+	   the stage's left edge. Nothing is centred: a centred bar between
+	   edge-aligned neighbours read as loose (Nate 2026-11-02). */
 
 	/* THE HEADLINE ON ONE LINE where the tile has room: the figure and its
 	   sentence share a baseline, each at its own size. From 38rem, where the
 	   longest ("0.0263% chance of C2R1 within 1,000 pulls", about 505px)
-	   fits; below it, the figure over its sentence. */
+	   fits; below it, the figure over its sentence. By the tile's width, never
+	   by fit: the headline's length changes as you drag. */
 	@container instrument (min-width: 38rem) {
 		.wi-head {
 			display: flex;
@@ -1323,25 +1302,44 @@
 		}
 	}
 
+	/* 🎛️ The headline's room below it, before the toolbar: it stands apart as
+	   the answer, where the toolbar belongs to the chart. */
+	.wi-head {
+		margin-bottom: var(--wi-head-gap, 0.5rem);
+	}
+
+	/* THE ANSWER AS THE FOCUS (Nate 2026-11-02: it must not read as an
+	   afterthought). Where the chart runs the tile's width, the Readout head's
+	   32px is small beside it: 🎛️ --wi-head-scale (1.5) of it, 48px, and the
+	   sentence a step up (--fs-3xl), the difference between them kept. */
+	@container instrument (min-width: 60rem) {
+		.wi-head {
+			font-size: calc(var(--fs-5xl) * var(--wi-head-scale, 1.5));
+			column-gap: 0.8rem;
+		}
+		.wi-head .readout-sentence {
+			font-size: var(--fs-3xl);
+		}
+	}
+
 	/* Four tabs don't fit a narrow tile: wrap rather than scroll. */
 	.wi-tabs {
 		flex-wrap: wrap;
 		max-width: 100%;
 	}
 
-	/* ── The setup bar's row ──
-	   Right over the chart and centred on it (Nate 2026-11-02): the settings
-	   belong to the chart below them. A pair's two bars sit side by side, or
-	   one over the other, centred either way. The bar (a raised plate: each
-	   segment is a value you set) and the tabs (a recessed track: one is
-	   chosen) are different materials, so they read as two things. */
-	.wi-controls {
+	/* ── THE CHART'S TOOLBAR, on the chart's top edge ──
+	   The view tabs (a recessed track: one is chosen), then the setup bar (a
+	   raised plate: each segment is a value you set): different materials, so
+	   they read as two things. 🎛️ Snug to the chart: --wi-toolbar-gap (0.25rem)
+	   above the SVG, whose own top margin holds the y axis's name. */
+	.wi-toolbar {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: center;
-		gap: 0.5rem 1rem;
+		gap: 0.5rem;
 		min-width: 0;
+		margin-bottom: calc(var(--wi-toolbar-gap, 0.25rem) - var(--inst-gap-control));
 	}
 
 	/* THE SETUP BAR: one glass plate, a setting per segment. The segments are

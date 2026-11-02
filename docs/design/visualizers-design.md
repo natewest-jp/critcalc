@@ -82,8 +82,8 @@ many layout issues"):
 
 ```
 [ Wish odds ▾ ]                                     [ Defaults ] [ Copy link ] [ ⋯ ]
-[ view tabs ]                                        63.5% chance of C0 within 90 pulls
-              [ setup bar: Pity 0 · Guarantee None · Goal C0 · … ]
+63.5% chance of C0 within 90 pulls
+[ view tabs ] [ setup bar: Pity 0 · Guarantee None · Goal C0 · … ]        [ chart tools ]
 ┌──────────────────────────────────────────────────────────────────┐
 │ the chart, full width: drag it, it is the control                 │
 │ companion strip, on the same x axis                               │
@@ -91,14 +91,24 @@ many layout issues"):
 fine print
 ```
 
-- **The head row** (⚓ Nate): the view tabs under the instrument's picker, at every width,
-  and the headline at the row's far end, right aligned, on one line (the figure and its
-  sentence on one baseline, each at its own size) from a 38rem tile. Where the tile is under
-  60rem the headline goes under the tabs, still at the right. Decided by the tile's width,
-  never by whether the content fits, because the headline's length changes as you drag and a
-  rewrap would move the chart under the hand. (Tried and set aside the same day: the view
-  tabs in the workspace bar beside the picker, and the setup bar beside the headline.)
-- **The setup bar's row**, right over the chart and centred on it (⚓ Nate).
+- **One left edge.** The picker, the headline, the toolbar and the chart all start on the
+  stage's left edge. Nothing is centred: a centred bar between edge-aligned neighbours read
+  as loose (⚓ Nate).
+- **The chart head** is a row of its own at the stage's top left: the first thing read and
+  the largest type on the screen, with open night to its right, so it reads as the focus and
+  not as something squeezed beside a control (⚓ Nate: "not an afterthought"). One line (the
+  figure and its sentence on one baseline, each at its own size) from a 38rem tile; from
+  60rem the figure is 🎛️ `--wi-head-scale` (1.5) × the Readout head's 32px and the sentence
+  a step up. By the tile's width, never by fit: the headline's length changes as you drag.
+- **The chart's toolbar sits on its top edge**, snug (🎛️ `--wi-toolbar-gap`, 0.25rem), as
+  the handle sits on its bottom edge (⚓ Nate): everything that changes what the chart draws.
+  The instrument's view tabs lead it where it has them, then the setup bar, then chart tools
+  at the far end. Most instruments have no view tabs; theirs starts with the setup bar and
+  nothing else moves, so the layout doesn't depend on the tabs. It wraps where it must.
+- **Tried and set aside the same day** (2026-11-02, in this order): the view tabs in the
+  workspace bar beside the picker, with the setup bar beside the headline; then the tabs
+  under the picker with the headline right aligned on their row and the setup bar centred
+  over the chart.
 - **Two materials.** The view tabs are a recessed track (one is chosen); the setup bar is a
   raised glass plate (each segment is a value you set). The first build gave every setting
   its own plate, and with the instrument tabs above that was three rows of identical

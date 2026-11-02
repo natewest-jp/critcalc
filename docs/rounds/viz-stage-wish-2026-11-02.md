@@ -1,6 +1,6 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage` in five passes (§7–§10), for Nate to look at in the local build. Not merged.
+**Status:** 🔨 built on `feat/viz-wish-stage` in six passes (§7–§11); §11 is the arrangement to judge next, for Nate to look at in the local build. Not merged.
 ⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
 §4 are Nate's; real Safari and iPhone.
 
@@ -191,5 +191,36 @@ Nate wanted to see a different arrangement:
   same reason as §9.
 - **The setup bar on its own row, right over the chart, centred.** A pair's two bars sit
   side by side and centred where they fit.
+
+Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 11. Sixth pass: one left edge, the headline as the focus, the toolbar on the chart's edge
+
+Nate on §10: "this isn't it", and handed the layout over for one more attempt, with what he
+was sure of (the controls belong on the chart's top edge, the bottom edge being the handle's;
+snug to it) and what he wasn't (alignment: centred looked loose beside edge-aligned
+neighbours; where the view tabs and the headline go; the headline must read as the focus,
+not an afterthought; most instruments have no view tabs, so the layout mustn't depend on
+them).
+
+- **One left edge** for the picker, the headline, the toolbar and the chart. Nothing
+  centred.
+- **The headline on a row of its own** at the stage's top left, with open night to its
+  right. From a 60rem tile it is 48px (🎛️ `--wi-head-scale`, 1.5 × the Readout head's 32px)
+  with its sentence a step up (`--fs-3xl`); 32px below that; on a phone the figure over its
+  sentence.
+- **The chart's toolbar on its top edge**, snug (🎛️ `--wi-toolbar-gap`, 0.25rem above the
+  SVG, whose top margin holds the y axis's name): the view tabs, then the setup bar, and chart
+  tools at the far end where an instrument has them. An instrument without view tabs starts
+  with its setup bar. It wraps: the pair's second bar goes to a second line, and on a phone
+  the tabs and the bar each take a line.
+
+Why this and not the alternatives: the toolbar gathers everything that changes the chart on
+the chart itself, so the headline has the stage's head to itself; a single left edge keeps
+the rows tidy at every width and with or without tabs. Headless screenshots at 2000, 1600
+(the pair), 1440 two up and 390.
+
+Next session: Nate's verdict on this arrangement, then the copy proposals (§5, §7), then
+Artifact odds, whose round moves the stage's CSS to `app.css`.
 
 Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.
