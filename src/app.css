@@ -2163,7 +2163,8 @@
    tokens (a mix of a mix INHERITED by a large tree), and this is consumed
    where it is written, as `.btn.is-active` always has been. */
 .band--3up > .band-zone .btn.is-active,
-.band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
+.band--3up > .band-zone .btn.is-active:hover:not(:disabled),
+.btn.btn--glass.is-active:hover:not(:disabled) {
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--text);
 }

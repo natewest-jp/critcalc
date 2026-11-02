@@ -10,9 +10,10 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 ## The workspace
 
 - Eight instruments, listed in `visualizers/lib/workspace.ts`: crit heatmap (`crit`), ICD timeline (`icd`), artifact odds (`artifact`), gauge explorer (`gauge`), reaction curves (`curves`), enemy RES & DEF (`defres`), wish odds (`wish`), damage breakdown (`breakdown`).
-- One to three tiles (`MAX_SLOTS`): one below 1360px, two from 1360px, three from 2200px.
+- One instrument at a time by default (`DEFAULT_SLOTS`), because an instrument is worked in, not glanced at. Layout offers up to three side by side (`MAX_SLOTS`), capped by what fits: two from 1360px, three from 2200px. Design one up; side by side only has to work.
 - `/crit-visualizer` redirects here (`static/_redirects`).
-- The toolbar is cut by the tile gap, one segment per tile, with plates for controls. Each tile's defaults live in its ⋯; Share is "Copy link"; the Layout plate sits on the last tile. The Visualizers have no inspector.
+- The toolbar is cut by the tile gap, one segment per tile, with plates for controls. One up, the segment shows the eight as tabs where they fit (a container query on the cell) and the dropdown otherwise. Each tile's bar carries Defaults (dimmed at defaults, Undo in its toast), Copy link, and a ⋯ with How it works and Report a problem; the Layout plate sits on the last tile. The Visualizers have no inspector.
+- An instrument's defaults are its share state as it mounts (`register` in `+page.svelte`), so anything applied to an instrument (a link, a saved state) must arrive after its handle binds.
 
 ## The tile is the viewport
 

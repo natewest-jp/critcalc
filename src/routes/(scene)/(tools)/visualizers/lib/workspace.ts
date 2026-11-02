@@ -17,14 +17,16 @@ export const INSTRUMENTS = [
 	// ⚓ Nate 2026-10-02: the picker's order is CONCEPTUAL — the two defaults
 	// first, then the mechanics (ICD, reactions), the damage maths, and the
 	// two dice (artifacts, wishes) last.
-	{ id: 'crit', name: 'Crit heatmap' },
-	{ id: 'gauge', name: 'Gauge explorer' },
-	{ id: 'icd', name: 'ICD timeline' },
-	{ id: 'curves', name: 'Reaction curves' },
-	{ id: 'breakdown', name: 'Damage breakdown' },
-	{ id: 'defres', name: 'Enemy RES & DEF' },
-	{ id: 'artifact', name: 'Artifact odds' },
-	{ id: 'wish', name: 'Wish odds' }
+	// `help` is the instrument's section id in Help's Visualizers chapter
+	// (`$lib/help/chapters/Visualizers.svelte`), which the tile's ⋯ links to.
+	{ id: 'crit', name: 'Crit heatmap', help: 'crit-heatmap' },
+	{ id: 'gauge', name: 'Gauge explorer', help: 'gauge-explorer' },
+	{ id: 'icd', name: 'ICD timeline', help: 'icd-timeline' },
+	{ id: 'curves', name: 'Reaction curves', help: 'reaction-curves' },
+	{ id: 'breakdown', name: 'Damage breakdown', help: 'damage-breakdown' },
+	{ id: 'defres', name: 'Enemy RES & DEF', help: 'enemy-res-def' },
+	{ id: 'artifact', name: 'Artifact odds', help: 'artifact-odds' },
+	{ id: 'wish', name: 'Wish odds', help: 'wish-odds' }
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
@@ -66,10 +68,20 @@ export function viewportCapacity(vw: number): number {
  */
 export type SlotPref = 'auto' | number;
 
-/** Repair a stored preference: anything that isn't a whole 1..MAX_SLOTS is 'auto'. */
+/**
+ * ⚓ ONE INSTRUMENT AT A TIME is the default at every width (Nate 2026-11-02,
+ * the Visualizers overhaul: `docs/rounds/viz-workspace-bars-2026-11-02.md`).
+ * An instrument is a thing you work in, and a half-width tile put the control
+ * you drag below the fold in four of six pairings measured at 1440×900. Side
+ * by side is the reader's choice, from Layout.
+ */
+export const DEFAULT_SLOTS: SlotPref = 1;
+
+/** Repair a stored preference: anything that isn't 'auto' or a whole 1..MAX_SLOTS is the default. */
 export function normalizeSlots(stored: unknown): SlotPref {
-	if (typeof stored !== 'number' || !Number.isInteger(stored)) return 'auto';
-	if (stored < 1 || stored > MAX_SLOTS) return 'auto';
+	if (stored === 'auto') return 'auto';
+	if (typeof stored !== 'number' || !Number.isInteger(stored)) return DEFAULT_SLOTS;
+	if (stored < 1 || stored > MAX_SLOTS) return DEFAULT_SLOTS;
 	return stored;
 }
 
@@ -109,32 +121,38 @@ export function normalizeAssignment(stored: unknown): InstrumentId[] {
 /** Everything the workspace persists: which instruments, and how many at once. */
 export type StoredWorkspace = { assignment: InstrumentId[]; slots: SlotPref };
 
-/**
- * Read the persisted workspace (already normalized), or null when absent.
- * No version bump for `slots`: a v1 payload written before the slot control
- * existed simply has no `slots` key and normalizes to 'auto' — which IS the
- * pre-control behavior, so old layouts restore unchanged.
- */
+/** Read the persisted workspace (already normalized), or null when absent. */
 export function loadWorkspace(): StoredWorkspace | null {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (!raw) return null;
-		const parsed: unknown = JSON.parse(raw);
-		if (typeof parsed !== 'object' || parsed === null) return null;
-		const data = parsed as { v?: unknown; assignment?: unknown; slots?: unknown };
-		if (data.v !== 1) return null;
-		return {
-			assignment: normalizeAssignment(data.assignment),
-			slots: normalizeSlots(data.slots)
-		};
+		return parseWorkspace(JSON.parse(raw));
 	} catch {
 		return null;
 	}
 }
 
+/**
+ * Read a stored workspace record. v1 was written while 'auto' was the
+ * default, and it saved the preference whether or not the reader ever
+ * touched it, so a v1 'auto' (or a v1 with no `slots`) cannot be told
+ * apart from "never chose": it takes today's default. A count a v1 reader
+ * did pick (1, 2 or 3) was a choice, and is kept. v2 is taken as written.
+ */
+export function parseWorkspace(parsed: unknown): StoredWorkspace | null {
+	if (typeof parsed !== 'object' || parsed === null) return null;
+	const data = parsed as { v?: unknown; assignment?: unknown; slots?: unknown };
+	if (data.v !== 1 && data.v !== 2) return null;
+	const slots =
+		data.v === 1 && (data.slots === 'auto' || data.slots === undefined)
+			? DEFAULT_SLOTS
+			: normalizeSlots(data.slots);
+	return { assignment: normalizeAssignment(data.assignment), slots };
+}
+
 export function saveWorkspace(assignment: InstrumentId[], slots: SlotPref): void {
 	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 1, assignment, slots }));
+		localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 2, assignment, slots }));
 	} catch {
 		// storage full / privacy mode — layout just won't persist
 	}

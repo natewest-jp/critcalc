@@ -9,6 +9,8 @@ import {
 	icdHitsToGaugeApps,
 	normalizeAssignment,
 	normalizeSlots,
+	parseWorkspace,
+	DEFAULT_SLOTS,
 	viewportCapacity
 } from './workspace';
 import { simulateIcd, uniformHitTimes, STANDARD_ICD } from '$lib/utils/icd';
@@ -74,17 +76,48 @@ describe('normalizeSlots', () => {
 		expect(normalizeSlots('auto')).toBe('auto');
 	});
 
-	it("falls back to 'auto' for anything else", () => {
+	it('falls back to the default for anything else', () => {
 		for (const bad of [null, undefined, 0, -1, MAX_SLOTS + 1, 1.5, NaN, '2', {}, [], () => {}]) {
-			expect(normalizeSlots(bad)).toBe('auto');
+			expect(normalizeSlots(bad)).toBe(DEFAULT_SLOTS);
 		}
 	});
 
-	it("treats a payload written before the control existed as 'auto'", () => {
-		// The v1 envelope gained `slots` without a version bump: an older record
-		// has no such key, and must restore to the pre-control behavior.
-		const legacy = { v: 1, assignment: [...DEFAULT_ASSIGNMENT] } as { slots?: unknown };
-		expect(normalizeSlots(legacy.slots)).toBe('auto');
+	it('defaults to one instrument at a time', () => {
+		expect(DEFAULT_SLOTS).toBe(1);
+	});
+});
+
+describe('parseWorkspace', () => {
+	const assignment = [...DEFAULT_ASSIGNMENT];
+
+	it("moves a v1 'auto' to the new default: v1 saved it whether or not it was chosen", () => {
+		expect(parseWorkspace({ v: 1, assignment, slots: 'auto' })?.slots).toBe(DEFAULT_SLOTS);
+	});
+
+	it('moves a v1 written before the slot control existed to the default', () => {
+		expect(parseWorkspace({ v: 1, assignment })?.slots).toBe(DEFAULT_SLOTS);
+	});
+
+	it('keeps a count a v1 reader picked', () => {
+		for (let n = 1; n <= MAX_SLOTS; n++) {
+			expect(parseWorkspace({ v: 1, assignment, slots: n })?.slots).toBe(n);
+		}
+	});
+
+	it("keeps a v2 'auto', which only a choice can write", () => {
+		expect(parseWorkspace({ v: 2, assignment, slots: 'auto' })?.slots).toBe('auto');
+	});
+
+	it('keeps the assignment, repaired', () => {
+		expect(parseWorkspace({ v: 2, assignment: ['wish', 'nope'], slots: 1 })?.assignment[0]).toBe(
+			'wish'
+		);
+	});
+
+	it('refuses an unknown version or a non-object', () => {
+		expect(parseWorkspace({ v: 3, assignment, slots: 1 })).toBeNull();
+		expect(parseWorkspace(null)).toBeNull();
+		expect(parseWorkspace('x')).toBeNull();
 	});
 });
 

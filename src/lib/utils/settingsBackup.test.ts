@@ -7,7 +7,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseBackup, BACKUP_VERSION, type BackupEnvelope } from './settingsBackup';
+import {
+	parseBackup,
+	sanitizeVizWorkspace,
+	BACKUP_VERSION,
+	type BackupEnvelope
+} from './settingsBackup';
 
 function envelope(data: Record<string, unknown>): string {
 	const env: BackupEnvelope = {
@@ -315,6 +320,15 @@ describe('parseBackup', () => {
 			slots: 2
 		});
 		expect(res.counts.openTabs).toBe(2);
+	});
+
+	it('keeps a v2 workspace (one up became the default) as v2', () => {
+		expect(sanitizeVizWorkspace({ v: 2, assignment: ['wish', 4], slots: 'auto' })).toEqual({
+			v: 2,
+			assignment: ['wish'],
+			slots: 'auto'
+		});
+		expect(sanitizeVizWorkspace({ v: 3, assignment: [] })).toBeUndefined();
 	});
 
 	it('loads a v1 file, which has no open documents, and touches none of them', () => {

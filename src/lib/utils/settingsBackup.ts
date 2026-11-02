@@ -385,9 +385,11 @@ function sanitizeRecentlyClosed(
 /** The Visualizers' `loadWorkspace` repairs the assignment against the current
  *  instrument roster on read, so this keeps only the envelope it accepts. */
 export function sanitizeVizWorkspace(v: unknown): Record<string, unknown> | undefined {
-	if (!isObject(v) || v.v !== 1 || !Array.isArray(v.assignment)) return undefined;
+	// v2 (2026-11-02): one up became the default, so a v1 'auto' reads as one
+	// up on restore (workspace.ts `parseWorkspace`). Kept at the version written.
+	if (!isObject(v) || (v.v !== 1 && v.v !== 2) || !Array.isArray(v.assignment)) return undefined;
 	const clean: Record<string, unknown> = {
-		v: 1,
+		v: v.v,
 		assignment: v.assignment.filter((id) => typeof id === 'string')
 	};
 	if (typeof v.slots === 'number' || v.slots === 'auto') clean.slots = v.slots;
