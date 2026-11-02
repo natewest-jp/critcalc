@@ -168,7 +168,7 @@
 			s.pity = clampPity(BANNERS.character, r.pity);
 			s.guaranteed = r.replay.guaranteed;
 			s.counter = r.replay.counter;
-			listing = false;
+			finding = true;
 			listed = [];
 		} catch {
 			importError = 'not-a-workbook';
@@ -203,7 +203,7 @@
 	// By hand: every 5★ since the last Radiance (or since 5.0), featured or not.
 	// The replay works out which were 50/50s, so a guarantee can't be entered
 	// as a win.
-	let listing = $state(false);
+	let finding = $state(false);
 	let listed = $state<boolean[]>([]);
 	const listedReplay = $derived(replay(listed));
 	function setListed(next: boolean[]) {
@@ -360,7 +360,7 @@
 	export function reset() {
 		imported = null;
 		importError = null;
-		listing = false;
+		finding = false;
 		listed = [];
 		target = 'character';
 		pulls = DEFAULT_PULLS;
@@ -394,7 +394,7 @@
 		const s = state as Record<string, unknown>;
 		imported = null;
 		importError = null;
-		listing = false;
+		finding = false;
 		listed = [];
 		const readPulls = (v: unknown) => {
 			if (typeof v === 'number' && Number.isFinite(v))
@@ -673,29 +673,42 @@
 					{RULES[id].guarantee}
 				</label>
 				{#if id === 'character'}
-					<div class="wi-levels">
+					<div class="wi-counter">
 						<span class="slider-label" id="wi-counter">Radiance counter</span>
-						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-counter">
-							{#each COUNTERS as k (k ?? 'unknown')}
-								<button
-									class="chip chip--control"
-									class:active={s.counter === k}
-									aria-pressed={s.counter === k}
-									onclick={() => (states.character.counter = k)}
-								>
-									{k === null ? 'Don’t know' : k}
-								</button>
-							{/each}
+						<div class="wi-counter-row">
+							<div class="chips wi-level-chips" role="group" aria-labelledby="wi-counter">
+								{#each COUNTERS as k (k ?? 'unknown')}
+									<button
+										class="chip chip--control"
+										class:active={s.counter === k}
+										aria-pressed={s.counter === k}
+										onclick={() => (states.character.counter = k)}
+									>
+										{k === null ? 'Don’t know' : k}
+									</button>
+								{/each}
+							</div>
+							<button
+								class="btn btn--sm"
+								class:is-active={finding}
+								aria-expanded={finding}
+								aria-controls="wi-find"
+								onclick={() => (finding = !finding)}
+							>
+								Find mine
+							</button>
 						</div>
 					</div>
+
+					<!-- One note for the guarantee and the counter together: what comes next. -->
 					{#if s.counter === null}
 						<p class="note">
 							Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
 							including Capturing Radiance).
-							<span class="wi-fine"
-								>Set your Radiance counter to use the community’s model of how Capturing Radiance
-								works instead.</span
-							>
+						</p>
+					{:else if s.counter === 3 && s.guaranteed}
+						<p class="note">
+							Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
 						</p>
 					{:else if s.counter === 3}
 						<p class="note">
@@ -704,115 +717,99 @@
 					{:else if s.counter === 2}
 						<p class="note">
 							You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
-							Capturing Radiance.
-							<span class="wi-fine"
-								>How small isn’t known. We use {Math.round(RADIANCE_CHANCE[2] * 100)}%, which makes
-								the long-run rate the official 55%; community estimates run from 2% to 20%.</span
-							>
+							Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
 						</p>
 					{:else}
-						<p class="note">
-							Your next 50/50 is an even one.
-							<span class="wi-fine"
-								>Each lost 50/50 adds one to the counter and each win takes one off. At 3, your next
-								50/50 is a Capturing Radiance.</span
-							>
-						</p>
+						<p class="note">Your next 50/50 is an even one.</p>
 					{/if}
 
-					<div class="wi-history">
-						<div class="wi-actions">
-							<button class="btn btn--sm" disabled={reading} onclick={() => fileInput?.click()}>
-								Read a Paimon.moe export
-							</button>
-							<button
-								class="btn btn--sm"
-								class:is-active={listing}
-								aria-expanded={listing}
-								onclick={() => (listing = !listing)}
-							>
-								Work it out
-							</button>
-							<input
-								bind:this={fileInput}
-								type="file"
-								accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-								class="wi-file"
-								onchange={(e) => importFile(e.currentTarget.files?.[0])}
-							/>
-						</div>
+					<input
+						bind:this={fileInput}
+						type="file"
+						accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+						class="wi-file"
+						onchange={(e) => importFile(e.currentTarget.files?.[0])}
+					/>
+					{#if finding}
+						<div class="wi-find" id="wi-find">
+							<div class="wi-actions">
+								<button class="btn btn--sm" disabled={reading} onclick={() => fileInput?.click()}>
+									Read a Paimon.moe export
+								</button>
+								<span class="wi-fine">The file stays on your device.</span>
+							</div>
 
-						{#if importError}
-							<p class="note wi-error" role="alert">
-								{#if importError === 'not-a-workbook'}
-									That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and
-									choose Export to Excel.
-								{:else if importError === 'not-paimon'}
-									That spreadsheet isn’t a Paimon.moe wish history export.
-								{:else}
-									That export has no character banner wishes in it.
-								{/if}
-							</p>
-						{/if}
-
-						{#if imported}
-							{@const r = imported.result}
-							{@const since = sinceRadiance(r.replay.steps)}
-							{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
-							<div class="wi-imported" role="status">
-								<p class="note">
-									Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
-									{dayOf(r.last)}.
+							{#if importError}
+								<p class="note wi-error" role="alert">
+									{#if importError === 'not-a-workbook'}
+										That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings
+										and choose Export to Excel.
+									{:else if importError === 'not-paimon'}
+										That spreadsheet isn’t a Paimon.moe wish history export.
+									{:else}
+										That export has no character banner wishes in it.
+									{/if}
 								</p>
-								{#if since.length > 0}
-									<span class="slider-label">
-										{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
-									</span>
-									{@render strip(since)}
-								{:else if lastRadiance?.time}
+							{/if}
+
+							{#if imported}
+								{@const r = imported.result}
+								{@const since = sinceRadiance(r.replay.steps)}
+								{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
+								<div class="wi-find-part" role="status">
 									<p class="note">
-										No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.
+										Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(
+											r.first
+										)} to
+										{dayOf(r.last)}.
 									</p>
-								{/if}
-								{#if r.first.slice(0, 10) > RADIANCE_SINCE}
-									<p class="wi-fine">
-										If you wished on the character banners before {dayOf(r.first)}, the counter may
-										be off.
+									{#if since.length > 0}
+										<span class="slider-label">
+											{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
+										</span>
+										{@render strip(since)}
+									{:else if lastRadiance?.time}
+										<p class="note">
+											No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.
+										</p>
+									{/if}
+									{#if r.first.slice(0, 10) > RADIANCE_SINCE}
+										<p class="wi-fine">
+											If you wished on the character banners before {dayOf(r.first)}, the counter
+											may be off.
+										</p>
+									{/if}
+									<div class="wi-actions">
+										<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+									</div>
+								</div>
+							{:else}
+								<div class="wi-find-part">
+									<p class="note">
+										Or list each 5★ since your last Radiance (or since 5.0), oldest first:
 									</p>
-								{/if}
-								<div class="wi-actions">
-									<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+									<div class="wi-actions">
+										<button class="btn btn--sm" onclick={() => setListed([...listed, true])}>
+											Featured
+										</button>
+										<button class="btn btn--sm" onclick={() => setListed([...listed, false])}>
+											Not featured
+										</button>
+										<button
+											class="btn btn--sm"
+											disabled={listed.length === 0}
+											onclick={() => setListed(listed.slice(0, -1))}
+										>
+											Undo
+										</button>
+									</div>
+									{#if listed.length > 0}
+										{@render strip(listedReplay.steps)}
+									{/if}
 								</div>
-							</div>
-						{:else if listing}
-							<div class="wi-listing">
-								<p class="note">
-									Add each 5★ you’ve pulled on the character banners since your last Capturing
-									Radiance (or since 5.0, if you haven’t had one), oldest first.
-								</p>
-								<div class="wi-actions">
-									<button class="btn btn--sm" onclick={() => setListed([...listed, true])}>
-										Featured
-									</button>
-									<button class="btn btn--sm" onclick={() => setListed([...listed, false])}>
-										Not featured
-									</button>
-									<button
-										class="btn btn--sm"
-										disabled={listed.length === 0}
-										onclick={() => setListed(listed.slice(0, -1))}
-									>
-										Undo
-									</button>
-								</div>
-								{#if listed.length > 0}
-									{@render strip(listedReplay.steps)}
-								{/if}
-							</div>
-						{:else}
-							<p class="wi-fine">The file is read on your device and isn’t uploaded.</p>
-						{/if}
-					</div>
+							{/if}
+						</div>
+					{/if}
 				{:else if id === 'fourStar'}
 					<p class="note">
 						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
@@ -1002,17 +999,34 @@
 		display: none;
 	}
 
-	.wi-history,
-	.wi-imported,
-	.wi-listing {
+	.wi-counter {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.wi-counter-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem 0.6rem;
+	}
+
+	/* "Find mine": the two ways to read the counter, closed until asked for */
+	.wi-find,
+	.wi-find-part {
 		display: grid;
 		gap: 0.5rem;
+	}
+
+	.wi-find {
+		gap: 0.75rem;
 	}
 
 	.wi-actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
+		align-items: center;
+		gap: 0.35rem 0.6rem;
 	}
 
 	.wi-error {

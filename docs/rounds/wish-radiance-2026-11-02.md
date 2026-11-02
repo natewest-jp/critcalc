@@ -51,6 +51,23 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
 - Left out: the 4★ guarantee (needs every banner's featured 4★s) and the weapon banner's fate
   point (resets with the banner; the export doesn't record the charted weapon).
 
+## 4a. The layout, condensed (⚓ Nate: "the panel is full and complex")
+
+- ⚓ One controls panel still (the 2026-10-04 ruling: separate panels split around "Pulling
+  for" in a shared tile). Condensed inside it instead.
+- The guarantee and the counter sit together but stay two controls, so the guarantee alone
+  works as before. One note under both says what comes next. Guarantee + 3 is the "double
+  guarantee": "Your next two featured 5★s are certain."
+- **Find mine**, a button at the end of the counter row, opens both ways to read the counter
+  (the import, then the by-hand list). It opens on its own when a file is dropped, to show the
+  report.
+- The fine print on how the counter moves went to Help's Wish odds paragraph, rewritten for
+  the counter.
+- Considered and not taken: a second panel; one control merging guarantee and counter (it
+  would tie guarantee-only players to the counter); merging You have and Aiming for into one
+  range row (a new interaction, held in case the section still feels heavy).
+- Section height with Find mine closed: 393px at a 1600px tile.
+
 ## 5. Share links
 
 `v: 3` carries the counter on the character banner; a `v: 2` link opens as "Don’t know".
@@ -58,6 +75,7 @@ evidence and its open questions: `docs/library/game/capturing-radiance.md`.
 ## 6. Gates
 
 Vitest 2692 passed (Wish 42, history 13, reader 4), svelte-check clean, lint clean, build. Chrome
-e2e 71 passed. Driven in headless Chrome against the production build: every counter state,
+e2e 71 passed (after §4a: 70 passed and 1 flaky, `site-chrome.spec.ts` "the brand holds still
+from the landing into a tool", passing on retry; it doesn't touch the visualizers). Driven in headless Chrome against the production build: every counter state,
 the import of the real export, Undo, the by-hand list, a wrong file, and 0px overflow at 390px,
 with no page errors.

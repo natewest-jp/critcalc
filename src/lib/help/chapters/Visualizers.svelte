@@ -251,11 +251,20 @@
 		while pulling isn’t counted, since how much you get depends on what you pull.
 	</p>
 	<p>
-		You win a 50/50 about 55% of the time, Capturing Radiance included (its exact rules aren’t
-		public, so every 50/50 is taken as a flat 55%). A featured 4★ comes about 22% of the time for
-		each 4★ you pull, and a lost 4★ 50/50 never gives you one of the banner’s featured 4★s. (The
-		rate-up 4★ characters on the banner are excluded from the standard pool temporarily for that
-		banner.)
+		You win a 50/50 about 55% of the time, Capturing Radiance included: that’s the official rate,
+		and what the chart uses until you set your <strong>Radiance counter</strong>. With it set, the
+		chart follows the community’s model instead. A hidden counter starts at 1 from version 5.0, goes
+		up by one for each 50/50 you lose and down by one for each you win (a guarantee doesn’t move
+		it), and at 3 your next 50/50 is a Capturing Radiance, which sets it back to 1.
+		<strong>Find mine</strong> reads your counter, pity and guarantee from a Paimon.moe export, or works
+		the counter out from the 5★s you list. The model comes from OneBST’s analysis of four million wishes,
+		and no history has been found that breaks it; its one unknown is the chance of a Radiance at 2, where
+		we use 9%.
+	</p>
+	<p>
+		A featured 4★ comes about 22% of the time for each 4★ you pull, and a lost 4★ 50/50 never gives
+		you one of the banner’s featured 4★s. (The rate-up 4★ characters on the banner are excluded from
+		the standard pool temporarily for that banner.)
 	</p>
 	<p>
 		On the weapon banner, a Fate Point charts the weapon you want; without one it’s 37.5% for each

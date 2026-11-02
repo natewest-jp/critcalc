@@ -130,19 +130,21 @@ The Character Event section gained a counter, an import and a by-hand list
 Paimon.moe labels, not a translation of ours).
 
 - **Radiance counter** (label, uppercased by CSS) and its chips **Don’t know · 0 · 1 · 2 ·
-  3**. ⚠️ The chip row shares the tight "You have" width; "Don’t know" is the long one.
-- **The four notes under it**, one per state. Player's vantage (§1.10). Counter 2's fine print
-  carries a number computed from `RADIANCE_CHANCE[2]` (9) and two fixed ones (2%, 20%, the
-  community's range).
-- **Read a Paimon.moe export** · **Work it out** (buttons) · "The file is read on your device
-  and isn’t uploaded." (fine print under them until either is used).
-- **The import's report:** "Read {n} character banner wishes, {first} to {last}." (dates via
-  `Intl`, en-US long form) · "Since your last Radiance" / "Since 5.0" (strip label) · "No 50/50s
-  since your last Radiance, on {date}." · "If you wished on the character banners before {date},
-  the counter may be off." · **Undo**.
+  3**, then **Find mine** (a button that opens the two ways to read it). ⚠️ The chips share the
+  tight "You have" width; "Don’t know" is the long one.
+- **One note for the guarantee and the counter together**, one sentence per state: the 55% line
+  (Don’t know) · "Your next two featured 5★s are certain: the guarantee, then a Capturing
+  Radiance." (3 with a guarantee) · the Radiance line (3) · counter 2's, whose "we estimate
+  {n}%" is computed from `RADIANCE_CHANCE[2]` · "Your next 50/50 is an even one." (0 or 1).
+  Player's vantage (§1.10). How the counter moves is Help's job.
+- **Inside Find mine:** **Read a Paimon.moe export** and "The file stays on your device." ·
+  the import's report: "Read {n} character banner wishes, {first} to {last}." (dates via
+  `Intl`, en-US long form), "Since your last Radiance" / "Since 5.0" (strip label), "No 50/50s
+  since your last Radiance, on {date}.", "If you wished on the character banners before
+  {date}, the counter may be off.", **Undo** · otherwise the by-hand list: "Or list each 5★
+  since your last Radiance (or since 5.0), oldest first:", **Featured** · **Not featured** ·
+  **Undo**, and the step names **Lost · Guarantee · Won · Radiance** (short; pills).
 - **Its three errors**, one per `ImportError`. The first tells the player where Paimon.moe's
   export is.
-- **The by-hand list:** its instruction, **Featured** · **Not featured** · **Undo**, and the
-  strip's four step names **Lost · Guarantee · Won · Radiance** (short; pills).
 - **Readout:** "On average, {label} would take {mean} pulls from here, and at most {max}." §1.8.
   The 4★ has no maximum and keeps the old sentence.
