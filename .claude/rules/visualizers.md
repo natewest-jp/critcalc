@@ -14,6 +14,7 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 - `/crit-visualizer` redirects here (`static/_redirects`).
 - The toolbar is cut by the tile gap, one segment per tile, with plates for controls. One up, the segment shows the eight as tabs where they fit (a container query on the cell) and the dropdown otherwise. Each tile's bar carries Defaults (dimmed at defaults, Undo in its toast), Copy link, and a ⋯ with How it works and Report a problem; the Layout plate sits on the last tile. The Visualizers have no inspector.
 - An instrument's defaults are its share state as it mounts (`register` in `+page.svelte`), so anything applied to an instrument (a link, a saved state) must arrive after its handle binds.
+- Each instrument's state is kept in the active profile (`ProfileRecord.instruments`, written by `storageSession.saveInstrument`), as its share state. So the share state is the instrument's whole remembered state: what it leaves out is forgotten on a reload, and a share-state version bump must still read the older versions profiles hold.
 
 ## The tile is the viewport
 
