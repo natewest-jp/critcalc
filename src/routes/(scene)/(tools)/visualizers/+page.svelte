@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { notices } from '$lib/notices.svelte';
+	import { named, notices } from '$lib/notices.svelte';
+	import { chapterSection, menu } from '$lib/menuState.svelte';
 	import { onMount, tick } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -13,12 +14,14 @@
 	import WishInstrument from './lib/WishInstrument.svelte';
 	import BreakdownInstrument from './lib/BreakdownInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
+	import InstrumentTabs from './lib/InstrumentTabs.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import ReportLink from '$lib/components/ReportLink.svelte';
 	import {
 		DEFAULT_ASSIGNMENT,
+		DEFAULT_SLOTS,
 		INSTRUMENTS,
 		MAX_SLOTS,
 		effectiveSlots,
@@ -67,7 +70,7 @@
 
 	let vw = $state(0);
 	const capacity = $derived(viewportCapacity(vw));
-	let slotPref = $state<SlotPref>('auto');
+	let slotPref = $state<SlotPref>(DEFAULT_SLOTS);
 	const slotCount = $derived(effectiveSlots(slotPref, capacity));
 
 	// Benched instruments don't mount until first slotted (then stay mounted so
@@ -99,7 +102,7 @@
 	onMount(() => {
 		const stored = loadWorkspace();
 		assignment = normalizeAssignment(stored?.assignment ?? DEFAULT_ASSIGNMENT);
-		slotPref = stored?.slots ?? 'auto';
+		slotPref = stored?.slots ?? DEFAULT_SLOTS;
 		restored = true;
 		afterPaint(releaseVeil);
 	});
@@ -125,14 +128,14 @@
 
 	// Layout only — instrument-internal state is deliberately untouched
 	// (nothing internal is persisted). The lineup size is layout too, so it
-	// goes back to following the viewport.
+	// goes back to the default count.
 	function resetWorkspace() {
 		assignment = [...DEFAULT_ASSIGNMENT];
-		slotPref = 'auto';
+		slotPref = DEFAULT_SLOTS;
 	}
 
-	/** The lineup control's options: follow the viewport, or cap at 1..MAX_SLOTS. */
-	const SLOT_OPTIONS: SlotPref[] = ['auto', ...Array.from({ length: MAX_SLOTS }, (_, i) => i + 1)];
+	/** The lineup control's options: cap at 1..MAX_SLOTS, or follow the viewport. */
+	const SLOT_OPTIONS: SlotPref[] = [...Array.from({ length: MAX_SLOTS }, (_, i) => i + 1), 'auto'];
 
 	// ── Instrument handles ─────────────────────────────────────────────────
 	// Optional per-instrument capabilities (share state in/out, handoff intake)
@@ -140,6 +143,48 @@
 	// Method calls, not mount-time props: with keep-alive a target may already
 	// be mounted when a link or handoff arrives.
 	let handles = $state<Partial<Record<InstrumentId, InstrumentHandle>>>({});
+
+	// ── Defaults on the bar (the Visualizers overhaul, round 1) ─────────────
+	// Each instrument's share state AS IT MOUNTS is its defaults: a handle
+	// binds before anything is applied to it (a link's state, and later a
+	// saved one, arrive after the mount — see afterNavigate below). Compared as
+	// JSON, the bar's Defaults is lit only when there is something to undo, so
+	// the button also tells you that you have moved something. Generic on
+	// purpose: no instrument has to declare its defaults twice.
+	let defaults = $state<Partial<Record<InstrumentId, string>>>({});
+	function register(id: InstrumentId, handle: InstrumentHandle | null | undefined) {
+		if (handle && defaults[id] === undefined && handle.getShareState) {
+			defaults[id] = JSON.stringify(handle.getShareState());
+		}
+		handles[id] = handle ?? undefined;
+	}
+	/** Read in the template, so it tracks every control the share state reads. */
+	function atDefaults(id: InstrumentId): boolean {
+		const h = handles[id];
+		if (!h?.getShareState || defaults[id] === undefined) return false;
+		return JSON.stringify(h.getShareState()) === defaults[id];
+	}
+	/** Defaults, with Undo: the toast hands the state back through the share
+	 *  path, which every instrument already sanitizes. */
+	function restoreDefaults(id: InstrumentId) {
+		const h = handles[id];
+		if (!h?.reset) return;
+		const before = h.getShareState?.();
+		h.reset();
+		const name = INSTRUMENTS.find((i) => i.id === id)?.name ?? id;
+		const apply = h.applyShareState;
+		notices.toast(
+			'success',
+			named`${name} is back to its defaults`,
+			before !== undefined && apply
+				? { actions: [{ label: 'Undo', run: () => apply(before) }] }
+				: {}
+		);
+	}
+	/** Help's Visualizers chapter, opened at this instrument's section. */
+	function openHelp(id: InstrumentId) {
+		menu.show(chapterSection('help', 'visualizers'), INSTRUMENTS.find((i) => i.id === id)?.help);
+	}
 
 	// ── `?i=` deep links ───────────────────────────────────────────────────
 	// afterNavigate, NOT onMount (Team Builder lessons): SPA mounts run before
@@ -277,15 +322,42 @@
 		     there is no longer a rail for a button to sit on. -->
 		<div class="ws-band" style:--ws-slots={slotCount} style:--ws-tile-gap="{TILE_GAP}px">
 			{#each assignment.slice(0, slotCount) as id, slot (id)}
-				<div class="ws-band-cell">
-					<InstrumentPicker
-						current={id}
-						{assignment}
-						{slotCount}
-						{slot}
-						onPick={(next) => pick(slot, next)}
-					/>
+				<div class="ws-band-cell" class:ws-band-cell--one={slotCount === 1}>
+					{#if slotCount === 1}
+						<!-- One up: the eight as tabs where the row fits, else the
+						     dropdown (the container queries below). -->
+						<div class="ws-tabs">
+							<InstrumentTabs
+								current={id}
+								onPick={(next) => pick(slot, next)}
+								panelId="ws-tile-{id}"
+							/>
+						</div>
+					{/if}
+					<div class="ws-picker">
+						<InstrumentPicker
+							current={id}
+							{assignment}
+							{slotCount}
+							{slot}
+							onPick={(next) => pick(slot, next)}
+						/>
+					</div>
 					<span class="ws-band-actions">
+						{#if handles[id]?.reset}
+							<!-- ⚓ On the bar, not in the ⋯ (Nate 2026-11-02): the reset
+							     players reach for. Dimmed while there is nothing to put
+							     back; Undo in its toast. -->
+							<button
+								class="btn btn--sm btn--glass"
+								disabled={atDefaults(id)}
+								onclick={() => restoreDefaults(id)}
+								title="Put this instrument’s controls back to their defaults"
+							>
+								<Mark name="reset" size={12} />
+								<span class="ws-band-word">Defaults</span>
+							</button>
+						{/if}
 						{#if handles[id]?.getShareState}
 							<button
 								class="btn btn--sm btn--glass"
@@ -307,16 +379,14 @@
 						<!-- Per TILE, so the report carries this instrument's link. -->
 						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
 							{#snippet items(close)}
-								{#if handles[id]?.reset}
-									<button
-										class="band-menu-item"
-										role="menuitem"
-										onclick={() => {
-											close();
-											handles[id]?.reset?.();
-										}}><Mark name="reset" /> Defaults</button
-									>
-								{/if}
+								<button
+									class="band-menu-item"
+									role="menuitem"
+									onclick={() => {
+										close();
+										openHelp(id);
+									}}><Mark name="help" /> How it works</button
+								>
 								<ReportLink
 									class="band-menu-item"
 									role="menuitem"
@@ -348,7 +418,12 @@
 		<div class="ws" style:--ws-slots={slotCount} style:--ws-tile-gap="{TILE_GAP}px">
 			{#each INSTRUMENTS as inst (inst.id)}
 				{@const slot = slotOf(inst.id)}
-				<section class="ws-tile" class:ws-hidden={slot === -1} style:order={slot}>
+				<section
+					id="ws-tile-{inst.id}"
+					class="ws-tile"
+					class:ws-hidden={slot === -1}
+					style:order={slot}
+				>
 					<!-- THE TILE IS THE VIEWPORT (2026-08-17). See .ws-body's rule for
 					     what was wrong before; the mask is unconditional and inert
 					     until there is something to scroll, which is what makes it
@@ -356,24 +431,30 @@
 					<div class="ws-body scroll-fade" use:scrollFade>
 						{#if slot !== -1 || everSlotted.has(inst.id)}
 							{#if inst.id === 'crit'}
-								<CritInstrument bind:this={handles.crit} />
+								<CritInstrument bind:this={() => handles.crit, (h) => register('crit', h)} />
 							{:else if inst.id === 'icd'}
 								<IcdInstrument
-									bind:this={handles.icd}
+									bind:this={() => handles.icd, (h) => register('icd', h)}
 									onHandoff={(msg) => deliverHandoff(msg, slot)}
 								/>
 							{:else if inst.id === 'artifact'}
-								<ArtifactInstrument bind:this={handles.artifact} />
+								<ArtifactInstrument
+									bind:this={() => handles.artifact, (h) => register('artifact', h)}
+								/>
 							{:else if inst.id === 'gauge'}
-								<GaugeInstrument bind:this={handles.gauge} />
+								<GaugeInstrument bind:this={() => handles.gauge, (h) => register('gauge', h)} />
 							{:else if inst.id === 'curves'}
-								<ReactionCurvesInstrument bind:this={handles.curves} />
+								<ReactionCurvesInstrument
+									bind:this={() => handles.curves, (h) => register('curves', h)}
+								/>
 							{:else if inst.id === 'defres'}
-								<DefResInstrument bind:this={handles.defres} />
+								<DefResInstrument bind:this={() => handles.defres, (h) => register('defres', h)} />
 							{:else if inst.id === 'wish'}
-								<WishInstrument bind:this={handles.wish} />
+								<WishInstrument bind:this={() => handles.wish, (h) => register('wish', h)} />
 							{:else if inst.id === 'breakdown'}
-								<BreakdownInstrument bind:this={handles.breakdown} />
+								<BreakdownInstrument
+									bind:this={() => handles.breakdown, (h) => register('breakdown', h)}
+								/>
 							{/if}
 						{/if}
 					</div>
@@ -427,6 +508,41 @@
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
 		min-width: 0;
+	}
+
+	/* The picker's wrapper takes the slack the picker itself used to (the
+	   nameplate is the long plate, InstrumentPicker § THE TILE'S NAMEPLATE). */
+	.ws-picker {
+		display: flex;
+		flex: 1;
+		min-width: 0;
+	}
+	.ws-tabs {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* ONE UP: tabs or the dropdown, by the CELL's width. The cell is the
+	   query container, so the question is "does the row fit beside the
+	   actions", whatever the window and the interface size.
+	   🎛️ 73rem, the literal in the query below: measured at the default
+	   interface size, the eight tabs are 850px and the four action plates
+	   300px, so the row needs 1154px of cell. 73rem (1168px) is the first
+	   whole rem above it, and a cell that wide comes with a window of about
+	   1232px. Re-measure if a name or an action changes. */
+	.ws-band-cell--one {
+		container: ws-cell / inline-size;
+	}
+	.ws-band-cell--one .ws-picker {
+		display: none;
+	}
+	@container ws-cell (width < 73rem) {
+		.ws-band-cell--one .ws-tabs {
+			display: none;
+		}
+		.ws-band-cell--one .ws-picker {
+			display: flex;
+		}
 	}
 
 	.ws-layout {

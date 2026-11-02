@@ -16,37 +16,60 @@ import type { Page } from '@playwright/test';
 const WORKSPACE_KEY = 'critcalc:vizWorkspace';
 
 /**
- * The instrument pickers, in slot order. Since the toolbar round they live in
- * BAND B, whose cells are laid out on the tile grid's own columns in slot order
- * — so the band IS the left-to-right reading.
+ * The instrument pickers, in slot order. They live in BAND B, whose cells are
+ * laid out on the tile grid's own columns in slot order — so the band IS the
+ * left-to-right reading. Side by side only: one up, the cell shows tabs.
  */
 const triggers = (page: Page) => page.locator('.ws-band-cell .ip-trigger');
 
+/** One up: the tab that is lit is the instrument on screen. */
+const currentTab = (page: Page) => page.locator('.it-tab[aria-selected="true"]');
+
 /**
- * Assert the whole lineup. `toHaveText` with an ARRAY checks the count and the
- * text together and retries until both settle — a one-shot read races the
- * second tile's lazy mount and sees a one-instrument lineup. (It did exactly
- * that on the first run of this spec.) Regexes, because each trigger's text
- * ends in whitespace around its mark.
+ * Assert the whole side-by-side lineup. `toHaveText` with an ARRAY checks the
+ * count and the text together and retries until both settle — a one-shot read
+ * races the second tile's lazy mount and sees a one-instrument lineup. (It did
+ * exactly that on the first run of this spec.) Regexes, because each trigger's
+ * text ends in whitespace around its mark.
  */
 const expectLineup = (page: Page, names: string[]) =>
 	expect(triggers(page)).toHaveText(names.map((n) => new RegExp(n)));
 
+/** Side by side, from the Layout plate — the reader's choice since one up became the default. */
+async function showTwo(page: Page) {
+	await page.locator('.band-menu-trigger', { hasText: 'Layout' }).click();
+	await page.locator('.ws-slots .btn', { hasText: '2' }).click();
+	await page.keyboard.press('Escape');
+}
+
+const defaultsButton = (page: Page) =>
+	page.locator('.ws-band-actions button', { hasText: 'Defaults' });
+
 test.describe('lineup and slots', () => {
-	test('first load shows the default two-slot lineup', async ({ page }) => {
+	test('first load shows one instrument, with all eight as tabs', async ({ page }) => {
 		await openTool(page, '/visualizers');
-		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
+		await expect(page.locator('.it-tab'), 'every instrument has a tab').toHaveCount(8);
+		await expect(currentTab(page)).toHaveText('Crit heatmap');
+		await expect(page.locator('.ws-tile:not(.ws-hidden)'), 'one tile').toHaveCount(1);
 
 		const actions = page.locator('.ws-band-actions .btn');
-		await expect(actions.filter({ hasText: 'Copy link' }), 'a link on both cells').toHaveCount(2);
-		// Each tile's Defaults lives in its own ⋯ (toolbar round, design §5.3).
-		await expect(
-			page.locator('.band-menu-trigger[aria-label="More instrument actions"]')
-		).toHaveCount(2);
+		await expect(actions.filter({ hasText: 'Copy link' })).toHaveCount(1);
+		await expect(defaultsButton(page), 'nothing to put back yet').toBeDisabled();
+	});
+
+	test('a tab switches the instrument, and the choice survives a reload', async ({ page }) => {
+		await openTool(page, '/visualizers');
+		await page.locator('.it-tab', { hasText: 'Wish odds' }).click();
+		await expect(currentTab(page)).toHaveText('Wish odds');
+
+		await page.reload({ waitUntil: 'networkidle' });
+		await expect(currentTab(page)).toHaveText('Wish odds');
 	});
 
 	test('picking an already-visible instrument swaps the two tiles', async ({ page }) => {
 		await openTool(page, '/visualizers');
+		await showTwo(page);
+		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
 		await page.locator('.ws-band-cell').first().locator('.ip-trigger').click();
 
 		await expect(page.locator('.ip-menu .ip-option'), 'all eight instruments').toHaveCount(8);
@@ -62,6 +85,7 @@ test.describe('lineup and slots', () => {
 
 	test('the layout survives a reload and resets on demand', async ({ page }) => {
 		await openTool(page, '/visualizers');
+		await showTwo(page);
 		await page.locator('.ws-band-cell').first().locator('.ip-trigger').click();
 		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge explorer' }).click();
 
@@ -71,20 +95,23 @@ test.describe('lineup and slots', () => {
 		// Reset layout sits in the toolbar's Layout plate (design §5.3).
 		await page.locator('.band-menu-trigger', { hasText: 'Layout' }).click();
 		await page.locator('.ws-reset').click();
-		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
+		await expect(currentTab(page), 'back to one up, on the first instrument').toHaveText(
+			'Crit heatmap'
+		);
 		const stored = await page.evaluate(
 			(k) => JSON.parse(localStorage.getItem(k) ?? 'null'),
 			WORKSPACE_KEY
 		);
-		expect(stored?.v).toBe(1);
-		expect(stored?.assignment?.[0], 'the reset persisted too').toBe('crit');
+		expect(stored?.v).toBe(2);
+		expect(stored?.slots, 'the reset persisted too').toBe(1);
+		expect(stored?.assignment?.[0]).toBe('crit');
 	});
 });
 
 test.describe('deep links', () => {
 	test('a bare ?i= slots its instrument first and strips the param', async ({ page }) => {
 		await openTool(page, '/visualizers?i=artifact');
-		await expect(triggers(page).first()).toHaveText(/Artifact odds/);
+		await expect(currentTab(page)).toHaveText('Artifact odds');
 		expect(page.url(), 'the param is consumed, not left in the URL').not.toContain('i=');
 	});
 
@@ -107,31 +134,29 @@ test.describe('deep links', () => {
 		});
 
 		await openTool(page, `/visualizers?i=${encodeURIComponent(param)}`);
-		await expect(triggers(page).first()).toHaveText(/Crit heatmap/);
+		await expect(currentTab(page)).toHaveText('Crit heatmap');
 		await expect(page.locator('.cv-value-input').first(), 'shared CR applied').toHaveValue('90');
 
-		// Per-instrument "Defaults" (in the tile's ⋯) restores that tile's own controls.
-		await page
-			.locator('.ws-band-cell')
-			.first()
-			.locator('.band-menu-trigger[aria-label="More instrument actions"]')
-			.click();
-		await page.locator('.band-menu-item', { hasText: 'Defaults' }).click();
+		// The bar's Defaults restores the tile's own controls, and its toast can undo it.
+		await defaultsButton(page).click();
 		await expect(page.locator('.cv-value-input').first(), 'CR back to its default').toHaveValue(
 			'70'
 		);
+		await expect(defaultsButton(page)).toBeDisabled();
+		await page.getByRole('button', { name: 'Undo' }).click();
+		await expect(page.locator('.cv-value-input').first(), 'Undo puts it back').toHaveValue('90');
 	});
 });
 
-test('the ICD timeline hands its hits off to a Gauge tile beside it', async ({ page }) => {
+test('the ICD timeline hands its hits off to the Gauge explorer', async ({ page }) => {
 	await openTool(page, '/visualizers?i=icd');
-	await expect(triggers(page).first()).toHaveText(/ICD timeline/);
+	await expect(currentTab(page)).toHaveText('ICD timeline');
 
 	const applying = parseInt(await page.locator('.icd-big').first().innerText(), 10);
 	await page.locator('.icd-send').click();
 
-	// The gauge opens BESIDE the source, not over it.
-	await expectLineup(page, ['ICD timeline', 'Gauge explorer']);
+	// One up, the gauge takes the tile (side by side, it opens beside the source).
+	await expect(currentTab(page)).toHaveText('Gauge explorer');
 	// The handoff caps at eight applications.
 	// ↻ 2026-08-17: counted on the CHART, not in the panel. `.gx-app` was one
 	// editor block per application and the panel is a single inspector now — so

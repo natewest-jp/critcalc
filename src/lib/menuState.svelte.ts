@@ -177,8 +177,14 @@ class MenuState {
 		return this.section !== null;
 	}
 
+	/** A place inside the section to open at: a chapter's `h2` id, read and
+	 *  cleared by the menu state once the chapter is on screen (a tool's
+	 *  "How it works" opens Help at that tool's own section). */
+	anchor = $state<string | null>(null);
+
 	/** Show a section: a new history entry, so Back returns to the last one. */
-	show(section: Section): void {
+	show(section: Section, anchor?: string): void {
+		this.anchor = anchor ?? null;
 		// Teams from inside a team's details goes back to the cards.
 		if (section === this.section && !page.state.teamDetail) return;
 		this.attempt(() => this.#push(section));

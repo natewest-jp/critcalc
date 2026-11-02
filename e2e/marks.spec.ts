@@ -101,7 +101,11 @@ test.describe('control glyphs are geometry, not type', () => {
 
 	test('visualizers — workspace and instrument picker', async ({ page }) => {
 		await openTool(page, '/visualizers');
-		await expectSwept(page, '.ip-trigger');
+		await expectSwept(page, '.it-row');
+		// One up shows tabs; the picker (and its menu's marks) is the side-by-side form.
+		await page.locator('.band-menu-trigger', { hasText: 'Layout' }).click();
+		await page.locator('.ws-slots .btn', { hasText: '2' }).click();
+		await page.keyboard.press('Escape');
 		await page.locator('.ip-trigger').first().click();
 		await expectSwept(page, '.ip-menu');
 	});

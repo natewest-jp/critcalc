@@ -12,7 +12,7 @@
   working copy.
 -->
 <script lang="ts">
-	import { onDestroy, type Component } from 'svelte';
+	import { onDestroy, tick, type Component } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -195,6 +195,17 @@
 	$effect(() => {
 		void section;
 		if (mainEl) mainEl.scrollTop = 0;
+	});
+	// …unless it was opened at a place in it (`menu.show`'s anchor). Waits for
+	// the chapter, which loads after the section shows, then jumps (no glide:
+	// it is where the page opens, not a move within it).
+	$effect(() => {
+		const id = menu.anchor;
+		if (!id || !ChapterC || !mainEl) return;
+		void tick().then(() => {
+			mainEl?.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.scrollIntoView({ block: 'start' });
+			menu.anchor = null;
+		});
 	});
 
 	// ── Settings' groups (2026-10-26): listed under Settings while you are
