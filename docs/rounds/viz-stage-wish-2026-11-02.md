@@ -1,6 +1,6 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage` in four passes (§7–§9), for Nate to look at in the local build. Not merged.
+**Status:** 🔨 built on `feat/viz-wish-stage` in five passes (§7–§10), for Nate to look at in the local build. Not merged.
 ⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
 §4 are Nate's; real Safari and iPhone.
 
@@ -176,5 +176,20 @@ Copy (proposed): none new. Help's Visualizers chapter still describes the worksp
   rather than by fit: side by side from 60rem, the headline never shrinking and a long setup
   bar wrapping inside itself; stacked below. Content-driven wrapping would rewrap mid-drag
   as the headline's digits change, moving the chart.
+
+Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 10. Fifth pass: tabs under the picker, the headline at the right, the bar over the chart
+
+Nate wanted to see a different arrangement:
+
+- **The view tabs under the instrument's picker, at every width.** The bar's views slot
+  (`viewSlots`, `viewsTarget`, the two copies and their container queries) is removed; the
+  picker keeps its 16rem cap and the actions hold the cell's far end.
+- **The headline right aligned, on the tabs' row** from a 60rem tile, under the tabs and
+  still at the right below that; one line from 38rem, as in §9. By the tile's width, for the
+  same reason as §9.
+- **The setup bar on its own row, right over the chart, centred.** A pair's two bars sit
+  side by side and centred where they fit.
 
 Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.

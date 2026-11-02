@@ -22,9 +22,9 @@ the answer), and the rest of the design serves that loop.
   🎛️ `--ws-picker-max` (16rem). ⚓ Nate: eight tabs, and more instruments to come, is a long
   row, and once an instrument is open the others aren't what you reach for (the Planner's
   document tabs went behind the Library for the same reason).
-- **The bar:** the picker, then the instrument's own view tabs where they fit (the views
-  slot), then Defaults, Copy link, ⋯ (How it works, Report a problem), and Layout on the last
-  tile. Defaults is dimmed at defaults and has Undo.
+- **The bar:** the picker, then Defaults, Copy link, ⋯ (How it works, Report a problem), and
+  Layout on the last tile. Defaults is dimmed at defaults and has Undo. The instrument's own
+  view tabs sit under the picker, in the stage (§6).
 
 ## 3. What is uniform and what varies
 
@@ -81,8 +81,9 @@ and the stage is now **one box** (⚓ Nate: "if we can simplify down to one box,
 many layout issues"):
 
 ```
-[ Wish odds ▾ ] [ view tabs ]                      [ Defaults ] [ Copy link ] [ ⋯ ]
-headline (the chart head)          [ setup bar: Pity 0 · Guarantee None · Goal C0 · … ]
+[ Wish odds ▾ ]                                     [ Defaults ] [ Copy link ] [ ⋯ ]
+[ view tabs ]                                        63.5% chance of C0 within 90 pulls
+              [ setup bar: Pity 0 · Guarantee None · Goal C0 · … ]
 ┌──────────────────────────────────────────────────────────────────┐
 │ the chart, full width: drag it, it is the control                 │
 │ companion strip, on the same x axis                               │
@@ -90,21 +91,18 @@ headline (the chart head)          [ setup bar: Pity 0 · Guarantee None · Goal
 fine print
 ```
 
-- **The view tabs** sit in the workspace bar, right of the picker, where the cell holds the
-  picker, the tabs and the actions in one row (⚓ Nate). Where it doesn't (two up, a phone),
-  they come down into the stage's head row, before the setup bar. The instrument renders both
-  copies and a container query on the cell's width shows one.
-- **The head row.** The headline on one line (the figure and its sentence on one baseline,
-  each at its own size) from a 38rem tile, with the setup bar beside it at the row's far end
-  from 60rem, bottom aligned; narrower, the controls sit under the headline, nearer the chart
-  (⚓ Nate). Decided by the tile's width, never by whether the content fits, because the
-  headline's length changes as you drag and a rewrap would move the chart under the hand.
-- **In the bar, the view tabs' track is the plate:** as tall as the picker and the actions,
-  with the lit tab inside it (⚓ Nate).
+- **The head row** (⚓ Nate): the view tabs under the instrument's picker, at every width,
+  and the headline at the row's far end, right aligned, on one line (the figure and its
+  sentence on one baseline, each at its own size) from a 38rem tile. Where the tile is under
+  60rem the headline goes under the tabs, still at the right. Decided by the tile's width,
+  never by whether the content fits, because the headline's length changes as you drag and a
+  rewrap would move the chart under the hand. (Tried and set aside the same day: the view
+  tabs in the workspace bar beside the picker, and the setup bar beside the headline.)
+- **The setup bar's row**, right over the chart and centred on it (⚓ Nate).
 - **Two materials.** The view tabs are a recessed track (one is chosen); the setup bar is a
   raised glass plate (each segment is a value you set). The first build gave every setting
-  its own plate on a row of its own, and with the instrument tabs above that was three rows
-  of identical buttons. Chart tools, where an instrument has them, follow the setup bar.
+  its own plate, and with the instrument tabs above that was three rows of identical
+  buttons. Chart tools, where an instrument has them, follow the setup bar.
 - **The setup bar.** Every per-session and set-once setting is a segment that shows its value
   and opens a popover: the guarantee too, as a value ("Held", "None"), not a toggle, so the
   bar has one grammar. A list is one segment that says what is on ("Shred: Chevreuse 40%,

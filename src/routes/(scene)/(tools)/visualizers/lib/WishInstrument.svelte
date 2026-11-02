@@ -28,28 +28,6 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 
-	let {
-		viewsTarget
-	}: {
-		/** The workspace bar's views slot, right of the instrument picker. Where
-		 *  the bar has room for them, the view tabs show there; elsewhere they
-		 *  stay in the stage (both copies render; the CSS shows one). */
-		viewsTarget?: HTMLElement;
-	} = $props();
-
-	/** Moves a node into another element: the view tabs into the bar's slot. */
-	function into(node: HTMLElement, target: HTMLElement) {
-		target.appendChild(node);
-		return {
-			update(next: HTMLElement) {
-				next.appendChild(node);
-			},
-			destroy() {
-				node.remove();
-			}
-		};
-	}
-
 	/** The most pulls the instrument takes, typed or shared. */
 	const MAX_PULLS = 2000;
 
@@ -781,16 +759,10 @@
 	{/if}
 {/snippet}
 
-{#snippet viewTabs(where: 'bar' | 'stage')}
+{#snippet viewTabs()}
 	<!-- What you're pulling for picks what the chart draws: the instrument's
-	     view tabs. Two copies when the bar has a slot: `bar` (moved there) and
-	     `stage`, and the CSS shows the one that fits (`--handed`). -->
-	<div
-		class="segment wi-tabs wi-tabs--{where}"
-		class:wi-tabs--handed={where === 'stage' && !!viewsTarget}
-		role="radiogroup"
-		aria-label="Pulling for"
-	>
+	     view tabs, under its picker. -->
+	<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
 		{#each TARGETS as t (t.id)}
 			<button
 				class="btn"
@@ -818,17 +790,17 @@
 	</ol>
 {/snippet}
 
-<!-- THE STAGE (design §6, the first instrument on it). One box: the controls
-     row (the view tabs, then the setup bar), the chart head, the chart with
-     its companion, and the handle. No answer card: what the card held is
+<!-- THE STAGE (design §6, the first instrument on it). One box: the head row
+     (the view tabs and the headline), the setup bar, the chart with its
+     companion, and the handle. No answer card: what the card held is
      drawn on the chart, or sits in the popover of the setting it explains. -->
 <div class="wi-root">
 	<div class="wi-stage ctx-dark">
-		<!-- THE HEAD ROW (Nate 2026-11-02): the headline, and beside it the
-		     controls (the view tabs where the bar had no room for them, then the
-		     setup bar). Where they don't fit beside it, the controls wrap below
-		     the headline, nearer the chart they change. -->
+		<!-- THE HEAD ROW (Nate 2026-11-02): the instrument's view tabs, under its
+		     picker, and the headline at the row's far end; under the tabs where
+		     the tile is too narrow for both. -->
 		<div class="wi-head-row">
+			{@render viewTabs()}
 			<!-- The chart head (design §6): the answer, where the chart is. It
 			     follows the handle and a drag on the chart. -->
 			<p class="readout-head wi-head">
@@ -836,147 +808,143 @@
 					>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
 				>
 			</p>
+		</div>
 
-			<div class="wi-controls">
-				{#if viewsTarget}
-					<div class="wi-views-mover" use:into={viewsTarget}>{@render viewTabs('bar')}</div>
-				{/if}
-				{@render viewTabs('stage')}
-
-				{#each blocks as id (id)}
-					{@const s = states[id]}
-					{@const b = BANNERS[id]}
-					<!-- THE SETUP BAR: one plate per banner, a setting per segment, each
+		<!-- THE SETUP BAR, right over the chart and centred on it (Nate). -->
+		<div class="wi-controls">
+			{#each blocks as id (id)}
+				{@const s = states[id]}
+				{@const b = BANNERS[id]}
+				<!-- THE SETUP BAR: one plate per banner, a setting per segment, each
 				     showing its value and opening its setting. Dropping a file on the
 				     character banner's bar is a pointer shortcut for "Read a Paimon.moe
 				     export", which stays the accessible path. -->
-					<div
-						class="wi-bar"
-						class:is-dropping={id === 'character' && dropping}
-						role="group"
-						aria-label={RULES[id].kicker}
-						ondragover={id === 'character' ? onDragOver : undefined}
-						ondragleave={id === 'character' ? onDragLeave : undefined}
-						ondrop={id === 'character' ? onDrop : undefined}
+				<div
+					class="wi-bar"
+					class:is-dropping={id === 'character' && dropping}
+					role="group"
+					aria-label={RULES[id].kicker}
+					ondragover={id === 'character' ? onDragOver : undefined}
+					ondragleave={id === 'character' ? onDragLeave : undefined}
+					ondrop={id === 'character' ? onDrop : undefined}
+				>
+					{#if blocks.length > 1}
+						<span class="wi-bar-name">{RULES[id].kicker}</span>
+					{/if}
+
+					<BandMenu role="dialog" align="start" ariaLabel="Current pity: {clampPity(b, s.pity)}">
+						{#snippet face()}
+							<span class="wi-chip-key">Pity</span>
+							<span class="wi-chip-val wi-chip-val--num">{clampPity(b, s.pity)}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<InstrumentSlider
+									label="Current pity"
+									aria={RULES[id].pityAria}
+									bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
+									min={0}
+									max={b.hard - 1}
+									step={1}
+								/>
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					<BandMenu
+						role="dialog"
+						align="start"
+						ariaLabel="{RULES[id].held}: {s.guaranteed ? 'Held' : 'None'}"
 					>
-						{#if blocks.length > 1}
-							<span class="wi-bar-name">{RULES[id].kicker}</span>
-						{/if}
+						{#snippet face()}
+							<span class="wi-chip-key">{RULES[id].held}</span>
+							<span class="wi-chip-val">{s.guaranteed ? 'Held' : 'None'}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<label class="check">
+									<input type="checkbox" bind:checked={states[id].guaranteed} />
+									<span class="check-box"></span>
+									{RULES[id].guarantee}
+								</label>
+								{@render bannerNote(id)}
+							</div>
+						{/snippet}
+					</BandMenu>
 
-						<BandMenu role="dialog" align="start" ariaLabel="Current pity: {clampPity(b, s.pity)}">
-							{#snippet face()}
-								<span class="wi-chip-key">Pity</span>
-								<span class="wi-chip-val wi-chip-val--num">{clampPity(b, s.pity)}</span>
-							{/snippet}
-							{#snippet items()}
-								<div class="wi-chip-pop">
-									<InstrumentSlider
-										label="Current pity"
-										aria={RULES[id].pityAria}
-										bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
-										min={0}
-										max={b.hard - 1}
-										step={1}
-									/>
-								</div>
-							{/snippet}
-						</BandMenu>
-
-						<BandMenu
-							role="dialog"
-							align="start"
-							ariaLabel="{RULES[id].held}: {s.guaranteed ? 'Held' : 'None'}"
-						>
-							{#snippet face()}
-								<span class="wi-chip-key">{RULES[id].held}</span>
-								<span class="wi-chip-val">{s.guaranteed ? 'Held' : 'None'}</span>
-							{/snippet}
-							{#snippet items()}
-								<div class="wi-chip-pop">
-									<label class="check">
-										<input type="checkbox" bind:checked={states[id].guaranteed} />
-										<span class="check-box"></span>
-										{RULES[id].guarantee}
-									</label>
-									{@render bannerNote(id)}
-								</div>
-							{/snippet}
-						</BandMenu>
-
-						<BandMenu
-							role="dialog"
-							align="start"
-							ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
-						>
-							{#snippet face()}
-								<span class="wi-chip-key">Goal</span>
-								<span class="wi-chip-val"
-									>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
-										id,
-										s.goal
-									)}</span
-								>
-							{/snippet}
-							{#snippet items()}
-								<div class="wi-chip-pop">
-									<div class="wi-pop wi-levels">
-										<span class="slider-label" id="wi-have-{id}">You have</span>
-										<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
-											{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
-												<button
-													class="chip chip--control"
-													class:active={s.have === copies}
-													aria-pressed={s.have === copies}
-													onclick={() => setHave(id, copies)}
-												>
-													{haveName(id, copies)}
-												</button>
-											{/each}
-										</div>
-										<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
-										<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
-											{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
-												<button
-													class="chip chip--control"
-													class:active={s.goal === copies}
-													aria-pressed={s.goal === copies}
-													disabled={copies <= s.have}
-													onclick={() => (states[id].goal = copies)}
-												>
-													{levelName(id, copies)}
-												</button>
-											{/each}
-										</div>
+					<BandMenu
+						role="dialog"
+						align="start"
+						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+					>
+						{#snippet face()}
+							<span class="wi-chip-key">Goal</span>
+							<span class="wi-chip-val"
+								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
+									id,
+									s.goal
+								)}</span
+							>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<div class="wi-pop wi-levels">
+									<span class="slider-label" id="wi-have-{id}">You have</span>
+									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
+										{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
+											<button
+												class="chip chip--control"
+												class:active={s.have === copies}
+												aria-pressed={s.have === copies}
+												onclick={() => setHave(id, copies)}
+											>
+												{haveName(id, copies)}
+											</button>
+										{/each}
+									</div>
+									<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
+										{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
+											<button
+												class="chip chip--control"
+												class:active={s.goal === copies}
+												aria-pressed={s.goal === copies}
+												disabled={copies <= s.have}
+												onclick={() => (states[id].goal = copies)}
+											>
+												{levelName(id, copies)}
+											</button>
+										{/each}
 									</div>
 								</div>
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					{#if id === 'character'}
+						<BandMenu
+							role="dialog"
+							align="start"
+							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
+						>
+							{#snippet face()}
+								<span class="wi-chip-key">Radiance counter</span>
+								<span class="wi-chip-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
+							{/snippet}
+							{#snippet items()}
+								<div class="wi-chip-pop">{@render counterPanel()}</div>
 							{/snippet}
 						</BandMenu>
-
-						{#if id === 'character'}
-							<BandMenu
-								role="dialog"
-								align="start"
-								ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
-							>
-								{#snippet face()}
-									<span class="wi-chip-key">Radiance counter</span>
-									<span class="wi-chip-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
-								{/snippet}
-								{#snippet items()}
-									<div class="wi-chip-pop">{@render counterPanel()}</div>
-								{/snippet}
-							</BandMenu>
-							<input
-								bind:this={fileInput}
-								type="file"
-								accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-								class="wi-file"
-								onchange={(e) => importFile(e.currentTarget.files?.[0])}
-							/>
-						{/if}
-					</div>
-				{/each}
-			</div>
+						<input
+							bind:this={fileInput}
+							type="file"
+							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							class="wi-file"
+							onchange={(e) => importFile(e.currentTarget.files?.[0])}
+						/>
+					{/if}
+				</div>
+			{/each}
 		</div>
 
 		<div
@@ -1311,18 +1279,23 @@
 	}
 
 	/* ── The head row ──
-	   The headline, and the controls beside it at the row's far end, bottom
-	   aligned so they sit nearest the chart; under it where the tile is
-	   narrower (Nate 2026-11-02). By the TILE's width, never by whether the
-	   content happens to fit: the headline's length changes as you drag, and
-	   a row that rewrapped mid-drag would move the chart under your hand.
-	   Wide (60rem), the controls shrink before the headline does, and a long
-	   setup bar (a pair's two) wraps inside itself, still at the right. */
+	   The view tabs under the instrument's picker, and the headline at the
+	   row's far end, right aligned (Nate 2026-11-02). Where the tile is too
+	   narrow for both, the headline goes under the tabs, still at the right.
+	   By the TILE's width, never by whether the content happens to fit: the
+	   headline's length changes as you drag, and a row that rewrapped mid-drag
+	   would move the chart under your hand. 🎛️ 60rem: the four tabs (420px)
+	   and the longest one-line headline (about 505px) with room between. */
 	.wi-head-row {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 0.75rem;
+	}
+
+	.wi-head {
+		align-self: flex-end;
+		text-align: right;
 	}
 
 	@container instrument (min-width: 60rem) {
@@ -1332,18 +1305,12 @@
 			justify-content: space-between;
 			gap: 2rem;
 		}
-		.wi-head {
-			flex-shrink: 0;
-		}
-		.wi-controls {
-			justify-content: flex-end;
-		}
 	}
 
-	/* THE HEADLINE ON ONE LINE where the tile has room (Nate 2026-11-02): the
-	   figure and its sentence share a baseline, each at its own size. From
-	   38rem, where the longest ("0.0263% chance of C2R1 within 1,000 pulls",
-	   about 505px) fits; below it, the figure over its sentence. */
+	/* THE HEADLINE ON ONE LINE where the tile has room: the figure and its
+	   sentence share a baseline, each at its own size. From 38rem, where the
+	   longest ("0.0263% chance of C2R1 within 1,000 pulls", about 505px)
+	   fits; below it, the figure over its sentence. */
 	@container instrument (min-width: 38rem) {
 		.wi-head {
 			display: flex;
@@ -1356,58 +1323,25 @@
 		}
 	}
 
-	/* The controls: the view tabs (a recessed track: one of them is chosen),
-	   then the setup bar (a raised plate: each segment is a value you set).
-	   Different materials, so the two read as two things and not as one run of
-	   buttons. */
-	.wi-controls {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 1rem;
-		min-width: 0;
-	}
-
 	/* Four tabs don't fit a narrow tile: wrap rather than scroll. */
 	.wi-tabs {
 		flex-wrap: wrap;
 		max-width: 100%;
 	}
 
-	/* ── THE VIEW TABS, IN THE BAR OR THE STAGE ──
-	   Where the workspace gives a views slot, both copies render and the
-	   width decides: the bar's copy where the cell holds the picker, the tabs
-	   and the actions in one row, the stage's copy below that. The cell and
-	   the tile are the same column, so the two queries ask the same width.
-	   🎛️ 64rem, the literal in both queries: measured at the default interface
-	   size, the picker (16rem) + Wish's four tabs + the four action plates
-	   with Layout come to about 1000px; 64rem is 1024px. */
-	.wi-views-mover {
-		display: contents;
-	}
-	.wi-tabs--bar {
-		display: none;
-	}
-
-	/* In the bar, the TRACK is the plate: as tall as the picker and the
-	   actions beside it (band B's one control height), the tabs inside it
-	   two pixels shorter, rather than tabs at the plate's height in a track
-	   that stood taller than its neighbours (Nate 2026-11-02). */
-	.wi-tabs--bar {
-		height: var(--band-ctrl-h);
-	}
-	.wi-tabs--bar > .btn {
-		height: auto;
-	}
-	@container ws-cell (min-width: 64rem) {
-		.wi-tabs--bar {
-			display: inline-flex;
-		}
-	}
-	@container instrument (min-width: 64rem) {
-		.wi-tabs--handed {
-			display: none;
-		}
+	/* ── The setup bar's row ──
+	   Right over the chart and centred on it (Nate 2026-11-02): the settings
+	   belong to the chart below them. A pair's two bars sit side by side, or
+	   one over the other, centred either way. The bar (a raised plate: each
+	   segment is a value you set) and the tabs (a recessed track: one is
+	   chosen) are different materials, so they read as two things. */
+	.wi-controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem 1rem;
+		min-width: 0;
 	}
 
 	/* THE SETUP BAR: one glass plate, a setting per segment. The segments are

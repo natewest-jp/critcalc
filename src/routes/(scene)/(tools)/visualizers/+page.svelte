@@ -143,14 +143,6 @@
 	// Method calls, not mount-time props: with keep-alive a target may already
 	// be mounted when a link or handoff arrives.
 	let handles = $state<Partial<Record<InstrumentId, InstrumentHandle>>>({});
-	/**
-	 * Each cell's VIEWS SLOT, right of its picker (Nate 2026-11-02: "the
-	 * instrument's own tabs sit just right of that instrument selector"). An
-	 * instrument on the stage moves its view tabs into it; the slot exists
-	 * only while the instrument is slotted, so a hidden instrument's tabs leave
-	 * with its cell.
-	 */
-	let viewSlots = $state<Partial<Record<InstrumentId, HTMLElement>>>({});
 
 	// ── Defaults on the bar (the Visualizers overhaul, round 1) ─────────────
 	// Each instrument's share state AS IT MOUNTS is its defaults: a handle
@@ -410,9 +402,6 @@
 							onPick={(next) => pick(slot, next)}
 						/>
 					</div>
-					<!-- The instrument's own view tabs land here where they fit (the
-					     instrument decides, by this cell's width). -->
-					<div class="ws-views" bind:this={viewSlots[id]}></div>
 					<span class="ws-band-actions">
 						{#if handles[id]?.reset}
 							<!-- ⚓ On the bar, not in the ⋯ (Nate 2026-11-02): the reset
@@ -520,10 +509,7 @@
 							{:else if inst.id === 'defres'}
 								<DefResInstrument bind:this={() => handles.defres, (h) => register('defres', h)} />
 							{:else if inst.id === 'wish'}
-								<WishInstrument
-									bind:this={() => handles.wish, (h) => register('wish', h)}
-									viewsTarget={viewSlots.wish}
-								/>
+								<WishInstrument bind:this={() => handles.wish, (h) => register('wish', h)} />
 							{:else if inst.id === 'breakdown'}
 								<BreakdownInstrument
 									bind:this={() => handles.breakdown, (h) => register('breakdown', h)}
@@ -583,27 +569,12 @@
 		min-width: 0;
 	}
 
-	/* Every cell is a size query container, so an instrument can ask whether its
-	   view tabs fit beside the picker and the actions (WishInstrument's
-	   `@container ws-cell` rules). */
-	.ws-band-cell {
-		container: ws-cell / inline-size;
-	}
-
 	/* 🎛️ THE PICKER STOPS AT --ws-picker-max (16rem): the longest name,
 	   "Damage breakdown", with its caret and room to spare. Past that it is
-	   only distance between the name and its views. */
+	   only distance between the name and the actions. */
 	.ws-picker {
 		display: flex;
 		flex: 0 1 var(--ws-picker-max, 16rem);
-		min-width: 0;
-	}
-
-	/* The views take the slack, so the actions stay at the cell's far end. */
-	.ws-views {
-		display: flex;
-		align-items: center;
-		flex: 1;
 		min-width: 0;
 	}
 
@@ -614,8 +585,10 @@
 		gap: 0.5rem;
 		padding: 0.4rem;
 	}
+	/* The actions hold the cell's far end. */
 	.ws-band-actions {
 		display: flex;
+		margin-left: auto;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
 		flex-shrink: 0;
