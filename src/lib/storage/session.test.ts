@@ -647,3 +647,46 @@ describe('a store the session cannot start on (⚓ Nate 2026-10-31)', () => {
 		expect(C.s.readOnly).not.toContain('d1');
 	});
 });
+
+/** The Visualizers keep each instrument's state in the profile (overhaul round 4). */
+describe('the Visualizers’ instruments, saved per profile', () => {
+	it('an instrument’s state is kept in the profile, and the next page reads it', async () => {
+		const A = await tab();
+		A.s.saveInstrument('wish', { v: 3, pulls: 120 });
+		await wait(500);
+		expect((await get(db, 'profiles', 'p1'))?.instruments).toEqual({
+			wish: { v: 3, pulls: 120 }
+		});
+		const B = await tab();
+		expect(B.s.instrumentState('wish')).toEqual({ v: 3, pulls: 120 });
+		expect(B.s.instrumentState('crit')).toBeUndefined();
+	});
+
+	it('only where a slider comes to rest is written', async () => {
+		const A = await tab();
+		for (let pulls = 90; pulls <= 100; pulls++) A.s.saveInstrument('wish', { v: 3, pulls });
+		await wait(500);
+		expect((await get(db, 'profiles', 'p1'))?.instruments?.wish).toEqual({ v: 3, pulls: 100 });
+	});
+
+	it('two tabs saving different instruments each keep theirs', async () => {
+		const A = await tab();
+		const B = await tab();
+		A.s.saveInstrument('wish', { v: 3, pulls: 120 });
+		B.s.saveInstrument('crit', { v: 1, cr: 0.8 });
+		await wait(500);
+		expect((await get(db, 'profiles', 'p1'))?.instruments).toEqual({
+			wish: { v: 3, pulls: 120 },
+			crit: { v: 1, cr: 0.8 }
+		});
+	});
+
+	it('a switch writes what is pending to the profile it belonged to', async () => {
+		const A = await tab();
+		A.s.saveInstrument('crit', { v: 1, cr: 0.9 });
+		await A.s.switchTo(THEORYCRAFT_ID);
+		expect((await get(db, 'profiles', 'p1'))?.instruments?.crit).toEqual({ v: 1, cr: 0.9 });
+		expect((await get(db, 'profiles', THEORYCRAFT_ID))?.instruments).toBeUndefined();
+		expect(A.s.instrumentState('crit')).toBeUndefined();
+	});
+});

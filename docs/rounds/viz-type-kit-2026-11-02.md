@@ -1,7 +1,6 @@
 # Visualizers overhaul, round 2: type, spacing and the kit (2026-11-02)
 
-**Status:** built on `feat/viz-type-kit` (stacked on round 1's `feat/viz-workspace-bars`), not
-merged. ⏭ Nate's look. Design: `docs/design/visualizers-design.md` §5 and §7.
+**Status:** ✅ merged to `main` 2026-11-02 (`feat/viz-type-kit`, merged in order with the overhaul's other rounds; not pushed). Nate: "All of these changes are solid"; refinement continues in a fresh session. ⏭ The copy in §7 is still proposed, not approved; real Safari and iPhone.
 
 ## 1. Why
 

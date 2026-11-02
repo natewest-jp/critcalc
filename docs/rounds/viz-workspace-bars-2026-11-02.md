@@ -1,7 +1,6 @@
 # Visualizers overhaul, round 1: the workspace and the bars (2026-11-02)
 
-**Status:** built on `feat/viz-workspace-bars`, not merged. ⏭ Nate's look, and the copy in §5.
-The overhaul's design and its four rounds: `docs/design/visualizers-design.md`.
+**Status:** ✅ merged to `main` 2026-11-02 (`feat/viz-workspace-bars`, merged in order with the overhaul's other rounds; not pushed). Nate: "All of these changes are solid"; refinement continues in a fresh session. ⏭ The copy in §5 is still proposed, not approved; real Safari and iPhone.
 
 ## 1. Why
 
