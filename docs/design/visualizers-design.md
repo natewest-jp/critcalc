@@ -94,9 +94,13 @@ fine print
   picker, the tabs and the actions in one row (⚓ Nate). Where it doesn't (two up, a phone),
   they come down into the stage's head row, before the setup bar. The instrument renders both
   copies and a container query on the cell's width shows one.
-- **The head row.** The headline, with the setup bar beside it at the row's far end, bottom
-  aligned. Where they don't fit side by side, the controls wrap under the headline, nearer
-  the chart they change (⚓ Nate).
+- **The head row.** The headline on one line (the figure and its sentence on one baseline,
+  each at its own size) from a 38rem tile, with the setup bar beside it at the row's far end
+  from 60rem, bottom aligned; narrower, the controls sit under the headline, nearer the chart
+  (⚓ Nate). Decided by the tile's width, never by whether the content fits, because the
+  headline's length changes as you drag and a rewrap would move the chart under the hand.
+- **In the bar, the view tabs' track is the plate:** as tall as the picker and the actions,
+  with the lit tab inside it (⚓ Nate).
 - **Two materials.** The view tabs are a recessed track (one is chosen); the setup bar is a
   raised glass plate (each segment is a value you set). The first build gave every setting
   its own plate on a row of its own, and with the instrument tabs above that was three rows

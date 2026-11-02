@@ -1311,16 +1311,49 @@
 	}
 
 	/* ── The head row ──
-	   The headline, then the controls beside it, bottom-aligned so the
-	   controls sit nearest the chart. `space-between` puts the controls at the
-	   row's far end beside the headline, and, once they wrap to a line of their
-	   own under it, at that line's start (a lone item on a line). */
+	   The headline, and the controls beside it at the row's far end, bottom
+	   aligned so they sit nearest the chart; under it where the tile is
+	   narrower (Nate 2026-11-02). By the TILE's width, never by whether the
+	   content happens to fit: the headline's length changes as you drag, and
+	   a row that rewrapped mid-drag would move the chart under your hand.
+	   Wide (60rem), the controls shrink before the headline does, and a long
+	   setup bar (a pair's two) wraps inside itself, still at the right. */
 	.wi-head-row {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 0.75rem 2rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
+	}
+
+	@container instrument (min-width: 60rem) {
+		.wi-head-row {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: 2rem;
+		}
+		.wi-head {
+			flex-shrink: 0;
+		}
+		.wi-controls {
+			justify-content: flex-end;
+		}
+	}
+
+	/* THE HEADLINE ON ONE LINE where the tile has room (Nate 2026-11-02): the
+	   figure and its sentence share a baseline, each at its own size. From
+	   38rem, where the longest ("0.0263% chance of C2R1 within 1,000 pulls",
+	   about 505px) fits; below it, the figure over its sentence. */
+	@container instrument (min-width: 38rem) {
+		.wi-head {
+			display: flex;
+			align-items: baseline;
+			column-gap: 0.6rem;
+			white-space: nowrap;
+		}
+		.wi-head .readout-sentence {
+			margin-top: 0;
+		}
 	}
 
 	/* The controls: the view tabs (a recessed track: one of them is chosen),
@@ -1354,6 +1387,17 @@
 	}
 	.wi-tabs--bar {
 		display: none;
+	}
+
+	/* In the bar, the TRACK is the plate: as tall as the picker and the
+	   actions beside it (band B's one control height), the tabs inside it
+	   two pixels shorter, rather than tabs at the plate's height in a track
+	   that stood taller than its neighbours (Nate 2026-11-02). */
+	.wi-tabs--bar {
+		height: var(--band-ctrl-h);
+	}
+	.wi-tabs--bar > .btn {
+		height: auto;
 	}
 	@container ws-cell (min-width: 64rem) {
 		.wi-tabs--bar {

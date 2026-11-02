@@ -1,6 +1,6 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage` in three passes (§7 and §8), for Nate to look at in the local build. Not merged.
+**Status:** 🔨 built on `feat/viz-wish-stage` in four passes (§7–§9), for Nate to look at in the local build. Not merged.
 ⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
 §4 are Nate's; real Safari and iPhone.
 
@@ -163,3 +163,18 @@ svelte-check, lint and build clean; Chrome e2e 72 passed.
 
 Copy (proposed): none new. Help's Visualizers chapter still describes the workspace's tabs
 (the "The workspace" section already on the to-do as stale).
+
+## 9. Fourth pass: the tab track and a one-line headline
+
+- **The bar's tab track is the plate.** It stood 4px taller than the picker and the actions
+  (the segment's 2px padding around tabs at the plate's height). Now the track takes band
+  B's control height and the tabs sit inside it: measured, picker, track and actions all
+  56–88px, the lit tab 58–86px.
+- **The headline on one line** from a 38rem tile, figure and sentence on one baseline at
+  their own sizes; under 38rem the figure over its sentence (the longest, "0.0263% chance of
+  C2R1 within 1,000 pulls", is about 505px). The head row is now laid out by the tile's width
+  rather than by fit: side by side from 60rem, the headline never shrinking and a long setup
+  bar wrapping inside itself; stacked below. Content-driven wrapping would rewrap mid-drag
+  as the headline's digits change, moving the chart.
+
+Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.
