@@ -21,6 +21,11 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 - A chart box that is measured and then drawn to fit carries `contain: size` with a natural-height floor, or its row ratchets taller on every redraw.
 - ⚠️ The tile's grid row is `minmax(0, 1fr)`, never `1fr`: `1fr` means `minmax(auto, 1fr)`, and the `auto` minimum stops an instrument's own `overflow-y: auto` from ever running.
 
+## The kit
+
+- Every instrument slider is `kit/InstrumentSlider.svelte`, so its value is typeable; the level slider is `kit/level.ts`. A typed value lands at the field's own precision, so pass `decimals` when a slider should take finer values than its step implies.
+- Control labels are sentence case; the kicker is the one caps voice. Sections and controls sit on the spacing ladder (`--inst-gap-*`, `.inst-section`), and a Readout leads with `.readout-head` (design: `docs/design/visualizers-design.md` §5).
+
 ## Materials
 
 - Night looks, glass touches, paper answers (`.claude/rules/ui.md`): each instrument has exactly one `.panel--paper` readout card.

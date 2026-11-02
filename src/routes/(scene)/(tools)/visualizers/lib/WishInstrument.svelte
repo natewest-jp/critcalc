@@ -25,6 +25,10 @@
 	import { formatChance } from './chance';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+
+	/** The most pulls the instrument takes, typed or shared. */
+	const MAX_PULLS = 2000;
 
 	// ── What you're pulling for ──────────────────────────────────────────────
 	// `pair` is a 5★ character AND their weapon: two banners, two pities, and
@@ -440,7 +444,7 @@
 		askingRadiance = false;
 		const readPulls = (v: unknown) => {
 			if (typeof v === 'number' && Number.isFinite(v))
-				pulls = Math.min(2000, Math.max(0, Math.round(v)));
+				pulls = Math.min(MAX_PULLS, Math.max(0, Math.round(v)));
 		};
 		// v1 (before 2026-10-04): one featured item, `banner` + flat state
 		if (s.v === 1) {
@@ -728,23 +732,19 @@
 	     (what you're pulling for is the chart's tabs). Sections stack in a shared
 	     tile and sit side by side in a wide one (see the container queries). -->
 	<div class="panel wi-controls instrument-controls">
-		<section class="wi-section">
-			<div class="slider-control">
-				<div class="slider-header">
-					<span class="slider-label">Pulls saved</span>
-					<span class="readout">{pulls}</span>
-				</div>
-				<input
-					type="range"
-					min="0"
-					max={Math.max(domain, pulls)}
-					step="1"
-					bind:value={pulls}
-					class="slider"
-					aria-label="Pulls you have saved"
-				/>
-			</div>
-			<p class="note">Or drag across the chart.</p>
+		<section class="inst-section">
+			<!-- Typed, it runs past the chart (to MAX_PULLS), where every goal is
+			     past 99.9%: the Readout answers, the marker waits at the axis's end. -->
+			<InstrumentSlider
+				label="Pulls saved"
+				aria="Pulls you have saved"
+				bind:value={pulls}
+				min={0}
+				max={Math.max(domain, pulls)}
+				step={1}
+				fieldMax={MAX_PULLS}
+			/>
+			<p class="inst-hint">Or drag across the chart.</p>
 		</section>
 
 		{#each blocks as id (id)}
@@ -754,7 +754,7 @@
 			     for "Read a Paimon.moe export", which stays the accessible path. -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<section
-				class="wi-section"
+				class="inst-section wi-section"
 				class:is-dropping={id === 'character' && dropping}
 				ondragover={id === 'character' ? onDragOver : undefined}
 				ondragleave={id === 'character' ? onDragLeave : undefined}
@@ -810,21 +810,14 @@
 						{/snippet}
 					</BandMenu>
 				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Current pity</span>
-						<span class="readout">{clampPity(b, s.pity)}</span>
-					</div>
-					<input
-						type="range"
-						min="0"
-						max={b.hard - 1}
-						step="1"
-						bind:value={states[id].pity}
-						class="slider"
-						aria-label={RULES[id].pityAria}
-					/>
-				</div>
+				<InstrumentSlider
+					label="Current pity"
+					aria={RULES[id].pityAria}
+					bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
+					min={0}
+					max={b.hard - 1}
+					step={1}
+				/>
 				<label class="check">
 					<input type="checkbox" bind:checked={states[id].guaranteed} />
 					<span class="check-box"></span>
@@ -900,8 +893,8 @@
 
 	<div class="panel panel--paper wi-readout instrument-readout">
 		<p class="kicker">Readout</p>
-		<p class="wi-big">
-			{formatChance(goalRow.chance)}<span class="wi-big-unit"
+		<p class="readout-head">
+			{formatChance(goalRow.chance)}<span class="readout-sentence"
 				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
 			>
 		</p>
@@ -1018,23 +1011,6 @@
 		/* tight enough that "Not owned … C5" holds one row in half a shared tile, down
 		   to two tiles at 1360 (272px for the row) */
 		padding-inline: 0.35rem;
-	}
-
-	.wi-big {
-		margin: 0;
-		font-family: var(--font-body);
-		font-size: var(--fs-5xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-tight);
-	}
-
-	/* Its own line: beside the number it broke mid-phrase in a narrow Readout */
-	.wi-big-unit {
-		display: block;
-		margin-top: 0.15rem;
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
 	}
 
 	.wi-table {
@@ -1229,17 +1205,11 @@
 
 	/* One panel, its sections stacked (⚓ Nate, 2026-10-04: a shared tile
 	   split the banner panels around "Pulling for" when they were separate). */
+	/* The panel's sections on the ladder (app.css § THE SPACING LADDER); each
+	   section is an `.inst-section`. */
 	.wi-controls {
 		display: grid;
-		gap: 1.25rem 1.5rem;
-		align-content: start;
-	}
-
-	/* Each section keeps the panel's own rhythm (`.panel` is a 0.7rem grid) —
-	   as plain blocks, what followed a slider sat right on its track. */
-	.wi-section {
-		display: grid;
-		gap: 0.7rem;
+		gap: var(--inst-gap-section) 1.5rem;
 		align-content: start;
 	}
 

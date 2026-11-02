@@ -41,6 +41,7 @@
 		type PieceQuery
 	} from './appraise';
 	import ValueWheel from './ValueWheel.svelte';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 
 	// ⚓ Three views, a piece's life (Nate, 2026-10-06): it DROPS, it is LEVELLED,
@@ -183,6 +184,10 @@
 	/**
 	 * The days slider runs on a SQUARE-ROOT scale, so its first half covers the
 	 * first quarter of the axis — the early days, where the chance moves fastest.
+	 * Dragged, it steps by whole days to 20 and by fives past that; typed, any
+	 * whole day count stands (23 sits between two stops, and the thumb rounds
+	 * to the nearest). The kit's `track` keeps the thumb on the pointer while
+	 * the days step underneath it.
 	 */
 	const SLIDER_STEPS = 1000;
 	const sliderOf = (d: number) => Math.round(Math.sqrt(Math.min(1, d / farmDomain)) * SLIDER_STEPS);
@@ -190,22 +195,6 @@
 		const d = (t / SLIDER_STEPS) ** 2 * farmDomain;
 		return Math.max(1, d < 20 ? Math.round(d) : Math.round(d / 5) * 5);
 	};
-	/**
-	 * ⚠️ The thumb keeps ITS OWN position while it is the thing being dragged.
-	 * Bound to `sliderOf(days)`, every input rounded the days and wrote the
-	 * rounded position back, pulling the thumb off the pointer between stops —
-	 * the jitter. Now the thumb glides and the days step underneath it; the
-	 * held position is dropped the moment it no longer names the days shown
-	 * (a chart drag, another piece, a reset).
-	 */
-	let sliderHeld = $state<number | null>(null);
-	const sliderValue = $derived(
-		sliderHeld !== null && daysAt(sliderHeld) === days ? sliderHeld : sliderOf(shownDays)
-	);
-	function setDaysFromSlider(t: number) {
-		sliderHeld = t;
-		days = daysAt(t);
-	}
 	const resinOf = (d: number) => Math.floor((d * RESIN_PER_DAY) / RESIN_PER_RUN) * RESIN_PER_RUN;
 	const chanceBy = $derived({
 		domain: 1 - farmMiss(resinOf(shownDays), perPiece, false),
@@ -1057,7 +1046,7 @@
 	<!-- ONE panel, a section per question (the Wish Odds layout) -->
 	<div class="panel ao-controls instrument-controls">
 		{#if view !== 'piece'}
-			<section class="ao-section">
+			<section class="inst-section">
 				<p class="kicker">Piece</p>
 				<div class="ao-slots">
 					{#each SLOTS as s (s.id)}
@@ -1094,14 +1083,14 @@
 					{/each}
 				</div>
 				{#if view === 'drop' && slot.mains.length > 1}
-					<p class="note">
+					<p class="inst-hint">
 						Pick every main stat you'd be happy with. The number under each is how often it drops.
 					</p>
 				{/if}
 			</section>
 		{/if}
 
-		<section class="ao-section">
+		<section class="inst-section">
 			<p class="kicker">Your stats</p>
 			<div class="chips ao-dense" role="group" aria-label="Your stats">
 				{#each SUBSTATS as s (s.id)}
@@ -1123,7 +1112,7 @@
 					</button>
 				{/each}
 			</div>
-			<p class="note">
+			<p class="inst-hint">
 				Pick up to four substats you want.
 				{#if view === 'drop'}
 					The number under each is its chance to be one of the piece's four substats.
@@ -1146,25 +1135,21 @@
 		</section>
 
 		{#if view === 'drop'}
-			<section class="ao-section">
+			<section class="inst-section">
 				<p class="kicker">Farming</p>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Days of resin</span>
-						<span class="readout">{fmtNum(shownDays)}</span>
-					</div>
-					<input
-						type="range"
-						min="0"
-						max={SLIDER_STEPS}
-						step="1"
-						value={sliderValue}
-						oninput={(e) => setDaysFromSlider(Number(e.currentTarget.value))}
-						class="slider"
-						aria-label="Days of resin"
-						aria-valuetext="{fmtNum(shownDays)} days"
-					/>
-				</div>
+				<!-- Whole days, typed as dragged: the chart drag and the stops round too. -->
+				<InstrumentSlider
+					label="Days of resin"
+					bind:value={() => shownDays, (v) => (days = v)}
+					min={1}
+					max={farmDomain}
+					step={1}
+					fieldMin={1}
+					fieldMax={farmDomain}
+					snap={Math.round}
+					track={{ steps: SLIDER_STEPS, to: sliderOf, from: daysAt }}
+					valueText="{fmtNum(shownDays)} days"
+				/>
 				<div class="chips">
 					<button
 						class="chip chip--control"
@@ -1185,7 +1170,7 @@
 				</div>
 			</section>
 		{:else if view === 'level'}
-			<section class="ao-section">
+			<section class="inst-section">
 				<p class="kicker">The piece</p>
 				{#if wantedSubs.length > 1}
 					<div class="chips" role="group" aria-label="How many of your stats it has">
@@ -1248,7 +1233,7 @@
 				</p>
 			</section>
 		{:else}
-			<section class="ao-section">
+			<section class="inst-section">
 				<p class="kicker">Your piece</p>
 				<div class="ao-card" bind:clientWidth={cardW}>
 					<div class="ao-card-head">
@@ -1415,14 +1400,14 @@
 					</button>
 				</div>
 				{#if defined}
-					<p class="note">
+					<p class="inst-hint">
 						Select the two substats you chose when making it. Together they're guaranteed at least 2
 						upgrades by +20.
 					</p>
 				{/if}
 			</section>
 			{#if finished}
-				<section class="ao-section">
+				<section class="inst-section">
 					<p class="kicker">Reshape</p>
 					<div class="chips" role="group" aria-label="Reshape">
 						{#each RESHAPES as r (r.floor)}
@@ -1455,8 +1440,8 @@
 	<div class="panel panel--paper ao-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		{#if view === 'drop'}
-			<p class="ao-big">
-				{inHundred(chanceBy.domain)} in 100<span class="ao-big-unit"
+			<p class="readout-head">
+				{inHundred(chanceBy.domain)} in 100<span class="readout-sentence"
 					>players would have this piece after {fmtValue(shownDays).replace(/\.0$/, '')} day{shownDays ===
 					1
 						? ''
@@ -1495,8 +1480,8 @@
 			</p>
 		{:else if view === 'level'}
 			{#if wantedSubs.length}
-				<p class="ao-big">
-					{fmtPct(odds.above, 0)}<span class="ao-big-unit"
+				<p class="readout-head">
+					{fmtPct(odds.above, 0)}<span class="readout-sentence"
 						>chance it would end above {valueOf(reference)}</span
 					>
 				</p>
@@ -1516,8 +1501,8 @@
 		{:else if !query}
 			<p class="note">Enter your piece to see how it measures up.</p>
 		{:else if !finished}
-			<p class="ao-big">
-				{fmtPct(odds.above, 0)}<span class="ao-big-unit"
+			<p class="readout-head">
+				{fmtPct(odds.above, 0)}<span class="readout-sentence"
 					>chance it would end above {valueOf(reference)}</span
 				>
 			</p>
@@ -1533,8 +1518,8 @@
 				</p>
 			{/if}
 		{:else}
-			<p class="ao-big">
-				Better than {Math.round(percentile * 100)}%<span class="ao-big-unit"
+			<p class="readout-head">
+				Better than {Math.round(percentile * 100)}%<span class="readout-sentence"
 					>of +20 {slotPlural} with these four substats</span
 				>
 			</p>
@@ -1644,16 +1629,11 @@
 
 	/* ── Controls ───────────────────────────────────────────────────────────── */
 
+	/* The panel's sections on the ladder (app.css § THE SPACING LADDER); each
+	   section is an `.inst-section`. */
 	.ao-controls {
 		display: grid;
-		gap: 1.25rem 1.5rem;
-		align-content: start;
-	}
-
-	/* Each section keeps the panel's own rhythm (`.panel` is a 0.7rem grid) */
-	.ao-section {
-		display: grid;
-		gap: 0.7rem;
+		gap: var(--inst-gap-section) 1.5rem;
 		align-content: start;
 	}
 
@@ -1963,23 +1943,6 @@
 	}
 
 	/* ── Readout ────────────────────────────────────────────────────────────── */
-
-	.ao-big {
-		margin: 0;
-		font-family: var(--font-body);
-		font-size: var(--fs-5xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-tight);
-	}
-
-	/* Its own line: beside the number it broke mid-phrase in a narrow Readout */
-	.ao-big-unit {
-		display: block;
-		margin-top: 0.15rem;
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
 
 	.ao-sub {
 		margin: 0.5rem 0 0;

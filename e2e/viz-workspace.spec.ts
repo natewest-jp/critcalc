@@ -135,16 +135,23 @@ test.describe('deep links', () => {
 
 		await openTool(page, `/visualizers?i=${encodeURIComponent(param)}`);
 		await expect(currentTab(page)).toHaveText('Crit heatmap');
-		await expect(page.locator('.cv-value-input').first(), 'shared CR applied').toHaveValue('90');
+		await expect(
+			page.locator('.ws-tile:not(.ws-hidden) .is-field').first(),
+			'shared CR applied'
+		).toHaveValue('90');
 
 		// The bar's Defaults restores the tile's own controls, and its toast can undo it.
 		await defaultsButton(page).click();
-		await expect(page.locator('.cv-value-input').first(), 'CR back to its default').toHaveValue(
-			'70'
-		);
+		await expect(
+			page.locator('.ws-tile:not(.ws-hidden) .is-field').first(),
+			'CR back to its default'
+		).toHaveValue('70');
 		await expect(defaultsButton(page)).toBeDisabled();
 		await page.getByRole('button', { name: 'Undo' }).click();
-		await expect(page.locator('.cv-value-input').first(), 'Undo puts it back').toHaveValue('90');
+		await expect(
+			page.locator('.ws-tile:not(.ws-hidden) .is-field').first(),
+			'Undo puts it back'
+		).toHaveValue('90');
 	});
 });
 
@@ -152,7 +159,10 @@ test('the ICD timeline hands its hits off to the Gauge explorer', async ({ page 
 	await openTool(page, '/visualizers?i=icd');
 	await expect(currentTab(page)).toHaveText('ICD timeline');
 
-	const applying = parseInt(await page.locator('.icd-big').first().innerText(), 10);
+	const applying = parseInt(
+		await page.locator('.ws-tile:not(.ws-hidden) .readout-head').first().innerText(),
+		10
+	);
 	await page.locator('.icd-send').click();
 
 	// One up, the gauge takes the tile (side by side, it opens beside the source).

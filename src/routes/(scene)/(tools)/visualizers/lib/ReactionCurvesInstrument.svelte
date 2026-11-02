@@ -8,17 +8,17 @@
 		emBonus,
 		emWorthOfBonus,
 		snapLevel,
-		stepLevel,
 		AMP_CURVE,
 		TRANSFORMATIVE_CURVE,
 		ADDITIVE_CURVE,
 		SPECIAL_CURVE,
 		CRYSTALLIZE_CURVE,
 		TOP_CONTRIBUTOR_SHARE,
-		MAX_LEVEL,
 		RB_MAX,
 		type EmCurve
 	} from './reactionCurves';
+	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import { LEVEL_SLIDER } from './kit/level';
 
 	type FamilyId = 'all' | 'amplifying' | 'transformative' | 'additive' | 'lunar' | 'crystallize';
 	/** What a row's reading is built from: its value formatted, the boost as a
@@ -430,7 +430,7 @@
 	// ── The reading: a row, in sentences ─────────────────────────────────
 	// Every row's reading is built and stacked in one grid cell, with only the
 	// chosen one visible — the box is as tall as the LONGEST, so moving between
-	// rows never shifts the Build panel below.
+	// rows never changes the Readout's height or moves the receipt under it.
 	function readingOf(c: Curve): string {
 		const v = at(c, em);
 		const boost = family.id === 'all' ? v / 100 : 0;
@@ -471,30 +471,6 @@
 	function onUp() {
 		dragging = false;
 	}
-
-	function onLevel(e: Event & { currentTarget: HTMLInputElement }) {
-		const el = e.currentTarget;
-		level = snapLevel(Number(el.value));
-		el.value = String(level);
-	}
-	// The arrows step 90 → 95 → 100 themselves: a native step lands on 91,
-	// which the nearest-stop snap would send straight back to 90.
-	const STEP_KEYS: Record<string, 1 | -1> = {
-		ArrowRight: 1,
-		ArrowUp: 1,
-		ArrowLeft: -1,
-		ArrowDown: -1
-	};
-	function onLevelKey(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
-		const dir = STEP_KEYS[e.key];
-		if (!dir) return;
-		e.preventDefault();
-		level = stepLevel(level, dir);
-		e.currentTarget.value = String(level);
-	}
-	/** Where a level sits along the slider's travel, for the 90/95/100 marks. */
-	const LEVEL_MARKS = [90, 95, 100];
-	const markPos = (lv: number) => (lv - 1) / (MAX_LEVEL - 1);
 </script>
 
 <div class="instrument instrument--capped">
@@ -659,68 +635,41 @@
 	</div>
 
 	<div class="panel rx-build instrument-controls">
-		<p class="kicker">Build</p>
-		<div class="rx-sliders">
-			<div class="slider-control" class:rx-wide={!takesRb}>
-				<div class="slider-header">
-					<span class="slider-label">Elemental Mastery</span>
-					<span class="readout">{em}</span>
-				</div>
-				<input
-					type="range"
-					min="0"
-					max={EM_MAX}
-					step="5"
+		<section class="inst-section">
+			<p class="kicker">Build</p>
+			<div class="rx-sliders">
+				<InstrumentSlider
+					class={takesRb ? '' : 'rx-wide'}
+					label="Elemental Mastery"
+					aria="Elemental Mastery"
 					bind:value={em}
-					class="slider"
-					aria-label="Elemental Mastery"
+					min={0}
+					max={EM_MAX}
+					step={5}
 				/>
-			</div>
-			{#if takesRb}
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Reaction Bonus</span>
-						<span class="readout">{rbPct}%</span>
-					</div>
-					<input
-						type="range"
-						min="0"
-						max={RB_MAX}
-						step="5"
+				{#if takesRb}
+					<InstrumentSlider
+						label="Reaction Bonus"
+						aria="Reaction Bonus in percent"
 						bind:value={rbPct}
-						class="slider"
-						aria-label="Reaction Bonus in percent"
+						min={0}
+						max={RB_MAX}
+						step={5}
+						unit="%"
 					/>
-				</div>
-			{/if}
-			{#if family.usesLevel}
-				<div class="slider-control rx-wide">
-					<div class="slider-header">
-						<span class="slider-label">Level</span>
-						<span class="readout">{level}</span>
-					</div>
-					<div class="rx-level">
-						<input
-							type="range"
-							min="1"
-							max={MAX_LEVEL}
-							step="1"
-							value={level}
-							oninput={onLevel}
-							onkeydown={onLevelKey}
-							class="slider"
-							aria-label="Character level"
-						/>
-						<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
-						<div class="rx-level-marks" aria-hidden="true">
-							{#each LEVEL_MARKS as lv (lv)}
-								<span class="rx-level-mark" style:--at={markPos(lv)}></span>
-							{/each}
-						</div>
-					</div>
-				</div>
-			{/if}
-		</div>
+				{/if}
+				{#if family.usesLevel}
+					<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
+					<InstrumentSlider
+						class="rx-wide"
+						label="Level"
+						aria="Character level"
+						bind:value={level}
+						{...LEVEL_SLIDER}
+					/>
+				{/if}
+			</div>
+		</section>
 	</div>
 </div>
 
@@ -888,7 +837,8 @@
 		   --instrument-slider-max, sweep 2026-10-15 §3 item 16), so the pair
 		   stays a pair on a wide tile rather than two halves of the panel */
 		grid-template-columns: repeat(2, minmax(0, var(--instrument-slider-max)));
-		gap: 0.5rem 1.5rem;
+		/* a row apart is control to control (app.css § THE SPACING LADDER) */
+		gap: var(--inst-gap-control) 1.5rem;
 		/* top, not stretch: the Level control is taller by its marks, and a
 		   stretched neighbour spreads that height into its own rows, dropping
 		   its label below Level's */
@@ -896,41 +846,11 @@
 	}
 
 	/* A line of its own runs under BOTH columns, so it is the pair's length,
-	   not one slider's (the app.css cap is per control) */
-	.slider-control.rx-wide {
+	   not one slider's (the app.css cap is per control). The slider is the
+	   kit's, so its root is out of this file's scope. */
+	.rx-sliders > :global(.slider-control.rx-wide) {
 		grid-column: 1 / -1;
 		max-width: none;
-	}
-
-	/* The Level slider's 90 / 95 / 100 marks. Above 90 only 95 and 100 exist,
-	   so the slider keeps the gaps' width and jumps them; the marks say where
-	   it can land. Positioned along the thumb's TRAVEL — its centre runs from
-	   half a thumb (15px, app.css .slider) in from either end. */
-	/* grid, so the input is blockified like its siblings' — inline, it sat on a
-	   text line and rode 12px lower than the other two tracks */
-	.rx-level {
-		position: relative;
-		display: grid;
-	}
-
-	/* ⚠ A range input carries the UA's 2px side margin (Chrome and WebKit
-	   alike), so its track starts 2px in from this wrapper. The marks mirror
-	   that box exactly — margin AND width — or every mark sits 2px left. */
-	.rx-level-marks {
-		position: relative;
-		width: 100%;
-		height: 5px;
-		margin: 3px 2px 0;
-	}
-
-	.rx-level-mark {
-		position: absolute;
-		top: 0;
-		/* centred on the thumb's centre: half the 1px mark back */
-		left: calc(7.5px + var(--at) * (100% - 15px) - 0.5px);
-		width: 1px;
-		height: 5px;
-		background: color-mix(in srgb, var(--text) 35%, transparent);
 	}
 
 	/* The sliders take a line each on a phone, and in the Build's half of a
