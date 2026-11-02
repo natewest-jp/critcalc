@@ -87,6 +87,8 @@ Readout used to be.
   Narrow: chart, live, settings, Readout.
 - An instrument whose chart wants width rather than height (the Damage breakdown's waterfall)
   keeps its controls under the chart, and its rail is the Readout alone.
+- A control's dependents sit below it. Where the settings decide what the live panel offers
+  (Artifact odds), the settings come first (`.instrument--settings-first`).
 
 ## 7. The kit
 
@@ -103,5 +105,5 @@ Undo, is how you start over; Copy link is how you share.
 
 1. The workspace and the bars: `docs/rounds/viz-workspace-bars-2026-11-02.md`.
 2. Type, spacing, the kit and typeable values: `docs/rounds/viz-type-kit-2026-11-02.md`.
-3. The rail and each instrument's controls sorted into the three kinds, Wish odds first.
+3. The rail and each instrument's controls sorted into the three kinds: `docs/rounds/viz-rail-2026-11-02.md`.
 4. Saved per profile.

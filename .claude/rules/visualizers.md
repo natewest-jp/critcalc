@@ -21,9 +21,14 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 - A chart box that is measured and then drawn to fit carries `contain: size` with a natural-height floor, or its row ratchets taller on every redraw.
 - ⚠️ The tile's grid row is `minmax(0, 1fr)`, never `1fr`: `1fr` means `minmax(auto, 1fr)`, and the `auto` minimum stops an instrument's own `overflow-y: auto` from ever running.
 
+## The rail
+
+- An instrument has four slots (`app.css` § THE RAIL): chart, live, settings, Readout. The Readout is last at every width, because it is the slot whose height follows the values. A control's dependents sit below it, so where settings decide what the live panel offers, use `.instrument--settings-first`.
+- The chart's height is the tile's (sticky at the wide tier), never what the controls leave. The Damage breakdown keeps its controls under its waterfall and opts out of that rule; Enemy RES & DEF keeps its bespoke right column (shred list, then the Readout).
+
 ## The kit
 
-- Every instrument slider is `kit/InstrumentSlider.svelte`, so its value is typeable; the level slider is `kit/level.ts`. A typed value lands at the field's own precision, so pass `decimals` when a slider should take finer values than its step implies.
+- Every instrument slider is `kit/InstrumentSlider.svelte`, so its value is typeable; the level slider is `kit/level.ts`; a set-once setting folds into `kit/SettingLine.svelte`. A typed value lands at the field's own precision, so pass `decimals` when a slider should take finer values than its step implies.
 - Control labels are sentence case; the kicker is the one caps voice. Sections and controls sit on the spacing ladder (`--inst-gap-*`, `.inst-section`), and a Readout leads with `.readout-head` (design: `docs/design/visualizers-design.md` §5).
 
 ## Materials
