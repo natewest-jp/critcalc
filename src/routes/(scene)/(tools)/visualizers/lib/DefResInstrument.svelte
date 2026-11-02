@@ -17,6 +17,7 @@
 	import { MAX_LEVEL, snapLevel } from './reactionCurves';
 	import DefResChart, { type ChartCurve, type ChartPoint } from './DefResChart.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import SettingLine from './kit/SettingLine.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
 
 	const ELEMENT_NAME: Record<ShredElement, string> = {
@@ -265,7 +266,8 @@
 		</div>
 	</div>
 
-	<div class="dr-controls panels instrument-controls">
+	<!-- SETTINGS (design §3): the hit and the enemy, set when you sit down. -->
+	<div class="dr-controls panels instrument-settings">
 		<div class="panel dr-hit">
 			<section class="inst-section">
 				<p class="kicker">Your hit</p>
@@ -298,12 +300,16 @@
 						{/if}
 					{/each}
 				</div>
-				<InstrumentSlider
-					label="Your level"
-					aria="Character level"
-					bind:value={charLevel}
-					{...LEVEL_SLIDER}
-				/>
+				<!-- Set once (almost always 90), so it folds into a line. -->
+				<SettingLine label="Your level" ariaLabel="Your level: {charLevel}">
+					{#snippet summary()}{charLevel}{/snippet}
+					<InstrumentSlider
+						label="Your level"
+						aria="Character level"
+						bind:value={charLevel}
+						{...LEVEL_SLIDER}
+					/>
+				</SettingLine>
 				<label class="check">
 					<input type="checkbox" bind:checked={ignoresDef} />
 					<span class="check-box"></span>
@@ -363,64 +369,12 @@
 		</div>
 	</div>
 
-	<div class="dr-side instrument-readout">
-		<div class="panel panel--paper dr-readout">
-			<p class="kicker">Readout</p>
-			<p class="readout-head">
-				{fmtX(total)}<span class="readout-sentence">of your hit's damage gets through</span>
-			</p>
-			<dl class="dr-rows">
-				<dt>RES</dt>
-				<dd>
-					{#if immune}
-						Immune
-					{:else}
-						<span class="dr-strong">{fmtX(resNow)}</span>
-						<span class="dr-sub"
-							>at {finalRes}% RES{resShred ? ` (${baseRes}% before shred)` : ''}</span
-						>
-					{/if}
-				</dd>
-				<dt>DEF</dt>
-				<dd>
-					<span class="dr-strong">{fmtX(defNow)}</span>
-					<span class="dr-sub">
-						{#if ignoresDef}
-							ignored by this hit
-						{:else}
-							Lv {charLevel} vs Lv {enemyLevel}{defShred ? ` · −${defShred}% DEF` : ''}{defIgnore
-								? ` · ${defIgnore}% ignored`
-								: ''}
-						{/if}
-					</span>
-				</dd>
-			</dl>
-			{#if !immune && total !== totalBase}
-				<p class="dr-meta">
-					Your shred and DEF ignore add
-					<span class="dr-strong">{gainPct(total, totalBase).toFixed(1)}%</span> damage against this enemy
-				</p>
-			{/if}
-			<p class="note dr-regime">
-				{#if immune}
-					An immune enemy takes no damage of this element, whatever the shred.
-				{:else if finalRes < 0}
-					Below 0% RES, shred works at half strength.
-				{:else if finalRes >= 75}
-					Above 75% RES, shred works at less than full strength, until RES drops back under 75%.
-				{:else}
-					Between 0% and 75% RES, shred works at full strength.
-				{/if}
-			</p>
-			<p class="dr-receipt">
-				<span class="dr-formula">res &lt; 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)</span>
-				<span class="dr-formula"
-					>(100+yours) / ((100+yours) + (100+enemy)·(1−shred)·(1−ignore))</span
-				>
-			</p>
-		</div>
-
-		<div class="panel dr-sources">
+	<!-- LIVE, then the Readout: the shred list is the control you work here
+	     (what does this shred buy?), and the Readout comes last at every width
+	     (design §6). One right-hand column at the wide tier, two grid items in
+	     their own right below it (see the container queries). -->
+	<div class="dr-side">
+		<div class="panel dr-sources instrument-live">
 			<p class="kicker">Shred</p>
 			<div class="inst-sections">
 				{#each SECTIONS as sec (sec.stat)}
@@ -508,26 +462,75 @@
 				{/each}
 			</div>
 		</div>
+
+		<div class="panel panel--paper dr-readout instrument-readout">
+			<p class="kicker">Readout</p>
+			<p class="readout-head">
+				{fmtX(total)}<span class="readout-sentence">of your hit's damage gets through</span>
+			</p>
+			<dl class="dr-rows">
+				<dt>RES</dt>
+				<dd>
+					{#if immune}
+						Immune
+					{:else}
+						<span class="dr-strong">{fmtX(resNow)}</span>
+						<span class="dr-sub"
+							>at {finalRes}% RES{resShred ? ` (${baseRes}% before shred)` : ''}</span
+						>
+					{/if}
+				</dd>
+				<dt>DEF</dt>
+				<dd>
+					<span class="dr-strong">{fmtX(defNow)}</span>
+					<span class="dr-sub">
+						{#if ignoresDef}
+							ignored by this hit
+						{:else}
+							Lv {charLevel} vs Lv {enemyLevel}{defShred ? ` · −${defShred}% DEF` : ''}{defIgnore
+								? ` · ${defIgnore}% ignored`
+								: ''}
+						{/if}
+					</span>
+				</dd>
+			</dl>
+			{#if !immune && total !== totalBase}
+				<p class="dr-meta">
+					Your shred and DEF ignore add
+					<span class="dr-strong">{gainPct(total, totalBase).toFixed(1)}%</span> damage against this enemy
+				</p>
+			{/if}
+			<p class="note dr-regime">
+				{#if immune}
+					An immune enemy takes no damage of this element, whatever the shred.
+				{:else if finalRes < 0}
+					Below 0% RES, shred works at half strength.
+				{:else if finalRes >= 75}
+					Above 75% RES, shred works at less than full strength, until RES drops back under 75%.
+				{:else}
+					Between 0% and 75% RES, shred works at full strength.
+				{/if}
+			</p>
+			<p class="dr-receipt">
+				<span class="dr-formula">res &lt; 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)</span>
+				<span class="dr-formula"
+					>(100+yours) / ((100+yours) + (100+enemy)·(1−shred)·(1−ignore))</span
+				>
+			</p>
+		</div>
 	</div>
 </div>
 
 <style>
-	/* ══ THE LAYOUT IS app.css's .instrument, PLUS ONE AREA ════════════════════
-	   The shred list is the one part no other instrument has. It is a CONTROL
-	   (a list of toggles), so below the wide tier it sits with the controls,
-	   before the Readout (⚓ Nate 2026-10-06: the Readout LAST); at the wide
-	   tier it takes the height left under the Readout in the right-hand
-	   column. A fourth area means restating the areas at each tier. */
+	/* ══ THE LAYOUT IS app.css's .instrument, WITH THE SHRED LIST MOVED ═══════
+	   The shred list is the live control (the slot classes are app.css's), but
+	   it is a long list, so it does not head the rail as a live slot does:
+	   narrow and mid, it comes after Your hit / Enemy, which would otherwise
+	   sit under it; wide, it shares the right-hand column with the Readout.
+	   The Readout is last at every width (⚓ Nate 2026-10-06; design §6).
+	   Areas are one property, so this restates them at each tier. */
 	.instrument {
-		grid-template-rows: minmax(min-content, 1fr) auto auto auto;
-		grid-template-areas: 'chart' 'controls' 'sources' 'readout';
-	}
-
-	.dr-readout {
-		grid-area: readout;
-	}
-	.dr-sources {
-		grid-area: sources;
+		grid-template-areas: 'chart' 'settings' 'live' 'readout';
 	}
 
 	/* RES takes the larger share of the slot's height */
@@ -563,7 +566,7 @@
 		color: var(--chart-dim);
 	}
 
-	/* The readout and the sources: grid items in their own right below the
+	/* The shred list and the Readout: grid items in their own right below the
 	   wide tier, one right-hand column at it. */
 	.dr-side {
 		display: contents;
@@ -734,55 +737,89 @@
 		color: var(--muted);
 	}
 
-	/* ── A shared tile: the shred list under the controls, the Readout beside
-	   both ── */
-	@container instrument (min-width: 38rem) {
+	/* ── Mid: the charts across; Your hit / Enemy over the shred list on the
+	   left, the Readout on the right (app.css's mid rows) ── */
+	@container instrument (38rem <= width < 60rem) {
 		.instrument {
-			grid-template-rows: minmax(min-content, 1fr) auto auto;
 			grid-template-areas:
 				'chart chart'
-				'controls readout'
-				'sources readout';
+				'settings readout'
+				'live readout';
 		}
-	}
 
-	@container instrument (38rem <= width < 60rem) {
-		/* The shared natural-height rule, said here because .dr-side (the
-		   .instrument-readout) dissolves at this tier; and beside the shred
-		   list the Readout stays in view, so the answer is on screen while you
-		   work down the list. */
+		/* Beside the shred list the Readout stays in view, so the answer is on
+		   screen while you work down the list. */
 		.dr-readout {
 			position: sticky;
 			top: 0;
-			align-self: start;
 		}
 	}
 
-	/* ── Wide: the Readout and the shred list are the right-hand column, the
-	   list taking whatever height is left (and scrolling inside it) ── */
+	/* ── Wide: the charts over Your hit / Enemy on the left; on the right the
+	   shred list, then the Readout at the column's foot ── */
 	@container instrument (min-width: 60rem) {
 		.instrument {
 			grid-template-rows: minmax(min-content, 1fr) auto;
 			grid-template-areas:
-				'chart readout'
-				'controls readout';
+				'chart side'
+				'settings side';
+		}
+
+		/* The charts share the left column with Your hit / Enemy, so they take
+		   the height those leave, not the tile's (app.css's wide chart). Neither
+		   panel changes height as you use it, so the charts hold still all the
+		   same. */
+		.dr-charts {
+			position: static;
+			align-self: stretch;
+			height: auto;
 		}
 
 		.dr-side {
+			grid-area: side;
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
+			min-width: 0;
 			min-height: 0;
+		}
+
+		/* app.css's `align-self: start` for these slots would shrink them
+		   across a flex column. */
+		.dr-sources,
+		.dr-readout {
+			align-self: stretch;
+		}
+
+		/* The shred list FIRST, taking the height the Readout leaves and
+		   scrolling inside it, top-anchored: when the Readout grows (a tick
+		   adds the meta line, lengthens the sub-lines, swaps the regime note)
+		   the list's window gets shorter, but its rows stay where they are.
+		   The floor keeps a few rows in view on a short tile. */
+		.dr-sources {
+			flex: 1 1 0;
+			min-height: 10rem;
+			overflow-y: auto;
 		}
 
 		.dr-readout {
 			flex: none;
 		}
+	}
 
-		.dr-sources {
-			flex: 1 1 0;
-			min-height: 0;
-			overflow-y: auto;
+	/* The column is the tile's height, and sticky, so the left column, when
+	   it runs taller than the tile, scrolls past a shred list and Readout that
+	   hold still. ⚠ Only where the tile is a SIZE container (from 1024px,
+	   +page.svelte), or `cqh` would read the viewport; below that the column
+	   stretches to the left column's height. */
+	@media (min-width: 1024px) {
+		@container instrument (min-width: 60rem) {
+			.dr-side {
+				position: sticky;
+				top: 0;
+				align-self: start;
+				height: 100cqh;
+			}
 		}
 	}
 </style>

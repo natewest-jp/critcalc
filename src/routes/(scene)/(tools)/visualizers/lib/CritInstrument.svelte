@@ -149,6 +149,15 @@
 	}
 </script>
 
+<!-- A hovered bar's sentence: "k of n hits crit", what that scores, and how
+     often. A snippet because its longest case also reserves the line's room. -->
+{#snippet countLine(k: number, chance: string)}
+	{k} of {hitsPerRotation}
+	{hitsWord(hitsPerRotation)} crit —
+	<span class="cv-strong">{formatMultiplier(rotationMultiplier(k, hitsPerRotation, myCD))}</span>,
+	in {chance} of rotations
+{/snippet}
+
 <div class="cv-instrument">
 	<div class="cv-layout" style:--cv-max-aspect={HEATMAP_MAX_ASPECT}>
 		<!-- THE STAGE: the chart and the controls that drive it, sized together
@@ -166,7 +175,9 @@
 				/>
 			</div>
 
-			<!-- The control strip: the build, then the overlays -->
+			<!-- The control strip, in the order of design §3: the build you scrub
+			     (live), the hits your rotation makes (per-session), then the
+			     overlays (set-once) -->
 			<div class="panel cv-controls">
 				<!-- The model holds fractions (0.7); the fields show percent. CRIT DMG
 				     keeps one decimal, as its field always did: a marker dragged on the
@@ -193,6 +204,17 @@
 					unit="%"
 				/>
 
+				<!-- The track is the risk ramp: how the no-crit chance falls as hits
+				     are added, at the current CRIT Rate. -->
+				<InstrumentSlider
+					label="Hits per rotation"
+					bind:value={hitsPerRotation}
+					min={HITS_MIN}
+					max={HITS_MAX}
+					step={1}
+					trackStyle="background-image: {riskGradient(myCR)}"
+				/>
+
 				<div class="inst-section">
 					<label class="check">
 						<input type="checkbox" bind:checked={showCvLine} />
@@ -208,17 +230,6 @@
 						</span>
 					</label>
 				</div>
-
-				<!-- The track is the risk ramp: how the no-crit chance falls as hits
-				     are added, at the current CRIT Rate. -->
-				<InstrumentSlider
-					label="Hits per rotation"
-					bind:value={hitsPerRotation}
-					min={HITS_MIN}
-					max={HITS_MAX}
-					step={1}
-					trackStyle="background-image: {riskGradient(myCR)}"
-				/>
 			</div>
 		</div>
 
@@ -235,13 +246,32 @@
 					<dt>Total crit value (CV)</dt>
 					<dd>{myCV}</dd>
 					<dd class="cv-build-gloss">2 × CRIT Rate + CRIT DMG, base crit stats included</dd>
-					<dt>No-crit risk ({hitsPerRotation} {hitsWord(hitsPerRotation)})</dt>
+					<!-- Stacked over its widest case, so the hits slider can't push the
+					     values column sideways (design §4) -->
+					<dt class="cv-stack">
+						<span>No-crit risk ({hitsPerRotation} {hitsWord(hitsPerRotation)})</span>
+						<span class="cv-ghost" aria-hidden="true">No-crit risk ({HITS_MAX} hits)</span>
+					</dt>
 					<dd>{formatChance(zeroCritRisk)}</dd>
 				</dl>
 
-				<!-- Pin: freeze a second marker to eyeball a trade against -->
+				<!-- Pin: freeze a second marker to eyeball a trade against. One button
+				     that toggles, with what it pinned below it, so Clear pin is where
+				     Pin this build was (design §4). Both labels share its cell, so it
+				     keeps one width either way. -->
 				<div class="cv-pin-section">
-					{#if pinned}
+					<button
+						class="btn btn--primary cv-button"
+						onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
+					>
+						<span class="cv-stack">
+							<span class:cv-ghost={!!pinned}>Pin this build</span>
+							<span class:cv-ghost={!pinned}>Clear pin</span>
+						</span>
+					</button>
+				</div>
+				{#if pinned}
+					<div class="cv-pinned">
 						<dl class="cv-build-list">
 							<dt>Pinned</dt>
 							<dd>
@@ -253,18 +283,8 @@
 						<p class="cv-build-delta">
 							<span class="cv-strong">{deltaFormat.format(pinnedDelta)}</span> average DMG vs pinned
 						</p>
-						<button class="btn btn--primary cv-button" onclick={() => (pinned = null)}>
-							Clear pin
-						</button>
-					{:else}
-						<button
-							class="btn btn--primary cv-button"
-							onclick={() => (pinned = { critRate: myCR, critDamage: myCD })}
-						>
-							Pin this build
-						</button>
-					{/if}
-				</div>
+					</div>
+				{/if}
 				<!-- One rotation: every crit count with its chance, and a roll that
 				     draws one of them. -->
 				<div class="cv-section cv-dist-section">
@@ -295,24 +315,28 @@
 					<div class="cv-dist-axis" aria-hidden="true">
 						<span>0</span><span>{hitsPerRotation}</span>
 					</div>
-					<p class="cv-roll-meta" aria-live="polite">
-						{#if hoveredCount !== null}
-							{hoveredCount} of {hitsPerRotation}
-							{hitsWord(hitsPerRotation)} crit —
-							<span class="cv-strong"
-								>{formatMultiplier(rotationMultiplier(hoveredCount, hitsPerRotation, myCD))}</span
-							>, in {formatChance(distribution[hoveredCount])} of rotations
-						{:else if rollResult}
-							{rollCrits} of {rollResult.length}
-							{hitsWord(rollResult.length)} crit —
-							<span class="cv-strong">{formatMultiplier(rollMultiplier)}</span>
-							this time
-						{:else}
-							On average {averageCrits.toFixed(1)} of {hitsPerRotation}
-							{hitsWord(hitsPerRotation)} crit —
-							<span class="cv-strong">{formatMultiplier(myMultiplier)}</span>
-						{/if}
-					</p>
+					<!-- The sentence swaps as you scrub the bars, so it sits over a ghost
+					     of its longest form (a hover at the last bar) and the Roll button
+					     under it holds still (design §4). -->
+					<div class="cv-stack">
+						<p class="cv-roll-meta" aria-live="polite">
+							{#if hoveredCount !== null}
+								{@render countLine(hoveredCount, formatChance(distribution[hoveredCount]))}
+							{:else if rollResult}
+								{rollCrits} of {rollResult.length}
+								{hitsWord(rollResult.length)} crit —
+								<span class="cv-strong">{formatMultiplier(rollMultiplier)}</span>
+								this time
+							{:else}
+								On average {averageCrits.toFixed(1)} of {hitsPerRotation}
+								{hitsWord(hitsPerRotation)} crit —
+								<span class="cv-strong">{formatMultiplier(myMultiplier)}</span>
+							{/if}
+						</p>
+						<p class="cv-roll-meta cv-ghost" aria-hidden="true">
+							{@render countLine(hitsPerRotation, formatChance(1))}
+						</p>
+					</div>
 					<div class="cv-roll">
 						<button class="btn btn--primary cv-button" onclick={rollIt}>
 							<Mark name="dice" size={12} />
@@ -407,9 +431,10 @@
 		inset: 0;
 	}
 
-	/* The strip: CRIT Rate | CRIT DMG, then the overlays | hits per rotation.
-	   One section, so its rows sit a control apart (app.css § THE SPACING
-	   LADDER); the overlays cell is an `.inst-section` of its own. */
+	/* The strip: CRIT Rate | CRIT DMG, then hits per rotation | the overlays,
+	   so it reads live, per-session, set-once (design §3) in both columns and
+	   in one. One section, so its rows sit a control apart (app.css § THE
+	   SPACING LADDER); the overlays cell is an `.inst-section` of its own. */
 	.cv-controls {
 		flex: none;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -533,12 +558,31 @@
 	   rule in the card is the one above the chart (⚓ Nate 2026-10-02) */
 	.cv-pin-section {
 		display: grid;
-		gap: 0.35rem;
 		margin-top: 0.35rem;
+	}
+
+	.cv-pinned {
+		display: grid;
+		gap: 0.35rem;
 	}
 
 	.cv-button {
 		justify-self: start;
+	}
+
+	/* A swapping text over its longest form, in one cell: the cell keeps the
+	   longest one's size whichever is showing (design §4). The ghost is
+	   aria-hidden, and hidden ink leaves the accessible name too. */
+	.cv-stack {
+		display: grid;
+	}
+
+	.cv-stack > * {
+		grid-area: 1 / 1;
+	}
+
+	.cv-ghost {
+		visibility: hidden;
 	}
 
 	/* ── One rotation: the crit-count distribution ─────────────────────────── */
@@ -621,7 +665,6 @@
 	}
 
 	.cv-roll-meta {
-		flex-basis: 100%;
 		margin: 0;
 		font-size: var(--fs-lg);
 		color: var(--muted);
@@ -699,6 +742,11 @@
 		}
 		.cv-pin-section {
 			grid-area: pin;
+		}
+		/* Under the button, in a row of its own past the chart's, so pinning
+		   moves neither the chart nor Roll */
+		.cv-pinned {
+			grid-column: 1;
 		}
 
 		/* Beside the numbers it needs no rule above it */

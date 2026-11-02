@@ -23,9 +23,9 @@
 		type ReplayStep
 	} from './wishHistory';
 	import { formatChance } from './chance';
-	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import SettingLine from './kit/SettingLine.svelte';
 
 	/** The most pulls the instrument takes, typed or shared. */
 	const MAX_PULLS = 2000;
@@ -728,10 +728,9 @@
 		</div>
 	</div>
 
-	<!-- ONE panel: the pulls you've saved, then each banner the tab touches
-	     (what you're pulling for is the chart's tabs). Sections stack in a shared
-	     tile and sit side by side in a wide one (see the container queries). -->
-	<div class="panel wi-controls instrument-controls">
+	<!-- LIVE (round 3, design §3): the pulls you've saved is the one control you
+	     scrub, so it heads the rail on its own, beside the chart it moves. -->
+	<div class="panel instrument-live">
 		<section class="inst-section">
 			<!-- Typed, it runs past the chart (to MAX_PULLS), where every goal is
 			     past 99.9%: the Readout answers, the marker waits at the axis's end. -->
@@ -746,7 +745,13 @@
 			/>
 			<p class="inst-hint">Or drag across the chart.</p>
 		</section>
+	</div>
 
+	<!-- SETTINGS: each banner the tab touches (what you're pulling for is the
+	     chart's tabs). Per session first (pity, the guarantee), then the set-once
+	     lines folded into popovers (Goal, the Radiance counter). ⚓ ONE panel (the
+	     2026-10-04 ruling: separate panels split around the pulls in a shared tile). -->
+	<div class="panel instrument-settings inst-sections">
 		{#each blocks as id (id)}
 			{@const s = states[id]}
 			{@const b = BANNERS[id]}
@@ -761,55 +766,6 @@
 				ondrop={id === 'character' ? onDrop : undefined}
 			>
 				<p class="kicker">{RULES[id].kicker}</p>
-				<div class="wi-row">
-					<span class="slider-label">Goal</span>
-					<BandMenu
-						role="dialog"
-						size="sm"
-						align="end"
-						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
-					>
-						{#snippet face()}
-							<span class="wi-face"
-								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
-									id,
-									s.goal
-								)}</span
-							>
-						{/snippet}
-						{#snippet items()}
-							<div class="wi-pop wi-levels">
-								<span class="slider-label" id="wi-have-{id}">You have</span>
-								<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
-									{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
-										<button
-											class="chip chip--control"
-											class:active={s.have === copies}
-											aria-pressed={s.have === copies}
-											onclick={() => setHave(id, copies)}
-										>
-											{haveName(id, copies)}
-										</button>
-									{/each}
-								</div>
-								<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
-								<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
-									{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
-										<button
-											class="chip chip--control"
-											class:active={s.goal === copies}
-											aria-pressed={s.goal === copies}
-											disabled={copies <= s.have}
-											onclick={() => (states[id].goal = copies)}
-										>
-											{levelName(id, copies)}
-										</button>
-									{/each}
-								</div>
-							</div>
-						{/snippet}
-					</BandMenu>
-				</div>
 				<InstrumentSlider
 					label="Current pity"
 					aria={RULES[id].pityAria}
@@ -823,45 +779,77 @@
 					<span class="check-box"></span>
 					{RULES[id].guarantee}
 				</label>
-				{#if id === 'character'}
-					<div class="wi-row">
-						<span class="slider-label">Radiance counter</span>
-						<BandMenu
-							role="dialog"
-							size="sm"
-							align="end"
-							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
-						>
-							{#snippet face()}
-								<span class="wi-face">{s.counter === null ? 'Don’t know' : s.counter}</span>
-							{/snippet}
-							{#snippet items(close)}
-								{@render counterPanel(close)}
-							{/snippet}
-						</BandMenu>
+				<SettingLine
+					label="Goal"
+					ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+				>
+					{#snippet summary()}
+						{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(id, s.goal)}
+					{/snippet}
+					<div class="wi-pop wi-levels">
+						<span class="slider-label" id="wi-have-{id}">You have</span>
+						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
+							{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
+								<button
+									class="chip chip--control"
+									class:active={s.have === copies}
+									aria-pressed={s.have === copies}
+									onclick={() => setHave(id, copies)}
+								>
+									{haveName(id, copies)}
+								</button>
+							{/each}
+						</div>
+						<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
+							{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
+								<button
+									class="chip chip--control"
+									class:active={s.goal === copies}
+									aria-pressed={s.goal === copies}
+									disabled={copies <= s.have}
+									onclick={() => (states[id].goal = copies)}
+								>
+									{levelName(id, copies)}
+								</button>
+							{/each}
+						</div>
 					</div>
+				</SettingLine>
+				{#if id === 'character'}
+					<SettingLine
+						label="Radiance counter"
+						ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
+					>
+						{#snippet summary()}
+							{s.counter === null ? 'Don’t know' : s.counter}
+						{/snippet}
+						{#snippet children(close)}
+							{@render counterPanel(close)}
+						{/snippet}
+					</SettingLine>
 
 					<!-- One note for the guarantee and the counter together: what comes next. -->
 					{#if s.counter === null}
-						<p class="note">
+						<p class="inst-hint">
 							Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
 							including Capturing Radiance).
 						</p>
 					{:else if s.counter === 3 && s.guaranteed}
-						<p class="note">
+						<p class="inst-hint">
 							Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
 						</p>
 					{:else if s.counter === 3}
-						<p class="note">
+						<p class="inst-hint">
 							Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
 						</p>
 					{:else if s.counter === 2}
-						<p class="note">
+						<p class="inst-hint">
 							You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
 							Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
 						</p>
 					{:else}
-						<p class="note">Your next 50/50 is an even one.</p>
+						<p class="inst-hint">Your next 50/50 is an even one.</p>
 					{/if}
 
 					<input
@@ -872,7 +860,7 @@
 						onchange={(e) => importFile(e.currentTarget.files?.[0])}
 					/>
 				{:else if id === 'fourStar'}
-					<p class="note">
+					<p class="inst-hint">
 						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
 						you want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it
 						averages out to about 22%.
@@ -882,7 +870,7 @@
 						>
 					</p>
 				{:else}
-					<p class="note">
+					<p class="inst-hint">
 						Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted,
 						37.5% to be the other featured weapon, and 25% to be a standard 5★ weapon.
 					</p>
@@ -1115,26 +1103,12 @@
 	}
 
 	/* A set-once setting's line: its name, and a summary that opens its popover */
-	.wi-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.6rem;
-	}
-
-	.wi-face {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		font-family: var(--font-condensed);
-	}
 
 	/* A popover's contents (BandMenu, portalled: the band menu's own surface) */
+	/* Inside SettingLine's popover, which pads it and sets its width. */
 	.wi-pop {
 		display: grid;
 		gap: 0.6rem;
-		width: min(22rem, calc(100vw - 2rem));
-		padding: 0.6rem;
 	}
 
 	.wi-pop-head {
@@ -1201,25 +1175,5 @@
 
 	.wi-step--radiance {
 		box-shadow: inset 0 0 0 1px var(--accent);
-	}
-
-	/* One panel, its sections stacked (⚓ Nate, 2026-10-04: a shared tile
-	   split the banner panels around "Pulling for" when they were separate). */
-	/* The panel's sections on the ladder (app.css § THE SPACING LADDER); each
-	   section is an `.inst-section`. */
-	.wi-controls {
-		display: grid;
-		gap: var(--inst-gap-section) 1.5rem;
-		align-content: start;
-	}
-
-	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
-	   side by side under the chart. */
-	@container instrument (min-width: 60rem) {
-		/* "Pulls saved" is a narrow column, so each banner section keeps the
-		   width for its eight level chips on one row. */
-		.wi-controls {
-			grid-template-columns: 11rem repeat(auto-fit, minmax(17.5rem, 1fr));
-		}
 	}
 </style>
