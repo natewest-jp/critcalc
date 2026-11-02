@@ -72,36 +72,49 @@ then control to control, then section to section. Exact values live as named pro
 
 Of three concepts (a setup line over a stage with the answer beside it; a stage over a
 fixed-height dock; the rail made into a proper inspector), Nate chose the first. It replaces
-the rail (§6a) one instrument at a time.
+the rail (§6a) one instrument at a time. Its first build (Wish odds) showed two new problems,
+and the stage is now **one box** (⚓ Nate: "if we can simplify down to one box, this solves so
+many layout issues"):
 
 ```
-[ view tabs ...................................... chart tools ]
-[ setup line: Pity 0 · No guarantee · Goal C0 · Radiance: ? ]
-  headline (the chart head)                 ┌──────────────────┐
-┌────────────────────────────────────────┐  │ answer card      │
-│ the chart: drag it, it is the control  │  │ (paper)          │
-└──────────── axis handle ───────────────┘  │                  │
-  companion strip, on the same x axis       └──────────────────┘
+[ view tabs ]  [ setup bar: Pity 0 · Guarantee None · Goal C0 · Radiance ? ]
+headline (the chart head)
+┌──────────────────────────────────────────────────────────────────┐
+│ the chart, full width: drag it, it is the control                 │
+│ companion strip, on the same x axis                               │
+└──────────────────────────── axis handle ─────────────────────────┘
+fine print
 ```
 
-- **The chart bar.** View tabs on the left (what the chart draws), chart tools on the right
-  (the Gauge's Add palette, an element choice, overlays). One component in all eight.
-- **The setup line.** Every per-session and set-once setting is a chip that shows its value
-  and opens a popover. A list is one chip that says what is on ("Shred: Chevreuse 40%,
-  Zhongli 20%"). Chips are labeled, not written as prose sentences, because a sentence with
-  controls inside it can't be reordered for another language. A chip holds a reserved width
-  and tabular figures, so the line doesn't rewrap under the hand.
-- **The chart head.** The headline answer sits at the chart's top left, as in Apple Stocks
-  and Robinhood: you scrub the chart and the number follows. It has a fixed height, so it
-  can sit above the chart without moving anything. ⚓ Nate: **each instrument's headline is
-  chosen at the start of its round, and it must be the most important answer for that
-  chart**, not whatever the old Readout led with.
+- **The controls row.** The view tabs (a recessed track: one is chosen), then the setup bar
+  (a raised glass plate: each segment is a value you set), on one row where they fit. Two
+  materials, so they read as two things. The first build gave every setting its own plate on
+  a row of its own, and with the instrument tabs above that was three rows of identical
+  buttons. Chart tools, where an instrument has them, end the row.
+- **The setup bar.** Every per-session and set-once setting is a segment that shows its value
+  and opens a popover: the guarantee too, as a value ("Held", "None"), not a toggle, so the
+  bar has one grammar. A list is one segment that says what is on ("Shred: Chevreuse 40%,
+  Zhongli 20%"). Segments are labeled, not written as prose sentences, because a sentence with
+  controls inside it can't be reordered for another language. Values hold a reserved width
+  and tabular figures. A setting's explanation lives in its popover, beside the choice.
+- **The chart head.** The headline answer sits at the stage's top left, over night, as in
+  Apple Stocks and Robinhood: you scrub the chart and the number follows. It has a fixed
+  height, so nothing below it moves. ⚓ Nate: **each instrument's headline is chosen at the
+  start of its round, and it must be the most important answer for that chart**, not
+  whatever the old Readout led with.
 - **The live control is a handle on the chart.** Where the live value is an axis (pulls,
   days, EM, RES, enemy level, CRIT DMG and CRIT Rate), it is a handle on that axis with a
   typeable value beside it.
-- **The answer card** is the one paper card. It keeps what geometry can't show: the
-  sentence, the table of levels, caveats and the formula. Beside the stage at the wide tier,
-  under it below that.
+- **No answer card.** The card's contents each have a better home: figures on the chart
+  (§7's marks), a setting's explanation in its popover, definitions as tooltips on the
+  chart's labels. Beside the stage it sat diagonally from the chart, and mostly repeated it.
+  What no part of the chart can show is one line of **fine print** under the handle; where an
+  instrument has a long working (a formula, caveats), the fine print opens it on paper.
+  ⏭ This changes the materials rule "one paper Readout card per instrument" (Nate's): on the
+  stage, paper is the full working on request.
+- **The layout.** One column at every width. From 1024px the stage is the tile's height,
+  capped at 🎛️ `--wi-stage-aspect` (1.9) × the tile's height and centred, so an ultrawide
+  doesn't flatten every slope.
 
 ### Using the chart's space
 

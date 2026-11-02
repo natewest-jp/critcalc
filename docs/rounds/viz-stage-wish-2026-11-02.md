@@ -1,6 +1,6 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage`, for Nate to look at in the local build. Not merged.
+**Status:** 🔨 built on `feat/viz-wish-stage` in two passes (§7 is the second), for Nate to look at in the local build. Not merged.
 ⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
 §4 are Nate's; real Safari and iPhone.
 
@@ -85,3 +85,53 @@ Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed. Driven on
 build: a drag on the chart, typing past the axis, pity, the guarantee, a reload (the state
 persists) and Defaults, with no page errors. Looked at headless at 3000, 1600, 1440 two up,
 1280, 900 and 390 wide.
+
+## 7. Second pass: one box
+
+Nate on the first pass: the chips with no panels are "the single biggest improvement", the
+headline "has even more impact standing over night", and the companion and the handle merged
+into the chart both work. Two new problems: too many rows of buttons (instrument tabs, view
+tabs, then a row of setting chips, all the same glass plate), and two boxes, the chart and
+the card, sitting diagonally from each other with gaps around both.
+
+- **One controls row.** The view tabs and a single **setup bar** share a row where they fit.
+  The bar is one glass plate whose segments are bare buttons, so the row reads as two objects
+  (a recessed track you choose one of, a raised plate of values) instead of nine plates.
+  Hairlines between segments were tried and dropped: on a phone the bar wraps and they
+  dangled at the line ends; each segment's chevron already ends it.
+- **The guarantee is a segment** with a value ("Held", "None") and a popover holding the
+  checkbox and the banner's note, so the bar has one grammar and the note has a home.
+- **No card.** Its contents moved:
+  - the table: the goal's Half by and Unlucky tenth were already on the curve; with more
+    than one level, each level's dot carries its chance ("R1 56.8%"), nudged apart and
+    stepping above the goal's own dot;
+  - the average and the worst case: marks on the companion strip ("average 90", "at most
+    180"), and the axis now runs to the worst case where there is one, so "at most" is on it;
+  - the definitions: tooltips on the crossing labels;
+  - the 55%, 4★ and weapon notes: the Guarantee popover (and the character note in the
+    Radiance counter's too);
+  - the wish-history import report: the Radiance counter's popover, which now stays open
+    after a file is read, so the report shows where the import was asked for;
+  - the pair note: one line of fine print under the handle.
+- **The layout** is one column. From 1024px the stage is the tile's height, capped at 🎛️
+  `--wi-stage-aspect` (1.9) × the tile's height and centred: with no side column, the rail's
+  1.65 would have capped a 1600×1000 one up and set the stage off from the tabs above it.
+- **Chart labels** wear the site's soft halo (the Gauge's recipe, a touch denser), so a
+  level's chance stays legible over a curve. A hard `paint-order` outline was tried and
+  smeared the glyphs.
+
+For Nate's eye, as well as §4: the bar's look; the chart at full width (flatter at 2000px:
+about 2.6 wide to 1 tall); the dot labels and strip marks; the halo.
+
+Copy, as well as §5 (written in, proposed):
+
+1. The guarantee's values: "Held", "None".
+2. The strip marks: "average 90", "at most 180".
+3. A level's dot label: "R1 56.8%".
+4. Tooltips: "Half of players get there within this many pulls." and "The unluckiest 10% of
+   players need this many pulls or more." (from the card's definitions).
+5. The pair's fine print: "Your character and weapon banners keep separate pity, so the chart
+   adds the pulls for both." ("the chart" was "this").
+
+⏭ The materials rule "one paper Readout card per instrument" (`ui.md`, Nate's) holds for the
+rail only now; `ui.md` is unchanged until Nate rules on the stage.
