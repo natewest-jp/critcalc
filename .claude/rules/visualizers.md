@@ -22,6 +22,11 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 - A chart box that is measured and then drawn to fit carries `contain: size` with a natural-height floor, or its row ratchets taller on every redraw.
 - ⚠️ The tile's grid row is `minmax(0, 1fr)`, never `1fr`: `1fr` means `minmax(auto, 1fr)`, and the `auto` minimum stops an instrument's own `overflow-y: auto` from ever running.
 
+## The stage
+
+- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds wears it. The headline sits at the chart head. Its CSS stays in `WishInstrument.svelte` until a second instrument wears it.
+- An axis handle is an `InstrumentSlider` whose track runs the plot's x range plus `THUMB_R` each side, so the thumb sits on the marker line. ⚠️ Zero the range input's margin, or Chrome's 2px puts it off the line.
+
 ## The rail
 
 - An instrument has four slots (`app.css` § THE RAIL): chart, live, settings, Readout. The Readout is last at every width, because it is the slot whose height follows the values. A control's dependents sit below it, so where settings decide what the live panel offers, use `.instrument--settings-first`.

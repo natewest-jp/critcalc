@@ -7,6 +7,7 @@
 		copiesCdfs,
 		RADIANCE_CHANCE,
 		sumCdf,
+		toPmf,
 		worstCasePulls,
 		type BannerDef,
 		type BannerId,
@@ -24,8 +25,8 @@
 	} from './wishHistory';
 	import { formatChance } from './chance';
 	import Mark from '$lib/components/Mark.svelte';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
-	import SettingLine from './kit/SettingLine.svelte';
 
 	/** The most pulls the instrument takes, typed or shared. */
 	const MAX_PULLS = 2000;
@@ -284,6 +285,10 @@
 	});
 
 	// ── Geometry ─────────────────────────────────────────────────────────────
+	// Top to bottom: the main plot (the chance by each pull), the companion
+	// strip on the same x axis (the chance on each pull), then the axis's
+	// numbers. The handle (Pulls saved) sits under the SVG, its track lined up
+	// with the plot's x range.
 	let graphW = $state(720);
 	let graphH = $state(0);
 	const PADL = 58;
@@ -291,10 +296,22 @@
 	const TOP = 16;
 	/** The plot's height at its least — the chart grows from here into the tile. */
 	const PLOT_MIN = 230;
-	const CHROME_H = TOP + 30; // above the plot + the axis below it
+	/** 🎛️ The companion strip's height (design §7: at most one, on the main x axis). */
+	const COMP_H = 72;
+	/** 🎛️ Between the plot and the strip; the strip's label sits in it. */
+	const COMP_GAP = 24;
+	/** The axis's numbers and its name, under the strip. */
+	const AXIS_H = 30;
+	const CHROME_H = TOP + COMP_GAP + COMP_H + AXIS_H;
 	const plotH = $derived(Math.max(PLOT_MIN, graphH - CHROME_H));
 	const plotY1 = $derived(TOP + plotH);
-	const H = $derived(plotY1 + 30);
+	const compY0 = $derived(plotY1 + COMP_GAP);
+	const compY1 = $derived(compY0 + COMP_H);
+	const H = $derived(compY1 + AXIS_H);
+	/** Half the slider thumb's 15px (app.css `.slider`): the handle's track runs
+	 *  this far past each end of the axis, so the thumb's centre lands on the
+	 *  marker line at every value. */
+	const THUMB_R = 7.5;
 	/** Axis labels stay at least this far apart (as in the ICD Timeline). */
 	const MIN_TICK_PX = 44;
 	const TICK_STEPS = [5, 10, 20, 25, 50, 100, 200, 250, 500];
@@ -375,29 +392,78 @@
 		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
 	}
 
-	const fmtPct = (p: number, digits = 1) => {
-		// never print a certainty the model doesn't have, nor a zero it doesn't either
-		const s = (p * 100).toFixed(digits);
-		if (p < 1 && Number(s) >= 100) return `>${(100 - 10 ** -digits).toFixed(digits)}%`;
-		if (p > 0 && Number(s) <= 0) return `<${(10 ** -digits).toFixed(digits)}%`;
-		return `${s}%`;
-	};
+	// ── The answer as geometry (design §6, §7: the chance-curve family) ──────
+	// The goal's Half by and Unlucky tenth are where its curve crosses 50% and
+	// 90%: a dot on the curve, a drop line to the axis, and the figure beside
+	// it. The label goes below and right of its dot, where a rising curve leaves
+	// the space empty, or above and left (also empty) where it would run off the
+	// plot. The goal's level name already sits left of the 50% crossing.
+	const crossings = $derived.by(() => {
+		const { median, p90 } = goalRow.stats;
+		return [
+			{ key: 'half', k: median, text: `Half by ${median}` },
+			{ key: 'tenth', k: p90, text: `Unlucky tenth ${p90}` }
+		]
+			.filter((c) => c.k > 0 && c.k <= domain)
+			.map((c) => {
+				const x = xOf(c.k);
+				const right = x + 8 + c.text.length * LABEL_CHAR_PX <= graphW - PADR;
+				const y = yOf(cdfAt(goal.cdf, c.k));
+				// below and right of the dot, or above and left: clear of a shallow curve too
+				return {
+					...c,
+					x,
+					y,
+					lx: right ? x + 8 : x - 8,
+					ly: right ? y + 14 : y - 7,
+					anchor: right ? 'start' : 'end'
+				};
+			});
+	});
+
+	// The companion strip: the chance the goal is done ON each pull, the
+	// main curve's slope. Its spikes are why the curve jumps (soft pity, the
+	// hard pity wall). Scaled to its own peak, so it shows shape, not size.
+	const goalPmf = $derived(toPmf(goal.cdf));
+	const compPath = $derived.by(() => {
+		let peak = 0;
+		for (let k = 1; k <= domain; k++) peak = Math.max(peak, goalPmf[k] ?? 0);
+		if (!(peak > 0)) return '';
+		const y = (p: number) => (compY1 - (p / peak) * (COMP_H - 4)).toFixed(1);
+		const x = (k: number) => xOf(Math.min(domain, Math.max(0, k))).toFixed(1);
+		// a step per pull, centred on its pull, as the marker line is
+		let d = `M${x(0)},${compY1}`;
+		for (let k = 1; k <= domain; k++) {
+			const yk = y(goalPmf[k] ?? 0);
+			d += ` L${x(k - 0.5)},${yk} L${x(k + 0.5)},${yk}`;
+		}
+		return `${d} L${x(domain)},${compY1} Z`;
+	});
+
 	const pullsPhrase = (n: number) => (n === 1 ? '1 pull' : `${n} pulls`);
 
-	const RULES: Record<BannerId, { kicker: string; pityAria: string; guarantee: string }> = {
+	/** `held` is the guarantee chip's word; `guarantee` says in full what it means
+	 *  (its tooltip and accessible name). */
+	const RULES: Record<
+		BannerId,
+		{ kicker: string; pityAria: string; held: string; guarantee: string }
+	> = {
 		character: {
 			kicker: 'Character Event',
 			pityAria: 'Pulls since your last five-star',
+			held: 'Guarantee',
 			guarantee: 'Guarantee held (lost the last 50/50)'
 		},
 		fourStar: {
 			kicker: 'Character Event',
 			pityAria: 'Pulls since your last four-star',
+			held: 'Guarantee',
 			guarantee: 'Guarantee held (last 4★ wasn’t featured)'
 		},
 		weapon: {
 			kicker: 'Weapon Event',
 			pityAria: 'Pulls since your last five-star weapon',
+			held: 'Fate point',
 			guarantee: 'Fate point held'
 		}
 	};
@@ -571,9 +637,12 @@
 	</ol>
 {/snippet}
 
-<div class="instrument instrument--capped">
-	<div class="wi-chart instrument-chart ctx-dark">
-		<!-- What you're pulling for picks what the chart draws, so it sits on the chart. -->
+<!-- THE STAGE (design §6, the first instrument on it): the chart bar, the
+     setup line, the chart head, the chart with its companion, and the handle,
+     all in one column; the answer card beside it at the wide tier. -->
+<div class="wi-root">
+	<div class="wi-stage ctx-dark">
+		<!-- The chart bar: what you're pulling for picks what the chart draws. -->
 		<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
 			{#each TARGETS as t (t.id)}
 				<button
@@ -587,6 +656,149 @@
 				</button>
 			{/each}
 		</div>
+
+		<!-- The setup line: each banner the tab touches, as chips that show their
+		     value. A chip opens its setting; the guarantee is a toggle. -->
+		<div class="wi-setup">
+			{#each blocks as id (id)}
+				{@const s = states[id]}
+				{@const b = BANNERS[id]}
+				<!-- Dropping a file on the character banner's chips is a pointer shortcut
+				     for "Read a Paimon.moe export", which stays the accessible path. -->
+				<div
+					class="wi-setup-group"
+					class:is-dropping={id === 'character' && dropping}
+					role="group"
+					aria-label={RULES[id].kicker}
+					ondragover={id === 'character' ? onDragOver : undefined}
+					ondragleave={id === 'character' ? onDragLeave : undefined}
+					ondrop={id === 'character' ? onDrop : undefined}
+				>
+					{#if blocks.length > 1}
+						<span class="wi-setup-name">{RULES[id].kicker}</span>
+					{/if}
+
+					<BandMenu
+						role="dialog"
+						glass
+						align="start"
+						ariaLabel="Current pity: {clampPity(b, s.pity)}"
+					>
+						{#snippet face()}
+							<span class="wi-chip-key">Pity</span>
+							<span class="wi-chip-val wi-chip-val--num">{clampPity(b, s.pity)}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<InstrumentSlider
+									label="Current pity"
+									aria={RULES[id].pityAria}
+									bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
+									min={0}
+									max={b.hard - 1}
+									step={1}
+								/>
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					<button
+						class="btn btn--glass"
+						class:is-active={s.guaranteed}
+						aria-pressed={s.guaranteed}
+						aria-label={RULES[id].guarantee}
+						title={RULES[id].guarantee}
+						onclick={() => (states[id].guaranteed = !states[id].guaranteed)}
+					>
+						{RULES[id].held}
+					</button>
+
+					<BandMenu
+						role="dialog"
+						glass
+						align="start"
+						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+					>
+						{#snippet face()}
+							<span class="wi-chip-key">Goal</span>
+							<span class="wi-chip-val"
+								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
+									id,
+									s.goal
+								)}</span
+							>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<div class="wi-pop wi-levels">
+									<span class="slider-label" id="wi-have-{id}">You have</span>
+									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
+										{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
+											<button
+												class="chip chip--control"
+												class:active={s.have === copies}
+												aria-pressed={s.have === copies}
+												onclick={() => setHave(id, copies)}
+											>
+												{haveName(id, copies)}
+											</button>
+										{/each}
+									</div>
+									<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
+										{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
+											<button
+												class="chip chip--control"
+												class:active={s.goal === copies}
+												aria-pressed={s.goal === copies}
+												disabled={copies <= s.have}
+												onclick={() => (states[id].goal = copies)}
+											>
+												{levelName(id, copies)}
+											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					{#if id === 'character'}
+						<BandMenu
+							role="dialog"
+							glass
+							align="start"
+							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
+						>
+							{#snippet face()}
+								<span class="wi-chip-key">Radiance counter</span>
+								<span class="wi-chip-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
+							{/snippet}
+							{#snippet items(close)}
+								<div class="wi-chip-pop">{@render counterPanel(close)}</div>
+							{/snippet}
+						</BandMenu>
+						<input
+							bind:this={fileInput}
+							type="file"
+							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							class="wi-file"
+							onchange={(e) => importFile(e.currentTarget.files?.[0])}
+						/>
+					{/if}
+				</div>
+			{/each}
+		</div>
+
+		<!-- The chart head (design §6): the answer, where the chart is. It follows
+		     the handle and a drag on the chart. Two fixed lines, so nothing below
+		     it moves as the figure changes. -->
+		<p class="readout-head wi-head">
+			{formatChance(goalRow.chance)}<span class="readout-sentence"
+				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
+			>
+		</p>
+
 		<div
 			class="wi-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
@@ -604,12 +816,13 @@
 				onpointercancel={onUp}
 				style:cursor="ew-resize"
 			>
-				<!-- X grid (pulls from now) -->
+				<!-- X grid (pulls from now), through the plot and the strip -->
 				{#each xTicks as t (t)}
 					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
+					<line x1={xOf(t)} y1={compY0} x2={xOf(t)} y2={compY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(t)}
-						y={plotY1 + 15}
+						y={compY1 + 15}
 						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
@@ -619,7 +832,7 @@
 				{/each}
 				<text
 					x={graphW - PADR}
-					y={plotY1 + 27}
+					y={compY1 + 27}
 					fill="var(--chart-dim)"
 					font-size="10"
 					text-anchor="end"
@@ -659,6 +872,14 @@
 						stroke="var(--chart-rule)"
 						stroke-dasharray="4 4"
 					/>
+					<line
+						x1={xOf(softAt)}
+						y1={compY0}
+						x2={xOf(softAt)}
+						y2={compY1}
+						stroke="var(--chart-rule)"
+						stroke-dasharray="4 4"
+					/>
 					<text
 						class="wi-word"
 						x={xOf(softAt) + 5}
@@ -669,6 +890,15 @@
 						soft pity
 					</text>
 				{/if}
+
+				<!-- The companion: the chance on each pull -->
+				<line x1={PADL} y1={compY1} x2={graphW - PADR} y2={compY1} stroke="var(--chart-rule)" />
+				{#if compPath}
+					<path d={compPath} fill="var(--chart-ink)" fill-opacity="0.45" />
+				{/if}
+				<text x="4" y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+					chance on each pull
+				</text>
 
 				<!-- One line per level; the goal's is the bold one -->
 				{#each curves as c (c.label)}
@@ -694,12 +924,43 @@
 					</text>
 				{/each}
 
-				<!-- Pulls-saved marker: a dot where it crosses each line -->
+				<!-- The goal's Half by and Unlucky tenth, drawn where they are -->
+				{#each crossings as c (c.key)}
+					<line
+						x1={c.x}
+						y1={c.y}
+						x2={c.x}
+						y2={plotY1}
+						stroke="var(--chart-ink)"
+						stroke-dasharray="2 3"
+					/>
+					<circle
+						cx={c.x}
+						cy={c.y}
+						r="3"
+						fill="var(--frame-bg)"
+						stroke="var(--text)"
+						stroke-width="1.5"
+					/>
+					<text
+						class="wi-word"
+						x={c.lx}
+						y={c.ly}
+						fill="var(--chart-ink)"
+						font-size="11"
+						text-anchor={c.anchor}
+					>
+						{c.text}
+					</text>
+				{/each}
+
+				<!-- Pulls-saved marker: a dot where it crosses each line, down through
+				     the strip to the handle under the chart -->
 				<line
 					x1={xOf(shownPulls)}
 					y1={TOP}
 					x2={xOf(shownPulls)}
-					y2={plotY1}
+					y2={compY1}
 					stroke="var(--chart-ink)"
 					stroke-width="1.5"
 				/>
@@ -713,179 +974,32 @@
 						stroke-width="1.5"
 					/>
 				{/each}
-				<text
-					class="wi-word"
-					x={xOf(shownPulls) + (shownPulls > domain * 0.7 ? -8 : 8)}
-					y={Math.max(TOP + 12, yOf(goalRow.chance) - 10)}
-					fill="var(--text)"
-					font-size="11"
-					font-weight="600"
-					text-anchor={shownPulls > domain * 0.7 ? 'end' : 'start'}
-				>
-					{fmtPct(goalRow.chance, 0)}
-				</text>
 			</svg>
 		</div>
-	</div>
 
-	<!-- LIVE (round 3, design §3): the pulls you've saved is the one control you
-	     scrub, so it heads the rail on its own, beside the chart it moves. -->
-	<div class="panel instrument-live">
-		<section class="inst-section">
-			<!-- Typed, it runs past the chart (to MAX_PULLS), where every goal is
-			     past 99.9%: the Readout answers, the marker waits at the axis's end. -->
+		<!-- THE HANDLE (design §6): the live control is the x axis's. Its track
+		     runs the plot's width, so the thumb sits under the marker line.
+		     Typed, it runs past the chart (to MAX_PULLS), where every goal is past
+		     99.9%: the head answers, the marker waits at the axis's end. -->
+		<div
+			class="wi-handle"
+			style:--wi-handle-l="{PADL - THUMB_R}px"
+			style:--wi-handle-r="{PADR - THUMB_R}px"
+		>
 			<InstrumentSlider
 				label="Pulls saved"
 				aria="Pulls you have saved"
 				bind:value={pulls}
 				min={0}
-				max={Math.max(domain, pulls)}
+				max={domain}
 				step={1}
 				fieldMax={MAX_PULLS}
 			/>
-			<p class="inst-hint">Or drag across the chart.</p>
-		</section>
+		</div>
 	</div>
 
-	<!-- SETTINGS: each banner the tab touches (what you're pulling for is the
-	     chart's tabs). Per session first (pity, the guarantee), then the set-once
-	     lines folded into popovers (Goal, the Radiance counter). ⚓ ONE panel (the
-	     2026-10-04 ruling: separate panels split around the pulls in a shared tile). -->
-	<div class="panel instrument-settings inst-sections">
-		{#each blocks as id (id)}
-			{@const s = states[id]}
-			{@const b = BANNERS[id]}
-			<!-- Dropping a file on the character banner's section is a pointer shortcut
-			     for "Read a Paimon.moe export", which stays the accessible path. -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<section
-				class="inst-section wi-section"
-				class:is-dropping={id === 'character' && dropping}
-				ondragover={id === 'character' ? onDragOver : undefined}
-				ondragleave={id === 'character' ? onDragLeave : undefined}
-				ondrop={id === 'character' ? onDrop : undefined}
-			>
-				<p class="kicker">{RULES[id].kicker}</p>
-				<InstrumentSlider
-					label="Current pity"
-					aria={RULES[id].pityAria}
-					bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
-					min={0}
-					max={b.hard - 1}
-					step={1}
-				/>
-				<label class="check">
-					<input type="checkbox" bind:checked={states[id].guaranteed} />
-					<span class="check-box"></span>
-					{RULES[id].guarantee}
-				</label>
-				<SettingLine
-					label="Goal"
-					ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
-				>
-					{#snippet summary()}
-						{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(id, s.goal)}
-					{/snippet}
-					<div class="wi-pop wi-levels">
-						<span class="slider-label" id="wi-have-{id}">You have</span>
-						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
-							{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
-								<button
-									class="chip chip--control"
-									class:active={s.have === copies}
-									aria-pressed={s.have === copies}
-									onclick={() => setHave(id, copies)}
-								>
-									{haveName(id, copies)}
-								</button>
-							{/each}
-						</div>
-						<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
-						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
-							{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
-								<button
-									class="chip chip--control"
-									class:active={s.goal === copies}
-									aria-pressed={s.goal === copies}
-									disabled={copies <= s.have}
-									onclick={() => (states[id].goal = copies)}
-								>
-									{levelName(id, copies)}
-								</button>
-							{/each}
-						</div>
-					</div>
-				</SettingLine>
-				{#if id === 'character'}
-					<SettingLine
-						label="Radiance counter"
-						ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
-					>
-						{#snippet summary()}
-							{s.counter === null ? 'Don’t know' : s.counter}
-						{/snippet}
-						{#snippet children(close)}
-							{@render counterPanel(close)}
-						{/snippet}
-					</SettingLine>
-
-					<!-- One note for the guarantee and the counter together: what comes next. -->
-					{#if s.counter === null}
-						<p class="inst-hint">
-							Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
-							including Capturing Radiance).
-						</p>
-					{:else if s.counter === 3 && s.guaranteed}
-						<p class="inst-hint">
-							Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
-						</p>
-					{:else if s.counter === 3}
-						<p class="inst-hint">
-							Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
-						</p>
-					{:else if s.counter === 2}
-						<p class="inst-hint">
-							You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
-							Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
-						</p>
-					{:else}
-						<p class="inst-hint">Your next 50/50 is an even one.</p>
-					{/if}
-
-					<input
-						bind:this={fileInput}
-						type="file"
-						accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-						class="wi-file"
-						onchange={(e) => importFile(e.currentTarget.files?.[0])}
-					/>
-				{:else if id === 'fourStar'}
-					<p class="inst-hint">
-						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
-						you want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it
-						averages out to about 22%.
-						<span class="wi-fine"
-							>Losing the 50/50 never gives you one of the three, even if they’re already on the
-							standard banner.</span
-						>
-					</p>
-				{:else}
-					<p class="inst-hint">
-						Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted,
-						37.5% to be the other featured weapon, and 25% to be a standard 5★ weapon.
-					</p>
-				{/if}
-			</section>
-		{/each}
-	</div>
-
-	<div class="panel panel--paper wi-readout instrument-readout">
+	<div class="panel panel--paper wi-readout">
 		<p class="kicker">Readout</p>
-		<p class="readout-head">
-			{formatChance(goalRow.chance)}<span class="readout-sentence"
-				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
-			>
-		</p>
 		<table class="wi-table">
 			<thead>
 				<tr>
@@ -923,6 +1037,51 @@
 				Your character and weapon banners keep separate pity, so this adds the pulls for both.
 			{/if}
 		</p>
+
+		<!-- What each banner's rules come to, from the guarantee and the counter
+		     (they sat under the chips' old panel; here they move nothing you touch). -->
+		{#each blocks as id (id)}
+			{@const s = states[id]}
+			{#if id === 'character'}
+				{#if s.counter === null}
+					<p class="note">
+						Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
+						including Capturing Radiance).
+					</p>
+				{:else if s.counter === 3 && s.guaranteed}
+					<p class="note">
+						Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
+					</p>
+				{:else if s.counter === 3}
+					<p class="note">
+						Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
+					</p>
+				{:else if s.counter === 2}
+					<p class="note">
+						You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
+						Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
+					</p>
+				{:else}
+					<p class="note">Your next 50/50 is an even one.</p>
+				{/if}
+			{:else if id === 'fourStar'}
+				<p class="note">
+					Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character you
+					want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it averages
+					out to about 22%.
+					<span class="wi-fine"
+						>Losing the 50/50 never gives you one of the three, even if they’re already on the
+						standard banner.</span
+					>
+				</p>
+			{:else}
+				<p class="note">
+					Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted,
+					37.5% to be the other featured weapon, and 25% to be a standard 5★ weapon.
+				</p>
+			{/if}
+		{/each}
+
 		{#if imported && target !== 'fourStar'}
 			{@const r = imported.result}
 			{@const since = sinceRadiance(r.replay.steps)}
@@ -1060,16 +1219,170 @@
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
-	/* The tabs ride in the chart's slot: they choose what it draws (as in
-	   Reaction curves). Four don't fit a narrow tile: wrap rather than scroll. */
-	.wi-chart {
+	/* ══ THE STAGE (design §6; Wish odds is its first instrument) ═════════════
+	   One column holds everything you touch and look at: the chart bar, the
+	   setup line, the chart head, the chart with its companion, the handle.
+	   The answer card is the only other slot.
+	   - Narrow: the stage, then the card, each at its natural height.
+	   - Mid, from 1024px: the stage takes 🎛️ --wi-stage-mid of the tile, so the
+	     card's top shows under it; the card follows.
+	   - Wide: the card beside the stage. The stage is the tile's height and
+	     sticky (as the rail's chart was), so a card taller than the tile
+	     scrolls past a chart that holds still; it is capped at
+	     --instrument-main-aspect × the tile's height, as the rail's was.
+	   The stage replaces the rail one instrument at a time; once a second
+	   instrument wears it, this moves to app.css. */
+	.wi-root {
+		min-height: 100%;
+		display: grid;
 		gap: 1rem;
+		align-content: start;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: 'stage' 'answer';
 	}
 
+	.wi-stage {
+		grid-area: stage;
+		display: flex;
+		flex-direction: column;
+		gap: var(--inst-gap-control);
+		min-width: 0;
+	}
+
+	.wi-readout {
+		grid-area: answer;
+		min-width: 0;
+		align-self: start;
+	}
+
+	@container instrument (min-width: 60rem) {
+		.wi-root {
+			grid-template-columns: minmax(0, 1fr) var(--instrument-side);
+			grid-template-areas: 'stage answer';
+		}
+	}
+
+	/* ⚠ `cqh` only where the tile is a SIZE container: from 1024px (app.css §
+	   THE RAIL; breakpoints.ts `visualizers`). */
+	@media (min-width: 1024px) {
+		@container instrument (38rem <= width < 60rem) {
+			.wi-stage {
+				height: calc(100cqh * var(--wi-stage-mid, 0.82));
+				min-height: max-content;
+			}
+		}
+		@container instrument (min-width: 60rem) {
+			.wi-root {
+				grid-template-columns:
+					minmax(0, calc(100cqh * var(--instrument-main-aspect)))
+					var(--instrument-side);
+				justify-content: center;
+			}
+			.wi-stage {
+				position: sticky;
+				top: 0;
+				align-self: start;
+				height: 100cqh;
+				min-height: max-content;
+			}
+		}
+	}
+
+	/* The chart bar's tabs. Four don't fit a narrow tile: wrap rather than scroll. */
 	.wi-tabs {
 		flex-wrap: wrap;
 		align-self: flex-start;
 		max-width: 100%;
+	}
+
+	/* ── The setup line ──
+	   Chips in a row that wraps. A pair's two banners are two groups, each led
+	   by its banner's name. */
+	.wi-setup {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1.5rem;
+	}
+
+	.wi-setup-group {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+		border-radius: var(--r-sm);
+	}
+
+	.wi-setup-name {
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		color: var(--chart-ink);
+		margin-right: 0.2rem;
+	}
+
+	/* A chip's face: the setting's name, then its value in the ink. */
+	.wi-chip-key {
+		color: var(--chart-ink);
+	}
+
+	.wi-chip-val {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	/* Pity runs 0–89: two figures held, so the chips after it never shift. */
+	.wi-chip-val--num {
+		min-width: 2ch;
+		justify-content: flex-end;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* A chip's popover (BandMenu, portalled): as SettingLine's, 22rem, about
+	   the old rail's width, so a slider inside keeps its track. */
+	.wi-chip-pop {
+		display: grid;
+		gap: var(--inst-gap-control);
+		width: min(22rem, calc(100vw - 2rem));
+		padding: 0.6rem;
+	}
+
+	/* ── The chart head ──
+	   The Readout head's type (app.css .readout-head), on the chart's ground.
+	   Its sentence stays one line where there is room and wraps on a phone. */
+	.wi-head {
+		color: var(--text);
+	}
+
+	/* ── The handle ──
+	   The track spans the plot's x range plus half a thumb each side (THUMB_R),
+	   so the thumb's centre is on the marker line at every value. The label
+	   and the typed value sit under the track, the track right under the
+	   axis's numbers. */
+	.wi-handle {
+		padding-inline: var(--wi-handle-l) var(--wi-handle-r);
+		margin-top: calc(-1 * var(--inst-gap-control) + 0.15rem);
+	}
+
+	.wi-handle :global(.slider-control) {
+		grid-template-areas: 'track' 'header';
+	}
+
+	.wi-handle :global(.slider-header) {
+		grid-area: header;
+		justify-content: flex-start;
+	}
+
+	.wi-handle :global(.is-track) {
+		grid-area: track;
+	}
+
+	/* ⚠ Chrome gives a range input 2px side margins, which put the thumb 2px
+	   off the marker line. */
+	.wi-handle :global(.slider) {
+		margin-inline: 0;
 	}
 
 	/* The import's report, at the foot of the Readout */
@@ -1102,10 +1415,8 @@
 		display: none;
 	}
 
-	/* A set-once setting's line: its name, and a summary that opens its popover */
-
-	/* A popover's contents (BandMenu, portalled: the band menu's own surface) */
-	/* Inside SettingLine's popover, which pads it and sets its width. */
+	/* A popover's contents (BandMenu, portalled: the band menu's own surface),
+	   inside .wi-chip-pop, which pads it and sets its width. */
 	.wi-pop {
 		display: grid;
 		gap: 0.6rem;
@@ -1145,10 +1456,10 @@
 		color: var(--ui-warning);
 	}
 
-	/* A file dragged over the section: it takes the drop */
-	.wi-section.is-dropping {
-		border-radius: var(--r-sm);
-		box-shadow: 0 0 0 1px var(--accent);
+	/* A file dragged over the character banner's chips: they take the drop */
+	.wi-setup-group.is-dropping {
+		outline: 1px solid var(--accent);
+		outline-offset: 4px;
 	}
 
 	.wi-strip {
