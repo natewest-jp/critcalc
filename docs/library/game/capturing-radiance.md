@@ -62,9 +62,14 @@ The worst case is a repeating loss, loss, Radiance cycle (1 featured in 3 non-gu
 - **The test history used for development** (a Paimon.moe export, 26 character banner 5★s
   from 2025-07 to 2026-09, an account started after 5.0) replays with no contradiction. It
   reached counter 3 four times, each time after exactly two losses in a row from 1, and won
-  all four. A flat 55% would give four wins in a row about 9% of the time.
+  all four. A flat 55% would give four wins in a row about 9% of the time. The player
+  remembers the Radiance animation on three of the four for certain and on the fourth less
+  clearly, and not on the two wins at counter 2, where the model makes a Radiance unlikely.
+  Recollection, not a recording, but every remembered case matches the model.
 - **The 5.0 start at 1** rests on there being no known player who lost their first three
-  post-5.0 50/50s in a row.
+  post-5.0 50/50s in a row. The test history adds a case for accounts made after 5.0: its
+  first Radiance came after loss, win, loss, loss. From a start at 1 that is counter 3, a
+  certain Radiance. From a start at 0 it would be counter 2, where a Radiance is unlikely.
 
 ## 4. Open questions
 
