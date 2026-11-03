@@ -25,22 +25,23 @@
 <section>
 	<h2 id="workspace">The workspace</h2>
 	<p>
-		The workspace shows as many instruments side by side as the window has room for: one, two from
-		1360px wide, three from 2200px. The menu over each tile picks its instrument; picking one
-		already showing in another tile swaps the two. <strong>Layout</strong>, beside the last tile,
-		can lower the count, and its <strong>Reset layout</strong> puts back the default instruments.
+		The workspace shows one instrument at a time, picked from the menu at its top left.
+		<strong>Layout</strong>, at the bar’s right end, shows two or three side by side when the window
+		is wide enough, or <strong>Auto</strong> for as many as fit. Picking an instrument already
+		showing in another tile swaps the two, and <strong>Reset layout</strong> goes back to one instrument
+		and the default lineup.
 	</p>
 	<p>
-		Each tile has <strong>Copy link</strong>, which copies a link that reopens the instrument
-		exactly as it looks now (the link always opens in the reader’s first tile). The tile’s
-		<strong>⋯</strong> menu has <strong>Defaults</strong>, which resets that instrument’s controls,
-		and
-		<strong>Report a problem</strong> for sending feedback related to that instrument.
+		Each instrument has <strong>Defaults</strong>, which puts its controls back to their defaults
+		(with Undo), and <strong>Copy link</strong>, which copies a link that reopens the instrument
+		exactly as it looks now (in the reader’s first tile). Its <strong>⋯</strong> menu has
+		<strong>How it works</strong>, which opens this page at the instrument’s section, and
+		<strong>Report a problem</strong>, for feedback about that instrument.
 	</p>
 	<p>
-		The layout is remembered between visits, but the instruments’ settings are not, and start from
-		their defaults each time. Within a site visit, an instrument keeps its state while it’s out of
-		view.
+		Each instrument’s settings are saved with your profile, and the layout with this browser, so
+		both are as you left them next visit. A link you open shows the settings it carries, and those
+		are what’s kept from then on.
 	</p>
 </section>
 

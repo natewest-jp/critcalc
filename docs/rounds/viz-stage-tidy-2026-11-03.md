@@ -1,7 +1,7 @@
 # The stage: tidying before Reaction curves (2026-11-03)
 
-**Status:** on `polish/viz-stage-tidy`, not merged. ⏭ Nate's eye on the Wish odds labels and ICD's
-head; Help's "The workspace" rewrite (§4) is proposed, not applied.
+**Status:** ✅ merged into `main` on 2026-11-03 (`polish/viz-stage-tidy`). Nate approved the labels,
+ICD's head and Help's "The workspace" rewrite (§4, now in Help).
 
 ## 1. Why
 
@@ -48,11 +48,11 @@ three Readouts without one (Reaction curves, Gauge, Breakdown) and new names for
 kickers. The stage replaces those Readouts, and each instrument's headline is chosen at the start
 of its round (⚓ design §6).
 
-## 4. Help's "The workspace", proposed
+## 4. Help's "The workspace" (approved, landed)
 
 The section (`src/lib/help/chapters/Visualizers.svelte` § The workspace) still describes the
 overhaul's starting point: as many tiles as fit, Defaults in the ⋯, settings forgotten each
-visit. All three changed (`viz-workspace-bars`, `viz-saved`). Proposed:
+visit. All three changed (`viz-workspace-bars`, `viz-saved`). Approved by Nate and landed:
 
 1. "The workspace shows one instrument at a time, picked from the menu at its top left.
    **Layout**, at the bar's right end, shows two or three side by side when the window is wide
