@@ -10,9 +10,12 @@
 import { defMultiplier, resMultiplier } from './defres';
 import {
 	additiveDamage,
+	additiveEmBonus,
 	ampMultiplier,
+	specialEmBonus,
 	specialReactionDamage,
 	transformativeDamage,
+	transformativeEmBonus,
 	TOP_CONTRIBUTOR_SHARE
 } from './reactionCurves';
 import { substatById, type SubstatId } from './artifactOdds';
@@ -193,6 +196,19 @@ export const transformativeTotal = (i: SheetInputs, mult: number) =>
 
 // ── Lunar / Stellar family (reaction damage) ───────────────────────────────
 
+/** A reaction family's EM bracket: 1 + its EM bonus + the Reaction Bonus.
+ *  The chunk (additive), the reaction's damage (transformative) and the
+ *  Lunar or Stellar hit each scale by it. */
+export function emBracket(family: Exclude<FamilyId, 'direct'>, i: SheetInputs): number {
+	const bonus =
+		family === 'additive'
+			? additiveEmBonus(i.em)
+			: family === 'lunar'
+				? specialEmBonus(i.em)
+				: transformativeEmBonus(i.em);
+	return 1 + bonus + rbOf(i);
+}
+
 export const baseDmgFactor = (i: SheetInputs) => 1 + Math.max(0, i.baseDmgPct) / 100;
 export const elevationFactor = (i: SheetInputs) => 1 + Math.max(0, i.elevationPct) / 100;
 
@@ -230,6 +246,8 @@ export type LabStat = {
 	key: keyof SheetInputs;
 	/** The stat's name as the game writes it */
 	label: string;
+	/** The artifact card's short name (CR, ATK%), for a cap's label */
+	short: string;
 	step: number;
 	/** Whether `step` is a percentage (formatting) */
 	isPct: boolean;
@@ -251,6 +269,7 @@ export function labStats(
 	const roll = (key: keyof SheetInputs, label: string, id: SubstatId): LabStat => ({
 		key,
 		label,
+		short: substatById(id).short,
 		step: averageRoll(id),
 		isPct: substatById(id).isPct
 	});
@@ -279,4 +298,66 @@ export function marginalGain(
 	const before = familyTotal(family, i, reactionMult);
 	if (before <= 0) return 0;
 	return familyTotal(family, patched, reactionMult) / before - 1;
+}
+
+// ── The stage: which column a roll lifts, and dragging a column ────────────
+
+/** A column of the chart: one bracket of the formula, or a start or a sum. */
+export type ColumnId =
+	| 'scaling'
+	| 'dmg'
+	| 'crit'
+	| 'amp'
+	| 'level'
+	| 'reaction'
+	| 'em'
+	| 'chunk'
+	| 'base'
+	| 'elevation'
+	| 'def'
+	| 'res'
+	| 'total';
+
+/** The column a roll of `key` lifts. Every bracket multiplies the rest, so
+ *  a roll lifts its column by exactly the ratio it lifts the result: on the
+ *  chart's log axis its cap on that column is as tall as the gain itself. */
+export function rollColumn(family: FamilyId, key: keyof SheetInputs): ColumnId | null {
+	if (key === 'statPct' || key === 'statFlat') return family === 'direct' ? 'scaling' : null;
+	if (key === 'cr' || key === 'cd') return 'crit';
+	if (key === 'em') return family === 'direct' ? 'amp' : 'em';
+	return null;
+}
+
+/** The roll that adds the most, the first on a tie; null for none. */
+export function bestRoll<T extends { gain: number }>(gains: T[]): T | null {
+	let best: T | null = null;
+	for (const g of gains) if (!best || g.gain > best.gain) best = g;
+	return best;
+}
+
+/**
+ * The value of `key` that brings a column's factor to `target`, for a factor
+ * that rises with the stat (every draggable column's does). Bisection over
+ * [lo, hi], so it serves the EM brackets' curves as well as the straight
+ * lines; a target past either end returns that end.
+ */
+export function solveStat(
+	i: SheetInputs,
+	key: keyof SheetInputs,
+	target: number,
+	factor: (s: SheetInputs) => number,
+	lo: number,
+	hi: number
+): number {
+	const at = (x: number) => factor({ ...i, [key]: x });
+	if (target <= at(lo)) return lo;
+	if (target >= at(hi)) return hi;
+	let a = lo;
+	let b = hi;
+	for (let n = 0; n < 50; n++) {
+		const m = (a + b) / 2;
+		if (at(m) < target) a = m;
+		else b = m;
+	}
+	return (a + b) / 2;
 }

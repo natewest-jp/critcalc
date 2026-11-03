@@ -207,10 +207,12 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   ones past the marker lit: counted, not computed). Reshape draws all three kinds at once. The
   to-beat drag reads its answer at the point. Other sites show the histogram; the curve is
   ours.
-- **Damage breakdown:** upright at the wide tier, a column per factor, so it fills the stage
-  like the rest and up means more damage. Drag a column's top to change that stat; the next
-  roll's gain draws as a ghost cap on its column. Horizontal rows below the wide tier, where
-  seven columns don't fit. To judge in a demo.
+- **Damage breakdown** (built: `docs/rounds/viz-stage-breakdown-2026-11-03.md`): upright where
+  the stage is 900px or wider (the widest family's nine columns fit), a column per bracket, so
+  it fills the stage like the rest and up means more damage. Drag a column set by one stat
+  (Scaling, DMG Bonus, EM, Base DMG Bonus, Elevation) to change that stat. Each roll draws as a
+  cap on the column it lifts, as tall as its gain on the log axis, the best gold. Horizontal rows
+  below 900px, by the width alone, so a tab never turns the chart.
 - **ICD timeline:** three lanes on one time axis (the timer's windows, the hit counter, the
   result), so why a hit is blocked is visible without pointing at it.
 - **Gauge explorer:** the overlaid areas stay. ⚓ Nate: few auras coexist (Electro-Charged,
@@ -249,7 +251,7 @@ Grouped by family, so each family's marks are built once and reused at once:
 2. Artifact odds: the survival curve and the histogram companion (`docs/rounds/viz-stage-artifact-2026-11-03.md`).
 3. Reaction curves: the response-curve family (`docs/rounds/viz-stage-reactions-2026-11-03.md`).
 4. Enemy RES & DEF: the two-plot response pair (`docs/rounds/viz-stage-defres-2026-11-03.md`).
-5. Damage breakdown.
+5. Damage breakdown: the bridge, upright (`docs/rounds/viz-stage-breakdown-2026-11-03.md`).
 6. Crit heatmap.
 7. ICD timeline.
 8. Gauge explorer.

@@ -24,14 +24,14 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 
 ## The stage
 
-- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds, Artifact odds, Reaction curves and Enemy RES & DEF wear it. It is one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE.
+- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds, Artifact odds, Reaction curves, Enemy RES & DEF and Damage breakdown wear it. It is one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE.
 - A typeable card field (`StatField.svelte`) only ever sets an option from its list: typing is a search (`statEntry.ts`, tested).
 - An axis handle is an `InstrumentSlider` whose track runs the plot's x range plus `THUMB_R` each side, so the thumb sits on the marker line. ⚠️ Zero the range input's margin, or Chrome's 2px puts it off the line.
 
 ## The rail
 
 - An instrument has four slots (`app.css` § THE RAIL): chart, live, settings, Readout. The Readout is last at every width, because it is the slot whose height follows the values. A control's dependents sit below it, so where settings decide what the live panel offers, use `.instrument--settings-first`.
-- The chart's height is the tile's (sticky at the wide tier), never what the controls leave. The Damage breakdown keeps its controls under its waterfall and opts out of that rule.
+- The chart's height is the tile's (sticky at the wide tier), never what the controls leave.
 
 ## The kit
 

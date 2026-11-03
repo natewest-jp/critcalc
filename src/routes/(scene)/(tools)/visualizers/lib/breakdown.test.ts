@@ -3,15 +3,21 @@ import {
 	DEFAULT_SHEET,
 	additiveChunk,
 	additiveEffective,
+	ampFactor,
 	averageRoll,
+	bestRoll,
 	critFactor,
+	dmgFactor,
+	emBracket,
 	defFactor,
 	directTotal,
 	familyTotal,
 	labStats,
 	lunarTotal,
 	marginalGain,
+	rollColumn,
 	scalingFactor,
+	solveStat,
 	scalingTotal,
 	transformativeTotal
 } from './breakdown';
@@ -99,7 +105,7 @@ describe('stat lab', () => {
 	});
 
 	it('stats outside a family contribute nothing', () => {
-		const statPct = { key: 'statPct', label: '', step: 5, isPct: true } as const;
+		const statPct = { key: 'statPct', label: '', short: '', step: 5, isPct: true } as const;
 		expect(marginalGain('transformative', I, 3, statPct)).toBe(0);
 	});
 });
@@ -183,5 +189,76 @@ describe('DEF shred and ignore', () => {
 		const sheet = { ...I, defShredPct: 50 };
 		expect(transformativeTotal(sheet, 3)).toBeCloseTo(transformativeTotal(I, 3), 10);
 		expect(lunarTotal(sheet, 3)).toBeCloseTo(lunarTotal(I, 3), 10);
+	});
+});
+
+describe('the stage: caps and dragging', () => {
+	it('a roll lifts its column by exactly the ratio it lifts the result', () => {
+		// The caps' heights rest on this: on a log axis the cap on a roll's
+		// column is the gain itself, so caps on different columns compare.
+		const cases = [
+			{ family: 'direct', mult: 1, col: (s: typeof I) => critFactor(s), key: 'cd' },
+			{ family: 'direct', mult: 2, col: (s: typeof I) => ampFactor(s, 2), key: 'em' },
+			{ family: 'additive', mult: 1.25, col: (s: typeof I) => emBracket('additive', s), key: 'em' },
+			{ family: 'lunar', mult: 3, col: (s: typeof I) => critFactor(s), key: 'cr' },
+			{
+				family: 'transformative',
+				mult: 3,
+				col: (s: typeof I) => emBracket('transformative', s),
+				key: 'em'
+			}
+		] as const;
+		for (const c of cases) {
+			const stat = labStats(c.family, c.mult).find((s) => s.key === c.key)!;
+			const rolled = { ...I, [c.key]: I[c.key] + stat.step };
+			expect(marginalGain(c.family, I, c.mult, stat)).toBeCloseTo(c.col(rolled) / c.col(I) - 1, 12);
+		}
+	});
+
+	it('every roll has a column to sit on', () => {
+		for (const [family, mult] of [
+			['direct', 2],
+			['additive', 1.25],
+			['transformative', 3],
+			['lunar', 3]
+		] as const)
+			for (const s of labStats(family, mult)) expect(rollColumn(family, s.key)).not.toBeNull();
+		expect(rollColumn('direct', 'statFlat')).toBe('scaling');
+		expect(rollColumn('direct', 'em')).toBe('amp');
+		expect(rollColumn('lunar', 'em')).toBe('em');
+	});
+
+	it('the best roll is the largest gain, the first on a tie', () => {
+		const top = { gain: 0.03 };
+		expect(bestRoll([{ gain: 0.01 }, top, { gain: 0.02 }])).toBe(top);
+		const a = { gain: 0.02 };
+		const b = { gain: 0.02 };
+		expect(bestRoll([a, b])).toBe(a);
+		expect(bestRoll([])).toBeNull();
+	});
+
+	it("the EM bracket is the reaction family's own curve", () => {
+		expect(emBracket('additive', { ...I, em: 0, rbPct: 0 })).toBe(1);
+		// 5 × 200 / (200 + 1200), plus a 15% Reaction Bonus
+		expect(emBracket('additive', { ...I, em: 200, rbPct: 15 })).toBeCloseTo(
+			1 + 1000 / 1400 + 0.15,
+			12
+		);
+		expect(emBracket('transformative', { ...I, em: 2000, rbPct: 0 })).toBeCloseTo(9, 12);
+		expect(emBracket('lunar', { ...I, em: 2000, rbPct: 0 })).toBeCloseTo(4, 12);
+	});
+
+	it('solving a column for its stat inverts the factor', () => {
+		expect(solveStat(I, 'dmgPct', 1.8, dmgFactor, 0, 200)).toBeCloseTo(80, 6);
+		const em = solveStat(I, 'em', ampFactor({ ...I, em: 345 }, 2), (s) => ampFactor(s, 2), 0, 1200);
+		expect(em).toBeCloseTo(345, 6);
+		// flat ATK stays where it is; ATK% takes the rest
+		const pct = solveStat(I, 'statPct', 3, scalingFactor, 0, 300);
+		expect(scalingFactor({ ...I, statPct: pct })).toBeCloseTo(3, 9);
+	});
+
+	it('a target past either end of the range returns that end', () => {
+		expect(solveStat(I, 'dmgPct', 0.5, dmgFactor, 0, 200)).toBe(0);
+		expect(solveStat(I, 'dmgPct', 9, dmgFactor, 0, 200)).toBe(200);
 	});
 });
