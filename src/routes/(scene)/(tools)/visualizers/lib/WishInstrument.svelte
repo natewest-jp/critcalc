@@ -592,132 +592,139 @@
 </script>
 
 {#snippet counterPanel()}
+	<!-- THE RADIANCE COUNTER'S POPOVER, on the instrument kit's roles (design
+	     §5): a control's label, its value, a hint under it; then "Find mine",
+	     its two ways (a file, or a few questions) as two blocks; then the
+	     import's report. One size per role, buttons at the control's. -->
 	{@const s = states.character}
 	<div class="wi-pop">
-		<div class="chips wi-level-chips" role="group" aria-label="Radiance counter">
-			{#each COUNTERS as k (k ?? 'unknown')}
-				<button
-					class="chip chip--control"
-					class:active={s.counter === k}
-					aria-pressed={s.counter === k}
-					onclick={() => (states.character.counter = k)}
-				>
-					{k === null ? 'Don’t know' : k}
-				</button>
-			{/each}
-		</div>
-
-		{@render bannerNote('character')}
-
-		<p class="wi-pop-head">Find mine</p>
-		<div class="wi-actions">
-			<button
-				class="btn btn--sm"
-				disabled={reading}
-				onclick={() => {
-					fileInput?.click();
-				}}
-			>
-				Read a Paimon.moe export
-			</button>
-			<span class="wi-fine">The file stays on your device.</span>
-		</div>
-		{#if importError}
-			<p class="note wi-error" role="alert">
-				{#if importError === 'not-a-workbook'}
-					That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and choose
-					Export to Excel.
-				{:else if importError === 'not-paimon'}
-					That spreadsheet isn’t a Paimon.moe wish history export.
-				{:else}
-					That export has no character banner wishes in it.
-				{/if}
-			</p>
-		{/if}
-
-		<div class="wi-interview" aria-live="polite">
-			<p class="note">Or answer a few questions, starting from your most recent 5★.</p>
-			{#if answers.length > 0}
-				<ol class="wi-strip" aria-label="Your answers, newest first">
-					{#each answers as a, i (i)}
-						<li class="wi-step">{ANSWER_LABEL[a]}</li>
-					{/each}
-				</ol>
-			{/if}
-
-			{#if answers.length > 0 && told.counters.length === 0}
-				<p class="note wi-error">Those answers can’t all be right. Check the last one.</p>
-			{:else if interviewDone}
-				<p class="note wi-done">
-					{#if told.guaranteed}
-						That’s enough: your counter is {told.counters[0]}, and you hold a guarantee.
-					{:else}
-						That’s enough: your counter is {told.counters[0]}.
-					{/if}
-				</p>
-			{:else if askingRadiance}
-				<p class="wi-question">Did it play the Capturing Radiance animation?</p>
-				<div class="wi-actions">
-					<button class="btn btn--sm" onclick={() => answer('featured-radiance')}>Yes</button>
-					<button class="btn btn--sm" onclick={() => answer('featured-plain')}>No</button>
-					<button class="btn btn--sm" onclick={() => answer('featured')}>Not sure</button>
-				</div>
-			{:else}
-				<p class="wi-question">
-					{answers.length === 0
-						? 'Your most recent 5★ on the character banners was'
-						: 'And the 5★ before that was'}
-				</p>
-				<div class="wi-actions">
-					<button class="btn btn--sm" onclick={answerFeatured}>The featured character</button>
-					<button class="btn btn--sm" onclick={() => answer('standard')}>A standard 5★</button>
-					<button class="btn btn--sm" onclick={() => answer('none')}>
-						{answers.length === 0 ? 'None yet since 5.0' : 'None before that since 5.0'}
+		<section class="wi-block">
+			<span class="slider-label" id="wi-counter-label">Radiance counter</span>
+			<div class="chips wi-level-chips" role="group" aria-labelledby="wi-counter-label">
+				{#each COUNTERS as k (k ?? 'unknown')}
+					<button
+						class="chip chip--control"
+						class:active={s.counter === k}
+						aria-pressed={s.counter === k}
+						onclick={() => (states.character.counter = k)}
+					>
+						{k === null ? 'Don’t know' : k}
 					</button>
-				</div>
-			{/if}
+				{/each}
+			</div>
+			{@render bannerNote('character')}
+		</section>
 
-			{#if answers.length > 0 || askingRadiance}
-				<div class="wi-actions">
-					<button class="btn btn--sm" onclick={interviewBack}>Back</button>
-					<button class="btn btn--sm" onclick={interviewRestart}>Start over</button>
-				</div>
-			{/if}
-		</div>
+		<section class="wi-block wi-block--ruled" aria-labelledby="wi-find-label">
+			<span class="slider-label" id="wi-find-label">Find mine</span>
+
+			<div class="wi-way">
+				<button class="btn wi-wide" disabled={reading} onclick={() => fileInput?.click()}>
+					<Mark name="upload" size={13} /> Read a Paimon.moe export
+				</button>
+				<p class="wi-hint">The file stays on your device.</p>
+				{#if importError}
+					<p class="wi-hint wi-error" role="alert">
+						{#if importError === 'not-a-workbook'}
+							That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and
+							choose Export to Excel.
+						{:else if importError === 'not-paimon'}
+							That spreadsheet isn’t a Paimon.moe wish history export.
+						{:else}
+							That export has no character banner wishes in it.
+						{/if}
+					</p>
+				{/if}
+			</div>
+
+			<div class="wi-way" aria-live="polite">
+				<p class="wi-hint">Or answer a few questions, starting from your most recent 5★.</p>
+				{#if answers.length > 0}
+					<ol class="wi-strip" aria-label="Your answers, newest first">
+						{#each answers as a, i (i)}
+							<li class="wi-step">{ANSWER_LABEL[a]}</li>
+						{/each}
+					</ol>
+				{/if}
+
+				{#if answers.length > 0 && told.counters.length === 0}
+					<p class="wi-hint wi-error">Those answers can’t all be right. Check the last one.</p>
+				{:else if interviewDone}
+					<p class="wi-hint wi-done">
+						{#if told.guaranteed}
+							That’s enough: your counter is {told.counters[0]}, and you hold a guarantee.
+						{:else}
+							That’s enough: your counter is {told.counters[0]}.
+						{/if}
+					</p>
+				{:else if askingRadiance}
+					<p class="wi-question">Did it play the Capturing Radiance animation?</p>
+					<div class="wi-answers">
+						<button class="btn" onclick={() => answer('featured-radiance')}>Yes</button>
+						<button class="btn" onclick={() => answer('featured-plain')}>No</button>
+						<button class="btn" onclick={() => answer('featured')}>Not sure</button>
+					</div>
+				{:else}
+					<p class="wi-question">
+						{answers.length === 0
+							? 'Your most recent 5★ on the character banners was'
+							: 'And the 5★ before that was'}
+					</p>
+					<div class="wi-answers">
+						<button class="btn" onclick={answerFeatured}>The featured character</button>
+						<button class="btn" onclick={() => answer('standard')}>A standard 5★</button>
+						<button class="btn" onclick={() => answer('none')}>
+							{answers.length === 0 ? 'None yet since 5.0' : 'None before that since 5.0'}
+						</button>
+					</div>
+				{/if}
+
+				{#if answers.length > 0 || askingRadiance}
+					<div class="wi-actions">
+						<button class="btn btn--sm" onclick={interviewBack}>
+							<Mark name="backSlim" size={11} /> Back
+						</button>
+						<button class="btn btn--sm" onclick={interviewRestart}>
+							<Mark name="reset" size={11} /> Start over
+						</button>
+					</div>
+				{/if}
+			</div>
+		</section>
 
 		{#if imported}
 			{@const r = imported.result}
 			{@const since = sinceRadiance(r.replay.steps)}
 			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
-			<div class="wi-report" role="status">
-				<span class="wi-report-head">Your wish history</span>
-				<p class="note">
+			<section class="wi-block wi-block--ruled" role="status" aria-labelledby="wi-report-label">
+				<span class="slider-label" id="wi-report-label">Your wish history</span>
+				<p class="wi-hint">
 					Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
 					{dayOf(r.last)}.
 				</p>
 				{#if since.length > 0}
-					<span class="wi-report-head">
-						{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
-					</span>
+					<span class="wi-subhead">{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}</span>
 					{@render strip(since)}
 				{:else if lastRadiance?.time}
-					<p class="note">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
+					<p class="wi-hint">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
 				{/if}
 				{#if r.weaponPity !== null}
-					<p class="note">
+					<p class="wi-hint">
 						Your weapon banner pity is {r.weaponPity}. Whether you hold a fate point isn’t in the
 						export.
 					</p>
 				{/if}
 				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
-					<p class="note">
+					<p class="wi-hint">
 						If you wished on the character banners before {dayOf(r.first)}, the counter may be off.
 					</p>
 				{/if}
 				<div class="wi-actions">
-					<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+					<button class="btn btn--sm" onclick={undoImport}>
+						<Mark name="undo" size={11} /> Undo
+					</button>
 				</div>
-			</div>
+			</section>
 		{/if}
 	</div>
 {/snippet}
@@ -728,28 +735,28 @@
 	{@const s = states[id]}
 	{#if id === 'character'}
 		{#if s.counter === null}
-			<p class="note">
+			<p class="wi-hint">
 				Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
 				including Capturing Radiance).
 			</p>
 		{:else if s.counter === 3 && s.guaranteed}
-			<p class="note">
+			<p class="wi-hint">
 				Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
 			</p>
 		{:else if s.counter === 3}
-			<p class="note">
+			<p class="wi-hint">
 				Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
 			</p>
 		{:else if s.counter === 2}
-			<p class="note">
+			<p class="wi-hint">
 				You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
 				Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
 			</p>
 		{:else}
-			<p class="note">Your next 50/50 is an even one.</p>
+			<p class="wi-hint">Your next 50/50 is an even one.</p>
 		{/if}
 	{:else if id === 'fourStar'}
-		<p class="note">
+		<p class="wi-hint">
 			Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character you
 			want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it averages out
 			to about 22%.
@@ -759,7 +766,7 @@
 			>
 		</p>
 	{:else}
-		<p class="note">
+		<p class="wi-hint">
 			Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted, 37.5%
 			to be the other featured weapon, and 25% to be a standard 5★ weapon.
 		</p>
@@ -871,12 +878,14 @@
 						{/snippet}
 						{#snippet items()}
 							<div class="setup-pop">
-								<label class="check">
-									<input type="checkbox" bind:checked={states[id].guaranteed} />
-									<span class="check-box"></span>
-									{RULES[id].guarantee}
-								</label>
-								{@render bannerNote(id)}
+								<div class="wi-block">
+									<label class="check">
+										<input type="checkbox" bind:checked={states[id].guaranteed} />
+										<span class="check-box"></span>
+										{RULES[id].guarantee}
+									</label>
+									{@render bannerNote(id)}
+								</div>
 							</div>
 						{/snippet}
 					</BandMenu>
@@ -1219,28 +1228,17 @@
 		padding-inline: 0.35rem;
 	}
 
+	/* Fine print inside a hint (the 4★ note's last line): its own line */
 	.wi-fine {
 		display: block;
-		font-size: var(--fs-md);
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
+		margin-top: 0.3rem;
 	}
 
-	/* The import's report, at the foot of the Radiance counter's popover */
-	.wi-report {
-		display: grid;
-		gap: 0.4rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
-	}
-
-	.wi-report-head {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
-
-	/* ── The Radiance counter's history tools ── */
+	/* ── The Radiance counter's popover (and the guarantee's note) ──
+	   The kit's roles, one size each (design §5): a label (.slider-label,
+	   --fs-lg semibold), a hint under its control (--fs-md, muted, a rung
+	   closer), buttons at the control's size. Blocks sit a control's gap
+	   apart; a rule and a section's gap set off "Find mine" and the report. */
 	.wi-file {
 		display: none;
 	}
@@ -1249,26 +1247,68 @@
 	   inside .setup-pop, which pads it and sets its width. */
 	.wi-pop {
 		display: grid;
-		gap: 0.6rem;
+		gap: var(--inst-gap-control);
 	}
 
-	.wi-pop-head {
-		margin: 0.4rem 0 0;
-		padding-top: 0.6rem;
+	.wi-block {
+		display: grid;
+		gap: var(--inst-gap-in);
+		min-width: 0;
+	}
+
+	.wi-block--ruled {
+		padding-top: var(--inst-gap-control);
 		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
+	}
+
+	/* One way to find the counter: its control, then what it says. The two
+	   ways sit a control's gap apart, their own lines a rung closer. */
+	.wi-way {
+		display: grid;
+		gap: var(--inst-gap-in);
+	}
+
+	.wi-way + .wi-way {
+		margin-top: calc(var(--inst-gap-control) - var(--inst-gap-in));
+	}
+
+	.wi-hint {
+		margin: 0;
+		font-size: var(--fs-md);
+		line-height: var(--lh-snug);
 		color: var(--muted);
 	}
 
-	.wi-interview {
-		display: grid;
-		gap: 0.5rem;
+	.wi-subhead {
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
 	}
 
+	/* The interview's question: the label's size, so it reads as the prompt
+	   the answers belong to, not as a heading over the popover */
 	.wi-question {
-		margin: 0.2rem 0 0;
+		margin: 0.25rem 0 0;
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
+		line-height: var(--lh-snug);
+		color: var(--text);
+	}
+
+	/* The answers: a list of whole-width buttons, one per line, easy to hit */
+	.wi-answers {
+		display: grid;
+		gap: 0.3rem;
+	}
+
+	.wi-answers .btn,
+	.wi-wide {
+		justify-content: flex-start;
+		width: 100%;
+	}
+
+	.wi-wide {
+		gap: 0.45rem;
 	}
 
 	.wi-done {
@@ -1279,7 +1319,11 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.35rem 0.6rem;
+		gap: 0.35rem 0.5rem;
+	}
+
+	.wi-actions .btn {
+		gap: 0.3rem;
 	}
 
 	.wi-error {

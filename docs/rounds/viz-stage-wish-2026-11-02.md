@@ -242,3 +242,25 @@ Back on Wish odds after Artifact odds (`docs/rounds/viz-stage-artifact-2026-11-0
   16 → 12: half the last x label.
 
 Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 13. Eighth pass (2026-11-03): the Radiance counter's popover, tidied
+
+Nate: "still so messy and has wrong font-size assignments". Measured before: "Find mine" was the
+smallest text in it (11px), the interview's question the largest (16px semibold), every answer
+an 11px button, and the counter's chips had no label. Rebuilt on the instrument kit's roles
+(design §5), one size per role; the wording is unchanged:
+
+- **The counter**: its label ("Radiance counter", `.slider-label`, 14px semibold), the chips, and
+  the banner's note as a hint under them (12px, muted, a rung closer). The Guarantee popover's note
+  takes the same hint, a rung from its checkbox.
+- **Find mine** is a section label under a rule, with its two ways as two blocks a control's gap
+  apart: the file (a whole-width button, with "The file stays on your device." under it, and its
+  error), then the questions (the lead as a hint, the answers so far, the question at the label's
+  size, the answers as a list of whole-width buttons at the control's size, then Back and Start
+  over with marks).
+- **The report** ("Your wish history") is a section of its own under a rule: its lines as hints a
+  rung apart, "Since your last Radiance" as a subhead over the strip, Undo with its mark.
+
+Gates: Vitest 2752, svelte-check, lint and build clean; e2e on both engines 144 passed. Looked at
+in every state: at rest, mid-interview, asking about the animation, done, and after reading an
+export.
