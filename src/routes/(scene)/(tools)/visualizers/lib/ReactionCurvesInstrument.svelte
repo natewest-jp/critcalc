@@ -17,12 +17,12 @@
 		RB_MAX,
 		type EmCurve
 	} from './reactionCurves';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
-	import SettingLine from './kit/SettingLine.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
 
 	type FamilyId = 'all' | 'amplifying' | 'transformative' | 'additive' | 'lunar' | 'crystallize';
-	/** What a row's reading is built from: its value formatted, the boost as a
+	/** What a curve's reading is built from: its value formatted, the boost as a
 	 *  "times its base" figure, and the raw boost for sums of its own. */
 	type Ctx = { v: string; times: string; boost: number };
 	type Curve = {
@@ -33,25 +33,24 @@
 		 *  (Crystallize's shield has no Reaction Bonus bracket). */
 		em: EmCurve | null;
 		value: (em: number, level: number, rb: number) => number;
-		/** The row in plain words: the reading's first sentence. */
+		/** The row in plain words: the dot label's tooltip. */
 		read: (c: Ctx) => string;
+		/** What the headline's figure is a gain in: "{noun} from the next 100 EM". */
+		noun: string;
 	};
 
 	const SHARE = TOP_CONTRIBUTOR_SHARE;
-	/** A row's label joins its reactions with this; the name breaks only here. */
-	const NAME_SEP = ' · ';
 
 	const FAMILIES: {
 		id: FamilyId;
 		label: string;
-		/** The family's explainer, at the head of the readout. */
+		/** The family's explainer, in the fine print. */
 		note: string;
 		formula?: string;
 		caveat?: string;
 		yLabel: string;
-		/** The readout's first two column heads. */
+		/** The setup bar's name for the curve the headline reads. */
 		rowHead: string;
-		valueHead: string;
 		usesLevel: boolean;
 		curves: Curve[];
 	}[] = [
@@ -61,12 +60,12 @@
 			note: 'How much EM boosts each family.',
 			yLabel: 'boost from EM',
 			rowHead: 'Family',
-			valueHead: 'Boost from EM',
 			usesLevel: false,
 			// ordered by height at the right edge, so the table reads like the chart
 			curves: [
 				{
 					label: 'Transformative',
+					noun: 'Transformative boost',
 					detail: 'Overloaded · Swirl · Bloom · Hyperbloom',
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
@@ -75,6 +74,7 @@
 				},
 				{
 					label: 'Additive',
+					noun: 'Additive boost',
 					detail: 'Spread · Aggravate',
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
@@ -83,6 +83,7 @@
 				},
 				{
 					label: 'Lunar & Stellar',
+					noun: 'Lunar and Stellar boost',
 					detail: 'Lunar-Charged · Lunar-Crystallize · Stellar Swirl',
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
@@ -91,6 +92,7 @@
 				},
 				{
 					label: 'Crystallize',
+					noun: 'Crystallize shield boost',
 					detail: 'Shield',
 					color: 'var(--el-geo-main)',
 					em: null,
@@ -99,6 +101,7 @@
 				},
 				{
 					label: 'Amplifying',
+					noun: 'Amplifying boost',
 					detail: 'Vaporize · Melt',
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
@@ -115,11 +118,11 @@
 			formula: '2.78·EM/(1400+EM)',
 			yLabel: 'hit multiplier',
 			rowHead: 'Reaction',
-			valueHead: 'Multiplier',
 			usesLevel: false,
 			curves: [
 				{
 					label: 'Forward ×2',
+					noun: 'forward Vaporize or Melt multiplier',
 					detail: 'Hydro on Pyro Vaporize · Pyro on Cryo Melt',
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
@@ -128,6 +131,7 @@
 				},
 				{
 					label: 'Reverse ×1.5',
+					noun: 'reverse Vaporize or Melt multiplier',
 					detail: 'Pyro on Hydro Vaporize · Cryo on Pyro Melt',
 					color: 'var(--el-cryo-main)',
 					em: AMP_CURVE,
@@ -143,11 +147,11 @@
 			formula: '16·EM/(2000+EM)',
 			yLabel: 'damage',
 			rowHead: 'Reaction',
-			valueHead: 'Damage',
 			usesLevel: true,
 			curves: [
 				{
 					label: 'Hyperbloom · Burgeon · Shatter',
+					noun: 'Hyperbloom, Burgeon, or Shatter damage',
 					detail: '×3',
 					color: 'var(--el-dendro-main)',
 					em: TRANSFORMATIVE_CURVE,
@@ -157,6 +161,7 @@
 				},
 				{
 					label: 'Overloaded',
+					noun: 'Overloaded damage',
 					detail: '×2.75',
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
@@ -165,6 +170,7 @@
 				},
 				{
 					label: 'Electro-Charged · Bloom',
+					noun: 'Electro-Charged or Bloom damage',
 					detail: '×2, Electro-Charged per tick',
 					color: 'var(--el-electro-main)',
 					em: TRANSFORMATIVE_CURVE,
@@ -174,6 +180,7 @@
 				},
 				{
 					label: 'Superconduct',
+					noun: 'Superconduct damage',
 					detail: '×1.5',
 					color: 'var(--el-cryo-main)',
 					em: TRANSFORMATIVE_CURVE,
@@ -182,6 +189,7 @@
 				},
 				{
 					label: 'Swirl',
+					noun: 'Swirl damage',
 					detail: '×0.6',
 					color: 'var(--el-anemo-main)',
 					em: TRANSFORMATIVE_CURVE,
@@ -190,6 +198,7 @@
 				},
 				{
 					label: 'Burning',
+					noun: 'damage per Burning tick',
 					detail: '×0.25 per tick',
 					color: 'var(--rx-burning)',
 					em: TRANSFORMATIVE_CURVE,
@@ -206,11 +215,11 @@
 			caveat: 'Before enemy RES.',
 			yLabel: 'flat DMG added',
 			rowHead: 'Reaction',
-			valueHead: 'DMG added',
 			usesLevel: true,
 			curves: [
 				{
 					label: 'Spread',
+					noun: 'Spread damage',
 					detail: '×1.25, a Dendro hit on Quicken',
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
@@ -219,6 +228,7 @@
 				},
 				{
 					label: 'Aggravate',
+					noun: 'Aggravate damage',
 					detail: '×1.15, an Electro hit on Quicken',
 					color: 'var(--el-electro-main)',
 					em: ADDITIVE_CURVE,
@@ -235,11 +245,11 @@
 			caveat: 'Stellar Swirl figures are from gcsim, not yet confirmed in game.',
 			yLabel: 'damage',
 			rowHead: 'Reaction',
-			valueHead: 'Damage',
 			usesLevel: true,
 			curves: [
 				{
 					label: 'Lunar-Charged · Stellar Swirl blast',
+					noun: 'Lunar-Charged or Stellar Swirl blast damage',
 					detail: '×1.8, per tick · after 3+ swirls',
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
@@ -249,6 +259,7 @@
 				},
 				{
 					label: 'Stellar Swirl blast',
+					noun: 'Stellar Swirl blast damage after 1–2 swirls',
 					detail: '×1.2, after 1–2 swirls',
 					color: 'var(--el-cryo-main)',
 					em: SPECIAL_CURVE,
@@ -258,6 +269,7 @@
 				},
 				{
 					label: 'Lunar-Crystallize',
+					noun: 'damage per Moondrift hit',
 					detail: '×0.96, per Moondrift hit',
 					color: 'var(--el-geo-main)',
 					em: SPECIAL_CURVE,
@@ -267,6 +279,7 @@
 				},
 				{
 					label: 'Stellar Swirl',
+					noun: 'Stellar Swirl damage',
 					detail: '×0.45',
 					color: 'var(--el-anemo-main)',
 					em: SPECIAL_CURVE,
@@ -282,11 +295,11 @@
 			formula: '4.44·EM/(1400+EM)',
 			yLabel: 'shield HP',
 			rowHead: 'Shard',
-			valueHead: 'Shield HP',
 			usesLevel: true,
 			curves: [
 				{
 					label: 'Shield',
+					noun: 'shield HP',
 					detail: 'any element',
 					color: 'var(--el-geo-main)',
 					em: null,
@@ -304,15 +317,17 @@
 	/** Reaction Bonus in whole percent. */
 	let rbPct = $state(0);
 	const rb = $derived(rbPct / 100);
-	/** The row the reading sentence describes — follows hover, focus and taps. */
-	let readIdx = $state(0);
+	/** The curve the headline reads: the setup bar's first segment, or a click
+	 *  on its label on the chart. */
+	let pick = $state(0);
 
 	const family = $derived(FAMILIES.find((f) => f.id === familyId)!);
 	const takesRb = $derived(family.curves.some((c) => c.em));
+	const picked = $derived(family.curves[Math.min(pick, family.curves.length - 1)]);
 
 	function pickFamily(id: FamilyId) {
 		familyId = id;
-		readIdx = 0;
+		pick = 0;
 	}
 
 	export function reset() {
@@ -323,10 +338,8 @@
 	}
 
 	// ── Workspace handle (share) ───────────────────────────────────────────────
-	// The row being read follows the pointer, so it is not shared: a link opens
-	// on the family's first row, as picking the family does.
 	export function getShareState() {
-		return { v: 1, family: familyId, em, level, rb: rbPct };
+		return { v: 1, family: familyId, em, level, rb: rbPct, pick };
 	}
 
 	export function applyShareState(state: unknown) {
@@ -344,20 +357,36 @@
 		em = num(s.em, EM_MAX, 5) ?? em;
 		if (typeof s.level === 'number' && Number.isFinite(s.level)) level = snapLevel(s.level);
 		rbPct = num(s.rb, RB_MAX, 5) ?? rbPct;
+		// an older link has no pick: the family's first curve, as before
+		pick = num(s.pick, family.curves.length - 1, 1) ?? 0;
 	}
 
 	// ── Geometry ───────────────────────────────────────────────────────────────
 	let graphW = $state(720);
 	let graphH = $state(0);
-	const PADL = 58;
-	const PADR = 14;
+	/** 🎛️ The left margin is what the y axis's numbers need ("12.5k"), so the
+	 *  widest starts near the stage's edge; every word on the chart starts at
+	 *  the plot's left edge (PADL), never in the margin. */
+	const PADL = 38;
+	const PADR = 12;
 	const TOP = 16;
 	/** The plot's height at its least — the chart grows from here into the tile. */
 	const PLOT_MIN = 210;
-	const CHROME_H = TOP + 28; // above the plot + the axis below it
+	/** 🎛️ The companion strip's height (design §7: at most one, on the main x axis). */
+	const COMP_H = 64;
+	/** 🎛️ Between the plot and the strip; the strip's label sits in it. */
+	const COMP_GAP = 24;
+	/** The axis's numbers and its name, under the strip. */
+	const AXIS_H = 30;
+	const CHROME_H = TOP + COMP_GAP + COMP_H + AXIS_H;
 	const plotH = $derived(Math.max(PLOT_MIN, graphH - CHROME_H));
 	const plotY1 = $derived(TOP + plotH);
-	const H = $derived(plotY1 + 28);
+	const compY0 = $derived(plotY1 + COMP_GAP);
+	const compY1 = $derived(compY0 + COMP_H);
+	const H = $derived(compY1 + AXIS_H);
+	/** Half the slider thumb's 15px (app.css `.slider`): the handle's track runs
+	 *  this far past each end of the axis, so the thumb sits on the marker. */
+	const THUMB_R = 7.5;
 
 	const EM_MAX = 1200;
 	const X_TICKS = [0, 200, 400, 600, 800, 1000, 1200];
@@ -379,7 +408,8 @@
 		return Array.from({ length: Math.floor(yMax / step + 1e-9) }, (_, i) => (i + 1) * step);
 	});
 
-	const xOf = $derived((e: number) => PADL + (e / EM_MAX) * (graphW - PADL - PADR));
+	const plotW = $derived(graphW - PADL - PADR);
+	const xOf = $derived((e: number) => PADL + (e / EM_MAX) * plotW);
 	const yOf = $derived((v: number) => plotY1 - (v / yMax) * (plotH - 8));
 
 	const SAMPLES = 60;
@@ -401,17 +431,6 @@
 			: family.id === 'amplifying'
 				? `×${v.toFixed(2)}`
 				: fmtInt(v);
-	// Marginal gain: what the NEXT 50 EM buys from here — the curve's
-	// diminishing returns as a number instead of a slope
-	const GAIN_STEP = 50;
-	const fmtGain = (c: Curve) => {
-		const d = at(c, em + GAIN_STEP) - at(c, em);
-		return family.id === 'all'
-			? `+${d.toFixed(1)}%`
-			: family.id === 'amplifying'
-				? `+${d.toFixed(2)}`
-				: `+${fmtInt(d)}`;
-	};
 	const fmtTick = (v: number) =>
 		family.id === 'all'
 			? `${Math.round(v)}%`
@@ -421,44 +440,107 @@
 					? `${(v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}k`
 					: `${Math.round(v)}`;
 
-	/** What the current Reaction Bonus is worth in EM on one curve, from here. */
-	const worthOf = (curve: EmCurve) => emWorthOfBonus(curve, em, rb);
-	const fmtWorth = (curve: EmCurve) => {
-		const n = worthOf(curve);
-		return Number.isFinite(n) ? `${fmtInt(n)} EM` : 'beyond any EM';
-	};
+	// ── The headline: what the NEXT 100 EM adds (⚓ Nate) ─────────────────
+	// The curve's diminishing returns as one number. A gain, not a slope: what
+	// the step from here to 100 EM more really adds, so the step drawn on the
+	// curve rises by exactly the headline's figure.
+	const GAIN_STEP = 100;
+	const gainOf = (c: Curve, e: number) => at(c, e + GAIN_STEP) - at(c, e);
+	const fmtGain = (d: number) =>
+		family.id === 'all'
+			? `+${d.toFixed(1)}%`
+			: family.id === 'amplifying'
+				? `+${d.toFixed(2)}`
+				: `+${fmtInt(d)}`;
+	const headGain = $derived(gainOf(picked, em));
 
-	// ── The reading: a row, in sentences ─────────────────────────────────
-	// Every row's reading is built and stacked in one grid cell, with only the
-	// chosen one visible — the box is as tall as the LONGEST, so moving between
-	// rows never changes the Readout's height or moves the receipt under it.
+	/** What the current Reaction Bonus is worth in EM on the picked curve. */
+	const bonusWorth = $derived.by(() => {
+		if (!picked.em) return 'none';
+		if (rbPct === 0) return null;
+		const n = emWorthOfBonus(picked.em, em, rb);
+		return Number.isFinite(n) ? `${fmtInt(n)} more EM` : 'more than any amount of EM';
+	});
+
+	/** A curve's reading in words: its dot label's tooltip. */
 	function readingOf(c: Curve): string {
 		const v = at(c, em);
 		const boost = family.id === 'all' ? v / 100 : 0;
-		const first = c.read({ v: fmt(v), times: fmt1(1 + boost), boost });
-		// The bonus's worth has its own column on All families; elsewhere this
-		// sentence is the only place it shows — and only while the slider is on
-		// screen, which Crystallize's own tab hides.
-		if (family.id === 'all' || !takesRb || rbPct === 0 || !c.em) return first;
-		const n = worthOf(c.em);
-		return `${first} ${
-			Number.isFinite(n)
-				? `The +${rbPct}% Reaction Bonus would be worth ${fmtInt(n)} more EM here.`
-				: `The +${rbPct}% Reaction Bonus would be worth more than any amount of EM here.`
-		}`;
+		return c.read({ v: fmt(v), times: fmt1(1 + boost), boost });
 	}
-	const readings = $derived(family.curves.map(readingOf));
 
-	// The chart moves the EM marker on press-and-drag only — a plain hover
-	// used to move it too, and leave it wherever the pointer crossed out.
+	// ── The answer as geometry (design §7: the response-curve family) ──────
+	// Each curve's dot at your EM carries its name and value (the headline
+	// speaks for the gain, not the value), nudged apart where two would touch;
+	// the picked one's in the ink.
+	/** 🎛️ The least gap between two dot labels, in px. */
+	const DOT_LABEL_GAP = 13;
+	/** A condensed 11px glyph, generously — only decides which side a label sits. */
+	const LABEL_CHAR_PX = 6.4;
+	const labelOf = (c: Curve) => `${c.label} ${fmt(at(c, em))}`;
+	/** The dot labels go LEFT of the marker, above each rising curve, where
+	 *  the step (right of the marker, under the picked curve) leaves them
+	 *  clear; right of it only where the widest wouldn't fit on the left. */
+	const labelsLeft = $derived(
+		xOf(em) - 8 - Math.max(...family.curves.map((c) => labelOf(c).length)) * LABEL_CHAR_PX >= PADL
+	);
+	const dotLabels = $derived.by(() => {
+		const x = xOf(em);
+		const left = labelsLeft;
+		const placed = family.curves
+			.map((c, i) => ({
+				i,
+				text: labelOf(c),
+				title: readingOf(c),
+				y: yOf(at(c, em))
+			}))
+			.sort((a, b) => a.y - b.y);
+		for (let k = 1; k < placed.length; k++)
+			placed[k].y = Math.max(placed[k].y, placed[k - 1].y + DOT_LABEL_GAP);
+		return placed.map((l) => ({
+			...l,
+			x: left ? x - 8 : x + 8,
+			y: l.y + 3.5,
+			anchor: left ? 'end' : 'start'
+		}));
+	});
+
+	/** The step on the picked curve: 100 EM across, then up by what it adds. */
+	const step = $derived.by(() => {
+		if (em + GAIN_STEP > EM_MAX) return null;
+		const x0 = xOf(em);
+		const x1 = xOf(em + GAIN_STEP);
+		const y0 = yOf(at(picked, em));
+		const y1 = yOf(at(picked, em + GAIN_STEP));
+		return { x0, x1, y0, y1 };
+	});
+
+	// The companion strip: what the next 100 EM adds, at every EM, on the
+	// picked curve. Falling, always: the diminishing returns, drawn. Scaled to
+	// its own peak, so it shows shape, not size.
+	const compPath = $derived.by(() => {
+		const g = (e: number) => gainOf(picked, e);
+		const peak = Math.max(g(0), g(EM_MAX));
+		if (!(peak > 0)) return '';
+		const y = (d: number) => (compY1 - (d / peak) * (COMP_H - 4)).toFixed(1);
+		let d = `M${xOf(0).toFixed(1)},${compY1}`;
+		for (let i = 0; i <= SAMPLES; i++) {
+			const e = (i / SAMPLES) * EM_MAX;
+			d += ` L${xOf(e).toFixed(1)},${y(g(e))}`;
+		}
+		return `${d} L${xOf(EM_MAX).toFixed(1)},${compY1} Z`;
+	});
+	const compDotY = $derived.by(() => {
+		const peak = Math.max(gainOf(picked, 0), gainOf(picked, EM_MAX));
+		return peak > 0 ? compY1 - (headGain / peak) * (COMP_H - 4) : compY1;
+	});
+
+	// The chart moves the EM marker on press-and-drag only.
 	let dragging = $state(false);
 	function emAt(e: PointerEvent) {
 		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
 		const x = e.clientX - rect.left;
-		em =
-			Math.round(
-				Math.min(EM_MAX, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * EM_MAX)) / 5
-			) * 5;
+		em = Math.round(Math.min(EM_MAX, Math.max(0, ((x - PADL) / plotW) * EM_MAX)) / 5) * 5;
 	}
 	function onDown(e: PointerEvent) {
 		if (e.button !== 0) return;
@@ -474,25 +556,121 @@
 	}
 </script>
 
-<div class="instrument instrument--capped">
-	<div class="rx-chart instrument-chart ctx-dark">
-		<!-- The family picks what the chart draws, so it sits on the chart. -->
-		<div class="segment rx-tabs" role="radiogroup" aria-label="Reaction family">
-			{#each FAMILIES as f (f.id)}
-				<button
-					class="btn"
-					class:is-active={familyId === f.id}
-					role="radio"
-					aria-checked={familyId === f.id}
-					onclick={() => pickFamily(f.id)}
-				>
-					{f.label}
-				</button>
-			{/each}
+<!-- THE STAGE (design §6). One box: the chart head (what the next 100 EM
+     adds), the chart's toolbar on its top edge (the families, then the setup
+     bar), the chart with its companion, and the EM handle on its bottom edge.
+     The old Readout table is on the chart: each curve's value at its dot, the
+     gain as the step and the strip, the readings as the dots' tooltips. -->
+<div class="stage-root">
+	<div class="stage ctx-dark">
+		<p class="readout-head stage-head">
+			{fmtGain(headGain)}<span class="readout-sentence"
+				>{picked.noun} from the next {GAIN_STEP} EM</span
+			>
+		</p>
+
+		<div class="stage-toolbar">
+			<div class="segment stage-tabs" role="radiogroup" aria-label="Reaction family">
+				{#each FAMILIES as f (f.id)}
+					<button
+						class="btn"
+						class:is-active={familyId === f.id}
+						role="radio"
+						aria-checked={familyId === f.id}
+						onclick={() => pickFamily(f.id)}
+					>
+						{f.label}
+					</button>
+				{/each}
+			</div>
+
+			<div class="setup-bar" role="group" aria-label="Setup">
+				{#if family.curves.length > 1}
+					<BandMenu role="dialog" align="start" ariaLabel="{family.rowHead}: {picked.label}">
+						{#snippet face()}
+							<span class="setup-key">{family.rowHead}</span>
+							<span class="setup-val">{picked.label}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="setup-pop">
+								<div class="rx-picks" role="radiogroup" aria-label={family.rowHead}>
+									{#each family.curves as c, i (c.label)}
+										<button
+											class="rx-pick"
+											class:is-on={c === picked}
+											role="radio"
+											aria-checked={c === picked}
+											onclick={() => (pick = i)}
+										>
+											<span class="rx-dot" style:background={c.color}></span>
+											<span class="rx-pick-name">{c.label}</span>
+											<span class="rx-pick-detail">{c.detail}</span>
+										</button>
+									{/each}
+								</div>
+							</div>
+						{/snippet}
+					</BandMenu>
+				{/if}
+
+				{#if takesRb}
+					<BandMenu role="dialog" align="start" ariaLabel="Reaction Bonus: {rbPct}%">
+						{#snippet face()}
+							<span class="setup-key">Reaction Bonus</span>
+							<span class="setup-val setup-val--num">{rbPct}%</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="setup-pop">
+								<InstrumentSlider
+									label="Reaction Bonus"
+									aria="Reaction Bonus in percent"
+									bind:value={rbPct}
+									min={0}
+									max={RB_MAX}
+									step={5}
+									unit="%"
+								/>
+								{#if bonusWorth === 'none'}
+									<p class="rx-pop-note">A Reaction Bonus doesn’t apply to a Crystallize shield.</p>
+								{:else if bonusWorth}
+									<p class="rx-pop-note">
+										At {em} EM, +{rbPct}% Reaction Bonus is worth {bonusWorth} on {picked.label}.
+									</p>
+								{:else}
+									<p class="rx-pop-note">
+										A Reaction Bonus adds to the boost from EM, so it’s worth less EM where the
+										curve is steep and more where it has flattened.
+									</p>
+								{/if}
+							</div>
+						{/snippet}
+					</BandMenu>
+				{/if}
+
+				{#if family.usesLevel}
+					<BandMenu role="dialog" align="start" ariaLabel="Level: {level}">
+						{#snippet face()}
+							<span class="setup-key">Level</span>
+							<span class="setup-val setup-val--num">{level}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="setup-pop">
+								<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
+								<InstrumentSlider
+									label="Level"
+									aria="Character level"
+									bind:value={level}
+									{...LEVEL_SLIDER}
+								/>
+							</div>
+						{/snippet}
+					</BandMenu>
+				{/if}
+			</div>
 		</div>
 
 		<div
-			class="rx-graph instrument-graph"
+			class="stage-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
 			bind:clientWidth={graphW}
 			bind:clientHeight={graphH}
@@ -506,13 +684,15 @@
 				onpointermove={onMove}
 				onpointerup={onUp}
 				onpointercancel={onUp}
+				style:cursor="ew-resize"
 			>
-				<!-- EM grid -->
+				<!-- EM grid, through the plot and the strip -->
 				{#each X_TICKS as t (t)}
 					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
+					<line x1={xOf(t)} y1={compY0} x2={xOf(t)} y2={compY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(t)}
-						y={plotY1 + 15}
+						y={compY1 + 15}
 						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
@@ -522,7 +702,7 @@
 				{/each}
 				<text
 					x={graphW - PADR}
-					y={plotY1 + 26}
+					y={compY1 + 27}
 					fill="var(--chart-dim)"
 					font-size="10"
 					text-anchor="end"
@@ -543,237 +723,172 @@
 						{fmtTick(v)}
 					</text>
 				{/each}
-				<text x={0} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+				<text x={PADL} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 					{family.yLabel}
 				</text>
 
-				<!-- Curves — the one being read draws on top, a little heavier -->
-				{#each paths as p, i (p.label)}
-					<path
-						d={p.d}
-						fill="none"
-						stroke={p.color}
-						stroke-width={i === readIdx ? 2.75 : 2}
-						stroke-linejoin="round"
-					/>
+				<!-- Curves: the picked one draws on top, a little heavier -->
+				{#each paths as p (p.label)}
+					{#if p !== picked}
+						<path d={p.d} fill="none" stroke={p.color} stroke-width="1.75" stroke-opacity="0.7" />
+					{/if}
+				{/each}
+				{#each paths as p (p.label)}
+					{#if p.label === picked.label}
+						<path d={p.d} fill="none" stroke={p.color} stroke-width="2.75" />
+					{/if}
 				{/each}
 
-				<!-- EM marker -->
+				<!-- The step: the next 100 EM across, and what it adds, up -->
+				{#if step}
+					<path
+						d="M{step.x0},{step.y0} L{step.x1},{step.y0} L{step.x1},{step.y1}"
+						fill="none"
+						stroke="var(--text)"
+						stroke-width="1.25"
+						stroke-dasharray="3 2"
+					/>
+				{/if}
+				{#if step && labelsLeft}
+					<text
+						class="stage-word"
+						x={(step.x0 + step.x1) / 2}
+						y={step.y0 + 13}
+						fill="var(--chart-dim)"
+						font-size="10"
+						text-anchor="middle"
+					>
+						next {GAIN_STEP} EM
+					</text>
+				{/if}
+
+				<!-- The companion: what the next 100 EM adds, at every EM -->
+				<line x1={PADL} y1={compY1} x2={graphW - PADR} y2={compY1} stroke="var(--chart-rule)" />
+				{#if compPath}
+					<path d={compPath} fill="var(--chart-ink)" fill-opacity="0.45" />
+				{/if}
+				<text x={PADL} y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+					what the next {GAIN_STEP} EM adds
+				</text>
+
+				<!-- The EM marker, down through the strip to the handle -->
 				<line
 					x1={xOf(em)}
 					y1={TOP}
 					x2={xOf(em)}
-					y2={plotY1}
-					stroke="var(--chart-dim)"
-					stroke-dasharray="2 3"
+					y2={compY1}
+					stroke="var(--chart-ink)"
+					stroke-width="1.5"
+				/>
+				<circle
+					cx={xOf(em)}
+					cy={compDotY}
+					r="3"
+					fill="var(--accent)"
+					style="stroke: var(--frame-bg)"
+					stroke-width="1.5"
 				/>
 				{#each family.curves as c (c.label)}
 					<circle
 						cx={xOf(em)}
 						cy={yOf(at(c, em))}
-						r="3.5"
-						fill={c.color}
+						r={c === picked ? 4.5 : 3}
+						fill={c === picked ? 'var(--accent)' : c.color}
 						style="stroke: var(--frame-bg)"
 						stroke-width="1.5"
 					/>
 				{/each}
+				<!-- A label is also a pointer shortcut to read its curve; the setup
+				     bar's first segment is the keyboard's way. -->
+				{#each dotLabels as l (l.i)}
+					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+					<text
+						class="stage-word rx-label"
+						class:is-picked={l.i === pick}
+						x={l.x}
+						y={l.y}
+						fill={l.i === pick ? 'var(--text)' : 'var(--chart-ink)'}
+						font-size="11"
+						text-anchor={l.anchor}
+						onpointerdown={(e) => e.stopPropagation()}
+						onclick={() => (pick = l.i)}
+					>
+						{l.text}<title>{l.title}</title>
+					</text>
+				{/each}
 			</svg>
 		</div>
-	</div>
 
-	<!-- LIVE (design §3): EM is the one control you scrub, so it heads the rail
-	     on its own, beside the chart it moves. -->
-	<div class="panel instrument-live">
-		<InstrumentSlider
-			label="Elemental Mastery"
-			aria="Elemental Mastery"
-			bind:value={em}
-			min={0}
-			max={EM_MAX}
-			step={5}
-		/>
-	</div>
-
-	<!-- SETTINGS: Reaction Bonus per session, then Level set once and folded.
-	     Every family takes one or the other; a family that took neither would
-	     drop the panel rather than leave an empty Build box on the rail. -->
-	{#if takesRb || family.usesLevel}
-		<div class="panel instrument-settings">
-			<section class="inst-section">
-				<p class="kicker">Build</p>
-				{#if takesRb}
-					<InstrumentSlider
-						label="Reaction Bonus"
-						aria="Reaction Bonus in percent"
-						bind:value={rbPct}
-						min={0}
-						max={RB_MAX}
-						step={5}
-						unit="%"
-					/>
-				{/if}
-				{#if family.usesLevel}
-					<SettingLine label="Level" ariaLabel="Level: {level}">
-						{#snippet summary()}{level}{/snippet}
-						<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
-						<InstrumentSlider
-							label="Level"
-							aria="Character level"
-							bind:value={level}
-							{...LEVEL_SLIDER}
-						/>
-					</SettingLine>
-				{/if}
-			</section>
+		<!-- THE HANDLE (design §6): EM is the x axis's, so its control is too. -->
+		<div
+			class="stage-handle"
+			style:--stage-handle-l="{PADL - THUMB_R}px"
+			style:--stage-handle-r="{PADR - THUMB_R}px"
+		>
+			<InstrumentSlider
+				label="Elemental Mastery"
+				aria="Elemental Mastery"
+				bind:value={em}
+				min={0}
+				max={EM_MAX}
+				step={5}
+			/>
 		</div>
-	{/if}
 
-	<div class="panel panel--paper rx-readout instrument-readout">
-		<p class="kicker">Readout</p>
-		<p class="note rx-intro">{family.note}</p>
-		<table class="rx-table">
-			<thead>
-				<tr>
-					<th scope="col">{family.rowHead}</th>
-					<th scope="col" class="rx-num">{family.valueHead}</th>
-					<th scope="col" class="rx-num">Next {GAIN_STEP} EM adds</th>
-					{#if family.id === 'all' && rbPct > 0}
-						<th scope="col" class="rx-num">+{rbPct}% bonus is worth</th>
-					{/if}
-				</tr>
-			</thead>
-			<tbody>
-				{#each family.curves as c, i (c.label)}
-					<tr
-						class:is-read={i === readIdx}
-						tabindex="0"
-						onpointerenter={() => (readIdx = i)}
-						onfocus={() => (readIdx = i)}
-						onclick={() => (readIdx = i)}
-					>
-						<th scope="row">
-							<span class="rx-dot" style:background={c.color}></span>
-							<span class="rx-name"
-								>{#each c.label.split(NAME_SEP) as part, j (j)}{#if j}{NAME_SEP}{/if}<span
-										class="rx-part">{part}</span
-									>{/each}</span
-							>
-							<span class="rx-detail">{c.detail}</span>
-						</th>
-						<td class="rx-num rx-strong">{fmt(at(c, em))}</td>
-						<td class="rx-num">{fmtGain(c)}</td>
-						{#if family.id === 'all' && rbPct > 0}
-							<td class="rx-num">{c.em ? fmtWorth(c.em) : 'doesn’t apply'}</td>
-						{/if}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-		<div class="rx-reading" aria-live="polite">
-			{#each readings as r, i (i)}
-				<p class:is-read={i === readIdx} aria-hidden={i !== readIdx}>{r}</p>
-			{/each}
-		</div>
-		{#if family.formula || family.caveat}
-			<p class="rx-receipt">
-				{#if family.formula}<span class="rx-formula">{family.formula}</span>{/if}
-				{#if family.caveat}<span>{family.caveat}</span>{/if}
-			</p>
-		{/if}
+		<!-- The fine print: the family's working, which no mark can show. -->
+		<p class="stage-fine">
+			{family.note}
+			{#if family.formula}<span class="rx-formula">EM bonus {family.formula}.</span>{/if}
+			{#if family.caveat}{family.caveat}{/if}
+		</p>
 	</div>
 </div>
 
 <style>
-	/* No frame — the chart is on the night; .ctx-dark stays claimed for
-	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. The family
-	   tabs ride in the chart's slot: they choose what it draws. */
-	.rx-chart {
-		gap: 1rem;
+	/* The picked curve's label reads in the ink; a label is clickable. */
+	.rx-label {
+		cursor: pointer;
 	}
 
-	.rx-graph svg {
-		display: block;
-		/* a horizontal drag sets EM; a vertical one still scrolls the tile, and
-		   neither selects the tick labels */
-		touch-action: pan-y;
-		user-select: none;
-		-webkit-user-select: none;
-	}
-
-	.rx-graph text {
-		font-family: var(--font-body);
-	}
-
-	/* Six families outgrow a narrow tile's width — wrap rather than scroll. */
-	.rx-tabs {
-		flex-wrap: wrap;
-		align-self: flex-start;
-		/* start-aligned, it sizes to its content and never wraps — on a 320px
-		   phone it pushed the whole instrument 39px wide */
-		max-width: 100%;
-	}
-
-	/* ── The readout: one row per curve, the columns' heads do the explaining,
-	   and the reading says the chosen row in words ── */
-	/* The full box, not .note's 56ch measure: the readout is already bounded
-	   by its column, and a narrower measure only adds lines */
-	.rx-intro {
-		max-width: none;
-		margin: 0 0 0.6rem;
-	}
-
-	.rx-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: var(--fs-md);
-		line-height: var(--lh-snug);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.rx-table thead th {
-		font-size: var(--fs-sm);
+	.rx-label.is-picked {
 		font-weight: var(--fw-semibold);
-		color: var(--muted);
+	}
+
+	/* The curve the headline reads: a list, a row per curve, its reactions under
+	   its name, past the dot. */
+	.rx-picks {
+		display: grid;
+		gap: 0.15rem;
+	}
+
+	.rx-pick {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		column-gap: 0.45rem;
+		align-items: baseline;
+		padding: 0.3rem 0.5rem;
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: inherit;
+		font: inherit;
 		text-align: left;
-		padding: 0 0.5rem 0.3rem;
-		/* the Readout is a column at most widths now: a head may wrap */
-		vertical-align: bottom;
+		cursor: pointer;
 	}
 
-	.rx-table tbody th,
-	.rx-table tbody td {
-		padding: 0.25rem 0.5rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
-		vertical-align: baseline;
+	@media (hover: hover) {
+		.rx-pick:hover {
+			background: color-mix(in srgb, var(--text) 7%, transparent);
+		}
 	}
 
-	.rx-table tbody th {
-		text-align: left;
-		font-weight: inherit;
+	.rx-pick.is-on {
+		background: color-mix(in srgb, var(--text) 12%, transparent);
 	}
 
-	.rx-table tbody tr {
-		cursor: default;
-		transition: background-color var(--t-snap);
-	}
-
-	.rx-table tbody tr.is-read {
-		background: color-mix(in srgb, var(--text) 7%, transparent);
-	}
-
-	.rx-table tbody tr:focus-visible {
+	.rx-pick:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: -2px;
-	}
-
-	/* No nowrap: a number has no space to break at, and "doesn't apply" may
-	   take two lines in a column */
-	.rx-num {
-		text-align: right;
-	}
-
-	.rx-table thead th.rx-num {
-		text-align: right;
 	}
 
 	.rx-dot {
@@ -781,60 +896,26 @@
 		width: 9px;
 		height: 9px;
 		border-radius: 50%;
-		margin-right: 0.45rem;
 	}
 
-	/* The family's name breaks BETWEEN reactions, never inside one; its
-	   reactions go beneath it, past the dot — beside it, "Lunar & Stellar"
-	   broke over five lines in a column. A whole-name nowrap set the table's
-	   min-content past a phone's paper card (Lunar-Charged · Stellar Swirl
-	   blast, 208px) */
-	.rx-name {
+	.rx-pick-name {
 		font-weight: var(--fw-semibold);
 	}
 
-	.rx-part {
-		white-space: nowrap;
-	}
-
-	.rx-detail {
-		display: block;
-		padding-left: calc(9px + 0.45rem);
+	.rx-pick-detail {
+		grid-column: 2;
 		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
 
-	.rx-strong {
-		font-weight: var(--fw-semibold);
-	}
-
-	.rx-reading {
-		display: grid;
-		margin-top: 0.6rem;
-		font-size: var(--fs-md);
-		line-height: var(--lh-normal);
-	}
-
-	.rx-reading > p {
-		grid-area: 1 / 1;
-		margin: 0;
-		visibility: hidden;
-	}
-
-	.rx-reading > p.is-read {
-		visibility: visible;
-	}
-
-	.rx-receipt {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.2rem 1rem;
-		margin: 0.4rem 0 0;
+	.rx-pop-note {
+		margin: 0.5rem 0 0;
 		font-size: var(--fs-sm);
-		color: color-mix(in srgb, var(--muted) 85%, transparent);
+		line-height: var(--lh-snug);
+		color: var(--muted);
 	}
 
 	.rx-formula {
-		font-family: var(--font-body);
+		font-variant-numeric: tabular-nums;
 	}
 </style>
