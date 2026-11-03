@@ -196,105 +196,39 @@ export function riskGradient(critRate: number, min = HITS_MIN, max = HITS_MAX): 
 	return `linear-gradient(to right, ${stops.join(', ')})`;
 }
 
-// ── Chart geometry ──────────────────────────────────────────────────────────
-// Canvas size and plot margins (pixels). PAD reserves room for tick labels.
+// ── The field's axes (the stage, 2026-11-03) ────────────────────────────────
+// CRIT DMG runs across, CRIT Rate up. ⚓ The CRIT Rate axis reaches down to 0%
+// although no build can (CR_MIN, the base 5%), because the companion strip
+// shares it: a rotation's crits as a share of its hits, and a rotation with no
+// crit sits at 0% (Nate 2026-11-03). The field draws the unreachable 0–5% band
+// veiled.
 
-export const SIZE = 720;
+/** The bottom of the CRIT Rate axis. Builds stop at CR_MIN above it. */
+export const CR_AXIS_MIN = 0;
 
-/** The heatmap's drawn box keeps its width:height inside this band — the
- *  chart fills its shell, but never stretches into an unreadable sliver.
- *  MAX is also the wide Crit Heatmap's stage width per unit of tile height
- *  (CritInstrument's wide tier), which is how its Readout meets the chart. */
-export const HEATMAP_MIN_ASPECT = 0.82; // narrowest w:h (tallest the plot may get)
-export const HEATMAP_MAX_ASPECT = 1.25; // widest w:h (widest the plot may get)
-// PAD reserves room for tick labels (left/bottom) and, on the right, the
-// isoline value column + its rotated AVERAGE DMG identity label.
-// ↻ 2026-09-30 (⚓ Nate): the three axis titles sit ONE ink gap past the tick
-// labels they actually stand beside, and the plot took the room back. Measured
-// on the GLYPHS, not the text boxes — a box carries empty room above the
-// capitals and below the digits, and CRIT RATE's widest tick ("100%") is at the
-// top, not beside the title — so equal numbers here are equal to the eye.
-// (By box, 4 / 6 / 8px measured 13.9 / 12.1 / 11.3px of ink.)
-/** Clear space between an axis title's glyphs and its tick labels' glyphs. 🎛️ */
-export const AXIS_TITLE_GAP = 10;
-/** Clear space between a title's glyphs and the outer edge of the chart box. */
-export const AXIS_TITLE_MARGIN = 6;
+/** The field's plot rectangle in the chart's pixels. The two axes are
+ *  normalised separately (their ranges are unrelated), so any aspect is
+ *  honest. */
+export type FieldRect = { x0: number; y0: number; w: number; h: number };
 
-/** Glyph metrics the title placement is built on — IBM Plex Sans at 11px,
- *  measured with canvas `measureText` (actualBoundingBox*). The ticks' digits
- *  and the titles' capitals share one cap height and sit a hair under their
- *  baseline. */
-export const AXIS_INK = {
-	/** Cap / digit height above the baseline. */
-	capHeight: 7.81,
-	/** How far the glyphs dip below the baseline. */
-	belowBaseline: 0.13,
-	/** The widest two-digit crit-rate tick, its ink from its right-aligned end. */
-	crTickInk: 22.98,
-	/** An isoline value ("×2.50", 10px), its ink from its start. ↻ 2026-10-02:
-	 *  re-measured when the × moved to the front (was 25.6 for "2.50x"). */
-	isoTickInk: 26.12
+export const cdToX = (critDamage: number, r: FieldRect) =>
+	r.x0 + ((critDamage - CD_MIN) / (CD_MAX - CD_MIN)) * r.w;
+export const crToY = (critRate: number, r: FieldRect) =>
+	r.y0 + (1 - (critRate - CR_AXIS_MIN) / (CR_MAX - CR_AXIS_MIN)) * r.h;
+export const xToCD = (x: number, r: FieldRect) => CD_MIN + ((x - r.x0) / r.w) * (CD_MAX - CD_MIN);
+export const yToCR = (y: number, r: FieldRect) =>
+	CR_AXIS_MIN + (1 - (y - r.y0) / r.h) * (CR_MAX - CR_AXIS_MIN);
+
+/** The crit count whose row on the strip is nearest a CRIT Rate: the strip
+ *  draws k crits of n hits at k / n on the shared axis. */
+export const countAtRate = (rate: number, hits: number) => {
+	const n = Math.max(1, Math.round(hits));
+	return clamp(Math.round(rate * n), 0, n);
 };
 
-export const PAD = {
-	// ↻ 2026-10-02 (⚓ Nate): was 24, which started the heatmap ~20px lower than
-	// every other instrument's first edge. 🎛️ 9 = the marker dot's radius (8)
-	// plus its outline, so a build at CRIT Rate 100% still shows its whole dot
-	// on the plot's top edge — only the faint halo clips, and only there. The
-	// "100%" tick's ink now begins ~5px below the tile's top.
-	top: 9,
-	// isoline labels start 8 past the plot, then the gap, the title, the margin
-	right: Math.ceil(
-		8 +
-			AXIS_INK.isoTickInk +
-			AXIS_TITLE_GAP +
-			AXIS_INK.belowBaseline +
-			AXIS_INK.capHeight +
-			AXIS_TITLE_MARGIN
-	),
-	// tick baselines sit 22 below the plot
-	bottom: Math.ceil(
-		22 +
-			AXIS_INK.belowBaseline +
-			AXIS_TITLE_GAP +
-			AXIS_INK.capHeight +
-			AXIS_INK.belowBaseline +
-			AXIS_TITLE_MARGIN
-	),
-	// crit-rate ticks end 10 left of the plot
-	left: Math.ceil(
-		10 +
-			AXIS_INK.crTickInk +
-			AXIS_TITLE_GAP +
-			AXIS_INK.belowBaseline +
-			AXIS_INK.capHeight +
-			AXIS_TITLE_MARGIN
-	)
-};
-
-// The pixel box the plot is drawn into. Because the CR and CD axes are already
-// normalized independently (unrelated ranges), the box need NOT be square — the
-// heatmap fills whatever rectangle it's given and distorts no true geometry.
-// `pad` stays fixed px so tick labels don't scale with the box.
-export type PlotGeometry = { width: number; height: number; pad: typeof PAD };
-export const DEFAULT_GEOMETRY: PlotGeometry = { width: SIZE, height: SIZE, pad: PAD };
-
-export const plotWidth = (g: PlotGeometry = DEFAULT_GEOMETRY) => g.width - g.pad.left - g.pad.right;
-export const plotHeight = (g: PlotGeometry = DEFAULT_GEOMETRY) =>
-	g.height - g.pad.top - g.pad.bottom;
-
-// Default-geometry plot dimensions (the square SIZE box — used by tests).
-export const PLOT_WIDTH = plotWidth();
-export const PLOT_HEIGHT = plotHeight();
-
-// Stat value → pixel, within a given plot geometry (defaults to the square box).
-export const cdToX = (critDamage: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
-	g.pad.left + ((critDamage - CD_MIN) / (CD_MAX - CD_MIN)) * plotWidth(g);
-export const crToY = (critRate: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
-	g.pad.top + (1 - (critRate - CR_MIN) / (CR_MAX - CR_MIN)) * plotHeight(g);
-
-// Pixel → stat value (pointer hit-testing).
-export const xToCD = (x: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
-	CD_MIN + ((x - g.pad.left) / plotWidth(g)) * (CD_MAX - CD_MIN);
-export const yToCR = (y: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
-	CR_MIN + (1 - (y - g.pad.top) / plotHeight(g)) * (CR_MAX - CR_MIN);
+/**
+ * The CD:CR ratio as the instrument writes it, "2.00 : 1". KQM's target is
+ * 1:2 CR:CD, and this is the same comparison read the other way.
+ */
+export const formatRatio = (critRate: number, critDamage: number) =>
+	critRate > 0 ? `${(critDamage / critRate).toFixed(2)} : 1` : '—';

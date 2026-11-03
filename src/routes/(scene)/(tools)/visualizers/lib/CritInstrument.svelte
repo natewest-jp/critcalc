@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CritHeatmap from './CritHeatmap.svelte';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import {
@@ -10,7 +11,7 @@
 		clamp,
 		averageDamageMultiplier,
 		zeroCritProbability,
-		critValue,
+		zeroCritRiskColor,
 		riskGradient,
 		HITS_MIN,
 		HITS_MAX,
@@ -19,20 +20,24 @@
 		formatChance,
 		critCountDistribution,
 		rotationMultiplier,
-		HEATMAP_MAX_ASPECT
+		type FieldRect
 	} from './crit';
 
-	// User's current build stats, bound to both the heatmap marker and the sliders
+	// Your build, bound to the field's marker and both handles
 	let myCR = $state(0.7);
 	let myCD = $state(1.4);
 
-	// Variance overlay controls
-	let showVariance = $state(true);
+	// The rotation: its hits, and whether the field is shaded by its no-crit risk
+	let shading = $state(true);
 	let hitsPerRotation = $state(8);
 
-	// "Roll it": one sampled rotation — variance as an experience, not a number
+	// A second, pinned build for eyeballing a trade (a circlet swap): no
+	// verdict, two markers and the change between them
+	let pinned = $state<{ critRate: number; critDamage: number } | null>(null);
+
+	// "Roll": one sampled rotation, variance as an experience, not a number
 	let rollResult = $state<boolean[] | null>(null);
-	let rollNonce = $state(0); // remounts the dot row so the stagger replays
+	let rollNonce = $state(0); // remounts the dots so the stagger replays
 	function rollIt() {
 		rollResult = sampleRotation(myCR, hitsPerRotation);
 		rollNonce++;
@@ -44,86 +49,84 @@
 		rollResult = null;
 	});
 	const rollCrits = $derived(rollResult ? rollResult.filter(Boolean).length : 0);
-	const rollMultiplier = $derived(
-		rollResult ? rotationMultiplier(rollCrits, rollResult.length, myCD) : 0
+
+	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
+	const zeroCritRisk = $derived(zeroCritProbability(myCR, hitsPerRotation));
+	const distribution = $derived(critCountDistribution(myCR, hitsPerRotation));
+	const averageCrits = $derived(clamp(myCR, 0, 1) * hitsPerRotation);
+	const pinnedDelta = $derived(
+		pinned ? myMultiplier / averageDamageMultiplier(pinned.critRate, pinned.critDamage) - 1 : 0
 	);
 
-	// Every result a roll could give, with its chance: bar k is "exactly k of
-	// the hits crit". The roll lights up the bar it landed on.
-	const distribution = $derived(critCountDistribution(myCR, hitsPerRotation));
-	const distributionPeak = $derived(Math.max(...distribution));
-	const averageCrits = $derived(Math.min(1, Math.max(0, myCR)) * hitsPerRotation);
-	let hoveredCount = $state<number | null>(null);
-	// The bar the sentence under the chart is about — the hovered one, else the
-	// rolled one — and the only bar drawn dark.
-	const readCount = $derived(hoveredCount ?? (rollResult ? rollCrits : null));
-	// The bar the average line runs through (bar k spans k … k+1 of the axis,
-	// and the line sits at average + ½).
-	const averageBar = $derived(Math.min(hitsPerRotation, Math.floor(averageCrits + 0.5)));
-
-	function pickBar(event: PointerEvent) {
-		const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-		const k = Math.floor(((event.clientX - box.left) / box.width) * distribution.length);
-		hoveredCount = Math.min(distribution.length - 1, Math.max(0, k));
-	}
+	// The strip's row the fine print reads: the hovered or tapped one, else
+	// the rolled one
+	let hoverCount = $state<number | null>(null);
+	const readCount = $derived(hoverCount ?? (rollResult ? rollCrits : null));
 
 	const hitsWord = (n: number) => (n === 1 ? 'hit' : 'hits');
 
-	// Crit-value budget line overlay (off by default — opt-in via the toggle)
-	let showCvLine = $state(false);
+	// ── Geometry ───────────────────────────────────────────────────────────
+	let graphW = $state(900);
+	let graphH = $state(0);
+	/** Half the slider thumb's 15px: a handle's track runs this far past each
+	 *  end of its axis, so the thumb sits on the marker's line. */
+	const THUMB_R = 7.5;
+	/** 🎛️ The CRIT Rate handle stands at the chart's left edge (the thumb's
+	 *  15px), then the y axis's numbers ("100%", right-aligned TICK_GAP from
+	 *  the plot; CritHeatmap). */
+	const CR_TRACK = 15;
+	const CR_GAP = 8;
+	const TICK_W = 26;
+	const TICK_GAP = 6;
+	const PADL = CR_TRACK + CR_GAP + TICK_W + TICK_GAP;
+	/** 🎛️ Above the plot: the CRIT Rate handle's name and field, and the strip's. */
+	const TOP = 34;
+	/** Under the plot: the x axis's numbers. The CRIT DMG handle is under the SVG. */
+	const BOTTOM = 22;
+	const PADR = 2;
+	/** 🎛️ The strip: its gap from the field, and its width as a share of the
+	 *  chart's, within limits. */
+	const STRIP_GAP = 14;
+	const STRIP_SHARE = 0.1;
+	const STRIP_MIN = 56;
+	const STRIP_MAX = 120;
+	/** The plot's least height; below 1024px (natural height) it is a near
+	 *  square of the chart's width, up to PLOT_NATURAL_MAX. */
+	const PLOT_MIN = 240;
+	const PLOT_NATURAL_MAX = 560;
 
-	// A second, pinned build for eyeballing a trade (e.g. circlet swap) — no verdict, just two markers
-	let pinned = $state<{ critRate: number; critDamage: number } | null>(null);
-
-	// Derived display values
-	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
-
-	// Probability that zero crits land across a full rotation — used in the variance overlay readout
-	const zeroCritRisk = $derived(zeroCritProbability(myCR, hitsPerRotation));
-
-	// CD:CR ratio string (KQM convention: 2:1 is roughly the optimization target)
-	const ratioText = $derived(myCR > 0 ? `${(myCD / myCR).toFixed(2)} : 1` : '—');
-
-	// Total crit value of the current build, in display units (e.g. 280). TOTAL
-	// on purpose, base 5% / 50% included (⚓ Nate 2026-10-02): players think of
-	// a build in totals, and the label says so — a KQM reader seeing a bare
-	// "280 CV" would take it for artifact CV, where 280 is near impossible.
-	const myCV = $derived(Math.round(critValue(myCR, myCD) * 100));
-
-	const pinnedMultiplier = $derived(
-		pinned ? averageDamageMultiplier(pinned.critRate, pinned.critDamage) : 0
-	);
-	// Relative, not a difference of multipliers (⚓ Nate 2026-09-23): "+7%
-	// average DMG" is a sentence a player can use; "+0.123x" made them divide.
-	const pinnedDelta = $derived(pinned ? myMultiplier / pinnedMultiplier - 1 : 0);
-	// ⏭ i18n: the locale moves here with the ledger; the sign is ICU's, not ours.
-	const deltaFormat = new Intl.NumberFormat('en-US', {
-		style: 'percent',
-		signDisplay: 'exceptZero',
-		maximumFractionDigits: 1
+	const stripW = $derived(clamp(Math.round(graphW * STRIP_SHARE), STRIP_MIN, STRIP_MAX));
+	const rect = $derived<FieldRect>({
+		x0: PADL,
+		y0: TOP,
+		w: Math.max(80, graphW - PADL - STRIP_GAP - stripW - PADR),
+		h: Math.max(PLOT_MIN, graphH - TOP - BOTTOM)
 	});
+	const strip = $derived({ x0: rect.x0 + rect.w + STRIP_GAP, w: stripW });
+	const graphMin = $derived(
+		TOP + BOTTOM + clamp(Math.round(graphW * 0.8), PLOT_MIN, PLOT_NATURAL_MAX)
+	);
 
-	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
-
-	// ── Workspace handle (share + reset) ───────────────────────────────────────
+	// ── Workspace handle (share + reset) ───────────────────────────────────
 
 	export function reset() {
 		myCR = 0.7;
 		myCD = 1.4;
-		showVariance = true;
+		shading = true;
 		hitsPerRotation = 8;
-		showCvLine = false;
 		pinned = null;
 		rollResult = null;
+		hoverCount = null;
 	}
 
+	// ⚓ v1 still: the stage draws the CV line always, so `cvLine` is no longer
+	// written, and an older state's is ignored.
 	export function getShareState() {
 		return {
 			v: 1,
 			cr: myCR,
 			cd: myCD,
-			cvLine: showCvLine,
-			variance: showVariance,
+			variance: shading,
 			hits: hitsPerRotation,
 			pin: pinned ? [pinned.critRate, pinned.critDamage] : null
 		};
@@ -136,8 +139,7 @@
 		const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 		if (num(s.cr)) myCR = clamp(s.cr, CR_MIN, CR_MAX);
 		if (num(s.cd)) myCD = clamp(s.cd, CD_MIN, CD_MAX);
-		if (typeof s.cvLine === 'boolean') showCvLine = s.cvLine;
-		if (typeof s.variance === 'boolean') showVariance = s.variance;
+		if (typeof s.variance === 'boolean') shading = s.variance;
 		if (num(s.hits)) hitsPerRotation = Math.min(HITS_MAX, Math.max(HITS_MIN, Math.round(s.hits)));
 		pinned =
 			Array.isArray(s.pin) && num(s.pin[0]) && num(s.pin[1])
@@ -149,49 +151,171 @@
 	}
 </script>
 
-<!-- A hovered bar's sentence: "k of n hits crit", what that scores, and how
-     often. A snippet because its longest case also reserves the line's room. -->
+<!-- A strip row's sentence: "k of n hits crit", what that scores, and how often.
+     A snippet, because its longest case also reserves the line's room. -->
 {#snippet countLine(k: number, chance: string)}
 	{k} of {hitsPerRotation}
-	{hitsWord(hitsPerRotation)} crit —
-	<span class="cv-strong">{formatMultiplier(rotationMultiplier(k, hitsPerRotation, myCD))}</span>,
-	in {chance} of rotations
+	{hitsWord(hitsPerRotation)} crit:
+	<strong>{formatMultiplier(rotationMultiplier(k, hitsPerRotation, myCD))}</strong>, in {chance} of rotations.
 {/snippet}
 
-<div class="cv-instrument">
-	<div class="cv-layout" style:--cv-max-aspect={HEATMAP_MAX_ASPECT}>
-		<!-- THE STAGE: the chart and the controls that drive it, sized together
-		     to the tile so both are on screen (see .cv-stage). Wide tiles dissolve
-		     it and the strip moves to the side column. -->
-		<div class="cv-stage">
-			<div class="panel cv-heatmap-panel">
+<!-- THE STAGE (design §6). One box: the chart head (your average per hit),
+     the chart's toolbar on its top edge (the setup bar, then Pin and Roll),
+     the field with its strip, and a handle on each axis. The old Readout is on
+     the chart: the CV on its line, the ratio at the marker, the pin's change
+     on its connector, the one-rotation chart as the strip. -->
+<div class="stage-root">
+	<div class="stage ctx-dark">
+		<p class="readout-head stage-head">
+			{formatMultiplier(myMultiplier)}<span class="readout-sentence">average damage per hit</span>
+		</p>
+
+		<div class="stage-toolbar">
+			<div class="setup-bar" role="group" aria-label="Setup">
+				<BandMenu role="dialog" align="start" ariaLabel="Hits per rotation: {hitsPerRotation}">
+					{#snippet face()}
+						<span class="setup-key">Hits per rotation</span>
+						<span class="setup-val setup-val--num">{hitsPerRotation}</span>
+					{/snippet}
+					{#snippet items()}
+						<div class="setup-pop">
+							<!-- The track is the risk ramp: how the no-crit chance falls as
+							     hits are added, at your CRIT Rate. -->
+							<InstrumentSlider
+								label="Hits per rotation"
+								bind:value={hitsPerRotation}
+								min={HITS_MIN}
+								max={HITS_MAX}
+								step={1}
+								trackStyle="background-image: {riskGradient(myCR)}"
+							/>
+							<p class="cv-pop-note">
+								The hits in one rotation that can crit. The bars beside the map count how many of
+								them do, and the track is coloured by the chance that none do: at {Math.round(
+									myCR * 100
+								)}% CRIT Rate,
+								<span style:color={zeroCritRiskColor(zeroCritRisk)}
+									>{formatChance(zeroCritRisk)}</span
+								>
+								over {hitsPerRotation}
+								{hitsWord(hitsPerRotation)}.
+							</p>
+						</div>
+					{/snippet}
+				</BandMenu>
+
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel="Shading: {shading ? 'No-crit risk' : 'None'}"
+				>
+					{#snippet face()}
+						<span class="setup-key">Shading</span>
+						<span class="setup-val">{shading ? 'No-crit risk' : 'None'}</span>
+					{/snippet}
+					{#snippet items()}
+						<div class="setup-pop">
+							<div class="segment" role="radiogroup" aria-label="Shading">
+								<button
+									class="btn"
+									class:is-active={shading}
+									role="radio"
+									aria-checked={shading}
+									onclick={() => (shading = true)}
+								>
+									No-crit risk
+								</button>
+								<button
+									class="btn"
+									class:is-active={!shading}
+									role="radio"
+									aria-checked={!shading}
+									onclick={() => (shading = false)}
+								>
+									None
+								</button>
+							</div>
+							<p class="cv-pop-note">
+								Darkens each CRIT Rate by its chance of a whole rotation of {hitsPerRotation}
+								{hitsWord(hitsPerRotation)} without a single crit.
+							</p>
+						</div>
+					{/snippet}
+				</BandMenu>
+			</div>
+
+			<!-- The chart tools hold the toolbar's far end. Pin's two labels share
+			     its cell, so it keeps one width either way (design §4). -->
+			<button
+				class="btn cv-tool"
+				onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
+			>
+				<span class="cv-stack">
+					<span class:cv-ghost={!!pinned}>Pin this build</span>
+					<span class:cv-ghost={!pinned}>Clear pin</span>
+				</span>
+			</button>
+			<button class="btn" onclick={rollIt}>
+				<Mark name="dice" size={12} />
+				Roll {hitsPerRotation}
+				{hitsWord(hitsPerRotation)}
+			</button>
+		</div>
+
+		<div class="cv-graph-wrap">
+			<div
+				class="stage-graph instrument-graph cv-graph"
+				style:--graph-min="{graphMin}px"
+				bind:clientWidth={graphW}
+				bind:clientHeight={graphH}
+			>
 				<CritHeatmap
 					bind:critRate={myCR}
 					bind:critDamage={myCD}
-					{showVariance}
-					{hitsPerRotation}
-					{showCvLine}
+					bind:hoverCount
+					width={graphW}
+					height={rect.y0 + rect.h + BOTTOM}
+					{rect}
+					{strip}
+					hits={hitsPerRotation}
+					{distribution}
+					{shading}
 					{pinned}
+					{pinnedDelta}
+					{readCount}
 				/>
+
+				<!-- THE CRIT RATE HANDLE (design §6): the y axis's, so it stands on
+				     that axis, its name and field over its top. The model holds
+				     fractions; the fields show percent. -->
+				<div
+					class="cv-cr"
+					style:--cr-top="{rect.y0 - THUMB_R}px"
+					style:--cr-h="{rect.h * (1 - CR_MIN) + 2 * THUMB_R}px"
+					style:--cr-w="{CR_TRACK}px"
+				>
+					<InstrumentSlider
+						vertical
+						label="CRIT Rate"
+						aria="Crit rate"
+						bind:value={myCR}
+						min={CR_MIN}
+						max={CR_MAX}
+						step={0.005}
+						scale={100}
+						unit="%"
+					/>
+				</div>
 			</div>
 
-			<!-- The control strip, in the order of design §3: the build you scrub
-			     (live), the hits your rotation makes (per-session), then the
-			     overlays (set-once) -->
-			<div class="panel cv-controls">
-				<!-- The model holds fractions (0.7); the fields show percent. CRIT DMG
-				     keeps one decimal, as its field always did: a marker dragged on the
-				     heatmap lands between whole percents. -->
-				<InstrumentSlider
-					label="CRIT Rate"
-					aria="Crit rate"
-					bind:value={myCR}
-					min={CR_MIN}
-					max={CR_MAX}
-					step={0.005}
-					scale={100}
-					unit="%"
-				/>
+			<!-- THE CRIT DMG HANDLE, on the x axis. One decimal, as its field
+			     always had: a marker dragged on the field lands between whole
+			     percents. -->
+			<div
+				class="stage-handle"
+				style:--stage-handle-l="{rect.x0 - THUMB_R}px"
+				style:--stage-handle-r="{graphW - rect.x0 - rect.w - THUMB_R}px"
+			>
 				<InstrumentSlider
 					label="CRIT DMG"
 					aria="Crit damage"
@@ -203,491 +327,153 @@
 					decimals={1}
 					unit="%"
 				/>
-
-				<!-- The track is the risk ramp: how the no-crit chance falls as hits
-				     are added, at the current CRIT Rate. -->
-				<InstrumentSlider
-					label="Hits per rotation"
-					bind:value={hitsPerRotation}
-					min={HITS_MIN}
-					max={HITS_MAX}
-					step={1}
-					trackStyle="background-image: {riskGradient(myCR)}"
-				/>
-
-				<div class="inst-section">
-					<label class="check">
-						<input type="checkbox" bind:checked={showCvLine} />
-						<span class="check-box"></span>
-						Equal-budget line (CV)
-					</label>
-					<label class="check">
-						<input type="checkbox" bind:checked={showVariance} />
-						<span class="check-box"></span>
-						<span>
-							No-crit risk overlay
-							<span class="inst-hint cv-toggle-sub">chance a whole rotation lands zero crits</span>
-						</span>
-					</label>
-				</div>
 			</div>
 		</div>
 
-		<div class="cv-panel-stack">
-			<!-- THE ANSWER: the one paper card -->
-			<div class="panel panel--paper cv-build-panel">
-				<p class="kicker">Current build</p>
-				<p class="readout-head">{formatMultiplier(myMultiplier)}</p>
-				<p class="cv-build-sub">Average DMG per hit. A hit that doesn't crit is ×1.</p>
-
-				<dl class="cv-build-list">
-					<dt>Ratio (CD:CR)</dt>
-					<dd>{ratioText}</dd>
-					<dt>Total crit value (CV)</dt>
-					<dd>{myCV}</dd>
-					<dd class="cv-build-gloss">2 × CRIT Rate + CRIT DMG, base crit stats included</dd>
-					<!-- Stacked over its widest case, so the hits slider can't push the
-					     values column sideways (design §4) -->
-					<dt class="cv-stack">
-						<span>No-crit risk ({hitsPerRotation} {hitsWord(hitsPerRotation)})</span>
-						<span class="cv-ghost" aria-hidden="true">No-crit risk ({HITS_MAX} hits)</span>
-					</dt>
-					<dd>{formatChance(zeroCritRisk)}</dd>
-				</dl>
-
-				<!-- Pin: freeze a second marker to eyeball a trade against. One button
-				     that toggles, with what it pinned below it, so Clear pin is where
-				     Pin this build was (design §4). Both labels share its cell, so it
-				     keeps one width either way. -->
-				<div class="cv-pin-section">
-					<button
-						class="btn btn--primary cv-button"
-						onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
-					>
-						<span class="cv-stack">
-							<span class:cv-ghost={!!pinned}>Pin this build</span>
-							<span class:cv-ghost={!pinned}>Clear pin</span>
-						</span>
-					</button>
-				</div>
-				{#if pinned}
-					<div class="cv-pinned">
-						<dl class="cv-build-list">
-							<dt>Pinned</dt>
-							<dd>
-								{pct(pinned.critRate)} / {pct(pinned.critDamage)} · {formatMultiplier(
-									pinnedMultiplier
-								)}
-							</dd>
-						</dl>
-						<p class="cv-build-delta">
-							<span class="cv-strong">{deltaFormat.format(pinnedDelta)}</span> average DMG vs pinned
-						</p>
-					</div>
-				{/if}
-				<!-- One rotation: every crit count with its chance, and a roll that
-				     draws one of them. -->
-				<div class="cv-section cv-dist-section">
-					<p class="cv-dist-title">
-						Crits in one rotation of {hitsPerRotation}
-						{hitsWord(hitsPerRotation)}
-					</p>
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<div
-						class="cv-dist"
-						onpointermove={pickBar}
-						onpointerdown={pickBar}
-						onpointerleave={() => (hoveredCount = null)}
-					>
-						{#each distribution as chance, k (k)}
-							<span
-								class="cv-dist-bar"
-								class:cv-dist-read={readCount === k}
-								style:height="{(chance / distributionPeak) * 100}%"
-							></span>
-						{/each}
-						<span
-							class="cv-dist-mean"
-							class:cv-dist-mean-cut={readCount === averageBar}
-							style:left="{((averageCrits + 0.5) / distribution.length) * 100}%"
-						></span>
-					</div>
-					<div class="cv-dist-axis" aria-hidden="true">
-						<span>0</span><span>{hitsPerRotation}</span>
-					</div>
-					<!-- The sentence swaps as you scrub the bars, so it sits over a ghost
-					     of its longest form (a hover at the last bar) and the Roll button
-					     under it holds still (design §4). -->
-					<div class="cv-stack">
-						<p class="cv-roll-meta" aria-live="polite">
-							{#if hoveredCount !== null}
-								{@render countLine(hoveredCount, formatChance(distribution[hoveredCount]))}
-							{:else if rollResult}
-								{rollCrits} of {rollResult.length}
-								{hitsWord(rollResult.length)} crit —
-								<span class="cv-strong">{formatMultiplier(rollMultiplier)}</span>
-								this time
-							{:else}
-								On average {averageCrits.toFixed(1)} of {hitsPerRotation}
-								{hitsWord(hitsPerRotation)} crit —
-								<span class="cv-strong">{formatMultiplier(myMultiplier)}</span>
-							{/if}
-						</p>
-						<p class="cv-roll-meta cv-ghost" aria-hidden="true">
-							{@render countLine(hitsPerRotation, formatChance(1))}
-						</p>
-					</div>
-					<div class="cv-roll">
-						<button class="btn btn--primary cv-button" onclick={rollIt}>
-							<Mark name="dice" size={12} />
-							Roll {hitsPerRotation}
-							{hitsWord(hitsPerRotation)}
-						</button>
-						{#if rollResult}
-							{#key rollNonce}
-								<div class="cv-roll-dots" aria-hidden="true">
-									{#each rollResult as crit, i (i)}
-										<span
-											class="cv-roll-dot"
-											class:cv-roll-crit={crit}
-											style:animation-delay="{i * 45}ms"
-										></span>
-									{/each}
-								</div>
-							{/key}
-						{/if}
-					</div>
-				</div>
-			</div>
+		<!-- The fine print: the strip read (a hover, a tap or a roll), over a
+		     ghost of its longest form, so reading never moves the stage. -->
+		<div class="stage-fine cv-fine">
+			<p class="cv-stack" aria-live="polite">
+				<span>
+					{#if hoverCount !== null}
+						{@render countLine(hoverCount, formatChance(distribution[hoverCount]))}
+					{:else if rollResult}
+						{rollCrits} of {rollResult.length}
+						{hitsWord(rollResult.length)} crit:
+						<strong
+							>{formatMultiplier(rotationMultiplier(rollCrits, rollResult.length, myCD))}</strong
+						>
+						this time.
+						{#key rollNonce}
+							<span class="cv-roll-dots" aria-hidden="true">
+								{#each rollResult as crit, i (i)}
+									<span
+										class="cv-roll-dot"
+										class:cv-roll-crit={crit}
+										style:animation-delay="{i * 45}ms"
+									></span>
+								{/each}
+							</span>
+						{/key}
+					{:else}
+						A hit that doesn’t crit is ×1. On average {averageCrits.toFixed(1)} of {hitsPerRotation}
+						{hitsWord(hitsPerRotation)} crit, and {formatChance(zeroCritRisk)} of rotations land none.
+					{/if}
+				</span>
+				<span class="cv-ghost" aria-hidden="true">
+					A hit that doesn’t crit is ×1. On average 39.6 of 40 hits crit, and &lt;0.1% of rotations
+					land none.
+				</span>
+			</p>
+			<p>
+				Drag anywhere on the map, or a handle, to move your build; hover or tap the bars to read one
+				rotation.
+			</p>
 		</div>
 	</div>
 </div>
 
 <style>
-	/* The instrument adapts to its TILE via container queries (not the viewport
-	   — a half-width tile on a wide monitor gets the narrow layout). The tile
-	   itself is that container (.ws-tile in the workspace page), so the
-	   @container rules below resolve one level up; declaring it here as well
-	   would shadow the tile with this element's own width.
-	   A bespoke root rather than the shared .instrument: below the wide tier
-	   the chart and its strip share one height budget (the stage), which
-	   .instrument's grid would fight. At the wide tier it is the shared form,
-	   restated by hand. */
-	.cv-instrument {
-		height: 100%;
-		min-height: 0;
-	}
-
-	/* ── Layout ────────────────────────────────────────────────────────────── */
-
-	/* Narrow: a BLOCK, not a grid, and that is load-bearing. The stage's
-	   max-height is a percentage, and a percentage resolves against a grid
-	   item's AREA, whose auto row is sized by the item — circular. Against a
-	   block parent of definite height it is just the tile. */
-	.cv-layout {
-		height: 100%;
-	}
-
-	/* ══ THE STAGE (⚓ 2026-10-02) ════════════════════════════════════════════
-	   The chart and its control strip share ONE height budget: the tile's.
-	   The chart starts as a square of the tile's width (100cqi — the tile is
-	   the inline-size container) capped at 70svh as before, and it is the only
-	   thing that SHRINKS, so when the tile is too short for both, the chart
-	   gives up height and the strip stays on screen. The readout card and the
-	   roll sit below the fold; the marker's own tooltip carries the answer.
-	   Where the tile is tall enough (or has no definite height — below 1024px
-	   the page scrolls), nothing shrinks and this is exactly the old layout.
-	   🎛️ CHART_MIN: below it the chart stops giving way and the strip goes
-	   below the fold instead — a chart too short to drag on is no trade. */
-	.cv-stage {
-		--cv-chart-min: 18rem;
+	/* The chart box and the CRIT Rate handle over it, the CRIT DMG handle under
+	   it: one unit, so the stage's gap doesn't fall between the chart and its
+	   handle. */
+	.cv-graph-wrap {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
-		max-height: 100%;
+		flex: 1 0 auto;
+		gap: var(--inst-gap-control);
 	}
 
-	/* The chart floats directly on the tool's dark field — no panel box. Its
-	   shell is absolutely placed inside (CritHeatmap), so this panel's size is
-	   set here and only here: no percentage has to find a definite parent. */
-	.cv-heatmap-panel {
+	.cv-graph {
 		position: relative;
-		height: min(100cqi, 70svh);
-		min-height: var(--cv-chart-min);
-		flex: 0 1 auto;
-		padding: 0;
-		border-radius: 0;
-		background: none;
-		box-shadow: none;
-		/* Carries the shell's shrinkability up to the layout — the chart sets
-		   its drawn box's width inline in px, and any box between that and the
-		   tile that keeps min-width: auto re-imposes a stale wide box as a
-		   floor when the lineup narrows. */
-		min-width: 0;
 	}
 
-	.cv-heatmap-panel > :global(.cv-heatmap-shell) {
+	/* The upright handle: no flow box of its own. Its name and field sit over
+	   the track's top, the track down the chart's left edge from CRIT Rate
+	   100% to 5%, the lowest a build can have. */
+	.cv-cr {
 		position: absolute;
 		inset: 0;
+		pointer-events: none;
 	}
-
-	/* The strip: CRIT Rate | CRIT DMG, then hits per rotation | the overlays,
-	   so it reads live, per-session, set-once (design §3) in both columns and
-	   in one. One section, so its rows sit a control apart (app.css § THE
-	   SPACING LADDER); the overlays cell is an `.inst-section` of its own. */
-	.cv-controls {
-		flex: none;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: var(--inst-gap-control) 1.5rem;
-	}
-
-	.cv-panel-stack {
-		margin-top: 1rem;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
-	/* 🐛 THE READOUT GETS THE SCROLLER'S FOOT (⚓ Nate 2026-10-25, the edges
-	   round). Where the tile is a size container (1024px up) and the chart
-	   stacks over its strip (under 60rem), the readout sits below the fold —
-	   and with the root at a fixed `height: 100%` it OVERFLOWED the root
-	   rather than growing it. A scroller adds its end padding after in-flow
-	   content only, so the card ran to the screen's foot while every other
-	   instrument stopped --room-bottom above it. Here the stage's cap reads
-	   the tile's height directly (100cqh — what 100% resolved to), so nothing
-	   needs a definite parent and the root can grow with what it holds.
-	   ⚠ Not at the wide tier, whose side column scrolls INSIDE a root of the
-	   tile's height; not under 1024px, where cqh has no size container. */
-	@media (min-width: 1024px) {
-		@container instrument (width < 60rem) {
-			.cv-instrument,
-			.cv-layout {
-				height: auto;
-			}
-			.cv-stage {
-				max-height: 100cqh;
-			}
-		}
-	}
-
-	/* Phones: the strip's columns stack. */
-	@container instrument (max-width: 30rem) {
-		.cv-controls {
-			grid-template-columns: minmax(0, 1fr);
-		}
-	}
-
-	/* ── Slider-adjacent (crit-specific) ───────────────────────────────────── */
-
-	/* The hits slider's risk ramp arrives as InstrumentSlider's inline
-	   `trackStyle`, which overrides the shared .slider track's background. */
-
-	/* A toggle's plain-language second line: the hint's voice, but inside the
-	   label (it is part of the checkbox's name), so on its own line with none
-	   of the sibling hint's pull-up. */
-	.cv-toggle-sub {
+	.cv-cr :global(.slider-control) {
 		display: block;
+	}
+	.cv-cr :global(.slider-header) {
+		position: absolute;
+		top: 0;
+		left: 0;
+		justify-content: flex-start;
+		gap: 0.5rem;
+		pointer-events: auto;
+	}
+	.cv-cr :global(.is-track) {
+		position: absolute;
+		top: var(--cr-top);
+		left: 0;
+		width: var(--cr-w);
+		height: var(--cr-h);
+		justify-items: center;
+		pointer-events: auto;
+	}
+
+	/* A chart tool holds the toolbar's far end */
+	.cv-tool {
+		margin-left: auto;
+	}
+
+	.cv-pop-note {
 		margin: 0;
-	}
-
-	/* ── Build panel ───────────────────────────────────────────────────────── */
-
-	.cv-build-panel {
-		gap: 0.35rem;
-	}
-
-	/* Plain-language gloss line under a readout value */
-	.cv-build-sub,
-	.cv-build-gloss {
-		margin: -0.2rem 0 0;
-		font-size: var(--fs-md);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-
-	/* Label | value, no colon (conventions §C): the column is the separator. */
-	.cv-build-list {
-		display: grid;
-		grid-template-columns: auto auto;
-		justify-content: start;
-		gap: 0 1rem;
-		margin: 0.35rem 0 0;
-		font-size: var(--fs-xl);
-		line-height: 1.5rem;
-	}
-
-	.cv-build-list dt {
+		font-size: var(--fs-sm);
+		line-height: var(--lh-snug);
 		color: var(--muted);
 	}
 
-	.cv-build-list dd {
+	.cv-fine {
+		display: grid;
+		gap: 0.25rem;
+	}
+	.cv-fine p {
 		margin: 0;
+	}
+	.cv-fine strong {
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
-	.cv-build-list .cv-build-gloss {
-		grid-column: 1 / -1;
-		margin: 0 0 0.2rem;
-		font-weight: var(--fw-normal);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-
-	.cv-build-delta {
-		margin: 0;
-		font-size: var(--fs-xl);
-		line-height: 1.5rem;
-		color: var(--muted);
-	}
-
-	.cv-strong {
-		font-family: var(--font-body);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-
-	.cv-section {
-		display: grid;
-		gap: 0.35rem;
-		margin-top: 0.35rem;
-		padding-top: 0.6rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
-	}
-
-	/* Pin sits under the numbers it would freeze, in both layouts — so the one
-	   rule in the card is the one above the chart (⚓ Nate 2026-10-02) */
-	.cv-pin-section {
-		display: grid;
-		margin-top: 0.35rem;
-	}
-
-	.cv-pinned {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.cv-button {
-		justify-self: start;
-	}
-
-	/* A swapping text over its longest form, in one cell: the cell keeps the
-	   longest one's size whichever is showing (design §4). The ghost is
-	   aria-hidden, and hidden ink leaves the accessible name too. */
+	/* A swapping text over its longest form, in one cell (design §4). The
+	   ghost is aria-hidden, and hidden ink leaves the accessible name too. */
 	.cv-stack {
 		display: grid;
 	}
-
-	.cv-stack > * {
+	.cv-stack > :global(*) {
 		grid-area: 1 / 1;
 	}
-
 	.cv-ghost {
 		visibility: hidden;
 	}
 
-	/* ── One rotation: the crit-count distribution ─────────────────────────── */
-
-	.cv-dist-title {
-		margin: 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-
-	/* One bar per crit count, 0 at the left. Bars are scaled to the TALLEST
-	   bar, not to 100%: the shape is the reading, and at 40 hits no single
-	   count clears 15%. ⚠ Alpha in the paint, never element opacity (§ Laws). */
-	.cv-dist {
-		position: relative;
-		display: flex;
-		align-items: flex-end;
-		gap: 1px;
-		height: 4.5rem;
-		cursor: crosshair;
-		touch-action: none;
-	}
-
-	.cv-dist-bar {
-		flex: 1 1 0;
-		min-width: 0;
-		border-radius: 1px 1px 0 0;
-		background: color-mix(in srgb, var(--muted) 38%, transparent);
-	}
-
-	/* The bar the sentence below is about (hovered, else rolled). Paper's
-	   anchor ink, ⛔ not gold: on parchment gold is the kicker's, and as a fill
-	   it reads as brown (⚓ Nate 2026-10-02). */
-	.cv-dist-read {
-		background: var(--muted);
-	}
-
-	/* The average, which usually falls BETWEEN two counts: no rotation scores
-	   exactly the headline multiplier, and this line is where it sits.
-	   Navy, and PAPER where it crosses the dark bar — neither navy nor gold
-	   reads on navy. ⛔ Not a paper edge around a navy line: that was three
-	   lines where there is one (⚓ Nate 2026-10-02). */
-	.cv-dist-mean {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		width: 2px;
-		margin-left: -1px;
-		background: var(--text);
-		pointer-events: none;
-	}
-
-	.cv-dist-mean-cut {
-		background: var(--surface-broad);
-	}
-
-	.cv-dist-axis {
-		display: flex;
-		justify-content: space-between;
-		margin-top: -0.2rem;
-		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-
-	/* ── Roll ──────────────────────────────────────────────────────────────── */
-
-	.cv-roll {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.45rem 0.7rem;
-	}
-
+	/* One rolled rotation: a hit that didn't crit is a ring, a crit the same
+	   ink filled. ⚠ The ring is an inset shadow: Chrome floors a 1.5px border
+	   to 1px. */
 	.cv-roll-dots {
-		display: flex;
-		flex: 1 1 8rem;
+		display: inline-flex;
 		flex-wrap: wrap;
-		gap: 0.3rem;
+		gap: 0.25rem;
+		margin-left: 0.4rem;
+		vertical-align: -1px;
 	}
-
-	.cv-roll-meta {
-		margin: 0;
-		font-size: var(--fs-lg);
-		color: var(--muted);
-	}
-
-	/* A hit that didn't crit is a ring, a crit the same ink filled — the same
-	   ink as the bar the roll lit, and ⛔ no glow (gold + glow on parchment went
-	   muddy).
-	   ⚠ The ring is an inset shadow, not a border: Chrome floors a 1.5px
-	   border-width to 1px. */
 	.cv-roll-dot {
-		width: 11px;
-		height: 11px;
-		border-radius: 50%;
-		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--muted) 45%, transparent);
+		width: 9px;
+		height: 9px;
+		border-radius: var(--r-round);
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--chart-ink) 70%, transparent);
 		animation: cv-dot-in 260ms ease-out backwards;
 	}
-
 	.cv-roll-crit {
-		background: var(--muted);
+		background: var(--text);
 		box-shadow: none;
 	}
-
 	@keyframes cv-dot-in {
 		from {
 			transform: scale(0.2);
@@ -698,134 +484,10 @@
 			opacity: 1;
 		}
 	}
-	/* A keyframe, so reduced motion is honoured by hand (the tokens' :root
-	   zeroing cannot reach an animation's own duration). */
+	/* A keyframe, so reduced motion is honoured by hand. */
 	@media (prefers-reduced-motion: reduce) {
 		.cv-roll-dot {
 			animation: none;
-		}
-	}
-
-	/* ── Container-responsive layout ───────────────────────────────────────── */
-
-	/* The card spread out under the chart: a stacked tile wide enough for
-	   two columns puts the numbers (and Pin) on the left and the one-rotation
-	   chart beside them, instead of leaving half the card empty. Beside the
-	   chart (≥ 60rem) the card is a 22rem column again and stacks.
-	   The chart section sits at the BOTTOM of the rows it spans (⚓ Nate): Roll
-	   lines up with Pin, and the chart keeps clear of the headline.
-	   ⚠ It is the shorter side. Were it ever the taller, its extra height would
-	   be shared out over the left column's rows and pull them apart. */
-	@container instrument (40rem <= width < 60rem) {
-		.cv-build-panel {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-areas:
-				'kicker kicker'
-				'value dist'
-				'sub dist'
-				'list dist'
-				'pin dist';
-			column-gap: 2.5rem;
-		}
-
-		.cv-build-panel > :global(.kicker) {
-			grid-area: kicker;
-		}
-		.cv-build-panel > .readout-head {
-			grid-area: value;
-		}
-		.cv-build-sub {
-			grid-area: sub;
-		}
-		.cv-build-panel > .cv-build-list {
-			grid-area: list;
-		}
-		.cv-pin-section {
-			grid-area: pin;
-		}
-		/* Under the button, in a row of its own past the chart's, so pinning
-		   moves neither the chart nor Roll */
-		.cv-pinned {
-			grid-column: 1;
-		}
-
-		/* Beside the numbers it needs no rule above it */
-		.cv-dist-section {
-			grid-area: dist;
-			align-self: end;
-			margin-top: 0;
-			padding-top: 0;
-			border-top: none;
-		}
-	}
-
-	/* Wide: the chart takes the tile's full height on the left, and the strip
-	   and the readout stack in a side column. The stage dissolves so its two
-	   children can sit in different columns.
-	   ⚓ NOT the shared instrument form (app.css .instrument), and measured, not
-	   assumed (2026-10-06): with the strip under the chart the heatmap gave up
-	   ~170px of height, and since it caps its width by its height it shrank by
-	   a fifth with bare night either side — a 2-D field wants the height. What
-	   it does share: the paper card runs to the bottom of the column, as every
-	   Readout does at this width. */
-	@container instrument (min-width: 60rem) {
-		.cv-layout {
-			display: grid;
-			/* the shared Readout column's width (app.css --instrument-side) */
-			grid-template-columns: minmax(0, 1fr) var(--instrument-side);
-			grid-template-rows: auto minmax(0, 1fr);
-			grid-template-areas:
-				'chart controls'
-				'chart stack';
-			gap: 1rem;
-			min-height: 0;
-		}
-
-		.cv-stage {
-			display: contents;
-		}
-
-		.cv-heatmap-panel {
-			grid-area: chart;
-			height: auto;
-			min-height: 0;
-		}
-
-		.cv-controls {
-			grid-area: controls;
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		/* Side column: the card fills it, and scrolls inside it if it outgrows
-		   the tile */
-		.cv-panel-stack {
-			grid-area: stack;
-			margin-top: 0;
-			min-height: 0;
-			overflow-y: auto;
-			align-content: stretch;
-		}
-	}
-
-	/* ⚓ THE READOUT MEETS THE STAGE (responsive sweep 2026-10-15, §3 item 16).
-	   The heatmap caps its width at --cv-max-aspect × its height (crit.ts
-	   HEATMAP_MAX_ASPECT), and in this layout its height is the tile's, so a
-	   chart column wider than that only held bare night: at 3440 one-up the
-	   stage sat centred with ~720px between it and the side column. The column
-	   is capped at exactly the widest box the heatmap will draw, so the side
-	   column butts the chart and the spare width is split either side of both
-	   (↻ centred, ⚓ Nate 2026-10-15; it went to the right at first).
-	   ⚠ `100cqh` is the tile's height only where the tile is a SIZE container,
-	   from 1024px (the Visualizers' named content stop in breakpoints.test.ts;
-	   +page.svelte); below it the column stays 1fr, the stage centred. */
-	@media (min-width: 1024px) {
-		@container instrument (min-width: 60rem) {
-			.cv-layout {
-				grid-template-columns:
-					minmax(0, calc(100cqh * var(--cv-max-aspect)))
-					var(--instrument-side);
-				justify-content: center;
-			}
 		}
 	}
 </style>

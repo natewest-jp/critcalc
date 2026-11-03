@@ -3029,7 +3029,7 @@ img {
    the day the world got darker.
 
    ✅ --frame-bg SURVIVES AS A NOTIONAL GROUND and is still declared everywhere:
-   the --chart-* stops mix against it, the heatmap's canvas reads it out of the
+   the --chart-* stops mix against it, the Crit heatmap's veil reads it out of the
    cascade, and a PNG export has to paint something real. Unpainted reference,
    painted export — the same arrangement --rp-chart-bg has held since the
    planner's own round.
@@ -3717,6 +3717,17 @@ img {
 	cursor: pointer;
 }
 
+/* An upright track (the Crit heatmap's CRIT Rate handle): the same track
+   and thumb turned on end, its minimum at the foot. The writing mode turns
+   the input, so arrow keys and dragging follow it natively; the box is the
+   caller's to place. */
+.slider.slider--vertical {
+	writing-mode: vertical-lr;
+	direction: rtl;
+	width: 4px;
+	height: 100%;
+}
+
 /* ── THE COARSE-POINTER HIT BOX (responsive round, 2026-09-05) ─────────────
    The survey (§ 3) found the slider's box IS its painted 4px track — the
    smallest live target on the site, at every width. Under a coarse pointer
@@ -3737,6 +3748,12 @@ img {
 		height: 24px;
 		padding-block: 10px;
 		background-clip: content-box;
+	}
+	.slider.slider--vertical {
+		width: 24px;
+		height: 100%;
+		padding-block: 0;
+		padding-inline: 10px;
 	}
 }
 
@@ -3911,7 +3928,7 @@ img {
 }
 
 /* ══ THE INSTRUMENT LAYOUT (2026-10-06, ⚓ Nate) ═══════════════════════════════
-   Every Visualizers instrument but the Crit Heatmap is the same three slots,
+   Every Visualizers instrument still on the rail is the same three slots,
    and each one only says which of its parts goes where:
      .instrument-chart     the chart (with whatever selects what it shows)
      .instrument-controls  the glass apparatus — ONE .panel, or a .panels row
@@ -3926,11 +3943,9 @@ img {
    At every tier the chart's row is `minmax(min-content, 1fr)`: it takes what
    the rest leave (.instrument-graph), and the rest sit at the tile's bottom.
    🎛️ `--instrument-side` is the wide Readout column — ONE width for every
-   instrument, the Crit Heatmap's included (see :root below).
+   instrument (see :root below).
    ⚠ An instrument that needs a FOURTH area restates the areas at each
    tier — they are one property, there is no adding to them.
-   The Crit Heatmap keeps a bespoke root: its chart and control strip share one
-   height budget (the stage), which this grid would fight. See its own notes.
 
    ⛔ NO `overflow-y` HERE (2026-08-17). It said `overflow-y: auto` for as long
    as this rule had existed and it NEVER ENGAGED — the tile's grid row was

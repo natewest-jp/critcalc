@@ -21,9 +21,9 @@ import {
 	crToY,
 	xToCD,
 	yToCR,
-	PAD,
-	PLOT_WIDTH,
-	PLOT_HEIGHT
+	CR_AXIS_MIN,
+	countAtRate,
+	formatRatio
 } from './crit';
 
 describe('averageDamageMultiplier', () => {
@@ -134,17 +134,35 @@ describe('zeroCritRiskColor', () => {
 	});
 });
 
-describe('coordinate transforms', () => {
+describe("the field's axes", () => {
+	const rect = { x0: 50, y0: 30, w: 800, h: 500 };
+
 	it('round-trips stat → pixel → stat', () => {
-		expect(xToCD(cdToX(1.4))).toBeCloseTo(1.4);
-		expect(yToCR(crToY(0.7))).toBeCloseTo(0.7);
+		expect(xToCD(cdToX(1.4, rect), rect)).toBeCloseTo(1.4);
+		expect(yToCR(crToY(0.7, rect), rect)).toBeCloseTo(0.7);
 	});
 
-	it('maps axis bounds to plot edges', () => {
-		expect(cdToX(CD_MIN)).toBeCloseTo(PAD.left);
-		expect(cdToX(CD_MAX)).toBeCloseTo(PAD.left + PLOT_WIDTH);
-		expect(crToY(CR_MAX)).toBeCloseTo(PAD.top);
-		expect(crToY(CR_MIN)).toBeCloseTo(PAD.top + PLOT_HEIGHT);
+	it('maps the axis bounds to the plot edges, CRIT Rate down to 0%', () => {
+		expect(cdToX(CD_MIN, rect)).toBeCloseTo(50);
+		expect(cdToX(CD_MAX, rect)).toBeCloseTo(850);
+		expect(crToY(CR_MAX, rect)).toBeCloseTo(30);
+		expect(crToY(CR_AXIS_MIN, rect)).toBeCloseTo(530);
+		// the lowest build sits 5% of the way up, over the veiled band
+		expect(crToY(CR_MIN, rect)).toBeCloseTo(505);
+	});
+
+	it("puts a crit count's row at its share of the hits", () => {
+		// 3 of 8 is 37.5%: the strip's row and the axis agree
+		expect(countAtRate(0.375, 8)).toBe(3);
+		expect(countAtRate(0.7, 8)).toBe(6); // 5.6 rounds to the nearer row
+		expect(countAtRate(-0.2, 8)).toBe(0);
+		expect(countAtRate(1.4, 8)).toBe(8);
+		expect(countAtRate(0.5, 0)).toBe(1); // at least one hit, as the distribution
+	});
+
+	it('writes the CD:CR ratio, with a dash where it has none', () => {
+		expect(formatRatio(0.7, 1.4)).toBe('2.00 : 1');
+		expect(formatRatio(0, 1.4)).toBe('—');
 	});
 });
 

@@ -52,6 +52,7 @@
 		marks = [],
 		track,
 		trackStyle,
+		vertical = false,
 		disabled = false,
 		class: className = ''
 	}: {
@@ -92,6 +93,9 @@
 		track?: Track;
 		/** Inline background for the track (the Crit heatmap's risk ramp). */
 		trackStyle?: string;
+		/** The track stands upright, its minimum at the foot (the Crit heatmap's
+		 *  CRIT Rate handle, on its y axis). Where the track goes is the caller's. */
+		vertical?: boolean;
 		disabled?: boolean;
 		class?: string;
 	} = $props();
@@ -264,6 +268,8 @@
 			id="{id}-track"
 			type="range"
 			class="slider"
+			class:slider--vertical={vertical}
+			aria-orientation={vertical ? 'vertical' : undefined}
 			min={track ? 0 : min}
 			max={track ? track.steps : max}
 			step={track ? 1 : step}
