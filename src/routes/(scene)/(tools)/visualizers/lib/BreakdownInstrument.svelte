@@ -615,10 +615,7 @@
 		if (len <= 0) return [];
 		const count = Math.ceil(len / CHEV_PITCH) + 1;
 		const xc = (g.x0 + g.x1) / 2;
-		// ⚓ Nate (2026-11-03): a sum isn't travelling, it's the readout, so
-		// its stripes are even, with no point: the chevrons' width and fade.
-		const sum = rows[k].kind === 'subtotal' || rows[k].kind === 'total';
-		const d = sum ? 0 : CHEV_SLOPE * (barW / 2);
+		const d = CHEV_SLOPE * (barW / 2);
 		const h = CHEV_PITCH / 2 + d;
 		const s = g.loss ? -1 : 1; // a cut points down, from its head at the bottom
 		const head = g.loss ? g.y1 : g.y0;
@@ -653,6 +650,12 @@
 	 *  column). In oklab, which keeps it clean where sRGB greys it. Both sides
 	 *  are literals, so no mix is fed by another (the WebKit trap, ui.md). */
 	const RX_MIX = 70;
+	/** ⚓ Nate (2026-11-03): a sum isn't travelling, it's the readout, so it
+	 *  wears no stripes, only their fade: the bright ink from the stripes'
+	 *  CHEV_HEAD at its head to nothing at its tail. Tried first and set
+	 *  aside: even stripes, the chevrons' width and fade with no point. */
+	const isSum = (r: Row) => r.kind === 'subtotal' || r.kind === 'total';
+
 	const barFill = (r: Row) =>
 		r.kind === 'total'
 			? 'color-mix(in srgb, var(--text) 85%, transparent)'
@@ -1188,6 +1191,19 @@
 							<clipPath id="{uid}-bar-{r.id}">
 								<rect x={g.x0} y={g.y0} width={barW} height={Math.max(0, g.y1 - g.y0)} />
 							</clipPath>
+							{#if isSum(r)}
+								<!-- from the head (the top, or the bottom for a cut) to the tail -->
+								<linearGradient
+									id="{uid}-fade-{r.id}"
+									x1="0"
+									x2="0"
+									y1={g.loss ? 1 : 0}
+									y2={g.loss ? 0 : 1}
+								>
+									<stop offset="0" style:stop-color="var(--bright-ink)" stop-opacity={CHEV_HEAD} />
+									<stop offset="1" style:stop-color="var(--bright-ink)" stop-opacity="0" />
+								</linearGradient>
+							{/if}
 						{/each}
 					</defs>
 
@@ -1245,15 +1261,25 @@
 								height={Math.max(1, g.y1 - g.y0)}
 								style:fill={barFill(r)}
 							/>
-							<g clip-path="url(#{uid}-bar-{r.id})">
-								{#each chevrons(k) as c, i (i)}
-									<polygon
-										points={c.points}
-										fill={isGlass(r) ? '#fff' : 'var(--bright-ink)'}
-										fill-opacity={c.alpha * (isGlass(r) ? 0.6 : 1)}
-									/>
-								{/each}
-							</g>
+							{#if isSum(r)}
+								<rect
+									x={g.x0}
+									y={g.y0}
+									width={barW}
+									height={Math.max(1, g.y1 - g.y0)}
+									fill="url(#{uid}-fade-{r.id})"
+								/>
+							{:else}
+								<g clip-path="url(#{uid}-bar-{r.id})">
+									{#each chevrons(k) as c, i (i)}
+										<polygon
+											points={c.points}
+											fill={isGlass(r) ? '#fff' : 'var(--bright-ink)'}
+											fill-opacity={c.alpha * (isGlass(r) ? 0.6 : 1)}
+										/>
+									{/each}
+								</g>
+							{/if}
 						{/if}
 					{/each}
 
@@ -1472,15 +1498,19 @@
 									style:width="{Math.max(hi - lo, 0.4)}%"
 									style:background={barFill(r)}
 								>
-									<!-- k = 0 is the HEAD; each step back toward the tail fades.
-									     k = −1 sits past the head, so the pattern runs through it. -->
-									{#each { length: nChev + 1 }, j (j)}
-										<span
-											class="bd-wf-chev"
-											style:--k={j - 1}
-											style:--a={chevAlpha(Math.max(0, j - 1), nChev)}
-										></span>
-									{/each}
+									{#if isSum(r)}
+										<span class="bd-wf-fade"></span>
+									{:else}
+										<!-- k = 0 is the HEAD; each step back toward the tail fades.
+										     k = −1 sits past the head, so the pattern runs through it. -->
+										{#each { length: nChev + 1 }, j (j)}
+											<span
+												class="bd-wf-chev"
+												style:--k={j - 1}
+												style:--a={chevAlpha(Math.max(0, j - 1), nChev)}
+											></span>
+										{/each}
+									{/if}
 								</span>
 							{/if}
 							{#each caps as c, j (c.stat.key)}
@@ -1923,9 +1953,26 @@
 		--arrow-c: var(--bright-ink);
 	}
 
-	/* A sum's stripes are even: no point (⚓ Nate 2026-11-03). */
-	.bd-wf-row.is-sum .bd-wf-bar {
-		--chev-depth: 0px;
+	/* A sum wears the stripes' fade alone (⚓ Nate 2026-11-03): its own
+	   element over the fill, so the bar keeps one background layer (real
+	   Safari has drawn 1px gaps in multi-layer bar backgrounds). 12% is
+	   CHEV_HEAD; the head is the right end, the left for a cut. */
+	.bd-wf-fade {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to left,
+			color-mix(in srgb, var(--bright-ink) 12%, transparent),
+			transparent
+		);
+	}
+
+	.bd-wf-bar.is-loss .bd-wf-fade {
+		background: linear-gradient(
+			to right,
+			color-mix(in srgb, var(--bright-ink) 12%, transparent),
+			transparent
+		);
 	}
 
 	.bd-wf-row.is-glass .bd-wf-bar {
@@ -1935,7 +1982,7 @@
 
 	.bd-wf-chev {
 		--pitch: 14px;
-		--depth: var(--chev-depth, 6px);
+		--depth: 6px;
 		position: absolute;
 		top: 0;
 		bottom: 0;
