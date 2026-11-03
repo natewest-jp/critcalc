@@ -137,6 +137,8 @@ fine print
   capped at 🎛️ `--stage-aspect` (2.4) × the tile's height and centred, so an ultrawide
   doesn't flatten every slope. The stage's CSS is `app.css` § THE STAGE, shared by every
   instrument on it; what one instrument adds stays in its own file.
+  ⚓ The Crit heatmap is the exception (§8): a 2-D field wants the height, so from a 60rem tile
+  its headline and fine print stand in a column at the left edge, beside the chart.
 - **An input is a segment at a glance.** Where a view is about something the player enters
   (Artifact odds' piece), the setup bar's first segment shows it read-only ("+20 Pyro Goblet ·
   CR 6.6 · CD 21.0 · …") and opens the full input in its popover; with nothing entered, the
@@ -226,8 +228,10 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   Rate's upright, the strip outside it on the left, and the right edge the average's axis (along
   CRIT DMG 300% the average is linear in CRIT Rate, so every contour meets it at its value).
   ⚓ Nate: stripped down to the contours, the CV line with its ring, and your average as a notch
-  on that axis. The field is 1.5 × its height at most, and the stage is capped to fit it and
-  centred. ⚓ Nate kept the rainbow over four ramps whose lightness only rises, though its own
+  on that axis; the contours solid, the ring a button to the best split. The field is 1.5 × its
+  height at most. ⚓ Nate: from a 60rem tile the headline and the fine print are a column at the
+  left edge and the chart stands beside them at the tile's height; every control sits on the
+  chart's top edge, none behind a popover. On a phone the strip lies under the chart. ⚓ Nate kept the rainbow over four ramps whose lightness only rises, though its own
   peaks at ×2.8.
 - **Unchanged charts:** Wish odds, Artifact odds' Drop view and Reaction curves gain
   annotations, not a different chart.

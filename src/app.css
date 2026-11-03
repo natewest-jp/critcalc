@@ -3749,11 +3749,12 @@ img {
 		padding-block: 10px;
 		background-clip: content-box;
 	}
+	/* ⚠ Physical padding: in a vertical writing mode `padding-inline` runs
+	   top and bottom, which painted the whole 24px as track. */
 	.slider.slider--vertical {
 		width: 24px;
 		height: 100%;
-		padding-block: 0;
-		padding-inline: 10px;
+		padding: 0 10px;
 	}
 }
 

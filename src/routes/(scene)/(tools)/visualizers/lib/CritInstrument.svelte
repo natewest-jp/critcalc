@@ -1,6 +1,5 @@
 <script lang="ts">
 	import CritHeatmap from './CritHeatmap.svelte';
-	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import {
@@ -12,7 +11,6 @@
 		averageDamageMultiplier,
 		critValue,
 		zeroCritProbability,
-		zeroCritRiskColor,
 		riskGradient,
 		HITS_MIN,
 		HITS_MAX,
@@ -69,6 +67,9 @@
 	// ── Geometry ───────────────────────────────────────────────────────────
 	let graphW = $state(900);
 	let graphH = $state(0);
+	/** The toolbar on the chart's top edge: measured, because it wraps, and
+	 *  the CRIT Rate track hangs from the column's top past it. */
+	let topH = $state(36);
 	/** Half the slider thumb's 15px: a handle's track runs this far past each
 	 *  end of its axis, so the thumb sits on the marker's line. */
 	const THUMB_R = 7.5;
@@ -83,22 +84,29 @@
 	const TICK_GAP = 6;
 	const AVG_W = 40;
 	const PADR = 2;
-	/** 🎛️ Above the plot: the CRIT Rate handle's name and field, and the
-	 *  average axis's name. */
-	const TOP = 34;
+	/** 🎛️ Above the plot: the average axis's name and the top numbers' half. */
+	const TOP = 18;
 	/** Under the plot: the x axis's numbers and the strip's name. The CRIT DMG
 	 *  handle is under the SVG. */
 	const BOTTOM = 22;
-	/** 🎛️ The strip: a share of the plot's height, within limits (by height,
-	 *  so the stage's width can follow the field without chasing itself). */
+	/** 🎛️ Between the toolbar on the chart's top edge and the chart. */
+	const TOOLBAR_GAP = 6;
+	/** 🎛️ The strip beside the field: a share of the plot's height, within
+	 *  limits (by height, so the column's width can follow the field without
+	 *  chasing itself). */
 	const STRIP_PER_H = 0.15;
 	const STRIP_MIN = 56;
 	const STRIP_MAX = 110;
+	/** 🎛️ Below this chart width (a phone) the strip leaves the field's side
+	 *  and lies under the chart on its own axis (⚓ Nate 2026-11-03: on the
+	 *  phone it took the field's width). */
+	const STRIP_SIDE_MIN = 560;
+	/** 🎛️ The strip under the chart: its height, bars and numbers. */
+	const STRIP_BELOW_H = 56;
 	/** 🎛️ THE FIELD'S WIDEST, as a multiple of its height (⚓ Nate
 	 *  2026-11-03: one up on a wide screen it stretched past 2:1). From 1024px
-	 *  the stage is capped at the width that gives the field this shape, and
-	 *  centred, night either side; the headline and the toolbar come with it,
-	 *  so the box keeps one left edge (design §6). */
+	 *  the chart's column is capped at the width that gives the field this
+	 *  shape. */
 	const FIELD_MAX_ASPECT = 1.5;
 	/** The plot's least height; below 1024px (natural height) it is a near
 	 *  square of the chart's width, up to PLOT_NATURAL_MAX. */
@@ -106,12 +114,15 @@
 	const PLOT_NATURAL_MAX = 560;
 
 	const plotH = $derived(Math.max(PLOT_MIN, graphH - TOP - BOTTOM));
-	const stripW = $derived(clamp(Math.round(plotH * STRIP_PER_H), STRIP_MIN, STRIP_MAX));
+	const stripSide = $derived(graphW >= STRIP_SIDE_MIN);
+	const stripW = $derived(
+		stripSide ? clamp(Math.round(plotH * STRIP_PER_H), STRIP_MIN, STRIP_MAX) : 0
+	);
 	const strip = $derived({ x0: 0, w: stripW });
-	const crX = $derived(stripW + STRIP_GAP);
+	const crX = $derived(stripSide ? stripW + STRIP_GAP : 0);
 	/** Everything across the chart but the field. */
 	const chromeW = $derived(crX + CR_TRACK + CR_GAP + TICK_W + TICK_GAP + AVG_W + PADR);
-	const stageMax = $derived(Math.round(plotH * FIELD_MAX_ASPECT + chromeW));
+	const colMax = $derived(Math.round(plotH * FIELD_MAX_ASPECT + chromeW));
 	const rect = $derived<FieldRect>({
 		x0: crX + CR_TRACK + CR_GAP + TICK_W + TICK_GAP,
 		y0: TOP,
@@ -124,6 +135,17 @@
 	const naturalMin = $derived(
 		TOP + BOTTOM + clamp(Math.round(graphW * 0.8), PLOT_MIN, PLOT_NATURAL_MAX)
 	);
+
+	// The strip under the chart: a column per crit count across the field's
+	// width, 0 at the left.
+	const belowPeak = $derived(Math.max(...distribution));
+	const belowColW = $derived(rect.w / distribution.length);
+	const BELOW_AXIS = 14;
+	function pickBelow(e: PointerEvent) {
+		const box = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
+		const k = Math.floor((e.clientX - box.left - rect.x0) / belowColW);
+		hoverCount = k >= 0 && k < distribution.length ? k : null;
+	}
 
 	// ── Workspace handle (share + reset) ───────────────────────────────────
 
@@ -178,138 +200,29 @@
 {/snippet}
 
 <!-- THE STAGE (design §6). One box: the chart head (your average per hit),
-     the chart's toolbar on its top edge (the setup bar, then Pin and Roll),
-     the field with its strip, and a handle on each axis. The old Readout is on
-     the chart: the CV on its line, the ratio at the marker, the pin's change
-     on its connector, the one-rotation chart as the strip. -->
-<div class="stage-root cv-stage-root" style:--cv-stage-max="{stageMax}px">
-	<div class="stage ctx-dark">
-		<p class="readout-head stage-head">
+     the chart with every control on its top edge (CRIT Rate's field, the
+     hits, the shading, Pin and Roll) and a handle on each axis, and the fine
+     print. ⚓ Nate (2026-11-03): where the tile is wide, the head and the fine
+     print are a column at the left edge and the chart stands beside them,
+     so the field gets the tile's height. -->
+<div class="stage-root">
+	<div class="stage ctx-dark cv-stage">
+		<p class="readout-head stage-head cv-head">
 			{formatMultiplier(myMultiplier)}<span class="readout-sentence">average damage per hit</span>
 		</p>
 
-		<div class="stage-toolbar">
-			<div class="setup-bar" role="group" aria-label="Setup">
-				<BandMenu role="dialog" align="start" ariaLabel="Hits per rotation: {hitsPerRotation}">
-					{#snippet face()}
-						<span class="setup-key">Hits per rotation</span>
-						<span class="setup-val setup-val--num">{hitsPerRotation}</span>
-					{/snippet}
-					{#snippet items()}
-						<div class="setup-pop">
-							<!-- The track is the risk ramp: how the no-crit chance falls as
-							     hits are added, at your CRIT Rate. -->
-							<InstrumentSlider
-								label="Hits per rotation"
-								bind:value={hitsPerRotation}
-								min={HITS_MIN}
-								max={HITS_MAX}
-								step={1}
-								trackStyle="background-image: {riskGradient(myCR)}"
-							/>
-							<p class="cv-pop-note">
-								The hits in one rotation that can crit. The bars beside the map count how many of
-								them do, and the track is coloured by the chance that none do: at {Math.round(
-									myCR * 100
-								)}% CRIT Rate,
-								<span style:color={zeroCritRiskColor(zeroCritRisk)}
-									>{formatChance(zeroCritRisk)}</span
-								>
-								over {hitsPerRotation}
-								{hitsWord(hitsPerRotation)}.
-							</p>
-						</div>
-					{/snippet}
-				</BandMenu>
-
-				<BandMenu
-					role="dialog"
-					align="start"
-					ariaLabel="Shading: {shading ? 'No-crit risk' : 'None'}"
-				>
-					{#snippet face()}
-						<span class="setup-key">Shading</span>
-						<span class="setup-val">{shading ? 'No-crit risk' : 'None'}</span>
-					{/snippet}
-					{#snippet items()}
-						<div class="setup-pop">
-							<div class="segment" role="radiogroup" aria-label="Shading">
-								<button
-									class="btn"
-									class:is-active={shading}
-									role="radio"
-									aria-checked={shading}
-									onclick={() => (shading = true)}
-								>
-									No-crit risk
-								</button>
-								<button
-									class="btn"
-									class:is-active={!shading}
-									role="radio"
-									aria-checked={!shading}
-									onclick={() => (shading = false)}
-								>
-									None
-								</button>
-							</div>
-							<p class="cv-pop-note">
-								Darkens each CRIT Rate by its chance of a whole rotation of {hitsPerRotation}
-								{hitsWord(hitsPerRotation)} without a single crit.
-							</p>
-						</div>
-					{/snippet}
-				</BandMenu>
-			</div>
-
-			<!-- The chart tools hold the toolbar's far end. Pin's two labels share
-			     its cell, so it keeps one width either way (design §4). -->
-			<button
-				class="btn cv-tool"
-				onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
-			>
-				<span class="cv-stack">
-					<span class:cv-ghost={!!pinned}>Pin this build</span>
-					<span class:cv-ghost={!pinned}>Clear pin</span>
-				</span>
-			</button>
-			<button class="btn" onclick={rollIt}>
-				<Mark name="dice" size={12} />
-				Roll {hitsPerRotation}
-				{hitsWord(hitsPerRotation)}
-			</button>
-		</div>
-
-		<div class="cv-graph-wrap">
-			<div
-				class="stage-graph instrument-graph cv-graph"
-				style:--cv-natural-min="{naturalMin}px"
-				style:--cv-fill-min="{TOP + BOTTOM + PLOT_MIN}px"
-				bind:clientWidth={graphW}
-				bind:clientHeight={graphH}
-			>
-				<CritHeatmap
-					bind:critRate={myCR}
-					bind:critDamage={myCD}
-					bind:hoverCount
-					width={graphW}
-					height={rect.y0 + rect.h + BOTTOM}
-					{rect}
-					{strip}
-					hits={hitsPerRotation}
-					{distribution}
-					{shading}
-					{pinned}
-					{pinnedDelta}
-					{readCount}
-				/>
-
-				<!-- THE CRIT RATE HANDLE (design §6): the y axis's, so it stands on
-				     that axis, its name and field over its top. The model holds
-				     fractions; the fields show percent. -->
+		<div
+			class="cv-chart-col"
+			style:--cv-col-max="{colMax}px"
+			style:--cv-toolbar-gap="{TOOLBAR_GAP}px"
+		>
+			<!-- THE CHART'S TOOLBAR, on its top edge: nothing behind a popover,
+			     since each setting is one value. CRIT Rate's name and field lead,
+			     over its track; the track itself hangs down the chart's left. -->
+			<div class="cv-toolbar" bind:clientHeight={topH}>
 				<div
 					class="cv-cr"
-					style:--cr-top="{rect.y0 - THUMB_R}px"
+					style:--cr-top="{topH + TOOLBAR_GAP + rect.y0 - THUMB_R}px"
 					style:--cr-h="{rect.h * (1 - CR_MIN) + 2 * THUMB_R}px"
 					style:--cr-w="{CR_TRACK}px"
 					style:--cr-x="{crX}px"
@@ -326,27 +239,163 @@
 						unit="%"
 					/>
 				</div>
+
+				<!-- The hits: a short slider inline, its track the risk ramp (how the
+				     no-crit chance falls as hits are added, at your CRIT Rate). -->
+				<div class="cv-hits">
+					<InstrumentSlider
+						label="Hits per rotation"
+						bind:value={hitsPerRotation}
+						min={HITS_MIN}
+						max={HITS_MAX}
+						step={1}
+						trackStyle="background-image: {riskGradient(myCR)}"
+					/>
+				</div>
+
+				<!-- The chart tools: one group, so they wrap together and hold the
+				     toolbar's far end. -->
+				<div class="cv-tools">
+					<button
+						class="btn"
+						class:is-active={shading}
+						aria-pressed={shading}
+						title="Darkens each CRIT Rate by its chance of a whole rotation without a single crit"
+						onclick={() => (shading = !shading)}
+					>
+						No-crit shading
+					</button>
+
+					<!-- Pin and Roll: a mark and a word, the word gone where the tile is
+				     narrow. Pin's two words share one cell, so it keeps one width. -->
+					<button
+						class="btn cv-tool"
+						aria-pressed={!!pinned}
+						aria-label={pinned ? 'Clear pin' : 'Pin this build'}
+						onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
+					>
+						<Mark name="pin" size={12} />
+						<span class="cv-stack cv-tool-word" aria-hidden="true">
+							<span class:cv-ghost={!!pinned}>Pin this build</span>
+							<span class:cv-ghost={!pinned}>Clear pin</span>
+						</span>
+					</button>
+					<button
+						class="btn cv-tool"
+						aria-label="Roll {hitsPerRotation} {hitsWord(hitsPerRotation)}"
+						onclick={rollIt}
+					>
+						<Mark name="dice" size={12} />
+						<span class="cv-tool-word" aria-hidden="true"
+							>Roll {hitsPerRotation} {hitsWord(hitsPerRotation)}</span
+						>
+					</button>
+				</div>
 			</div>
 
-			<!-- THE CRIT DMG HANDLE, on the x axis. One decimal, as its field
-			     always had: a marker dragged on the field lands between whole
-			     percents. -->
-			<div
-				class="stage-handle"
-				style:--stage-handle-l="{rect.x0 - THUMB_R}px"
-				style:--stage-handle-r="{graphW - rect.x0 - rect.w - THUMB_R}px"
-			>
-				<InstrumentSlider
-					label="CRIT DMG"
-					aria="Crit damage"
-					bind:value={myCD}
-					min={CD_MIN}
-					max={CD_MAX}
-					step={0.01}
-					scale={100}
-					decimals={1}
-					unit="%"
-				/>
+			<div class="cv-graph-wrap">
+				<div
+					class="stage-graph instrument-graph cv-graph"
+					style:--cv-natural-min="{naturalMin}px"
+					style:--cv-fill-min="{TOP + BOTTOM + PLOT_MIN}px"
+					bind:clientWidth={graphW}
+					bind:clientHeight={graphH}
+				>
+					<CritHeatmap
+						bind:critRate={myCR}
+						bind:critDamage={myCD}
+						bind:hoverCount
+						width={graphW}
+						height={rect.y0 + rect.h + BOTTOM}
+						{rect}
+						{strip}
+						hits={hitsPerRotation}
+						{distribution}
+						{shading}
+						{pinned}
+						{pinnedDelta}
+						{readCount}
+					/>
+				</div>
+
+				<!-- THE CRIT DMG HANDLE, on the x axis. One decimal, as its field
+				     always had: a marker dragged on the field lands between whole
+				     percents. -->
+				<div
+					class="stage-handle"
+					style:--stage-handle-l="{rect.x0 - THUMB_R}px"
+					style:--stage-handle-r="{graphW - rect.x0 - rect.w - THUMB_R}px"
+				>
+					<InstrumentSlider
+						label="CRIT DMG"
+						aria="Crit damage"
+						bind:value={myCD}
+						min={CD_MIN}
+						max={CD_MAX}
+						step={0.01}
+						scale={100}
+						decimals={1}
+						unit="%"
+					/>
+				</div>
+
+				<!-- The strip under the chart, where the chart is too narrow for it
+				     beside the field: a column per crit count, 0 to the hits. -->
+				{#if !stripSide}
+					<svg
+						class="cv-strip-below"
+						width={graphW}
+						height={STRIP_BELOW_H}
+						aria-hidden="true"
+						onpointerdown={pickBelow}
+						onpointermove={(e) => e.pointerType === 'mouse' && pickBelow(e)}
+						onpointerleave={(e) => e.pointerType === 'mouse' && (hoverCount = null)}
+					>
+						{#each distribution as chance, k (k)}
+							{@const h = belowPeak > 0 ? (chance / belowPeak) * (STRIP_BELOW_H - BELOW_AXIS) : 0}
+							<rect
+								x={rect.x0 + k * belowColW + belowColW * 0.14}
+								y={STRIP_BELOW_H - BELOW_AXIS - h}
+								width={belowColW * 0.72}
+								height={h}
+								rx="1"
+								fill={readCount === k ? 'var(--text)' : 'var(--chart-ink)'}
+								fill-opacity={readCount === k ? 1 : 0.45}
+							/>
+						{/each}
+						<line
+							x1={rect.x0}
+							y1={STRIP_BELOW_H - BELOW_AXIS}
+							x2={rect.x0 + rect.w}
+							y2={STRIP_BELOW_H - BELOW_AXIS}
+							stroke="var(--chart-rule)"
+						/>
+						<text
+							x={rect.x0 + belowColW / 2}
+							y={STRIP_BELOW_H - 2}
+							fill="var(--chart-ink)"
+							font-size="10"
+							text-anchor="middle">0</text
+						>
+						<text
+							x={rect.x0 + rect.w - belowColW / 2}
+							y={STRIP_BELOW_H - 2}
+							fill="var(--chart-ink)"
+							font-size="10"
+							text-anchor="middle">{hitsPerRotation}</text
+						>
+						<text
+							x={rect.x0 + rect.w / 2}
+							y={STRIP_BELOW_H - 2}
+							fill="var(--chart-dim)"
+							font-size="10"
+							text-anchor="middle"
+						>
+							crits in {hitsPerRotation}
+							{hitsWord(hitsPerRotation)}
+						</text>
+					</svg>
+				{/if}
 			</div>
 		</div>
 
@@ -388,32 +437,131 @@
 			<!-- ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
 			     "280 CV" for artifact CV, where 280 is near impossible. -->
 			<p>
-				Each dashed curve joins the builds with one average, read on the right edge. The solid line
-				is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value (CV), 2 ×
-				CRIT Rate + CRIT DMG with base crit stats included, and its ring is that budget’s best split.
-				Hover or tap a bar to read one rotation.
+				Each curve joins the builds with one average, read on the right edge. The straight line is
+				every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value (CV), 2 × CRIT
+				Rate + CRIT DMG with base crit stats included, and its ring is that budget’s best split: press
+				it to move there. Hover or tap a bar to read one rotation.
 			</p>
 		</div>
 	</div>
 </div>
 
 <style>
-	/* THE FIELD KEEPS ITS SHAPE: the stage is no wider than the field at
-	   FIELD_MAX_ASPECT needs (the script measures it), and the shared rule
-	   centres it. From 1024px only, where the stage is capped at all (app.css
-	   § THE STAGE; breakpoints.test.ts names the stop). */
+	/* ── The stacked form: the head, the chart, the fine print ── */
+	.cv-chart-col {
+		/* the CRIT Rate track's containing block (it hangs from this top) */
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		flex: 1 0 auto;
+		gap: var(--cv-toolbar-gap);
+		min-width: 0;
+	}
+	/* The column is no wider than the field at FIELD_MAX_ASPECT needs (the
+	   script measures it), and centred in what it has. From 1024px only, where
+	   the tile's height is definite (breakpoints.test.ts names the stop). */
 	@media (min-width: 1024px) {
-		.cv-stage-root {
-			grid-template-columns: minmax(
-				0,
-				min(calc(100cqh * var(--stage-aspect)), var(--cv-stage-max))
-			);
+		.cv-chart-col {
+			width: min(100%, var(--cv-col-max));
+			align-self: center;
 		}
 	}
 
-	/* The chart box and the CRIT Rate handle over it, the CRIT DMG handle under
-	   it: one unit, so the stage's gap doesn't fall between the chart and its
-	   handle. */
+	/* ── The side form (⚓ Nate 2026-11-03): from a 60rem tile the head and
+	   the fine print are a column at the stage's left edge, and the chart
+	   stands beside them at the tile's full height, centred in the rest. ── */
+	@container instrument (min-width: 60rem) {
+		.cv-stage {
+			display: grid;
+			grid-template-columns: var(--cv-side-w, 17rem) minmax(0, 1fr);
+			grid-template-rows: auto minmax(0, 1fr);
+			grid-template-areas:
+				'head chart'
+				'fine chart';
+			column-gap: 2.5rem;
+			row-gap: 1rem;
+		}
+		.cv-head {
+			grid-area: head;
+			/* the figure over its sentence, in a column this narrow */
+			display: block;
+			white-space: normal;
+		}
+		.cv-head :global(.readout-sentence) {
+			margin-top: 0.15rem;
+		}
+		.cv-chart-col {
+			grid-area: chart;
+			/* ⚠ In the grid, align-self is the block axis: stretch to the
+			   stage's height, and centre across instead. */
+			align-self: stretch;
+			justify-self: center;
+		}
+		.cv-fine {
+			grid-area: fine;
+		}
+	}
+
+	/* ── The toolbar on the chart's top edge ── */
+	.cv-toolbar {
+		/* Pin and Roll drop their words by the toolbar's own width: the chart's
+		   column is narrower than the tile in the side form. */
+		container: cv-toolbar / inline-size;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+	}
+
+	/* CRIT Rate: its name and field in the toolbar, its track hung down the
+	   chart's left edge from 100% to 5%, the lowest a build can have, between
+	   the strip and the y axis's numbers. The column is the containing block. */
+	.cv-cr :global(.slider-control) {
+		display: block;
+	}
+	.cv-cr :global(.slider-header) {
+		justify-content: flex-start;
+		gap: 0.5rem;
+	}
+	.cv-cr :global(.is-track) {
+		position: absolute;
+		top: var(--cr-top);
+		left: var(--cr-x);
+		width: var(--cr-w);
+		height: var(--cr-h);
+		justify-items: center;
+	}
+
+	/* The hits: name, field, then a short track, on one line. */
+	.cv-hits :global(.slider-control) {
+		grid-template-columns: auto minmax(5rem, 8rem);
+		align-items: center;
+		column-gap: 0.75rem;
+	}
+	.cv-hits :global(.slider-header) {
+		justify-content: flex-start;
+		gap: 0.5rem;
+	}
+
+	/* The chart tools hold the toolbar's far end, and wrap as one. */
+	.cv-tools {
+		display: flex;
+		gap: 0.5rem;
+		margin-left: auto;
+	}
+	.cv-tool {
+		gap: 0.4rem;
+	}
+	/* 🎛️ Below the width the whole row needs with its words (measured about
+	   836px), Pin and Roll keep their marks alone. */
+	@container cv-toolbar (max-width: 52rem) {
+		.cv-tool .cv-tool-word {
+			display: none;
+		}
+	}
+
+	/* The chart box and the CRIT DMG handle under it: one unit, so the
+	   column's gap doesn't fall between the chart and its handle. */
 	.cv-graph-wrap {
 		display: flex;
 		flex-direction: column;
@@ -433,50 +581,16 @@
 		}
 	}
 
-	/* The upright handle: no flow box of its own. Its name and field sit over
-	   the track's top, the track between the strip and the y axis's numbers
-	   from CRIT Rate 100% to 5%, the lowest a build can have. */
-	.cv-cr {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-	}
-	.cv-cr :global(.slider-control) {
+	.cv-strip-below {
 		display: block;
-	}
-	.cv-cr :global(.slider-header) {
-		position: absolute;
-		top: 0;
-		left: var(--cr-x);
-		justify-content: flex-start;
-		gap: 0.5rem;
-		pointer-events: auto;
-	}
-	.cv-cr :global(.is-track) {
-		position: absolute;
-		top: var(--cr-top);
-		left: var(--cr-x);
-		width: var(--cr-w);
-		height: var(--cr-h);
-		justify-items: center;
-		pointer-events: auto;
-	}
-
-	/* A chart tool holds the toolbar's far end */
-	.cv-tool {
-		margin-left: auto;
-	}
-
-	.cv-pop-note {
-		margin: 0;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-snug);
-		color: var(--muted);
+		margin-top: 0.25rem;
+		touch-action: pan-y;
 	}
 
 	.cv-fine {
 		display: grid;
 		gap: 0.25rem;
+		align-content: start;
 	}
 	.cv-fine p {
 		margin: 0;

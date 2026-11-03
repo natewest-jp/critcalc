@@ -52,7 +52,8 @@
 		/** The field's plot. */
 		rect: FieldRect;
 		/** The companion strip, at the chart's left edge outside the CRIT Rate
-		 *  handle: its left edge and width. Its rows grow leftward from its right. */
+		 *  handle: its left edge and width. Its rows grow leftward from its right.
+		 *  Width 0 where it lives under the chart instead (the instrument draws it). */
 		strip: { x0: number; w: number };
 		hits: number;
 		/** The chance of each crit count, 0 … hits. */
@@ -76,6 +77,9 @@
 	const ROW_SHARE = 0.72;
 	const ROW_MIN = 1.5;
 	const ROW_MAX = 10;
+	/** 🎛️ The contours' white and width. */
+	const CONTOUR_INK = 0.32;
+	const CONTOUR_W = 1;
 	/** 🎛️ How much the night veils the unreachable 0–5% band. */
 	const VEIL = 0.62;
 
@@ -250,6 +254,17 @@
 		if (shadeCanvas) paintShade(shadeCanvas, shading, hits);
 	});
 
+	/** 🎛️ The ring's press target: wider than its 5px, for a finger. */
+	const RING_HIT_R = 12;
+	function toBest() {
+		// ⚠ Both read before either is written: setting CRIT Rate moves the CV,
+		// and `best` with it.
+		const { critRate: cr, critDamage: cd } = best;
+		critRate = Number(cr.toFixed(3));
+		critDamage = Number(cd.toFixed(3));
+		hoverCount = null;
+	}
+
 	// ── Presses ───────────────────────────────────────────────────────────
 	// A press on the field moves your build there and drags it; a press on
 	// the strip reads a row (a hover does too, where there is one).
@@ -380,9 +395,11 @@
 		/>
 
 		<!-- The contours: builds with the same average, each valued where it
-		     meets the average's axis on the right -->
+		     meets the average's axis on the right. 🎛️ Solid and thin, as a
+		     map's height lines are (Nate 2026-11-03: once the CV line was the
+		     only other line, dashes no longer had to tell them apart). -->
 		{#each isolines as iso (iso.m)}
-			<path d={iso.d} fill="none" stroke={ink(0.34)} stroke-width="1.1" stroke-dasharray="5 4" />
+			<path d={iso.d} fill="none" stroke={ink(CONTOUR_INK)} stroke-width={CONTOUR_W} />
 		{/each}
 
 		<!-- The equal-CV line through your build, and its best split: the
@@ -471,29 +488,31 @@
 
 		<!-- The companion: how many of the hits crit, on the CRIT Rate axis,
 		     outside the CRIT Rate handle; each row grows away from the field -->
-		<line x1={stripRight} y1={rect.y0} x2={stripRight} y2={bottom} stroke="var(--chart-rule)" />
-		{#each rows as r (r.k)}
-			<rect
-				x={r.x}
-				y={r.y - rowH / 2}
-				width={Math.max(r.len, 0)}
-				height={rowH}
-				rx="1"
-				fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
-				fill-opacity={readCount === r.k ? 1 : 0.45}
-			/>
-		{/each}
-		<text
-			class="stage-word"
-			x={stripRight}
-			y={bottom + 16}
-			fill="var(--chart-dim)"
-			font-size="10"
-			text-anchor="end"
-		>
-			crits in {n}
-			{n === 1 ? 'hit' : 'hits'}
-		</text>
+		{#if strip.w > 0}
+			<line x1={stripRight} y1={rect.y0} x2={stripRight} y2={bottom} stroke="var(--chart-rule)" />
+			{#each rows as r (r.k)}
+				<rect
+					x={r.x}
+					y={r.y - rowH / 2}
+					width={Math.max(r.len, 0)}
+					height={rowH}
+					rx="1"
+					fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
+					fill-opacity={readCount === r.k ? 1 : 0.45}
+				/>
+			{/each}
+			<text
+				class="stage-word"
+				x={stripRight}
+				y={bottom + 16}
+				fill="var(--chart-dim)"
+				font-size="10"
+				text-anchor="end"
+			>
+				crits in {n}
+				{n === 1 ? 'hit' : 'hits'}
+			</text>
+		{/if}
 
 		<!-- The pinned build, and the move from it to yours -->
 		{#if pinned}
@@ -533,6 +552,30 @@
 		<!-- ⏸ The black ring is deliberate: this dot rides a rainbow, and white
 		     on pale yellow is where it would disappear. -->
 		<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
+		<!-- THE RING IS A BUTTON: one press moves your build to the best split
+		     of its budget. Last, so it sits over the marker and the lines. -->
+		{#if !atBest}
+			<circle
+				class="cv-ring-hit"
+				cx={x(best.critDamage)}
+				cy={y(best.critRate)}
+				r={RING_HIT_R}
+				fill="transparent"
+				role="button"
+				tabindex="0"
+				aria-label="Move to the best split of this budget"
+				onpointerdown={(e) => e.stopPropagation()}
+				onclick={toBest}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						toBest();
+					}
+				}}
+			>
+				<title>Move to the best split of this budget</title>
+			</circle>
+		{/if}
 	</svg>
 </div>
 
@@ -557,6 +600,16 @@
 		position: absolute;
 		display: block;
 		border-radius: var(--r-sm);
+	}
+
+	.cv-ring-hit {
+		cursor: pointer;
+		outline: none;
+	}
+	/* Focus draws its own ring: Safari's outline on SVG is unreliable. */
+	.cv-ring-hit:focus-visible {
+		stroke: var(--accent);
+		stroke-width: 2;
 	}
 
 	.cv-shade {

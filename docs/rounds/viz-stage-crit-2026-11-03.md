@@ -1,7 +1,7 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
 **Status:** built on `feat/viz-crit-stage`; Nate's first look (§3a) reworked the layout and his
-second (§3b) stripped it down. Waiting for his eye, the copy (§5) and Help (§6). Not merged.
+second (§3b) stripped it down; his third (§3c) gave the field the tile's height. Waiting for his eye, the copy (§5) and Help (§6). Not merged.
 
 ## 1. The round's three openings
 
@@ -146,29 +146,61 @@ field still stretched and sat lopsided; the strip's words were too much.
    from 1024px too, so at 1366×768 the chart ran taller than the tile. It is the floor below
    1024px only; above, the least plot.
 
+## 3c. Nate's third look: vertical room
+
+Nate: "much better". He asked for Claude's ideas 1 and 2, a phone pass, and his own ideas for
+giving the field more height:
+
+1. **The ring is a button** (Claude's idea 1): a press, or Enter on it focused, moves your build
+   to the best split of its budget. ⚠ It reads both stats before writing either: setting CRIT
+   Rate first moved the CV and the split with it (a first build landed 60.6% / 145% for 121.2%).
+2. **The contours are solid and thin** (idea 2), 🎛️ `CONTOUR_INK` 0.32, `CONTOUR_W` 1.
+3. **The phone:** below 🎛️ `STRIP_SIDE_MIN` (560px of chart) the strip leaves the field's side and
+   lies under the CRIT DMG handle on its own axis, a column per crit count, 0 to the hits
+   (`STRIP_BELOW_H` 56). Nate's point: the strip shares CRIT Rate's axis by meaning, but it reads
+   without it. And the upright track painted a 24px slab under a coarse pointer: its padding was
+   `padding-inline`, which in a vertical writing mode runs top and bottom (`app.css`, now
+   physical).
+4. **The side form** (Nate's ideas): from a 60rem tile the headline and the fine print are a
+   column at the stage's left edge (🎛️ `--cv-side-w` 17rem), and the chart stands beside them at
+   the tile's full height, centred in the rest. Nate offered the fine print on the right;
+   Claude's pick was under the headline, so the text is one column at the edge every instrument
+   starts from and the right stays the average's axis.
+5. **Every control on the chart's top edge**, nothing behind a popover: CRIT Rate's name and field
+   lead (its track still hangs down the field's left, from a containing block on the chart's
+   column), then the hits as a short inline slider with its risk ramp, then the chart tools as
+   one group at the far end: No-crit shading as a toggle, Pin and Roll each a mark and a word.
+   The words drop by the toolbar's own width (🎛️ 52rem, the row measured about 836px with them),
+   since the chart's column is narrower than the tile in the side form. The svg's top margin
+   falls from 34 to 🎛️ 18 (`TOP`), with the CRIT Rate field gone from it.
+6. Measured, the field: 1007×760 (1.32) at 1600×1000, was 885×590; 1260×840 (1.5, the cap) at
+   1920×1080; 792×528 at 1366×768; 491×495 at 1024×768 (the side form at its narrowest); two up
+   at 1600, 553×611 in the stacked form with the toolbar on one row.
+
 ## 4. For Nate's eye
 
-1. The field at 1.5:1 and the stage centred, night either side; at 1366×768 the field is 513×342
-   (the height limits it).
-2. One solid line through the marker (the CV line) and the dashed contours behind it; the ring
-   and its words only away from it.
-3. Your average as a notch and a bold value on the right axis, in place of a contour of its own.
-4. The narrow strip at the far left, with no words; its rows sit at k / n, so at 40 hits it is a
-   fine comb.
-5. The upright CRIT Rate handle between the strip and the y axis's numbers.
-6. The 0–5% veil and its words.
-7. On a phone the field is 195px wide: the strip and the average's axis take about 100px of 358.
+1. The side form: the head and fine print at the left edge, the chart beside them; at 1024×768
+   the field is near square.
+2. The toolbar on the chart's top edge, and where it wraps (1024 one up: CRIT Rate and the hits,
+   then the three tools right aligned).
+3. No-crit shading as a lit plate when on.
+4. The solid contours, and the ring as a button (no change at rest; a pointer cursor over it).
+5. On the phone: the strip under the CRIT DMG handle, and the thin CRIT Rate track.
+6. Your average as a notch and a bold value on the right axis.
+7. The 0–5% veil and its words.
 
 ## 5. Copy (written in, for approval)
 
 1. The headline: "{×1.98} average damage per hit".
-2. The setup bar: "Hits per rotation" {n}; "Shading" "No-crit risk" | "None".
-3. The Hits popover: "The hits in one rotation that can crit. The bars beside the map count how
-   many of them do, and the track is coloured by the chance that none do: at {70}% CRIT Rate,
-   {<0.1%} over {8} hits."
-4. The Shading popover: "Darkens each CRIT Rate by its chance of a whole rotation of {8} hits
-   without a single crit."
-5. The chart tools: "Pin this build" / "Clear pin" (kept); "Roll {8} hits" (kept).
+2. The toolbar on the chart's top edge: "CRIT Rate" and "Hits per rotation" (the sliders' labels),
+   "No-crit shading" (a toggle; its tooltip "Darkens each CRIT Rate by its chance of a whole
+   rotation without a single crit"). The setup bar's "Shading", "No-crit risk" and "None" are
+   retired with it.
+3. The hits popover's note is retired: the fine print says the same (Nate: it did double duty).
+4. The shading popover's note became the toggle's tooltip (item 2).
+5. The chart tools: "Pin this build" / "Clear pin" and "Roll {8} hits" (kept), each after its
+   mark, the words dropping where the toolbar is narrow (the names stay for screen readers).
+   The ring's name: "Move to the best split of this budget" (new, its tooltip and its label).
 6. On the chart: "{280} CV" (kept), "best split of this budget" (kept), "{+3.3%} vs pinned" (was
    "+3.3% average DMG vs pinned" in the card), "crits in {8} hits" (new, the strip's name), "below
    the base 5% CRIT Rate" (new, the veil), "average damage" (the right axis's name, was the title
@@ -178,11 +210,11 @@ field still stretched and sat lopsided; the strip's words were too much.
    doesn't crit is ×1.") lent the first sentence.
 8. A row read: "{6} of {8} hits crit: {×2.05}, in {29.6%} of rotations." After a roll: "{3} of
    {8} hits crit: {×1.52} this time." Both were an em dash before the figure; a colon now.
-9. The standing line: "Each dashed curve joins the builds with one average, read on the right
-   edge. The solid line is every build with your {280} total crit value (CV), 2 × CRIT Rate + CRIT
-   DMG with base crit stats included, and its ring is that budget’s best split. Hover or tap a bar
-   to read one rotation." ⚓ It keeps the card's TOTAL (Nate 2026-10-02): a bare "280 CV" reads
-   as artifact CV.
+9. The standing line: "Each curve joins the builds with one average, read on the right edge. The
+   straight line is every build with your {280} total crit value (CV), 2 × CRIT Rate + CRIT DMG
+   with base crit stats included, and its ring is that budget’s best split: press it to move
+   there. Hover or tap a bar to read one rotation." ⚓ It keeps the card's TOTAL (Nate
+   2026-10-02): a bare "280 CV" reads as artifact CV.
 10. The handles' labels: "CRIT Rate", "CRIT DMG" (kept, now the axes' only names).
 
 Retired: "Current build", "Average DMG per hit. …", "Ratio (CD:CR)" (and its trial at the marker), "CD = 2×CR" (with its ray), "Total crit value (CV)"
@@ -203,11 +235,11 @@ Equal-budget toggle and "the chart under the map". Proposed:
 2. Second paragraph: "The solid line through your build is every build with your total crit
    value (CV), counted as 2 × CRIT Rate + CRIT DMG with base crit stats included. A ring marks
    that budget’s best split, which sits on the 1:2 ratio until CRIT Rate would pass
-   100% and then leaves it. **Pin this build** holds a second marker, and the line from it to
+   100% and then leaves it; press it to move your build there. **Pin this build** holds a second marker, and the line from it to
    yours shows how much the move changes your average."
-3. Third paragraph: "The average hides how uneven a rotation can be. The bars left of the map
+3. Third paragraph: "The average hides how uneven a rotation can be. The bars beside the map (under it, on a phone)
    share its CRIT Rate axis: one for each number of crits in a rotation, set at that number’s
-   share of the hits, as long as its chance. Set the hits in the bar over the map. The
+   share of the hits, as long as its chance. Set the hits over the map. The
    **no-crit risk** shading darkens builds by their chance of a whole rotation without a single
    crit, and **Roll** plays one rotation and lights the bar it lands on."
 
