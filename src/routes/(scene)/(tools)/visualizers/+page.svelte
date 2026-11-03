@@ -693,8 +693,8 @@
 		   tile is a SIZE container. Its height is the row's now — definite, and
 		   never its content's — so the containment the rule above warns about
 		   has nothing to collapse, and `100cqh` is the tile's height: what the
-		   capped instruments' chart column and the Crit Heatmap's stage measure
-		   their width against (app.css .instrument--capped). The name and the
+		   stage and the Crit Heatmap's stage measure their width against
+		   (app.css § THE STAGE). The name and the
 		   width queries are unchanged; layout containment already came with
 		   inline-size, so nothing positioned inside moves. */
 		.ws-tile {

@@ -140,15 +140,7 @@ describe('symbol marks are geometry, not type (.claude/rules/ui.md: sub-pixel la
 		{ file: 'src/lib/components/RosterTab.svelte', span: `['←', '→', '↑', '↓']` },
 		{ file: 'src/lib/components/CompareControl.svelte', span: '(⌃\\`)' },
 		{ file: 'src/lib/timeline/buffDisplay.ts', span: '` → ${value.cap}%`' },
-		{ file: 'src/lib/timeline/buffDisplay.ts', span: '`${startStr} → ${endStr} over duration`' },
-		{
-			file: 'src/routes/(scene)/(tools)/visualizers/lib/DefResInstrument.svelte',
-			span: '`${x}% → ${fmtX(resAt(x))}`'
-		},
-		{
-			file: 'src/routes/(scene)/(tools)/visualizers/lib/DefResInstrument.svelte',
-			span: '`Lv ${x} → ${fmtX(defAt(x))}`'
-		}
+		{ file: 'src/lib/timeline/buffDisplay.ts', span: '`${startStr} → ${endStr} over duration`' }
 	];
 
 	const scanned = files.filter(

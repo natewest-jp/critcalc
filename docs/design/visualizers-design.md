@@ -166,8 +166,8 @@ more of the controls into them, without losing the chart's look.
 
 Until an instrument moves to the stage, it keeps the rail: the chart on the left at the
 tile's height, and a right column of live controls, settings, then the Readout, last because
-its height follows the values. The Damage breakdown keeps its controls under its waterfall and
-Enemy RES & DEF keeps a bespoke right column. The CSS is `app.css` § THE RAIL.
+its height follows the values. The Damage breakdown keeps its controls under its waterfall. The
+CSS is `app.css` § THE RAIL.
 
 ## 7. Chart families
 
@@ -189,16 +189,18 @@ breakdown is the one exception (§8).
 **Companion strips.** An instrument may give part of its chart's height to one second view
 that shares the main chart's x axis: Wish odds' chance per pull (the soft-pity spike that
 explains the main curve's jump), Reaction curves' gain per 100 EM, Artifact odds' 100 dots,
-the Crit heatmap's hit histogram. Enemy RES & DEF's pair of charts is already this shape. At
-most one per instrument.
+the Crit heatmap's hit histogram. At most one per instrument. Enemy RES & DEF has none: its two
+plots share the y axis (how much of the hit is kept), not the x, so they sit side by side.
 
 ## 8. The chart changes
 
-- **Enemy RES & DEF:** the DEF chart's x axis becomes DEF removed (shred and ignore
-  combined), where the curve climbs steeply toward ×1; against enemy level it was nearly flat.
-  Enemy level becomes a setup chip. Shred sources draw as segments of an arrow along the RES
-  axis. To try in a demo: the answer as a unit square whose width is the RES multiplier and
-  height the DEF multiplier, so its area is the damage kept.
+- **Enemy RES & DEF** (built: `docs/rounds/viz-stage-defres-2026-11-03.md`): two plots on one
+  multiplier scale, RES the wider. The DEF plot's x axis is DEF removed (shred and ignore
+  combined), where the curve climbs steeply toward ×1; against enemy level it was nearly flat,
+  and enemy level is a setup segment. Shred draws as an arrow along each axis, a segment per
+  source. ⚓ Nate (2026-11-03): the unit square (width the RES multiplier, height the DEF
+  multiplier, so its area is the damage kept) waits; try it in a demo only if the two plots
+  leave him wanting it.
 - **Artifact odds** (built: `docs/rounds/viz-stage-artifact-2026-11-03.md`): Level up, Your
   piece and Reshape are survival curves (the chance to end above each value), drawn as the steps
   they are, with a 100-dot strip as the companion (one dot per hundredth of the outcomes, the
@@ -246,7 +248,7 @@ Grouped by family, so each family's marks are built once and reused at once:
 1. Wish odds: the frame and the chance-curve family (`docs/rounds/viz-stage-wish-2026-11-02.md`).
 2. Artifact odds: the survival curve and the histogram companion (`docs/rounds/viz-stage-artifact-2026-11-03.md`).
 3. Reaction curves: the response-curve family (`docs/rounds/viz-stage-reactions-2026-11-03.md`).
-4. Enemy RES & DEF.
+4. Enemy RES & DEF: the two-plot response pair (`docs/rounds/viz-stage-defres-2026-11-03.md`).
 5. Damage breakdown.
 6. Crit heatmap.
 7. ICD timeline.

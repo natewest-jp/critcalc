@@ -32,6 +32,15 @@ export function defMultiplier(
 }
 
 /**
+ * DEF shred and DEF ignore as one figure: the share of the enemy's DEF that's
+ * gone, as a fraction. They multiply on the enemy side, so
+ * `defMultiplier(c, e, defRemoved(s, i))` is `defMultiplier(c, e, s, i)`: one
+ * axis can carry both (the DEF chart's x).
+ */
+export const defRemoved = (defReduction: number, defIgnore: number) =>
+	1 - (1 - clamp01(defReduction)) * (1 - clamp01(defIgnore));
+
+/**
  * RES damage multiplier for a FINAL resistance value (base − shred, as a
  * fraction: 0.10 = 10%). Three regimes:
  *   res < 0      → 1 − res/2   (each negative point only counts half)
@@ -47,10 +56,11 @@ export function resMultiplier(res: number): number {
 	return 1 / (4 * res + 1);
 }
 
-/** Base RES the instrument offers, whole percent. Most enemies resist 10%;
+/** Base RES the instrument offers, whole percent (the RES plot's x range, so
+ *  the handle under it spans the axis). Most enemies resist 10%;
  *  bosses commonly sit at 30, 60 or 90, and some reach 200 (⚓ Nate's read of
  *  the Stygian Onslaught bosses, 2026-10-06). */
-export const BASE_RES_MIN = -50;
+export const BASE_RES_MIN = -100;
 export const BASE_RES_MAX = 200;
 export const RES_RUNGS = [10, 30, 60, 90, 200] as const;
 

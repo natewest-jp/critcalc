@@ -3,23 +3,47 @@
 Hand-written half of the ledger for `../inventory/vz_defres.md`. Written at the close of the
 DEF & RES pass (2026-10-06, `docs/rounds/defres-pass-2026-10-06.md`); the rulings come from worksheet
 05 + the conventions sheet (both superseded) and from that pass, where Nate approved every
-explainer line by line.
+explainer line by line. Brought to the stage at the close of its stage round (2026-11-03,
+`docs/rounds/viz-stage-defres-2026-11-03.md`), where Nate chose the headline and approved the
+copy.
 
 ## The surface
 
-Two charts STACKED — the RES multiplier against the enemy's RES, the DEF multiplier against
-the enemy's level — each with a one-line caption beneath it; three glass panels (Your hit ·
-Enemy · Shred) and one paper Readout. `.kicker`, `.slider-label` and every chip are uppercased
-by CSS — write them sentence case. ⚓ The instrument was **Enemy DEF & RES** until 2026-10-06;
-it was renamed so the name reads in the instrument's own order (RES first everywhere). The
-internal id stays `defres`.
+One stage box: a headline, the hit's element as view tabs, a setup bar (Shred, Enemy level, Your
+level, DEF), two plots on one "damage kept" scale (RES against the enemy's RES, DEF against the
+share of its DEF removed), the enemy's RES as the handle with its common values, and fine print.
+No Readout card. `.chip` is uppercased by CSS — write it sentence case. ⚓ The instrument was
+**Enemy DEF & RES** until 2026-10-06; it was renamed so the name reads in the instrument's own
+order (RES first everywhere). The internal id stays `defres`.
 
+- ⚓ **The headline is what your shred adds** (Nate): "+27.8% / damage from your shred", "…
+  damage from your shred and DEF ignore" when an ignore is picked, "+0% / damage from shred, with
+  none picked", "×0 / the enemy is immune to Cryo". ⚠️ ASSEMBLED — the figure leads in English.
+- **The Shred segment's face** lists what is on, the first two as "{name} {n}%", then "+{N}"; or
+  "None". The names are data (a LOOKUP).
+- **DEF is a value, not a toggle** (design §6: the bar has one grammar): "Applies" (talents and
+  attacks, with or without an Amplifying or Additive reaction) or "Ignored" (Transformative,
+  Lunar, and Stellar reactions).
+- **The chart's words** are lowercase furniture: "damage kept" (the shared y axis); the axes'
+  names "Enemy {Element} RES" and "Enemy DEF removed". The arrow's labels: "{name} {n}%", "{name}
+  {n}% ignored", "Other {n}%".
+- **The dots' tooltips** read the point in words: "At 10% RES, before shred, ×0.900 of the hit
+  gets through."; "Level 90 against level 100, with 78% of its DEF removed, ×0.812 of the hit
+  gets through." ⚠️ ASSEMBLED.
+- **The fine print:** "RES ×1.150 and DEF ×0.487: ×0.560 of your hit's damage gets through.",
+  then "Equal levels already cost you half your damage." (the old DEF caption's lead, kept — see
+  below; not shown when DEF is ignored), then the regime sentence, then the two formulas.
+- **Retired on the stage:** the RES caption ("Most enemies resist 10%. …"), the rest of the DEF
+  caption, "Your shred and DEF ignore add X% damage against this enemy" (the headline now), the
+  Readout's two rows and its head, the Your hit / Enemy / Shred kickers, and the checkbox's
+  "Transformative, Lunar or Stellar reaction (ignores DEF)". Their key notes below stay as
+  history until the inventory is regenerated.
 - ⚓⚓ **Shred is described by STRENGTH, never in "points"** (⚓ Nate 2026-10-06): "shred works
   at half strength" below 0% RES, "full strength" from 0% to 75%, "less than full strength"
   above 75%. The game only ever says "decreases RES by X%"; points are the arithmetic, not
   the player's view. A locale should keep the strength metaphor, ⛔ not "percentage points".
-- ⚓ **Transformative, Lunar and Stellar reactions ignore DEF** — all three, always named
-  together. Stellar was added in the pass (Fandom's Stellar-Conduct formula has no DEF term;
+- ⚓ **Transformative, Lunar, and Stellar reactions ignore DEF** — all three, always named
+  together, with the Oxford comma (approved on the stage). Stellar was added in the pass (Fandom's Stellar-Conduct formula has no DEF term;
   gcsim sets `IgnoreDefPercent: 1` on every Stellar-Conduct and Stellar Swirl hit).
 - 🔒 **Frozen (game vocabulary):** RES · DEF · the seven elements + Physical · Transformative ·
   Lunar · Stellar · Skill DMG · constellation badges `C1`–`C6` · character names and artifact

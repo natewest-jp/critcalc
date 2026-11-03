@@ -3775,7 +3775,6 @@ img {
 		.fp-find,
 		.rfs-plates .band-menu-trigger,
 		.dr-source .check,
-		.dr-hit .check,
 		.cov-search-hit
 	) {
 		position: relative;
@@ -3789,7 +3788,6 @@ img {
 		.fp-find,
 		.rfs-plates .band-menu-trigger,
 		.dr-source .check,
-		.dr-hit .check,
 		.cov-search-hit
 	)::before {
 		content: '';
@@ -3897,7 +3895,7 @@ img {
 		--hit-x: 3px;
 		--hit-y: 6px;
 	}
-	/* RES & DEF's shred list: rows abut at 1.75rem, so a toggle fills its own
+	/* RES & DEF's shred list (its Shred popover): rows abut at 1.75rem, so a toggle fills its own
 	   row and no more — and takes the row's width up to its amount. */
 	.dr-source .check {
 		flex: 1 1 auto;
@@ -3929,9 +3927,8 @@ img {
    the rest leave (.instrument-graph), and the rest sit at the tile's bottom.
    🎛️ `--instrument-side` is the wide Readout column — ONE width for every
    instrument, the Crit Heatmap's included (see :root below).
-   ⚠ An instrument that needs a FOURTH area (Enemy RES & DEF's shred list)
-   restates the areas at each tier — they are one property, there is no
-   adding to them.
+   ⚠ An instrument that needs a FOURTH area restates the areas at each
+   tier — they are one property, there is no adding to them.
    The Crit Heatmap keeps a bespoke root: its chart and control strip share one
    height budget (the stage), which this grid would fight. See its own notes.
 
@@ -3946,7 +3943,7 @@ img {
    sizes its `fr` rows against a definite min-height too) — and grows with
    its content past it. A fixed height left a long instrument's content
    overflowing its own box, so nothing inside could be `sticky` past the
-   slot's first screen (Enemy RES & DEF's Readout beside its shred list). */
+   slot's first screen. */
 :root {
 	/* ⚓ ONE WIDTH (2026-10-06, ⚓ Nate asked why they differed). Was 22rem in
 	   five instruments, 25rem in the Gauge Explorer and 23rem in Enemy RES &
@@ -3958,13 +3955,6 @@ img {
 	   column is the widest need, and the others gain 3rem of breathing room.
 	   🎛️ Re-measure if a log line grows. */
 	--instrument-side: minmax(18rem, 25rem);
-	/* 🎛️ THE WIDEST A CHART'S COLUMN GETS, as a multiple of the TILE'S height
-	   (responsive sweep 2026-10-15, §3 item 16). Only the four charts that
-	   are not time series wear it (.instrument--capped). Set where a 16:9
-	   screen already sits, so it bites only past that shape: a one-up tile is
-	   1440/907 = 1.59 at 1920×1080 and 2080/1267 = 1.64 at 2560×1440, and
-	   2960/1267 = 2.34 at 3440×1440, where Wish Odds drew 2960×896. */
-	--instrument-main-aspect: 1.65;
 	/* 🎛️ The longest a control slider runs (§3 item 16): Wish Odds' pity
 	   slider was 2722px one-up at 3440. Set just above the longest track a
 	   DEFAULT lineup draws — the same slider, 651px one-up at 1359 — so only a
@@ -4146,35 +4136,6 @@ img {
 	}
 }
 
-/* ⚓ A CHART THAT IS NOT A TIME SERIES STOPS GROWING SIDEWAYS (responsive
-   sweep 2026-10-15, §3 item 16). One Visualizers slot on an ultrawide drew
-   Wish Odds 2960×896: a curve's shape is its slope, and stretched that far
-   every slope reads flat. So Wish Odds, Reaction Curves, Artifact Odds and
-   Enemy RES & DEF cap their chart-and-controls column at
-   --instrument-main-aspect × the tile's height, and the Readout follows the
-   column instead of holding the tile's right edge; the spare width is bare
-   night split either side (↻ centred, ⚓ Nate 2026-10-15, sweep item 16 —
-   it sat on the left at first). The Gauge Explorer and the ICD Timeline keep the full
-   width: their x axis is time, and more width is more time to read.
-   ⚠ Against the TILE's height, never the chart's: the chart's height is what
-   the controls leave, and the controls wrap with the width, so a cap on the
-   chart's own aspect would feed itself and ratchet (the `contain: size`
-   lesson above, one axis over).
-   ⚠ `100cqh` needs a SIZE container, and the tile is one only from 1024px
-   (the Visualizers' named content stop in breakpoints.test.ts, where `.ws`
-   takes the viewport's height — +page.svelte). Below it the tile has no
-   definite height and `cqh` would fall back to the viewport's. */
-@media (min-width: 1024px) {
-	@container instrument (min-width: 60rem) {
-		.instrument--capped {
-			grid-template-columns:
-				minmax(0, calc(100cqh * var(--instrument-main-aspect)))
-				var(--instrument-side);
-			justify-content: center;
-		}
-	}
-}
-
 /* 🎛️ A slider stops at --instrument-slider-max (§3 item 16), its value with
    it, since the header is part of the control. Every instrument's controls,
    the ICD Timeline's included (the Gauge has no slider): a track as long as
@@ -4222,8 +4183,7 @@ img {
    - Narrow: natural height; the tile scrolls.
    - From 1024px: the tile's height, capped at 🎛️ --stage-aspect × the
      tile's height and centred, so an ultrawide doesn't stretch every slope
-     flat (the rail's --instrument-main-aspect rule, with no side column
-     now, so set where a 16:10 one up is still uncapped).
+     flat (set where a 16:10 one up is still uncapped).
    The stage replaces the rail one instrument at a time (§ THE RAIL above). */
 :root {
 	/* 🎛️ The widest the stage gets, as a multiple of the tile's height. ↻ 2.4,

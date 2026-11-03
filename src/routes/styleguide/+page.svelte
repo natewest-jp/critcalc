@@ -169,12 +169,7 @@
 	const teamHues = pre('--team-hue-');
 	const insetLines = exact('--inset-line', '--inset-line-quiet', '--inset-line-mid');
 	const landing = exact('--hero-lit', '--hero-rule', '--veil-ground-top', '--veil-ground-bottom');
-	const layoutKnobs = exact(
-		'--scroll-fade-scale',
-		'--instrument-side',
-		'--instrument-main-aspect',
-		'--instrument-slider-max'
-	);
+	const layoutKnobs = exact('--scroll-fade-scale', '--instrument-side', '--instrument-slider-max');
 	/* Deliberately also shown under the glass family (`pre('--glass-')` claims
 	   it). The register section needs to display its own stop, and a token that
 	   is BOTH a material and a content role earns two appearances. */
