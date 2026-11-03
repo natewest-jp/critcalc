@@ -98,9 +98,9 @@ fine print
   the largest type on the screen, with open night to its right, so it reads as the focus and
   not as something squeezed beside a control (⚓ Nate: "not an afterthought"). One line (the
   figure and its sentence on one baseline, each at its own size) from a 38rem tile; from
-  60rem the figure is 🎛️ `--wi-head-scale` (1.5) × the Readout head's 32px and the sentence
+  60rem the figure is 🎛️ `--stage-head-scale` (1.5) × the Readout head's 32px and the sentence
   a step up. By the tile's width, never by fit: the headline's length changes as you drag.
-- **The chart's toolbar sits on its top edge**, snug (🎛️ `--wi-toolbar-gap`, 0.25rem), as
+- **The chart's toolbar sits on its top edge**, snug (🎛️ `--stage-toolbar-gap`, 0.25rem), as
   the handle sits on its bottom edge (⚓ Nate): everything that changes what the chart draws.
   The instrument's view tabs lead it where it has them, then the setup bar, then chart tools
   at the far end. Most instruments have no view tabs; theirs starts with the setup bar and
@@ -135,8 +135,13 @@ fine print
   ⏭ This changes the materials rule "one paper Readout card per instrument" (Nate's): on the
   stage, paper is the full working on request.
 - **The layout.** One column at every width. From 1024px the stage is the tile's height,
-  capped at 🎛️ `--wi-stage-aspect` (1.9) × the tile's height and centred, so an ultrawide
-  doesn't flatten every slope.
+  capped at 🎛️ `--stage-aspect` (1.9) × the tile's height and centred, so an ultrawide
+  doesn't flatten every slope. The stage's CSS is `app.css` § THE STAGE, shared by every
+  instrument on it; what one instrument adds stays in its own file.
+- **An input the view is about stands beside the chart.** Artifact odds' piece card (⚓ Nate:
+  front and center, in the game's shape, not folded into a control bar) sits left of the chart
+  under the toolbar from a 52rem tile, and between the toolbar and the chart below it. The
+  toolbar spans both, so the view tabs never move when the card comes and goes.
 
 ### Using the chart's space
 
@@ -192,8 +197,9 @@ most one per instrument.
   Enemy level becomes a setup chip. Shred sources draw as segments of an arrow along the RES
   axis. To try in a demo: the answer as a unit square whose width is the RES multiplier and
   height the DEF multiplier, so its area is the damage kept.
-- **Artifact odds:** Level up and Your piece become a survival curve (the chance to end above
-  each value), with the histogram as the companion. All three views are then chance curves,
+- **Artifact odds** (built: `docs/rounds/viz-stage-artifact-2026-11-03.md`): Level up and Your
+  piece become a survival curve (the chance to end above each value), with the histogram as the
+  companion. All three views are then chance curves,
   and the to-beat drag reads its answer at the point. Other sites already show the histogram;
   the curve as the main view is ours.
 - **Damage breakdown:** upright at the wide tier, a column per factor, so it fills the stage
@@ -234,8 +240,8 @@ The overhaul:
 The stage, one instrument per round, built together with Nate and judged in the local build.
 Grouped by family, so each family's marks are built once and reused at once:
 
-1. Wish odds: the frame and the chance-curve family.
-2. Artifact odds: the survival curve and the histogram companion.
+1. Wish odds: the frame and the chance-curve family (`docs/rounds/viz-stage-wish-2026-11-02.md`).
+2. Artifact odds: the survival curve and the histogram companion (`docs/rounds/viz-stage-artifact-2026-11-03.md`).
 3. Reaction curves.
 4. Enemy RES & DEF.
 5. Damage breakdown.
