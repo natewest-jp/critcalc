@@ -14,6 +14,13 @@
 	 * white then settling to gold on a selected line, a flat gray on another,
 	 * with a ring bursting from the badge. A pause, then the game's "Select a
 	 * Result to Keep": the original and the result side by side.
+	 * ⚓ ONE LAYOUT FOR BOTH (Nate 2026-11-03): the rolling card IS the result
+	 * card, centred while it rolls, so at the choice it only slides sideways
+	 * into its place and the original fades in beside it. Everything the
+	 * choice adds (the original, the totals, the radios, the verdict) is laid
+	 * out during the roll but hidden, so nothing changes height and the panel
+	 * never re-centres. On a phone the original appears under it instead, and
+	 * the card doesn't move at all.
 	 */
 	type Line = { name: string; selected: boolean; wanted: boolean; unit: string };
 	let {
@@ -22,9 +29,11 @@
 		originalCounts,
 		roll,
 		mainName,
-		slotId,
 		kind,
+		originalValue,
+		resultValue,
 		verdict,
+		onsettle,
 		onclose,
 		onretry
 	}: {
@@ -34,20 +43,27 @@
 		originalCounts: number[];
 		roll: ReshapeRoll;
 		mainName: string;
-		slotId: string;
 		/** "Standard", "Advanced", "Decreed" */
 		kind: string;
+		/** Your stats' value on each card ("34.2 CV"), under it */
+		originalValue: string;
+		resultValue: string;
 		/** What the result means, said under the two cards */
 		verdict: string;
+		/** The result is showing: the chart behind can light where it landed */
+		onsettle: () => void;
 		onclose: (keep: boolean) => void;
 		onretry: () => void;
 	} = $props();
 
-	/** 🎛️ The recording's pace: the piece settles, then an upgrade every STEP_MS */
-	const INTRO_MS = 600;
+	/** 🎛️ The recording's pace: a pause to find the card (Nate: a little more
+	 *  than the game's, so the eye knows where to look), then an upgrade every
+	 *  STEP_MS. Was 600. */
+	const INTRO_MS = 1100;
 	const STEP_MS = 520;
-	/** 🎛️ The pause on the finished piece before the choice */
-	const OUTRO_MS = 800;
+	/** 🎛️ The pause on the finished piece before the choice, to take it in
+	 *  (Nate: a little more). Was 800. */
+	const OUTRO_MS = 1500;
 
 	/** Upgrades shown so far */
 	let shown = $state(0);
@@ -82,6 +98,7 @@
 		shown = roll.steps.length;
 		phase = 'result';
 		keep = 'original';
+		onsettle();
 	}
 	function play() {
 		clearTimers();
@@ -157,61 +174,71 @@
 	role="presentation"
 >
 	<div class="rr-panel ctx-dark" role="dialog" aria-modal="true" aria-labelledby="rr-title">
-		{#if phase === 'rolling'}
-			<h2 class="rr-title" id="rr-title">{kind} reshape</h2>
-			<div class="rr-stage">
-				<img
-					class="rr-piece"
-					src="/assets/artifacts/generic-full-set/{slotId}.webp"
-					alt=""
-					aria-hidden="true"
-				/>
-				<div aria-live="polite">{@render card(values, null, upgrades)}</div>
-			</div>
-			<div class="rr-actions">
+		<h2 class="rr-title" id="rr-title">
+			{phase === 'rolling' ? `${kind} reshape` : 'Select a result to keep'}
+		</h2>
+		<div class="rr-pair" class:is-rolling={phase === 'rolling'}>
+			<label
+				class="rr-choice rr-choice--original"
+				class:is-on={phase === 'result' && keep === 'original'}
+				inert={phase === 'rolling'}
+			>
+				{@render card(original, originalCounts, null)}
+				<span class="rr-total">{originalValue}</span>
+				<span class="rr-radio">
+					<input type="radio" name="rr-keep" value="original" bind:group={keep} />
+					Keep the original
+				</span>
+			</label>
+			<span class="rr-arrow" aria-hidden="true"><Mark name="forwardSlim" size={14} /></span>
+			<label
+				class="rr-choice rr-choice--result"
+				class:is-on={phase === 'result' && keep === 'result'}
+			>
+				<div aria-live="polite">
+					{#if phase === 'rolling'}
+						{@render card(values, null, upgrades)}
+					{:else}
+						{@render card(roll.final, roll.counts, null)}
+					{/if}
+				</div>
+				<span class="rr-total rr-later">{resultValue}</span>
+				<span class="rr-radio rr-later" inert={phase === 'rolling'}>
+					<input type="radio" name="rr-keep" value="result" bind:group={keep} />
+					Keep the reshaped result
+				</span>
+			</label>
+		</div>
+		<p class="note rr-verdict rr-later">{verdict}</p>
+		<div class="rr-actions">
+			{#if phase === 'rolling'}
 				<button class="btn" onclick={toResult}>Skip</button>
-			</div>
-		{:else}
-			<h2 class="rr-title" id="rr-title">Select a result to keep</h2>
-			<div class="rr-pair">
-				<label class="rr-choice" class:is-on={keep === 'original'}>
-					{@render card(original, originalCounts, null)}
-					<span class="rr-radio">
-						<input type="radio" name="rr-keep" value="original" bind:group={keep} />
-						Keep the original
-					</span>
-				</label>
-				<span class="rr-arrow" aria-hidden="true"><Mark name="forwardSlim" size={14} /></span>
-				<label class="rr-choice" class:is-on={keep === 'result'}>
-					{@render card(roll.final, roll.counts, null)}
-					<span class="rr-radio">
-						<input type="radio" name="rr-keep" value="result" bind:group={keep} />
-						Keep the reshaped result
-					</span>
-				</label>
-			</div>
-			<p class="note rr-verdict">{verdict}</p>
-			<div class="rr-actions">
+			{:else}
 				<button class="btn" onclick={onretry}><Mark name="dice" size={13} /> Try again</button>
 				<button
 					class="btn btn--primary"
 					bind:this={confirmEl}
 					onclick={() => onclose(keep === 'result')}>Confirm</button
 				>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 </div>
 
 <style>
+	/* ⚓ NO DIM (Nate 2026-11-03), unlike the site's other dialogs: the dot
+	   strip behind is where the roll lands, so it stays in view. The backdrop
+	   still holds the page (a click outside does nothing); the panel stands
+	   off the chart on a deep shadow instead, seated high so the strip at the
+	   chart's foot shows under it. 🎛️ --rr-top. */
 	.rr-backdrop {
 		position: fixed;
 		inset: 0;
 		z-index: 200;
 		display: grid;
-		place-items: center;
-		padding: 1rem;
-		background: rgba(16, 16, 19, 0.72);
+		place-items: start center;
+		padding: var(--rr-top, 12vh) 1rem 1rem;
+		background: transparent;
 	}
 
 	.rr-panel {
@@ -221,10 +248,13 @@
 		max-height: calc(100vh - 2rem);
 		overflow-y: auto;
 		padding: 1.2rem 1.3rem 1.1rem;
+		border: 1px solid var(--border);
 		border-radius: var(--r-md);
 		background: var(--surface);
 		color: var(--text);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+		box-shadow:
+			0 18px 60px rgba(0, 0, 0, 0.75),
+			0 4px 16px rgba(0, 0, 0, 0.5);
 	}
 
 	.rr-title {
@@ -233,26 +263,6 @@
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
 		text-align: center;
-	}
-
-	/* The piece over its card, as the game shows it while it reshapes */
-	.rr-stage {
-		display: grid;
-		justify-items: center;
-		gap: 0.6rem;
-	}
-
-	.rr-piece {
-		width: 72px;
-		height: 72px;
-		object-fit: contain;
-		filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 55%, transparent));
-	}
-
-	/* The card's box (the live region around it) holds the width: a grid
-	   item shrinks to its content, and the card's lines crowded their values */
-	.rr-stage > div {
-		width: min(22rem, 100%);
 	}
 
 	/* ── A card: the main stat, then the four lines ── */
@@ -433,22 +443,83 @@
 		}
 	}
 
-	/* ── The choice: the original and the result side by side ── */
+	/* ── The choice: the original and the result side by side ──
+	   The same grid while it rolls: the result card is moved left by half its
+	   own width plus half the arrow and one gap, which centres it, and slides
+	   back at the choice (--t-move, travel). With `left`, not a transform: a
+	   box snaps to whole pixels, where a transform-placed card's sweeps would
+	   fade at fractional offsets (ui.md, sub-pixel laws). What the choice adds
+	   waits hidden, holding its room. */
 	.rr-pair {
+		--rr-gap: 0.6rem;
+		--rr-arrow-w: 1.5rem;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-		align-items: center;
-		gap: 0.6rem;
+		grid-template-columns: minmax(0, 1fr) var(--rr-arrow-w) minmax(0, 1fr);
+		align-items: start;
+		gap: var(--rr-gap);
 	}
 
+	.rr-choice--result {
+		position: relative;
+		left: 0;
+		transition:
+			left var(--t-move),
+			background var(--t-snap);
+	}
+
+	.rr-pair.is-rolling .rr-choice--result {
+		left: calc(-50% - var(--rr-arrow-w) / 2 - var(--rr-gap));
+	}
+
+	.rr-choice--original,
+	.rr-arrow,
+	.rr-later {
+		transition:
+			opacity var(--t-quick) linear,
+			visibility var(--t-quick) linear;
+	}
+
+	.rr-pair.is-rolling .rr-choice--original,
+	.rr-pair.is-rolling .rr-arrow,
+	.rr-pair.is-rolling .rr-later,
+	.rr-panel:has(.rr-pair.is-rolling) .rr-verdict {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	/* A phone: one column, the result first and the original under it, so
+	   the rolling card never moves */
 	@media (max-width: 40rem) {
 		.rr-pair {
 			grid-template-columns: minmax(0, 1fr);
 		}
+		.rr-choice--result {
+			order: 1;
+		}
 		.rr-arrow {
-			rotate: 90deg;
+			order: 2;
+			rotate: -90deg;
 			justify-self: center;
 		}
+		.rr-choice--original {
+			order: 3;
+		}
+		.rr-pair.is-rolling .rr-choice--result {
+			left: 0;
+		}
+	}
+
+	.rr-arrow {
+		align-self: center;
+	}
+
+	/* Your stats on each card, under it: the figure the choice is about */
+	.rr-total {
+		text-align: center;
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-bold);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
 	}
 
 	.rr-arrow {

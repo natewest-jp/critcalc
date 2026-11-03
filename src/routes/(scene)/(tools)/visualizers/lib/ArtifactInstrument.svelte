@@ -343,7 +343,7 @@
 	// One roll, played as the game plays it (ReshapeRoll.svelte), then lit on
 	// the strip where it landed. The tries are this session's, for this piece
 	// and this pick: a changed line, level or pick starts the trail over.
-	type Try = { sig: string; floor: Floor; x: number };
+	type Try = { sig: string; floor: Floor; x: number; roll: Roll };
 	let tries = $state<Try[]>([]);
 	let rolling = $state<Roll | null>(null);
 	const trySig = $derived(
@@ -354,10 +354,13 @@
 		if (!query || !resolution || !canReshape) return;
 		rolling = rollReshape({ ...query, selected: rshSel }, resolution.events, reshapeFloor);
 	}
+	/** A roll joins the trail once, as its result shows (the dialog doesn't dim
+	 *  the strip, so its dot lights behind it) */
 	function recordTry(r: Roll) {
+		if (tries.some((t) => t.roll === r)) return;
 		tries = [
 			...tries.filter((t) => t.sig === trySig),
-			{ sig: trySig, floor: reshapeFloor, x: r.x }
+			{ sig: trySig, floor: reshapeFloor, x: r.x, roll: r }
 		];
 	}
 	function closeRoll(keepIt: boolean) {
@@ -398,16 +401,16 @@
 		const { below, equal } = compareTo(dist, [{ x, p: 1 }]);
 		return Math.min(99, Math.max(0, Math.floor((below + equal / 2) * 100)));
 	};
+	/** The roll's meaning, said under the two cards (the values are on them) */
 	const rollVerdict = (r: Roll) => {
-		const pct = Math.round(percentileOf(primaryDist, [{ x: r.x, p: 1 }]) * 100);
-		const vs = `${valueOf(r.x)} against your ${fmtValue(nowX)}`;
+		const below = Math.round(compareTo(primaryDist, [{ x: r.x, p: 1 }]).below * 100);
 		const head =
 			r.x > nowX + 1e-6
-				? `This one beats your piece: ${vs}.`
+				? 'This one beats your piece.'
 				: r.x < nowX - 1e-6
-					? `Your piece is still better: ${vs}.`
-					: `The same as your piece: ${vs}.`;
-		return `${head} Luckier than ${pct}% of ${reshapeName} reshapes.`;
+					? 'Your piece is still better.'
+					: 'The same as your piece.';
+		return `${head} Better than ${below} of 100 ${reshapeName} reshapes.`;
 	};
 
 	// ── The readings: values that fit more than one upgrade count ──────────
@@ -1789,9 +1792,11 @@
 				originalCounts={resolution?.counts ?? []}
 				roll={rolling}
 				mainName={main.id === 'elemDmg' ? `${element} DMG Bonus` : main.name}
-				{slotId}
 				kind={reshapeName}
+				originalValue={valueOf(nowX)}
+				resultValue={valueOf(rolling.x)}
 				verdict={rollVerdict(rolling)}
+				onsettle={() => rolling && recordTry(rolling)}
 				onclose={closeRoll}
 				onretry={retryRoll}
 			/>

@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** 🔨 three passes (§2–§6, §7, §8) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** 🔨 four passes (§2–§6, §7, §8, §9) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -414,3 +414,43 @@ yours ring at +20; no page errors.
    better: …" / "The same as your piece: …", then "Luckier than 73% of Standard reshapes."
 3. The strip: "yours", "this roll", and "· your tries: 3, 1 beat it" after its label.
 4. The toast: "Your piece is now the reshaped result" [Undo].
+
+## 9. Fourth pass: the roll's pace, one layout, no dim
+
+Nate on §8: "you nailed the look and animations". Four asks, built:
+
+- **More pause** before the first upgrade and after the last: 🎛️ `INTRO_MS` 600 → 1100 (to find
+  where to look) and `OUTRO_MS` 800 → 1500 (to take in what happened).
+- **The cards line up** (⚓ Nate: the move to the choice is horizontal only). The rolling card is
+  the result card, in the choice's own grid: centred by `left` while it rolls, sliding into its
+  place at the choice (`--t-move`) as the original fades in beside it. The original, the totals,
+  the radios and the verdict are laid out during the roll and hidden, so nothing changes height.
+  Measured at 1600: the card moves 176px across and 0 down. On a phone the original appears under
+  the result, and the card doesn't move at all. `left`, not a transform: a box snaps to whole
+  pixels, where a transform-placed card's fading sweeps could shimmer in WebKit.
+- **No piece icon** over the rolling card: the generic slot icon doesn't hold up at that size
+  (⏭ Nate may trace the slot icons as SVGs later).
+- **The readout**: each card's value under it ("34.2 CV", "28.0 CV"), and one line under both:
+  "Your piece is still better." (or "This one beats your piece.", "The same as your piece.") with
+  the luck sentence (proposed below).
+- **No dim** (⚓ Nate, unusual for the site's dialogs): the backdrop is transparent but still holds
+  the page, the panel stands off on a deep shadow, seated at 🎛️ `--rr-top` (12vh) so the dot
+  strip shows under it. A roll's dot now lights **as its result shows** (behind the dialog), not
+  on Confirm.
+
+Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+### The luck sentence (proposed; Nate asked for options)
+
+Now: "Luckier than 3% of Standard reshapes." Options, with my pick first:
+
+1. "Better than 3 of 100 Standard reshapes." ✅ written in. It counts the same 100 dots the strip
+   draws (the roll's dot is lit there), and has the shape of Your piece's headline ("Better than
+   87% of +20 flowers…").
+2. "97 of 100 Standard reshapes do better." The other side of the same count: plainer about a bad
+   roll, harsher about it too.
+3. "A typical Standard reshape gives 28.0 CV." The middle, not a rank: easy to read, but it says
+   nothing about how rare this roll was.
+4. A word, then the count: "An unlucky roll: better than 3 of 100 Standard reshapes." (bands:
+   very unlucky, unlucky, typical, lucky, very lucky). The quickest read, but the bands' edges
+   are ours to choose, and it reads closer to a verdict.
