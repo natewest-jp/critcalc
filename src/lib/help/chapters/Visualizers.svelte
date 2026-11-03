@@ -167,22 +167,25 @@
 <section>
 	<h2 id="damage-breakdown">Damage breakdown</h2>
 	<p>
-		One hit written out as its damage formula, one multiplier per row, in the formula’s order. Each
-		bar starts where the last one ended, on a scale where each gridline doubles the damage, so a ×2
-		is the same width wherever it falls. Cuts like enemy DEF run backwards. Hover or tap a row to
-		read what share of the result it accounts for.
+		One hit written out as its damage formula, one column per bracket in the formula’s order, headed
+		by the substat whose next roll would add the most. Each bar starts where the last one ended, on
+		a scale where each gridline doubles the damage, so a ×2 is the same size wherever it falls and a
+		cut like enemy DEF runs the other way. Hover or tap a column to read what share of the result it
+		accounts for. Where the tile is narrow, the columns become rows.
 	</p>
 	<p>
-		The tabs choose the kind of hit: a direct hit (optionally Vaporized or Melted), an additive one
-		like Spread, a transformative reaction, or a Lunar or Stellar one. Only the sliders that feed
-		that formula are shown. A direct hit ends as a ratio against a hit from your scaling stat alone,
-		because the talent multiplier isn’t an input. The reaction families end in a number. Enemy RES
-		is entered after shred.
+		The tabs choose the kind of hit: a direct hit, an additive one like Spread, a transformative
+		reaction, or a Lunar or Stellar one. Set the reaction, your stats, your level, and the enemy in
+		the bar over the chart; only the stats that feed that formula are offered. A column one stat
+		sets, like DMG Bonus or EM, has a grip: drag it to change that stat. A direct hit ends as a
+		ratio against a hit from your scaling stat alone, because the talent multiplier isn’t an input.
+		The reaction families end in a number. Enemy RES is entered after shred.
 	</p>
 	<p>
-		<strong>What the next roll buys</strong> adds one average 5★ substat roll of each kind and shows what
-		it gains. DMG Bonus isn’t there, since it can’t appear as an artifact substat. For an additive reaction
-		the gain is measured on the added damage alone, not the whole hit.
+		The marks at the end of a bar are one more average 5★ roll of each substat that feeds it, as
+		long as what the roll would add, so marks on different bars compare directly; the best is gold.
+		DMG Bonus has none, since it can’t appear as an artifact substat. For an additive reaction the
+		gain is measured on the added damage alone, not the whole hit.
 	</p>
 </section>
 
