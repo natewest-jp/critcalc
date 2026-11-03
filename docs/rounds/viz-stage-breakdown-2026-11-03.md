@@ -1,8 +1,8 @@
 # The stage, round 5: Damage breakdown (2026-11-03)
 
-**Status:** on `feat/viz-breakdown-stage`. Nate: the copy (§4) and Help (§5) approved, Help
-landed; real Safari checked ("Safari green"). The sums' gradient (§3a item 2) waits on his look
-before the merge.
+**Status:** ✅ merged into `main` on 2026-11-03 (`feat/viz-breakdown-stage`). Nate: "really
+cool"; the copy (§4) and Help (§5) approved, Help landed; his tweaks (§3a) landed, the sums'
+gradient approved ("looks great"); real Safari checked ("Safari green").
 
 ## 1. The headline
 
