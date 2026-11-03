@@ -398,12 +398,14 @@
 
 	// ── The answer as geometry (design §6, §7: the chance-curve family) ──────
 	// The goal's Half by and Unlucky tenth are where its curve crosses 50% and
-	// 90%: a dot on the curve, a drop line to the axis, and the figure beside
-	// it. The label goes below and right of its dot, where a rising curve leaves
-	// the space empty, or above and left (also empty) where it would run off the
-	// plot. The goal's level name already sits left of the 50% crossing.
+	// 90%: a dot on the curve, a drop line to the axis, and the figure at the
+	// line's FOOT, just above the axis, as Artifact odds has them: the figure
+	// is an x value, and the space under the curve is empty. Right of its
+	// line, or left near the plot's right edge; a label that would run into
+	// the one before steps up a row.
 	const crossings = $derived.by(() => {
 		const { median, p90 } = goalRow.stats;
+		const placed: { x0: number; x1: number; row: number }[] = [];
 		return [
 			{
 				key: 'half',
@@ -421,15 +423,18 @@
 			.filter((c) => c.k > 0 && c.k <= domain)
 			.map((c) => {
 				const x = xOf(c.k);
-				const right = x + 8 + c.text.length * LABEL_CHAR_PX <= graphW - PADR;
-				const y = yOf(cdfAt(goal.cdf, c.k));
-				// below and right of the dot, or above and left: clear of a shallow curve too
+				const w = c.text.length * LABEL_CHAR_PX;
+				const right = x + 5 + w <= graphW - PADR;
+				const x0 = right ? x + 5 : x - 5 - w;
+				let row = 0;
+				while (placed.some((b) => b.row === row && x0 < b.x1 + 4 && b.x0 < x0 + w + 4)) row++;
+				placed.push({ x0, x1: x0 + w, row });
 				return {
 					...c,
 					x,
-					y,
-					lx: right ? x + 8 : x - 8,
-					ly: right ? y + 14 : y - 7,
+					y: yOf(cdfAt(goal.cdf, c.k)),
+					lx: right ? x + 5 : x - 5,
+					ly: plotY1 - 6 - row * 14,
 					anchor: right ? 'start' : 'end'
 				};
 			});
@@ -458,12 +463,29 @@
 		// written over: a label that lands on it steps above it
 		const goalY = yOf(goalRow.chance);
 		for (const l of placed) if (Math.abs(l.y - goalY) < DOT_LABEL_GAP) l.y = goalY - DOT_LABEL_GAP;
-		return placed.map((l) => ({
-			...l,
-			x: left ? x - 8 : x + 8,
-			y: l.y + 3.5,
-			anchor: left ? 'end' : 'start'
-		}));
+		// A dot label that would sit on a crossing's label goes to the marker's
+		// other side (a low chance puts it down at the feet).
+		const boxes = crossings.map((c) => {
+			const w = c.text.length * LABEL_CHAR_PX;
+			const x0 = c.anchor === 'start' ? c.lx : c.lx - w;
+			return { x0, x1: x0 + w, y0: c.ly - 11, y1: c.ly + 2 };
+		});
+		return placed.map((l) => {
+			const w = l.text.length * LABEL_CHAR_PX;
+			const at = (onLeft: boolean) => {
+				const x0 = onLeft ? x - 8 - w : x + 8;
+				return { x0, x1: x0 + w, y0: l.y + 3.5 - 11, y1: l.y + 3.5 + 2 };
+			};
+			const hits = (b: { x0: number; x1: number; y0: number; y1: number }) =>
+				boxes.some((c) => b.x0 < c.x1 + 4 && c.x0 < b.x1 + 4 && b.y0 < c.y1 + 4 && c.y0 < b.y1 + 4);
+			const side = hits(at(left)) && !hits(at(!left)) ? !left : left;
+			return {
+				...l,
+				x: side ? x - 8 : x + 8,
+				y: l.y + 3.5,
+				anchor: side ? 'end' : 'start'
+			};
+		});
 	});
 
 	// The distribution's two landmarks, on the strip that draws it: the
@@ -638,9 +660,7 @@
 			</div>
 
 			<div class="wi-way" aria-live="polite">
-				<p class="wi-hint wi-balance">
-					Or answer a few questions, starting from your most recent&nbsp;5★.
-				</p>
+				<p class="wi-hint">Or answer a few questions to predict it:</p>
 				{#if answers.length > 0}
 					<ol class="wi-strip" aria-label="Your answers, newest first">
 						{#each answers as a, i (i)}
@@ -1279,12 +1299,6 @@
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 		color: var(--muted);
-	}
-
-	/* A two-line hint broken evenly, "recent 5★" kept together (it left "5★."
-	   alone on the second line) */
-	.wi-balance {
-		text-wrap: balance;
 	}
 
 	.wi-subhead {

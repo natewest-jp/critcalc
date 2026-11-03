@@ -682,9 +682,8 @@
 	<div class="panel panel--paper icd-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="readout-head">
-			{apps}<span class="readout-sentence"
-				>of {sim.length}
-				{sim.length === 1 ? 'hit applies' : 'hits apply'}</span
+			{apps} of {sim.length}<span class="readout-sentence"
+				>{sim.length === 1 ? 'hit applies' : 'hits apply'}</span
 			>
 		</p>
 		{#if perWindow}

@@ -132,8 +132,7 @@ fine print
   chart's labels. Beside the stage it sat diagonally from the chart, and mostly repeated it.
   What no part of the chart can show is one line of **fine print** under the handle; where an
   instrument has a long working (a formula, caveats), the fine print opens it on paper.
-  ⏭ This changes the materials rule "one paper Readout card per instrument" (Nate's): on the
-  stage, paper is the full working on request.
+  ⚓ Nate: the materials rule in `ui.md` follows, so a readout card on paper is the rail's alone.
 - **The layout.** One column at every width. From 1024px the stage is the tile's height,
   capped at 🎛️ `--stage-aspect` (2.4) × the tile's height and centred, so an ultrawide
   doesn't flatten every slope. The stage's CSS is `app.css` § THE STAGE, shared by every

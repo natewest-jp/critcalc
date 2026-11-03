@@ -33,7 +33,7 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 
 ## Materials
 
-- **Night looks, glass touches, paper answers.** Charts sit on the scene; `.panel` (which is `.ctx-glass`) holds apparatus; `.panel.panel--paper` is the one readout card per instrument. It is written as a compound selector because a lone modifier ties with `.panel` and loses on source order. ⚠️ That holds for every modifier: write it compound (`.btn.btn--glass`).
+- **Night looks, glass touches, paper answers.** Charts sit on the scene; `.panel` (which is `.ctx-glass`) holds apparatus; `.panel.panel--paper` is a readout card, which an instrument on the stage doesn't have (`.claude/rules/visualizers.md`). It is written as a compound selector because a lone modifier ties with `.panel` and loses on source order. ⚠️ That holds for every modifier: write it compound (`.btn.btn--glass`).
 - No surface paints a slab to stand on. The `.frame` class is retired (`conventions.test.ts` checks); `--frame-bg` survives only as the unpainted mix reference.
 - Glass is `.58` for a panel and `.45` for a well. Hovering a pane (under `@media (hover: hover)`) is `.80` plus an ink ring. A lit plate is a dim gold fill. Density separates resting from engaged.
 - Glass has no `backdrop-filter`. Remove a blur, never set `blur(0)`: any value still pays for compositing and still creates a stacking context and a containing block. Glass alphas are measured unblurred.
