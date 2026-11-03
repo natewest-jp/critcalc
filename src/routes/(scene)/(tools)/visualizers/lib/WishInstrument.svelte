@@ -7,6 +7,7 @@
 		copiesCdfs,
 		RADIANCE_CHANCE,
 		sumCdf,
+		toPmf,
 		worstCasePulls,
 		type BannerDef,
 		type BannerId,
@@ -24,8 +25,8 @@
 	} from './wishHistory';
 	import { formatChance } from './chance';
 	import Mark from '$lib/components/Mark.svelte';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
-	import SettingLine from './kit/SettingLine.svelte';
 
 	/** The most pulls the instrument takes, typed or shared. */
 	const MAX_PULLS = 2000;
@@ -182,8 +183,6 @@
 			s.guaranteed = r.replay.guaranteed;
 			s.counter = r.replay.counter;
 			interviewRestart();
-			closeCounter?.();
-			closeCounter = null;
 		} catch {
 			importError = 'not-a-workbook';
 		} finally {
@@ -257,9 +256,6 @@
 		none: 'None since 5.0'
 	};
 
-	/** The counter popover's close, kept while a file is chosen from inside it. */
-	let closeCounter: (() => void) | null = null;
-
 	const STEP_LABEL: Record<ReplayStep['kind'], string> = {
 		lost: 'Lost',
 		guarantee: 'Guarantee',
@@ -268,10 +264,12 @@
 	};
 
 	// The axis runs to where the goal is 99.9% done, in whole tens — the 4★
-	// chain never strictly ends, and the slider's ceiling follows it.
+	// chain never strictly ends, and the slider's ceiling follows it — or to
+	// the goal's worst case where it has one, so "at most" is on the axis.
 	const domain = $derived.by(() => {
 		let n = goal.cdf.findIndex((p) => p >= 0.999);
 		if (n < 0) n = goal.cdf.length - 1;
+		if (goal.worst !== null) n = Math.max(n, goal.worst);
 		return Math.max(10, Math.ceil(n / 10) * 10);
 	});
 	const shownPulls = $derived(Math.min(pulls, domain));
@@ -284,6 +282,10 @@
 	});
 
 	// ── Geometry ─────────────────────────────────────────────────────────────
+	// Top to bottom: the main plot (the chance by each pull), the companion
+	// strip on the same x axis (the chance on each pull), then the axis's
+	// numbers. The handle (Pulls saved) sits under the SVG, its track lined up
+	// with the plot's x range.
 	let graphW = $state(720);
 	let graphH = $state(0);
 	const PADL = 58;
@@ -291,10 +293,22 @@
 	const TOP = 16;
 	/** The plot's height at its least — the chart grows from here into the tile. */
 	const PLOT_MIN = 230;
-	const CHROME_H = TOP + 30; // above the plot + the axis below it
+	/** 🎛️ The companion strip's height (design §7: at most one, on the main x axis). */
+	const COMP_H = 72;
+	/** 🎛️ Between the plot and the strip; the strip's label sits in it. */
+	const COMP_GAP = 24;
+	/** The axis's numbers and its name, under the strip. */
+	const AXIS_H = 30;
+	const CHROME_H = TOP + COMP_GAP + COMP_H + AXIS_H;
 	const plotH = $derived(Math.max(PLOT_MIN, graphH - CHROME_H));
 	const plotY1 = $derived(TOP + plotH);
-	const H = $derived(plotY1 + 30);
+	const compY0 = $derived(plotY1 + COMP_GAP);
+	const compY1 = $derived(compY0 + COMP_H);
+	const H = $derived(compY1 + AXIS_H);
+	/** Half the slider thumb's 15px (app.css `.slider`): the handle's track runs
+	 *  this far past each end of the axis, so the thumb's centre lands on the
+	 *  marker line at every value. */
+	const THUMB_R = 7.5;
 	/** Axis labels stay at least this far apart (as in the ICD Timeline). */
 	const MIN_TICK_PX = 44;
 	const TICK_STEPS = [5, 10, 20, 25, 50, 100, 200, 250, 500];
@@ -375,29 +389,136 @@
 		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
 	}
 
-	const fmtPct = (p: number, digits = 1) => {
-		// never print a certainty the model doesn't have, nor a zero it doesn't either
-		const s = (p * 100).toFixed(digits);
-		if (p < 1 && Number(s) >= 100) return `>${(100 - 10 ** -digits).toFixed(digits)}%`;
-		if (p > 0 && Number(s) <= 0) return `<${(10 ** -digits).toFixed(digits)}%`;
-		return `${s}%`;
-	};
+	// ── The answer as geometry (design §6, §7: the chance-curve family) ──────
+	// The goal's Half by and Unlucky tenth are where its curve crosses 50% and
+	// 90%: a dot on the curve, a drop line to the axis, and the figure beside
+	// it. The label goes below and right of its dot, where a rising curve leaves
+	// the space empty, or above and left (also empty) where it would run off the
+	// plot. The goal's level name already sits left of the 50% crossing.
+	const crossings = $derived.by(() => {
+		const { median, p90 } = goalRow.stats;
+		return [
+			{
+				key: 'half',
+				k: median,
+				text: `Half by ${median}`,
+				title: 'Half of players get there within this many pulls.'
+			},
+			{
+				key: 'tenth',
+				k: p90,
+				text: `Unlucky tenth ${p90}`,
+				title: 'The unluckiest 10% of players need this many pulls or more.'
+			}
+		]
+			.filter((c) => c.k > 0 && c.k <= domain)
+			.map((c) => {
+				const x = xOf(c.k);
+				const right = x + 8 + c.text.length * LABEL_CHAR_PX <= graphW - PADR;
+				const y = yOf(cdfAt(goal.cdf, c.k));
+				// below and right of the dot, or above and left: clear of a shallow curve too
+				return {
+					...c,
+					x,
+					y,
+					lx: right ? x + 8 : x - 8,
+					ly: right ? y + 14 : y - 7,
+					anchor: right ? 'start' : 'end'
+				};
+			});
+	});
+
+	// With more than one level on the chart, each level's dot carries its
+	// chance (the head speaks for the goal's). Beside the marker, on the side
+	// with room, nudged apart where two would touch.
+	/** 🎛️ The least gap between two dot labels, in px. */
+	const DOT_LABEL_GAP = 13;
+	const dotLabels = $derived.by(() => {
+		if (rows.length < 2) return [];
+		const x = xOf(shownPulls);
+		const left = shownPulls > domain * 0.7;
+		const placed = rows
+			.filter((r) => !r.primary)
+			.map((r) => ({
+				key: r.label,
+				text: `${r.label} ${formatChance(r.chance)}`,
+				y: yOf(r.chance)
+			}))
+			.sort((a, b) => a.y - b.y);
+		for (let i = 1; i < placed.length; i++)
+			placed[i].y = Math.max(placed[i].y, placed[i - 1].y + DOT_LABEL_GAP);
+		// the goal's dot is unlabeled (the head speaks for it) but not to be
+		// written over: a label that lands on it steps above it
+		const goalY = yOf(goalRow.chance);
+		for (const l of placed) if (Math.abs(l.y - goalY) < DOT_LABEL_GAP) l.y = goalY - DOT_LABEL_GAP;
+		return placed.map((l) => ({
+			...l,
+			x: left ? x - 8 : x + 8,
+			y: l.y + 3.5,
+			anchor: left ? 'end' : 'start'
+		}));
+	});
+
+	// The distribution's two landmarks, on the strip that draws it: the
+	// average, and the worst case where the strip runs out.
+	const stripMarks = $derived.by(() => {
+		const marks: { key: string; x: number; text: string; anchor: 'middle' | 'end' }[] = [];
+		const mean = Math.round(goalRow.stats.mean);
+		if (mean > 0 && mean <= domain)
+			marks.push({ key: 'mean', x: xOf(mean), text: `average ${mean}`, anchor: 'middle' });
+		if (goalRow.worst !== null && goalRow.worst <= domain)
+			marks.push({
+				key: 'worst',
+				x: xOf(goalRow.worst),
+				text: `at most ${goalRow.worst}`,
+				anchor: 'end'
+			});
+		return marks;
+	});
+
+	// The companion strip: the chance the goal is done ON each pull, the
+	// main curve's slope. Its spikes are why the curve jumps (soft pity, the
+	// hard pity wall). Scaled to its own peak, so it shows shape, not size.
+	const goalPmf = $derived(toPmf(goal.cdf));
+	const compPath = $derived.by(() => {
+		let peak = 0;
+		for (let k = 1; k <= domain; k++) peak = Math.max(peak, goalPmf[k] ?? 0);
+		if (!(peak > 0)) return '';
+		const y = (p: number) => (compY1 - (p / peak) * (COMP_H - 4)).toFixed(1);
+		const x = (k: number) => xOf(Math.min(domain, Math.max(0, k))).toFixed(1);
+		// a step per pull, centred on its pull, as the marker line is
+		let d = `M${x(0)},${compY1}`;
+		for (let k = 1; k <= domain; k++) {
+			const yk = y(goalPmf[k] ?? 0);
+			d += ` L${x(k - 0.5)},${yk} L${x(k + 0.5)},${yk}`;
+		}
+		return `${d} L${x(domain)},${compY1} Z`;
+	});
+
 	const pullsPhrase = (n: number) => (n === 1 ? '1 pull' : `${n} pulls`);
 
-	const RULES: Record<BannerId, { kicker: string; pityAria: string; guarantee: string }> = {
+	/** `held` is the guarantee chip's word; `guarantee` says in full what it means
+	 *  (its tooltip and accessible name). */
+	const RULES: Record<
+		BannerId,
+		{ kicker: string; pityAria: string; held: string; guarantee: string }
+	> = {
 		character: {
 			kicker: 'Character Event',
 			pityAria: 'Pulls since your last five-star',
+			held: 'Guarantee',
 			guarantee: 'Guarantee held (lost the last 50/50)'
 		},
 		fourStar: {
 			kicker: 'Character Event',
 			pityAria: 'Pulls since your last four-star',
+			held: 'Guarantee',
 			guarantee: 'Guarantee held (last 4★ wasn’t featured)'
 		},
 		weapon: {
 			kicker: 'Weapon Event',
 			pityAria: 'Pulls since your last five-star weapon',
+			held: 'Fate point',
 			guarantee: 'Fate point held'
 		}
 	};
@@ -463,7 +584,7 @@
 	}
 </script>
 
-{#snippet counterPanel(close: () => void)}
+{#snippet counterPanel()}
 	{@const s = states.character}
 	<div class="wi-pop">
 		<div class="chips wi-level-chips" role="group" aria-label="Radiance counter">
@@ -479,13 +600,14 @@
 			{/each}
 		</div>
 
+		{@render bannerNote('character')}
+
 		<p class="wi-pop-head">Find mine</p>
 		<div class="wi-actions">
 			<button
 				class="btn btn--sm"
 				disabled={reading}
 				onclick={() => {
-					closeCounter = close;
 					fileInput?.click();
 				}}
 			>
@@ -555,6 +677,103 @@
 				</div>
 			{/if}
 		</div>
+
+		{#if imported}
+			{@const r = imported.result}
+			{@const since = sinceRadiance(r.replay.steps)}
+			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
+			<div class="wi-report" role="status">
+				<span class="wi-report-head">Your wish history</span>
+				<p class="note">
+					Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
+					{dayOf(r.last)}.
+				</p>
+				{#if since.length > 0}
+					<span class="wi-report-head">
+						{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
+					</span>
+					{@render strip(since)}
+				{:else if lastRadiance?.time}
+					<p class="note">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
+				{/if}
+				{#if r.weaponPity !== null}
+					<p class="note">
+						Your weapon banner pity is {r.weaponPity}. Whether you hold a fate point isn’t in the
+						export.
+					</p>
+				{/if}
+				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
+					<p class="note">
+						If you wished on the character banners before {dayOf(r.first)}, the counter may be off.
+					</p>
+				{/if}
+				<div class="wi-actions">
+					<button class="btn btn--sm" onclick={undoImport}>Undo</button>
+				</div>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet bannerNote(id: BannerId)}
+	<!-- What the banner's rules come to from here, in the popover of the setting
+	     it explains (the guarantee, and the Radiance counter). -->
+	{@const s = states[id]}
+	{#if id === 'character'}
+		{#if s.counter === null}
+			<p class="note">
+				Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
+				including Capturing Radiance).
+			</p>
+		{:else if s.counter === 3 && s.guaranteed}
+			<p class="note">
+				Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
+			</p>
+		{:else if s.counter === 3}
+			<p class="note">
+				Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
+			</p>
+		{:else if s.counter === 2}
+			<p class="note">
+				You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
+				Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
+			</p>
+		{:else}
+			<p class="note">Your next 50/50 is an even one.</p>
+		{/if}
+	{:else if id === 'fourStar'}
+		<p class="note">
+			Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character you
+			want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it averages out
+			to about 22%.
+			<span class="wi-fine"
+				>Losing the 50/50 never gives you one of the three, even if they’re already on the standard
+				banner.</span
+			>
+		</p>
+	{:else}
+		<p class="note">
+			Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted, 37.5%
+			to be the other featured weapon, and 25% to be a standard 5★ weapon.
+		</p>
+	{/if}
+{/snippet}
+
+{#snippet viewTabs()}
+	<!-- What you're pulling for picks what the chart draws: the instrument's
+	     view tabs, leading the chart's toolbar. -->
+	<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
+		{#each TARGETS as t (t.id)}
+			<button
+				class="btn"
+				class:is-active={target === t.id}
+				role="radio"
+				aria-checked={target === t.id}
+				onclick={() => (target = t.id)}
+			>
+				{t.label}
+			</button>
+		{/each}
 	</div>
 {/snippet}
 
@@ -571,22 +790,165 @@
 	</ol>
 {/snippet}
 
-<div class="instrument instrument--capped">
-	<div class="wi-chart instrument-chart ctx-dark">
-		<!-- What you're pulling for picks what the chart draws, so it sits on the chart. -->
-		<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
-			{#each TARGETS as t (t.id)}
-				<button
-					class="btn"
-					class:is-active={target === t.id}
-					role="radio"
-					aria-checked={target === t.id}
-					onclick={() => (target = t.id)}
+<!-- THE STAGE (design §6, the first instrument on it). One box: the chart
+     head (the headline), the chart's toolbar on its top edge (the view tabs and
+     the setup bar), the chart with its companion, and the handle on its bottom
+     edge. No answer card: what the card held is
+     drawn on the chart, or sits in the popover of the setting it explains. -->
+<div class="wi-root">
+	<div class="wi-stage ctx-dark">
+		<!-- THE CHART HEAD (design §6): the answer, on a row of its own at the
+		     stage's top left, the first thing read and the largest type on the
+		     screen. It follows the handle and a drag on the chart. -->
+		<p class="readout-head wi-head">
+			{formatChance(goalRow.chance)}<span class="readout-sentence"
+				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
+			>
+		</p>
+
+		<!-- THE CHART'S TOOLBAR, on its top edge (Nate: the bottom edge is the
+		     handle's): everything that changes what the chart draws. The view
+		     tabs where the instrument has them, then the setup bar; chart tools,
+		     where an instrument has them, at the far end. Left aligned on the
+		     stage's one left edge, so an instrument with no tabs starts with its
+		     setup bar and nothing else moves. -->
+		<div class="wi-toolbar">
+			{@render viewTabs()}
+			{#each blocks as id (id)}
+				{@const s = states[id]}
+				{@const b = BANNERS[id]}
+				<!-- THE SETUP BAR: one plate per banner, a setting per segment, each
+				     showing its value and opening its setting. Dropping a file on the
+				     character banner's bar is a pointer shortcut for "Read a Paimon.moe
+				     export", which stays the accessible path. -->
+				<div
+					class="wi-bar"
+					class:is-dropping={id === 'character' && dropping}
+					role="group"
+					aria-label={RULES[id].kicker}
+					ondragover={id === 'character' ? onDragOver : undefined}
+					ondragleave={id === 'character' ? onDragLeave : undefined}
+					ondrop={id === 'character' ? onDrop : undefined}
 				>
-					{t.label}
-				</button>
+					{#if blocks.length > 1}
+						<span class="wi-bar-name">{RULES[id].kicker}</span>
+					{/if}
+
+					<BandMenu role="dialog" align="start" ariaLabel="Current pity: {clampPity(b, s.pity)}">
+						{#snippet face()}
+							<span class="wi-chip-key">Pity</span>
+							<span class="wi-chip-val wi-chip-val--num">{clampPity(b, s.pity)}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<InstrumentSlider
+									label="Current pity"
+									aria={RULES[id].pityAria}
+									bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
+									min={0}
+									max={b.hard - 1}
+									step={1}
+								/>
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					<BandMenu
+						role="dialog"
+						align="start"
+						ariaLabel="{RULES[id].held}: {s.guaranteed ? 'Held' : 'None'}"
+					>
+						{#snippet face()}
+							<span class="wi-chip-key">{RULES[id].held}</span>
+							<span class="wi-chip-val">{s.guaranteed ? 'Held' : 'None'}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<label class="check">
+									<input type="checkbox" bind:checked={states[id].guaranteed} />
+									<span class="check-box"></span>
+									{RULES[id].guarantee}
+								</label>
+								{@render bannerNote(id)}
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					<BandMenu
+						role="dialog"
+						align="start"
+						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+					>
+						{#snippet face()}
+							<span class="wi-chip-key">Goal</span>
+							<span class="wi-chip-val"
+								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
+									id,
+									s.goal
+								)}</span
+							>
+						{/snippet}
+						{#snippet items()}
+							<div class="wi-chip-pop">
+								<div class="wi-pop wi-levels">
+									<span class="slider-label" id="wi-have-{id}">You have</span>
+									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
+										{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
+											<button
+												class="chip chip--control"
+												class:active={s.have === copies}
+												aria-pressed={s.have === copies}
+												onclick={() => setHave(id, copies)}
+											>
+												{haveName(id, copies)}
+											</button>
+										{/each}
+									</div>
+									<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
+										{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
+											<button
+												class="chip chip--control"
+												class:active={s.goal === copies}
+												aria-pressed={s.goal === copies}
+												disabled={copies <= s.have}
+												onclick={() => (states[id].goal = copies)}
+											>
+												{levelName(id, copies)}
+											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
+						{/snippet}
+					</BandMenu>
+
+					{#if id === 'character'}
+						<BandMenu
+							role="dialog"
+							align="start"
+							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
+						>
+							{#snippet face()}
+								<span class="wi-chip-key">Radiance counter</span>
+								<span class="wi-chip-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
+							{/snippet}
+							{#snippet items()}
+								<div class="wi-chip-pop">{@render counterPanel()}</div>
+							{/snippet}
+						</BandMenu>
+						<input
+							bind:this={fileInput}
+							type="file"
+							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							class="wi-file"
+							onchange={(e) => importFile(e.currentTarget.files?.[0])}
+						/>
+					{/if}
+				</div>
 			{/each}
 		</div>
+
 		<div
 			class="wi-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
@@ -604,12 +966,13 @@
 				onpointercancel={onUp}
 				style:cursor="ew-resize"
 			>
-				<!-- X grid (pulls from now) -->
+				<!-- X grid (pulls from now), through the plot and the strip -->
 				{#each xTicks as t (t)}
 					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
+					<line x1={xOf(t)} y1={compY0} x2={xOf(t)} y2={compY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(t)}
-						y={plotY1 + 15}
+						y={compY1 + 15}
 						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
@@ -619,7 +982,7 @@
 				{/each}
 				<text
 					x={graphW - PADR}
-					y={plotY1 + 27}
+					y={compY1 + 27}
 					fill="var(--chart-dim)"
 					font-size="10"
 					text-anchor="end"
@@ -659,6 +1022,14 @@
 						stroke="var(--chart-rule)"
 						stroke-dasharray="4 4"
 					/>
+					<line
+						x1={xOf(softAt)}
+						y1={compY0}
+						x2={xOf(softAt)}
+						y2={compY1}
+						stroke="var(--chart-rule)"
+						stroke-dasharray="4 4"
+					/>
 					<text
 						class="wi-word"
 						x={xOf(softAt) + 5}
@@ -669,6 +1040,35 @@
 						soft pity
 					</text>
 				{/if}
+
+				<!-- The companion: the chance on each pull -->
+				<line x1={PADL} y1={compY1} x2={graphW - PADR} y2={compY1} stroke="var(--chart-rule)" />
+				{#if compPath}
+					<path d={compPath} fill="var(--chart-ink)" fill-opacity="0.45" />
+				{/if}
+				<text x="4" y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+					chance on each pull
+				</text>
+				{#each stripMarks as m (m.key)}
+					<line
+						x1={m.x}
+						y1={compY0}
+						x2={m.x}
+						y2={compY1}
+						stroke="var(--chart-ink)"
+						stroke-dasharray="2 3"
+					/>
+					<text
+						class="wi-word"
+						x={m.x}
+						y={compY0 - 6}
+						fill="var(--chart-ink)"
+						font-size="11"
+						text-anchor={m.anchor}
+					>
+						{m.text}
+					</text>
+				{/each}
 
 				<!-- One line per level; the goal's is the bold one -->
 				{#each curves as c (c.label)}
@@ -694,12 +1094,43 @@
 					</text>
 				{/each}
 
-				<!-- Pulls-saved marker: a dot where it crosses each line -->
+				<!-- The goal's Half by and Unlucky tenth, drawn where they are -->
+				{#each crossings as c (c.key)}
+					<line
+						x1={c.x}
+						y1={c.y}
+						x2={c.x}
+						y2={plotY1}
+						stroke="var(--chart-ink)"
+						stroke-dasharray="2 3"
+					/>
+					<circle
+						cx={c.x}
+						cy={c.y}
+						r="3"
+						fill="var(--frame-bg)"
+						stroke="var(--text)"
+						stroke-width="1.5"
+					/>
+					<text
+						class="wi-word"
+						x={c.lx}
+						y={c.ly}
+						fill="var(--chart-ink)"
+						font-size="11"
+						text-anchor={c.anchor}
+					>
+						{c.text}<title>{c.title}</title>
+					</text>
+				{/each}
+
+				<!-- Pulls-saved marker: a dot where it crosses each line, down through
+				     the strip to the handle under the chart -->
 				<line
 					x1={xOf(shownPulls)}
 					y1={TOP}
 					x2={xOf(shownPulls)}
-					y2={plotY1}
+					y2={compY1}
 					stroke="var(--chart-ink)"
 					stroke-width="1.5"
 				/>
@@ -713,249 +1144,46 @@
 						stroke-width="1.5"
 					/>
 				{/each}
-				<text
-					class="wi-word"
-					x={xOf(shownPulls) + (shownPulls > domain * 0.7 ? -8 : 8)}
-					y={Math.max(TOP + 12, yOf(goalRow.chance) - 10)}
-					fill="var(--text)"
-					font-size="11"
-					font-weight="600"
-					text-anchor={shownPulls > domain * 0.7 ? 'end' : 'start'}
-				>
-					{fmtPct(goalRow.chance, 0)}
-				</text>
+				{#each dotLabels as l (l.key)}
+					<text
+						class="wi-word"
+						x={l.x}
+						y={l.y}
+						fill="var(--chart-ink)"
+						font-size="11"
+						text-anchor={l.anchor}
+					>
+						{l.text}
+					</text>
+				{/each}
 			</svg>
 		</div>
-	</div>
 
-	<!-- LIVE (round 3, design §3): the pulls you've saved is the one control you
-	     scrub, so it heads the rail on its own, beside the chart it moves. -->
-	<div class="panel instrument-live">
-		<section class="inst-section">
-			<!-- Typed, it runs past the chart (to MAX_PULLS), where every goal is
-			     past 99.9%: the Readout answers, the marker waits at the axis's end. -->
+		<!-- THE HANDLE (design §6): the live control is the x axis's. Its track
+		     runs the plot's width, so the thumb sits under the marker line.
+		     Typed, it runs past the chart (to MAX_PULLS), where every goal is past
+		     99.9%: the head answers, the marker waits at the axis's end. -->
+		<div
+			class="wi-handle"
+			style:--wi-handle-l="{PADL - THUMB_R}px"
+			style:--wi-handle-r="{PADR - THUMB_R}px"
+		>
 			<InstrumentSlider
 				label="Pulls saved"
 				aria="Pulls you have saved"
 				bind:value={pulls}
 				min={0}
-				max={Math.max(domain, pulls)}
+				max={domain}
 				step={1}
 				fieldMax={MAX_PULLS}
 			/>
-			<p class="inst-hint">Or drag across the chart.</p>
-		</section>
-	</div>
+		</div>
 
-	<!-- SETTINGS: each banner the tab touches (what you're pulling for is the
-	     chart's tabs). Per session first (pity, the guarantee), then the set-once
-	     lines folded into popovers (Goal, the Radiance counter). ⚓ ONE panel (the
-	     2026-10-04 ruling: separate panels split around the pulls in a shared tile). -->
-	<div class="panel instrument-settings inst-sections">
-		{#each blocks as id (id)}
-			{@const s = states[id]}
-			{@const b = BANNERS[id]}
-			<!-- Dropping a file on the character banner's section is a pointer shortcut
-			     for "Read a Paimon.moe export", which stays the accessible path. -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<section
-				class="inst-section wi-section"
-				class:is-dropping={id === 'character' && dropping}
-				ondragover={id === 'character' ? onDragOver : undefined}
-				ondragleave={id === 'character' ? onDragLeave : undefined}
-				ondrop={id === 'character' ? onDrop : undefined}
-			>
-				<p class="kicker">{RULES[id].kicker}</p>
-				<InstrumentSlider
-					label="Current pity"
-					aria={RULES[id].pityAria}
-					bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
-					min={0}
-					max={b.hard - 1}
-					step={1}
-				/>
-				<label class="check">
-					<input type="checkbox" bind:checked={states[id].guaranteed} />
-					<span class="check-box"></span>
-					{RULES[id].guarantee}
-				</label>
-				<SettingLine
-					label="Goal"
-					ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
-				>
-					{#snippet summary()}
-						{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(id, s.goal)}
-					{/snippet}
-					<div class="wi-pop wi-levels">
-						<span class="slider-label" id="wi-have-{id}">You have</span>
-						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
-							{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
-								<button
-									class="chip chip--control"
-									class:active={s.have === copies}
-									aria-pressed={s.have === copies}
-									onclick={() => setHave(id, copies)}
-								>
-									{haveName(id, copies)}
-								</button>
-							{/each}
-						</div>
-						<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
-						<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
-							{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
-								<button
-									class="chip chip--control"
-									class:active={s.goal === copies}
-									aria-pressed={s.goal === copies}
-									disabled={copies <= s.have}
-									onclick={() => (states[id].goal = copies)}
-								>
-									{levelName(id, copies)}
-								</button>
-							{/each}
-						</div>
-					</div>
-				</SettingLine>
-				{#if id === 'character'}
-					<SettingLine
-						label="Radiance counter"
-						ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
-					>
-						{#snippet summary()}
-							{s.counter === null ? 'Don’t know' : s.counter}
-						{/snippet}
-						{#snippet children(close)}
-							{@render counterPanel(close)}
-						{/snippet}
-					</SettingLine>
-
-					<!-- One note for the guarantee and the counter together: what comes next. -->
-					{#if s.counter === null}
-						<p class="inst-hint">
-							Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
-							including Capturing Radiance).
-						</p>
-					{:else if s.counter === 3 && s.guaranteed}
-						<p class="inst-hint">
-							Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
-						</p>
-					{:else if s.counter === 3}
-						<p class="inst-hint">
-							Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
-						</p>
-					{:else if s.counter === 2}
-						<p class="inst-hint">
-							You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
-							Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
-						</p>
-					{:else}
-						<p class="inst-hint">Your next 50/50 is an even one.</p>
-					{/if}
-
-					<input
-						bind:this={fileInput}
-						type="file"
-						accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-						class="wi-file"
-						onchange={(e) => importFile(e.currentTarget.files?.[0])}
-					/>
-				{:else if id === 'fourStar'}
-					<p class="inst-hint">
-						Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character
-						you want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it
-						averages out to about 22%.
-						<span class="wi-fine"
-							>Losing the 50/50 never gives you one of the three, even if they’re already on the
-							standard banner.</span
-						>
-					</p>
-				{:else}
-					<p class="inst-hint">
-						Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted,
-						37.5% to be the other featured weapon, and 25% to be a standard 5★ weapon.
-					</p>
-				{/if}
-			</section>
-		{/each}
-	</div>
-
-	<div class="panel panel--paper wi-readout instrument-readout">
-		<p class="kicker">Readout</p>
-		<p class="readout-head">
-			{formatChance(goalRow.chance)}<span class="readout-sentence"
-				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
-			>
-		</p>
-		<table class="wi-table">
-			<thead>
-				<tr>
-					<th scope="col">Level</th>
-					<th scope="col" class="wi-num">Chance</th>
-					<th scope="col" class="wi-num">Half by</th>
-					<th scope="col" class="wi-num">Unlucky tenth</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each rows as r (r.label)}
-					<tr class:is-goal={r.primary}>
-						<th scope="row">{r.label}</th>
-						<td class="wi-num">{formatChance(r.chance)}</td>
-						<td class="wi-num">{r.stats.median}</td>
-						<td class="wi-num">{r.stats.p90}</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-		<p class="wi-meta">
-			{#if goalRow.worst !== null}
-				On average, {goalRow.label} would take
-				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here, and at most
-				<span class="wi-strong">{goalRow.worst}</span>.
-			{:else}
-				On average, {goalRow.label} would take
-				<span class="wi-strong">{Math.round(goalRow.stats.mean)}</span> pulls from here.
-			{/if}
-		</p>
-		<p class="note">
-			Half by: half of players get there within this many pulls. Unlucky tenth: the unluckiest 10%
-			of players need this many or more.
-			{#if target === 'pair'}
-				Your character and weapon banners keep separate pity, so this adds the pulls for both.
-			{/if}
-		</p>
-		{#if imported && target !== 'fourStar'}
-			{@const r = imported.result}
-			{@const since = sinceRadiance(r.replay.steps)}
-			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
-			<div class="wi-report" role="status">
-				<span class="wi-report-head">Your wish history</span>
-				<p class="note">
-					Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
-					{dayOf(r.last)}.
-				</p>
-				{#if since.length > 0}
-					<span class="wi-report-head">
-						{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}
-					</span>
-					{@render strip(since)}
-				{:else if lastRadiance?.time}
-					<p class="note">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
-				{/if}
-				{#if r.weaponPity !== null}
-					<p class="note">
-						Your weapon banner pity is {r.weaponPity}. Whether you hold a fate point isn’t in the
-						export.
-					</p>
-				{/if}
-				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
-					<p class="note">
-						If you wished on the character banners before {dayOf(r.first)}, the counter may be off.
-					</p>
-				{/if}
-				<div class="wi-actions">
-					<button class="btn btn--sm" onclick={undoImport}>Undo</button>
-				</div>
-			</div>
+		<!-- The fine print: what no part of the chart can show. -->
+		{#if target === 'pair'}
+			<p class="wi-fine-print">
+				Your character and weapon banners keep separate pity, so the chart adds the pulls for both.
+			</p>
 		{/if}
 	</div>
 </div>
@@ -974,8 +1202,15 @@
 		font-family: var(--font-body);
 	}
 
+	/* A word on the chart wears the site's soft halo (the Gauge's pill digits,
+	   the planner's bars), a touch denser, so it stays legible where it
+	   crosses a line or a rule (a level's chance beside the goal's curve). A
+	   hard outline (`paint-order: stroke`) was tried and smeared the glyphs. */
 	.wi-graph text.wi-word {
 		font-family: var(--font-condensed);
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 90%, transparent) 0px 0px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 70%, transparent) 0px 0px 6px;
 	}
 
 	/* Label above its chips: a row of eight needs the panel's whole width */
@@ -1001,78 +1236,224 @@
 		padding-inline: 0.35rem;
 	}
 
-	.wi-table {
-		width: 100%;
-		margin: 0.75rem 0 0.5rem;
-		border-collapse: collapse;
-		font-size: var(--fs-md);
-		line-height: var(--lh-snug);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.wi-table thead th {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-		text-align: left;
-		padding: 0 0.5rem 0.3rem;
-	}
-
-	.wi-table tbody th,
-	.wi-table tbody td {
-		padding: 0.25rem 0.5rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
-		vertical-align: baseline;
-	}
-
-	.wi-table tbody th {
-		text-align: left;
-		font-weight: inherit;
-		font-family: var(--font-condensed);
-	}
-
-	.wi-table tr.is-goal {
-		font-weight: var(--fw-semibold);
-	}
-
-	.wi-num,
-	.wi-table thead th.wi-num {
-		text-align: right;
-		white-space: nowrap;
-	}
-
-	.wi-meta {
-		margin: 0;
-		font-size: var(--fs-xl);
-		line-height: 1.5rem;
-		color: var(--muted);
-	}
-
-	.wi-strong {
-		font-family: var(--font-body);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-
 	.wi-fine {
 		display: block;
 		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
-	/* The tabs ride in the chart's slot: they choose what it draws (as in
-	   Reaction curves). Four don't fit a narrow tile: wrap rather than scroll. */
-	.wi-chart {
-		gap: 1rem;
+	/* ══ THE STAGE (design §6; Wish odds is its first instrument) ═════════════
+	   ONE BOX: the controls row, the chart head, the chart with its companion,
+	   and the handle. There is no answer card: what it held is drawn on the
+	   chart or sits in the popover of the setting it explains (Nate, the second
+	   pass: two boxes sat diagonally from each other).
+	   - Narrow: natural height; the page scrolls.
+	   - From 1024px: the tile's height, and capped at 🎛️ --wi-stage-aspect ×
+	     the tile's height, centred, so an ultrawide doesn't stretch every slope
+	     flat (the rail's --instrument-main-aspect rule, with no side column
+	     now, so set where a 16:10 one up is still uncapped).
+	   The stage replaces the rail one instrument at a time; once a second
+	   instrument wears it, this moves to app.css. */
+	.wi-root {
+		min-height: 100%;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
+	.wi-stage {
+		display: flex;
+		flex-direction: column;
+		gap: var(--inst-gap-control);
+		min-width: 0;
+	}
+
+	/* ⚠ `cqh` only where the tile is a SIZE container: from 1024px (app.css §
+	   THE RAIL; breakpoints.ts `visualizers`). */
+	@media (min-width: 1024px) {
+		.wi-root {
+			grid-template-columns: minmax(0, calc(100cqh * var(--wi-stage-aspect, 1.9)));
+			justify-content: center;
+		}
+		.wi-stage {
+			height: 100cqh;
+			min-height: max-content;
+		}
+	}
+
+	/* ── The stage's head: ONE LEFT EDGE ──
+	   The picker above, the headline, the toolbar and the chart all start on
+	   the stage's left edge. Nothing is centred: a centred bar between
+	   edge-aligned neighbours read as loose (Nate 2026-11-02). */
+
+	/* THE HEADLINE ON ONE LINE where the tile has room: the figure and its
+	   sentence share a baseline, each at its own size. From 38rem, where the
+	   longest ("0.0263% chance of C2R1 within 1,000 pulls", about 505px)
+	   fits; below it, the figure over its sentence. By the tile's width, never
+	   by fit: the headline's length changes as you drag. */
+	@container instrument (min-width: 38rem) {
+		.wi-head {
+			display: flex;
+			align-items: baseline;
+			column-gap: 0.6rem;
+			white-space: nowrap;
+		}
+		.wi-head .readout-sentence {
+			margin-top: 0;
+		}
+	}
+
+	/* 🎛️ The headline's room below it, before the toolbar: it stands apart as
+	   the answer, where the toolbar belongs to the chart. */
+	.wi-head {
+		margin-bottom: var(--wi-head-gap, 0.5rem);
+	}
+
+	/* THE ANSWER AS THE FOCUS (Nate 2026-11-02: it must not read as an
+	   afterthought). Where the chart runs the tile's width, the Readout head's
+	   32px is small beside it: 🎛️ --wi-head-scale (1.5) of it, 48px, and the
+	   sentence a step up (--fs-3xl), the difference between them kept. */
+	@container instrument (min-width: 60rem) {
+		.wi-head {
+			font-size: calc(var(--fs-5xl) * var(--wi-head-scale, 1.5));
+			column-gap: 0.8rem;
+		}
+		.wi-head .readout-sentence {
+			font-size: var(--fs-3xl);
+		}
+	}
+
+	/* Four tabs don't fit a narrow tile: wrap rather than scroll. */
 	.wi-tabs {
 		flex-wrap: wrap;
-		align-self: flex-start;
 		max-width: 100%;
 	}
 
-	/* The import's report, at the foot of the Readout */
+	/* ── THE CHART'S TOOLBAR, on the chart's top edge ──
+	   The view tabs (a recessed track: one is chosen), then the setup bar (a
+	   raised plate: each segment is a value you set): different materials, so
+	   they read as two things. 🎛️ Snug to the chart: --wi-toolbar-gap (0.25rem)
+	   above the SVG, whose own top margin holds the y axis's name. */
+	.wi-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+		margin-bottom: calc(var(--wi-toolbar-gap, 0.25rem) - var(--inst-gap-control));
+	}
+
+	/* THE SETUP BAR: one glass plate, a setting per segment. The segments are
+	   bare buttons on the plate (BandMenu's triggers), which light under the
+	   hand and while their popover is open; each one's chevron ends it, so no
+	   hairlines (they dangled at the end of a wrapped line on a phone). */
+	.wi-bar {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 2px;
+		max-width: 100%;
+		padding: 2px;
+		border-radius: var(--r-sm);
+		background: var(--glass-panel);
+	}
+
+	.wi-bar > :global(.btn) {
+		background: transparent;
+		border-radius: var(--r-xs);
+	}
+
+	@media (hover: hover) {
+		.wi-bar > :global(.btn:hover:not(:disabled)) {
+			background: var(--glass-hover);
+		}
+	}
+
+	.wi-bar > :global(.btn.is-active) {
+		background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
+	}
+
+	/* A pair's banner name leads its bar. */
+	.wi-bar-name {
+		padding-inline: 0.6rem 0.5rem;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		color: var(--chart-ink);
+	}
+
+	/* A chip's face: the setting's name, then its value in the ink. */
+	.wi-chip-key {
+		color: var(--chart-ink);
+	}
+
+	.wi-chip-val {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	/* Pity runs 0–89: two figures held, so the chips after it never shift. */
+	.wi-chip-val--num {
+		min-width: 2ch;
+		justify-content: flex-end;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* A chip's popover (BandMenu, portalled): as SettingLine's, 22rem, about
+	   the old rail's width, so a slider inside keeps its track. */
+	.wi-chip-pop {
+		display: grid;
+		gap: var(--inst-gap-control);
+		width: min(22rem, calc(100vw - 2rem));
+		padding: 0.6rem;
+	}
+
+	/* ── The chart head ──
+	   The Readout head's type (app.css .readout-head), on the chart's ground.
+	   Its sentence stays one line where there is room and wraps on a phone. */
+	.wi-head {
+		color: var(--text);
+	}
+
+	/* The fine print, under the handle: what no part of the chart can show. */
+	.wi-fine-print {
+		margin: 0;
+		font-size: var(--fs-md);
+		line-height: var(--lh-snug);
+		color: var(--chart-ink);
+	}
+
+	/* ── The handle ──
+	   The track spans the plot's x range plus half a thumb each side (THUMB_R),
+	   so the thumb's centre is on the marker line at every value. The label
+	   and the typed value sit under the track, the track right under the
+	   axis's numbers. */
+	.wi-handle {
+		padding-inline: var(--wi-handle-l) var(--wi-handle-r);
+		margin-top: calc(-1 * var(--inst-gap-control) + 0.15rem);
+	}
+
+	.wi-handle :global(.slider-control) {
+		grid-template-areas: 'track' 'header';
+	}
+
+	.wi-handle :global(.slider-header) {
+		grid-area: header;
+		justify-content: flex-start;
+	}
+
+	.wi-handle :global(.is-track) {
+		grid-area: track;
+	}
+
+	/* ⚠ Chrome gives a range input 2px side margins, which put the thumb 2px
+	   off the marker line. */
+	.wi-handle :global(.slider) {
+		margin-inline: 0;
+	}
+
+	/* The import's report, at the foot of the Radiance counter's popover */
 	.wi-report {
 		display: grid;
 		gap: 0.4rem;
@@ -1087,25 +1468,13 @@
 		color: var(--muted);
 	}
 
-	/* On paper the strip is ink only: no gold on paper */
-	.wi-report .wi-step--lost {
-		color: color-mix(in srgb, var(--muted) 60%, transparent);
-	}
-
-	.wi-report .wi-step--radiance {
-		box-shadow: inset 0 0 0 1px currentColor;
-		font-weight: var(--fw-semibold);
-	}
-
 	/* ── The Radiance counter's history tools ── */
 	.wi-file {
 		display: none;
 	}
 
-	/* A set-once setting's line: its name, and a summary that opens its popover */
-
-	/* A popover's contents (BandMenu, portalled: the band menu's own surface) */
-	/* Inside SettingLine's popover, which pads it and sets its width. */
+	/* A popover's contents (BandMenu, portalled: the band menu's own surface),
+	   inside .wi-chip-pop, which pads it and sets its width. */
 	.wi-pop {
 		display: grid;
 		gap: 0.6rem;
@@ -1145,10 +1514,10 @@
 		color: var(--ui-warning);
 	}
 
-	/* A file dragged over the section: it takes the drop */
-	.wi-section.is-dropping {
-		border-radius: var(--r-sm);
-		box-shadow: 0 0 0 1px var(--accent);
+	/* A file dragged over the character banner's bar: it takes the drop */
+	.wi-bar.is-dropping {
+		outline: 1px solid var(--accent);
+		outline-offset: 4px;
 	}
 
 	.wi-strip {

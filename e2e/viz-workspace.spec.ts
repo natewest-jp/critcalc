@@ -18,12 +18,12 @@ const WORKSPACE_KEY = 'critcalc:vizWorkspace';
 /**
  * The instrument pickers, in slot order. They live in BAND B, whose cells are
  * laid out on the tile grid's own columns in slot order — so the band IS the
- * left-to-right reading. Side by side only: one up, the cell shows tabs.
+ * left-to-right reading. A picker at every width (the eight tabs retired).
  */
 const triggers = (page: Page) => page.locator('.ws-band-cell .ip-trigger');
 
-/** One up: the tab that is lit is the instrument on screen. */
-const currentTab = (page: Page) => page.locator('.it-tab[aria-selected="true"]');
+/** One up: the first picker names the instrument on screen. */
+const currentTab = (page: Page) => page.locator('.ws-band-cell .ip-name-current').first();
 
 /**
  * Assert the whole side-by-side lineup. `toHaveText` with an ARRAY checks the
@@ -46,9 +46,9 @@ const defaultsButton = (page: Page) =>
 	page.locator('.ws-band-actions button', { hasText: 'Defaults' });
 
 test.describe('lineup and slots', () => {
-	test('first load shows one instrument, with all eight as tabs', async ({ page }) => {
+	test('first load shows one instrument, named on its picker', async ({ page }) => {
 		await openTool(page, '/visualizers');
-		await expect(page.locator('.it-tab'), 'every instrument has a tab').toHaveCount(8);
+		await expect(triggers(page), 'one picker').toHaveCount(1);
 		await expect(currentTab(page)).toHaveText('Crit heatmap');
 		await expect(page.locator('.ws-tile:not(.ws-hidden)'), 'one tile').toHaveCount(1);
 
@@ -57,9 +57,10 @@ test.describe('lineup and slots', () => {
 		await expect(defaultsButton(page), 'nothing to put back yet').toBeDisabled();
 	});
 
-	test('a tab switches the instrument, and the choice survives a reload', async ({ page }) => {
+	test('the picker switches the instrument, and the choice survives a reload', async ({ page }) => {
 		await openTool(page, '/visualizers');
-		await page.locator('.it-tab', { hasText: 'Wish odds' }).click();
+		await triggers(page).first().click();
+		await page.locator('.ip-menu .ip-option', { hasText: 'Wish odds' }).click();
 		await expect(currentTab(page)).toHaveText('Wish odds');
 
 		await page.reload({ waitUntil: 'networkidle' });

@@ -15,7 +15,6 @@
 	import WishInstrument from './lib/WishInstrument.svelte';
 	import BreakdownInstrument from './lib/BreakdownInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
-	import InstrumentTabs from './lib/InstrumentTabs.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
@@ -390,18 +389,10 @@
 		     there is no longer a rail for a button to sit on. -->
 		<div class="ws-band" style:--ws-slots={slotCount} style:--ws-tile-gap="{TILE_GAP}px">
 			{#each assignment.slice(0, slotCount) as id, slot (id)}
-				<div class="ws-band-cell" class:ws-band-cell--one={slotCount === 1}>
-					{#if slotCount === 1}
-						<!-- One up: the eight as tabs where the row fits, else the
-						     dropdown (the container queries below). -->
-						<div class="ws-tabs">
-							<InstrumentTabs
-								current={id}
-								onPick={(next) => pick(slot, next)}
-								panelId="ws-tile-{id}"
-							/>
-						</div>
-					{/if}
+				<div class="ws-band-cell">
+					<!-- The instrument's name, as a dropdown at every width (Nate
+					     2026-11-02: eight tabs, and more to come, is a long row, and once
+					     an instrument is open the others aren't what you reach for). -->
 					<div class="ws-picker">
 						<InstrumentPicker
 							current={id}
@@ -578,39 +569,13 @@
 		min-width: 0;
 	}
 
-	/* The picker's wrapper takes the slack the picker itself used to (the
-	   nameplate is the long plate, InstrumentPicker § THE TILE'S NAMEPLATE). */
+	/* 🎛️ THE PICKER STOPS AT --ws-picker-max (16rem): the longest name,
+	   "Damage breakdown", with its caret and room to spare. Past that it is
+	   only distance between the name and the actions. */
 	.ws-picker {
 		display: flex;
-		flex: 1;
+		flex: 0 1 var(--ws-picker-max, 16rem);
 		min-width: 0;
-	}
-	.ws-tabs {
-		flex: 1;
-		min-width: 0;
-	}
-
-	/* ONE UP: tabs or the dropdown, by the CELL's width. The cell is the
-	   query container, so the question is "does the row fit beside the
-	   actions", whatever the window and the interface size.
-	   🎛️ 73rem, the literal in the query below: measured at the default
-	   interface size, the eight tabs are 850px and the four action plates
-	   300px, so the row needs 1154px of cell. 73rem (1168px) is the first
-	   whole rem above it, and a cell that wide comes with a window of about
-	   1232px. Re-measure if a name or an action changes. */
-	.ws-band-cell--one {
-		container: ws-cell / inline-size;
-	}
-	.ws-band-cell--one .ws-picker {
-		display: none;
-	}
-	@container ws-cell (width < 73rem) {
-		.ws-band-cell--one .ws-tabs {
-			display: none;
-		}
-		.ws-band-cell--one .ws-picker {
-			display: flex;
-		}
 	}
 
 	.ws-layout {
@@ -620,8 +585,10 @@
 		gap: 0.5rem;
 		padding: 0.4rem;
 	}
+	/* The actions hold the cell's far end. */
 	.ws-band-actions {
 		display: flex;
+		margin-left: auto;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
 		flex-shrink: 0;

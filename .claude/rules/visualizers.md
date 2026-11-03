@@ -12,7 +12,7 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 - Eight instruments, listed in `visualizers/lib/workspace.ts`: crit heatmap (`crit`), ICD timeline (`icd`), artifact odds (`artifact`), gauge explorer (`gauge`), reaction curves (`curves`), enemy RES & DEF (`defres`), wish odds (`wish`), damage breakdown (`breakdown`).
 - One instrument at a time by default (`DEFAULT_SLOTS`), because an instrument is worked in, not glanced at. Layout offers up to three side by side (`MAX_SLOTS`), capped by what fits: two from 1360px, three from 2200px. Design one up; side by side only has to work.
 - `/crit-visualizer` redirects here (`static/_redirects`).
-- The toolbar is cut by the tile gap, one segment per tile, with plates for controls. One up, the segment shows the eight as tabs where they fit (a container query on the cell) and the dropdown otherwise. Each tile's bar carries Defaults (dimmed at defaults, Undo in its toast), Copy link, and a ⋯ with How it works and Report a problem; the Layout plate sits on the last tile. The Visualizers have no inspector.
+- The toolbar is cut by the tile gap, one segment per tile, with plates for controls. The instrument is a picker at every width, its view tabs under it in the stage. Each tile's bar carries Defaults (dimmed at defaults, Undo in its toast), Copy link, and a ⋯ with How it works and Report a problem; the Layout plate sits on the last tile. The Visualizers have no inspector.
 - An instrument's defaults are its share state as it mounts (`register` in `+page.svelte`), so anything applied to an instrument (a link, a saved state) must arrive after its handle binds.
 - Each instrument's state is kept in the active profile (`ProfileRecord.instruments`, written by `storageSession.saveInstrument`), as its share state. So the share state is the instrument's whole remembered state: what it leaves out is forgotten on a reload, and a share-state version bump must still read the older versions profiles hold.
 
@@ -21,6 +21,11 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 - `.ws-body` scrolls under a roll-off mask, and the tool never page-scrolls.
 - A chart box that is measured and then drawn to fit carries `contain: size` with a natural-height floor, or its row ratchets taller on every redraw.
 - ⚠️ The tile's grid row is `minmax(0, 1fr)`, never `1fr`: `1fr` means `minmax(auto, 1fr)`, and the `auto` minimum stops an instrument's own `overflow-y: auto` from ever running.
+
+## The stage
+
+- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds wears it. It is one box, with the headline at the chart head and no answer card. Its CSS stays in `WishInstrument.svelte` until a second instrument wears it.
+- An axis handle is an `InstrumentSlider` whose track runs the plot's x range plus `THUMB_R` each side, so the thumb sits on the marker line. ⚠️ Zero the range input's margin, or Chrome's 2px puts it off the line.
 
 ## The rail
 
@@ -34,7 +39,7 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 
 ## Materials
 
-- Night looks, glass touches, paper answers (`.claude/rules/ui.md`): each instrument has exactly one `.panel--paper` readout card.
+- Night looks, glass touches, paper answers (`.claude/rules/ui.md`): each instrument on the rail has exactly one `.panel--paper` readout card; on the stage there is none.
 
 ## The Gauge Explorer
 

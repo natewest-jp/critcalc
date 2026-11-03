@@ -1,9 +1,11 @@
 # The Visualizers: design
 
-The current design of the Visualizers surface and the shape every instrument follows. Agreed
-with Nate on 2026-11-02 from a review of all eight (screenshots one up and two up, and an
-inventory of every control); the rounds that build it are listed at the end. The per-area rules
-are in `.claude/rules/visualizers.md`.
+The current design of the Visualizers surface and the shape every instrument follows. The
+workspace, type and kit were agreed with Nate on 2026-11-02 from a review of all eight
+(screenshots one up and two up, and an inventory of every control). The stage (§6), the chart
+families (§7) and the chart changes (§8) were agreed in a second session the same day, and
+are built one instrument at a time (§11). The per-area rules are in
+`.claude/rules/visualizers.md`.
 
 ## 1. What an instrument is for
 
@@ -16,30 +18,32 @@ the answer), and the rest of the design serves that loop.
 - **One up by default.** Side by side is a choice under Layout, and an instrument only has to
   work there (scrolling inside a tile is fine). Interactive chart tools give the one chart you
   work in the screen (Grafana's Explore view, Lightroom, Desmos); multi-up is for monitoring.
-- **Tabs** name all eight where the row fits, so the tool shows what it holds.
-- **The bar:** the instrument tabs (or picker), then Defaults, Copy link, ⋯ (How it works,
-  Report a problem), and Layout on the last tile. Defaults is dimmed at defaults and has Undo.
+- **A picker, not tabs.** The instrument is named on a dropdown at every width, capped at
+  🎛️ `--ws-picker-max` (16rem). ⚓ Nate: eight tabs, and more instruments to come, is a long
+  row, and once an instrument is open the others aren't what you reach for (the Planner's
+  document tabs went behind the Library for the same reason).
+- **The bar:** the picker, then Defaults, Copy link, ⋯ (How it works, Report a problem), and
+  Layout on the last tile. Defaults is dimmed at defaults and has Undo. The instrument's own
+  view tabs sit under the picker, in the stage (§6).
 
-## 3. The order of an instrument
+## 3. What is uniform and what varies
 
-Top to bottom, and in reading order on a phone:
-
-1. **The question:** the chart's tabs (what it draws).
-2. **The chart**, as large as the tile allows.
-3. **The live controls**: the ones you scrub. Fixed positions, next to the answer.
-4. **The answer**: the Readout's headline.
-5. **Per-session settings**: your build, your pity. Visible and compact.
-6. **Set-once settings**: folded into summary lines that open popovers (Wish odds' Goal and
-   Radiance counter are the pattern).
-7. **Explanations**: fine print in the Readout, or Help through How it works.
+The eight differ in three ways that no single column fits: the chart's shape (a square field,
+landscape curves, a thin timeline, a table of rows), the number of controls (two for
+Reaction curves, twenty and more for Artifact odds and Enemy RES & DEF), and the kind of
+answer (a number, a table, a log). The tools that serve very different content well (Figma's
+and Blender's inspectors, PhET's simulations, Ableton's device chain) are uniform in
+**positions and grammar** and let the **amounts** vary. So every instrument puts the same
+things in the same places, says them with the same parts, and has as many of them as it needs.
 
 ### Three kinds of control
 
-- **Live:** the thing you scrub (pulls saved, days of resin, CRIT Rate, EM). Full-size slider
-  with a typeable value.
-- **Per-session:** set when you sit down (pity, the enemy, your stats). Inline, compact.
-- **Set-once:** rarely changed (your level, the scaling stat, model choices). A summary line
-  and a popover.
+- **Live:** the thing you scrub (pulls saved, days of resin, CRIT Rate, EM). A handle on the
+  chart, with a typeable twin.
+- **Per-session:** set when you sit down (pity, the enemy, your stats). A chip on the setup
+  line.
+- **Set-once:** rarely changed (your level, the scaling stat, model choices). Also a chip on
+  the setup line; the popover is where its detail lives.
 
 ## 4. Stability
 
@@ -50,9 +54,7 @@ properties panel, Desmos and the explorable-explanation tradition:
   above a control. A swapping sentence gets reserved space or sits last.
 - **Numbers don't jitter:** values in tabular figures, fixed-width value fields.
 - **Axes freeze during a drag** (the Gauge's `dragDomain` is the model).
-- **The chart's height doesn't depend on the controls.** Today the chart takes what the
-  controls leave, so a control that grows its panel shrinks the chart and lifts the panel. The
-  rail (§6) separates them.
+- **The chart's height doesn't depend on the controls.**
 
 ## 5. Type and spacing
 
@@ -68,42 +70,175 @@ The site's Settings page has the grammar the instruments adopt:
 
 Spacing groups by proximity, so each rung is about double the one inside it: label to track,
 then control to control, then section to section. Exact values live as named properties in
-`app.css` (round 2).
+`app.css`.
 
-## 6. The rail
+## 6. The stage
 
-At the wide tier the chart takes the left at the tile's full height, and a right column holds,
-top to bottom: the live controls, the settings (per-session, then set-once lines), and the
-Readout last. The Crit heatmap already had this shape. It keeps the slider beside the answer,
-gives the chart a height of its own, and ends the full-height slab of mostly empty paper the
-Readout used to be.
+Of three concepts (a setup line over a stage with the answer beside it; a stage over a
+fixed-height dock; the rail made into a proper inspector), Nate chose the first. It replaces
+the rail (§6a) one instrument at a time. Its first build (Wish odds) showed two new problems,
+and the stage is now **one box** (⚓ Nate: "if we can simplify down to one box, this solves so
+many layout issues"):
 
-- **The Readout is last at every width.** It is the one slot whose height follows the values,
-  so nothing you touch sits below it, and a growing answer moves nothing under your hand.
-- **The chart's height is the tile's** (sticky at the wide tier, so a rail taller than the tile
-  scrolls past a chart that holds still), and a share of it at the mid tier. Never what the
-  controls leave.
-- Mid tier: the chart across the top; live over settings on the left, the Readout on the right.
-  Narrow: chart, live, settings, Readout.
-- An instrument whose chart wants width rather than height (the Damage breakdown's waterfall)
-  keeps its controls under the chart, and its rail is the Readout alone.
-- A control's dependents sit below it. Where the settings decide what the live panel offers
-  (Artifact odds), the settings come first (`.instrument--settings-first`).
+```
+[ Wish odds ▾ ]                                     [ Defaults ] [ Copy link ] [ ⋯ ]
+63.5% chance of C0 within 90 pulls
+[ view tabs ] [ setup bar: Pity 0 · Guarantee None · Goal C0 · … ]        [ chart tools ]
+┌──────────────────────────────────────────────────────────────────┐
+│ the chart, full width: drag it, it is the control                 │
+│ companion strip, on the same x axis                               │
+└──────────────────────────── axis handle ─────────────────────────┘
+fine print
+```
 
-## 7. The kit
+- **One left edge.** The picker, the headline, the toolbar and the chart all start on the
+  stage's left edge. Nothing is centred: a centred bar between edge-aligned neighbours read
+  as loose (⚓ Nate).
+- **The chart head** is a row of its own at the stage's top left: the first thing read and
+  the largest type on the screen, with open night to its right, so it reads as the focus and
+  not as something squeezed beside a control (⚓ Nate: "not an afterthought"). One line (the
+  figure and its sentence on one baseline, each at its own size) from a 38rem tile; from
+  60rem the figure is 🎛️ `--wi-head-scale` (1.5) × the Readout head's 32px and the sentence
+  a step up. By the tile's width, never by fit: the headline's length changes as you drag.
+- **The chart's toolbar sits on its top edge**, snug (🎛️ `--wi-toolbar-gap`, 0.25rem), as
+  the handle sits on its bottom edge (⚓ Nate): everything that changes what the chart draws.
+  The instrument's view tabs lead it where it has them, then the setup bar, then chart tools
+  at the far end. Most instruments have no view tabs; theirs starts with the setup bar and
+  nothing else moves, so the layout doesn't depend on the tabs. It wraps where it must.
+- **Tried and set aside the same day** (2026-11-02, in this order): the view tabs in the
+  workspace bar beside the picker, with the setup bar beside the headline; then the tabs
+  under the picker with the headline right aligned on their row and the setup bar centred
+  over the chart.
+- **Two materials.** The view tabs are a recessed track (one is chosen); the setup bar is a
+  raised glass plate (each segment is a value you set). The first build gave every setting
+  its own plate, and with the instrument tabs above that was three rows of identical
+  buttons. Chart tools, where an instrument has them, follow the setup bar.
+- **The setup bar.** Every per-session and set-once setting is a segment that shows its value
+  and opens a popover: the guarantee too, as a value ("Held", "None"), not a toggle, so the
+  bar has one grammar. A list is one segment that says what is on ("Shred: Chevreuse 40%,
+  Zhongli 20%"). Segments are labeled, not written as prose sentences, because a sentence with
+  controls inside it can't be reordered for another language. Values hold a reserved width
+  and tabular figures. A setting's explanation lives in its popover, beside the choice.
+- **The chart head.** The headline answer sits at the stage's top left, over night, as in
+  Apple Stocks and Robinhood: you scrub the chart and the number follows. It has a fixed
+  height, so nothing below it moves. ⚓ Nate: **each instrument's headline is chosen at the
+  start of its round, and it must be the most important answer for that chart**, not
+  whatever the old Readout led with.
+- **The live control is a handle on the chart.** Where the live value is an axis (pulls,
+  days, EM, RES, enemy level, CRIT DMG and CRIT Rate), it is a handle on that axis with a
+  typeable value beside it.
+- **No answer card.** The card's contents each have a better home: figures on the chart
+  (§7's marks), a setting's explanation in its popover, definitions as tooltips on the
+  chart's labels. Beside the stage it sat diagonally from the chart, and mostly repeated it.
+  What no part of the chart can show is one line of **fine print** under the handle; where an
+  instrument has a long working (a formula, caveats), the fine print opens it on paper.
+  ⏭ This changes the materials rule "one paper Readout card per instrument" (Nate's): on the
+  stage, paper is the full working on request.
+- **The layout.** One column at every width. From 1024px the stage is the tile's height,
+  capped at 🎛️ `--wi-stage-aspect` (1.9) × the tile's height and centred, so an ultrawide
+  doesn't flatten every slope.
+
+### Using the chart's space
+
+The charts are the most attractive part of the screen and the least used: a single curve at
+1100×800 says no more than it would at 1100×500. The answer is to draw more of the answer and
+more of the controls into them, without losing the chart's look.
+
+1. **The answer as geometry, not more text.** Most Readout tables are points already on the
+   curve: a "Half by" is where a chance curve crosses 50%. Draw the point and the table
+   teaches itself.
+2. **Three layers:** the data, a light annotation layer, and handles. Labels sit at the data;
+   a legend is the last resort.
+3. **No panel inside the plot.** Labels may use the empty corners a monotone curve leaves;
+   cards may not, because the curve moves into them when a setting changes.
+4. **A handle looks like a handle at rest**, not only on hover, which touch doesn't have. The
+   streamer's first finding was that it was hard to see how the tools are controlled.
+5. **Every handle has a twin:** a typeable field and a keyboard path (an ARIA slider on the
+   handle), for precision, screen readers and touch.
+
+### 6a. The rail (the form being replaced)
+
+Until an instrument moves to the stage, it keeps the rail: the chart on the left at the
+tile's height, and a right column of live controls, settings, then the Readout, last because
+its height follows the values. The Damage breakdown keeps its controls under its waterfall and
+Enemy RES & DEF keeps a bespoke right column. The CSS is `app.css` § THE RAIL.
+
+## 7. Chart families
+
+The eight charts are five kinds, and each kind shares its marks, which is what makes them read
+as one set of instruments:
+
+- **Chance curves** (Wish odds, all three Artifact views): chance from 0 to 100% up the side;
+  the 50% and 90% crossings marked, with drop lines to the x axis.
+- **Response curves** (Reaction curves, RES, DEF): the current dot with its value; a short
+  tangent for what the next step adds.
+- **Timelines** (Gauge explorer, ICD timeline): time across; events marked where they happen.
+- **The field** (Crit heatmap): the 1:2 ray and the CV isoline through your point.
+- **The bridge** (Damage breakdown): one column per factor.
+
+**Orientation:** what you spend runs to the right (pulls, days, EM, RES, time). The Damage
+breakdown is the one exception (§8).
+
+**Companion strips.** An instrument may give part of its chart's height to one second view
+that shares the main chart's x axis: Wish odds' chance per pull (the soft-pity spike that
+explains the main curve's jump), Reaction curves' gain per 100 EM, Artifact odds' histogram,
+the Crit heatmap's hit histogram. Enemy RES & DEF's pair of charts is already this shape. At
+most one per instrument.
+
+## 8. The chart changes
+
+- **Enemy RES & DEF:** the DEF chart's x axis becomes DEF removed (shred and ignore
+  combined), where the curve climbs steeply toward ×1; against enemy level it was nearly flat.
+  Enemy level becomes a setup chip. Shred sources draw as segments of an arrow along the RES
+  axis. To try in a demo: the answer as a unit square whose width is the RES multiplier and
+  height the DEF multiplier, so its area is the damage kept.
+- **Artifact odds:** Level up and Your piece become a survival curve (the chance to end above
+  each value), with the histogram as the companion. All three views are then chance curves,
+  and the to-beat drag reads its answer at the point. Other sites already show the histogram;
+  the curve as the main view is ours.
+- **Damage breakdown:** upright at the wide tier, a column per factor, so it fills the stage
+  like the rest and up means more damage. Drag a column's top to change that stat; the next
+  roll's gain draws as a ghost cap on its column. Horizontal rows below the wide tier, where
+  seven columns don't fit. To judge in a demo.
+- **ICD timeline:** three lanes on one time axis (the timer's windows, the hit counter, the
+  result), so why a hit is blocked is visible without pointing at it.
+- **Gauge explorer:** the overlaid areas stay. ⚓ Nate: few auras coexist (Electro-Charged,
+  Frozen, Burning, Quicken), because most reactions clear one or both elements, so lanes per
+  element would gain little; the overlay also matches the Planner's aura lane. The aura log's
+  reactions become marks on the timeline.
+- **Unchanged charts:** Wish odds, Artifact odds' Drop view, Reaction curves and the Crit
+  heatmap gain annotations, not a different chart. For Nate's eye: the Crit heatmap's rainbow
+  map draws bands where the data is smooth (the yellow ridge reads as a boundary).
+
+## 9. The kit
 
 The instruments share small components where three or more had copies: the slider (label,
 typeable value, ticks and snapping), the Readout head, the summary-line popover, and the chart
-frame's constants. Not a charting library: the charts are bespoke on purpose.
+frame's constants. Not a charting library: the charts are bespoke on purpose. A piece of the
+stage built for one instrument stays in that instrument until a second needs it.
 
-## 8. Saved per profile
+## 10. Saved per profile
 
 An instrument remembers its state per profile, so set-once settings stay set. Defaults, with
 Undo, is how you start over; Copy link is how you share.
 
-## 9. Rounds
+## 11. Rounds
+
+The overhaul:
 
 1. The workspace and the bars: `docs/rounds/viz-workspace-bars-2026-11-02.md`.
 2. Type, spacing, the kit and typeable values: `docs/rounds/viz-type-kit-2026-11-02.md`.
 3. The rail and each instrument's controls sorted into the three kinds: `docs/rounds/viz-rail-2026-11-02.md`.
 4. Saved per profile: `docs/rounds/viz-saved-2026-11-02.md`.
+
+The stage, one instrument per round, built together with Nate and judged in the local build.
+Grouped by family, so each family's marks are built once and reused at once:
+
+1. Wish odds: the frame and the chance-curve family.
+2. Artifact odds: the survival curve and the histogram companion.
+3. Reaction curves.
+4. Enemy RES & DEF.
+5. Damage breakdown.
+6. Crit heatmap.
+7. ICD timeline.
+8. Gauge explorer.
