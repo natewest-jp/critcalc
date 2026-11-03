@@ -186,10 +186,12 @@ as one set of instruments:
 **Orientation:** what you spend runs to the right (pulls, days, EM, RES, time). The Damage
 breakdown is the one exception (§8).
 
-**Companion strips.** An instrument may give part of its chart's height to one second view
-that shares the main chart's x axis: Wish odds' chance per pull (the soft-pity spike that
+**Companion strips.** An instrument may give part of its chart to one second view that
+shares one of the main chart's axes: Wish odds' chance per pull (the soft-pity spike that
 explains the main curve's jump), Reaction curves' gain per 100 EM, Artifact odds' 100 dots,
-the Crit heatmap's hit histogram. At most one per instrument. Enemy RES & DEF has none: its two
+all on the x axis; the Crit heatmap's crit counts beside the field, on its CRIT Rate axis
+(⚓ Nate: a count sits at its share of the hits, so the axis reaches 0%). At most one per
+instrument. Enemy RES & DEF has none: its two
 plots share the y axis (how much of the hit is kept), not the x, so they sit side by side.
 
 ## 8. The chart changes
@@ -219,9 +221,13 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   Frozen, Burning, Quicken), because most reactions clear one or both elements, so lanes per
   element would gain little; the overlay also matches the Planner's aura lane. The aura log's
   reactions become marks on the timeline.
-- **Unchanged charts:** Wish odds, Artifact odds' Drop view, Reaction curves and the Crit
-  heatmap gain annotations, not a different chart. For Nate's eye: the Crit heatmap's rainbow
-  map draws bands where the data is smooth (the yellow ridge reads as a boundary).
+- **Crit heatmap** (built: `docs/rounds/viz-stage-crit-2026-11-03.md`): the field fills the
+  stage at any aspect (its axes are normalised separately), with a handle on each axis, CRIT
+  Rate's upright. Its marks are always drawn. The rainbow's lightness peaks at ×2.8, which drew
+  a ridge where the data is smooth; rivals whose lightness only rises are on `/lab/crit-ramps`
+  for Nate's pick.
+- **Unchanged charts:** Wish odds, Artifact odds' Drop view and Reaction curves gain
+  annotations, not a different chart.
 
 ## 9. The kit
 
@@ -252,6 +258,6 @@ Grouped by family, so each family's marks are built once and reused at once:
 3. Reaction curves: the response-curve family (`docs/rounds/viz-stage-reactions-2026-11-03.md`).
 4. Enemy RES & DEF: the two-plot response pair (`docs/rounds/viz-stage-defres-2026-11-03.md`).
 5. Damage breakdown: the bridge, upright (`docs/rounds/viz-stage-breakdown-2026-11-03.md`).
-6. Crit heatmap.
+6. Crit heatmap: the field, its strip on the CRIT Rate axis (`docs/rounds/viz-stage-crit-2026-11-03.md`).
 7. ICD timeline.
 8. Gauge explorer.
