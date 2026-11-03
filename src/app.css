@@ -4359,9 +4359,12 @@ img {
 	color: var(--chart-ink);
 }
 
-/* A segment's face: the setting's name, then its value in the ink. */
+/* A segment's face: the setting's name, then its value in the ink. 🎛️ The
+   name a step fainter than the chart's ink (Nate 2026-11-03: --chart-ink
+   wasn't faint enough), so the value reads first: --setup-key-mix of the
+   muted ink over the ground (--chart-dim is 62%). */
 .setup-key {
-	color: var(--chart-ink);
+	color: color-mix(in srgb, var(--muted) var(--setup-key-mix, 78%), var(--frame-bg));
 }
 .setup-val {
 	display: inline-flex;

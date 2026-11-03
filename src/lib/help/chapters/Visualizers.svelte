@@ -207,30 +207,34 @@
 <section>
 	<h2 id="artifact-odds">Artifact odds</h2>
 	<p>
-		A 5★ artifact’s odds over its life, in three views. Throughout, <strong>Your stats</strong> are the
-		substats you’d count as good. With only CRIT Rate and CRIT DMG chosen, results are in crit value;
+		A 5★ artifact’s odds over its life, in four views. Throughout, <strong>Valued stats</strong> are the
+		substats you’d count as good. With only CRIT Rate and CRIT DMG valued, results are in crit value;
 		otherwise in useful rolls, where a top roll counts 1 and the smallest 0.7.
 	</p>
 	<p>
 		<strong>Drop</strong> answers how long a piece takes to farm. Pick the piece type, every main stat
-		you’d accept, and how many of your stats it needs, and the chart shows the chance you’d have it after
-		each day of resin, from the domain alone and during a Stygian Onslaught Outbreak. A day is 180 resin,
-		and a run averages a little over one 5★.
+		you’d accept, and how many of your valued stats it needs, and the chart shows the chance you’d have
+		it after each day of resin, from the domain alone and during a Stygian Onslaught Outbreak. A day is
+		180 resin, and a run averages a little over one 5★.
 	</p>
 	<p>
-		<strong>Level up</strong> shows where a fresh piece would land at +20 as a histogram stacked by how
-		many upgrades went into your stats. Drag the marker to set the value to beat. It covers pieces that
-		drop with three substats or four, and pieces made with Sanctifying Elixir, which guarantees two of
-		your chosen substats at least two upgrades.
+		<strong>Level up</strong> shows the chance a fresh piece ends above each value at +20, with 100 dots
+		under the curve, one for each hundredth of the pieces. Drag the chart, or type a value under it, to
+		set the value to beat. It covers pieces that drop with three substats or four, and pieces made with
+		Sanctifying Elixir, which guarantees two of your chosen substats at least two upgrades.
 	</p>
 	<p>
-		<strong>Your piece</strong> is where you can enter the values of a real artifact and assess it. The
-		controls are laid out like the game’s reshape screen. Each value wheel offers only values the game
-		can produce, and a badge shows how many upgrades a substat has taken. A red pip means the current
-		values fit two possible counts and lets you pick which it is. A finished piece is ranked against every
-		+20 piece with the same four substats. Select two substats to see what a reshape would do. A reshape
-		keeps each substat’s starting roll and rerolls its upgrades by the rules of the reshape you choose:
-		Standard, Advanced, or Decreed.
+		<strong>Your piece</strong> is where you enter a real artifact and see how it measures up. Open it
+		from the toolbar and type each substat and its value, or pick them from the list: a field takes only
+		values the game can produce. A badge shows how many upgrades a substat has taken, and when the values
+		fit more than one count, the card asks which one the game shows. Below +20, the chart shows the chance
+		it ends above a value; at +20, the piece is ranked against every +20 piece with the same four substats.
+	</p>
+	<p>
+		<strong>Reshape</strong> picks two substats, as the game’s reshape screen does, and draws all
+		three kinds (Standard, Advanced and Decreed) against your piece. A reshape keeps each substat’s
+		starting roll and rerolls its upgrades. <strong>Try a reshape</strong> rolls one and plays it out,
+		then lights where it landed among the dots.
 	</p>
 	<p>
 		The reshape guarantee is read as a top-up: Upgrades land at random, and if the two selected

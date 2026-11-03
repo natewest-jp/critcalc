@@ -620,7 +620,7 @@
 			: `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 	};
 	const statList = (ids: SubstatId[]) => ids.map((id) => substatById(id).short).join(', ');
-	/** The Your stats segment's value: in Drop, how many of them it needs too */
+	/** The Valued stats segment's value: in Drop, how many of them it needs too */
 	const wantedFace = $derived(
 		view === 'drop' && atLeast < wanted.length
 			? `${atLeast} of ${statList(wanted)}`
@@ -1266,7 +1266,7 @@
 {/snippet}
 
 {#snippet wantedBody()}
-	<div class="chips ao-dense" role="group" aria-label="Your stats">
+	<div class="chips ao-dense" role="group" aria-label="Valued stats">
 		{#each SUBSTATS as s (s.id)}
 			{@const on = wanted.includes(s.id)}
 			<button
@@ -1330,7 +1330,7 @@
 {/snippet}
 
 {#snippet hasBody()}
-	<div class="chips" role="group" aria-label="How many of your stats it has">
+	<div class="chips" role="group" aria-label="How many of your valued stats it has">
 		{#each Array.from({ length: wantedSubs.length }, (_, i) => i + 1) as n (n)}
 			<button
 				class="chip chip--control"
@@ -1624,7 +1624,7 @@
 		<p class="note ao-card-note">
 			{#if resolution}
 				The number beside each substat is how many upgrades it got, the same number the game shows
-				on its reshape screen. Your stats are highlighted.
+				on its reshape screen. Your valued stats are highlighted.
 			{:else if pieceComplete}
 				Pick your piece's level. Levels these values can't belong to are dimmed.
 			{:else}
@@ -1726,7 +1726,7 @@
 				{:else}
 					{@render segment('Piece', pieceFace, pieceFace, pieceBody)}
 				{/if}
-				{@render segment('Your stats', wantedFace, wantedFace, wantedBody)}
+				{@render segment('Valued stats', wantedFace, wantedFace, wantedBody)}
 				{#if view === 'drop'}
 					{@render segment(
 						'Set',
@@ -1814,7 +1814,7 @@
 				{#if emptyReason}
 					<div class="ao-empty">
 						{#if emptyReason === 'main'}
-							<p>Your only chosen stat is this piece's main stat. Pick a substat too.</p>
+							<p>Your only valued stat is this piece's main stat. Pick a substat too.</p>
 						{:else if emptyReason === 'incomplete'}
 							<p>
 								{pieceLines.length
@@ -1851,7 +1851,7 @@
 							<p>Pick the two substats to reshape, as the game's reshape screen asks.</p>
 							<button class="btn" onclick={() => reshapeMenu?.show()}>Pick two substats</button>
 						{:else}
-							<p>None of your chosen stats are on this piece.</p>
+							<p>None of your valued stats are on this piece.</p>
 						{/if}
 					</div>
 				{:else}
@@ -1926,7 +1926,7 @@
 								? 'days of resin'
 								: unit === 'cv'
 									? 'crit value (CV) at +20'
-									: 'useful rolls in your stats at +20'}
+									: 'useful rolls in your valued stats at +20'}
 						</text>
 
 						<!-- Y grid: the chance -->
@@ -2206,8 +2206,8 @@
 				</p>
 			{:else if !emptyReason && view === 'level' && unit === 'rolls'}
 				<p class="stage-fine">
-					Useful rolls count every roll in your stats by its size: a max roll counts as 1, the
-					smallest as 0.7. A substat's starting roll counts too.
+					Useful rolls count every roll in your valued stats by its size: a max roll counts as 1,
+					the smallest as 0.7. A substat's starting roll counts too.
 				</p>
 			{:else if !emptyReason && view === 'piece' && !finished && refPiece === null}
 				<p class="stage-fine">
@@ -2218,12 +2218,6 @@
 					<button class="btn btn--sm ao-next" onclick={() => (view = 'reshape')}>
 						Reshape this piece <Mark name="forwardSlim" size={11} />
 					</button>
-				</p>
-			{:else if !emptyReason && view === 'reshape'}
-				<p class="stage-fine">
-					Reshaping keeps each substat's starting roll and rerolls all its upgrades. You keep
-					whichever result you prefer, so the piece can't come out worse: a reshape costs 1 Dust of
-					Enlightenment for a flower or plume, and 2 for other pieces.
 				</p>
 			{/if}
 		</div>
@@ -2517,16 +2511,17 @@
 		pointer-events: none;
 	}
 
-	/* ↻ 2026-11-03: the disc was --ui-danger, which the streamer read as an
-	   error ("invalid value"). It isn't one: the model took a reading that
-	   may be a stand-in, which is what --ui-provisional means. Its "!" is the
-	   dark ground, as the pip's figures are. */
+	/* The source mark was a magenta disc rgb(217,18,84) with an off-white
+	   "!" — neither ours. The disc is --ui-danger and the "!" white (⚓ Nate,
+	   both): --chrome is the one role that IS white. ⚓ It emulates Genshin's
+	   own notification mark (Nate 2026-11-03, after it was tried as
+	   --ui-provisional): the question beside it says what it means. */
 	.ao-warn-disc {
-		fill: var(--ui-provisional);
+		fill: var(--ui-danger);
 	}
 
 	.ao-warn-ink {
-		fill: var(--frame-bg);
+		fill: var(--chrome);
 	}
 
 	/* The six levels on one row at any card width: even columns, the chips
@@ -2559,8 +2554,10 @@
 		background: color-mix(in srgb, var(--text) 5%, transparent);
 	}
 
+	/* Open, a shade denser than answered: the mark carries the alarm, so the
+	   box stays neutral (a red-tinted box would read as an error again) */
 	.ao-reading.is-open {
-		background: var(--ui-provisional-soft);
+		background: color-mix(in srgb, var(--text) 9%, transparent);
 	}
 
 	.ao-reading-ask {

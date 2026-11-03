@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** 🔨 six passes (§2–§6, §7–§11) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** ✅ finished for now (Nate, 2026-11-03), seven passes (§2–§6, §7–§12) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -491,3 +491,24 @@ Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
 - ⏭ The other instruments' phone usability waits for its own session (agreed with Nate).
 
 Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 12. Seventh pass: closing it out
+
+Nate: the copy in §6–§11 is approved as written in, except Reshape's fine print ("Reshaping keeps
+each substat's starting roll…"), which goes: players know how reshaping works. Real Safari checked
+by Nate: good.
+
+- **Help** (`src/lib/help/chapters/Visualizers.svelte` § Artifact odds) rewritten for the tool as
+  it is: four views, Valued stats, the curve and its 100 dots, the card behind the toolbar and its
+  typed fields, the question for a value that fits two counts, and Reshape with Try a reshape. The
+  top-up paragraph is unchanged.
+- **Your stats is Valued stats** (⚓ Nate), with the strings that name the set: "Your valued stats
+  are highlighted", "None of your valued stats are on this piece", "Your only valued stat is this
+  piece's main stat", "useful rolls in your valued stats at +20", and the useful-rolls note.
+- **The notification mark back to `--ui-danger` with a white "!"** (⚓ Nate: it emulates Genshin's
+  own notification mark; §2's change to `--ui-provisional` reverted). The open question's box
+  goes neutral (a shade denser than answered) rather than a red tint.
+- **The setup bar's keys fainter**, Wish odds too: 🎛️ `--setup-key-mix` 78% of the muted ink over
+  the ground (`app.css` § THE STAGE; was `--chart-ink`, 100%; `--chart-dim` is 62%).
+
+Gates: Vitest 2752, svelte-check, lint and build clean; e2e on both engines 144 passed.
