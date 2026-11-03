@@ -280,6 +280,9 @@
 		guides: { x: number; label: string; side: 'left' | 'right' }[];
 		dim: boolean;
 		message?: string;
+		/** Where the message centres, in the plot's units: in the room its curve
+		 *  leaves, so it doesn't cross it. */
+		messageAt: { x: number; m: number };
 	};
 
 	const resPanel = $derived.by((): Panel => {
@@ -339,7 +342,9 @@
 				{ x: 75, label: 'diminishing returns', side: 'right' }
 			],
 			dim: immune,
-			message: immune ? 'Immune: this element deals no damage' : undefined
+			message: immune ? 'Immune: this element deals no damage' : undefined,
+			// over the flat tail, where the curve has fallen away
+			messageAt: { x: 125, m: 1.2 }
 		};
 	});
 
@@ -405,7 +410,9 @@
 			segs: ignoresDef ? [] : segs,
 			guides: [],
 			dim: ignoresDef,
-			message: ignoresDef ? 'Transformative, Lunar and Stellar reactions ignore DEF' : undefined
+			message: ignoresDef ? 'Transformative, Lunar, and Stellar reactions ignore DEF' : undefined,
+			// under the line, which is ×1 throughout when DEF is ignored
+			messageAt: { x: 50, m: 0.6 }
 		};
 	});
 
@@ -430,12 +437,22 @@
 	 *  inward. */
 	function dotLabelAt(p: Panel, d: Dot, cx: number, cy: number) {
 		const right = p.id === 'res' || d.hollow || cx - p.r.x0 < 48;
+		const below = p.id === 'def' && d.hollow;
+		// Up against the plot's top (RES shredded toward −100%), above the dot
+		// would meet the y axis's name: level with the dot instead, which on a
+		// falling curve is still clear of it.
+		const level = !below && cy - 8 - DOT_LABEL_CAP < p.r.y0;
 		return {
-			x: cx + (right ? 7 : -7),
-			y: p.id === 'def' && d.hollow ? cy + 15 : cy - 8,
+			x: cx + (right ? 1 : -1) * (level ? 9 : 7),
+			y: below ? cy + 15 : level ? cy + 1 : cy - 8,
 			anchor: right ? 'start' : 'end'
 		} as const;
 	}
+
+	/** A 12px condensed glyph, generously: keeps a message inside its plot. */
+	const MESSAGE_CHAR_PX = 6.5;
+	/** A dot label's cap height at 12px, about. */
+	const DOT_LABEL_CAP = 9;
 
 	/** A guide's label only where it fits inside its plot, clear of the y
 	 *  axis's name over the plot's left corner. */
@@ -643,10 +660,11 @@
 		{/each}
 
 		{#if p.message}
+			{@const half = (p.message.length * MESSAGE_CHAR_PX) / 2}
 			<text
 				class="stage-word"
-				x={(r.x0 + r.x1) / 2}
-				y={(r.y0 + r.y1) / 2}
+				x={Math.min(r.x1 - half, Math.max(r.x0 + half, xIn(p, p.messageAt.x)))}
+				y={yIn(r, p.messageAt.m)}
 				fill="var(--text)"
 				font-size="12"
 				text-anchor="middle"
@@ -947,6 +965,9 @@
 		<p class="stage-fine">
 			{#if !immune}
 				RES {fmtX(resNow)} and DEF {fmtX(defNow)}: {fmtX(total)} of your hit’s damage gets through.
+				<!-- ⚓ The DEF caption's fact, kept: it surprises people, so it led
+				     (docs/text/ledger/notes/vz_defres.md). -->
+				{#if !ignoresDef}Equal levels already cost you half your damage.{/if}
 			{/if}
 			{regime}
 			<span class="dr-formula"
