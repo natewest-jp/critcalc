@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { shredSources } from '$lib/data/shredSources.generated';
-import { defMultiplier, groupSources, resMultiplier, sumPicks } from './defres';
+import { defMultiplier, defRemoved, groupSources, resMultiplier, sumPicks } from './defres';
 
 describe('defMultiplier', () => {
 	it('equal levels with no modifiers is exactly one half', () => {
@@ -22,6 +22,28 @@ describe('defMultiplier', () => {
 	it('clamps modifier inputs to [0, 1]', () => {
 		expect(defMultiplier(90, 90, 2)).toBe(1); // enemy side zeroed
 		expect(defMultiplier(90, 90, -1)).toBeCloseTo(0.5, 12);
+	});
+});
+
+describe('defRemoved', () => {
+	it('carries shred and ignore together on one axis', () => {
+		for (const [s, i] of [
+			[0, 0],
+			[0.3, 0],
+			[0, 0.6],
+			[0.45, 0.6],
+			[1, 0.3]
+		])
+			for (const [c, e] of [
+				[90, 100],
+				[80, 90]
+			])
+				expect(defMultiplier(c, e, defRemoved(s, i))).toBeCloseTo(defMultiplier(c, e, s, i), 12);
+	});
+
+	it('an ignore removes its share of what the shred left', () => {
+		// 45% shred, then 60% ignore of the 55% left: 45 + 33 = 78%
+		expect(defRemoved(0.45, 0.6)).toBeCloseTo(0.78, 12);
 	});
 });
 
