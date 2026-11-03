@@ -189,18 +189,22 @@
 <section>
 	<h2 id="enemy-res-def">Enemy RES &amp; DEF</h2>
 	<p>
-		How much of a hit gets through the enemy’s resistance and defense. The upper chart is RES and
-		the lower is DEF. Point at either to read it, and drag to set the value — the enemy’s RES after
-		shred on the first, its level on the second.
+		How much of a hit gets through the enemy’s resistance and defense, and what your shred adds to
+		it, which is the headline. The RES chart and the DEF chart share one scale: how much of the hit
+		is kept. Drag across the RES chart or the handle under it to set the enemy’s RES, or pick a
+		common value beside the handle. Each source of shred you pick is a segment of the arrow along
+		its chart’s axis, and its dot shows where you land.
 	</p>
 	<p>
 		Shred works at three strengths. Between 0% and 75% RES it counts in full; below 0% it still
 		helps but at half strength; above 75% it helps but less than in full. Equal levels with the
 		enemy already halve your damage through DEF, and DEF shred and DEF ignore win it back,
-		multiplying together. Transformative, Lunar and Stellar reactions ignore DEF entirely.
+		multiplying together, so the DEF chart counts them as one figure: how much of the enemy’s DEF is
+		gone. Transformative, Lunar, and Stellar reactions ignore DEF entirely; set that with DEF in the
+		bar over the chart.
 	</p>
 	<p>
-		The shred list holds every character and artifact set that shreds the element you’ve chosen,
+		The Shred setting holds every character and artifact set that shreds the element you’ve chosen,
 		with the constellation it needs and its amounts where they vary. Several shreds add up, but two
 		routes to the same in-game debuff count only once. An immune enemy takes no damage of that
 		element, regardless of the shred.
