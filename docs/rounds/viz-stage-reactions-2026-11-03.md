@@ -1,7 +1,8 @@
 # The stage, round 3: Reaction curves (2026-11-03)
 
-**Status:** on `feat/viz-reaction-stage`, not merged. Nate: "Beautiful!"; the copy (§4) approved as
-written in, Help (§5) landed in his wording. ⏭ Real Safari.
+**Status:** ✅ merged into `main` on 2026-11-03 (`feat/viz-reaction-stage`). Nate: "Beautiful!"; the
+copy (§4) approved as written in, Help (§5) landed in his wording, real Safari checked by Nate
+("very clean, and the label-click interaction works well").
 
 ## 1. The headline
 
@@ -50,8 +51,10 @@ Driven on the production build at 1600 and 390: every family's headline, the mar
    Stellar Swirl blast).
 2. The labels' crowding: on All families at low EM four labels stack; on a phone they go right
    and cross the curves (the phone pass is on hold).
-3. The step: small on a flat curve (Swirl, Burning), dashed in the ink.
-4. The strip: on these curves it falls slowly, so it reads as a slab more than a shape.
+3. The step: small on a flat curve (Swirl, Burning), dashed in the ink. ⚓ Nate: hiding it past
+   1100 EM is right, there's no room for it.
+4. The strip: on these curves it falls slowly, so it reads as a slab more than a shape. ⚓ Nate:
+   kept, it's still useful.
 5. The other curves at 70%.
 
 ## 4. Copy (written in, approved)
@@ -84,10 +87,15 @@ and third are unchanged, except the column):
    and, for every EM, in the strip under the chart. Pick the curve in the bar over the chart, or
    click its label." ⚓ Nate split it: "…and the headline shows what the next 100 EM would add to
    one of them. The value of the next 100 EM is also visualized as a step on the active curve and
-   in the strip under the chart." The pick sentence follows.
+   in the strip under the chart." Then, at Claude's suggestion ("value" had meant two things two
+   sentences apart): "What the next 100 EM adds is also visualized as a step…". The pick sentence
+   follows.
 2. In the second paragraph, "On All families, a Reaction Bonus above zero adds a column for how
    much EM the bonus is worth, which varies a lot" → "The Reaction Bonus setting says how much EM
    the bonus is worth on the curve you're reading, which varies a lot" (its example still holds:
    87 EM and 517).
 
 Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+The copy ledger's note for this surface is `docs/text/ledger/notes/vz_rc.md` (worksheet 04 never
+closed into one).

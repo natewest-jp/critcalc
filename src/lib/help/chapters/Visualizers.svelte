@@ -145,9 +145,9 @@
 		families: Amplifying, Transformative, Additive, Lunar &amp; Stellar, and Crystallize, plus
 		<strong>All families</strong>, which puts them on one scale as the bonus each gets from EM. Drag
 		across the chart or the handle under it to set EM. Each curve’s dot shows its value there, and
-		the headline shows what the next 100 EM would add to one of them. The value of the next 100 EM
-		is also visualized as a step on the active curve and in the strip under the chart. Pick the
-		curve in the bar over the chart, or click its label.
+		the headline shows what the next 100 EM would add to one of them. What the next 100 EM adds is
+		also visualized as a step on the active curve and in the strip under the chart. Pick the curve
+		in the bar over the chart, or click its label.
 	</p>
 	<p>
 		Every curve has the same shape, a bonus of k&nbsp;×&nbsp;EM&nbsp;/&nbsp;(c&nbsp;+&nbsp;EM), with
