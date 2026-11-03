@@ -228,7 +228,7 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   Rate's upright, the strip outside it on the left, and the right edge the average's axis (along
   CRIT DMG 300% the average is linear in CRIT Rate, so every contour meets it at its value).
   ⚓ Nate: stripped down to the contours, the CV line with its ring, and your average as a notch
-  on that axis; the contours solid, the ring a button to the best split. The field is 1.5 × its
+  on that axis; the contours dotted, the ring a button to the best split. The field is 1.5 × its
   height at most. ⚓ Nate: from a 60rem tile the headline and the fine print are a column at the
   left edge and the chart stands beside them at the tile's height; every control sits on the
   chart's top edge, none behind a popover. On a phone the strip lies under the chart. ⚓ Nate kept the rainbow over four ramps whose lightness only rises, though its own

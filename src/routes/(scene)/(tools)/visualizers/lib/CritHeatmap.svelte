@@ -73,13 +73,21 @@
 	const CR_TICKS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
 	/** The y axis's numbers end this far left of the plot. */
 	const TICK_GAP = 6;
-	/** 🎛️ A strip row's thickness: most of the space a row has, within these. */
+	/** 🎛️ A strip row's thickness: most of the space a row has, within these.
+	 *  ↻ ROW_MAX 22, was 10 (Nate 2026-11-03: at 8 hits the rows stood 95px
+	 *  apart as hairlines). Not the whole gap: a solid block of bars would
+	 *  read as one shape, not a count. */
 	const ROW_SHARE = 0.72;
 	const ROW_MIN = 1.5;
-	const ROW_MAX = 10;
-	/** 🎛️ The contours' white and width. */
-	const CONTOUR_INK = 0.32;
-	const CONTOUR_W = 1;
+	const ROW_MAX = 22;
+	/** 🎛️ The contours' white, width and dash. Dotted (round dots, CONTOUR_GAP
+	 *  apart), after dashed (5 4) and solid were both tried (Nate 2026-11-03):
+	 *  dots read as a guide drawn over the colour, not a line on it, and stay
+	 *  clear of the one solid line, the CV's. Solid: CONTOUR_DASH 'none'. */
+	const CONTOUR_INK = 0.6;
+	const CONTOUR_W = 2;
+	const CONTOUR_GAP = 5;
+	const CONTOUR_DASH = `0 ${CONTOUR_GAP}`;
 	/** 🎛️ How much the night veils the unreachable 0–5% band. */
 	const VEIL = 0.62;
 
@@ -395,11 +403,16 @@
 		/>
 
 		<!-- The contours: builds with the same average, each valued where it
-		     meets the average's axis on the right. 🎛️ Solid and thin, as a
-		     map's height lines are (Nate 2026-11-03: once the CV line was the
-		     only other line, dashes no longer had to tell them apart). -->
+		     meets the average's axis on the right (CONTOUR_* above). -->
 		{#each isolines as iso (iso.m)}
-			<path d={iso.d} fill="none" stroke={ink(CONTOUR_INK)} stroke-width={CONTOUR_W} />
+			<path
+				d={iso.d}
+				fill="none"
+				stroke={ink(CONTOUR_INK)}
+				stroke-width={CONTOUR_W}
+				stroke-dasharray={CONTOUR_DASH}
+				stroke-linecap="round"
+			/>
 		{/each}
 
 		<!-- The equal-CV line through your build, and its best split: the

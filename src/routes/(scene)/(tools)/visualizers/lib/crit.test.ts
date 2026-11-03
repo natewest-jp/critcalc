@@ -22,7 +22,8 @@ import {
 	xToCD,
 	yToCR,
 	CR_AXIS_MIN,
-	countAtRate
+	countAtRate,
+	HITS_MAX
 } from './crit';
 
 describe('averageDamageMultiplier', () => {
@@ -203,9 +204,9 @@ describe('critCountDistribution', () => {
 		expect(d[8]).toBeCloseTo(Math.pow(0.7, 8), 12);
 	});
 
-	it('sums to 1 and its first bar is the no-crit risk, up to 40 hits', () => {
+	it('sums to 1 and its first bar is the no-crit risk, up to 60 hits', () => {
 		for (const cr of [0.05, 0.37, 0.7, 0.95]) {
-			for (const hits of [1, 8, 40]) {
+			for (const hits of [1, 8, 40, HITS_MAX]) {
 				const d = critCountDistribution(cr, hits);
 				expect(d.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
 				expect(d[0]).toBeCloseTo(zeroCritProbability(cr, hits), 12);

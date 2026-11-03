@@ -48,7 +48,7 @@ export function formatChance(probability: number): string {
  * the binomial distribution, since every hit's crit is its own independent
  * roll. Index 0 is the no-crit risk; the whole array is what "Roll" samples
  * one point from. Built by the ratio between neighbours rather than by
- * factorials, which stays exact enough at the slider's 40 hits.
+ * factorials, which stays exact enough at the slider's 60 hits.
  */
 export function critCountDistribution(critRate: number, hits: number): number[] {
 	const n = Math.max(1, Math.round(hits));
@@ -176,7 +176,8 @@ export function riskColorSmooth(probability: number): string {
 
 /** The hit counts the hits-per-rotation slider spans. */
 export const HITS_MIN = 1;
-export const HITS_MAX = 40;
+/** ↻ 60, was 40 (Nate 2026-11-03, a streamer's ask). */
+export const HITS_MAX = 60;
 
 /**
  * The hits-per-rotation slider's track: each hit count painted the risk colour

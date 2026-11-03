@@ -199,6 +199,34 @@
 	<strong>{formatMultiplier(rotationMultiplier(k, hitsPerRotation, myCD))}</strong>, in {chance} of rotations.
 {/snippet}
 
+<!-- THE CRIT RATE HANDLE (design §6): its name and field where the chart
+     has room for them (over the y axis's numbers, ending at the field's left
+     edge; on a phone beside CRIT DMG's, under the chart), its track always
+     hung down the field's left from the chart column's top. The model holds
+     fractions; the fields show percent. -->
+{#snippet crHandle()}
+	<div
+		class="cv-cr"
+		style:--cr-top="{topH + TOOLBAR_GAP + rect.y0 - THUMB_R}px"
+		style:--cr-h="{rect.h * (1 - CR_MIN) + 2 * THUMB_R}px"
+		style:--cr-w="{CR_TRACK}px"
+		style:--cr-x="{crX}px"
+		style:--cr-head-w={stripSide ? `${rect.x0 - TICK_GAP}px` : null}
+	>
+		<InstrumentSlider
+			vertical
+			label="CRIT Rate"
+			aria="Crit rate"
+			bind:value={myCR}
+			min={CR_MIN}
+			max={CR_MAX}
+			step={0.005}
+			scale={100}
+			unit="%"
+		/>
+	</div>
+{/snippet}
+
 <!-- THE STAGE (design §6). One box: the chart head (your average per hit),
      the chart with every control on its top edge (CRIT Rate's field, the
      hits, the shading, Pin and Roll) and a handle on each axis, and the fine
@@ -220,25 +248,7 @@
 			     since each setting is one value. CRIT Rate's name and field lead,
 			     over its track; the track itself hangs down the chart's left. -->
 			<div class="cv-toolbar" bind:clientHeight={topH}>
-				<div
-					class="cv-cr"
-					style:--cr-top="{topH + TOOLBAR_GAP + rect.y0 - THUMB_R}px"
-					style:--cr-h="{rect.h * (1 - CR_MIN) + 2 * THUMB_R}px"
-					style:--cr-w="{CR_TRACK}px"
-					style:--cr-x="{crX}px"
-				>
-					<InstrumentSlider
-						vertical
-						label="CRIT Rate"
-						aria="Crit rate"
-						bind:value={myCR}
-						min={CR_MIN}
-						max={CR_MAX}
-						step={0.005}
-						scale={100}
-						unit="%"
-					/>
-				</div>
+				{#if stripSide}{@render crHandle()}{/if}
 
 				<!-- The hits: a short slider inline, its track the risk ramp (how the
 				     no-crit chance falls as hits are added, at your CRIT Rate). -->
@@ -323,6 +333,7 @@
 				     percents. -->
 				<div
 					class="stage-handle"
+					class:cv-handles={!stripSide}
 					style:--stage-handle-l="{rect.x0 - THUMB_R}px"
 					style:--stage-handle-r="{graphW - rect.x0 - rect.w - THUMB_R}px"
 				>
@@ -337,6 +348,7 @@
 						decimals={1}
 						unit="%"
 					/>
+					{#if !stripSide}{@render crHandle()}{/if}
 				</div>
 
 				<!-- The strip under the chart, where the chart is too narrow for it
@@ -430,7 +442,7 @@
 					{/if}
 				</span>
 				<span class="cv-ghost" aria-hidden="true">
-					A hit that doesn’t crit is ×1. On average 39.6 of 40 hits crit, and &lt;0.1% of rotations
+					A hit that doesn’t crit is ×1. On average 59.4 of 60 hits crit, and &lt;0.1% of rotations
 					land none.
 				</span>
 			</p>
@@ -522,6 +534,54 @@
 	.cv-cr :global(.slider-header) {
 		justify-content: flex-start;
 		gap: 0.5rem;
+	}
+	/* Beside the field: the name and field end at the field's left edge, over
+	   the y axis's numbers (⚓ Nate 2026-11-03), and grow leftward if they
+	   must. */
+	.cv-toolbar .cv-cr {
+		display: flex;
+		justify-content: flex-end;
+		min-width: var(--cr-head-w);
+	}
+
+	/* On a phone, CRIT Rate's name and field sit beside CRIT DMG's under the
+	   chart (⚓ Nate): the CRIT DMG track across, then the two names. Both
+	   sliders' boxes dissolve into this grid; CRIT Rate's track stays hung
+	   from the column. */
+	.cv-handles {
+		display: grid;
+		grid-template-columns: auto auto;
+		grid-template-areas:
+			'cd-track cd-track'
+			'cr-head cd-head';
+		justify-content: start;
+		column-gap: 1rem;
+		row-gap: var(--inst-gap-in, 0.5rem);
+		/* The names take the stage's full width; only the track keeps the
+		   inset that puts its thumb on the marker's line. */
+		padding-inline: 0;
+	}
+	.cv-handles > :global(.slider-control > .is-track) {
+		margin-inline: var(--stage-handle-l) var(--stage-handle-r);
+	}
+	.cv-handles :global(.slider-header) {
+		gap: 0.35rem;
+	}
+	.cv-handles :global(.slider-label) {
+		white-space: nowrap;
+	}
+	.cv-handles :global(.slider-control),
+	.cv-handles .cv-cr {
+		display: contents;
+	}
+	.cv-handles > :global(.slider-control > .is-track) {
+		grid-area: cd-track;
+	}
+	.cv-handles > :global(.slider-control > .slider-header) {
+		grid-area: cd-head;
+	}
+	.cv-handles .cv-cr :global(.slider-header) {
+		grid-area: cr-head;
 	}
 	.cv-cr :global(.is-track) {
 		position: absolute;

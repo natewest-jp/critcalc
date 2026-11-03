@@ -1,7 +1,7 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
 **Status:** built on `feat/viz-crit-stage`; Nate's first look (§3a) reworked the layout and his
-second (§3b) stripped it down; his third (§3c) gave the field the tile's height. Waiting for his eye, the copy (§5) and Help (§6). Not merged.
+second (§3b) stripped it down; his third (§3c) gave the field the tile's height, and §3d has his last tweaks. Waiting for his eye, the copy (§5) and Help (§6). Not merged.
 
 ## 1. The round's three openings
 
@@ -176,6 +176,24 @@ giving the field more height:
 6. Measured, the field: 1007×760 (1.32) at 1600×1000, was 885×590; 1260×840 (1.5, the cap) at
    1920×1080; 792×528 at 1366×768; 491×495 at 1024×768 (the side form at its narrowest); two up
    at 1600, 553×611 in the stacked form with the toolbar on one row.
+
+## 3d. Nate's tweaks before the close
+
+Nate: "so much better … just about there."
+
+1. **CRIT Rate's name and field end at the field's left edge**, over the y axis's numbers, on any
+   chart with the strip beside it (the CR block is as wide as the margin and right aligned).
+2. **On a phone, CRIT Rate's and CRIT DMG's names sit side by side under the chart**: the CRIT
+   DMG track, then the two names on one row across the stage's full width (the track alone keeps
+   the inset). Fits at 375 wide.
+3. **The strip's bars are wider where they have the gap**: 🎛️ `ROW_MAX` 22, was 10. Claude's
+   judgment: not the whole gap, since a solid block of bars reads as one shape, not a count. At
+   8 hits on 1600×1000 the rows are 22px in a 95px pitch; at 60 they keep 72% of theirs.
+4. **Hits go to 60** (`HITS_MAX`, was 40; a streamer's ask). Tested: the distribution sums to 1
+   and leads with the no-crit risk at 60.
+5. **The contours are dotted**, after dashed and solid: round dots, 🎛️ `CONTOUR_W` 2,
+   `CONTOUR_GAP` 5, `CONTOUR_INK` 0.6. They read as a guide over the colour and stay clear of the
+   one solid line; `CONTOUR_DASH` 'none' brings solid back.
 
 ## 4. For Nate's eye
 
