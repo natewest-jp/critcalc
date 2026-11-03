@@ -1,7 +1,8 @@
 # The stage, round 4: Enemy RES & DEF (2026-11-03)
 
-**Status:** built on `feat/viz-defres-stage`, not merged. Waiting on Nate's look, the copy (§4)
-and Help (§5).
+**Status:** ✅ merged into `main` on 2026-11-03 (`feat/viz-defres-stage`). Nate: "a hole-in-one
+… I don't think there's anything I'd change about it." The copy (§4) and Help (§5) approved as
+proposed; Claude's three closing fixes (§3a) approved and landed. Real Safari is still Nate's.
 
 ## 1. The headline
 
@@ -70,7 +71,16 @@ page errors. Looked at headless at 1600, 700 and 390.
 5. On a 700px tile with the final RES near −100%, its "×1.450" meets the y axis's name.
 6. The phone (on hold): the plots stack and hold together, the guides drop.
 
-## 4. Copy (written in, for approval)
+### 3a. Nate's rulings, and the closing fixes
+
+- ⚓ Nate: the arrow's brownish second tone stays.
+- ⚓ Nate approved Claude's three: (1) the fine print keeps "Equal levels already cost you half
+  your damage." after the product, not shown when DEF is ignored; (2) a dot label against the
+  plot's top sits level with its dot (item 5 above); (3) Immune's and DEF Ignored's messages sit
+  in the room their curve leaves (over RES's flat tail, under DEF's ×1 line), inside the plot
+  (item 4 above).
+
+## 4. Copy (written in, approved)
 
 New:
 
@@ -93,19 +103,19 @@ New:
    1/(4·res+1). DEF: (100+yours) / ((100+yours) + (100+enemy)·(1−shred)·(1−ignore))."
 
 Kept: the guides, the regime sentences, "Immune: this element deals no damage", the popover's
-lists and section heads. Proposed: the DEF message "Transformative, Lunar and Stellar reactions
+lists and section heads. Approved: the DEF message "Transformative, Lunar and Stellar reactions
 ignore DEF" takes the style guide's Oxford comma ("Lunar, and Stellar").
 
 Retired: both chart captions ("Most enemies resist 10%. …" and "Equal levels already cost you
 half your damage. …"), "Your shred and DEF ignore add X% damage against this enemy", the
 Readout's rows, the Your hit, Enemy and Shred kickers, and the checkbox's label. ⚠ The DEF
 caption's fact led by ruling (`docs/text/ledger/notes/vz_defres.md`: "equal levels already cost
-you half" surprises people); it now shows only as the hollow dot's figure. Claude's suggestion:
-keep it in the fine print, after the product.
+you half" surprises people); it had shrunk to the hollow dot's figure, so it is kept in the fine
+print, after the product (approved).
 
-## 5. Help (proposed, not landed)
+## 5. Help (landed, as proposed)
 
-`src/lib/help/chapters/Visualizers.svelte` § Enemy RES & DEF, today written for the two
+`src/lib/help/chapters/Visualizers.svelte` § Enemy RES & DEF, which was written for the two
 stacked charts.
 
 1. First paragraph: "How much of a hit gets through the enemy's resistance and defense, and
@@ -121,4 +131,6 @@ stacked charts.
 3. Third paragraph, its opening: "The shred list holds" → "The Shred setting holds".
 
 Tests: `defres.test.ts` § `defRemoved` (2 new). Gates: Vitest 2754, svelte-check, lint and
-build clean.
+build clean; e2e both engines 144 passed.
+
+The copy ledger's note is `docs/text/ledger/notes/vz_defres.md`, brought to the stage.
