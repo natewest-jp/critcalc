@@ -21,7 +21,6 @@
 		formatChance,
 		critCountDistribution,
 		rotationMultiplier,
-		splitChartWidth,
 		type FieldRect
 	} from './crit';
 
@@ -90,34 +89,39 @@
 	/** Under the plot: the x axis's numbers and the strip's name. The CRIT DMG
 	 *  handle is under the SVG. */
 	const BOTTOM = 22;
-	/** 🎛️ The field's widest, as a multiple of its height; the strip takes the
-	 *  width past it, between its least and most, and any past that goes back
-	 *  to the field (splitChartWidth in crit.ts). */
-	const FIELD_MAX_ASPECT = 1.6;
+	/** 🎛️ The strip: a share of the plot's height, within limits (by height,
+	 *  so the stage's width can follow the field without chasing itself). */
+	const STRIP_PER_H = 0.15;
 	const STRIP_MIN = 56;
-	const STRIP_MAX = 480;
+	const STRIP_MAX = 110;
+	/** 🎛️ THE FIELD'S WIDEST, as a multiple of its height (⚓ Nate
+	 *  2026-11-03: one up on a wide screen it stretched past 2:1). From 1024px
+	 *  the stage is capped at the width that gives the field this shape, and
+	 *  centred, night either side; the headline and the toolbar come with it,
+	 *  so the box keeps one left edge (design §6). */
+	const FIELD_MAX_ASPECT = 1.5;
 	/** The plot's least height; below 1024px (natural height) it is a near
 	 *  square of the chart's width, up to PLOT_NATURAL_MAX. */
 	const PLOT_MIN = 240;
 	const PLOT_NATURAL_MAX = 560;
 
 	const plotH = $derived(Math.max(PLOT_MIN, graphH - TOP - BOTTOM));
-	const split = $derived(
-		splitChartWidth(
-			graphW - (STRIP_GAP + CR_TRACK + CR_GAP + TICK_W + TICK_GAP + AVG_W + PADR),
-			plotH,
-			{ maxAspect: FIELD_MAX_ASPECT, stripMin: STRIP_MIN, stripMax: STRIP_MAX }
-		)
-	);
-	const strip = $derived({ x0: 0, w: split.strip });
-	const crX = $derived(split.strip + STRIP_GAP);
+	const stripW = $derived(clamp(Math.round(plotH * STRIP_PER_H), STRIP_MIN, STRIP_MAX));
+	const strip = $derived({ x0: 0, w: stripW });
+	const crX = $derived(stripW + STRIP_GAP);
+	/** Everything across the chart but the field. */
+	const chromeW = $derived(crX + CR_TRACK + CR_GAP + TICK_W + TICK_GAP + AVG_W + PADR);
+	const stageMax = $derived(Math.round(plotH * FIELD_MAX_ASPECT + chromeW));
 	const rect = $derived<FieldRect>({
 		x0: crX + CR_TRACK + CR_GAP + TICK_W + TICK_GAP,
 		y0: TOP,
-		w: split.field,
+		w: Math.max(80, graphW - chromeW),
 		h: plotH
 	});
-	const graphMin = $derived(
+	/** Below 1024px the stage has its natural height, so the chart's floor is
+	 *  its height: a near square of its width. From 1024px the chart fills the
+	 *  tile and the floor is only the least plot (CSS, `.cv-graph`). */
+	const naturalMin = $derived(
 		TOP + BOTTOM + clamp(Math.round(graphW * 0.8), PLOT_MIN, PLOT_NATURAL_MAX)
 	);
 
@@ -178,7 +182,7 @@
      the field with its strip, and a handle on each axis. The old Readout is on
      the chart: the CV on its line, the ratio at the marker, the pin's change
      on its connector, the one-rotation chart as the strip. -->
-<div class="stage-root">
+<div class="stage-root cv-stage-root" style:--cv-stage-max="{stageMax}px">
 	<div class="stage ctx-dark">
 		<p class="readout-head stage-head">
 			{formatMultiplier(myMultiplier)}<span class="readout-sentence">average damage per hit</span>
@@ -279,7 +283,8 @@
 		<div class="cv-graph-wrap">
 			<div
 				class="stage-graph instrument-graph cv-graph"
-				style:--graph-min="{graphMin}px"
+				style:--cv-natural-min="{naturalMin}px"
+				style:--cv-fill-min="{TOP + BOTTOM + PLOT_MIN}px"
 				bind:clientWidth={graphW}
 				bind:clientHeight={graphH}
 			>
@@ -383,20 +388,29 @@
 			<!-- ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
 			     "280 CV" for artifact CV, where 280 is near impossible. -->
 			<p>
-				Each curve joins the builds with one average, its value where it meets the right edge; the
-				bold one is yours. The straight line is every build with your {Math.round(
-					critValue(myCR, myCD) * 100
-				)} total crit value (CV): 2 × CRIT Rate + CRIT DMG, base crit stats included.
-			</p>
-			<p>
-				Drag anywhere on the map, or a handle, to move your build; hover or tap the bars to read one
-				rotation.
+				Each dashed curve joins the builds with one average, read on the right edge. The solid line
+				is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value (CV), 2 ×
+				CRIT Rate + CRIT DMG with base crit stats included, and its ring is that budget’s best split.
+				Hover or tap a bar to read one rotation.
 			</p>
 		</div>
 	</div>
 </div>
 
 <style>
+	/* THE FIELD KEEPS ITS SHAPE: the stage is no wider than the field at
+	   FIELD_MAX_ASPECT needs (the script measures it), and the shared rule
+	   centres it. From 1024px only, where the stage is capped at all (app.css
+	   § THE STAGE; breakpoints.test.ts names the stop). */
+	@media (min-width: 1024px) {
+		.cv-stage-root {
+			grid-template-columns: minmax(
+				0,
+				min(calc(100cqh * var(--stage-aspect)), var(--cv-stage-max))
+			);
+		}
+	}
+
 	/* The chart box and the CRIT Rate handle over it, the CRIT DMG handle under
 	   it: one unit, so the stage's gap doesn't fall between the chart and its
 	   handle. */
@@ -409,6 +423,14 @@
 
 	.cv-graph {
 		position: relative;
+		min-height: var(--cv-natural-min);
+	}
+	/* The tile is a size container from 1024px (breakpoints.test.ts names the
+	   stop), and the stage its height: the chart takes what the rest leave. */
+	@media (min-width: 1024px) {
+		.cv-graph {
+			min-height: var(--cv-fill-min);
+		}
 	}
 
 	/* The upright handle: no flow box of its own. Its name and field sit over

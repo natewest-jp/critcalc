@@ -225,9 +225,10 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   stage at any aspect (its axes are normalised separately), with a handle on each axis, CRIT
   Rate's upright, the strip outside it on the left, and the right edge the average's axis (along
   CRIT DMG 300% the average is linear in CRIT Rate, so every contour meets it at its value).
-  Your own contour is the boldest line: the headline drawn. Its marks are always drawn. The field
-  is capped at 1.6 × its height, the strip taking the width past it. ⚓ Nate kept the rainbow
-  over four ramps whose lightness only rises, though its own peaks at ×2.8.
+  ⚓ Nate: stripped down to the contours, the CV line with its ring, and your average as a notch
+  on that axis. The field is 1.5 × its height at most, and the stage is capped to fit it and
+  centred. ⚓ Nate kept the rainbow over four ramps whose lightness only rises, though its own
+  peaks at ×2.8.
 - **Unchanged charts:** Wish odds, Artifact odds' Drop view and Reaction curves gain
   annotations, not a different chart.
 

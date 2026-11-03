@@ -20,9 +20,6 @@
 		cvLineCR,
 		bestSplit,
 		formatMultiplier,
-		formatChance,
-		rotationMultiplier,
-		formatRatio,
 		countAtRate,
 		cdToX,
 		crToY,
@@ -141,9 +138,10 @@
 	/** 🎛️ A fixed contour's value hides when it is this close to yours. */
 	const AVG_CLEAR = 12;
 
-	// Your contour: every build with your average, the headline's figure drawn.
+	// Your average, marked on its axis: the headline's figure on the scale
+	// the contours are read by. ⛔ Not as a contour of its own: two more lines
+	// through the marker were too many (Nate 2026-11-03).
 	const yourM = $derived(averageDamageMultiplier(shownCR, shownCD));
-	const yourPath = $derived(linePath((cd) => (yourM - 1) / cd, CR_MIN));
 	const yourY = $derived(avgY(yourM));
 
 	const isolines = $derived(
@@ -163,13 +161,6 @@
 		return { x: x(cv - 2 * CR_MAX) + 8, y: rect.y0 + 14 };
 	});
 
-	// The 1:2 ray, CD = 2 × CR, from the field's left edge to its top.
-	const RAY_CD0 = CD_MIN;
-	const RAY_CD1 = Math.min(CD_MAX, 2 * CR_MAX);
-
-	// The marker's word: its CD:CR ratio, right of the dot unless that runs out.
-	const ratioLeft = $derived(dotX > right - 92);
-
 	const pinnedX = $derived(pinned ? x(clamp(pinned.critDamage, CD_MIN, CD_MAX)) : 0);
 	const pinnedY = $derived(pinned ? y(clamp(pinned.critRate, CR_MIN, CR_MAX)) : 0);
 	// ⏭ i18n: the locale moves here with the ledger; the sign is ICU's.
@@ -185,26 +176,15 @@
 	const rowH = $derived(
 		clamp(((rect.h * (1 / n)) / (CR_MAX - CR_AXIS_MIN)) * ROW_SHARE, ROW_MIN, ROW_MAX)
 	);
-	// 🎛️ Where the strip has the length and its rows the room, each row
-	// carries its reading: the count, that rotation's average, and its chance.
-	const ROW_LABEL_W = 118;
-	const ROW_LABEL_MIN_GAP = 13;
-	/** A row this unlikely keeps its bar but not its words. */
-	const ROW_LABEL_MIN_CHANCE = 0.005;
-	const rowGap = $derived(rect.h / n / (CR_MAX - CR_AXIS_MIN));
-	const rowWords = $derived(strip.w >= ROW_LABEL_W + 60 && rowGap >= ROW_LABEL_MIN_GAP);
-	const barRoom = $derived(rowWords ? strip.w - ROW_LABEL_W : strip.w);
 	const stripRight = $derived(strip.x0 + strip.w);
 	const rows = $derived(
 		distribution.map((chance, k) => {
-			const len = peak > 0 ? (chance / peak) * barRoom : 0;
+			const len = peak > 0 ? (chance / peak) * strip.w : 0;
 			return {
 				k,
 				y: y(k / n),
 				len,
-				x: stripRight - len,
-				words: rowWords && chance >= ROW_LABEL_MIN_CHANCE,
-				chance
+				x: stripRight - len
 			};
 		})
 	);
@@ -405,31 +385,9 @@
 			<path d={iso.d} fill="none" stroke={ink(0.34)} stroke-width="1.1" stroke-dasharray="5 4" />
 		{/each}
 
-		<!-- The 1:2 ray: where any budget's average peaks (until CRIT Rate
-		     would pass 100%) -->
-		<line
-			x1={x(RAY_CD0)}
-			y1={y(RAY_CD0 / 2)}
-			x2={x(RAY_CD1)}
-			y2={y(RAY_CD1 / 2)}
-			stroke={ink(0.45)}
-			stroke-width="1"
-			stroke-dasharray="7 5"
-		/>
-		<!-- Its name at its dark foot, clear of the bright corner -->
-		<text
-			class="stage-word"
-			x={rect.x0 + 6}
-			y={y(RAY_CD0 / 2) - 10}
-			fill="var(--text)"
-			font-size="10"
-		>
-			CD = 2×CR
-		</text>
-
 		<!-- The equal-CV line through your build, and its best split: the
-		     lighter of your two lines, so your contour leads -->
-		<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.25" stroke-opacity="0.7" />
+		     one solid line on the field -->
+		<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.5" stroke-opacity="0.85" />
 		<text
 			class="stage-word"
 			x={cvLabel.x}
@@ -459,30 +417,6 @@
 				best split of this budget
 			</text>
 		{/if}
-
-		<!-- YOUR CONTOUR: every build with your average, the headline's figure
-		     as a line. The boldest line on the field, cased in the night so it
-		     holds on the yellow too. -->
-		<path
-			d={yourPath}
-			fill="none"
-			stroke="var(--frame-bg)"
-			stroke-opacity="0.45"
-			stroke-width="5"
-			stroke-linecap="round"
-		/>
-		<path d={yourPath} fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" />
-		<text
-			class="stage-word"
-			x={right - 6}
-			y={yourY - 7}
-			fill="var(--text)"
-			font-size="11"
-			font-weight="600"
-			text-anchor="end"
-		>
-			your average
-		</text>
 
 		<!-- The axes' numbers -->
 		{#each CD_TICKS as t (t)}
@@ -529,8 +463,9 @@
 				</text>
 			{/if}
 		{/each}
-		<line x1={right} y1={yourY} x2={right + 5} y2={yourY} stroke="var(--text)" stroke-width="2" />
-		<text x={right + 7} y={yourY + 4} fill="var(--text)" font-size="12" font-weight="700">
+		<!-- Yours: a notch where your build's contour would meet the axis -->
+		<path d="M{right + 1},{yourY} l5,-4 v8 z" fill="var(--text)" />
+		<text x={right + 9} y={yourY + 4} fill="var(--text)" font-size="12" font-weight="700">
 			{formatMultiplier(yourM)}
 		</text>
 
@@ -547,18 +482,6 @@
 				fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
 				fill-opacity={readCount === r.k ? 1 : 0.45}
 			/>
-			{#if r.words}
-				<text
-					x={r.x - 6}
-					y={r.y + 3.5}
-					fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
-					font-size="10"
-					text-anchor="end"
-				>
-					{r.k} crit{r.k === 1 ? '' : 's'} · {formatMultiplier(rotationMultiplier(r.k, n, shownCD))} ·
-					{formatChance(r.chance)}
-				</text>
-			{/if}
 		{/each}
 		<text
 			class="stage-word"
@@ -571,11 +494,6 @@
 			crits in {n}
 			{n === 1 ? 'hit' : 'hits'}
 		</text>
-
-		<!-- Your build's crosshair: the CRIT Rate line runs out through the
-		     handle and the strip, where the rows' average falls -->
-		<line x1={strip.x0} y1={dotY} x2={right} y2={dotY} stroke={ink(0.32)} stroke-dasharray="3 4" />
-		<line x1={dotX} y1={rect.y0} x2={dotX} y2={bottom} stroke={ink(0.32)} stroke-dasharray="3 4" />
 
 		<!-- The pinned build, and the move from it to yours -->
 		{#if pinned}
@@ -615,16 +533,6 @@
 		<!-- ⏸ The black ring is deliberate: this dot rides a rainbow, and white
 		     on pale yellow is where it would disappear. -->
 		<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
-		<text
-			class="stage-word"
-			x={ratioLeft ? dotX - 14 : dotX + 14}
-			y={dotY + 18}
-			fill="var(--text)"
-			font-size="10"
-			text-anchor={ratioLeft ? 'end' : 'start'}
-		>
-			CD:CR {formatRatio(shownCR, shownCD)}
-		</text>
 	</svg>
 </div>
 
