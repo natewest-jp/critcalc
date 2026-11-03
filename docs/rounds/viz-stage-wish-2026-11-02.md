@@ -1,8 +1,9 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage` in six passes (§7–§11); §11 is the arrangement to judge next, for Nate to look at in the local build. Not merged.
-⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
-§4 are Nate's; real Safari and iPhone.
+**Status:** ✅ merged into `main` on 2026-11-03 (Nate's go-ahead), before Artifact odds. Built in
+eight passes: §11's arrangement stands, with §12 (the edges) and §13 (the Radiance counter's
+popover) after it. Its written-in copy (§5, §7) ships as it stands. ⏭ Open: whether the crossings'
+labels move to the drop line's foot, as Artifact odds has them (`docs/todo.md`).
 
 ## 1. Why
 
@@ -224,3 +225,43 @@ Next session: Nate's verdict on this arrangement, then the copy proposals (§5, 
 Artifact odds, whose round moves the stage's CSS to `app.css`.
 
 Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 12. Seventh pass (2026-11-03): the stage's edges are the site's, and the chart's side edges
+
+Back on Wish odds after Artifact odds (`docs/rounds/viz-stage-artifact-2026-11-03.md`), on
+`feat/viz-artifact-stage` (the stage's CSS is shared in `app.css` now, so both instruments move).
+
+- **The stage lines up with the site** one up (⚓ Nate: the other tools do). It was inset 24px a
+  side at 1920×1080 and 13px at 2560×1440: the width cap (1.9 × the tile's height, centred) bit,
+  since a one-up tile is 1.95:1 and 1.89:1 there. 🎛️ `--stage-aspect` 1.9 → 2.4: no 16:9 or 16:10
+  screen is capped; an ultrawide (2.55:1 at 3440×1440) still is, centred. Measured at 1280, 1920
+  and 2560 wide: the stage's edges are the bars' to the pixel.
+- **The chart's side edges** (⚓ Nate: text stuck out far past the plot's left). The y axis's name
+  and the strip's label began 4px into the SVG, about 50px left of the plot, whose margin was 52–58px.
+  🎛️ `PADL` 34 (both instruments): what the "100%" tick needs, so the widest y number starts on
+  the stage's edge, under the headline; every other word starts at the plot's left edge. `PADR`
+  16 → 12: half the last x label.
+
+Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 13. Eighth pass (2026-11-03): the Radiance counter's popover, tidied
+
+Nate: "still so messy and has wrong font-size assignments". Measured before: "Find mine" was the
+smallest text in it (11px), the interview's question the largest (16px semibold), every answer
+an 11px button, and the counter's chips had no label. Rebuilt on the instrument kit's roles
+(design §5), one size per role; the wording is unchanged:
+
+- **The counter**: its label ("Radiance counter", `.slider-label`, 14px semibold), the chips, and
+  the banner's note as a hint under them (12px, muted, a rung closer). The Guarantee popover's note
+  takes the same hint, a rung from its checkbox.
+- **Find mine** is a section label under a rule, with its two ways as two blocks a control's gap
+  apart: the file (a whole-width button, with "The file stays on your device." under it, and its
+  error), then the questions (the lead as a hint, the answers so far, the question at the label's
+  size, the answers as a list of whole-width buttons at the control's size, then Back and Start
+  over with marks).
+- **The report** ("Your wish history") is a section of its own under a rule: its lines as hints a
+  rung apart, "Since your last Radiance" as a subhead over the strip, Undo with its mark.
+
+Gates: Vitest 2752, svelte-check, lint and build clean; e2e on both engines 144 passed. Looked at
+in every state: at rest, mid-interview, asking about the animation, done, and after reading an
+export.

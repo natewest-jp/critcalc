@@ -599,6 +599,29 @@ export function compareTo(dist: ValueDist, ref: ValueDist) {
 	return { below, equal, above: Math.max(0, 1 - below - equal) };
 }
 
+/**
+ * The survival curve: the chance an outcome ends above x, for any x (the
+ * Level up and Your piece charts). As `compareTo`'s `above` against a sure
+ * reference, so the curve and the headline read the same: an outcome within
+ * 1e-6 of x ties, and a tie isn't above.
+ */
+export function survival(dist: ValueDist): (x: number) => number {
+	const sorted = [...dist].sort((a, b) => a.x - b.x);
+	// tail[i]: the chance of sorted[i] or anything after it
+	const tail = new Array<number>(sorted.length + 1).fill(0);
+	for (let i = sorted.length - 1; i >= 0; i--) tail[i] = tail[i + 1] + sorted[i].p;
+	return (x) => {
+		let lo = 0;
+		let hi = sorted.length;
+		while (lo < hi) {
+			const mid = (lo + hi) >> 1;
+			if (sorted[mid].x <= x + 1e-6) lo = mid + 1;
+			else hi = mid;
+		}
+		return Math.min(1, Math.max(0, tail[lo]));
+	};
+}
+
 /** Mid-rank percentile: below, plus half the ties (a typical piece reads 50). */
 export function percentileOf(dist: ValueDist, ref: ValueDist): number {
 	const { below, equal } = compareTo(dist, ref);

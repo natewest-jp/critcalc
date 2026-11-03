@@ -10,9 +10,10 @@ import {
 	pieceReshape,
 	piecePopulation,
 	upgradeTotals,
+	rollReshape,
 	type PieceQuery
 } from './appraise';
-import { collapse, distStats, freshOutcome, substatById } from './artifactOdds';
+import { collapse, compareTo, distStats, freshOutcome, substatById } from './artifactOdds';
 
 // Expectations pinned after a full cross-validation against the Genshin
 // Optimizer's generated artifact_sub_rolls.json (2026-07-07): identical
@@ -199,10 +200,100 @@ describe('a piece', () => {
 		expect(d[0].x).toBeCloseTo(7.8, 9);
 	});
 
+	// The game shows a 3-line piece's 4th substat from the start, grayed out
+	// as "(unactivated)" (Nate, 2026-11-03): every fresh piece's four lines
+	// are known. Its first upgrade (at +4) only turns that line on, so from +0
+	// the piece is exactly a 3-line piece at +4 whose 4th line has just come.
+	it('an unactivated 4th line is a 3-line piece at +4, known in advance', () => {
+		const known: PieceQuery = {
+			...demo,
+			level: 0,
+			lines: [
+				{ id: 'atkPct', value: 4.1 },
+				{ id: 'er', value: 4.5 },
+				{ id: 'cd', value: 5.4 },
+				{ id: 'cr', value: 2.7 }
+			],
+			counts: [1, 1, 1, 1],
+			selected: [],
+			unactivated: true
+		};
+		const atFour: PieceQuery = { ...known, level: 4, unactivated: false };
+		expect(collapse(pieceFuture(known))).toEqual(collapse(pieceFuture(atFour)));
+		// its value now leaves the unactivated line out: CD 5.4 only
+		expect(pieceNow(known)[0].x).toBeCloseTo(5.4, 9);
+	});
+
+	it('an unactivated 4th line resolves as a 3-line start at +0', () => {
+		const inf = (
+			[
+				['atkPct', 4.1],
+				['er', 4.5],
+				['cd', 5.4],
+				['cr', 2.7]
+			] as const
+		).map(([id, v]) => inferRollCounts(id, v));
+		expect(resolvePiece(inf, 0).map((r) => r.fourLineStart)).toEqual([true]);
+		const res = resolvePiece(inf, 0, true);
+		expect(res.map((r) => [r.fourLineStart, r.events])).toEqual([[false, 4]]);
+	});
+
 	it('a reshape keeps the first rolls and deals the rest again', () => {
 		const after = collapse(pieceReshape(demo, 4, 2));
 		expect(sum(after)).toBeCloseTo(1, 9);
 		expect(after[0].x).toBeGreaterThanOrEqual(2 * 2.7 + 5.4 + 5.4);
+	});
+
+	// "Try a reshape" rolls ONE result; it must be a draw from the very
+	// distribution the chart draws, or the dot it lights would lie.
+	describe('one reshape, rolled', () => {
+		/** A seeded generator (mulberry32), so the test is the same every run */
+		const seeded = (seed: number) => () => {
+			seed = (seed + 0x6d2b79f5) | 0;
+			let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+			t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+			return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+		};
+
+		for (const floor of [2, 3, 4]) {
+			it(`a floor-${floor} roll is a draw from pieceReshape`, () => {
+				const exact = collapse(pieceReshape(demo, 4, floor));
+				const support = new Set(exact.map((d) => d.x.toFixed(6)));
+				const rand = seeded(floor);
+				const N = 20000;
+				let mean = 0;
+				let beats = 0;
+				for (let i = 0; i < N; i++) {
+					const r = rollReshape(demo, 4, floor, rand);
+					expect(support.has(r.x.toFixed(6))).toBe(true);
+					mean += r.x / N;
+					if (r.x > 34.2 + 1e-6) beats++;
+				}
+				expect(mean).toBeCloseTo(distStats(exact).mean, 0);
+				expect(beats / N).toBeCloseTo(compareTo(exact, [{ x: 34.2, p: 1 }]).above, 1);
+			});
+		}
+
+		it("keeps the floor, the starting rolls and the game's display", () => {
+			const rand = seeded(7);
+			for (let i = 0; i < 200; i++) {
+				const r = rollReshape(demo, 4, 4, rand);
+				expect(r.steps).toHaveLength(4);
+				// Decreed on CR and CD: all four upgrades go to them
+				expect(r.steps.every((s) => s.line === 0 || s.line === 1)).toBe(true);
+				expect(r.counts.reduce((a, b) => a + b, 0)).toBe(8);
+				// a start is one roll the line's value can begin with
+				r.start.forEach((v, li) => {
+					const id = demo.lines[li].id;
+					expect(inferRollCounts(id, Number(v)).some((c) => c.count === 1)).toBe(true);
+				});
+				// the last step on a line shows what the line ends on
+				r.steps.forEach((s, k) => {
+					if (!r.steps.slice(k + 1).some((t) => t.line === s.line))
+						expect(s.value).toBe(r.final[s.line]);
+				});
+			}
+		});
 	});
 
 	it('no reshape without two selected lines', () => {

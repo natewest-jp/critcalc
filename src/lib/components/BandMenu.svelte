@@ -162,6 +162,12 @@
 		if (refocus) triggerEl?.focus();
 	}
 
+	/** Open from elsewhere: Artifact odds' "Enter your piece" opens the card's
+	 *  segment. */
+	export function show() {
+		if (!open) openMenu();
+	}
+
 	// Portalled, so it outlived its page's leave (the Builder's More, on an
 	// iPhone swipe-back). No refocus: the trigger is on the page going away.
 	closeOnLeave(
@@ -175,7 +181,8 @@
      (Wish Odds' interview replaces its buttons), taking focus with them. -->
 <svelte:window
 	onkeydown={(e) => {
-		if (!open || e.key !== 'Escape') return;
+		// a field inside that used Escape itself (a combobox closing its list)
+		if (!open || e.key !== 'Escape' || e.defaultPrevented) return;
 		if (e.target !== document.body && !menuEl?.contains(e.target as Node)) return;
 		e.preventDefault();
 		close();

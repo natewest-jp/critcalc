@@ -24,7 +24,8 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 
 ## The stage
 
-- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds wears it. It is one box, with the headline at the chart head and no answer card. Its CSS stays in `WishInstrument.svelte` until a second instrument wears it.
+- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds and Artifact odds wear it. It is one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE.
+- A typeable card field (`StatField.svelte`) only ever sets an option from its list: typing is a search (`statEntry.ts`, tested).
 - An axis handle is an `InstrumentSlider` whose track runs the plot's x range plus `THUMB_R` each side, so the thumb sits on the marker line. ⚠️ Zero the range input's margin, or Chrome's 2px puts it off the line.
 
 ## The rail

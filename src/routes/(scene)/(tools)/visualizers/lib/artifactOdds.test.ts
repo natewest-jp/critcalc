@@ -17,6 +17,7 @@ import {
 	distStats,
 	compareTo,
 	percentileOf,
+	survival,
 	rollEvents,
 	rollsLeftAt,
 	unitTiers,
@@ -296,6 +297,24 @@ describe('the top-up floor, enumerated the other way round', () => {
 			expect(ours.length).toBe(late.size);
 			for (const d of ours) expect(late.get(Math.round(d.x * 10))).toBeCloseTo(d.p, 12);
 		});
+});
+
+describe('survival', () => {
+	const dist: ValueDist = [
+		{ x: 3, p: 0.25 },
+		{ x: 1, p: 0.25 },
+		{ x: 2, p: 0.5 }
+	];
+	const s = survival(dist);
+	it('is the chance of ending above x', () => {
+		expect(s(0)).toBe(1);
+		expect(s(1.5)).toBeCloseTo(0.75, 12);
+		expect(s(3)).toBe(0);
+	});
+	it('agrees with compareTo at every value, ties included', () => {
+		for (const x of [0, 1, 1.0000001, 2, 2.5, 3, 4])
+			expect(s(x)).toBeCloseTo(compareTo(dist, [{ x, p: 1 }]).above, 12);
+	});
 });
 
 describe('compareTo / percentileOf', () => {
