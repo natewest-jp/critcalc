@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** 🔨 built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** 🔨 two passes (§2–§6, then §7) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -244,3 +244,117 @@ Help (`src/lib/help/chapters/Visualizers.svelte` § Artifact odds), now stale:
 Removed: the odds bar's keys (Below / Equal / Above, Worse / The same / Better), "Likely: …",
 "Typical: …", "Now: …", the hover line ("…: x% chance of exactly this · y% chance of this or
 more"), the legend, and "Drag the chart or use the slider…".
+
+## 7. Second pass: two jobs, two steps, 100 dots
+
+Nate on the first pass: the curves are "more useful than the histograms", and the steps in them
+are real (CV lands on a grid of about 0.78, one roll's smallest tier, and the game's rounding to
+0.1 splits each grid point into a little step). Then: the card does too many jobs at once (entering
+a piece, and choosing what to reshape), and the card beside the chart is two boxes again. His idea,
+refined together: split entry from reshaping, put the card behind a segment, and give reshaping
+its own step with all three kinds on the chart. Built as agreed:
+
+- **Reshape is a fourth view tab** (Drop, Level up, Your piece, Reshape: the piece's life). Its
+  head is the chance the chosen kind beats your piece ("13.3% chance a Standard reshape beats your
+  piece"); its chart draws **all three kinds**, the chosen one bold, the others thin and named at
+  the marker ("Advanced 32.5%", "Decreed 99.78%"); its Reshape segment ("CR and CD · Standard")
+  opens **the game's reshape screen**: each line with its badge, value and radial, two at most,
+  then the kind. Your piece at +20 has a "Reshape this piece" button under its handle.
+- **Your piece is entry and rating only.** The card loses its radials. A defined (Elixir) piece's
+  two substats are picked in the Made popover, as the game's Define Minor Affixes picks them. The
+  two selections are separate state now (`defSel` and `selected` in the share state; an older
+  state's single selection becomes both, as it meant both).
+- **The card is behind the piece's segment**, the setup bar's first, which shows the piece at a
+  glance in Nate's format: level, the main stat at its shortest (none on a flower or plume) and the
+  slot as one name, then each substat ("+20 Pyro Goblet · CR 6.6 · CD 21.0 · ATK% 9.9 · ER 5.2"),
+  your stats in gold, a grayed 4th line dim. With no piece, the chart's empty state has an "Enter
+  your piece" button that opens it (`BandMenu` gained `show()`). The stage is one box again.
+- **A goblet's element.** The main stat field lists each element ("Pyro DMG Bonus", typed "pyro"),
+  so the summary can say "Pyro Goblet". The odds don't change with the element (each is 5%), so
+  it is only the piece's name (`el` in the share state).
+- **The unactivated 4th line** (Nate: since about a year ago the game shows every piece's four
+  substats, a 3-line piece's 4th grayed out as "(unactivated)"). The card always takes four lines;
+  at +0–3 a check marks the 4th as grayed out. The engine reads that as a 3-line piece whose 4th
+  line is known: one value roll fewer to come, and the line adds nothing now
+  (`PieceQuery.unactivated`, `resolvePiece(…, unactivated)`). Tests, written failing first in
+  `appraise.test.ts`: such a piece's future equals a 3-line piece's at +4, and it resolves as a
+  3-line start. The engine's mix over an unknown 4th line stays for a 3-line piece without one,
+  which the card no longer offers.
+- **Straight drops**: a survival curve is drawn from its own points, flat between values and
+  straight down at each (it was sampled every 2px, so each drop leaned).
+- **The 100-dot strip** replaces the histogram: the bold curve's outcomes as 100 dots, one per
+  hundredth, stacked where they land; the dots past the marker are lit and counted in the strip's
+  label ("100 pieces, one dot each: 49 end above 29.6"). A stack taller than the strip spills into
+  columns beside its value, rather than every dot shrinking (a Standard reshape piles twenty dots
+  on a few values, and at the first try they shrank to 3px specks). The shading by upgrades into
+  your stats went with the histogram.
+- **Escape in a field inside a popover** closes the field's list, not the popover (`BandMenu`
+  leaves an Escape a field already used).
+
+Considered and not taken: the card's controls over an empty corner of the plot (design §6's "no
+panel inside the plot": a Decreed reshape's curve stays high far to the right, through the top
+right corner); a one-off "Explore reshaping" button instead of a tab (a tab is how an instrument
+changes what its chart answers, and it can be returned to).
+
+Next, agreed: "Try a reshape", rolling one result and showing it original and result side by side,
+as the game's Select a Result to Keep does.
+
+Gates: Vitest 2748 (new: the unactivated line, 2), svelte-check, lint and build clean; Chrome e2e
+72 passed. Driven on the production build: all four views, the card from the segment and from the
+empty state, a whole +0 Pyro goblet with a grayed 4th line by keyboard, a list row clicked inside
+the popover, Escape twice (list, then card), Clear; no page errors. Looked at headless at 1600,
+1440 two up and 390.
+
+### For Nate's eye (second pass)
+
+1. The piece's summary segment, its gold for your stats and the dim grayed line.
+2. ⏭ The summary's level is the card's range ("+16–19 Flower"), since the card asks for a range,
+   not a level (the odds only need the upgrades); your example read "+16 Flower".
+3. ⏭ The slot is "Plume" there, as everywhere on the site (your example said "Feather").
+4. The Reshape view: three curves, the chosen one bold, the others named at the marker; the
+   game-like popover.
+5. The 100 dots: size (4–9px), the dim and lit dots, the spill into columns.
+6. "Reshape this piece" under Your piece's handle at +20.
+7. The grayed-out check under the level chips, shown only at +0–3.
+
+### Copy for Nate (second pass; written in, proposed)
+
+1. Reshape's head: "13.3% / chance a Standard reshape beats your piece"; with no piece at +20:
+   "— / Reshaping needs a +20 piece"; with fewer than two picked: "— / Pick two substats to
+   reshape".
+2. The Reshape segment: "Reshape CR and CD · Standard" ("Pick 2" before two are picked).
+3. The Reshape popover: "Pick 2 substats. After the reshape, they get at least 2 of the piece's
+   upgrades between them." and "Every 6 Dust of Enlightenment you spend makes your next reshape
+   Advanced, and the third Advanced in a row is Decreed. The chart shows all three."
+4. Reshape's fine print: "Reshaping keeps each substat's starting roll and rerolls all its
+   upgrades. You keep whichever result you prefer, so the piece can't come out worse: a reshape
+   costs 1 Dust of Enlightenment for a flower or plume, and 2 for other pieces."
+5. Reshape's y axis: "chance a reshape ends above". Its empty states: "This piece is +16–19.
+   Level it to +20 to reshape it." [Edit your piece] and "Pick the two substats to reshape, as the
+   game's reshape screen asks." [Pick two substats].
+6. Dot labels: "Advanced 32.5%", "Decreed 99.78%".
+7. The strip: "100 pieces, one dot each: 49 end above 29.6"; at +20 "100 +20 flowers like yours,
+   one dot each: 12 beat it"; in Reshape "100 Standard reshapes, one dot each: 13 beat your piece".
+8. The button: "Reshape this piece".
+9. The Made popover on Your piece: "Defined substats", then "Pick the two substats you chose when
+   making it. Together they're guaranteed at least 2 upgrades by +20." (the second sentence as
+   before). In Level up: "A piece made with Sanctifying Elixir guarantees at least 2 of its
+   upgrades go to the two substats you chose for it."
+10. The card: the check "The 4th substat is grayed out (unactivated)"; the note loses "Use the
+    circles on the right to choose two substats to reshape."; the clearing row is "None" for every
+    line (no "Not yet").
+11. The empty states: "Enter a piece to see how it measures up." [Enter your piece]; "Enter all four
+    of its substats, a grayed-out one too." [Finish your piece]; [Edit your piece] after the
+    impossible-value and misfit messages.
+12. The summary with no piece: "Enter your piece".
+13. Help, replacing §6 item 19 (Your piece). Now: "Each value wheel offers only values the game
+    can produce, and a badge shows how many upgrades a substat has taken. A red pip means the
+    current values fit two possible counts and lets you pick which it is. A finished piece is
+    ranked against every +20 piece with the same four substats. Select two substats to see what a
+    reshape would do. A reshape keeps …" → "Open the piece in the toolbar and type each substat and
+    its value, or pick them from the list: a field takes only values the game can produce. A badge
+    shows how many upgrades a substat has taken, and when the values fit more than one count, the
+    card asks which one the game shows. A finished piece is ranked against every +20 piece with the
+    same four substats." plus a new paragraph: "**Reshape** picks two substats as the game's reshape
+    screen does and draws all three kinds of reshape against your piece. A reshape keeps …" (the
+    rest of the current paragraph unchanged).

@@ -49,16 +49,18 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 
-	// ⚓ Three views, a piece's life (Nate, 2026-10-06): it DROPS, it is LEVELLED,
-	// and then it is YOUR piece — ranked, levelled further, or reshaped.
-	// ⚓ "What counts as good" is the player's set of stats (1–4), not a pair:
-	// a reshape selects two lines, and that selection lives on the piece card,
-	// where the game puts it (the radial on each line's right).
-	type View = 'drop' | 'level' | 'piece';
+	// ⚓ Four views, a piece's life (Nate, 2026-10-06; Reshape 2026-11-03): it
+	// DROPS, it is LEVELLED, it is YOUR piece (entered and ranked), and it is
+	// RESHAPED. Entering a piece and reshaping it are two jobs, as they are two
+	// screens in the game (Nate, 2026-11-03): the card is for entry only, and
+	// the reshape's two substats are picked on the Reshape view.
+	// ⚓ "What counts as good" is the player's set of stats (1–4), not a pair.
+	type View = 'drop' | 'level' | 'piece' | 'reshape';
 	const VIEWS: { id: View; label: string }[] = [
 		{ id: 'drop', label: 'Drop' },
 		{ id: 'level', label: 'Level up' },
-		{ id: 'piece', label: 'Your piece' }
+		{ id: 'piece', label: 'Your piece' },
+		{ id: 'reshape', label: 'Reshape' }
 	];
 	/** Levels by the upgrade they have reached: +0–3 has none, +20 all five */
 	const LEVELS = [
@@ -74,6 +76,7 @@
 		{ floor: 3, label: 'Advanced', hint: 'at least 3' },
 		{ floor: 4, label: 'Decreed', hint: 'at least 4' }
 	] as const;
+	type Floor = (typeof RESHAPES)[number]['floor'];
 	const MAX_WANTED = 4;
 	/** The main stat a slot starts on (⚓ Nate: sands ATK%, not the list's first HP%) */
 	const DEFAULT_MAIN: Partial<Record<SlotId, MainStatId>> = {
@@ -97,6 +100,25 @@
 		cr: ['cr'],
 		cd: ['cd', 'crit damage', 'cdmg']
 	};
+	/**
+	 * A goblet's elemental DMG Bonus: the odds don't depend on which element
+	 * (each is 5%), so the element is only how the piece is named ("+20 Pyro
+	 * Goblet") and what the main stat field answers to ("pyro").
+	 */
+	const ELEMENTS = ['Pyro', 'Hydro', 'Electro', 'Cryo', 'Anemo', 'Geo', 'Dendro'] as const;
+	type Element = (typeof ELEMENTS)[number];
+	/** A main stat at its shortest, for the piece's summary (⚓ Nate: "+20 EM Circlet"). */
+	const MAIN_SHORT: Partial<Record<MainStatId, string>> = {
+		hpPct: 'HP%',
+		atkPct: 'ATK%',
+		defPct: 'DEF%',
+		er: 'ER',
+		em: 'EM',
+		cr: 'CR',
+		cd: 'CD',
+		physDmg: 'Physical',
+		healing: 'Healing'
+	};
 
 	type Line = { id: SubstatId | ''; raw: string };
 	/** The demo piece: a +20 flower with double crit, so the view teaches itself. */
@@ -112,6 +134,7 @@
 	let slotId = $state<SlotId>('flower');
 	/** Main stats you'd take. Drop accepts several; the other views use the first. */
 	let mains = $state<MainStatId[]>(['hp']);
+	let element = $state<Element>('Pyro');
 	/** Your stats — what counts as good */
 	let wanted = $state<SubstatId[]>(['cr', 'cd']);
 	/** Drop: at least this many of your stats on the piece */
@@ -121,19 +144,26 @@
 	/** Level up: the piece has this many of your stats */
 	let levelHas = $state(2);
 	let fourLine = $state(true);
-	/** Made with Sanctifying Elixir: its two selected lines get ≥2 upgrades by +20 */
+	/** Made with Sanctifying Elixir: its two defined lines get ≥2 upgrades by +20 */
 	let defined = $state(false);
 	let level = $state(20);
 	let lines = $state<Line[]>(demoLines());
-	/** The card's radials: a reshape's two lines (a defined piece's, too) */
-	let selected = $state<SubstatId[]>(['cr', 'cd']);
+	/** At +0–3, the 4th line is grayed out in the game: a 3-line piece. */
+	let unactivated = $state(false);
+	/** A defined piece's two lines (the Elixir's Define Minor Affixes) */
+	let definedSel = $state<SubstatId[]>([]);
+	/** The reshape's two lines (the game's radials on its reshape screen) */
+	let reshapeSel = $state<SubstatId[]>(['cr', 'cd']);
 	let resolutionPick = $state(0);
 	/** The player chose among the readings (the card's question is answered). */
 	let readingPicked = $state(false);
-	let reshapeFloor = $state<2 | 3 | 4>(2);
+	let reshapeFloor = $state<Floor>(2);
 	/** A value to beat; null = the default (see each view) */
 	let refLevel = $state<number | null>(null);
 	let refPiece = $state<number | null>(null);
+
+	let pieceMenu = $state<BandMenu>();
+	let reshapeMenu = $state<BandMenu>();
 
 	const slot = $derived(SLOTS.find((s) => s.id === slotId)!);
 	const mainStats = $derived(slot.mains.filter((m) => mains.includes(m.id)));
@@ -229,11 +259,14 @@
 			);
 		return freshOutcome(unit, wantedSubs.slice(0, levelK), events, floor);
 	}
-	const levelOut = $derived(levelOutcome(levelFloor));
+	const levelDist = $derived(collapse(levelOutcome(levelFloor)));
 	const levelGhost = $derived(levelFloor ? collapse(levelOutcome(0)) : null);
 
 	// ── Your piece ─────────────────────────────────────────────────────────
 	const pieceLines = $derived(lines.filter((l) => l.id !== '') as { id: SubstatId; raw: string }[]);
+	/** The game shows all four lines of every piece; a grayed 4th counts only below +4 */
+	const pieceComplete = $derived(pieceLines.length === 4);
+	const unactivatedOn = $derived(unactivated && level === 0 && pieceComplete);
 	const lineInferences = $derived(
 		pieceLines.map((l) => {
 			const v = Number(l.raw);
@@ -241,16 +274,14 @@
 			return inferRollCounts(l.id, v);
 		})
 	);
-	const resolutions = $derived(resolvePiece(lineInferences, level));
+	const resolutions = $derived(resolvePiece(lineInferences, level, unactivatedOn));
 	const resolution = $derived(
 		resolutions.length ? resolutions[Math.min(resolutionPick, resolutions.length - 1)] : null
 	);
-	/** Every substat has a value (3 are enough at +0–3) */
-	const pieceComplete = $derived(pieceLines.length >= (level === 0 ? 3 : 4));
 	/** Which levels these values fit — the level chips say so (once there is a piece) */
 	const fitsLevel = $derived(
 		Object.fromEntries(
-			LEVELS.map((l) => [l.at, resolvePiece(lineInferences, l.at).length > 0])
+			LEVELS.map((l) => [l.at, resolvePiece(lineInferences, l.at, unactivated).length > 0])
 		) as Record<number, boolean>
 	);
 	const totals = $derived(
@@ -259,8 +290,10 @@
 	const upgradesAt = (at: number) => Math.floor(at / 4);
 
 	const wantedOnPiece = $derived(pieceLines.filter((l) => wantedSubs.includes(l.id)).length);
-	const sel = $derived(selected.filter((id) => pieceLines.some((l) => l.id === id)));
-	const pieceFloor = $derived(defined && sel.length === 2 ? 2 : 0);
+	const onPiece = (ids: SubstatId[]) => ids.filter((id) => pieceLines.some((l) => l.id === id));
+	const defSel = $derived(onPiece(definedSel));
+	const rshSel = $derived(onPiece(reshapeSel));
+	const pieceFloor = $derived(defined && defSel.length === 2 ? 2 : 0);
 
 	const query = $derived<PieceQuery | null>(
 		resolution && wantedOnPiece > 0
@@ -271,7 +304,8 @@
 					level,
 					lines: pieceLines.map((l) => ({ id: l.id, value: Number(l.raw) })),
 					counts: resolution.counts,
-					selected: sel
+					selected: defSel,
+					unactivated: unactivatedOn
 				}
 			: null
 	);
@@ -283,10 +317,20 @@
 		query && resolution ? piecePopulation(query, resolution.events, pieceFloor) : []
 	);
 	const percentile = $derived(population.length ? percentileOf(population, now) : 0);
-	const future = $derived(query && !finished ? pieceFuture(query, pieceFloor) : []);
-	const canReshape = $derived(query !== null && finished && sel.length === 2);
-	const reshaped = $derived(
-		canReshape && query && resolution ? pieceReshape(query, resolution.events, reshapeFloor) : []
+	const future = $derived(query && !finished ? collapse(pieceFuture(query, pieceFloor)) : []);
+
+	// ── Reshape ────────────────────────────────────────────────────────────
+	const canReshape = $derived(query !== null && finished && rshSel.length === 2);
+	/** All three reshapes, drawn together; the bar picks the one the head speaks for */
+	const reshapes = $derived(
+		canReshape && query && resolution
+			? RESHAPES.map((r) => {
+					const dist = collapse(
+						pieceReshape({ ...query, selected: rshSel }, resolution.events, r.floor)
+					);
+					return { ...r, dist, beats: compareTo(dist, now).above };
+				})
+			: []
 	);
 	const reshapeName = $derived(RESHAPES.find((r) => r.floor === reshapeFloor)!.label);
 
@@ -314,38 +358,45 @@
 			})
 			.join(' · ');
 
-	// ── The value chart: Level up and Your piece ───────────────────────────
-	// Main plot: the survival curve (the chance to end ABOVE each value) of the
-	// view's answer. Companion: the histogram, shaded by upgrades into your
-	// stats (design §8). Gold in the strip is the question asked; gray is what
-	// it is measured against.
-	const solid = $derived<Outcome>(
-		view === 'level' ? levelOut : finished ? (canReshape ? reshaped : []) : future
-	);
-	const solidDist = $derived(collapse(solid));
-	const ghost = $derived<ValueDist | null>(
-		view === 'level' ? levelGhost : finished ? population : null
-	);
-	/** The headline's curve: at +20 the population your piece ranks in. */
-	const primaryDist = $derived(view === 'piece' && finished ? population : solidDist);
-	/** The curve beside it: a farmed piece (Level up, made with Elixir), or a reshape. */
-	const secondaryDist = $derived<ValueDist | null>(
-		view === 'level' ? levelGhost : view === 'piece' && finished && canReshape ? solidDist : null
-	);
+	// ── What the chart draws, by view ──────────────────────────────────────
+	// Level up, Your piece and Reshape draw survival curves (the chance to end
+	// ABOVE each value) over a 100-dot strip. The bold curve is the head's;
+	// the thin ones are named at the marker.
+	type Curve = { key: string; dist: ValueDist; name: string };
+	const curves = $derived.by<Curve[]>(() => {
+		if (view === 'level')
+			return [
+				{ key: 'piece', dist: levelDist, name: '' },
+				...(levelGhost ? [{ key: 'farmed', dist: levelGhost, name: 'Farmed' }] : [])
+			];
+		if (view === 'piece') return [{ key: 'piece', dist: finished ? population : future, name: '' }];
+		if (view === 'reshape') {
+			const chosen = reshapes.find((r) => r.floor === reshapeFloor);
+			return [
+				...(chosen ? [{ key: chosen.label, dist: chosen.dist, name: '' }] : []),
+				...reshapes
+					.filter((r) => r.floor !== reshapeFloor)
+					.map((r) => ({ key: r.label, dist: r.dist, name: r.label }))
+			];
+		}
+		return [];
+	});
+	const primaryDist = $derived(curves[0]?.dist ?? []);
 	const primaryS = $derived(survival(primaryDist));
-	const secondaryS = $derived(secondaryDist ? survival(secondaryDist) : null);
 	const primaryStats = $derived(distStats(primaryDist));
-	/** The value to beat: dragged, or the default — a typical piece */
+	/** The value the marker stands on: dragged, the default, or your piece */
 	const refDefault = $derived(
-		view === 'level' ? distStats(collapse(levelOut)).median : distStats(population).median
+		view === 'level' ? distStats(levelDist).median : distStats(population).median
 	);
+	/** Your piece is the marker at +20, and in Reshape. */
+	const markIsPiece = $derived((view === 'piece' && finished) || view === 'reshape');
 	const reference = $derived(
-		view === 'level' ? (refLevel ?? refDefault) : finished ? nowX : (refPiece ?? refDefault)
+		view === 'level' ? (refLevel ?? refDefault) : markIsPiece ? nowX : (refPiece ?? refDefault)
 	);
-	const odds = $derived(
-		finished && view === 'piece'
-			? compareTo(collapse(reshaped), now)
-			: compareTo(solidDist, [{ x: reference, p: 1 }])
+	const beats = $derived(
+		view === 'reshape'
+			? (reshapes.find((r) => r.floor === reshapeFloor)?.beats ?? 0)
+			: primaryS(reference)
 	);
 
 	const fmtLineValue = (id: SubstatId, n: number) =>
@@ -364,14 +415,36 @@
 	);
 	/** A line's name field: the substats it can be (not the main, not another line's). */
 	const nameOptions = (i: number): FieldOption[] => [
-		{ value: '', label: i === 3 && level === 0 ? 'Not yet' : 'None' },
+		{ value: '', label: 'None' },
 		...SUBSTATS.filter(
 			(s) => s.id !== main.id && (s.id === lines[i].id || !lines.some((l) => l.id === s.id))
 		).map((s) => ({ value: s.id, label: s.name, terms: [s.short.toLowerCase(), ...TERMS[s.id]] }))
 	];
+	/** The main stat field: a goblet's elemental DMG is one option per element. */
 	const mainOptions = $derived<FieldOption[]>(
-		slot.mains.map((m) => ({ value: m.id, label: m.name }))
+		slot.mains.flatMap((m) =>
+			m.id === 'elemDmg'
+				? ELEMENTS.map((e) => ({
+						value: `elemDmg:${e}`,
+						label: `${e} DMG Bonus`,
+						terms: [e.toLowerCase()]
+					}))
+				: [
+						{
+							value: m.id,
+							label: m.name,
+							terms: MAIN_SHORT[m.id] ? [MAIN_SHORT[m.id]!.toLowerCase()] : []
+						}
+					]
+		)
 	);
+	const mainValue = $derived(main.id === 'elemDmg' ? `elemDmg:${element}` : main.id);
+	function pickMainField(v: string) {
+		if (v.startsWith('elemDmg:')) {
+			element = v.slice('elemDmg:'.length) as Element;
+			pickMain('elemDmg');
+		} else pickMain(v as MainStatId);
+	}
 
 	// Changing a line's stat snaps its value to the nearest legal one
 	function setLineStat(index: number, id: SubstatId | '') {
@@ -387,7 +460,10 @@
 					: options[0];
 			lines = lines.map((l, i) => (i === index ? { id, raw: fmtLineValue(id, nearest) } : l));
 		}
-		if (old) selected = selected.filter((s) => s !== old);
+		if (old) {
+			definedSel = definedSel.filter((s) => s !== old);
+			reshapeSel = reshapeSel.filter((s) => s !== old);
+		}
 		resetReading();
 		resetRefs();
 	}
@@ -406,10 +482,8 @@
 	}
 
 	/**
-	 * A narrow card (a phone, or a narrow tile) names substats by their short
-	 * form — "CRIT DMG" truncated to "CRIT …" at 320px, the field's ~100px
-	 * beside the value and radial — and its Clear drops the word. The CARD's
-	 * width decides, never the screen's.
+	 * A narrow card (a phone) names substats by their short form, and its
+	 * Clear drops the word. The CARD's width decides, never the screen's.
 	 */
 	let cardW = $state(400);
 	const tightCard = $derived(cardW < 300);
@@ -422,7 +496,9 @@
 			{ id: '', raw: '' },
 			{ id: '', raw: '' }
 		];
-		selected = [];
+		definedSel = [];
+		reshapeSel = [];
+		unactivated = false;
 		resetReading();
 		resetRefs();
 	}
@@ -434,10 +510,11 @@
 		fixLines();
 	}
 
-	// The game's radial: two at most, and a third waits for one to be cleared
-	function toggleSelected(id: SubstatId) {
-		if (selected.includes(id)) selected = selected.filter((s) => s !== id);
-		else if (sel.length < 2) selected = [...sel, id];
+	/** Two at most (the game's radials, the Elixir's two), a third waits */
+	function toggleTwo(list: SubstatId[], id: SubstatId): SubstatId[] {
+		const on = onPiece(list);
+		if (on.includes(id)) return on.filter((s) => s !== id);
+		return on.length < 2 ? [...on, id] : on;
 	}
 
 	// ── Formatting ─────────────────────────────────────────────────────────
@@ -456,6 +533,7 @@
 	const slotWord = $derived(slot.name.toLowerCase());
 	/** ⚠️ Sands is its own plural */
 	const slotPlural = $derived(slotId === 'sands' ? 'sands' : `${slotWord}s`);
+	const levelLabel = $derived(LEVELS.find((l) => l.at === level)!.label);
 	/** "CR", "CR and CD", "CR, CD and ER" */
 	const andList = (ids: SubstatId[]) => {
 		const names = ids.map((id) => substatById(id).short);
@@ -475,11 +553,28 @@
 	);
 	const hasWord = (n: number) =>
 		n === wantedSubs.length && n > 1 ? (n === 2 ? 'Both' : `All ${n}`) : String(n);
+	/**
+	 * THE PIECE AT A GLANCE (⚓ Nate 2026-11-03): its level, its main stat at
+	 * its shortest (not on a flower or plume, whose main never varies) and its
+	 * slot as one name, then each substat: "+20 Pyro Goblet · CR 6.6 · …".
+	 */
+	const pieceName = $derived.by(() => {
+		const mainWord =
+			slotId === 'flower' || slotId === 'plume'
+				? ''
+				: main.id === 'elemDmg'
+					? element
+					: (MAIN_SHORT[main.id] ?? main.name);
+		return [levelLabel, mainWord, slot.name].filter(Boolean).join(' ');
+	});
+	const reshapeFace = $derived(
+		`${rshSel.length === 2 ? andList(rshSel) : 'Pick 2'} · ${reshapeName}`
+	);
 
 	// ── Geometry ───────────────────────────────────────────────────────────
 	// Top to bottom: the main plot, the companion strip on the same x axis
-	// (Level up and Your piece), then the axis's numbers. The handle sits
-	// under the SVG, its track lined up with the plot's x range.
+	// (the value views), then the axis's numbers. The handle sits under the
+	// SVG, its track lined up with the plot's x range.
 	let graphW = $state(720);
 	let graphH = $state(0);
 	const PADL = 52;
@@ -536,12 +631,6 @@
 		}
 		return d;
 	}
-	/** Where a farming curve crosses a height, in days (its crossing in resin). */
-	function farmDaysAt(p: number, outbreak: boolean) {
-		const s = farmStats(perPiece, outbreak);
-		const resin = p === 0.5 ? s.median : p === 0.9 ? s.p90 : NaN;
-		return resin / RESIN_PER_DAY;
-	}
 	// Each curve is named where the space beside it is empty: the Outbreak's
 	// above its curve, the Domain's below its own, both at 🎛️ FARM_LABEL_AT
 	// of the axis, clear of the Half by (left) and the Unlucky tenth (right).
@@ -558,58 +647,32 @@
 		};
 	});
 
-	// The value axis: 1-CV or 0.1-roll bins
+	// The value axis: it spans every curve the view draws, and your piece
 	const binW = $derived(unit === 'cv' ? 1 : 0.1);
-	const binOf = (x: number) => Math.round(Math.floor(x / binW + 1e-6) * binW * 10) / 10;
-	type Bin = { x: number; p: number; byK: number[] };
-	const solidBins = $derived.by<Bin[]>(() => {
-		const out: Bin[] = [];
-		for (const o of solid) {
-			const x = binOf(o.x);
-			let bin = out.find((b) => b.x === x);
-			if (!bin) out.push((bin = { x, p: 0, byK: [0, 0, 0, 0, 0, 0] }));
-			bin.p += o.p;
-			bin.byK[o.k] += o.p;
+	const valueSpan = $derived.by(() => {
+		let lo = Infinity;
+		let hi = -Infinity;
+		for (const c of curves)
+			for (const d of c.dist) {
+				lo = Math.min(lo, d.x);
+				hi = Math.max(hi, d.x);
+			}
+		if ((view === 'piece' || view === 'reshape') && query) {
+			lo = Math.min(lo, nowX);
+			hi = Math.max(hi, nowX);
 		}
-		return out.sort((a, b) => a.x - b.x);
+		return Number.isFinite(lo) ? { lo, hi: hi + binW } : { lo: 0, hi: 1 };
 	});
-	const ghostBins = $derived.by(() => {
-		const out: { x: number; p: number }[] = [];
-		for (const d of ghost ?? []) {
-			const x = binOf(d.x);
-			const last = out.find((b) => b.x === x);
-			if (last) last.p += d.p;
-			else out.push({ x, p: d.p });
-		}
-		return out.sort((a, b) => a.x - b.x);
-	});
-	const ks = $derived([...new Set(solid.map((o) => o.k))].sort((a, b) => a - b));
-	const histX0 = $derived(
-		Math.min(
-			solidBins[0]?.x ?? Infinity,
-			ghostBins[0]?.x ?? Infinity,
-			view === 'piece' && query ? binOf(nowX) : Infinity
-		)
-	);
-	const histX1 = $derived(
-		Math.max(
-			(solidBins.at(-1)?.x ?? -Infinity) + binW,
-			(ghostBins.at(-1)?.x ?? -Infinity) + binW,
-			view === 'piece' && query ? binOf(nowX) + binW : -Infinity
-		)
-	);
-	/** A few outcomes shouldn't turn into a handful of slabs: the axis spans at least this */
+	/** A few outcomes shouldn't crowd one end: the axis spans at least this */
 	const MIN_SPAN = $derived(unit === 'cv' ? 12 : 1.5);
 	const histLo = $derived(
-		Math.max(0, Math.min(histX0, histX1 - MIN_SPAN / 2 - (histX1 - histX0) / 2))
+		Math.max(
+			0,
+			Math.min(valueSpan.lo, valueSpan.hi - MIN_SPAN / 2 - (valueSpan.hi - valueSpan.lo) / 2)
+		)
 	);
-	const histHi = $derived(Math.max(histX1, histLo + MIN_SPAN));
-	const histMax = $derived(
-		Math.max(1e-9, ...solidBins.map((b) => b.p), ...ghostBins.map((b) => b.p))
-	);
+	const histHi = $derived(Math.max(valueSpan.hi, histLo + MIN_SPAN));
 	const histXOf = $derived((x: number) => PADL + ((x - histLo) / (histHi - histLo)) * plotW);
-	const barW = $derived(Math.max(1, (binW / (histHi - histLo)) * plotW - 1));
-	const barH = $derived((p: number) => (COMP_H - 4) * (p / histMax));
 	const histTicks = $derived.by(() => {
 		const step = Math.max(binW, niceStep(histHi - histLo, Math.floor(plotW / MIN_TICK_PX / 1.4)));
 		const first = Math.ceil(histLo / step - 1e-9) * step;
@@ -618,41 +681,98 @@
 			(_, i) => Math.round((first + i * step) * 10) / 10
 		);
 	});
-	/** Upgrades into your stats → shade: more upgrades, denser gold */
-	const kOpacity = (k: number) => 0.2 + (0.8 * k) / 5;
-	/** Each shade's count, over its hump in the strip, where two don't touch. */
-	const kLabels = $derived.by(() => {
-		if (ks.length < 2) return [];
-		const placed: { k: number; x: number }[] = [];
-		for (const k of ks) {
-			let w = 0;
-			let sx = 0;
-			for (const o of solid)
-				if (o.k === k) {
-					w += o.p;
-					sx += o.x * o.p;
-				}
-			if (w < 0.01) continue;
-			const x = histXOf(sx / w);
-			if (placed.every((p) => Math.abs(p.x - x) >= 14)) placed.push({ k, x });
+
+	/**
+	 * A survival curve drawn as the steps it is: flat between the values a
+	 * piece can end on, straight down at each one. (Sampled every 2px and
+	 * joined, each drop leaned across its sample.)
+	 */
+	function survivalPath(dist: ValueDist) {
+		const pts = [...dist].sort((a, b) => a.x - b.x);
+		let s = 1;
+		let d = `M${histXOf(histLo).toFixed(1)},${yOf(1).toFixed(1)}`;
+		for (const pt of pts) {
+			const x = histXOf(pt.x).toFixed(1);
+			d += ` L${x},${yOf(s).toFixed(1)}`;
+			s = Math.max(0, s - pt.p);
+			d += ` L${x},${yOf(s).toFixed(1)}`;
 		}
-		return placed;
+		return `${d} L${histXOf(histHi).toFixed(1)},${yOf(s).toFixed(1)}`;
+	}
+
+	/**
+	 * THE 100-DOT STRIP: the bold curve's outcomes as 100 pieces, one dot each
+	 * (a quantile dot plot), stacked where they land; the ones that end above
+	 * the marker are lit, so "38 of 100" is counted, not computed. Each dot is
+	 * a percentile: the (i + ½)th hundredth of the distribution.
+	 * The values are discrete, so one value can hold twenty dots: a stack
+	 * taller than the strip spills into columns beside its value, rather than
+	 * every dot shrinking to a speck (a Standard reshape's first try). 🎛️ The
+	 * dots are as big as the blocks allow without touching, DOT_MAX to DOT_MIN.
+	 */
+	const DOT_MAX = 9;
+	const DOT_MIN = 4;
+	const strip = $derived.by(() => {
+		if (!hasStrip || !primaryDist.length) return { dots: [], lit: 0 };
+		const xs: number[] = [];
+		let acc = 0;
+		let j = 0;
+		for (let i = 0; i < 100; i++) {
+			const q = (i + 0.5) / 100;
+			while (j < primaryDist.length - 1 && acc + primaryDist[j].p < q) acc += primaryDist[j++].p;
+			xs.push(primaryDist[j].x);
+		}
+		type Group = { x: number; n: number; cols: number };
+		let size = DOT_MAX;
+		let rows = 1;
+		let groups: Group[] = [];
+		for (; size >= DOT_MIN; size -= 0.5) {
+			rows = Math.max(1, Math.floor((COMP_H - 2) / size));
+			// dots within one dot's width share a block, centred on their mean
+			groups = [];
+			for (const x of xs) {
+				const px = histXOf(x);
+				const last = groups.at(-1);
+				if (last && px - last.x < size) {
+					last.x = (last.x * last.n + px) / (last.n + 1);
+					last.n++;
+				} else groups.push({ x: px, n: 1, cols: 1 });
+			}
+			for (const g of groups) g.cols = Math.ceil(g.n / rows);
+			const fits = groups.every(
+				(g, k) =>
+					k === 0 || g.x - (g.cols * size) / 2 >= groups[k - 1].x + (groups[k - 1].cols * size) / 2
+			);
+			if (fits) break;
+		}
+		size = Math.max(DOT_MIN, size);
+		let lit = 0;
+		let at = 0;
+		const dots = groups.flatMap((g) => {
+			const left = g.x - (g.cols * size) / 2;
+			return Array.from({ length: g.n }, (_, k) => {
+				const on = xs[at++] > reference + 1e-6;
+				if (on) lit++;
+				// fill column by column from the bottom, the block's columns side by side
+				const col = Math.floor(k / rows);
+				const row = k % rows;
+				return {
+					cx: left + (col + 0.5) * size,
+					cy: compY1 - (row + 0.5) * size,
+					r: Math.max(1, size / 2 - 0.6),
+					on
+				};
+			});
+		});
+		return { dots, lit };
 	});
 	const stripLabel = $derived(
-		ks.length > 1 ? 'chance of each value, by upgrades into your stats:' : 'chance of each value'
+		view === 'reshape'
+			? `100 ${reshapeName} reshapes, one dot each: ${strip.lit} beat your piece`
+			: view === 'piece' && finished
+				? `100 +20 ${slotPlural} like yours, one dot each: ${strip.lit} beat it`
+				: `100 pieces, one dot each: ${strip.lit} end above ${fmtValue(reference)}`
 	);
-	/** Hump numerals start clear of the strip's label. */
-	const stripLabelEnd = $derived(4 + stripLabel.length * 5.6 + 8);
-
-	function survivalPath(S: (x: number) => number) {
-		const n = Math.max(2, Math.round(plotW / 2));
-		let d = '';
-		for (let i = 0; i <= n; i++) {
-			const x = histLo + (i / n) * (histHi - histLo);
-			d += `${i ? ' L' : 'M'}${histXOf(x).toFixed(1)},${yOf(S(x)).toFixed(1)}`;
-		}
-		return d;
-	}
 
 	// ── The answer as geometry (design §6, §7: the chance-curve family) ────
 	// Half by / Unlucky tenth on Drop's Domain curve (rising); Typical /
@@ -670,34 +790,36 @@
 					{
 						key: 'half',
 						p: 0.5,
-						x: farmDaysAt(0.5, false),
+						x: farm.domain.median / RESIN_PER_DAY,
 						text: `Half by ${fmtDays(farm.domain.median)}`,
 						title: 'Half of players have it within this many days.'
 					},
 					{
 						key: 'tenth',
 						p: 0.9,
-						x: farmDaysAt(0.9, false),
+						x: farm.domain.p90 / RESIN_PER_DAY,
 						text: `Unlucky tenth ${fmtDays(farm.domain.p90)}`,
 						title: 'The unluckiest 10% of players need this many days or more.'
 					}
 				]
-			: [
-					{
-						key: 'half',
-						p: 0.5,
-						x: primaryStats.median,
-						text: `Typical ${fmtValue(primaryStats.median)}`,
-						title: 'Half end above this, and half at or below it.'
-					},
-					{
-						key: 'tenth',
-						p: 0.9,
-						x: primaryStats.p10,
-						text: `Unlucky tenth ${fmtValue(primaryStats.p10)}`,
-						title: 'The unluckiest 10% end at or below this.'
-					}
-				];
+			: primaryDist.length
+				? [
+						{
+							key: 'half',
+							p: 0.5,
+							x: primaryStats.median,
+							text: `Typical ${fmtValue(primaryStats.median)}`,
+							title: 'Half end above this, and half at or below it.'
+						},
+						{
+							key: 'tenth',
+							p: 0.9,
+							x: primaryStats.p10,
+							text: `Unlucky tenth ${fmtValue(primaryStats.p10)}`,
+							title: 'The unluckiest 10% end at or below this.'
+						}
+					]
+				: [];
 		const xOf = rising ? farmXOf : histXOf;
 		const lo = rising ? 0 : histLo;
 		const hi = rising ? farmDomain : histHi;
@@ -738,18 +860,32 @@
 					label: `In an Outbreak ${formatChance(chanceBy.outbreak)}`
 				}
 			];
-		const dots = [{ key: 'primary', p: primaryS(reference), primary: true, label: '' }];
-		if (secondaryS) {
-			const p = view === 'level' ? secondaryS(reference) : odds.above;
-			const label =
-				view === 'level'
-					? `Farmed ${formatChance(p)}`
-					: `${reshapeName} reshape ${formatChance(p)}`;
-			dots.push({ key: 'secondary', p, primary: false, label });
-		}
-		return dots;
+		if (view === 'reshape')
+			return [
+				...reshapes
+					.filter((r) => r.floor === reshapeFloor)
+					.map((r) => ({ key: r.label, p: r.beats, primary: true, label: '' })),
+				...reshapes
+					.filter((r) => r.floor !== reshapeFloor)
+					.map((r) => ({
+						key: r.label,
+						p: r.beats,
+						primary: false,
+						label: `${r.label} ${formatChance(r.beats)}`
+					}))
+			];
+		return curves.map((c, i) => {
+			const p = survival(c.dist)(reference);
+			return {
+				key: c.key,
+				p,
+				primary: i === 0,
+				label: c.name ? `${c.name} ${formatChance(p)}` : ''
+			};
+		});
 	});
 	const dotLabels = $derived.by(() => {
+		if (!markDots.length) return [];
 		// Drop's curves rise, so the Outbreak's label goes left of the marker,
 		// above its curve, where it fits; a falling curve's dot labels go right,
 		// until the marker nears the plot's right edge.
@@ -788,8 +924,8 @@
 		});
 	});
 
-	/** A reference can be dragged in Level up and on an unfinished piece */
-	const draggable = $derived(view === 'drop' || view === 'level' || !finished);
+	/** A value to beat can be dragged in Level up and on an unfinished piece */
+	const draggable = $derived(!markIsPiece);
 
 	// Press and drag moves the value to beat (or the days you'll farm)
 	let scrubbing = $state(false);
@@ -825,11 +961,15 @@
 		if (!wantedSubs.length) return 'main';
 		if (view === 'level') return null;
 		if (!resolution) {
-			if (pieceLines.length < (level === 0 ? 3 : 4)) return 'incomplete';
+			if (!pieceComplete) return 'incomplete';
 			if (lineInferences.some((i) => !i.length)) return 'impossible';
 			return 'misfit';
 		}
 		if (wantedOnPiece === 0) return 'none';
+		if (view === 'reshape') {
+			if (!finished) return 'unfinished';
+			if (rshSel.length < 2) return 'pick';
+		}
 		return null;
 	});
 
@@ -838,6 +978,7 @@
 		view = 'drop';
 		slotId = 'flower';
 		mains = ['hp'];
+		element = 'Pyro';
 		wanted = ['cr', 'cd'];
 		atLeast = 2;
 		eitherSet = false;
@@ -847,7 +988,9 @@
 		defined = false;
 		level = 20;
 		lines = demoLines();
-		selected = ['cr', 'cd'];
+		unactivated = false;
+		definedSel = [];
+		reshapeSel = ['cr', 'cd'];
 		resetReading();
 		reshapeFloor = 2;
 		resetRefs();
@@ -867,14 +1010,19 @@
 			fourLine,
 			defined,
 			level,
-			selected,
+			// the reshape's two lines (before 2026-11-03, also a defined piece's)
+			selected: reshapeSel,
 			reshape: reshapeFloor,
 			lines: lines.map((l) => [l.id, l.raw]),
 			// added 2026-10-15 — older v1 links lack both and open on the defaults
 			reading: resolutionPick,
 			ref: [refLevel, refPiece],
-			// added 2026-11-03: the reading was chosen, not the default
-			picked: readingPicked
+			// added 2026-11-03: the reading was chosen, the Elixir's two lines, a
+			// grayed 4th line, the goblet's element
+			picked: readingPicked,
+			defSel: definedSel,
+			unact: unactivated,
+			el: element
 		};
 	}
 
@@ -884,6 +1032,8 @@
 		if (s.v !== 1) return;
 		const isSub = (x: unknown): x is SubstatId =>
 			typeof x === 'string' && SUBSTATS.some((ss) => ss.id === x);
+		const two = (v: unknown) =>
+			Array.isArray(v) ? [...new Set(v.filter(isSub))].slice(0, 2) : null;
 		const int = (v: unknown, lo: number, hi: number) =>
 			typeof v === 'number' && Number.isFinite(v)
 				? Math.min(hi, Math.max(lo, Math.round(v)))
@@ -894,6 +1044,8 @@
 			const m = s.mains.filter((x) => sl.mains.some((mm) => mm.id === x)) as MainStatId[];
 			mains = m.length ? [...new Set(m)] : [sl.mains[0].id];
 		} else mains = [sl.mains[0].id];
+		if (typeof s.el === 'string' && (ELEMENTS as readonly string[]).includes(s.el))
+			element = s.el as Element;
 		if (Array.isArray(s.wanted)) {
 			const w = [...new Set(s.wanted.filter(isSub))].slice(0, MAX_WANTED);
 			if (w.length) wanted = w;
@@ -916,12 +1068,14 @@
 				next.push({ id, raw });
 			}
 			const ids = next.map((l) => l.id).filter((id) => id !== '');
-			// distinct stats only — duplicates would break roll inference; only the
-			// 4th may be empty, and only at +0–3
-			const emptyOk = next.every((l, i) => l.id !== '' || (i === 3 && level === 0));
-			if (next.length === 4 && new Set(ids).size === ids.length && emptyOk) lines = next;
+			// distinct stats only — duplicates would break roll inference
+			if (next.length === 4 && new Set(ids).size === ids.length) lines = next;
 		}
-		if (Array.isArray(s.selected)) selected = [...new Set(s.selected.filter(isSub))].slice(0, 2);
+		unactivated = s.unact === true;
+		const sel = two(s.selected);
+		if (sel) reshapeSel = sel;
+		// before 2026-11-03 one selection served both: a defined piece's too
+		definedSel = two(s.defSel) ?? (defined && sel ? sel : []);
 		fixLines();
 		resetRefs();
 		// after the lines: the reading indexes their resolutions
@@ -1123,21 +1277,62 @@
 			Made with Elixir
 		</button>
 	</div>
-	{#if view === 'piece'}
-		<p class="note">
-			Select the two substats you chose when making it. Together they're guaranteed at least 2
-			upgrades by +20.
-		</p>
-	{:else}
+	{#if view === 'level'}
 		<p class="note">
 			A piece made with Sanctifying Elixir guarantees at least 2 of its upgrades go to the two
 			substats you chose for it.
+		</p>
+	{:else if defined}
+		<!-- The Elixir's own screen: Define Minor Affixes, two of the piece's lines. -->
+		<span class="slider-label" id="ao-defined-label">Defined substats</span>
+		<div class="chips" role="group" aria-labelledby="ao-defined-label">
+			{#each pieceLines as l (l.id)}
+				{@const on = defSel.includes(l.id)}
+				<button
+					class="chip chip--control"
+					class:active={on}
+					aria-pressed={on}
+					disabled={!on && defSel.length >= 2}
+					onclick={() => (definedSel = toggleTwo(definedSel, l.id))}
+				>
+					{substatById(l.id).short}
+				</button>
+			{/each}
+		</div>
+		<p class="note">
+			Pick the two substats you chose when making it. Together they're guaranteed at least 2
+			upgrades by +20.
 		</p>
 	{/if}
 {/snippet}
 
 {#snippet reshapeBody()}
-	<div class="chips" role="group" aria-label="Reshape">
+	<!-- The game's reshape screen: the piece's lines with their upgrades, a
+	     radial on each, then the kind of reshape. -->
+	<div class="ao-rs-lines" role="group" aria-label="Substats to reshape">
+		{#each pieceLines as l, i (l.id)}
+			{@const on = rshSel.includes(l.id)}
+			{@const count = resolution ? resolution.counts[i] - 1 : null}
+			<button
+				class="ao-rs-line"
+				class:is-on={on}
+				class:is-wanted={wantedSubs.includes(l.id)}
+				aria-pressed={on}
+				disabled={!on && rshSel.length >= 2}
+				onclick={() => (reshapeSel = toggleTwo(reshapeSel, l.id))}
+			>
+				<span class="ao-badge" class:is-zero={count === 0}>{count ? count : ''}</span>
+				<span class="ao-rs-name">{substatById(l.id).name}</span>
+				<span class="ao-rs-value">{l.raw}{substatById(l.id).isPct ? '%' : ''}</span>
+				<span class="ao-radial" class:is-on={on} aria-hidden="true"></span>
+			</button>
+		{/each}
+	</div>
+	<p class="note">
+		Pick 2 substats. After the reshape, they get at least {reshapeFloor} of the piece's upgrades between
+		them.
+	</p>
+	<div class="chips" role="group" aria-label="Kind of reshape">
 		{#each RESHAPES as r (r.floor)}
 			<button
 				class="chip chip--control"
@@ -1150,17 +1345,9 @@
 		{/each}
 	</div>
 	<p class="note">
-		Your two selected substats are guaranteed at least this many of the piece's upgrades between
-		them. Reshaping keeps each substat's starting roll and rerolls all its upgrades, and you can
-		keep whichever result you prefer.
+		Every {ADVANCED_EXEGESIS} Dust of Enlightenment you spend makes your next reshape Advanced, and the
+		third Advanced in a row is Decreed. The chart shows all three.
 	</p>
-	<p class="note">
-		Reshaping a flower or plume costs 1 Dust of Enlightenment (other pieces cost 2). Every {ADVANCED_EXEGESIS}
-		Dust you spend makes your next reshape Advanced, and the third Advanced in a row is Decreed.
-	</p>
-	{#if !canReshape}
-		<p class="note">Select two substats on your piece to see a reshape.</p>
-	{/if}
 {/snippet}
 
 {#snippet warnMark()}
@@ -1182,9 +1369,11 @@
 {/snippet}
 
 {#snippet pieceCard()}
-	<!-- THE PIECE CARD: the game's reshape screen, line for line (⚓ Nate: it
-	     keeps this shape; it is the view's input, so it comes first). -->
-	<section class="panel ao-card" aria-label="Your piece" bind:clientWidth={cardW}>
+	<!-- THE PIECE CARD: the game's reshape screen, line for line, for entering
+	     a piece (⚓ Nate: it keeps this shape). Behind the piece's segment now
+	     that it does one job (entry), so the stage is one box again; the
+	     reshape's radials are on the Reshape view. -->
+	<div class="ao-card" bind:clientWidth={cardW}>
 		<div class="ao-card-head">
 			{@render slotPicker(true)}
 			<button
@@ -1204,8 +1393,8 @@
 					kind="name"
 					label="Main stat"
 					options={mainOptions}
-					value={main.id}
-					onpick={(v) => pickMain(v as MainStatId)}
+					value={mainValue}
+					onpick={pickMainField}
 				/>
 			{:else}
 				<span class="ao-main-fixed">{main.name}</span>
@@ -1214,9 +1403,9 @@
 		{#each lines as line, i (i)}
 			{@const at = pieceLines.findIndex((l) => l.id === line.id)}
 			{@const isWanted = line.id !== '' && wantedSubs.includes(line.id)}
-			{@const isSel = line.id !== '' && sel.includes(line.id)}
 			{@const open = unsettled.includes(i) && !readingPicked}
-			<div class="ao-line" class:is-wanted={isWanted}>
+			{@const grayed = unactivatedOn && i === 3}
+			<div class="ao-line" class:is-wanted={isWanted && !grayed} class:is-grayed={grayed}>
 				{#if line.id === ''}
 					<span class="ao-badge is-none" aria-hidden="true"></span>
 				{:else if resolution && at >= 0}
@@ -1239,7 +1428,7 @@
 					label="Substat {i + 1}"
 					options={nameOptions(i)}
 					value={line.id}
-					placeholder={i === 3 && level === 0 ? 'Not yet' : 'Substat…'}
+					placeholder="Substat…"
 					display={line.id !== '' && tightCard ? substatById(line.id).short : undefined}
 					onpick={(v) => setLineStat(i, v as SubstatId | '')}
 				/>
@@ -1253,18 +1442,6 @@
 					placeholder="—"
 					onpick={(v) => setLineValue(i, v)}
 				/>
-				{#if line.id !== ''}
-					<button
-						class="ao-radial"
-						class:is-on={isSel}
-						disabled={!isSel && sel.length >= 2}
-						aria-pressed={isSel}
-						aria-label="Select {substatById(line.id).name} for a reshape"
-						onclick={() => toggleSelected(line.id as SubstatId)}
-					></button>
-				{:else}
-					<span></span>
-				{/if}
 			</div>
 		{/each}
 		<div class="chips ao-dense ao-levels" role="group" aria-label="Level">
@@ -1280,6 +1457,23 @@
 				</button>
 			{/each}
 		</div>
+		{#if level === 0}
+			<!-- The game shows a 3-line piece's 4th substat grayed out until +4. -->
+			<label class="check ao-unactivated">
+				<input
+					type="checkbox"
+					bind:checked={
+						() => unactivated,
+						(v) => {
+							unactivated = v;
+							resetReading();
+						}
+					}
+				/>
+				<span class="check-box"></span>
+				The 4th substat is grayed out (unactivated)
+			</label>
+		{/if}
 		{#if unsettled.length}
 			<!-- THE QUESTION, in words, under everything you touch on the card. -->
 			<div
@@ -1318,8 +1512,7 @@
 		<p class="note ao-card-note">
 			{#if resolution}
 				The number beside each substat is how many upgrades it got, the same number the game shows
-				on its reshape screen. Your stats are highlighted. Use the circles on the right to choose
-				two substats to reshape.
+				on its reshape screen. Your stats are highlighted.
 			{:else if pieceComplete}
 				Pick your piece's level. Levels these values can't belong to are dimmed.
 			{:else}
@@ -1327,14 +1520,46 @@
 				level.
 			{/if}
 		</p>
-	</section>
+	</div>
+{/snippet}
+
+{#snippet pieceSegment()}
+	<!-- THE PIECE AT A GLANCE, opening the card: "+20 Pyro Goblet · CR 6.6 · …" -->
+	<BandMenu
+		bind:this={pieceMenu}
+		role="dialog"
+		align="start"
+		ariaLabel="Your piece: {pieceLines.length ? pieceName : 'not entered'}"
+	>
+		{#snippet face()}
+			{#if pieceLines.length}
+				<span class="ao-glance">
+					<span class="setup-val">{pieceName}</span>
+					{#each lines as l, i (i)}
+						{#if l.id !== ''}
+							<span class="ao-glance-sep" aria-hidden="true">·</span>
+							<span
+								class="ao-glance-line"
+								class:is-wanted={wantedSubs.includes(l.id)}
+								class:is-grayed={unactivatedOn && i === 3}
+								>{substatById(l.id).short} <span class="ao-glance-num">{l.raw}</span></span
+							>
+						{/if}
+					{/each}
+				</span>
+			{:else}
+				<span class="setup-val">Enter your piece</span>
+			{/if}
+		{/snippet}
+		{#snippet items()}
+			<div class="setup-pop ao-card-pop">{@render pieceCard()}</div>
+		{/snippet}
+	</BandMenu>
 {/snippet}
 
 <!-- THE STAGE (design §6; app.css § THE STAGE). One box: the chart head,
      the chart's toolbar on its top edge (the view tabs and the setup bar),
-     and the chart with its companion and its handle. In Your piece the card,
-     the view's input, stands beside the chart (under it where the tile is
-     narrow). -->
+     and the chart with its companion and its handle. -->
 <div class="stage-root">
 	<div class="stage ctx-dark">
 		<!-- THE CHART HEAD: the view's answer, at the stage's top left. -->
@@ -1345,16 +1570,24 @@
 				>
 			{:else if emptyReason}
 				—<span class="readout-sentence"
-					>{view === 'piece'
-						? 'Enter your piece to see how it measures up'
-						: 'Pick a substat'}</span
+					>{emptyReason === 'main'
+						? 'Pick a substat'
+						: emptyReason === 'unfinished'
+							? 'Reshaping needs a +20 piece'
+							: emptyReason === 'pick'
+								? 'Pick two substats to reshape'
+								: 'Enter your piece to see how it measures up'}</span
+				>
+			{:else if view === 'reshape'}
+				{formatChance(beats)}<span class="readout-sentence"
+					>chance a {reshapeName} reshape beats your piece</span
 				>
 			{:else if view === 'piece' && finished}
 				Better than {Math.round(percentile * 100)}%<span class="readout-sentence"
 					>of +20 {slotPlural} with these four substats</span
 				>
 			{:else}
-				{formatChance(odds.above)}<span class="readout-sentence"
+				{formatChance(beats)}<span class="readout-sentence"
 					>chance it ends above {valueOf(reference)}{view === 'piece' ? ' at +20' : ''}</span
 				>
 			{/if}
@@ -1376,7 +1609,9 @@
 				{/each}
 			</div>
 			<div class="setup-bar" role="group" aria-label="Setup">
-				{#if view !== 'piece'}
+				{#if view === 'piece' || view === 'reshape'}
+					{@render pieceSegment()}
+				{:else}
 					{@render segment('Piece', pieceFace, pieceFace, pieceBody)}
 				{/if}
 				{@render segment('Your stats', wantedFace, wantedFace, wantedBody)}
@@ -1399,7 +1634,7 @@
 						startBody
 					)}
 				{/if}
-				{#if view !== 'drop'}
+				{#if view === 'level' || view === 'piece'}
 					{@render segment(
 						'Made',
 						defined ? 'With Elixir' : 'Farmed',
@@ -1407,472 +1642,441 @@
 						madeBody
 					)}
 				{/if}
-				{#if view === 'piece' && finished}
-					{@render segment('Reshape', reshapeName, reshapeName, reshapeBody)}
+				{#if view === 'reshape'}
+					<BandMenu
+						bind:this={reshapeMenu}
+						role="dialog"
+						align="start"
+						ariaLabel="Reshape: {reshapeFace}"
+					>
+						{#snippet face()}
+							<span class="setup-key">Reshape</span>
+							<span class="setup-val">{reshapeFace}</span>
+						{/snippet}
+						{#snippet items()}
+							<div class="setup-pop">{@render reshapeBody()}</div>
+						{/snippet}
+					</BandMenu>
 				{/if}
 			</div>
 		</div>
 
-		<div class="ao-main" class:has-card={view === 'piece'}>
-			{#if view === 'piece'}{@render pieceCard()}{/if}
-
-			<div class="ao-chart-col">
-				<div
-					class="stage-graph instrument-graph"
-					style:--graph-min="{PLOT_MIN + CHROME_H}px"
-					bind:clientWidth={graphW}
-					bind:clientHeight={graphH}
-				>
-					{#if emptyReason}
-						<div class="ao-empty">
-							{#if emptyReason === 'main'}
-								<p>Your only chosen stat is this piece's main stat. Pick a substat too.</p>
-							{:else if emptyReason === 'incomplete'}
-								<p>
-									Enter your piece's substats{level === 0
-										? ' — three, or four if it dropped with four'
-										: ' — all four'}.
-								</p>
-							{:else if emptyReason === 'impossible'}
-								<p>
-									One of these values isn't possible for that substat. Check it against the game.
-								</p>
-							{:else if emptyReason === 'misfit'}
-								<p>
-									These values add up to {totals.join(' or ')} upgrade{totals.at(-1) === 1
-										? ''
-										: 's'}, but a {LEVELS.find((l) => l.at === level)?.label} piece has only {Math.max(
-										0,
-										upgradesAt(level) - 1
-									)}–{upgradesAt(level)}.
-									{#if LEVELS.some((l) => fitsLevel[l.at])}
-										Recheck your values, or pick {LEVELS.filter((l) => fitsLevel[l.at])
-											.map((l) => l.label)
-											.join(' or ')}.
-									{:else}
-										Recheck your values.
-									{/if}
-								</p>
-							{:else}
-								<p>None of your chosen stats are on this piece.</p>
-							{/if}
-						</div>
-					{:else}
-						<svg
-							width={graphW}
-							height={H}
-							role="img"
-							aria-label={view === 'drop'
-								? 'Chance of this piece by days of resin'
-								: `Chance to end above each ${unit === 'cv' ? 'crit value' : 'count of useful rolls'} at +20`}
-							onpointerdown={onDown}
-							onpointermove={onMove}
-							onpointerup={onUp}
-							onpointercancel={onUp}
-							style:cursor={draggable ? 'ew-resize' : 'default'}
+		<div class="ao-chart-col">
+			<div
+				class="stage-graph instrument-graph"
+				style:--graph-min="{PLOT_MIN + CHROME_H}px"
+				bind:clientWidth={graphW}
+				bind:clientHeight={graphH}
+			>
+				{#if emptyReason}
+					<div class="ao-empty">
+						{#if emptyReason === 'main'}
+							<p>Your only chosen stat is this piece's main stat. Pick a substat too.</p>
+						{:else if emptyReason === 'incomplete'}
+							<p>
+								{pieceLines.length
+									? 'Enter all four of its substats, a grayed-out one too.'
+									: 'Enter a piece to see how it measures up.'}
+							</p>
+							<button class="btn" onclick={() => pieceMenu?.show()}>
+								{pieceLines.length ? 'Finish your piece' : 'Enter your piece'}
+							</button>
+						{:else if emptyReason === 'impossible'}
+							<p>One of these values isn't possible for that substat. Check it against the game.</p>
+							<button class="btn" onclick={() => pieceMenu?.show()}>Edit your piece</button>
+						{:else if emptyReason === 'misfit'}
+							<p>
+								These values add up to {totals.join(' or ')} upgrade{totals.at(-1) === 1
+									? ''
+									: 's'}, but a {levelLabel} piece has only {Math.max(
+									0,
+									upgradesAt(level) - 1
+								)}–{upgradesAt(level)}.
+								{#if LEVELS.some((l) => fitsLevel[l.at])}
+									Recheck your values, or pick {LEVELS.filter((l) => fitsLevel[l.at])
+										.map((l) => l.label)
+										.join(' or ')}.
+								{:else}
+									Recheck your values.
+								{/if}
+							</p>
+							<button class="btn" onclick={() => pieceMenu?.show()}>Edit your piece</button>
+						{:else if emptyReason === 'unfinished'}
+							<p>This piece is {levelLabel}. Level it to +20 to reshape it.</p>
+							<button class="btn" onclick={() => pieceMenu?.show()}>Edit your piece</button>
+						{:else if emptyReason === 'pick'}
+							<p>Pick the two substats to reshape, as the game's reshape screen asks.</p>
+							<button class="btn" onclick={() => reshapeMenu?.show()}>Pick two substats</button>
+						{:else}
+							<p>None of your chosen stats are on this piece.</p>
+						{/if}
+					</div>
+				{:else}
+					<svg
+						width={graphW}
+						height={H}
+						role="img"
+						aria-label={view === 'drop'
+							? 'Chance of this piece by days of resin'
+							: `Chance to end above each ${unit === 'cv' ? 'crit value' : 'count of useful rolls'} at +20`}
+						onpointerdown={onDown}
+						onpointermove={onMove}
+						onpointerup={onUp}
+						onpointercancel={onUp}
+						style:cursor={draggable ? 'ew-resize' : 'default'}
+					>
+						<!-- X grid and the axis's numbers, through the plot and the strip -->
+						{#if view === 'drop'}
+							{#each farmTicks as t (t)}
+								<line
+									x1={farmXOf(t)}
+									y1={TOP}
+									x2={farmXOf(t)}
+									y2={plotY1}
+									stroke="var(--chart-grid)"
+								/>
+								<text
+									x={farmXOf(t)}
+									y={axisY + 15}
+									fill="var(--chart-ink)"
+									font-size="10"
+									text-anchor="middle"
+								>
+									{fmtNum(t)}
+								</text>
+							{/each}
+						{:else}
+							{#each histTicks as t (t)}
+								<line
+									x1={histXOf(t)}
+									y1={TOP}
+									x2={histXOf(t)}
+									y2={plotY1}
+									stroke="var(--chart-grid)"
+								/>
+								<line
+									x1={histXOf(t)}
+									y1={compY0}
+									x2={histXOf(t)}
+									y2={compY1}
+									stroke="var(--chart-grid)"
+								/>
+								<text
+									x={histXOf(t)}
+									y={axisY + 15}
+									fill="var(--chart-ink)"
+									font-size="10"
+									text-anchor="middle"
+								>
+									{unit === 'cv' ? t : t.toFixed(1)}
+								</text>
+							{/each}
+						{/if}
+						<text
+							x={graphW - PADR}
+							y={axisY + 27}
+							fill="var(--chart-dim)"
+							font-size="10"
+							text-anchor="end"
 						>
-							<!-- X grid and the axis's numbers, through the plot and the strip -->
-							{#if view === 'drop'}
-								{#each farmTicks as t (t)}
-									<line
-										x1={farmXOf(t)}
-										y1={TOP}
-										x2={farmXOf(t)}
-										y2={plotY1}
-										stroke="var(--chart-grid)"
-									/>
-									<text
-										x={farmXOf(t)}
-										y={axisY + 15}
-										fill="var(--chart-ink)"
-										font-size="10"
-										text-anchor="middle"
-									>
-										{fmtNum(t)}
-									</text>
-								{/each}
-							{:else}
-								{#each histTicks as t (t)}
-									<line
-										x1={histXOf(t)}
-										y1={TOP}
-										x2={histXOf(t)}
-										y2={plotY1}
-										stroke="var(--chart-grid)"
-									/>
-									<line
-										x1={histXOf(t)}
-										y1={compY0}
-										x2={histXOf(t)}
-										y2={compY1}
-										stroke="var(--chart-grid)"
-									/>
-									<text
-										x={histXOf(t)}
-										y={axisY + 15}
-										fill="var(--chart-ink)"
-										font-size="10"
-										text-anchor="middle"
-									>
-										{unit === 'cv' ? t : t.toFixed(1)}
-									</text>
-								{/each}
-							{/if}
+							{view === 'drop'
+								? 'days of resin'
+								: unit === 'cv'
+									? 'crit value (CV) at +20'
+									: 'useful rolls in your stats at +20'}
+						</text>
+
+						<!-- Y grid: the chance -->
+						{#each [0.25, 0.5, 0.75, 1] as p (p)}
+							<line
+								x1={PADL}
+								y1={yOf(p)}
+								x2={graphW - PADR}
+								y2={yOf(p)}
+								stroke={p === 1 ? 'var(--chart-rule)' : 'var(--chart-grid)'}
+							/>
 							<text
-								x={graphW - PADR}
-								y={axisY + 27}
-								fill="var(--chart-dim)"
+								x={PADL - 7}
+								y={yOf(p) + 3.5}
+								fill="var(--chart-ink)"
 								font-size="10"
 								text-anchor="end"
 							>
-								{view === 'drop'
-									? 'days of resin'
-									: unit === 'cv'
-										? 'crit value (CV) at +20'
-										: 'useful rolls in your stats at +20'}
+								{Math.round(p * 100)}%
 							</text>
+						{/each}
+						<line x1={PADL} y1={plotY1} x2={graphW - PADR} y2={plotY1} stroke="var(--chart-rule)" />
+						<text x="4" y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+							{view === 'drop'
+								? 'chance you have it by then'
+								: view === 'reshape'
+									? 'chance a reshape ends above'
+									: 'chance it ends above'}
+						</text>
 
-							<!-- Y grid: the chance -->
-							{#each [0.25, 0.5, 0.75, 1] as p (p)}
-								<line
-									x1={PADL}
-									y1={yOf(p)}
-									x2={graphW - PADR}
-									y2={yOf(p)}
-									stroke={p === 1 ? 'var(--chart-rule)' : 'var(--chart-grid)'}
-								/>
-								<text
-									x={PADL - 7}
-									y={yOf(p) + 3.5}
-									fill="var(--chart-ink)"
-									font-size="10"
-									text-anchor="end"
-								>
-									{Math.round(p * 100)}%
-								</text>
-							{/each}
+						{#if view === 'drop'}
+							<path
+								d={farmPath(true)}
+								fill="none"
+								stroke="var(--chart-ink)"
+								stroke-width="1.25"
+								stroke-linejoin="round"
+							/>
+							<path
+								d={farmPath(false)}
+								fill="none"
+								stroke="var(--text)"
+								stroke-width="2"
+								stroke-linejoin="round"
+							/>
+							<text
+								class="stage-word"
+								x={farmLabels.outbreak.x}
+								y={farmLabels.outbreak.y}
+								fill="var(--chart-ink)"
+								font-size="11"
+								text-anchor={farmLabels.outbreak.anchor}
+							>
+								In an Outbreak
+							</text>
+							<text
+								class="stage-word"
+								x={farmLabels.domain.x}
+								y={farmLabels.domain.y}
+								fill="var(--text)"
+								font-size="11"
+								font-weight="600"
+								text-anchor={farmLabels.domain.anchor}
+							>
+								Domain
+							</text>
+						{:else}
+							<!-- The companion: 100 pieces, one dot each, on the same x axis -->
 							<line
 								x1={PADL}
-								y1={plotY1}
+								y1={compY1}
 								x2={graphW - PADR}
-								y2={plotY1}
+								y2={compY1}
 								stroke="var(--chart-rule)"
 							/>
-							<text x="4" y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
-								{view === 'drop' ? 'chance you have it by then' : 'chance it ends above'}
+							<text x="4" y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+								{stripLabel}
 							</text>
+							{#each strip.dots as d, i (i)}
+								<circle
+									cx={d.cx}
+									cy={d.cy}
+									r={d.r}
+									fill={d.on ? 'var(--accent)' : 'var(--chart-ink)'}
+									fill-opacity={d.on ? 0.95 : 0.4}
+								/>
+							{/each}
 
-							{#if view === 'drop'}
+							<!-- The curves: the head's bold, the others thin -->
+							{#each curves.slice(1) as c (c.key)}
 								<path
-									d={farmPath(true)}
+									d={survivalPath(c.dist)}
 									fill="none"
 									stroke="var(--chart-ink)"
 									stroke-width="1.25"
 									stroke-linejoin="round"
 								/>
+							{/each}
+							{#if curves[0]}
 								<path
-									d={farmPath(false)}
+									d={survivalPath(curves[0].dist)}
 									fill="none"
 									stroke="var(--text)"
 									stroke-width="2"
 									stroke-linejoin="round"
 								/>
-								<text
-									class="stage-word"
-									x={farmLabels.outbreak.x}
-									y={farmLabels.outbreak.y}
-									fill="var(--chart-ink)"
-									font-size="11"
-									text-anchor={farmLabels.outbreak.anchor}
-								>
-									In an Outbreak
-								</text>
-								<text
-									class="stage-word"
-									x={farmLabels.domain.x}
-									y={farmLabels.domain.y}
-									fill="var(--text)"
-									font-size="11"
-									font-weight="600"
-									text-anchor={farmLabels.domain.anchor}
-								>
-									Domain
-								</text>
-							{:else}
-								<!-- The companion: the histogram, on the same x axis -->
-								<line
-									x1={PADL}
-									y1={compY1}
-									x2={graphW - PADR}
-									y2={compY1}
-									stroke="var(--chart-rule)"
-								/>
-								<text
-									x="4"
-									y={compY0 - 6}
-									fill="var(--chart-dim)"
-									font-size="10"
-									text-anchor="start"
-								>
-									{stripLabel}
-								</text>
-								{#each kLabels as l (l.k)}
-									{#if l.x > stripLabelEnd}
-										<text
-											class="stage-word"
-											x={l.x}
-											y={compY0 - 6}
-											fill="var(--accent)"
-											font-size="11"
-											font-weight="600"
-											text-anchor="middle">{l.k}</text
-										>
-									{/if}
-								{/each}
-								{#each ghostBins as bin (bin.x)}
-									<rect
-										x={histXOf(bin.x) + 0.5}
-										y={compY1 - barH(bin.p)}
-										width={barW}
-										height={barH(bin.p)}
-										fill="var(--chart-grid)"
-									/>
-								{/each}
-								{#each solidBins as bin (bin.x)}
-									{@const inset = ghostBins.length ? barW * 0.2 : 0}
-									{#each ks as k (k)}
-										{@const under = bin.byK.slice(0, k).reduce((a, b) => a + b, 0)}
-										{#if bin.byK[k] > 0}
-											<rect
-												x={histXOf(bin.x) + 0.5 + inset}
-												y={compY1 - barH(under + bin.byK[k])}
-												width={Math.max(1, barW - 2 * inset)}
-												height={barH(bin.byK[k])}
-												fill="var(--accent)"
-												fill-opacity={kOpacity(k)}
-											/>
-										{/if}
-									{/each}
-								{/each}
-
-								<!-- The curves: the answer's bold, the one beside it thin -->
-								{#if secondaryS}
-									<path
-										d={survivalPath(secondaryS)}
-										fill="none"
-										stroke={view === 'level' ? 'var(--chart-ink)' : 'var(--accent)'}
-										stroke-width="1.5"
-										stroke-linejoin="round"
-									/>
-								{/if}
-								<path
-									d={survivalPath(primaryS)}
-									fill="none"
-									stroke="var(--text)"
-									stroke-width="2"
-									stroke-linejoin="round"
-								/>
-
-								<!-- Your piece now, on the way to +20 -->
-								{#if view === 'piece' && !finished && query}
-									<line
-										x1={histXOf(nowX)}
-										y1={TOP}
-										x2={histXOf(nowX)}
-										y2={plotY1}
-										stroke="var(--chart-rule)"
-										stroke-dasharray="4 4"
-									/>
-									<text
-										class="stage-word"
-										x={histXOf(nowX) + 5}
-										y={TOP + 11}
-										fill="var(--chart-dim)"
-										font-size="10"
-									>
-										now {fmtValue(nowX)}
-									</text>
-								{/if}
 							{/if}
 
-							<!-- The crossings, drawn where they are -->
-							{#each crossings as c (c.key)}
+							<!-- Your piece now, on the way to +20 -->
+							{#if view === 'piece' && !finished && query}
 								<line
-									x1={c.cx}
-									y1={c.cy}
-									x2={c.cx}
+									x1={histXOf(nowX)}
+									y1={TOP}
+									x2={histXOf(nowX)}
 									y2={plotY1}
-									stroke="var(--chart-ink)"
-									stroke-dasharray="2 3"
-								/>
-								<circle
-									cx={c.cx}
-									cy={c.cy}
-									r="3"
-									fill="var(--frame-bg)"
-									stroke="var(--text)"
-									stroke-width="1.5"
+									stroke="var(--chart-rule)"
+									stroke-dasharray="4 4"
 								/>
 								<text
 									class="stage-word"
-									x={c.lx}
-									y={c.ly}
-									fill="var(--chart-ink)"
-									font-size="11"
-									text-anchor={c.anchor}
+									x={histXOf(nowX) + 5}
+									y={TOP + 11}
+									fill="var(--chart-dim)"
+									font-size="10"
 								>
-									{c.text}<title>{c.title}</title>
+									now {fmtValue(nowX)}
 								</text>
-							{/each}
+							{/if}
+						{/if}
 
-							<!-- The marker: a dot where it crosses each curve, down to the handle -->
+						<!-- The crossings, drawn where they are -->
+						{#each crossings as c (c.key)}
 							<line
-								x1={markX}
-								y1={TOP}
-								x2={markX}
-								y2={axisY}
+								x1={c.cx}
+								y1={c.cy}
+								x2={c.cx}
+								y2={plotY1}
 								stroke="var(--chart-ink)"
+								stroke-dasharray="2 3"
+							/>
+							<circle
+								cx={c.cx}
+								cy={c.cy}
+								r="3"
+								fill="var(--frame-bg)"
+								stroke="var(--text)"
 								stroke-width="1.5"
 							/>
-							{#each markDots as d (d.key)}
-								<circle
-									cx={markX}
-									cy={yOf(d.p)}
-									r={d.primary ? 4.5 : 3}
-									fill={d.primary ? 'var(--accent)' : 'var(--chart-ink)'}
-									style="stroke: var(--frame-bg)"
-									stroke-width="1.5"
-								/>
-							{/each}
-							{#each dotLabels as l (l.key)}
-								<text
-									class="stage-word"
-									x={l.x}
-									y={l.y}
-									fill="var(--chart-ink)"
-									font-size="11"
-									text-anchor={l.anchor}
-								>
-									{l.text}
-								</text>
-							{/each}
-						</svg>
-					{/if}
-				</div>
+							<text
+								class="stage-word"
+								x={c.lx}
+								y={c.ly}
+								fill="var(--chart-ink)"
+								font-size="11"
+								text-anchor={c.anchor}
+							>
+								{c.text}<title>{c.title}</title>
+							</text>
+						{/each}
 
-				<!-- THE HANDLE: the x axis's own. Days in Drop; the value to beat in
-				     Level up and on an unfinished piece; at +20 it shows your piece. -->
-				{#if !emptyReason}
-					<div
-						class="stage-handle"
-						style:--stage-handle-l="{PADL - THUMB_R}px"
-						style:--stage-handle-r="{PADR - THUMB_R}px"
-					>
-						{#if view === 'drop'}
-							<InstrumentSlider
-								label="Days of resin"
-								bind:value={() => days, (v) => (days = v)}
-								min={0}
-								max={farmDomain}
-								step={1}
-								fieldMin={1}
-								fieldMax={MAX_DAYS}
-								snap={(v) => Math.max(1, Math.round(v))}
-								valueText={daysPhrase(days)}
+						<!-- The marker: a dot where it crosses each curve, down to the handle -->
+						<line
+							x1={markX}
+							y1={TOP}
+							x2={markX}
+							y2={axisY}
+							stroke="var(--chart-ink)"
+							stroke-width="1.5"
+						/>
+						{#each markDots as d (d.key)}
+							<circle
+								cx={markX}
+								cy={yOf(d.p)}
+								r={d.primary ? 4.5 : 3}
+								fill={d.primary ? 'var(--accent)' : 'var(--chart-ink)'}
+								style="stroke: var(--frame-bg)"
+								stroke-width="1.5"
 							/>
-						{:else if view === 'piece' && finished}
-							<InstrumentSlider
-								label="Your piece"
-								value={nowX}
-								min={histLo}
-								max={histHi}
-								step={0.1}
-								decimals={1}
-								typeable={false}
-								disabled
-							/>
-						{:else}
-							<InstrumentSlider
-								label="To beat"
-								aria="The value to beat"
-								bind:value={
-									() => reference,
-									(v) => {
-										if (view === 'level') refLevel = v;
-										else refPiece = v;
-									}
-								}
-								min={histLo}
-								max={histHi}
-								step={0.1}
-								decimals={1}
-								fieldMin={0}
-								fieldMax={100}
-							/>
-						{/if}
-					</div>
-				{/if}
-
-				<!-- The fine print: what no part of the chart can show. -->
-				{#if view === 'drop'}
-					<p class="stage-fine">
-						About 1 in every {oneIn(perPiece)} five-star drops from this domain is the piece you want.
-						{daysPhrase(days)} is {fmtNum(resinOf(days))} resin, at {RESIN_PER_DAY} a day. During a Stygian
-						Onslaught Disturbance Outbreak, every 120 resin you spend also earns one extra 5★ from the
-						domain.
-					</p>
-				{:else if !emptyReason && view === 'level' && unit === 'rolls'}
-					<p class="stage-fine">
-						Useful rolls count every roll in your stats by its size: a max roll counts as 1, the
-						smallest as 0.7. A substat's starting roll counts too.
-					</p>
-				{:else if !emptyReason && view === 'piece' && !finished && refPiece === null}
-					<p class="stage-fine">
-						Until you drag it, the value to beat is a typical +20 {slotWord} with these substats.
-					</p>
+						{/each}
+						{#each dotLabels as l (l.key)}
+							<text
+								class="stage-word"
+								x={l.x}
+								y={l.y}
+								fill="var(--chart-ink)"
+								font-size="11"
+								text-anchor={l.anchor}
+							>
+								{l.text}
+							</text>
+						{/each}
+					</svg>
 				{/if}
 			</div>
+
+			<!-- THE HANDLE: the x axis's own. Days in Drop; the value to beat in
+			     Level up and on an unfinished piece; your piece at +20 and in
+			     Reshape. -->
+			{#if !emptyReason}
+				<div
+					class="stage-handle"
+					style:--stage-handle-l="{PADL - THUMB_R}px"
+					style:--stage-handle-r="{PADR - THUMB_R}px"
+				>
+					{#if view === 'drop'}
+						<InstrumentSlider
+							label="Days of resin"
+							bind:value={() => days, (v) => (days = v)}
+							min={0}
+							max={farmDomain}
+							step={1}
+							fieldMin={1}
+							fieldMax={MAX_DAYS}
+							snap={(v) => Math.max(1, Math.round(v))}
+							valueText={daysPhrase(days)}
+						/>
+					{:else if markIsPiece}
+						<InstrumentSlider
+							label="Your piece"
+							value={nowX}
+							min={histLo}
+							max={histHi}
+							step={0.1}
+							decimals={1}
+							typeable={false}
+							disabled
+						/>
+					{:else}
+						<InstrumentSlider
+							label="To beat"
+							aria="The value to beat"
+							bind:value={
+								() => reference,
+								(v) => {
+									if (view === 'level') refLevel = v;
+									else refPiece = v;
+								}
+							}
+							min={histLo}
+							max={histHi}
+							step={0.1}
+							decimals={1}
+							fieldMin={0}
+							fieldMax={100}
+						/>
+					{/if}
+				</div>
+			{/if}
+
+			<!-- The fine print: what no part of the chart can show. -->
+			{#if view === 'drop'}
+				<p class="stage-fine">
+					About 1 in every {oneIn(perPiece)} five-star drops from this domain is the piece you want.
+					{daysPhrase(days)} is {fmtNum(resinOf(days))} resin, at {RESIN_PER_DAY} a day. During a Stygian
+					Onslaught Disturbance Outbreak, every 120 resin you spend also earns one extra 5★ from the domain.
+				</p>
+			{:else if !emptyReason && view === 'level' && unit === 'rolls'}
+				<p class="stage-fine">
+					Useful rolls count every roll in your stats by its size: a max roll counts as 1, the
+					smallest as 0.7. A substat's starting roll counts too.
+				</p>
+			{:else if !emptyReason && view === 'piece' && !finished && refPiece === null}
+				<p class="stage-fine">
+					Until you drag it, the value to beat is a typical +20 {slotWord} with these substats.
+				</p>
+			{:else if !emptyReason && view === 'piece' && finished}
+				<p class="stage-fine">
+					<button class="btn btn--sm ao-next" onclick={() => (view = 'reshape')}>
+						Reshape this piece <Mark name="forwardSlim" size={11} />
+					</button>
+				</p>
+			{:else if !emptyReason && view === 'reshape'}
+				<p class="stage-fine">
+					Reshaping keeps each substat's starting roll and rerolls all its upgrades. You keep
+					whichever result you prefer, so the piece can't come out worse: a reshape costs 1 Dust of
+					Enlightenment for a flower or plume, and 2 for other pieces.
+				</p>
+			{/if}
 		</div>
 	</div>
 </div>
 
 <style>
-	/* ── The stage's body: the chart, and in Your piece the card beside it ──
-	   The stage (app.css § THE STAGE) is a column; this row takes what the
-	   head and the toolbar leave. One column below 52rem, the card over the
-	   chart: the card is the view's input, so it comes first. From 52rem the
-	   card stands at the chart's left, at its own height, and the chart keeps
-	   the row's: 🎛️ --ao-card-w (22rem), about the old rail's width. */
-	.ao-main {
+	/* ── The chart's column: the chart, its handle, the fine print ──
+	   The stage (app.css § THE STAGE) is a column; this takes what the head
+	   and the toolbar leave. */
+	.ao-chart-col {
 		flex: 1 1 0;
 		min-height: max-content;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr);
-		gap: var(--inst-gap-section);
-	}
-
-	.ao-main.has-card {
-		grid-template-rows: auto minmax(0, 1fr);
-	}
-
-	@container instrument (min-width: 52rem) {
-		.ao-main.has-card {
-			grid-template-columns: var(--ao-card-w, 22rem) minmax(0, 1fr);
-			grid-template-rows: minmax(0, 1fr);
-			column-gap: 1.5rem;
-		}
-		.ao-card {
-			align-self: start;
-		}
-	}
-
-	.ao-chart-col {
 		display: flex;
 		flex-direction: column;
 		gap: var(--inst-gap-control);
 		min-width: 0;
-		min-height: 0;
 	}
 
 	/* A capped svg (and .instrument-graph's min-width 0): otherwise the svg's
@@ -1882,11 +2086,13 @@
 		max-width: 100%;
 	}
 
-	/* What the chart can't draw yet, in the chart's own box */
+	/* What the chart can't draw yet, in the chart's own box, with the way on */
 	.ao-empty {
 		display: grid;
+		justify-items: center;
 		height: 100%;
 		align-content: center;
+		gap: 0.9rem;
 		padding: 0 1rem;
 		text-align: center;
 		color: var(--chart-ink);
@@ -1895,6 +2101,44 @@
 	.ao-empty p {
 		margin: 0 auto;
 		max-width: 44ch;
+	}
+
+	.ao-next {
+		gap: 0.35rem;
+	}
+
+	/* ── The piece at a glance (the setup bar's first segment) ──
+	   Its figures tabular; your stats in the gold the card gives them; a
+	   grayed-out 4th line dim, as the game shows it. On a narrow bar it may
+	   wrap inside its segment rather than run past the bar. */
+	.ao-glance {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 0.4rem;
+		white-space: normal;
+		text-align: left;
+	}
+
+	.ao-glance-line {
+		color: var(--text);
+		white-space: nowrap;
+	}
+
+	.ao-glance-line.is-wanted {
+		color: var(--accent);
+	}
+
+	.ao-glance-line.is-grayed {
+		color: var(--chart-dim);
+	}
+
+	.ao-glance-num {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.ao-glance-sep {
+		color: var(--chart-dim);
 	}
 
 	/* ── Popover contents ─────────────────────────────────────────────────── */
@@ -1976,10 +2220,17 @@
 
 	/* ── The piece card: the game's reshape screen, line for line ─────────── */
 
+	/* 🎛️ The card's popover: wider than a setting's 22rem, for the lines'
+	   names beside their values (the card's own 22rem column on the stage
+	   before it moved behind the segment) */
+	.ao-card-pop {
+		width: min(24rem, calc(100vw - 2rem));
+	}
+
 	.ao-card {
+		display: grid;
 		gap: 0.3rem;
 		min-width: 0;
-		max-width: 28rem;
 	}
 
 	.ao-card-head {
@@ -2000,14 +2251,10 @@
 	/* The main stat sits on its own row, above the four substats (the game's) */
 	.ao-main-row {
 		display: grid;
-		grid-template-columns: 1.5rem minmax(0, 1fr) 6.7rem;
+		grid-template-columns: 1.5rem minmax(0, 1fr);
 		align-items: center;
 		gap: 0.45rem;
 		padding: 0 0.3rem 0.2rem;
-	}
-
-	.ao-main-row > :global(.sf) {
-		grid-column: 2 / -1;
 	}
 
 	/* The game marks its main stat with a star where substats carry a badge */
@@ -2020,7 +2267,6 @@
 	/* As tall as the field it replaces on a flower or plume, so switching
 	   slots doesn't move the card */
 	.ao-main-fixed {
-		grid-column: 2 / -1;
 		display: flex;
 		align-items: center;
 		height: 2rem;
@@ -2032,7 +2278,7 @@
 
 	.ao-line {
 		display: grid;
-		grid-template-columns: 1.5rem minmax(0, 1fr) 5.2rem 1.5rem;
+		grid-template-columns: 1.5rem minmax(0, 1fr) 5.2rem;
 		align-items: center;
 		gap: 0.45rem;
 		padding: 0.2rem 0.3rem;
@@ -2045,6 +2291,11 @@
 
 	.ao-line.is-wanted > :global(.sf--name .sf-input) {
 		color: var(--accent);
+	}
+
+	/* A grayed-out 4th line, as the game shows one below +4 */
+	.ao-line.is-grayed :global(.sf-input) {
+		color: var(--muted);
 	}
 
 	/* The upgrade badge: a gold disc with the count, a dot for none (the game's) */
@@ -2108,29 +2359,6 @@
 		fill: var(--frame-bg);
 	}
 
-	/* The game's reshape radial */
-	.ao-radial {
-		width: 1.15rem;
-		height: 1.15rem;
-		padding: 0;
-		border: none;
-		border-radius: 50%;
-		background: transparent;
-		box-shadow: inset 0 0 0 1.5px var(--muted);
-		cursor: pointer;
-		transition: background var(--t-snap);
-	}
-
-	.ao-radial.is-on {
-		background: var(--accent);
-		box-shadow: none;
-	}
-
-	.ao-radial:disabled {
-		cursor: default;
-		opacity: 0.35;
-	}
-
 	/* The six levels on one row at any card width: even columns, the chips
 	   filling them (as a wrapping row, +20 went to a line of its own). */
 	.ao-levels {
@@ -2143,6 +2371,11 @@
 	.ao-levels :global(.chip) {
 		justify-content: center;
 		padding-inline: 0;
+	}
+
+	.ao-unactivated {
+		margin-top: 0.3rem;
+		font-size: var(--fs-md);
 	}
 
 	/* The readings: the question in words, and each answer a chip that says
@@ -2183,5 +2416,72 @@
 
 	.ao-card-note {
 		margin-top: 0.4rem;
+	}
+
+	/* ── The Reshape popover: the game's reshape screen ──
+	   Each line a button: its badge, name and value, and the game's radial on
+	   its right; two at most. */
+	.ao-rs-lines {
+		display: grid;
+		gap: 0.3rem;
+	}
+
+	.ao-rs-line {
+		display: grid;
+		grid-template-columns: 1.5rem minmax(0, 1fr) auto 1.5rem;
+		align-items: center;
+		gap: 0.45rem;
+		width: 100%;
+		min-height: 2.2rem;
+		padding: 0.2rem 0.5rem 0.2rem 0.3rem;
+		border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+		border-radius: 3px;
+		background: transparent;
+		color: var(--text);
+		font-family: var(--font-body);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		text-align: left;
+		cursor: pointer;
+		transition:
+			background var(--t-snap),
+			border-color var(--t-snap);
+	}
+
+	.ao-rs-line:hover:not(:disabled) {
+		background: var(--fill-hover);
+	}
+
+	.ao-rs-line.is-on {
+		border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+	}
+
+	.ao-rs-line:disabled {
+		cursor: default;
+		opacity: 0.55;
+	}
+
+	.ao-rs-line.is-wanted .ao-rs-name {
+		color: var(--accent);
+	}
+
+	.ao-rs-value {
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* The game's reshape radial */
+	.ao-radial {
+		justify-self: center;
+		width: 1.15rem;
+		height: 1.15rem;
+		border-radius: 50%;
+		box-shadow: inset 0 0 0 1.5px var(--muted);
+		transition: background var(--t-snap);
+	}
+
+	.ao-radial.is-on {
+		background: var(--accent);
+		box-shadow: none;
 	}
 </style>

@@ -138,10 +138,12 @@ fine print
   capped at 🎛️ `--stage-aspect` (1.9) × the tile's height and centred, so an ultrawide
   doesn't flatten every slope. The stage's CSS is `app.css` § THE STAGE, shared by every
   instrument on it; what one instrument adds stays in its own file.
-- **An input the view is about stands beside the chart.** Artifact odds' piece card (⚓ Nate:
-  front and center, in the game's shape, not folded into a control bar) sits left of the chart
-  under the toolbar from a 52rem tile, and between the toolbar and the chart below it. The
-  toolbar spans both, so the view tabs never move when the card comes and goes.
+- **An input is a segment at a glance.** Where a view is about something the player enters
+  (Artifact odds' piece), the setup bar's first segment shows it read-only ("+20 Pyro Goblet ·
+  CR 6.6 · CD 21.0 · …") and opens the full input in its popover; with nothing entered, the
+  chart's empty state opens it. ⚓ Nate (2026-11-03): one job per step (entering a piece is
+  not reshaping it), and the stage stays one box. Set aside: the input beside the chart (two
+  boxes) and a panel over an empty corner of the plot (the rule below).
 
 ### Using the chart's space
 
@@ -186,7 +188,7 @@ breakdown is the one exception (§8).
 
 **Companion strips.** An instrument may give part of its chart's height to one second view
 that shares the main chart's x axis: Wish odds' chance per pull (the soft-pity spike that
-explains the main curve's jump), Reaction curves' gain per 100 EM, Artifact odds' histogram,
+explains the main curve's jump), Reaction curves' gain per 100 EM, Artifact odds' 100 dots,
 the Crit heatmap's hit histogram. Enemy RES & DEF's pair of charts is already this shape. At
 most one per instrument.
 
@@ -197,11 +199,12 @@ most one per instrument.
   Enemy level becomes a setup chip. Shred sources draw as segments of an arrow along the RES
   axis. To try in a demo: the answer as a unit square whose width is the RES multiplier and
   height the DEF multiplier, so its area is the damage kept.
-- **Artifact odds** (built: `docs/rounds/viz-stage-artifact-2026-11-03.md`): Level up and Your
-  piece become a survival curve (the chance to end above each value), with the histogram as the
-  companion. All three views are then chance curves,
-  and the to-beat drag reads its answer at the point. Other sites already show the histogram;
-  the curve as the main view is ours.
+- **Artifact odds** (built: `docs/rounds/viz-stage-artifact-2026-11-03.md`): Level up, Your
+  piece and Reshape are survival curves (the chance to end above each value), drawn as the steps
+  they are, with a 100-dot strip as the companion (one dot per hundredth of the outcomes, the
+  ones past the marker lit: counted, not computed). Reshape draws all three kinds at once. The
+  to-beat drag reads its answer at the point. Other sites show the histogram; the curve is
+  ours.
 - **Damage breakdown:** upright at the wide tier, a column per factor, so it fills the stage
   like the rest and up means more damage. Drag a column's top to change that stat; the next
   roll's gain draws as a ghost cap on its column. Horizontal rows below the wide tier, where
