@@ -239,6 +239,7 @@
 	<div
 		bind:this={menuEl}
 		class="band-menu ctx-dark"
+		class:band-menu--scroll={menuMaxH !== null}
 		use:portal
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
@@ -247,7 +248,6 @@
 		style:top="{menuY}px"
 		style:min-width="{MENU_MIN_W}px"
 		style:max-height={menuMaxH === null ? null : `${menuMaxH}px`}
-		style:overflow-y={menuMaxH === null ? null : 'auto'}
 		{role}
 		tabindex="-1"
 		aria-label={ariaLabel ?? label}
@@ -305,6 +305,14 @@
 		background: var(--surface);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 		outline: none;
+	}
+	/* Scrolls once fit() has capped its height. ⚠ A class, never an inline
+	   `style:overflow-y`: Svelte's transition stashes the element's inline
+	   `overflow` at creation and writes it back when the intro ends, and fit()
+	   runs mid-fade, so an inline overflow-y was wiped and a tall menu (the
+	   Enemy RES & DEF Shred popover) spilled past its cap, unscrollable. */
+	.band-menu.band-menu--scroll {
+		overflow-y: auto;
 	}
 
 	/* Items are authored by the caller; these are the shared affordances.
