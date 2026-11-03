@@ -1,7 +1,8 @@
 # The stage, round 5: Damage breakdown (2026-11-03)
 
-**Status:** built on `feat/viz-breakdown-stage`, waiting on Nate's look. The copy (§4) is written
-in and proposed; Help (§5) is proposed, not landed. Real Safari is still Nate's.
+**Status:** on `feat/viz-breakdown-stage`. Nate: the copy (§4) and Help (§5) approved, Help
+landed; real Safari checked ("Safari green"). The sums' gradient (§3a item 2) waits on his look
+before the merge.
 
 ## 1. The headline
 
@@ -89,15 +90,17 @@ Nate: "really cool … good overall." ⚓ The grips, crit left undraggable, and 
 
 1. The chevrons run through the whole bar: the stripes start past the head, clipped there, so
    the corners beside the first point are filled (both forms).
-2. A sum is the readout, not travel, so the result and the chunk wear even stripes, the
-   chevrons' width and fade with no point. Offered even stripes or a fading gradient; Claude
-   picked the stripes, which keep the moving bars' rhythm at rest.
+2. A sum is the readout, not travel, so the result and the chunk wear no chevrons. First even
+   stripes, the chevrons' width and fade with no point (Claude's pick of Nate's two). ⚓ Nate:
+   "not so good after all", so the simple gradient, Claude's recommendation too: the stripes'
+   bright ink from their 12% at the head to nothing at the tail, a fade with no direction. In
+   rows it is its own element over the fill, so the bar keeps one background layer.
 3. The reaction's bar is its element colour mixed with the stage's slate, in oklab (🎛️ `RX_MIX`
    70%), toned down without greying.
 4. ↻ Reversing his 2026-10-02 call: the rows' bars are one height again (🎛️ `--bar-h` 1.5rem,
    was 55% of the row), so a two-line row's bar no longer stands taller than a one-line row's.
 
-## 4. Copy (written in, proposed)
+## 4. Copy (written in, approved)
 
 1. The headline: "{+X%} {noun} from one more {stat} roll"; tied rolls "{A} or {B}" ("A, B, or
    C" for three). The nouns: "damage" (direct hit), "{Reaction} damage" (additive,
@@ -123,7 +126,7 @@ gained", "Each row adds one average 5★ roll of that substat to your current sh
 and Enemy kickers, "DEF shred and ignore" with its On and Off, and the reaction row's "picked
 above".
 
-## 5. Help (proposed)
+## 5. Help (landed, as proposed)
 
 `src/lib/help/chapters/Visualizers.svelte` § Damage breakdown, written for the rows and the
 Readout table.
@@ -149,4 +152,4 @@ Readout table.
 
 Tests: `breakdown.test.ts` § the stage: caps and dragging (6 new). Gates: see the commit.
 
-The copy ledger's note (`docs/text/ledger/notes/vz_breakdown.md`, new) is written at the close.
+The copy ledger's note is `docs/text/ledger/notes/vz_breakdown.md`, new at the close.
