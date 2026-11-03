@@ -158,7 +158,14 @@
 	/** A defined piece's two lines (the Elixir's Define Minor Affixes) */
 	let definedSel = $state<SubstatId[]>([]);
 	/** The reshape's two lines (the game's radials on its reshape screen) */
-	let reshapeSel = $state<SubstatId[]>(['cr', 'cd']);
+	let reshapeSel = $state<SubstatId[]>([]);
+	/**
+	 * The reshape's two follow your valued stats until you pick (⚓ Nate
+	 * 2026-11-03): the first two on the piece, in the order you valued them,
+	 * which roughly follows what you care about most. Not "the best pair":
+	 * choosing the pair with the best odds would make the call for you.
+	 */
+	let reshapeAuto = $state(true);
 	let resolutionPick = $state(0);
 	/** The player chose among the readings (the card's question is answered). */
 	let readingPicked = $state(false);
@@ -213,6 +220,12 @@
 		if (wanted.includes(id)) {
 			if (wanted.length > 1) wanted = wanted.filter((w) => w !== id);
 		} else if (wanted.length < MAX_WANTED) wanted = [...wanted, id];
+		// on a piece's views only its lines are offered: a valued stat the piece
+		// hasn't makes way, rather than a hidden one blocking the fourth
+		else if (pieceOnly) {
+			const hidden = wanted.find((w) => !pieceLines.some((l) => l.id === w));
+			if (hidden) wanted = [...wanted.filter((w) => w !== hidden), id];
+		}
 		atLeast = Math.min(Math.max(1, atLeast), wanted.length);
 		resetRefs();
 	}
@@ -297,7 +310,9 @@
 	const wantedOnPiece = $derived(pieceLines.filter((l) => wantedSubs.includes(l.id)).length);
 	const onPiece = (ids: SubstatId[]) => ids.filter((id) => pieceLines.some((l) => l.id === id));
 	const defSel = $derived(onPiece(definedSel));
-	const rshSel = $derived(onPiece(reshapeSel));
+	const rshSel = $derived(reshapeAuto ? onPiece(wantedSubs).slice(0, 2) : onPiece(reshapeSel));
+	/** Your piece and Reshape offer only the piece's four lines as valued stats */
+	const pieceOnly = $derived((view === 'piece' || view === 'reshape') && pieceLines.length > 0);
 	const pieceFloor = $derived(defined && defSel.length === 2 ? 2 : 0);
 
 	const query = $derived<PieceQuery | null>(
@@ -576,6 +591,7 @@
 		];
 		definedSel = [];
 		reshapeSel = [];
+		reshapeAuto = true;
 		unactivated = false;
 		resetReading();
 		resetRefs();
@@ -1102,7 +1118,8 @@
 		lines = demoLines();
 		unactivated = false;
 		definedSel = [];
-		reshapeSel = ['cr', 'cd'];
+		reshapeSel = [];
+		reshapeAuto = true;
 		resetReading();
 		reshapeFloor = 2;
 		resetRefs();
@@ -1134,7 +1151,8 @@
 			picked: readingPicked,
 			defSel: definedSel,
 			unact: unactivated,
-			el: element
+			el: element,
+			rsAuto: reshapeAuto
 		};
 	}
 
@@ -1186,6 +1204,8 @@
 		unactivated = s.unact === true;
 		const sel = two(s.selected);
 		if (sel) reshapeSel = sel;
+		// an older state's selection was its own; a newer one says
+		reshapeAuto = typeof s.rsAuto === 'boolean' ? s.rsAuto : !sel?.length;
 		// before 2026-11-03 one selection served both: a defined piece's too
 		definedSel = two(s.defSel) ?? (defined && sel ? sel : []);
 		fixLines();
@@ -1267,14 +1287,14 @@
 
 {#snippet wantedBody()}
 	<div class="chips ao-dense" role="group" aria-label="Valued stats">
-		{#each SUBSTATS as s (s.id)}
+		{#each pieceOnly ? SUBSTATS.filter( (s) => pieceLines.some((l) => l.id === s.id) ) : SUBSTATS as s (s.id)}
 			{@const on = wanted.includes(s.id)}
 			<button
 				class="chip chip--control"
 				class:ao-chance-chip={view === 'drop'}
 				class:active={on}
 				aria-pressed={on}
-				disabled={!on && wanted.length >= MAX_WANTED}
+				disabled={!on && wanted.length >= MAX_WANTED && !pieceOnly}
 				onclick={() => toggleWanted(s.id)}
 			>
 				<span>{s.short}</span>
@@ -1287,7 +1307,9 @@
 		{/each}
 	</div>
 	<p class="inst-hint">
-		Pick up to four substats you want.
+		{pieceOnly
+			? "Pick the substats you want, from this piece's four."
+			: 'Pick up to four substats you want.'}
 		{#if view === 'drop'}
 			The number under each is its chance to be one of the piece's four substats.
 		{/if}
@@ -1431,7 +1453,10 @@
 				class:is-wanted={wantedSubs.includes(l.id)}
 				aria-pressed={on}
 				disabled={!on && rshSel.length >= 2}
-				onclick={() => (reshapeSel = toggleTwo(reshapeSel, l.id))}
+				onclick={() => {
+					reshapeSel = toggleTwo(rshSel, l.id);
+					reshapeAuto = false;
+				}}
 			>
 				<span class="ao-badge" class:is-zero={count === 0}>{count ? count : ''}</span>
 				<span class="ao-rs-name">{substatById(l.id).name}</span>
@@ -1440,6 +1465,9 @@
 			</button>
 		{/each}
 	</div>
+	{#if reshapeAuto && rshSel.length === 2}
+		<p class="note">Your first two valued stats on this piece, until you pick your own.</p>
+	{/if}
 	<p class="note">
 		Pick 2 substats. After the reshape, they get at least {reshapeFloor} of the piece's upgrades between
 		them.

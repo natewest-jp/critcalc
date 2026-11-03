@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** ✅ finished for now (Nate, 2026-11-03), seven passes (§2–§6, §7–§12) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** ✅ finished for now (Nate, 2026-11-03), eight passes (§2–§6, §7–§13) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -512,3 +512,25 @@ by Nate: good.
   the ground (`app.css` § THE STAGE; was `--chart-ink`, 100%; `--chart-dim` is 62%).
 
 Gates: Vitest 2752, svelte-check, lint and build clean; e2e on both engines 144 passed.
+
+## 13. Eighth pass: Valued stats on a piece, and the reshape's default
+
+Nate asked whether Reshape should lose Valued stats (curves from the picks alone) or take a copy
+of it in its popover. Kept as one control shared by all four views: Valued stats says what
+"better" means (CV or useful rolls, and which stats count), the picks say which two lines you
+gamble on, and they differ often enough (valuing CR, CD and ATK% while reshaping CR and CD; a
+support valuing ER). Curves from the picks alone would change the measure between Your piece and
+Reshape; a second copy could drift from the first. Two changes instead (⚓ Nate):
+
+- **On Your piece and Reshape, Valued stats offers only the piece's four lines** ("Pick the
+  substats you want, from this piece's four."). A valued stat the piece hasn't makes way for a new
+  one rather than blocking the fourth.
+- **The reshape's two default to your valued stats**: the first two on the piece, in the order you
+  valued them (⚓ Nate asked how; agreed). Not the pair with the best odds, which would make the call
+  for the player. A pick of your own ends the default; Clear restores it. The popover says so while
+  it holds: "Your first two valued stats on this piece, until you pick your own." (proposed).
+  `rsAuto` in the share state; an older state's selection is treated as its own.
+
+Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed. Driven: the default
+follows Valued stats (CR and CD, still after ATK% joins), the popover offers the piece's four,
+an own pick ends the default and survives a reload.
