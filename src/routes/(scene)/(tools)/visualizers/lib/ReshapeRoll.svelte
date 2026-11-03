@@ -22,7 +22,7 @@
 	 * never re-centres. On a phone the original appears under it instead, and
 	 * the card doesn't move at all.
 	 */
-	type Line = { name: string; selected: boolean; wanted: boolean; unit: string };
+	type Line = { name: string; short: string; selected: boolean; wanted: boolean; unit: string };
 	let {
 		lines,
 		original,
@@ -162,7 +162,9 @@
 					{/key}
 				{/if}
 				<span class="rr-badge" class:is-zero={n === 0}>{n || ''}</span>
-				<span class="rr-name">{l.name}</span>
+				<span class="rr-name"
+					><span class="rr-long">{l.name}</span><span class="rr-short">{l.short}</span></span
+				>
 				<span class="rr-value">{vals[i]}{l.unit}</span>
 				<span class="rr-coin" class:is-on={l.selected} aria-hidden="true"></span>
 			</div>
@@ -249,6 +251,7 @@
 	}
 
 	.rr-panel {
+		container: rr-panel / inline-size;
 		display: grid;
 		gap: 1rem;
 		width: min(44rem, 100%);
@@ -529,25 +532,85 @@
 		}
 	}
 
-	/* A phone: one column, the result first and the original under it, so
-	   the rolling card never moves */
+	/* A PHONE: the two cards stay side by side, compact (short names, tighter
+	   rows), rather than stacked: stacked, the choice ran past an iPhone 16's
+	   height and scrolled on anything smaller (Nate). Side by side it is about
+	   half as tall, and the move to the choice stays horizontal. */
+	.rr-short {
+		display: none;
+	}
+
 	@media (max-width: 40rem) {
+		.rr-backdrop {
+			padding: 0.75rem 0.5rem;
+		}
+		.rr-panel {
+			gap: 0.7rem;
+			padding: 0.9rem 0.6rem 0.8rem;
+		}
 		.rr-pair {
-			grid-template-columns: minmax(0, 1fr);
+			--rr-gap: 0.25rem;
+			--rr-arrow-w: 0.9rem;
 		}
-		.rr-choice--result {
-			order: 1;
+		.rr-choice {
+			gap: 0.35rem;
+			padding: 0.25rem;
 		}
-		.rr-arrow {
-			order: 2;
-			rotate: -90deg;
-			justify-self: center;
+		.rr-card {
+			padding: 0.35rem 0.35rem 0.4rem;
 		}
-		.rr-choice--original {
-			order: 3;
+		.rr-main,
+		.rr-line {
+			font-size: var(--fs-md);
 		}
-		.rr-pair.is-rolling .rr-choice--result {
-			left: 0;
+		.rr-main span {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.rr-line {
+			grid-template-columns: 1.2rem minmax(0, 1fr) auto 0.7rem;
+			gap: 0.3rem;
+			min-height: 1.75rem;
+			padding: 0 0.25rem 0 0.15rem;
+		}
+		.rr-coin.is-on {
+			width: 0.6rem;
+			height: 0.6rem;
+		}
+		.rr-long {
+			display: none;
+		}
+		.rr-short {
+			display: inline;
+		}
+		.rr-total {
+			font-size: var(--fs-lg);
+		}
+		.rr-rank,
+		.rr-radio {
+			font-size: var(--fs-sm);
+			text-align: center;
+		}
+	}
+
+	/* The narrowest panel (a 320px phone gives it 304px): "ATK%" ran into its
+	   value, so one size down. By the panel's own width, a container query
+	   (the breakpoint table has no rung this small, and needs none). */
+	@container rr-panel (max-width: 21rem) {
+		.rr-main,
+		.rr-line {
+			font-size: var(--fs-sm);
+		}
+		/* measured at 320: "ATK%" beside "12.8%" was 4px short; this frees 6 */
+		.rr-line {
+			grid-template-columns: 1.1rem minmax(0, 1fr) auto 0.5rem;
+			gap: 0.15rem;
+			padding: 0 0.1rem;
+		}
+		.rr-coin.is-on {
+			width: 0.5rem;
+			height: 0.5rem;
 		}
 	}
 
@@ -602,8 +665,10 @@
 		accent-color: var(--accent);
 	}
 
+	/* A .note carries a 56ch measure: centred as a box too, or on a wide
+	   panel its centred text sat left of the cards' middle */
 	.rr-verdict {
-		margin: 0;
+		margin: 0 auto;
 		text-align: center;
 		color: var(--text);
 	}

@@ -410,7 +410,7 @@
 				: 'They come out the same.';
 	/** A card's place among this kind's reshapes, said under that card */
 	const reshapeRank = (x: number) =>
-		`Better than ${Math.round(compareTo(primaryDist, [{ x, p: 1 }]).below * 100)} of 100 ${reshapeName} reshapes`;
+		`Better than ${Math.round(compareTo(primaryDist, [{ x, p: 1 }]).below * 100)}% of ${reshapeName} reshapes`;
 
 	// ── The readings: values that fit more than one upgrade count ──────────
 	// ⚓ The streamer took the old tap-to-cycle badge for an "invalid value"
@@ -1783,6 +1783,7 @@
 			<ReshapeRoll
 				lines={pieceLines.map((l) => ({
 					name: substatById(l.id).name,
+					short: substatById(l.id).short,
 					selected: rshSel.includes(l.id),
 					wanted: wantedSubs.includes(l.id),
 					unit: substatById(l.id).isPct ? '%' : ''

@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** 🔨 five passes (§2–§6, §7–§10) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** 🔨 six passes (§2–§6, §7–§11) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -471,5 +471,23 @@ Now: "Luckier than 3% of Standard reshapes." Options, with my pick first:
   reshapes" under the result. One line under both says which is better: "Your piece is still
   better." / "The reshaped result is better." / "They come out the same." (proposed; "This one
   beats your piece" had the same which-piece problem).
+
+Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 11. Sixth pass: percentages, a centred verdict, and the choice on a phone
+
+- **The rank lines in percent** (⚓ Nate's wording): "Better than 83% of Standard reshapes", no
+  period.
+- **The verdict centred.** It is a `.note`, whose 56ch measure left it a narrow box at the
+  panel's left with its text centred inside; it is centred as a box now (measured: 0px off the
+  panel's middle).
+- **The choice on a phone** (Nate: it barely fit an iPhone 16 and scrolled on anything smaller).
+  The two cards stay side by side below 40rem, compact (short names, tighter rows), rather than
+  stacked: the panel is about 423px tall at every phone size and scrolls at none (checked at 393,
+  375 and 320 wide), and the move to the choice stays horizontal there too. The narrowest panel
+  (304px on a 320 phone) takes its rows one size down by a container query on the panel (the
+  breakpoint table has no rung that small, and `breakpoints.test.ts` keeps `@media` to the
+  table); 40 rolls at 320 left at least 5.9px between every name and its value.
+- ⏭ The other instruments' phone usability waits for its own session (agreed with Nate).
 
 Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.
