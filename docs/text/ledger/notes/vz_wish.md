@@ -139,7 +139,8 @@ Paimon.moe labels, not a translation of ours).
   Radiance." (3 with a guarantee) · the Radiance line (3) · counter 2's, whose "we estimate
   {n}%" is computed from `RADIANCE_CHANCE[2]` · "Your next 50/50 is an even one." (0 or 1).
   Player's vantage (§1.10). How the counter moves is Help's job.
-- **The interview:** "Or answer a few questions, starting from your most recent 5★." · the first
+- **The interview:** "Or answer a few questions to predict it:" (the first question names the
+  starting point, so the lead doesn't) · the first
   question "Your most recent 5★ on the character banners was" and every later one "And the 5★
   before that was", answered **The featured character** · **A standard 5★** · **None yet since
   5.0** / **None before that since 5.0** · "Did it play the Capturing Radiance animation?"
