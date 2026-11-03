@@ -4226,8 +4226,13 @@ img {
      now, so set where a 16:10 one up is still uncapped).
    The stage replaces the rail one instrument at a time (§ THE RAIL above). */
 :root {
-	/* 🎛️ The widest the stage gets, as a multiple of the tile's height. */
-	--stage-aspect: 1.9;
+	/* 🎛️ The widest the stage gets, as a multiple of the tile's height. ↻ 2.4,
+	   was 1.9 (Nate 2026-11-03: one up, the stage's edges should be the
+	   site's, as every other tool's are). A one-up tile is 1.95:1 at 1920×1080
+	   and 1.89:1 at 2560×1440, so 1.9 bit there and inset the stage 13–24px
+	   from the bars above it; at 2.4 no 16:9 or 16:10 screen is capped, and an
+	   ultrawide (2.55:1 at 3440×1440) still is, centred. */
+	--stage-aspect: 2.4;
 	/* 🎛️ The headline from a 60rem tile, × the Readout head's 32px. */
 	--stage-head-scale: 1.5;
 	/* 🎛️ The headline's room below it, before the toolbar: it stands apart as

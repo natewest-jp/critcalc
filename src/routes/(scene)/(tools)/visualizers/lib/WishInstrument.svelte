@@ -288,8 +288,15 @@
 	// with the plot's x range.
 	let graphW = $state(720);
 	let graphH = $state(0);
-	const PADL = 58;
-	const PADR = 16;
+	/**
+	 * 🎛️ THE CHART'S SIDE EDGES (Nate 2026-11-03: its text stuck out past the
+	 * plot). The left margin is what the y axis's numbers need ("100%"), so
+	 * the widest starts on the stage's edge, under the headline; the right
+	 * keeps half the last x label. Every other word on the chart starts at the
+	 * plot's left edge (PADL), never in the margin.
+	 */
+	const PADL = 34;
+	const PADR = 12;
 	const TOP = 16;
 	/** The plot's height at its least — the chart grows from here into the tile. */
 	const PLOT_MIN = 230;
@@ -1009,7 +1016,7 @@
 						{Math.round(p * 100)}%
 					</text>
 				{/each}
-				<text x="4" y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+				<text x={PADL} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 					chance by then
 				</text>
 
@@ -1046,7 +1053,7 @@
 				{#if compPath}
 					<path d={compPath} fill="var(--chart-ink)" fill-opacity="0.45" />
 				{/if}
-				<text x="4" y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+				<text x={PADL} y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 					chance on each pull
 				</text>
 				{#each stripMarks as m (m.key)}

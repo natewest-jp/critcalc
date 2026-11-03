@@ -224,3 +224,21 @@ Next session: Nate's verdict on this arrangement, then the copy proposals (§5, 
 Artifact odds, whose round moves the stage's CSS to `app.css`.
 
 Gates: Vitest 2733, svelte-check, lint and build clean; Chrome e2e 72 passed.
+
+## 12. Seventh pass (2026-11-03): the stage's edges are the site's, and the chart's side edges
+
+Back on Wish odds after Artifact odds (`docs/rounds/viz-stage-artifact-2026-11-03.md`), on
+`feat/viz-artifact-stage` (the stage's CSS is shared in `app.css` now, so both instruments move).
+
+- **The stage lines up with the site** one up (⚓ Nate: the other tools do). It was inset 24px a
+  side at 1920×1080 and 13px at 2560×1440: the width cap (1.9 × the tile's height, centred) bit,
+  since a one-up tile is 1.95:1 and 1.89:1 there. 🎛️ `--stage-aspect` 1.9 → 2.4: no 16:9 or 16:10
+  screen is capped; an ultrawide (2.55:1 at 3440×1440) still is, centred. Measured at 1280, 1920
+  and 2560 wide: the stage's edges are the bars' to the pixel.
+- **The chart's side edges** (⚓ Nate: text stuck out far past the plot's left). The y axis's name
+  and the strip's label began 4px into the SVG, about 50px left of the plot, whose margin was 52–58px.
+  🎛️ `PADL` 34 (both instruments): what the "100%" tick needs, so the widest y number starts on
+  the stage's edge, under the headline; every other word starts at the plot's left edge. `PADR`
+  16 → 12: half the last x label.
+
+Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.

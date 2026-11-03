@@ -135,7 +135,7 @@ fine print
   ⏭ This changes the materials rule "one paper Readout card per instrument" (Nate's): on the
   stage, paper is the full working on request.
 - **The layout.** One column at every width. From 1024px the stage is the tile's height,
-  capped at 🎛️ `--stage-aspect` (1.9) × the tile's height and centred, so an ultrawide
+  capped at 🎛️ `--stage-aspect` (2.4) × the tile's height and centred, so an ultrawide
   doesn't flatten every slope. The stage's CSS is `app.css` § THE STAGE, shared by every
   instrument on it; what one instrument adds stays in its own file.
 - **An input is a segment at a glance.** Where a view is about something the player enters
