@@ -176,8 +176,9 @@ as one set of instruments:
 
 - **Chance curves** (Wish odds, all three Artifact views): chance from 0 to 100% up the side;
   the 50% and 90% crossings marked, with drop lines to the x axis.
-- **Response curves** (Reaction curves, RES, DEF): the current dot with its value; a short
-  tangent for what the next step adds.
+- **Response curves** (Reaction curves, RES, DEF): the current dot with its value; a step
+  for what the next step adds (across, then up by exactly the gain, where a tangent would
+  overstate it on a flattening curve).
 - **Timelines** (Gauge explorer, ICD timeline): time across; events marked where they happen.
 - **The field** (Crit heatmap): the 1:2 ray and the CV isoline through your point.
 - **The bridge** (Damage breakdown): one column per factor.
@@ -244,7 +245,7 @@ Grouped by family, so each family's marks are built once and reused at once:
 
 1. Wish odds: the frame and the chance-curve family (`docs/rounds/viz-stage-wish-2026-11-02.md`).
 2. Artifact odds: the survival curve and the histogram companion (`docs/rounds/viz-stage-artifact-2026-11-03.md`).
-3. Reaction curves.
+3. Reaction curves: the response-curve family (`docs/rounds/viz-stage-reactions-2026-11-03.md`).
 4. Enemy RES & DEF.
 5. Damage breakdown.
 6. Crit heatmap.
