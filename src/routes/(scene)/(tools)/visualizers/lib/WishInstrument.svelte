@@ -638,7 +638,9 @@
 			</div>
 
 			<div class="wi-way" aria-live="polite">
-				<p class="wi-hint">Or answer a few questions, starting from your most recent 5★.</p>
+				<p class="wi-hint wi-balance">
+					Or answer a few questions, starting from your most recent&nbsp;5★.
+				</p>
 				{#if answers.length > 0}
 					<ol class="wi-strip" aria-label="Your answers, newest first">
 						{#each answers as a, i (i)}
@@ -1277,6 +1279,12 @@
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 		color: var(--muted);
+	}
+
+	/* A two-line hint broken evenly, "recent 5★" kept together (it left "5★."
+	   alone on the second line) */
+	.wi-balance {
+		text-wrap: balance;
 	}
 
 	.wi-subhead {
