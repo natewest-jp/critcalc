@@ -34,7 +34,7 @@ function stripComments(s: string): string {
 }
 
 /** Dev-only pages that carry their own meta and are not in the sitemap. */
-const DEV_ROUTES = new Set(['/lab', '/lab/notices', '/styleguide']);
+const DEV_ROUTES = new Set(['/lab', '/lab/notices', '/lab/crit-ramps', '/styleguide']);
 
 /** `src/routes/(scene)/(pages)/help/planner/+page.svelte` → `/help/planner`. */
 function routeOf(file: string): string {
