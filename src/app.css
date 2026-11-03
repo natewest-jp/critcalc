@@ -4139,9 +4139,9 @@ img {
 /* 🎛️ A slider stops at --instrument-slider-max (§3 item 16), its value with
    it, since the header is part of the control. Every instrument's controls,
    the ICD Timeline's included (the Gauge has no slider): a track as long as
-   the chart is only more distance for the hand. A two-up slider grid caps its COLUMNS
-   instead (Reaction Curves, Damage Breakdown), or its second slider would
-   start halfway across the panel. */
+   the chart is only more distance for the hand. A two-up slider grid caps its
+   COLUMNS instead, or its second slider would start halfway across the
+   panel. */
 .instrument-live .slider-control,
 .instrument-settings .slider-control,
 .instrument-controls .slider-control {
