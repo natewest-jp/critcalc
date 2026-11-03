@@ -1,9 +1,8 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** ✅ finished for now (Nate, 2026-11-03), eight passes (§2–§6, §7–§13) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
-Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
-local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
-visual calls in §5 are Nate's; real Safari and iPhone.
+**Status:** ✅ merged into `main` on 2026-11-03, after Wish odds (`feat/viz-artifact-stage`, stacked
+on `feat/viz-wish-stage`). Eight passes (§2–§6, §7–§13); its copy approved by Nate (§12), Help
+updated, real Safari checked by Nate.
 
 ## 1. Why, and Nate's three asks
 

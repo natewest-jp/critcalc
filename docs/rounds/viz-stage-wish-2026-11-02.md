@@ -1,8 +1,9 @@
 # The stage, round 1: Wish odds (2026-11-02)
 
-**Status:** 🔨 built on `feat/viz-wish-stage` in six passes (§7–§11); §11 is the arrangement to judge next, for Nate to look at in the local build. Not merged.
-⏭ The copy in §5 is written in for the demo and is proposed, not approved; the visual calls in
-§4 are Nate's; real Safari and iPhone.
+**Status:** ✅ merged into `main` on 2026-11-03 (Nate's go-ahead), before Artifact odds. Built in
+eight passes: §11's arrangement stands, with §12 (the edges) and §13 (the Radiance counter's
+popover) after it. Its written-in copy (§5, §7) ships as it stands. ⏭ Open: whether the crossings'
+labels move to the drop line's foot, as Artifact odds has them (`docs/todo.md`).
 
 ## 1. Why
 
