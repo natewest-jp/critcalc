@@ -199,6 +199,44 @@ describe('a piece', () => {
 		expect(d[0].x).toBeCloseTo(7.8, 9);
 	});
 
+	// The game shows a 3-line piece's 4th substat from the start, grayed out
+	// as "(unactivated)" (Nate, 2026-11-03): every fresh piece's four lines
+	// are known. Its first upgrade (at +4) only turns that line on, so from +0
+	// the piece is exactly a 3-line piece at +4 whose 4th line has just come.
+	it('an unactivated 4th line is a 3-line piece at +4, known in advance', () => {
+		const known: PieceQuery = {
+			...demo,
+			level: 0,
+			lines: [
+				{ id: 'atkPct', value: 4.1 },
+				{ id: 'er', value: 4.5 },
+				{ id: 'cd', value: 5.4 },
+				{ id: 'cr', value: 2.7 }
+			],
+			counts: [1, 1, 1, 1],
+			selected: [],
+			unactivated: true
+		};
+		const atFour: PieceQuery = { ...known, level: 4, unactivated: false };
+		expect(collapse(pieceFuture(known))).toEqual(collapse(pieceFuture(atFour)));
+		// its value now leaves the unactivated line out: CD 5.4 only
+		expect(pieceNow(known)[0].x).toBeCloseTo(5.4, 9);
+	});
+
+	it('an unactivated 4th line resolves as a 3-line start at +0', () => {
+		const inf = (
+			[
+				['atkPct', 4.1],
+				['er', 4.5],
+				['cd', 5.4],
+				['cr', 2.7]
+			] as const
+		).map(([id, v]) => inferRollCounts(id, v));
+		expect(resolvePiece(inf, 0).map((r) => r.fourLineStart)).toEqual([true]);
+		const res = resolvePiece(inf, 0, true);
+		expect(res.map((r) => [r.fourLineStart, r.events])).toEqual([[false, 4]]);
+	});
+
 	it('a reshape keeps the first rolls and deals the rest again', () => {
 		const after = collapse(pieceReshape(demo, 4, 2));
 		expect(sum(after)).toBeCloseTo(1, 9);

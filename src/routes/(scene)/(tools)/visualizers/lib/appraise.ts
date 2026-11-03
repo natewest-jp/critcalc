@@ -180,8 +180,14 @@ export type PieceResolution = {
  * 4 + u (a 4-line start) or 3 + u (a 3-line start, whose first upgrade added
  * a line); at +0 a piece shows its 3 or 4 starting lines, one roll each.
  * Usually unique; ambiguous pieces return every consistent resolution.
+ * `unactivated`: at +0–3, four lines whose last is grayed out are a 3-line
+ * start (the game shows a 3-line piece's 4th line before it turns on).
  */
-export function resolvePiece(inferences: CountInference[][], level = 20): PieceResolution[] {
+export function resolvePiece(
+	inferences: CountInference[][],
+	level = 20,
+	unactivated = false
+): PieceResolution[] {
 	const lines = inferences.length;
 	if ((lines !== 3 && lines !== 4) || inferences.some((line) => line.length === 0)) return [];
 	const u = Math.floor(Math.min(20, Math.max(0, level)) / 4);
@@ -190,6 +196,8 @@ export function resolvePiece(inferences: CountInference[][], level = 20): PieceR
 	const allowed = new Map<number, boolean>();
 	if (lines === 3) {
 		if (u === 0) allowed.set(3, false);
+	} else if (u === 0 && unactivated) {
+		allowed.set(4, false);
 	} else {
 		allowed.set(4 + u, true);
 		if (u > 0) allowed.set(3 + u, false);
@@ -233,6 +241,9 @@ export type PieceQuery = {
 	counts: number[];
 	/** The selected lines: a reshape's two, or a defined piece's */
 	selected: SubstatId[];
+	/** A 3-line piece below +4: its 4th line (the last) is known but grayed
+	 *  out, "(unactivated)", until the first upgrade turns it on. */
+	unactivated?: boolean;
 };
 
 /** What a line's display says, in the unit: its sum so far, or its first roll. */
@@ -259,7 +270,10 @@ const upgradesIn = (q: PieceQuery, ids: SubstatId[]) =>
 
 /** Your stats' value on the piece as it is now (exact for CV, read off the display for rolls). */
 export function pieceNow(q: PieceQuery): ValueDist {
-	return collapse(outcome(q.unit, lineStates(q, 'sum'), 0));
+	const states = lineStates(q, 'sum');
+	// an unactivated line adds nothing yet
+	if (q.unactivated) states[states.length - 1] = { ...states.at(-1)!, wanted: false };
+	return collapse(outcome(q.unit, states, 0));
 }
 
 /**
@@ -271,11 +285,13 @@ export function pieceNow(q: PieceQuery): ValueDist {
  */
 export function pieceFuture(q: PieceQuery, floor = 0): Outcome {
 	const states = lineStates(q, 'sum');
+	// an unactivated line's first upgrade only turns it on: one value roll fewer
+	const turnOn = q.unactivated && q.level < 4 ? 1 : 0;
 	if (q.lines.length === 4)
 		return outcome(
 			q.unit,
 			states,
-			rollsLeftAt(q.level),
+			rollsLeftAt(q.level) - turnOn,
 			floor,
 			upgradesIn(q, q.selected),
 			upgradesIn(q, q.wanted)
