@@ -590,6 +590,9 @@
 		width: var(--cr-w);
 		height: var(--cr-h);
 		justify-items: center;
+		/* ⚠ Over the chart: the track comes first in the page and hangs over
+		   the chart's box, whose SVG would otherwise take its presses. */
+		z-index: 1;
 	}
 
 	/* The hits: name, field, then a short track, on one line. */

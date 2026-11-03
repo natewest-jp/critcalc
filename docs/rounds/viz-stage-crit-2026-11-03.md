@@ -1,7 +1,10 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
-**Status:** built on `feat/viz-crit-stage`; Nate's first look (§3a) reworked the layout and his
-second (§3b) stripped it down; his third (§3c) gave the field the tile's height, and §3d has his last tweaks. Waiting for his eye, the copy (§5) and Help (§6). Not merged.
+**Status (2026-11-03, end of session):** built on `feat/viz-crit-stage`, not merged. Nate: "the
+dots read much better … everything else is looking good." Four passes on Nate's looks (§3a–§3d)
+and one fix (§3e). Left for the next session: the copy (§5) and Help (§6), to finalize with
+Nate; real Safari; `npm run test:e2e` (both engines) before the merge; then the merge and the
+copy ledger's note (`docs/text/ledger/notes/vz_crit.md`, rewritten for the stage).
 
 ## 1. The round's three openings
 
@@ -194,6 +197,13 @@ Nate: "so much better … just about there."
 5. **The contours are dotted**, after dashed and solid: round dots, 🎛️ `CONTOUR_W` 2,
    `CONTOUR_GAP` 5, `CONTOUR_INK` 0.6. They read as a guide over the colour and stay clear of the
    one solid line; `CONTOUR_DASH` 'none' brings solid back.
+
+## 3e. The CRIT Rate track wouldn't drag (Nate's find)
+
+Since §3c the track has been in the toolbar's markup and hangs down over the chart's box, and
+the chart's SVG, later in the page, sat over it and took its presses (measured: the element
+under the track's middle was the `svg`). Keyboard and the field still worked, which hid it.
+Fixed with `z-index: 1` on the hung track; a drag now moves it at 1600 and on a touch phone.
 
 ## 4. For Nate's eye
 
