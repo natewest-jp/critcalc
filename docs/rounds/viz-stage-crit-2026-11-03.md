@@ -1,7 +1,7 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
-**Status:** built on `feat/viz-crit-stage`, waiting for Nate's eye: the ramp pick on
-`/lab/crit-ramps` (§3), the visual calls (§4), the copy (§5) and Help (§6). Not merged.
+**Status:** built on `feat/viz-crit-stage`; Nate's first look (§3a) reworked the layout, and the
+rework waits for his eye, along with the copy (§5) and Help (§6). Not merged.
 
 ## 1. The round's three openings
 
@@ -66,7 +66,7 @@ Driven on the dev server at 1600, 1000, 700 and 390, and two up at 1600: a field
 upright handle by keyboard (↑ steps up) and by click, a strip hover, Roll, Pin with a typed
 build, and the Hits popover. No page errors.
 
-## 3. The ramp, for Nate's pick (`/lab/crit-ramps`)
+## 3. The ramp (⚓ Nate: the rainbow stays)
 
 The design record flagged the rainbow's yellow ridge. Measured: its OKLab lightness climbs to
 0.79 at ×2.8 and falls to 0.46 by ×4, so the lightest band reads as a crest in a field that has
@@ -84,28 +84,56 @@ goes through the same B-spline and chroma gain as the current ramp (`critRamp.ts
   own palette.
 - **D, ice:** one family, navy to pale cyan; the quietest.
 
-Claude's recommendation is **A**: it removes the ridge and leaves the part of the field players
-actually sit in unchanged. One thing to look at: with A, C or D the top corner goes near white,
-where the white marker relies on its dark ring.
+Claude recommended **A**: it removes the ridge and leaves the part of the field players
+actually sit in unchanged. ⚓ Nate kept the rainbow, and the lab page is retired.
 
-The pick replaces `colorStops` in `CritHeatmap.svelte`, and the lab page is retired.
+## 3a. Nate's first look, and the rework
+
+Nate: "not reading quite right". Three points:
+
+1. **The curves are the chart's essential fact, and they hid further.** The streamer couldn't tell
+   what the curving lines were, though the headline is one of them, and the strip had taken the
+   right edge where their values used to sit. The rework:
+   - **The strip moves to the left, outside the CRIT Rate handle** (Nate's idea). Its rows grow
+     away from the field, and your crosshair runs from the field out through the handle's thumb
+     and the strip.
+   - **The right edge is the average's axis again**, with "average damage" at its head and ×1 to
+     ×4. Along CRIT DMG 300% the average is 1 + 3 × CRIT Rate, a straight line, so the edge is an
+     exact linear scale and every contour meets it at its own value.
+   - **Your contour is drawn**: every build with your average, solid at 2.5px over a night
+     casing (the boldest line on the field), labelled "your average" inside the edge and valued
+     on the axis in the ink, bold, "×1.98". The CV line steps down to 1.25px at 70%, so the two
+     lines through your marker differ. At the best split the CV line touches your contour, which
+     is the best split's geometry, now visible.
+   - The fine print names them (§5 item 9).
+2. **The rainbow stays** (§3).
+3. **The field stretched to 2.3:1 one up.** Offered by Nate: more length for the strip, or this
+   instrument alone with a control on the side. Claude's pick is the first: a side column would
+   hold only the fine print, and the stage's one box is what the five before it settled on.
+   🎛️ `FIELD_MAX_ASPECT` 1.6: the field takes up to 1.6 × its height, the strip the rest between
+   `STRIP_MIN` 56 and `STRIP_MAX` 480, and any past that goes back to the field
+   (`splitChartWidth`, tested). Measured: 1.60 at 1366×768 and 1600×1000, 1.85 at 1920×1080 and
+   2560×1440 (the strip at its most). The length lets each row carry its reading where its rows
+   have room (🎛️ `ROW_LABEL_W` 118 from a 178px strip, rows 13px apart, a chance of 0.5%):
+   "6 crits · ×2.05 · 29.6%".
 
 ## 4. For Nate's eye
 
-1. The field at about 2.3:1 one up, with its contours flattened. There is a cap knob if he wants
-   one; there is none today.
-2. The upright CRIT Rate handle at the chart's left edge, its name and field over its top; the
-   CRIT DMG handle under the axis as everywhere else.
-3. The strip: grey rows, the read one in the ink; its name "crits in 8 hits" small at its top
-   right. Its rows sit at k / n, so at 40 hits it is a fine comb.
-4. The 0–5% veil and its words.
-5. The marks drawn always (the Equal-budget toggle is gone): the CV line, the 1:2 ray and the
+1. The field's aspect after the rework (§3a): 1.6 up to 1600 wide, 1.85 past it. Raising
+   `STRIP_MAX` holds 1.6 further, with a longer strip.
+2. The upright CRIT Rate handle between the strip and the y axis's numbers, its name and field
+   over its top; the CRIT DMG handle under the axis as everywhere else.
+3. The strip: grey rows, the read one in the ink, each with its reading where there is room; its
+   name "crits in 8 hits" under it. Two up and on a phone it is 56px of bars with no words.
+4. Your contour and its "×1.98" on the axis; the CV line now the lighter of the two.
+5. The 0–5% veil and its words.
+6. The marks drawn always (the Equal-budget toggle is gone): the CV line, the 1:2 ray and the
    ring. The ray's name now sits at its dark lower-left end; at the top corner it smudged on the
    yellow.
-6. The marker's "CD:CR 2.00 : 1", small, below and right of the dot.
-7. Pin and Roll at the toolbar's far end; on a phone they wrap under the setup bar, right
+7. The marker's "CD:CR 2.00 : 1", small, below and right of the dot.
+8. Pin and Roll at the toolbar's far end; on a phone they wrap under the setup bar, right
    aligned.
-8. Rows in the strip are always on: there is no setting to hide them.
+9. Rows in the strip are always on: there is no setting to hide them.
 
 ## 5. Copy (written in, for approval)
 
@@ -120,23 +148,25 @@ The pick replaces `colorStops` in `CritHeatmap.svelte`, and the lab page is reti
 6. On the chart: "{280} CV" (kept), "best split of this budget" (kept), "CD = 2×CR" (kept),
    "CD:CR {2.00 : 1}" (new, at the marker), "{+3.3%} vs pinned" (was "+3.3% average DMG vs
    pinned" in the card), "crits in {8} hits" (new, the strip's name), "below the base 5% CRIT
-   Rate" (new, the veil).
+   Rate" (new, the veil), "average damage" (the right axis's name, was the title "Average
+   DMG"), "your average" (new, on your contour), a strip row "{6} crits · {×2.05} · {29.6%}"
+   (new; "1 crit" in the singular).
 7. The fine print at rest: "A hit that doesn’t crit is ×1. On average {5.6} of {8} hits crit,
    and {<0.1%} of rotations land none." The card's gloss ("Average DMG per hit. A hit that
    doesn't crit is ×1.") lent the first sentence.
 8. A row read: "{6} of {8} hits crit: {×2.05}, in {29.6%} of rotations." After a roll: "{3} of
    {8} hits crit: {×1.52} this time." Both were an em dash before the figure; a colon now.
-9. The standing line: "The solid line is every build with your {280} total crit value (CV): 2 ×
-   CRIT Rate + CRIT DMG, base crit stats included. Drag anywhere on the map, or a handle, to move
-   your build; hover or tap the bars to read one rotation." ⚓ It keeps the card's TOTAL
-   (Nate 2026-10-02): a bare "280 CV" reads as artifact CV.
-10. The handles' labels: "CRIT Rate", "CRIT DMG" (kept, now the axes' only names).
+9. The standing lines: "Each curve joins the builds with one average, its value where it meets
+   the right edge; the bold one is yours. The straight line is every build with your {280} total
+   crit value (CV): 2 × CRIT Rate + CRIT DMG, base crit stats included." Then: "Drag anywhere on
+   the map, or a handle, to move your build; hover or tap the bars to read one rotation." ⚓ It
+   keeps the card's TOTAL (Nate 2026-10-02): a bare "280 CV" reads as artifact CV.
 
 Retired: "Current build", "Average DMG per hit. …", "Ratio (CD:CR)", "Total crit value (CV)"
 with its gloss (now item 9), "No-crit risk ({n} hits)", "Pinned" with its value, "Crits in one
 rotation of {n} hits", "Equal-budget line (CV)", "No-crit risk overlay" with "chance a whole
-rotation lands zero crits", the axis titles "CRIT Rate", "CRIT DMG" and "Average DMG", the
-marker tooltip's lines, and "×4.00" at the corner.
+rotation lands zero crits", the axis titles "CRIT Rate" and "CRIT DMG", and
+the marker tooltip's lines.
 
 ## 6. Help (proposed, not landed)
 
@@ -145,14 +175,14 @@ Equal-budget toggle and "the chart under the map". Proposed:
 
 1. First paragraph: "Your average damage per hit, 1 + CRIT Rate × CRIT DMG, across every split
    of CRIT Rate (up the side) and CRIT DMG (along the bottom). Press anywhere on the map to move
-   your build there, or drag a handle on either axis, or type a value beside it. The dashed
-   contours join builds with the same average."
+   your build there, or drag a handle on either axis, or type a value beside it. Each curve joins
+   the builds with one average, read off the right edge, and the bold one is yours."
 2. Second paragraph: "The solid line through your build is every build with your total crit
    value (CV), counted as 2 × CRIT Rate + CRIT DMG with base crit stats included. A ring marks
    that budget’s best split, which sits on the dashed 1:2 diagonal until CRIT Rate would pass
    100% and then leaves it. **Pin this build** holds a second marker, and the line from it to
    yours shows how much the move changes your average."
-3. Third paragraph: "The average hides how uneven a rotation can be. The bars beside the map
+3. Third paragraph: "The average hides how uneven a rotation can be. The bars left of the map
    share its CRIT Rate axis: one for each number of crits in a rotation, set at that number’s
    share of the hits, as long as its chance. Set the hits in the bar over the map. The
    **no-crit risk** shading darkens builds by their chance of a whole rotation without a single
@@ -160,5 +190,6 @@ Equal-budget toggle and "the chart under the map". Proposed:
 
 The credit paragraph is unchanged.
 
-Tests: `crit.test.ts` § the field's axes (4, replacing the fixed-box transforms). Gates: see the
+Tests: `crit.test.ts` § the field's axes (4, replacing the fixed-box transforms) and
+§ splitChartWidth (3). Gates: see the
 commits.

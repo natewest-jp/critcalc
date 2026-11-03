@@ -23,7 +23,8 @@ import {
 	yToCR,
 	CR_AXIS_MIN,
 	countAtRate,
-	formatRatio
+	formatRatio,
+	splitChartWidth
 } from './crit';
 
 describe('averageDamageMultiplier', () => {
@@ -228,5 +229,27 @@ describe('critCountDistribution', () => {
 		const d = critCountDistribution(0.7, 8);
 		const mean = d.reduce((sum, p, k) => sum + p * rotationMultiplier(k, 8, 1.4), 0);
 		expect(mean).toBeCloseTo(averageDamageMultiplier(0.7, 1.4), 12);
+	});
+});
+
+describe('splitChartWidth', () => {
+	const opts = { maxAspect: 1.6, stripMin: 56, stripMax: 480 };
+
+	it('gives the field its widest and the strip the rest', () => {
+		const { field, strip } = splitChartWidth(1300, 560, opts);
+		expect(field).toBeCloseTo(560 * 1.6);
+		expect(strip).toBeCloseTo(1300 - 896);
+	});
+
+	it('hands width past the strip’s most back to the field', () => {
+		const { field, strip } = splitChartWidth(2000, 560, opts);
+		expect(strip).toBe(480);
+		expect(field).toBe(1520);
+	});
+
+	it('keeps the strip at its least where the chart is narrow', () => {
+		const { field, strip } = splitChartWidth(300, 260, opts);
+		expect(strip).toBe(56);
+		expect(field).toBe(244);
 	});
 });

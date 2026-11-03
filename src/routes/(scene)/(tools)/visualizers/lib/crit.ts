@@ -232,3 +232,19 @@ export const countAtRate = (rate: number, hits: number) => {
  */
 export const formatRatio = (critRate: number, critDamage: number) =>
 	critRate > 0 ? `${(critDamage / critRate).toFixed(2)} : 1` : '—';
+
+/**
+ * The chart's width between the field and its strip. The field takes up to
+ * `maxAspect` × its height, and the strip what is left, within its least and
+ * most; width past both goes back to the field, so the chart always fills the
+ * stage. ⚓ Nate (2026-11-03): one up on a wide screen the field stretched to
+ * 2.3:1, and the spare width is the strip's first.
+ */
+export function splitChartWidth(
+	available: number,
+	plotHeight: number,
+	{ maxAspect, stripMin, stripMax }: { maxAspect: number; stripMin: number; stripMax: number }
+): { field: number; strip: number } {
+	const strip = clamp(available - plotHeight * maxAspect, stripMin, stripMax);
+	return { field: Math.max(80, available - strip), strip };
+}

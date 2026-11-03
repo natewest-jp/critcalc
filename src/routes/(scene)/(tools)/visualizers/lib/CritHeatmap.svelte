@@ -20,6 +20,8 @@
 		cvLineCR,
 		bestSplit,
 		formatMultiplier,
+		formatChance,
+		rotationMultiplier,
 		formatRatio,
 		countAtRate,
 		cdToX,
@@ -52,7 +54,8 @@
 		height: number;
 		/** The field's plot. */
 		rect: FieldRect;
-		/** The companion strip, right of the field: its left edge and width. */
+		/** The companion strip, at the chart's left edge outside the CRIT Rate
+		 *  handle: its left edge and width. Its rows grow leftward from its right. */
 		strip: { x0: number; w: number };
 		hits: number;
 		/** The chance of each crit count, 0 … hits. */
@@ -81,8 +84,9 @@
 
 	// Cubehelix-inspired colour ramp: deep blue → teal → green → yellow →
 	// orange → red-purple, over ×1 to ×4; the curve between the stops is
-	// critRamp.ts's. ⏸ Nate is comparing it with four ramps whose lightness
-	// only rises (/lab/crit-ramps); the pick replaces these stops.
+	// critRamp.ts's. ⚓ Kept (Nate 2026-11-03) over four ramps whose lightness
+	// only rises, though its own peaks at ×2.8 (docs/rounds/
+	// viz-stage-crit-2026-11-03.md §3).
 	const colorStops: readonly RGB[] = [
 		[12, 24, 74],
 		[22, 78, 148],
@@ -128,16 +132,27 @@
 		return d;
 	}
 
+	// ⚓ THE RIGHT EDGE IS THE AVERAGE'S AXIS. Along CRIT DMG 300% the average
+	// is 1 + 3 × CRIT Rate, a straight line in CRIT Rate, so the edge is an
+	// exact ×1 (at 0%) to ×4 (at 100%) scale, and every contour meets it at its
+	// own value: the labels there are an axis, not a legend.
+	const avgY = (m: number) => y((m - 1) / CD_MAX);
+	const AVG_ENDS = [1, 4];
+	/** 🎛️ A fixed contour's value hides when it is this close to yours. */
+	const AVG_CLEAR = 12;
+
+	// Your contour: every build with your average, the headline's figure drawn.
+	const yourM = $derived(averageDamageMultiplier(shownCR, shownCD));
+	const yourPath = $derived(linePath((cd) => (yourM - 1) / cd, CR_MIN));
+	const yourY = $derived(avgY(yourM));
+
 	const isolines = $derived(
-		ISOLINE_VALUES.map((m) => {
-			const crRight = (m - 1) / CD_MAX;
-			return {
-				m,
-				d: linePath((cd) => (m - 1) / cd),
-				// Its value inside the field's right edge, over where it leaves
-				labelY: y(crRight) - 4
-			};
-		})
+		ISOLINE_VALUES.map((m) => ({
+			m,
+			d: linePath((cd) => (m - 1) / cd),
+			y: avgY(m),
+			shown: Math.abs(avgY(m) - yourY) >= AVG_CLEAR
+		}))
 	);
 	// Builds only: the line stops at the base 5%.
 	const cvPath = $derived(linePath((cd) => cvLineCR(cv, cd), CR_MIN));
@@ -170,12 +185,28 @@
 	const rowH = $derived(
 		clamp(((rect.h * (1 / n)) / (CR_MAX - CR_AXIS_MIN)) * ROW_SHARE, ROW_MIN, ROW_MAX)
 	);
+	// 🎛️ Where the strip has the length and its rows the room, each row
+	// carries its reading: the count, that rotation's average, and its chance.
+	const ROW_LABEL_W = 118;
+	const ROW_LABEL_MIN_GAP = 13;
+	/** A row this unlikely keeps its bar but not its words. */
+	const ROW_LABEL_MIN_CHANCE = 0.005;
+	const rowGap = $derived(rect.h / n / (CR_MAX - CR_AXIS_MIN));
+	const rowWords = $derived(strip.w >= ROW_LABEL_W + 60 && rowGap >= ROW_LABEL_MIN_GAP);
+	const barRoom = $derived(rowWords ? strip.w - ROW_LABEL_W : strip.w);
+	const stripRight = $derived(strip.x0 + strip.w);
 	const rows = $derived(
-		distribution.map((chance, k) => ({
-			k,
-			y: y(k / n),
-			len: peak > 0 ? (chance / peak) * strip.w : 0
-		}))
+		distribution.map((chance, k) => {
+			const len = peak > 0 ? (chance / peak) * barRoom : 0;
+			return {
+				k,
+				y: y(k / n),
+				len,
+				x: stripRight - len,
+				words: rowWords && chance >= ROW_LABEL_MIN_CHANCE,
+				chance
+			};
+		})
 	);
 
 	// ── The canvases ──────────────────────────────────────────────────────
@@ -253,7 +284,7 @@
 	const inField = (px: number, py: number) =>
 		px >= rect.x0 - SLACK && px <= right + SLACK && py >= rect.y0 - SLACK && py <= bottom + SLACK;
 	const inStrip = (px: number, py: number) =>
-		px >= strip.x0 - 4 && px <= strip.x0 + strip.w + 4 && py >= rect.y0 - SLACK && py <= bottom;
+		px >= strip.x0 - 4 && px <= stripRight + 4 && py >= rect.y0 - SLACK && py <= bottom;
 
 	function moveTo(px: number, py: number) {
 		critRate = Number(clamp(yToCR(py, rect), CR_MIN, CR_MAX).toFixed(3));
@@ -368,19 +399,10 @@
 			stroke={ink(0.18)}
 		/>
 
-		<!-- The contours: builds with the same average -->
+		<!-- The contours: builds with the same average, each valued where it
+		     meets the average's axis on the right -->
 		{#each isolines as iso (iso.m)}
 			<path d={iso.d} fill="none" stroke={ink(0.34)} stroke-width="1.1" stroke-dasharray="5 4" />
-			<text
-				class="stage-word"
-				x={right - 5}
-				y={iso.labelY}
-				fill={ink(0.7)}
-				font-size="10"
-				text-anchor="end"
-			>
-				{formatMultiplier(iso.m)}
-			</text>
 		{/each}
 
 		<!-- The 1:2 ray: where any budget's average peaks (until CRIT Rate
@@ -405,8 +427,9 @@
 			CD = 2×CR
 		</text>
 
-		<!-- The equal-CV line through your build, and its best split -->
-		<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.6" stroke-opacity="0.85" />
+		<!-- The equal-CV line through your build, and its best split: the
+		     lighter of your two lines, so your contour leads -->
+		<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.25" stroke-opacity="0.7" />
 		<text
 			class="stage-word"
 			x={cvLabel.x}
@@ -437,6 +460,30 @@
 			</text>
 		{/if}
 
+		<!-- YOUR CONTOUR: every build with your average, the headline's figure
+		     as a line. The boldest line on the field, cased in the night so it
+		     holds on the yellow too. -->
+		<path
+			d={yourPath}
+			fill="none"
+			stroke="var(--frame-bg)"
+			stroke-opacity="0.45"
+			stroke-width="5"
+			stroke-linecap="round"
+		/>
+		<path d={yourPath} fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" />
+		<text
+			class="stage-word"
+			x={right - 6}
+			y={yourY - 7}
+			fill="var(--text)"
+			font-size="11"
+			font-weight="600"
+			text-anchor="end"
+		>
+			your average
+		</text>
+
 		<!-- The axes' numbers -->
 		{#each CD_TICKS as t (t)}
 			<line x1={x(t)} y1={bottom} x2={x(t)} y2={bottom + 4} stroke="var(--chart-rule)" />
@@ -462,11 +509,37 @@
 			</text>
 		{/each}
 
-		<!-- The companion: how many of the hits crit, on the CRIT Rate axis -->
-		<line x1={strip.x0} y1={rect.y0} x2={strip.x0} y2={bottom} stroke="var(--chart-rule)" />
+		<!-- THE AVERAGE'S AXIS, the field's right edge: the contours' values
+		     where they meet it, the ends, and yours, in the headline's ink -->
+		<text x={width - 2} y={rect.y0 - 8} fill="var(--chart-dim)" font-size="10" text-anchor="end">
+			average damage
+		</text>
+		{#each AVG_ENDS as m (m)}
+			{#if Math.abs(avgY(m) - yourY) >= AVG_CLEAR}
+				<text x={right + 6} y={avgY(m) + 3.5} fill="var(--chart-ink)" font-size="10">
+					{formatMultiplier(m)}
+				</text>
+			{/if}
+		{/each}
+		{#each isolines as iso (iso.m)}
+			<line x1={right} y1={iso.y} x2={right + 4} y2={iso.y} stroke="var(--chart-rule)" />
+			{#if iso.shown}
+				<text x={right + 6} y={iso.y + 3.5} fill="var(--chart-ink)" font-size="10">
+					{formatMultiplier(iso.m)}
+				</text>
+			{/if}
+		{/each}
+		<line x1={right} y1={yourY} x2={right + 5} y2={yourY} stroke="var(--text)" stroke-width="2" />
+		<text x={right + 7} y={yourY + 4} fill="var(--text)" font-size="12" font-weight="700">
+			{formatMultiplier(yourM)}
+		</text>
+
+		<!-- The companion: how many of the hits crit, on the CRIT Rate axis,
+		     outside the CRIT Rate handle; each row grows away from the field -->
+		<line x1={stripRight} y1={rect.y0} x2={stripRight} y2={bottom} stroke="var(--chart-rule)" />
 		{#each rows as r (r.k)}
 			<rect
-				x={strip.x0}
+				x={r.x}
 				y={r.y - rowH / 2}
 				width={Math.max(r.len, 0)}
 				height={rowH}
@@ -474,11 +547,23 @@
 				fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
 				fill-opacity={readCount === r.k ? 1 : 0.45}
 			/>
+			{#if r.words}
+				<text
+					x={r.x - 6}
+					y={r.y + 3.5}
+					fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
+					font-size="10"
+					text-anchor="end"
+				>
+					{r.k} crit{r.k === 1 ? '' : 's'} · {formatMultiplier(rotationMultiplier(r.k, n, shownCD))} ·
+					{formatChance(r.chance)}
+				</text>
+			{/if}
 		{/each}
 		<text
 			class="stage-word"
-			x={strip.x0 + strip.w}
-			y={rect.y0 - 8}
+			x={stripRight}
+			y={bottom + 16}
 			fill="var(--chart-dim)"
 			font-size="10"
 			text-anchor="end"
@@ -487,16 +572,9 @@
 			{n === 1 ? 'hit' : 'hits'}
 		</text>
 
-		<!-- Your build's crosshair, the CRIT Rate line on through the strip,
-		     where the rows' average falls -->
-		<line
-			x1={rect.x0}
-			y1={dotY}
-			x2={strip.x0 + strip.w}
-			y2={dotY}
-			stroke={ink(0.32)}
-			stroke-dasharray="3 4"
-		/>
+		<!-- Your build's crosshair: the CRIT Rate line runs out through the
+		     handle and the strip, where the rows' average falls -->
+		<line x1={strip.x0} y1={dotY} x2={right} y2={dotY} stroke={ink(0.32)} stroke-dasharray="3 4" />
 		<line x1={dotX} y1={rect.y0} x2={dotX} y2={bottom} stroke={ink(0.32)} stroke-dasharray="3 4" />
 
 		<!-- The pinned build, and the move from it to yours -->

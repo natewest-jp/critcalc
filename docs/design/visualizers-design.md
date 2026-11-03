@@ -189,7 +189,7 @@ breakdown is the one exception (§8).
 **Companion strips.** An instrument may give part of its chart to one second view that
 shares one of the main chart's axes: Wish odds' chance per pull (the soft-pity spike that
 explains the main curve's jump), Reaction curves' gain per 100 EM, Artifact odds' 100 dots,
-all on the x axis; the Crit heatmap's crit counts beside the field, on its CRIT Rate axis
+all on the x axis; the Crit heatmap's crit counts left of the field, on its CRIT Rate axis
 (⚓ Nate: a count sits at its share of the hits, so the axis reaches 0%). At most one per
 instrument. Enemy RES & DEF has none: its two
 plots share the y axis (how much of the hit is kept), not the x, so they sit side by side.
@@ -223,9 +223,11 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   reactions become marks on the timeline.
 - **Crit heatmap** (built: `docs/rounds/viz-stage-crit-2026-11-03.md`): the field fills the
   stage at any aspect (its axes are normalised separately), with a handle on each axis, CRIT
-  Rate's upright. Its marks are always drawn. The rainbow's lightness peaks at ×2.8, which drew
-  a ridge where the data is smooth; rivals whose lightness only rises are on `/lab/crit-ramps`
-  for Nate's pick.
+  Rate's upright, the strip outside it on the left, and the right edge the average's axis (along
+  CRIT DMG 300% the average is linear in CRIT Rate, so every contour meets it at its value).
+  Your own contour is the boldest line: the headline drawn. Its marks are always drawn. The field
+  is capped at 1.6 × its height, the strip taking the width past it. ⚓ Nate kept the rainbow
+  over four ramps whose lightness only rises, though its own peaks at ×2.8.
 - **Unchanged charts:** Wish odds, Artifact odds' Drop view and Reaction curves gain
   annotations, not a different chart.
 

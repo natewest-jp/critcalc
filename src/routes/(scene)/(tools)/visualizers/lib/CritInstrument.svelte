@@ -21,6 +21,7 @@
 		formatChance,
 		critCountDistribution,
 		rotationMultiplier,
+		splitChartWidth,
 		type FieldRect
 	} from './crit';
 
@@ -72,38 +73,50 @@
 	/** Half the slider thumb's 15px: a handle's track runs this far past each
 	 *  end of its axis, so the thumb sits on the marker's line. */
 	const THUMB_R = 7.5;
-	/** 🎛️ The CRIT Rate handle stands at the chart's left edge (the thumb's
-	 *  15px), then the y axis's numbers ("100%", right-aligned TICK_GAP from
-	 *  the plot; CritHeatmap). */
+	/** 🎛️ Left to right: the strip, STRIP_GAP, the CRIT Rate handle (the
+	 *  thumb's 15px), CR_GAP, the y axis's numbers ("100%", right-aligned
+	 *  TICK_GAP from the plot; CritHeatmap), the field, then the average's
+	 *  axis ("×1.98", AVG_W). */
+	const STRIP_GAP = 10;
 	const CR_TRACK = 15;
 	const CR_GAP = 8;
 	const TICK_W = 26;
 	const TICK_GAP = 6;
-	const PADL = CR_TRACK + CR_GAP + TICK_W + TICK_GAP;
-	/** 🎛️ Above the plot: the CRIT Rate handle's name and field, and the strip's. */
-	const TOP = 34;
-	/** Under the plot: the x axis's numbers. The CRIT DMG handle is under the SVG. */
-	const BOTTOM = 22;
+	const AVG_W = 40;
 	const PADR = 2;
-	/** 🎛️ The strip: its gap from the field, and its width as a share of the
-	 *  chart's, within limits. */
-	const STRIP_GAP = 14;
-	const STRIP_SHARE = 0.1;
+	/** 🎛️ Above the plot: the CRIT Rate handle's name and field, and the
+	 *  average axis's name. */
+	const TOP = 34;
+	/** Under the plot: the x axis's numbers and the strip's name. The CRIT DMG
+	 *  handle is under the SVG. */
+	const BOTTOM = 22;
+	/** 🎛️ The field's widest, as a multiple of its height; the strip takes the
+	 *  width past it, between its least and most, and any past that goes back
+	 *  to the field (splitChartWidth in crit.ts). */
+	const FIELD_MAX_ASPECT = 1.6;
 	const STRIP_MIN = 56;
-	const STRIP_MAX = 120;
+	const STRIP_MAX = 480;
 	/** The plot's least height; below 1024px (natural height) it is a near
 	 *  square of the chart's width, up to PLOT_NATURAL_MAX. */
 	const PLOT_MIN = 240;
 	const PLOT_NATURAL_MAX = 560;
 
-	const stripW = $derived(clamp(Math.round(graphW * STRIP_SHARE), STRIP_MIN, STRIP_MAX));
+	const plotH = $derived(Math.max(PLOT_MIN, graphH - TOP - BOTTOM));
+	const split = $derived(
+		splitChartWidth(
+			graphW - (STRIP_GAP + CR_TRACK + CR_GAP + TICK_W + TICK_GAP + AVG_W + PADR),
+			plotH,
+			{ maxAspect: FIELD_MAX_ASPECT, stripMin: STRIP_MIN, stripMax: STRIP_MAX }
+		)
+	);
+	const strip = $derived({ x0: 0, w: split.strip });
+	const crX = $derived(split.strip + STRIP_GAP);
 	const rect = $derived<FieldRect>({
-		x0: PADL,
+		x0: crX + CR_TRACK + CR_GAP + TICK_W + TICK_GAP,
 		y0: TOP,
-		w: Math.max(80, graphW - PADL - STRIP_GAP - stripW - PADR),
-		h: Math.max(PLOT_MIN, graphH - TOP - BOTTOM)
+		w: split.field,
+		h: plotH
 	});
-	const strip = $derived({ x0: rect.x0 + rect.w + STRIP_GAP, w: stripW });
 	const graphMin = $derived(
 		TOP + BOTTOM + clamp(Math.round(graphW * 0.8), PLOT_MIN, PLOT_NATURAL_MAX)
 	);
@@ -294,6 +307,7 @@
 					style:--cr-top="{rect.y0 - THUMB_R}px"
 					style:--cr-h="{rect.h * (1 - CR_MIN) + 2 * THUMB_R}px"
 					style:--cr-w="{CR_TRACK}px"
+					style:--cr-x="{crX}px"
 				>
 					<InstrumentSlider
 						vertical
@@ -369,9 +383,14 @@
 			<!-- ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
 			     "280 CV" for artifact CV, where 280 is near impossible. -->
 			<p>
-				The solid line is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value
-				(CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Drag anywhere on the map, or a handle,
-				to move your build; hover or tap the bars to read one rotation.
+				Each curve joins the builds with one average, its value where it meets the right edge; the
+				bold one is yours. The straight line is every build with your {Math.round(
+					critValue(myCR, myCD) * 100
+				)} total crit value (CV): 2 × CRIT Rate + CRIT DMG, base crit stats included.
+			</p>
+			<p>
+				Drag anywhere on the map, or a handle, to move your build; hover or tap the bars to read one
+				rotation.
 			</p>
 		</div>
 	</div>
@@ -393,8 +412,8 @@
 	}
 
 	/* The upright handle: no flow box of its own. Its name and field sit over
-	   the track's top, the track down the chart's left edge from CRIT Rate
-	   100% to 5%, the lowest a build can have. */
+	   the track's top, the track between the strip and the y axis's numbers
+	   from CRIT Rate 100% to 5%, the lowest a build can have. */
 	.cv-cr {
 		position: absolute;
 		inset: 0;
@@ -406,7 +425,7 @@
 	.cv-cr :global(.slider-header) {
 		position: absolute;
 		top: 0;
-		left: 0;
+		left: var(--cr-x);
 		justify-content: flex-start;
 		gap: 0.5rem;
 		pointer-events: auto;
@@ -414,7 +433,7 @@
 	.cv-cr :global(.is-track) {
 		position: absolute;
 		top: var(--cr-top);
-		left: 0;
+		left: var(--cr-x);
 		width: var(--cr-w);
 		height: var(--cr-h);
 		justify-items: center;
