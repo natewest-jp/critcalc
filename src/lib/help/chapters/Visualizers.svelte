@@ -144,13 +144,15 @@
 		How each family of reactions scales with Elemental Mastery. The tabs over the chart are the
 		families: Amplifying, Transformative, Additive, Lunar &amp; Stellar, and Crystallize, plus
 		<strong>All families</strong>, which puts them on one scale as the bonus each gets from EM. Drag
-		across the chart to set EM; the table reads each reaction at that value, with what the next 50
-		EM would add.
+		across the chart or the handle under it to set EM. Each curve’s dot shows its value there, and
+		the headline shows what the next 100 EM would add to one of them. The value of the next 100 EM
+		is also visualized as a step on the active curve and in the strip under the chart. Pick the
+		curve in the bar over the chart, or click its label.
 	</p>
 	<p>
 		Every curve has the same shape, a bonus of k&nbsp;×&nbsp;EM&nbsp;/&nbsp;(c&nbsp;+&nbsp;EM), with
-		its own k and c per family, and Reaction Bonus adds inside it. On All families, a Reaction Bonus
-		above zero adds a column for how much EM the bonus is worth, which varies a lot: at 600 EM, +40%
+		its own k and c per family, and Reaction Bonus adds inside it. The Reaction Bonus setting says
+		how much EM the bonus is worth on the curve you’re reading, which varies a lot: at 600 EM, +40%
 		is worth about 87 EM for a transformative reaction and over 500 for an amplifying one. Level
 		matters for the reactions that scale with it. The level slider runs to 90, then jumps to 95 and
 		100.

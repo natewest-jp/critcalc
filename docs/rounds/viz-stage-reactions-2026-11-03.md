@@ -1,7 +1,7 @@
 # The stage, round 3: Reaction curves (2026-11-03)
 
-**Status:** first pass on `feat/viz-reaction-stage`, not merged. ⏭ Nate's eye in the local build;
-the copy (§4) and Help (§5) proposed.
+**Status:** on `feat/viz-reaction-stage`, not merged. Nate: "Beautiful!"; the copy (§4) approved as
+written in, Help (§5) landed in his wording. ⏭ Real Safari.
 
 ## 1. The headline
 
@@ -54,7 +54,7 @@ Driven on the production build at 1600 and 390: every family's headline, the mar
 4. The strip: on these curves it falls slowly, so it reads as a slab more than a shape.
 5. The other curves at 70%.
 
-## 4. Copy (written in, proposed)
+## 4. Copy (written in, approved)
 
 1. Headlines: "{gain} {noun} from the next 100 EM", the nouns: "Transformative boost", "Additive
    boost", "Lunar and Stellar boost", "Crystallize shield boost", "Amplifying boost"; "forward
@@ -71,7 +71,7 @@ Driven on the production build at 1600 and 390: every family's headline, the mar
 4. The chart: "next 100 EM" (the step), "what the next 100 EM adds" (the strip).
 5. The fine print: the family's note, then "EM bonus 16·EM/(2000+EM)." and the caveat.
 
-## 5. Help, proposed
+## 5. Help (landed)
 
 `src/lib/help/chapters/Visualizers.svelte` § Reaction curves, the first paragraph (the second
 and third are unchanged, except the column):
@@ -82,7 +82,9 @@ and third are unchanged, except the column):
    the chart or the handle under it to set EM. Each curve's dot shows its value there, and the
    headline shows what the next 100 EM would add to one of them, drawn as a step on its curve
    and, for every EM, in the strip under the chart. Pick the curve in the bar over the chart, or
-   click its label."
+   click its label." ⚓ Nate split it: "…and the headline shows what the next 100 EM would add to
+   one of them. The value of the next 100 EM is also visualized as a step on the active curve and
+   in the strip under the chart." The pick sentence follows.
 2. In the second paragraph, "On All families, a Reaction Bonus above zero adds a column for how
    much EM the bonus is worth, which varies a lot" → "The Reaction Bonus setting says how much EM
    the bonus is worth on the curve you're reading, which varies a lot" (its example still holds:
