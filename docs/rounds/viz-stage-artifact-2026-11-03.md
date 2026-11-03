@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** 🔨 two passes (§2–§6, then §7) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** 🔨 three passes (§2–§6, §7, §8) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -358,3 +358,59 @@ the popover, Escape twice (list, then card), Clear; no page errors. Looked at he
     same four substats." plus a new paragraph: "**Reshape** picks two substats as the game's reshape
     screen does and draws all three kinds of reshape against your piece. A reshape keeps …" (the
     rest of the current paragraph unchanged).
+
+## 8. Third pass: you are this dot, and Try a reshape
+
+Nate asked whether the strip could hold a dot for every possible artifact. Counted for the demo
+flower: about 60,000 distinct finished pieces (140,000 from a 4-line start), from 17 million
+ordered roll sequences, collapsing to 109 crit values. Computable, but they are not equally
+likely (the rarest value is about 1 in a million, the commonest 1 in 18), so a dot each would give
+a once-in-a-million roll the same dot as an everyday one, and "13 dots beat yours" would stop
+meaning 13%. Agreed instead: keep the 100 equal-chance dots, ring yours, and light where a tried
+reshape lands. Built:
+
+- **You are this dot.** At +20 and in Reshape the strip rings the dot your piece's rank falls in
+  ("yours"): among 100 pieces like it, or among 100 reshapes.
+- **Try a reshape**, a chart tool at the toolbar's far end (design §6), in Reshape. It rolls one
+  reshape (`rollReshape` in `appraise.ts`) and plays it as the game does, from Nate's recording:
+  the piece on its starting rolls, every badge a dot; an upgrade every 520ms, the value and badge
+  changing as a light sweeps the row (white settling to gold on a selected line, with a ring
+  bursting from its badge; flat gray on another); a pause; then the game's "Select a result to
+  keep", the original and the result side by side, with a line on what it means ("Your piece is
+  still better: 24.0 CV against your 34.2. Luckier than 3% of Standard reshapes."). Skip jumps to
+  the choice; under reduced motion it starts there. Try again rolls the next in the same dialog.
+- **The trail.** Each try lights its dot (the latest ringed in gold, "this roll"; earlier ones
+  fainter) and the strip counts them ("· your tries: 3, 1 beat it"). The trail is the session's,
+  for this piece, pick and kind.
+- **Keep the reshaped result** makes it your piece (its reading known, so no question), with an
+  Undo toast that checks the profile is still the one it was pressed in.
+- **The roll is the chart's.** Tests (`appraise.test.ts`): 20,000 seeded rolls for each floor land
+  only on values `pieceReshape` gives, with its mean and its chance to beat the piece; a Decreed
+  roll puts all four upgrades on the two lines; a start is a one-roll value the line can begin
+  with; a line's last step shows what it ends on.
+
+Gates: Vitest 2752 (new: 4), svelte-check, lint and build clean; Chrome e2e 72 passed. Driven on
+the production build: a roll frame by frame at 90ms (the sweeps, the ring, the gray rows, the
+choice), Try again and Skip, the trail after three tries, keeping a result and its Undo, the
+yours ring at +20; no page errors.
+
+### For Nate's eye (third pass)
+
+1. The sweep against your recording: 🎛️ `STEP_MS` 520, `INTRO_MS` 600, `OUTRO_MS` 800; the white
+   over 380ms and the tone over 900ms (`--rr-white-ms`, `--rr-tone-ms`); the ring's 520ms.
+2. The piece over the card while it rolls: the generic slot icon with a gold glow (we have no
+   set art).
+3. The choice screen: the two cards, the lit choice, the verdict line, Try again and Confirm.
+4. The rings and their labels on the strip ("yours", "this roll"); where a full stack is tall, the
+   label runs close to the strip's own label.
+5. Try a reshape as a plate at the toolbar's far end.
+
+### Copy for Nate (third pass; written in, proposed)
+
+1. The tool: "Try a reshape". The dialog's titles: "Standard reshape" while it rolls, "Select a
+   result to keep" after (the game's words, sentence case); "Skip", "Try again", "Confirm",
+   "Keep the original", "Keep the reshaped result".
+2. The verdict: "This one beats your piece: 36.4 CV against your 34.2." / "Your piece is still
+   better: …" / "The same as your piece: …", then "Luckier than 73% of Standard reshapes."
+3. The strip: "yours", "this roll", and "· your tries: 3, 1 beat it" after its label.
+4. The toast: "Your piece is now the reshaped result" [Undo].

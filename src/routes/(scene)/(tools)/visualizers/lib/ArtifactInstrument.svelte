@@ -40,7 +40,9 @@
 		piecePopulation,
 		pieceReshape,
 		upgradeTotals,
-		type PieceQuery
+		rollReshape,
+		type PieceQuery,
+		type ReshapeRoll as Roll
 	} from './appraise';
 	import { formatChance } from './chance';
 	import type { FieldOption } from './statEntry';
@@ -48,6 +50,9 @@
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
+	import ReshapeRoll from './ReshapeRoll.svelte';
+	import { notices } from '$lib/notices.svelte';
+	import { storageSession } from '$lib/storage/session.svelte';
 
 	// ⚓ Four views, a piece's life (Nate, 2026-10-06; Reshape 2026-11-03): it
 	// DROPS, it is LEVELLED, it is YOUR piece (entered and ranked), and it is
@@ -333,6 +338,77 @@
 			: []
 	);
 	const reshapeName = $derived(RESHAPES.find((r) => r.floor === reshapeFloor)!.label);
+
+	// ── Try a reshape ──────────────────────────────────────────────────────
+	// One roll, played as the game plays it (ReshapeRoll.svelte), then lit on
+	// the strip where it landed. The tries are this session's, for this piece
+	// and this pick: a changed line, level or pick starts the trail over.
+	type Try = { sig: string; floor: Floor; x: number };
+	let tries = $state<Try[]>([]);
+	let rolling = $state<Roll | null>(null);
+	const trySig = $derived(
+		JSON.stringify([pieceLines, resolution?.counts, rshSel, wantedSubs, main.id])
+	);
+	const shownTries = $derived(tries.filter((t) => t.sig === trySig && t.floor === reshapeFloor));
+	function tryReshape() {
+		if (!query || !resolution || !canReshape) return;
+		rolling = rollReshape({ ...query, selected: rshSel }, resolution.events, reshapeFloor);
+	}
+	function recordTry(r: Roll) {
+		tries = [
+			...tries.filter((t) => t.sig === trySig),
+			{ sig: trySig, floor: reshapeFloor, x: r.x }
+		];
+	}
+	function closeRoll(keepIt: boolean) {
+		const r = rolling;
+		rolling = null;
+		if (!r) return;
+		recordTry(r);
+		if (keepIt) keepRoll(r);
+	}
+	/** Try again: this roll joins the trail, and the next plays in the same dialog */
+	function retryRoll() {
+		if (rolling) recordTry(rolling);
+		tryReshape();
+	}
+	/** Keep the reshaped result: it becomes your piece, with Undo. */
+	function keepRoll(r: Roll) {
+		const before = getShareState();
+		const pid = storageSession.profile?.id;
+		let k = 0;
+		lines = lines.map((l) => (l.id === '' ? l : { ...l, raw: r.final[k++] }));
+		// the roll knows its counts: pick that reading, so no question is asked
+		const at = resolutions.findIndex((res) => res.counts.every((c, i) => c === r.counts[i]));
+		resolutionPick = Math.max(0, at);
+		readingPicked = resolutions.length > 1;
+		notices.toast('success', 'Your piece is now the reshaped result', {
+			actions: [
+				{
+					label: 'Undo',
+					run: () => {
+						if (storageSession.profile?.id === pid) applyShareState(before);
+					}
+				}
+			]
+		});
+	}
+	/** A value's place among a distribution: its mid-rank, as a dot's index */
+	const dotIndex = (dist: ValueDist, x: number) => {
+		const { below, equal } = compareTo(dist, [{ x, p: 1 }]);
+		return Math.min(99, Math.max(0, Math.floor((below + equal / 2) * 100)));
+	};
+	const rollVerdict = (r: Roll) => {
+		const pct = Math.round(percentileOf(primaryDist, [{ x: r.x, p: 1 }]) * 100);
+		const vs = `${valueOf(r.x)} against your ${fmtValue(nowX)}`;
+		const head =
+			r.x > nowX + 1e-6
+				? `This one beats your piece: ${vs}.`
+				: r.x < nowX - 1e-6
+					? `Your piece is still better: ${vs}.`
+					: `The same as your piece: ${vs}.`;
+		return `${head} Luckier than ${pct}% of ${reshapeName} reshapes.`;
+	};
 
 	// ── The readings: values that fit more than one upgrade count ──────────
 	// ⚓ The streamer took the old tap-to-cycle badge for an "invalid value"
@@ -766,9 +842,43 @@
 		});
 		return { dots, lit };
 	});
+	/**
+	 * YOU ARE THIS DOT: your piece's place among the strip's 100 (at +20, and
+	 * in Reshape among the reshapes), and in Reshape each try's, the latest
+	 * lit. A dot is the hundredth its rank falls in.
+	 */
+	const stripRings = $derived.by(() => {
+		if (!strip.dots.length || !markIsPiece) return [];
+		const top = (i: number) =>
+			Math.min(...strip.dots.filter((d) => d.cx === strip.dots[i].cx).map((d) => d.cy)) -
+			strip.dots[i].r;
+		const rings: { key: string; i: number; kind: 'yours' | 'try' | 'last'; label: string }[] = [
+			{ key: 'yours', i: dotIndex(primaryDist, nowX), kind: 'yours', label: 'yours' }
+		];
+		if (view === 'reshape')
+			shownTries.forEach((t, k) => {
+				const last = k === shownTries.length - 1;
+				rings.push({
+					key: `try${k}`,
+					i: dotIndex(primaryDist, t.x),
+					kind: last ? 'last' : 'try',
+					label: last ? 'this roll' : ''
+				});
+			});
+		// labels on one dot stack upward
+		const used: Record<number, number> = {};
+		return rings.map((r) => {
+			const d = strip.dots[r.i];
+			const n = r.label ? (used[r.i] ?? 0) : 0;
+			if (r.label) used[r.i] = n + 1;
+			return { ...r, cx: d.cx, cy: d.cy, rr: d.r + 2, ly: top(r.i) - 4 - n * 11 };
+		});
+	});
+	const triesBeat = $derived(shownTries.filter((t) => t.x > nowX + 1e-6).length);
 	const stripLabel = $derived(
 		view === 'reshape'
-			? `100 ${reshapeName} reshapes, one dot each: ${strip.lit} beat your piece`
+			? `100 ${reshapeName} reshapes, one dot each: ${strip.lit} beat your piece` +
+					(shownTries.length ? ` · your tries: ${shownTries.length}, ${triesBeat} beat it` : '')
 			: view === 'piece' && finished
 				? `100 +20 ${slotPlural} like yours, one dot each: ${strip.lit} beat it`
 				: `100 pieces, one dot each: ${strip.lit} end above ${fmtValue(reference)}`
@@ -1659,7 +1769,33 @@
 					</BandMenu>
 				{/if}
 			</div>
+			<!-- A chart tool, at the toolbar's far end (design §6). -->
+			{#if view === 'reshape' && !emptyReason}
+				<button class="btn ao-tool" onclick={tryReshape}>
+					<Mark name="dice" size={14} /> Try a reshape
+				</button>
+			{/if}
 		</div>
+
+		{#if rolling}
+			<ReshapeRoll
+				lines={pieceLines.map((l) => ({
+					name: substatById(l.id).name,
+					selected: rshSel.includes(l.id),
+					wanted: wantedSubs.includes(l.id),
+					unit: substatById(l.id).isPct ? '%' : ''
+				}))}
+				original={pieceLines.map((l) => l.raw)}
+				originalCounts={resolution?.counts ?? []}
+				roll={rolling}
+				mainName={main.id === 'elemDmg' ? `${element} DMG Bonus` : main.name}
+				{slotId}
+				kind={reshapeName}
+				verdict={rollVerdict(rolling)}
+				onclose={closeRoll}
+				onretry={retryRoll}
+			/>
+		{/if}
 
 		<div class="ao-chart-col">
 			<div
@@ -1870,6 +2006,27 @@
 									fill={d.on ? 'var(--accent)' : 'var(--chart-ink)'}
 									fill-opacity={d.on ? 0.95 : 0.4}
 								/>
+							{/each}
+							{#each stripRings as r (r.key)}
+								<circle
+									cx={r.cx}
+									cy={r.cy}
+									r={r.rr}
+									fill="none"
+									stroke={r.kind === 'yours' ? 'var(--text)' : 'var(--accent)'}
+									stroke-width={r.kind === 'try' ? 1 : 1.75}
+									stroke-opacity={r.kind === 'try' ? 0.55 : 1}
+								/>
+								{#if r.label}
+									<text
+										class="stage-word"
+										x={r.cx}
+										y={r.ly}
+										fill={r.kind === 'yours' ? 'var(--text)' : 'var(--accent)'}
+										font-size="10"
+										text-anchor="middle">{r.label}</text
+									>
+								{/if}
 							{/each}
 
 							<!-- The curves: the head's bold, the others thin -->
@@ -2105,6 +2262,12 @@
 
 	.ao-next {
 		gap: 0.35rem;
+	}
+
+	/* A chart tool holds the toolbar's far end */
+	.ao-tool {
+		margin-left: auto;
+		gap: 0.4rem;
 	}
 
 	/* ── The piece at a glance (the setup bar's first segment) ──

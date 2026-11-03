@@ -16,6 +16,7 @@ import {
 	nextLineChance,
 	outcome,
 	rollsLeftAt,
+	shownValue,
 	substatById,
 	SUBSTATS,
 	uniformLine,
@@ -336,6 +337,99 @@ export function piecePopulation(q: PieceQuery, events: number, floor = 0): Value
 export function pieceReshape(q: PieceQuery, events: number, floor: number): Outcome {
 	if (q.selected.length !== 2) return [];
 	return outcome(q.unit, lineStates(q, 'initial'), events, floor);
+}
+
+// ── One reshape, rolled ─────────────────────────────────────────────────────
+
+/** One upgrade of a rolled reshape: the line it landed on, and what it shows after. */
+export type RollStep = { line: number; value: string; upgrades: number };
+
+export type ReshapeRoll = {
+	/** Each line's starting roll, as the game shows it (a reshape keeps these) */
+	start: string[];
+	/** The upgrades in the order they land */
+	steps: RollStep[];
+	/** Each line as the game shows it after the reshape */
+	final: string[];
+	/** Rolls per line, the first included (the badge shows this minus 1) */
+	counts: number[];
+	/** Your stats' value after it, in the unit (a point of `pieceReshape`'s distribution) */
+	x: number;
+};
+
+/** A line's roll at a tier, in game units, float32 as the game adds them. */
+const rollValue = (stat: Substat, tier: number) =>
+	stat.isPct ? Math.fround(Math.fround(stat.tiers[tier]) * 100) : Math.fround(stat.tiers[tier]);
+
+function pick<T>(weights: Map<T, number>, rand: () => number): T {
+	let r = rand() * [...weights.values()].reduce((a, b) => a + b, 0);
+	for (const [k, w] of weights) if ((r -= w) <= 0) return k;
+	return [...weights.keys()].at(-1)!;
+}
+
+/**
+ * ONE reshape of a +20 piece, rolled the way `pieceReshape` counts them all,
+ * for the "Try a reshape" animation: each line keeps a starting roll (drawn
+ * from those its displayed value can come from), then `events` upgrades land
+ * on a uniformly random line at a uniformly random tier, and under a floor
+ * the top-up reading applies: if the two selected lines end with fewer than
+ * `floor`, the last upgrades elsewhere move to them (each to either, evenly).
+ */
+export function rollReshape(
+	q: PieceQuery,
+	events: number,
+	floor: number,
+	rand: () => number = Math.random
+): ReshapeRoll {
+	const stats = q.lines.map((l) => substatById(l.id));
+	const first = q.lines.map((l, i) => pick(lineDetail(l.id, l.value, q.counts[i]).initial, rand));
+	const sel = q.lines.map((l) => q.selected.includes(l.id));
+	const selIdx = sel.flatMap((s, i) => (s ? [i] : []));
+
+	const order = Array.from({ length: events }, () => Math.floor(rand() * 4));
+	let short = floor - order.filter((i) => sel[i]).length;
+	for (let k = order.length - 1; k >= 0 && short > 0 && selIdx.length; k--) {
+		if (sel[order[k]]) continue;
+		order[k] = selIdx[Math.floor(rand() * selIdx.length)];
+		short--;
+	}
+
+	const value = first.map((t, i) => rollValue(stats[i], t));
+	const tiers = first.map((t) => [t]);
+	const start = value.map((v, i) => displayValue(stats[i], v));
+	const steps: RollStep[] = order.map((line) => {
+		const tier = Math.floor(rand() * 4);
+		tiers[line].push(tier);
+		value[line] = Math.fround(value[line] + rollValue(stats[line], tier));
+		return {
+			line,
+			value: displayValue(stats[line], value[line]),
+			upgrades: tiers[line].length - 1
+		};
+	});
+
+	// your stats' value, in the engine's own units, so it lands on a point of
+	// the distribution the chart draws
+	const sum = (i: number) =>
+		tiers[i].reduce((acc, t) => acc + unitTiers(q.unit, q.lines[i].id)[t], 0);
+	const wantedAt = (id: SubstatId) =>
+		q.lines.findIndex((l) => l.id === id && q.wanted.includes(id));
+	let x: number;
+	if (q.unit === 'cv') {
+		const cr = wantedAt('cr');
+		const cd = wantedAt('cd');
+		x = shownValue('cv', cr < 0 ? 0 : sum(cr), cd < 0 ? 0 : sum(cd));
+	} else {
+		const rv = q.lines.reduce((acc, l, i) => acc + (q.wanted.includes(l.id) ? sum(i) : 0), 0);
+		x = shownValue('rolls', 0, 0, rv);
+	}
+	return {
+		start,
+		steps,
+		final: value.map((v, i) => displayValue(stats[i], v)),
+		counts: tiers.map((t) => t.length),
+		x
+	};
 }
 
 /** Every upgrade total these values could add up to (when no level fits). */
