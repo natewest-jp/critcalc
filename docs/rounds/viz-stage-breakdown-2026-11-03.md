@@ -68,7 +68,7 @@ popovers; no page errors.
 
 ## 3. For Nate's eye
 
-1. The two solid columns: the reaction's element colour (Hyperbloom's green, Lunar-Charged's
+1. ✅ (§3a) The two solid columns: the reaction's element colour (Hyperbloom's green, Lunar-Charged's
    violet, Vaporize's blue) and the result at 85% ink were thin rows and are now large blocks,
    the loudest things on the stage.
 2. The caps: 2–6px tall, their labels carrying the figure. Flat ATK's short name is the card's
@@ -81,6 +81,21 @@ popovers; no page errors.
 6. The space above the tallest bar (the caps' labels need it) and the y axis's name, "times a
    hit from base ATK alone".
 7. Rows below 900px: every two-up tile takes them.
+
+### 3a. Nate's rulings, and the tweaks
+
+Nate: "really cool … good overall." ⚓ The grips, crit left undraggable, and the other points of
+§3 stand as built. His tweaks, landed:
+
+1. The chevrons run through the whole bar: the stripes start past the head, clipped there, so
+   the corners beside the first point are filled (both forms).
+2. A sum is the readout, not travel, so the result and the chunk wear even stripes, the
+   chevrons' width and fade with no point. Offered even stripes or a fading gradient; Claude
+   picked the stripes, which keep the moving bars' rhythm at rest.
+3. The reaction's bar is its element colour mixed with the stage's slate, in oklab (🎛️ `RX_MIX`
+   70%), toned down without greying.
+4. ↻ Reversing his 2026-10-02 call: the rows' bars are one height again (🎛️ `--bar-h` 1.5rem,
+   was 55% of the row), so a two-line row's bar no longer stands taller than a one-line row's.
 
 ## 4. Copy (written in, proposed)
 

@@ -615,11 +615,18 @@
 		if (len <= 0) return [];
 		const count = Math.ceil(len / CHEV_PITCH) + 1;
 		const xc = (g.x0 + g.x1) / 2;
-		const d = CHEV_SLOPE * (barW / 2);
+		// ⚓ Nate (2026-11-03): a sum isn't travelling, it's the readout, so
+		// its stripes are even, with no point: the chevrons' width and fade.
+		const sum = rows[k].kind === 'subtotal' || rows[k].kind === 'total';
+		const d = sum ? 0 : CHEV_SLOPE * (barW / 2);
 		const h = CHEV_PITCH / 2 + d;
 		const s = g.loss ? -1 : 1; // a cut points down, from its head at the bottom
 		const head = g.loss ? g.y1 : g.y0;
-		return Array.from({ length: count }, (_, i) => {
+		// ⚓ Nate: the pattern runs through the whole bar, so the stripes start
+		// past the head (clipped there) and fill its corners beside the point.
+		const lead = Math.ceil(h / CHEV_PITCH);
+		return Array.from({ length: count + lead }, (_, j) => {
+			const i = j - lead;
 			const t = head + s * (2 + i * CHEV_PITCH);
 			const p = (x: number, y: number) => `${x.toFixed(1)},${y.toFixed(1)}`;
 			return {
@@ -631,7 +638,7 @@
 					p(g.x1, t + s * h),
 					p(xc, t + s * (CHEV_PITCH / 2))
 				].join(' '),
-				alpha: chevAlpha(i, count)
+				alpha: chevAlpha(Math.max(0, i), count)
 			};
 		});
 	}
@@ -641,12 +648,19 @@
 	let trackW = $state(0);
 	const chevronsFor = (px: number) => (px <= 0 ? 0 : Math.ceil(px / CHEV_PITCH) + 1);
 
+	/** 🎛️ The reaction's bar: its element colour's share in a mix with the
+	 *  stage's slate (⚓ Nate 2026-11-03: full strength was too vivid as a
+	 *  column). In oklab, which keeps it clean where sRGB greys it. Both sides
+	 *  are literals, so no mix is fed by another (the WebKit trap, ui.md). */
+	const RX_MIX = 70;
 	const barFill = (r: Row) =>
 		r.kind === 'total'
 			? 'color-mix(in srgb, var(--text) 85%, transparent)'
 			: r.kind === 'subtotal'
 				? 'color-mix(in srgb, var(--text) 40%, transparent)'
-				: (r.color ?? 'var(--glass-bar)');
+				: r.color
+					? `color-mix(in oklab, ${r.color} ${RX_MIX}%, var(--frame-bg))`
+					: 'var(--glass-bar)';
 	/** A stat bracket's stripes are white and fainter (the glass); the
 	 *  element's and the sums' are the dark ink. */
 	const isGlass = (r: Row) => r.color === null && r.kind === 'mult';
@@ -1458,9 +1472,14 @@
 									style:width="{Math.max(hi - lo, 0.4)}%"
 									style:background={barFill(r)}
 								>
-									{#each { length: nChev }, k (k)}
-										<!-- k = 0 is the HEAD; each step back toward the tail fades -->
-										<span class="bd-wf-chev" style:--k={k} style:--a={chevAlpha(k, nChev)}></span>
+									<!-- k = 0 is the HEAD; each step back toward the tail fades.
+									     k = −1 sits past the head, so the pattern runs through it. -->
+									{#each { length: nChev + 1 }, j (j)}
+										<span
+											class="bd-wf-chev"
+											style:--k={j - 1}
+											style:--a={chevAlpha(Math.max(0, j - 1), nChev)}
+										></span>
 									{/each}
 								</span>
 							{/if}
@@ -1832,10 +1851,11 @@
 
 	/* The bar column fills the row's full height, and the bar sits on its
 	   middle, so the leading line knows where the bar stops and the row
-	   ends. ↻ 2026-10-02 (⚓ Nate): a SHARE of the row, not a fixed 0.9rem,
-	   so the space never reads louder than the bars. 🎛️ */
+	   ends. 🎛️ ↻ 2026-11-03 (⚓ Nate): one height for every bar again, so
+	   the rows read as one series; it was a share of the row (55%), which
+	   made a two-line row's bar taller than a one-line row's. */
 	.bd-wf-track {
-		--bar-h: max(0.9rem, 55%);
+		--bar-h: 1.5rem;
 		position: relative;
 		align-self: stretch;
 		min-height: 1.5rem;
@@ -1903,6 +1923,11 @@
 		--arrow-c: var(--bright-ink);
 	}
 
+	/* A sum's stripes are even: no point (⚓ Nate 2026-11-03). */
+	.bd-wf-row.is-sum .bd-wf-bar {
+		--chev-depth: 0px;
+	}
+
 	.bd-wf-row.is-glass .bd-wf-bar {
 		--arrow-c: rgb(255 255 255);
 		--chev-scale: 0.6;
@@ -1910,7 +1935,7 @@
 
 	.bd-wf-chev {
 		--pitch: 14px;
-		--depth: 6px;
+		--depth: var(--chev-depth, 6px);
 		position: absolute;
 		top: 0;
 		bottom: 0;
