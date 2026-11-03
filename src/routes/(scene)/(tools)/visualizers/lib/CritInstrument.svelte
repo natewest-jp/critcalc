@@ -10,6 +10,7 @@
 		CD_MAX,
 		clamp,
 		averageDamageMultiplier,
+		critValue,
 		zeroCritProbability,
 		zeroCritRiskColor,
 		riskGradient,
@@ -365,9 +366,12 @@
 					land none.
 				</span>
 			</p>
+			<!-- ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
+			     "280 CV" for artifact CV, where 280 is near impossible. -->
 			<p>
-				Drag anywhere on the map, or a handle, to move your build; hover or tap the bars to read one
-				rotation.
+				The solid line is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value
+				(CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Drag anywhere on the map, or a handle,
+				to move your build; hover or tap the bars to read one rotation.
 			</p>
 		</div>
 	</div>
