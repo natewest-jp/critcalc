@@ -402,16 +402,15 @@
 		return Math.min(99, Math.max(0, Math.floor((below + equal / 2) * 100)));
 	};
 	/** The roll's meaning, said under the two cards (the values are on them) */
-	const rollVerdict = (r: Roll) => {
-		const below = Math.round(compareTo(primaryDist, [{ x: r.x, p: 1 }]).below * 100);
-		const head =
-			r.x > nowX + 1e-6
-				? 'This one beats your piece.'
-				: r.x < nowX - 1e-6
-					? 'Your piece is still better.'
-					: 'The same as your piece.';
-		return `${head} Better than ${below} of 100 ${reshapeName} reshapes.`;
-	};
+	const rollVerdict = (r: Roll) =>
+		r.x > nowX + 1e-6
+			? 'The reshaped result is better.'
+			: r.x < nowX - 1e-6
+				? 'Your piece is still better.'
+				: 'They come out the same.';
+	/** A card's place among this kind's reshapes, said under that card */
+	const reshapeRank = (x: number) =>
+		`Better than ${Math.round(compareTo(primaryDist, [{ x, p: 1 }]).below * 100)} of 100 ${reshapeName} reshapes`;
 
 	// ── The readings: values that fit more than one upgrade count ──────────
 	// ⚓ The streamer took the old tap-to-cycle badge for an "invalid value"
@@ -1795,6 +1794,8 @@
 				kind={reshapeName}
 				originalValue={valueOf(nowX)}
 				resultValue={valueOf(rolling.x)}
+				originalRank={reshapeRank(nowX)}
+				resultRank={reshapeRank(rolling.x)}
 				verdict={rollVerdict(rolling)}
 				onsettle={() => rolling && recordTry(rolling)}
 				onclose={closeRoll}

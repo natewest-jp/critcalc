@@ -1,6 +1,6 @@
 # The stage, round 2: Artifact odds (2026-11-03)
 
-**Status:** 🔨 four passes (§2–§6, §7, §8, §9) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
+**Status:** 🔨 five passes (§2–§6, §7–§10) built on `feat/viz-artifact-stage`, stacked on `feat/viz-wish-stage` (not merged:
 Wish odds' §11 arrangement and its copy are still waiting on Nate). For Nate to look at in the
 local build. ⏭ The copy in §6 is written in for the demo and is proposed, not approved; the
 visual calls in §5 are Nate's; real Safari and iPhone.
@@ -454,3 +454,22 @@ Now: "Luckier than 3% of Standard reshapes." Options, with my pick first:
 4. A word, then the count: "An unlucky roll: better than 3 of 100 Standard reshapes." (bands:
    very unlucky, unlucky, typical, lucky, very lucky). The quickest read, but the bands' edges
    are ours to choose, and it reads closer to a verdict.
+
+## 10. Fifth pass: a reveal you can see, and each rank under its card
+
+- **The slide and fade never ran.** `.rr-choice`'s own `transition` (its background) came later
+  in the sheet at the same specificity and replaced the slide's and the fade's, so the move to the
+  choice snapped. Each transition is now set by a selector that outranks it, on the state being
+  entered, and Try again snaps back. Slower than the site's bands on purpose (Nate: at 240ms and
+  150ms it couldn't be seen; this is a reveal to watch): 🎛️ `--rr-slide-ms` 600 (eased out), the
+  original over `--rr-reveal-ms` 450 from `--rr-reveal-delay` 200, the totals, ranks, radios and
+  verdict a beat later. Sampled per frame: the card glides 176px over about 600ms; the original
+  fades in from 200 to 650ms, the rest from about 425 to 875ms. Reduced motion: no transitions.
+- **The luck line** (Nate: after "Your piece is still better.", a rank line read as your piece's).
+  Each card now says its own place among this kind's reshapes, under its value: "34.2 CV / Better
+  than 83 of 100 Standard reshapes" under yours, "24.9 CV / Better than 11 of 100 Standard
+  reshapes" under the result. One line under both says which is better: "Your piece is still
+  better." / "The reshaped result is better." / "They come out the same." (proposed; "This one
+  beats your piece" had the same which-piece problem).
+
+Gates: Vitest 2752, svelte-check, lint and build clean; Chrome e2e 72 passed.

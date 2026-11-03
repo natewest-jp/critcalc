@@ -32,6 +32,8 @@
 		kind,
 		originalValue,
 		resultValue,
+		originalRank,
+		resultRank,
 		verdict,
 		onsettle,
 		onclose,
@@ -48,6 +50,9 @@
 		/** Your stats' value on each card ("34.2 CV"), under it */
 		originalValue: string;
 		resultValue: string;
+		/** Each card's place among this kind's reshapes, under its value */
+		originalRank: string;
+		resultRank: string;
 		/** What the result means, said under the two cards */
 		verdict: string;
 		/** The result is showing: the chart behind can light where it landed */
@@ -185,6 +190,7 @@
 			>
 				{@render card(original, originalCounts, null)}
 				<span class="rr-total">{originalValue}</span>
+				<span class="rr-rank">{originalRank}</span>
 				<span class="rr-radio">
 					<input type="radio" name="rr-keep" value="original" bind:group={keep} />
 					Keep the original
@@ -203,6 +209,7 @@
 					{/if}
 				</div>
 				<span class="rr-total rr-later">{resultValue}</span>
+				<span class="rr-rank rr-later">{resultRank}</span>
 				<span class="rr-radio rr-later" inert={phase === 'rolling'}>
 					<input type="radio" name="rr-keep" value="result" bind:group={keep} />
 					Keep the reshaped result
@@ -446,10 +453,19 @@
 	/* ── The choice: the original and the result side by side ──
 	   The same grid while it rolls: the result card is moved left by half its
 	   own width plus half the arrow and one gap, which centres it, and slides
-	   back at the choice (--t-move, travel). With `left`, not a transform: a
-	   box snaps to whole pixels, where a transform-placed card's sweeps would
-	   fade at fractional offsets (ui.md, sub-pixel laws). What the choice adds
-	   waits hidden, holding its room. */
+	   back at the choice. With `left`, not a transform: a box snaps to whole
+	   pixels, where a transform-placed card's sweeps would fade at fractional
+	   offsets (ui.md, sub-pixel laws). What the choice adds waits hidden,
+	   holding its room, and fades in once the slide is under way.
+	   🎛️ Slower than the site's bands on purpose (Nate: at --t-move's 240ms
+	   and --t-quick's 150ms the move couldn't be seen): this is a reveal to
+	   watch, like the sweep, not a control answering. --rr-slide-ms (600),
+	   then the original over --rr-reveal-ms (450) from --rr-reveal-delay
+	   (200), the rest a beat later. Only on the way to the choice: Try again
+	   snaps back. Reduced motion: none (below).
+	   ⚠ Each transition is set on the state being entered, by a selector that
+	   outranks `.rr-choice`'s own (`background`), which once replaced them
+	   both and the slide and fade ran in no time. */
 	.rr-pair {
 		--rr-gap: 0.6rem;
 		--rr-arrow-w: 1.5rem;
@@ -459,24 +475,40 @@
 		gap: var(--rr-gap);
 	}
 
-	.rr-choice--result {
+	.rr-pair .rr-choice--result {
 		position: relative;
 		left: 0;
 		transition:
-			left var(--t-move),
+			left var(--rr-slide-ms, 600ms) cubic-bezier(0.2, 0.7, 0.2, 1),
 			background var(--t-snap);
+	}
+
+	.rr-pair .rr-choice--original,
+	.rr-pair .rr-arrow {
+		transition:
+			opacity var(--rr-reveal-ms, 450ms) linear var(--rr-reveal-delay, 200ms),
+			visibility 0s linear var(--rr-reveal-delay, 200ms),
+			background var(--t-snap);
+	}
+
+	.rr-pair .rr-later,
+	.rr-panel .rr-verdict {
+		transition:
+			opacity var(--rr-reveal-ms, 450ms) linear
+				calc(var(--rr-reveal-delay, 200ms) + var(--rr-reveal-ms, 450ms) / 2),
+			visibility 0s linear calc(var(--rr-reveal-delay, 200ms) + var(--rr-reveal-ms, 450ms) / 2);
 	}
 
 	.rr-pair.is-rolling .rr-choice--result {
 		left: calc(-50% - var(--rr-arrow-w) / 2 - var(--rr-gap));
 	}
 
-	.rr-choice--original,
-	.rr-arrow,
-	.rr-later {
-		transition:
-			opacity var(--t-quick) linear,
-			visibility var(--t-quick) linear;
+	.rr-pair.is-rolling .rr-choice--result,
+	.rr-pair.is-rolling .rr-choice--original,
+	.rr-pair.is-rolling .rr-arrow,
+	.rr-pair.is-rolling .rr-later,
+	.rr-panel:has(.rr-pair.is-rolling) .rr-verdict {
+		transition: none;
 	}
 
 	.rr-pair.is-rolling .rr-choice--original,
@@ -485,6 +517,16 @@
 	.rr-panel:has(.rr-pair.is-rolling) .rr-verdict {
 		opacity: 0;
 		visibility: hidden;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rr-pair .rr-choice--result,
+		.rr-pair .rr-choice--original,
+		.rr-pair .rr-arrow,
+		.rr-pair .rr-later,
+		.rr-panel .rr-verdict {
+			transition: none;
+		}
 	}
 
 	/* A phone: one column, the result first and the original under it, so
@@ -526,13 +568,21 @@
 		color: var(--muted);
 	}
 
+	/* Its place among the reshapes, said under the card it belongs to (Nate:
+	   after "Your piece is still better", a rank line read as your piece's) */
+	.rr-rank {
+		margin-top: -0.35rem;
+		text-align: center;
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+
 	.rr-choice {
 		display: grid;
 		gap: 0.5rem;
 		padding: 0.4rem;
 		border-radius: var(--r-sm);
 		cursor: pointer;
-		transition: background var(--t-snap);
 	}
 
 	.rr-choice.is-on {
