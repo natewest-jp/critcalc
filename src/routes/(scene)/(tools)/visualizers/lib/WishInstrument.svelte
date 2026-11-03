@@ -762,7 +762,7 @@
 {#snippet viewTabs()}
 	<!-- What you're pulling for picks what the chart draws: the instrument's
 	     view tabs, leading the chart's toolbar. -->
-	<div class="segment wi-tabs" role="radiogroup" aria-label="Pulling for">
+	<div class="segment stage-tabs" role="radiogroup" aria-label="Pulling for">
 		{#each TARGETS as t (t.id)}
 			<button
 				class="btn"
@@ -795,12 +795,12 @@
      the setup bar), the chart with its companion, and the handle on its bottom
      edge. No answer card: what the card held is
      drawn on the chart, or sits in the popover of the setting it explains. -->
-<div class="wi-root">
-	<div class="wi-stage ctx-dark">
+<div class="stage-root">
+	<div class="stage ctx-dark">
 		<!-- THE CHART HEAD (design §6): the answer, on a row of its own at the
 		     stage's top left, the first thing read and the largest type on the
 		     screen. It follows the handle and a drag on the chart. -->
-		<p class="readout-head wi-head">
+		<p class="readout-head stage-head">
 			{formatChance(goalRow.chance)}<span class="readout-sentence"
 				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
 			>
@@ -812,7 +812,7 @@
 		     where an instrument has them, at the far end. Left aligned on the
 		     stage's one left edge, so an instrument with no tabs starts with its
 		     setup bar and nothing else moves. -->
-		<div class="wi-toolbar">
+		<div class="stage-toolbar">
 			{@render viewTabs()}
 			{#each blocks as id (id)}
 				{@const s = states[id]}
@@ -822,7 +822,7 @@
 				     character banner's bar is a pointer shortcut for "Read a Paimon.moe
 				     export", which stays the accessible path. -->
 				<div
-					class="wi-bar"
+					class="setup-bar"
 					class:is-dropping={id === 'character' && dropping}
 					role="group"
 					aria-label={RULES[id].kicker}
@@ -831,16 +831,16 @@
 					ondrop={id === 'character' ? onDrop : undefined}
 				>
 					{#if blocks.length > 1}
-						<span class="wi-bar-name">{RULES[id].kicker}</span>
+						<span class="setup-bar-name">{RULES[id].kicker}</span>
 					{/if}
 
 					<BandMenu role="dialog" align="start" ariaLabel="Current pity: {clampPity(b, s.pity)}">
 						{#snippet face()}
-							<span class="wi-chip-key">Pity</span>
-							<span class="wi-chip-val wi-chip-val--num">{clampPity(b, s.pity)}</span>
+							<span class="setup-key">Pity</span>
+							<span class="setup-val setup-val--num">{clampPity(b, s.pity)}</span>
 						{/snippet}
 						{#snippet items()}
-							<div class="wi-chip-pop">
+							<div class="setup-pop">
 								<InstrumentSlider
 									label="Current pity"
 									aria={RULES[id].pityAria}
@@ -859,11 +859,11 @@
 						ariaLabel="{RULES[id].held}: {s.guaranteed ? 'Held' : 'None'}"
 					>
 						{#snippet face()}
-							<span class="wi-chip-key">{RULES[id].held}</span>
-							<span class="wi-chip-val">{s.guaranteed ? 'Held' : 'None'}</span>
+							<span class="setup-key">{RULES[id].held}</span>
+							<span class="setup-val">{s.guaranteed ? 'Held' : 'None'}</span>
 						{/snippet}
 						{#snippet items()}
-							<div class="wi-chip-pop">
+							<div class="setup-pop">
 								<label class="check">
 									<input type="checkbox" bind:checked={states[id].guaranteed} />
 									<span class="check-box"></span>
@@ -880,8 +880,8 @@
 						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
 					>
 						{#snippet face()}
-							<span class="wi-chip-key">Goal</span>
-							<span class="wi-chip-val"
+							<span class="setup-key">Goal</span>
+							<span class="setup-val"
 								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
 									id,
 									s.goal
@@ -889,7 +889,7 @@
 							>
 						{/snippet}
 						{#snippet items()}
-							<div class="wi-chip-pop">
+							<div class="setup-pop">
 								<div class="wi-pop wi-levels">
 									<span class="slider-label" id="wi-have-{id}">You have</span>
 									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
@@ -930,11 +930,11 @@
 							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
 						>
 							{#snippet face()}
-								<span class="wi-chip-key">Radiance counter</span>
-								<span class="wi-chip-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
+								<span class="setup-key">Radiance counter</span>
+								<span class="setup-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
 							{/snippet}
 							{#snippet items()}
-								<div class="wi-chip-pop">{@render counterPanel()}</div>
+								<div class="setup-pop">{@render counterPanel()}</div>
 							{/snippet}
 						</BandMenu>
 						<input
@@ -950,7 +950,7 @@
 		</div>
 
 		<div
-			class="wi-graph instrument-graph"
+			class="stage-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
 			bind:clientWidth={graphW}
 			bind:clientHeight={graphH}
@@ -1031,7 +1031,7 @@
 						stroke-dasharray="4 4"
 					/>
 					<text
-						class="wi-word"
+						class="stage-word"
 						x={xOf(softAt) + 5}
 						y={TOP + 11}
 						fill="var(--chart-dim)"
@@ -1059,7 +1059,7 @@
 						stroke-dasharray="2 3"
 					/>
 					<text
-						class="wi-word"
+						class="stage-word"
 						x={m.x}
 						y={compY0 - 6}
 						fill="var(--chart-ink)"
@@ -1082,7 +1082,7 @@
 				{/each}
 				{#each labels as l (l.text)}
 					<text
-						class="wi-word"
+						class="stage-word"
 						x={l.x}
 						y={l.y}
 						fill={l.primary ? 'var(--text)' : 'var(--chart-ink)'}
@@ -1113,7 +1113,7 @@
 						stroke-width="1.5"
 					/>
 					<text
-						class="wi-word"
+						class="stage-word"
 						x={c.lx}
 						y={c.ly}
 						fill="var(--chart-ink)"
@@ -1146,7 +1146,7 @@
 				{/each}
 				{#each dotLabels as l (l.key)}
 					<text
-						class="wi-word"
+						class="stage-word"
 						x={l.x}
 						y={l.y}
 						fill="var(--chart-ink)"
@@ -1164,9 +1164,9 @@
 		     Typed, it runs past the chart (to MAX_PULLS), where every goal is past
 		     99.9%: the head answers, the marker waits at the axis's end. -->
 		<div
-			class="wi-handle"
-			style:--wi-handle-l="{PADL - THUMB_R}px"
-			style:--wi-handle-r="{PADR - THUMB_R}px"
+			class="stage-handle"
+			style:--stage-handle-l="{PADL - THUMB_R}px"
+			style:--stage-handle-r="{PADR - THUMB_R}px"
 		>
 			<InstrumentSlider
 				label="Pulls saved"
@@ -1181,7 +1181,7 @@
 
 		<!-- The fine print: what no part of the chart can show. -->
 		{#if target === 'pair'}
-			<p class="wi-fine-print">
+			<p class="stage-fine">
 				Your character and weapon banners keep separate pity, so the chart adds the pulls for both.
 			</p>
 		{/if}
@@ -1189,30 +1189,6 @@
 </div>
 
 <style>
-	/* No frame — the chart (.wi-chart) is on the night; .ctx-dark stays claimed
-	   for --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
-	.wi-graph svg {
-		display: block;
-		touch-action: pan-y;
-		user-select: none;
-		-webkit-user-select: none;
-	}
-
-	.wi-graph text {
-		font-family: var(--font-body);
-	}
-
-	/* A word on the chart wears the site's soft halo (the Gauge's pill digits,
-	   the planner's bars), a touch denser, so it stays legible where it
-	   crosses a line or a rule (a level's chance beside the goal's curve). A
-	   hard outline (`paint-order: stroke`) was tried and smeared the glyphs. */
-	.wi-graph text.wi-word {
-		font-family: var(--font-condensed);
-		text-shadow:
-			color-mix(in srgb, var(--label-halo, #081225) 90%, transparent) 0px 0px 2px,
-			color-mix(in srgb, var(--label-halo, #081225) 70%, transparent) 0px 0px 6px;
-	}
-
 	/* Label above its chips: a row of eight needs the panel's whole width */
 	.wi-levels {
 		display: grid;
@@ -1242,217 +1218,6 @@
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
-	/* ══ THE STAGE (design §6; Wish odds is its first instrument) ═════════════
-	   ONE BOX: the controls row, the chart head, the chart with its companion,
-	   and the handle. There is no answer card: what it held is drawn on the
-	   chart or sits in the popover of the setting it explains (Nate, the second
-	   pass: two boxes sat diagonally from each other).
-	   - Narrow: natural height; the page scrolls.
-	   - From 1024px: the tile's height, and capped at 🎛️ --wi-stage-aspect ×
-	     the tile's height, centred, so an ultrawide doesn't stretch every slope
-	     flat (the rail's --instrument-main-aspect rule, with no side column
-	     now, so set where a 16:10 one up is still uncapped).
-	   The stage replaces the rail one instrument at a time; once a second
-	   instrument wears it, this moves to app.css. */
-	.wi-root {
-		min-height: 100%;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-	}
-
-	.wi-stage {
-		display: flex;
-		flex-direction: column;
-		gap: var(--inst-gap-control);
-		min-width: 0;
-	}
-
-	/* ⚠ `cqh` only where the tile is a SIZE container: from 1024px (app.css §
-	   THE RAIL; breakpoints.ts `visualizers`). */
-	@media (min-width: 1024px) {
-		.wi-root {
-			grid-template-columns: minmax(0, calc(100cqh * var(--wi-stage-aspect, 1.9)));
-			justify-content: center;
-		}
-		.wi-stage {
-			height: 100cqh;
-			min-height: max-content;
-		}
-	}
-
-	/* ── The stage's head: ONE LEFT EDGE ──
-	   The picker above, the headline, the toolbar and the chart all start on
-	   the stage's left edge. Nothing is centred: a centred bar between
-	   edge-aligned neighbours read as loose (Nate 2026-11-02). */
-
-	/* THE HEADLINE ON ONE LINE where the tile has room: the figure and its
-	   sentence share a baseline, each at its own size. From 38rem, where the
-	   longest ("0.0263% chance of C2R1 within 1,000 pulls", about 505px)
-	   fits; below it, the figure over its sentence. By the tile's width, never
-	   by fit: the headline's length changes as you drag. */
-	@container instrument (min-width: 38rem) {
-		.wi-head {
-			display: flex;
-			align-items: baseline;
-			column-gap: 0.6rem;
-			white-space: nowrap;
-		}
-		.wi-head .readout-sentence {
-			margin-top: 0;
-		}
-	}
-
-	/* 🎛️ The headline's room below it, before the toolbar: it stands apart as
-	   the answer, where the toolbar belongs to the chart. */
-	.wi-head {
-		margin-bottom: var(--wi-head-gap, 0.5rem);
-	}
-
-	/* THE ANSWER AS THE FOCUS (Nate 2026-11-02: it must not read as an
-	   afterthought). Where the chart runs the tile's width, the Readout head's
-	   32px is small beside it: 🎛️ --wi-head-scale (1.5) of it, 48px, and the
-	   sentence a step up (--fs-3xl), the difference between them kept. */
-	@container instrument (min-width: 60rem) {
-		.wi-head {
-			font-size: calc(var(--fs-5xl) * var(--wi-head-scale, 1.5));
-			column-gap: 0.8rem;
-		}
-		.wi-head .readout-sentence {
-			font-size: var(--fs-3xl);
-		}
-	}
-
-	/* Four tabs don't fit a narrow tile: wrap rather than scroll. */
-	.wi-tabs {
-		flex-wrap: wrap;
-		max-width: 100%;
-	}
-
-	/* ── THE CHART'S TOOLBAR, on the chart's top edge ──
-	   The view tabs (a recessed track: one is chosen), then the setup bar (a
-	   raised plate: each segment is a value you set): different materials, so
-	   they read as two things. 🎛️ Snug to the chart: --wi-toolbar-gap (0.25rem)
-	   above the SVG, whose own top margin holds the y axis's name. */
-	.wi-toolbar {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem;
-		min-width: 0;
-		margin-bottom: calc(var(--wi-toolbar-gap, 0.25rem) - var(--inst-gap-control));
-	}
-
-	/* THE SETUP BAR: one glass plate, a setting per segment. The segments are
-	   bare buttons on the plate (BandMenu's triggers), which light under the
-	   hand and while their popover is open; each one's chevron ends it, so no
-	   hairlines (they dangled at the end of a wrapped line on a phone). */
-	.wi-bar {
-		display: inline-flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 2px;
-		max-width: 100%;
-		padding: 2px;
-		border-radius: var(--r-sm);
-		background: var(--glass-panel);
-	}
-
-	.wi-bar > :global(.btn) {
-		background: transparent;
-		border-radius: var(--r-xs);
-	}
-
-	@media (hover: hover) {
-		.wi-bar > :global(.btn:hover:not(:disabled)) {
-			background: var(--glass-hover);
-		}
-	}
-
-	.wi-bar > :global(.btn.is-active) {
-		background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
-	}
-
-	/* A pair's banner name leads its bar. */
-	.wi-bar-name {
-		padding-inline: 0.6rem 0.5rem;
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		color: var(--chart-ink);
-	}
-
-	/* A chip's face: the setting's name, then its value in the ink. */
-	.wi-chip-key {
-		color: var(--chart-ink);
-	}
-
-	.wi-chip-val {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-
-	/* Pity runs 0–89: two figures held, so the chips after it never shift. */
-	.wi-chip-val--num {
-		min-width: 2ch;
-		justify-content: flex-end;
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* A chip's popover (BandMenu, portalled): as SettingLine's, 22rem, about
-	   the old rail's width, so a slider inside keeps its track. */
-	.wi-chip-pop {
-		display: grid;
-		gap: var(--inst-gap-control);
-		width: min(22rem, calc(100vw - 2rem));
-		padding: 0.6rem;
-	}
-
-	/* ── The chart head ──
-	   The Readout head's type (app.css .readout-head), on the chart's ground.
-	   Its sentence stays one line where there is room and wraps on a phone. */
-	.wi-head {
-		color: var(--text);
-	}
-
-	/* The fine print, under the handle: what no part of the chart can show. */
-	.wi-fine-print {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: var(--lh-snug);
-		color: var(--chart-ink);
-	}
-
-	/* ── The handle ──
-	   The track spans the plot's x range plus half a thumb each side (THUMB_R),
-	   so the thumb's centre is on the marker line at every value. The label
-	   and the typed value sit under the track, the track right under the
-	   axis's numbers. */
-	.wi-handle {
-		padding-inline: var(--wi-handle-l) var(--wi-handle-r);
-		margin-top: calc(-1 * var(--inst-gap-control) + 0.15rem);
-	}
-
-	.wi-handle :global(.slider-control) {
-		grid-template-areas: 'track' 'header';
-	}
-
-	.wi-handle :global(.slider-header) {
-		grid-area: header;
-		justify-content: flex-start;
-	}
-
-	.wi-handle :global(.is-track) {
-		grid-area: track;
-	}
-
-	/* ⚠ Chrome gives a range input 2px side margins, which put the thumb 2px
-	   off the marker line. */
-	.wi-handle :global(.slider) {
-		margin-inline: 0;
-	}
-
 	/* The import's report, at the foot of the Radiance counter's popover */
 	.wi-report {
 		display: grid;
@@ -1474,7 +1239,7 @@
 	}
 
 	/* A popover's contents (BandMenu, portalled: the band menu's own surface),
-	   inside .wi-chip-pop, which pads it and sets its width. */
+	   inside .setup-pop, which pads it and sets its width. */
 	.wi-pop {
 		display: grid;
 		gap: 0.6rem;
@@ -1515,7 +1280,7 @@
 	}
 
 	/* A file dragged over the character banner's bar: it takes the drop */
-	.wi-bar.is-dropping {
+	.setup-bar.is-dropping {
 		outline: 1px solid var(--accent);
 		outline-offset: 4px;
 	}

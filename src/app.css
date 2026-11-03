@@ -4214,6 +4214,233 @@ img {
 	gap: 1rem;
 }
 
+/* ══ THE STAGE (design §6; Wish odds first, then Artifact odds) ═════════════
+   ONE BOX: the chart head (the headline), the chart's toolbar on its top
+   edge (view tabs, then the setup bar), the chart with its companion, and
+   the handle on its bottom edge. There is no answer card: what it held is
+   drawn on the chart or sits in the popover of the setting it explains.
+   - Narrow: natural height; the tile scrolls.
+   - From 1024px: the tile's height, capped at 🎛️ --stage-aspect × the
+     tile's height and centred, so an ultrawide doesn't stretch every slope
+     flat (the rail's --instrument-main-aspect rule, with no side column
+     now, so set where a 16:10 one up is still uncapped).
+   The stage replaces the rail one instrument at a time (§ THE RAIL above). */
+:root {
+	/* 🎛️ The widest the stage gets, as a multiple of the tile's height. */
+	--stage-aspect: 1.9;
+	/* 🎛️ The headline from a 60rem tile, × the Readout head's 32px. */
+	--stage-head-scale: 1.5;
+	/* 🎛️ The headline's room below it, before the toolbar: it stands apart as
+	   the answer, where the toolbar belongs to the chart. */
+	--stage-head-gap: 0.5rem;
+	/* 🎛️ The toolbar's gap above the chart's SVG, whose own top margin holds
+	   the y axis's name. */
+	--stage-toolbar-gap: 0.25rem;
+}
+
+.stage-root {
+	min-height: 100%;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.stage {
+	display: flex;
+	flex-direction: column;
+	gap: var(--inst-gap-control);
+	min-width: 0;
+}
+
+/* ⚠ `cqh` only where the tile is a SIZE container: from 1024px (§ THE RAIL;
+   breakpoints.ts `visualizers`). */
+@media (min-width: 1024px) {
+	.stage-root {
+		grid-template-columns: minmax(0, calc(100cqh * var(--stage-aspect)));
+		justify-content: center;
+	}
+	.stage {
+		height: 100cqh;
+		min-height: max-content;
+	}
+}
+
+/* ── The chart head: ONE LEFT EDGE ──
+   The picker above, the headline, the toolbar and the chart all start on the
+   stage's left edge. Nothing is centred: a centred bar between edge-aligned
+   neighbours read as loose (Nate 2026-11-02). The Readout head's type
+   (.readout-head), on the chart's ground. */
+.stage-head {
+	margin-bottom: var(--stage-head-gap);
+	color: var(--text);
+}
+
+/* THE HEADLINE ON ONE LINE where the tile has room: the figure and its
+   sentence share a baseline, each at its own size. From 38rem, where Wish
+   odds' longest ("0.0263% chance of C2R1 within 1,000 pulls", about 505px)
+   fits; below it, the figure over its sentence. By the tile's width, never
+   by fit: the headline's length changes as you drag. */
+@container instrument (min-width: 38rem) {
+	.stage-head {
+		display: flex;
+		align-items: baseline;
+		column-gap: 0.6rem;
+		white-space: nowrap;
+	}
+	.stage-head .readout-sentence {
+		margin-top: 0;
+	}
+}
+
+/* THE ANSWER AS THE FOCUS (Nate 2026-11-02: it must not read as an
+   afterthought). Where the chart runs the tile's width, the Readout head's
+   32px is small beside it: --stage-head-scale of it, and the sentence a step
+   up (--fs-3xl), the difference between them kept. */
+@container instrument (min-width: 60rem) {
+	.stage-head {
+		font-size: calc(var(--fs-5xl) * var(--stage-head-scale));
+		column-gap: 0.8rem;
+	}
+	.stage-head .readout-sentence {
+		font-size: var(--fs-3xl);
+	}
+}
+
+/* ── THE CHART'S TOOLBAR, on the chart's top edge ──
+   The view tabs (a recessed track: one is chosen), then the setup bar (a
+   raised plate: each segment is a value you set): different materials, so
+   they read as two things. Snug to the chart (--stage-toolbar-gap). */
+.stage-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+	margin-bottom: calc(var(--stage-toolbar-gap) - var(--inst-gap-control));
+}
+
+/* View tabs that don't fit a narrow tile wrap rather than scroll. */
+.stage-tabs {
+	flex-wrap: wrap;
+	max-width: 100%;
+}
+
+/* THE SETUP BAR: one glass plate, a setting per segment. The segments are
+   bare buttons on the plate (BandMenu's triggers), which light under the hand
+   and while their popover is open; each one's chevron ends it, so no
+   hairlines (they dangled at the end of a wrapped line on a phone). */
+.setup-bar {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+	max-width: 100%;
+	padding: 2px;
+	border-radius: var(--r-sm);
+	background: var(--glass-panel);
+}
+.setup-bar > .btn {
+	background: transparent;
+	border-radius: var(--r-xs);
+}
+@media (hover: hover) {
+	.setup-bar > .btn:hover:not(:disabled) {
+		background: var(--glass-hover);
+	}
+}
+.setup-bar > .btn.is-active {
+	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
+}
+
+/* A bar's name, where a stage has two (Wish odds' pair). */
+.setup-bar-name {
+	padding-inline: 0.6rem 0.5rem;
+	font-size: var(--fs-md);
+	font-weight: var(--fw-semibold);
+	color: var(--chart-ink);
+}
+
+/* A segment's face: the setting's name, then its value in the ink. */
+.setup-key {
+	color: var(--chart-ink);
+}
+.setup-val {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-weight: var(--fw-semibold);
+	color: var(--text);
+}
+/* A number that changes: its figures held, so the segments after it never
+   shift. */
+.setup-val--num {
+	min-width: 2ch;
+	justify-content: flex-end;
+	font-variant-numeric: tabular-nums;
+}
+
+/* A segment's popover (BandMenu, portalled): as SettingLine's, 22rem, about
+   the old rail's width, so a slider inside keeps its track. */
+.setup-pop {
+	display: grid;
+	gap: var(--inst-gap-control);
+	width: min(22rem, calc(100vw - 2rem));
+	padding: 0.6rem;
+}
+
+/* ── The chart ── */
+.stage-graph svg {
+	display: block;
+	touch-action: pan-y;
+	user-select: none;
+	-webkit-user-select: none;
+}
+.stage-graph text {
+	font-family: var(--font-body);
+}
+/* A word on the chart wears the site's soft halo (the Gauge's pill digits,
+   the planner's bars), a touch denser, so it stays legible where it crosses
+   a line or a rule. A hard outline (`paint-order: stroke`) was tried and
+   smeared the glyphs. */
+.stage-graph text.stage-word {
+	font-family: var(--font-condensed);
+	text-shadow:
+		color-mix(in srgb, var(--label-halo, #081225) 90%, transparent) 0px 0px 2px,
+		color-mix(in srgb, var(--label-halo, #081225) 70%, transparent) 0px 0px 6px;
+}
+
+/* ── The handle ──
+   The track spans the plot's x range plus half a thumb each side (THUMB_R in
+   the instrument, passed as --stage-handle-l/-r), so the thumb's centre is on
+   the marker line at every value. The label and the typed value sit under
+   the track, the track right under the axis's numbers. */
+.stage-handle {
+	padding-inline: var(--stage-handle-l) var(--stage-handle-r);
+	margin-top: calc(-1 * var(--inst-gap-control) + 0.15rem);
+}
+.stage-handle .slider-control {
+	grid-template-areas: 'track' 'header';
+}
+.stage-handle .slider-header {
+	grid-area: header;
+	justify-content: flex-start;
+}
+.stage-handle .is-track {
+	grid-area: track;
+}
+/* ⚠ Chrome gives a range input 2px side margins, which put the thumb 2px off
+   the marker line. */
+.stage-handle .slider {
+	margin-inline: 0;
+}
+
+/* The fine print, under the handle: what no part of the chart can show. */
+.stage-fine {
+	margin: 0;
+	font-size: var(--fs-md);
+	line-height: var(--lh-snug);
+	color: var(--chart-ink);
+}
+
 /* ↻ 2026-08-12 (motion round): the nine-selector `transition: none` list that
    used to lead this block is GONE — every one of those rules spends --t-quick,
    and the band is zeroed at :root under the same query. The list is not merely
