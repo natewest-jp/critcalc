@@ -45,8 +45,8 @@
 	 * ⚓ 2026-08-13: DOUBLE the tool gutter, and the doubling is the whole point.
 	 * Since the instruments lost their frames there is no ground left to say
 	 * where one ends and the next begins — the gap is the only boundary, and it
-	 * was 20px against a 16px rhythm INSIDE each instrument (`.panels`' column
-	 * gap). Four pixels cannot carry that distinction, so at three-up the three
+	 * was 20px against a 16px rhythm INSIDE each instrument (the spacing
+	 * ladder's `--inst-gap-control`). Four pixels cannot carry that distinction, so at three-up the three
 	 * arguments read as one field of panels.
 	 *
 	 * This is the planner's law one axis over — the gap encodes GROUPING — and

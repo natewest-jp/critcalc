@@ -630,7 +630,7 @@
 			</div>
 
 			<div
-				class="stage-graph instrument-graph icd-graph"
+				class="stage-graph icd-graph"
 				style:--graph-min="{natural}px"
 				style:max-height="{K_MAX * (FIXED + STALK * STALK_GROW)}px"
 				bind:clientWidth={graphW}

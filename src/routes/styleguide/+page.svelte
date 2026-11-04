@@ -71,9 +71,9 @@
 
 	/** Every column-0 `:root {` block of app.css, as one body. Each block ends at
 	 *  its first column-0 `}` (every line inside is tab-indented). ↻ 2026-10-27:
-	 *  there are four (the interface size and profile tokens, the scroll fade's
-	 *  scale and the instrument layout's knobs each open their own), and
-	 *  reading only the first hid the rest from every group below. The
+	 *  there are several (the interface size and profile tokens, the scroll
+	 *  fade's scale, the spacing ladder and the stage's knobs each open their
+	 *  own), and reading only the first hid the rest from every group below. The
 	 *  `:root` blocks nested in `@media` are tab-indented and so not matched:
 	 *  they re-set values at other widths, and a swatch shows the default. A
 	 *  later declaration wins, as it does in the cascade. */
@@ -169,7 +169,16 @@
 	const teamHues = pre('--team-hue-');
 	const insetLines = exact('--inset-line', '--inset-line-quiet', '--inset-line-mid');
 	const landing = exact('--hero-lit', '--hero-rule', '--veil-ground-top', '--veil-ground-bottom');
-	const layoutKnobs = exact('--scroll-fade-scale', '--instrument-side', '--instrument-slider-max');
+	const layoutKnobs = exact(
+		'--scroll-fade-scale',
+		'--stage-aspect',
+		'--stage-head-scale',
+		'--stage-head-gap',
+		'--stage-toolbar-gap',
+		'--inst-gap-in',
+		'--inst-gap-control',
+		'--inst-gap-section'
+	);
 	/* Deliberately also shown under the glass family (`pre('--glass-')` claims
 	   it). The register section needs to display its own stop, and a token that
 	   is BOTH a material and a content role earns two appearances. */
@@ -1330,8 +1339,9 @@
 		<p class="sg-note">
 			🎛️ Values, not roles, each documented where it is used: <code>--scroll-fade-scale</code>
 			multiplies every <code>.scroll-fade</code>'s length (app.css § THE SCROLL FADE; see
-			<a href="#layout">Layout</a>), and the three <code>--instrument-*</code> knobs size the Visualizers'
-			instrument grid (app.css § THE INSTRUMENT LAYOUT).
+			<a href="#layout">Layout</a>); the four <code>--stage-*</code> knobs size the Visualizers'
+			stage (app.css § THE STAGE); and the three <code>--inst-gap-*</code> rungs are the instruments'
+			spacing ladder, each double the one inside it (app.css § THE SPACING LADDER).
 		</p>
 		<div class="sg-swatches">
 			{#each layoutKnobs as t (t.name)}{@render swatch(t)}{/each}
@@ -1785,14 +1795,14 @@
 					<div class="panel panel--paper">
 						<h3 class="kicker">Readout</h3>
 						<p class="note">
-							One card per instrument, and the material is the whole signal — same box as the glass
-							panel beside it, one context up.
+							One card per surface at most, and the material is the whole signal — same box as the
+							glass panel beside it, one context up.
 						</p>
 					</div>
 				</div>
 				{@render spec(
 					'.panel.panel--paper',
-					'THE ANSWER. --surface in .ctx-light = parchment-100, the CARD rung (not -50: the size axis on paper says a card standing on the world is the darker one). ⚠️ ONE per instrument — paper is the brightest material on a dark world, so a second card does not read as a second answer, it reads as the first one failing to be one'
+					'THE ANSWER. --surface in .ctx-light = parchment-100, the CARD rung (not -50: the size axis on paper says a card standing on the world is the darker one). ⚠️ ONE per surface at most — paper is the brightest material on a dark world, so a second card does not read as a second answer, it reads as the first one failing to be one'
 				)}
 			</div>
 		</div>
@@ -2456,9 +2466,9 @@
 				argument is at its rule.
 			</li>
 			<li>
-				<code>.instrument</code> and <code>.instrument-chart</code> / <code>-controls</code> /
-				<code>-readout</code> / <code>-graph</code>: the Visualizers' three slots (app.css § THE
-				INSTRUMENT LAYOUT; <a href="#laws">Laws · Structure</a>).
+				<code>.stage</code> and its parts (<code>.stage-head</code>, <code>.stage-graph</code>, the
+				setup bar): the one box every Visualizers instrument is (app.css § THE STAGE;
+				<a href="#laws">Laws · Structure</a>).
 				<code>.slider-control</code> / <code>-header</code> / <code>-label</code>,
 				<code>.slider</code>
 				and <code>.readout</code> are an instrument's slider row, its knob flat on
@@ -2991,10 +3001,9 @@
 						instrument mounts once and hides with <code>display: none</code> when unslotted, so its
 						state survives swaps; the lineup size is viewport capacity capped by the reader's
 						preference. The <em>tile</em> owns <code>container-name: instrument</code> — instruments
-						size to the slot they're in, never to the viewport — and every instrument but the Crit
-						Heatmap is the same three slots (chart, controls, Readout) laid out by
-						<code>.instrument</code>: the Readout last in one column, beside the controls under a
-						full-width chart from 38rem, a full-height column from 60rem. ⚓ 2026-08-13:
+						size to the slot they're in, never to the viewport — and every instrument is one box,
+						<code>.stage</code>: the headline at the chart head, the toolbar on the chart's top
+						edge, the handle on its bottom edge, and no answer card. ⚓ 2026-08-13:
 						<strong>band B is cut by the tile gap</strong>
 						here and paints nothing, so each instrument's picker and actions are their own run of glass
 						plates; and the gap
@@ -3002,16 +3011,16 @@
 						with the frames gone it is the only thing left saying where one argument ends.
 					</li>
 					<li>
-						⚓ <strong>NIGHT LOOKS · GLASS TOUCHES · PAPER ANSWERS.</strong> The three materials an
-						instrument is made of, and the rule that assigns them. The
+						⚓ <strong>NIGHT LOOKS · GLASS TOUCHES · PAPER ANSWERS.</strong> The three materials a
+						tool's surfaces are made of, and the rule that assigns them. The
 						<strong>chart</strong> draws on the night with no ground. The
 						<strong>apparatus</strong> — sliders, chips, toggles — is <code>.panel</code>, which is
 						<code>.ctx-glass</code>, the same material as the bands above it. The
-						<strong>answer</strong> is <code>.panel--paper</code>, and there is
-						<strong>exactly one per instrument</strong>: paper is the brightest material on a dark
-						world, so a second card does not read as a second answer, it reads as the first one
-						failing to be one. Controls inside a glass panel keep <code>--btn-face</code> and never stack
-						alpha.
+						<strong>answer</strong> is <code>.panel--paper</code>, and a surface has
+						<strong>one at most</strong>: paper is the brightest material on a dark world, so a
+						second card does not read as a second answer, it reads as the first one failing to be
+						one. The Visualizers' stage has none: its answer is the headline and the chart's marks.
+						Controls inside a glass panel keep <code>--btn-face</code> and never stack alpha.
 					</li>
 					<li>
 						Control glyphs are <strong>geometry</strong>, never a unicode character and never

@@ -5,7 +5,7 @@ paths:
 
 # Visualizers
 
-Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-2026-10-06.md`, `docs/rounds/instrument-passes-2026-10-01.md`, and the per-instrument passes in `docs/rounds/`. The gauge model is in `.claude/rules/gauge.md`.
+Budget: about 5,000 characters. Records: the stage rounds listed in the design's §11, and the per-instrument passes in `docs/rounds/`. The gauge model is in `.claude/rules/gauge.md`.
 
 ## The workspace
 
@@ -24,24 +24,19 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 
 ## The stage
 
-- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds, Artifact odds, Reaction curves, Enemy RES & DEF, Damage breakdown, the Crit heatmap, the ICD timeline and the Gauge explorer wear it, so the rail has no users left. It is one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE.
+- Every instrument wears the stage (design §6): one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE; what one instrument adds stays in its own file.
 - A typeable card field (`StatField.svelte`) only ever sets an option from its list: typing is a search (`statEntry.ts`, tested).
 - An axis handle is an `InstrumentSlider` whose track runs the plot's x range plus `THUMB_R` each side, so the thumb sits on the marker line. ⚠️ Zero the range input's margin, or Chrome's 2px puts it off the line.
 - A y-axis handle is the same slider with `vertical` (the Crit heatmap's CRIT Rate), its track placed by the instrument over the y range plus `THUMB_R` each end.
 
-## The rail
-
-- An instrument has four slots (`app.css` § THE RAIL): chart, live, settings, Readout. The Readout is last at every width, because it is the slot whose height follows the values. A control's dependents sit below it, so where settings decide what the live panel offers, use `.instrument--settings-first`.
-- The chart's height is the tile's (sticky at the wide tier), never what the controls leave.
-
 ## The kit
 
 - Every instrument slider is `kit/InstrumentSlider.svelte`, so its value is typeable; the level slider is `kit/level.ts`; a set-once setting folds into `kit/SettingLine.svelte`. A typed value lands at the field's own precision, so pass `decimals` when a slider should take finer values than its step implies.
-- Control labels are sentence case; the kicker is the one caps voice. Sections and controls sit on the spacing ladder (`--inst-gap-*`, `.inst-section`), and a Readout leads with `.readout-head` (design: `docs/design/visualizers-design.md` §5).
+- Control labels are sentence case; the kicker is the one caps voice. Controls sit on the spacing ladder (`--inst-gap-*`, `app.css` § THE SPACING LADDER), and the headline is set in `.readout-head` (design: `docs/design/visualizers-design.md` §5).
 
 ## Materials
 
-- Night looks, glass touches, paper answers (`.claude/rules/ui.md`): each instrument on the rail has exactly one `.panel--paper` readout card; on the stage there is none.
+- Night looks, glass touches, paper answers (`.claude/rules/ui.md`), but an instrument has no paper card: its answer is the headline and the marks on the chart.
 
 ## The Gauge Explorer
 

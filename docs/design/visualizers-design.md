@@ -75,8 +75,9 @@ then control to control, then section to section. Exact values live as named pro
 ## 6. The stage
 
 Of three concepts (a setup line over a stage with the answer beside it; a stage over a
-fixed-height dock; the rail made into a proper inspector), Nate chose the first. It replaces
-the rail (§6a) one instrument at a time. Its first build (Wish odds) showed two new problems,
+fixed-height dock; the rail made into a proper inspector), Nate chose the first, and every
+instrument now wears it. It replaced the rail (a right column of live controls, settings and a
+paper Readout beside the chart, `docs/rounds/viz-rail-2026-11-02.md`). Its first build (Wish odds) showed two new problems,
 and the stage is now **one box** (⚓ Nate: "if we can simplify down to one box, this solves so
 many layout issues"):
 
@@ -132,7 +133,7 @@ fine print
   chart's labels. Beside the stage it sat diagonally from the chart, and mostly repeated it.
   What no part of the chart can show is one line of **fine print** under the handle; where an
   instrument has a long working (a formula, caveats), the fine print opens it on paper.
-  ⚓ Nate: the materials rule in `ui.md` follows, so a readout card on paper is the rail's alone.
+  ⚓ Nate: the materials rule in `ui.md` follows, so an instrument has no paper card.
 - **The layout.** One column at every width. From 1024px the stage is the tile's height,
   capped at 🎛️ `--stage-aspect` (2.4) × the tile's height and centred, so an ultrawide
   doesn't flatten every slope. The stage's CSS is `app.css` § THE STAGE, shared by every
@@ -163,13 +164,6 @@ more of the controls into them, without losing the chart's look.
    streamer's first finding was that it was hard to see how the tools are controlled.
 5. **Every handle has a twin:** a typeable field and a keyboard path (an ARIA slider on the
    handle), for precision, screen readers and touch.
-
-### 6a. The rail (the form being replaced)
-
-Until an instrument moves to the stage, it keeps the rail: the chart on the left at the
-tile's height, and a right column of live controls, settings, then the Readout, last because
-its height follows the values. The Damage breakdown keeps its controls under its waterfall. The
-CSS is `app.css` § THE RAIL.
 
 ## 7. Chart families
 

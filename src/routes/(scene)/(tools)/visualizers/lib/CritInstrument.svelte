@@ -302,7 +302,7 @@
 
 			<div class="cv-graph-wrap">
 				<div
-					class="stage-graph instrument-graph cv-graph"
+					class="stage-graph cv-graph"
 					style:--cv-natural-min="{naturalMin}px"
 					style:--cv-fill-min="{TOP + BOTTOM + PLOT_MIN}px"
 					bind:clientWidth={graphW}

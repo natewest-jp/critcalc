@@ -1841,7 +1841,7 @@
 
 		<div class="ao-chart-col">
 			<div
-				class="stage-graph instrument-graph"
+				class="stage-graph"
 				style:--graph-min="{PLOT_MIN + CHROME_H}px"
 				bind:clientWidth={graphW}
 				bind:clientHeight={graphH}
@@ -2278,7 +2278,7 @@
 		min-width: 0;
 	}
 
-	/* A capped svg (and .instrument-graph's min-width 0): otherwise the svg's
+	/* A capped svg (and .stage-graph's min-width 0): otherwise the svg's
 	   own width props the box open, the measured width never shrinks, and a
 	   narrower tile clips the chart's right end */
 	.ao-chart-col :global(svg) {
