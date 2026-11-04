@@ -157,9 +157,11 @@
 			note: 'Cryo on Pyro is the weak direction: the trigger removes only **half** its own gauge, so each 1U hit chips 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the **damage** multiplier — a different number from what the reaction costs the aura.)',
 			apps: [
 				[0, 'pyro', 2],
+				// ⚓ Two hits (Nate 2026-11-04): two chips leave about 0.07U, so a
+				// third (it was at 6s) landed on a bare target and started a Cryo
+				// aura of its own, against the note.
 				[2, 'cryo', 1],
-				[4, 'cryo', 1],
-				[6, 'cryo', 1]
+				[4, 'cryo', 1]
 			]
 		},
 		{
