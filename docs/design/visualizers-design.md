@@ -230,7 +230,8 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   element would gain little; the overlay also matches the Planner's aura lane. The aura log's
   reactions become marks on the timeline: what a reaction took off, beside its drop, and what an
   application did to its own aura, over its pill. ⚓ Nate: the headline is the aura at the moment
-  pointed at or pinned (at rest, when the target goes bare), and the scenarios are chips under
+  pointed at or pinned (at rest, when the target goes bare), the strongest as the figure and any
+  others in the sentence, and the scenarios are chips under
   the chart, never in a popover.
 - **Crit heatmap** (built: `docs/rounds/viz-stage-crit-2026-11-03.md`): the field fills the
   stage at any aspect (its axes are normalised separately), with a handle on each axis, CRIT

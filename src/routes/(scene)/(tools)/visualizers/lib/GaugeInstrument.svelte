@@ -900,11 +900,7 @@
      the reactions), with the chosen one's note last. -->
 {#snippet headLine(h: { figure: string; sentence: string }, ghost: boolean)}
 	<p class="readout-head stage-head gx-head" class:gx-head--ghost={ghost} inert={ghost}>
-		<span class="gx-head-figure"
-			>{#each h.figure.split(' · ') as part, i (i)}{i ? ' · ' : ''}<span class="gx-aura"
-					>{part}</span
-				>{/each}</span
-		><span class="readout-sentence gx-head-sentence"
+		<span class="gx-head-figure">{h.figure}</span><span class="readout-sentence gx-head-sentence"
 			>{h.sentence}
 			{#if ghost || pinT !== null}
 				<button
@@ -1514,10 +1510,11 @@
 	   scrub. */
 	.gx-head-figure {
 		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
 	}
-	/* ⚠ The head wraps here, between the auras, where app.css keeps a stage
-	   headline on one line: three auras outrun a two-up tile. Each aura holds
-	   together. */
+	/* ⚠ The head wraps here, where app.css keeps a stage headline on one line:
+	   a burn's sentence names two more auras and outruns a two-up tile. The
+	   figure holds together (above). */
 	.gx-head-cell {
 		display: grid;
 	}
@@ -1525,9 +1522,6 @@
 		grid-area: 1 / 1;
 		flex-wrap: wrap;
 		white-space: normal;
-	}
-	.gx-aura {
-		white-space: nowrap;
 	}
 	.gx-head--ghost {
 		visibility: hidden;

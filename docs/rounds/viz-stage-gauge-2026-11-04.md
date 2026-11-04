@@ -1,7 +1,7 @@
 # The stage, round 8: Gauge explorer (2026-11-04)
 
-**Status:** built on `feat/viz-stage-gauge`, not merged. Waiting on Nate's look in the local
-build. Copy is written in as a proposal (§5); Help is proposed and not yet in (§6). Real Safari is
+**Status:** built on `feat/viz-stage-gauge`, not merged. Nate: "an easy win", the copy approved
+(§5). One pass after the first build (§8). Help is proposed and not yet in (§6). Real Safari is
 Nate's to check. This is the last instrument on the rail, so every Visualizer now uses the stage.
 
 ## 1. The rulings
@@ -25,6 +25,7 @@ The rail (the toolbar panel over the chart, the Example scenarios panel, the pap
 its aura log) is now one stage box:
 
 - **The chart head:** the headline, with Unpin beside its sentence while a moment is pinned.
+  (§8: with more than one aura, the strongest is the figure and the rest ride in the sentence.)
 - **The toolbar on the chart's top edge:** the add buttons on a glass plate ("+ Add" and the
   seven elements), and Clear at the far end. A plate, not a segment: a segment's recessed track
   means "one of these is chosen", and these are actions.
@@ -65,8 +66,8 @@ Top-up with its editor open, Burning; no sideways scroll, no page errors.
 ## 3. For Nate's eye
 
 1. "No aura" at rest, in the largest type on the screen.
-2. On a phone, the room kept for Burning's three-aura reading leaves a gap under "No aura"
-   (about 100px).
+2. On a phone, the room kept for a burn's reading leaves a gap under "No aura" (one sentence
+   line since §8; about 100px before).
 3. Unpin beside the sentence.
 4. The add plate at the left and Clear at the far end.
 5. The hint line under the aura strips, with the reserved strip rows' night above it.
@@ -91,7 +92,7 @@ earlier doesn't really fix it, because two chips leave only about 0.07U. So the 
 
 Gates: Vitest 2794, svelte-check, lint, build; Chrome e2e 72 passed.
 
-## 5. Copy (written in, proposed)
+## 5. Copy (written in, approved by Nate)
 
 1. The headline: "{u}U {aura}" joined by " · " / "at {t}s"; at rest "No aura" / "from {t}s";
    with no aura ever, "No aura" / "on the target". Units at two places so the figure keeps its
@@ -124,3 +125,26 @@ next element applies fresh.", "Aura log" and every log line, "Nothing lands on t
 The rail's CSS (`app.css` § THE INSTRUMENT LAYOUT and § THE RAIL, the `--instrument-*` knobs on
 `/styleguide`, `ui.md`'s paper rule and the rail sections of `visualizers.md` and the design's
 §6a) has no users left. Retiring it is a tidy round of its own.
+
+## 8. The second pass: strongest leads
+
+Nate: everything fine but the headline, heavy through a burn ("0.78U Pyro · 2.00U Burning ·
+0.23U Dendro" in the largest type). Claude's reading: every other instrument leads with one
+figure, and this one ran up to three; the room the headline keeps for its longest reading was
+the phone's gap too. Offered: the strongest aura as the figure, the others in the sentence;
+the names in the headline with the units at the reading's dots (a single aura loses its big
+number); one aura per line at the sentence's size (a small table, three lines tall); keeping it.
+
+⚓ Nate picked **strongest leads**: "2.00U Burning" / "with 0.78U Pyro · 0.23U Dendro at 3.4s".
+Ties keep the display order; a single aura and the rest state are unchanged. The leader can
+change mid-scrub where two auras cross (Electro-Charged's Hydro and Electro), which is the rule
+working. `widestHead` now takes the longest figure and the longest sentence apart, an upper
+bound. On a phone the chart starts about 80px higher than in the first build (213 against ~290
+at 390px). Measured: no movement while pinning through a burn at 2000, 1400 and 390px.
+
+Copy (proposed, in the build): "with {u}U {aura} · {u}U {aura} at {t}s" as the sentence when
+more than one aura is on the target.
+
+Also: **Reverse Melt keeps two Cryo hits** (⚓ Nate), the third removed (§3's finding).
+
+Gates: Vitest 2796, svelte-check, lint, build; Chrome e2e 72 passed.

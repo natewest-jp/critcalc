@@ -34,8 +34,16 @@ export type GaugeHead = { figure: string; sentence: string };
 const fmtU = (u: number) => `${u.toFixed(2)}U`;
 const fmtT = (t: number) => `${t.toFixed(1)}s`;
 
-/** The headline: what is on the target at `t`, or with no moment, when it
- *  goes bare. */
+const auraText = (a: { mod: AuraKey; u: number }) => `${fmtU(a.u)} ${AURA_MOD_META[a.mod].label}`;
+
+/**
+ * The headline: what is on the target at `t`, or with no moment, when it
+ * goes bare. ⚓ STRONGEST LEADS (Nate 2026-11-04): one figure, as on every
+ * other instrument, the aura with the most gauge; any others ride in the
+ * sentence ("2.00U Burning" / "with 0.78U Pyro · 0.23U Dendro at 3.4s").
+ * ↻ Was every aura in the figure, which ran three figures at the largest
+ * size through a burn. Ties keep the display order.
+ */
 export function gaugeHead(series: SeriesInterval[], t: number | null): GaugeHead {
 	if (t === null) {
 		const end = bareFrom(series);
@@ -43,12 +51,11 @@ export function gaugeHead(series: SeriesInterval[], t: number | null): GaugeHead
 			? { figure: 'No aura', sentence: 'on the target' }
 			: { figure: 'No aura', sentence: `from ${fmtT(end)}` };
 	}
-	const auras = aurasAt(series, t);
+	const [lead, ...rest] = aurasAt(series, t).sort((a, b) => b.u - a.u);
+	if (!lead) return { figure: 'No aura', sentence: `at ${fmtT(t)}` };
 	return {
-		figure: auras.length
-			? auras.map((a) => `${fmtU(a.u)} ${AURA_MOD_META[a.mod].label}`).join(' · ')
-			: 'No aura',
-		sentence: `at ${fmtT(t)}`
+		figure: auraText(lead),
+		sentence: rest.length ? `with ${rest.map(auraText).join(' · ')} at ${fmtT(t)}` : `at ${fmtT(t)}`
 	};
 }
 
@@ -58,17 +65,23 @@ const SAMPLE_S = 0.05;
 /**
  * The longest headline this sequence can show, for the room the headline
  * keeps (design §4: it has a fixed height, so nothing under it moves). A
- * pinned Burning moment names three auras and wraps on a phone where "No
- * aura" doesn't. Units are fixed-width, so the longest figure is the one
- * naming the most, and the longest sentence is the latest time's.
+ * pinned Burning moment runs a long sentence and wraps on a phone where "No
+ * aura" doesn't. The longest figure and the longest sentence are taken
+ * apart, which can only overstate the room. Units are fixed-width, so a
+ * longer string is a wider one, near enough.
  */
 export function widestHead(series: SeriesInterval[], duration: number): GaugeHead {
 	let figure = 'No aura';
+	let sentence = '';
+	const last = Math.max(duration, 10);
 	for (let t = 0; t <= duration; t += SAMPLE_S) {
-		const f = gaugeHead(series, t).figure;
-		if (f.length > figure.length) figure = f;
+		// Read at the latest time, so the sentence's time is its widest.
+		const h = gaugeHead(series, t);
+		const s = h.sentence.replace(/at [\d.]+s$/, `at ${fmtT(last)}`);
+		if (h.figure.length > figure.length) figure = h.figure;
+		if (s.length > sentence.length) sentence = s;
 	}
-	return { figure, sentence: `at ${fmtT(Math.max(duration, 10))}` };
+	return { figure, sentence: sentence || `at ${fmtT(last)}` };
 }
 
 /** What a reaction took off each aura, for a label beside the curve's drop:

@@ -44,7 +44,28 @@ describe('the headline at a moment', () => {
 		]);
 		const auras = aurasAt(series, 1.2).map((a) => a.mod);
 		expect(auras).toEqual(['hydro', 'electro']);
-		expect(gaugeHead(series, 1.2).figure).toMatch(/^\d\.\d\dU Hydro · \d\.\d\dU Electro$/);
+	});
+
+	it('leads with the strongest aura, the rest in the sentence', () => {
+		// 2U Hydro (1.6U taxed) under 1U Electro (0.8U): Hydro leads.
+		const { series } = run([
+			[0, 'hydro', 2],
+			[1, 'electro', 1]
+		]);
+		const head = gaugeHead(series, 1.2);
+		expect(head.figure).toMatch(/^\d\.\d\dU Hydro$/);
+		expect(head.sentence).toMatch(/^with \d\.\d\dU Electro at 1\.2s$/);
+	});
+
+	it('leads with Burning’s fixed 2U through a burn', () => {
+		const { series } = run([
+			[0, 'dendro', 1],
+			[1, 'pyro', 1],
+			[2, 'dendro', 1]
+		]);
+		const head = gaugeHead(series, 3.4);
+		expect(head.figure).toBe('2.00U Burning');
+		expect(head.sentence).toMatch(/^with .*Pyro.* · .*Dendro at 3\.4s$/);
 	});
 
 	it('leaves Burning’s fuel out: it is bookkeeping, not an aura', () => {
@@ -64,16 +85,19 @@ describe('the headline at a moment', () => {
 });
 
 describe('the room the headline keeps', () => {
-	it('is the reading that names the most auras', () => {
+	it('is never shorter than any reading, figure or sentence', () => {
 		const sim = run([
 			[0, 'dendro', 1],
 			[1, 'pyro', 1],
 			[2, 'dendro', 1]
 		]);
-		const widest = widestHead(sim.series, sim.duration).figure;
-		for (let t = 0; t <= sim.duration; t += 0.25)
-			expect(gaugeHead(sim.series, t).figure.length).toBeLessThanOrEqual(widest.length);
-		expect(widest.split(' · ').length).toBeGreaterThanOrEqual(2);
+		const widest = widestHead(sim.series, sim.duration);
+		for (let t = 0; t <= sim.duration; t += 0.25) {
+			const h = gaugeHead(sim.series, t);
+			expect(h.figure.length).toBeLessThanOrEqual(widest.figure.length);
+			expect(h.sentence.length).toBeLessThanOrEqual(widest.sentence.length);
+		}
+		expect(widest.sentence).toContain(' · ');
 	});
 
 	it('is "No aura" where no aura forms', () => {
