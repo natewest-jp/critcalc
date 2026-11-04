@@ -474,10 +474,9 @@
 	 * the box. 3 covers every scenario but Burning (4) and most sequences a
 	 * reader builds; past it, a row comes out of the plot again. Each reserved
 	 * row is 18px of plot given up for good, which is why it is not 4.
-	 * The scenario NOTE needs no reserve: it sits in the settings slot, and the
-	 * chart's height is the tile's, never what the controls leave (app.css §
-	 * THE RAIL). ⛔ Reserving it was tried when it did reach the chart: the
-	 * longest note took ~90px from a two-up chart for good.
+	 * The scenario NOTE needs no reserve here: its cell under the chart
+	 * always holds the longest note (`.gx-notes`), so a change of note never
+	 * changes the plot's height.
 	 * ⚠ The box's FLOOR (`--graph-min`) keeps the real count, so a box with no
 	 * spare height (a phone) gains no empty rows.
 	 */
@@ -965,7 +964,7 @@
 			</button>
 		</div>
 		<div
-			class="stage-graph instrument-graph gx-graph"
+			class="stage-graph gx-graph"
 			style:--graph-min="{PLOT_MIN + chromeH}px"
 			bind:clientWidth={graphW}
 			bind:clientHeight={graphH}

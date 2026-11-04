@@ -1167,7 +1167,7 @@
 			<!-- UPRIGHT (design §8): a column per bracket, up is more damage.
 			     Drag a column with a grip to change its stat. -->
 			<div
-				class="stage-graph instrument-graph bd-graph"
+				class="stage-graph bd-graph"
 				style:--graph-min="{PLOT_MIN + TOP + 6 + footH}px"
 				bind:clientWidth={graphW}
 				bind:clientHeight={graphH}

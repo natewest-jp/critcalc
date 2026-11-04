@@ -876,7 +876,7 @@
 		</div>
 
 		<div
-			class="stage-graph instrument-graph"
+			class="stage-graph"
 			style:--graph-min="{minH}px"
 			bind:clientWidth={graphW}
 			bind:clientHeight={graphH}
