@@ -1,7 +1,8 @@
 # The stage: the pre-push layout sweep (2026-11-04)
 
-**Status:** on `polish/viz-stage-sweep`, not merged. Nate checked fixes 2 and 3 on his phone
-("looking good"). The What's new entry (§6) is landed in his wording, waiting for his look.
+**Status:** ✅ merged into `main` and pushed on 2026-11-04, with the whole Visualizers overhaul.
+Nate checked fixes 2 and 3 on his phone ("looking good"), and approved the What's new entry
+(§6) and the link's e2e case.
 
 ## 1. Why
 
@@ -52,8 +53,9 @@ overflow or clipping at any of the viewports, or two or three up.
 ## 6. What's new, and a link that rolls a reshape
 
 The entry, "A new layout for the visualizers" (November 4), is Nate's wording: the shared
-layout, remembered settings, and Try a reshape, with two typos fixed ("remembers",
-"simulates"). Two drafted paragraphs were dropped at his call (side by side from Layout, and
+layout, remembered settings, and Try a reshape. Two typos were fixed ("remembers",
+"simulates"), and he accepted "last-used". Seeing it on the page, he revised the opening to
+"Visualizers has a new layout. All of the heavy panels have been slimmed to …". Two drafted paragraphs were dropped at his call (side by side from Layout, and
 ICD's new strip).
 
 Nate asked whether "Give it a try!" could open Reshape and start a roll. A share link couldn't,
@@ -64,6 +66,7 @@ Artifact odds' `act('reshape')` opens Reshape and rolls, on the reader's own pie
 that can't be reshaped yet shows Reshape's own prompt. Driven on the production build: a cold
 load of the link, a click from `/changelog`, a reader whose saved view was Drop, and a phone
 tap all land on Reshape with the roll playing, the address bar clean, and no page errors.
-⏭ Proposed, not added: a case for it in `e2e/viz-workspace.spec.ts`.
+Its e2e case, approved by Nate: `e2e/viz-workspace.spec.ts` › deep links clicks the link on
+`/changelog` and expects Reshape, a roll, and a clean address bar.
 
-Gates after it: Vitest 2796, svelte-check, lint and build clean; e2e both engines 144 passed.
+Gates: Vitest 2796, svelte-check, lint and build clean; e2e both engines 146 passed.

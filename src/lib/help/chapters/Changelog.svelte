@@ -41,12 +41,12 @@
 				<time class="entry-date" datetime="2026-11-04">November 4</time>
 			</header>
 			<p>
-				All visualizers have a new layout. All of the controls have been moved to slim control bars,
+				Visualizers has a new layout. All of the heavy panels have been slimmed to control bars,
 				buttons, and interactions directly on the graphs. The headline (the large text) now appears
 				for all visualizers and carries more useful information.
 			</p>
 			<p>
-				Each one also now remembers your last used settings, so you’ll find things the way you left
+				Each one also now remembers your last-used settings, so you’ll find things the way you left
 				them.
 			</p>
 			<p>
