@@ -37,6 +37,25 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
+				<h3>A new layout for the visualizers</h3>
+				<time class="entry-date" datetime="2026-11-04">November 4</time>
+			</header>
+			<p>
+				Visualizers has a new layout. All of the heavy panels have been slimmed to control bars,
+				buttons, and interactions directly on the graphs. The headline (the large text) now appears
+				for all visualizers and carries more useful information.
+			</p>
+			<p>
+				Each one also now remembers your last-used settings, so you’ll find things the way you left
+				them.
+			</p>
+			<p>
+				Artifact odds has a new Try a reshape button that simulates the game’s Reshape animation.
+				<a href="{resolve('/visualizers')}?i=artifact&do=reshape">Give it a try!</a>
+			</p>
+		</article>
+		<article class="entry">
+			<header class="entry-head">
 				<h3>Capturing Radiance in Wish Odds</h3>
 				<time class="entry-date" datetime="2026-11-02">November 2</time>
 			</header>

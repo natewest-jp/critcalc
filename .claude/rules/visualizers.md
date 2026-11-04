@@ -13,6 +13,7 @@ Budget: about 5,000 characters. Records: the stage rounds listed in the design's
 - One instrument at a time by default (`DEFAULT_SLOTS`), because an instrument is worked in, not glanced at. Layout offers up to three side by side (`MAX_SLOTS`), capped by what fits: two from 1360px, three from 2200px. Design one up; side by side only has to work.
 - `/crit-visualizer` redirects here (`static/_redirects`).
 - The toolbar is cut by the tile gap, one segment per tile, with plates for controls. The instrument is a picker at every width, its view tabs under it in the stage. Each tile's bar carries Defaults (dimmed at defaults, Undo in its toast), Copy link, and a ⋯ with How it works and Report a problem; the Layout plate sits on the last tile. The Visualizers have no inspector.
+- A link may carry `?do=` beside `?i=`: a one-shot action the instrument's `act` runs once the profile's saved state is on it, so it acts on the reader's own state (What's new opens Artifact odds with `do=reshape`).
 - An instrument's defaults are its share state as it mounts (`register` in `+page.svelte`), so anything applied to an instrument (a link, a saved state) must arrive after its handle binds.
 - Each instrument's state is kept in the active profile (`ProfileRecord.instruments`, written by `storageSession.saveInstrument`), as its share state. So the share state is the instrument's whole remembered state: what it leaves out is forgotten on a reload, and a share-state version bump must still read the older versions profiles hold.
 

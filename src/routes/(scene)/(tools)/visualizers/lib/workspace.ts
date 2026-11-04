@@ -177,6 +177,9 @@ export type InstrumentHandle = {
 	receiveHandoff?: (kind: string, payload: unknown) => void;
 	/** Restore the instrument's controls to their first-load defaults. */
 	reset?: () => void;
+	/** Run a link's one-shot action (`?do=`, beside `?i=`) on what the
+	 *  instrument holds; an action it doesn't know is ignored. */
+	act?: (action: string) => void;
 };
 
 // ---------------------------------------------------------------------------

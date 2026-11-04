@@ -1,4 +1,4 @@
-import { test, expect, openTool } from './fixtures/critcalc';
+import { test, expect, openTool, openSection } from './fixtures/critcalc';
 import type { Page } from '@playwright/test';
 
 /**
@@ -153,6 +153,22 @@ test.describe('deep links', () => {
 			page.locator('.ws-tile:not(.ws-hidden) .is-field').first(),
 			'Undo puts it back'
 		).toHaveValue('90');
+	});
+
+	test('What’s new’s ?do=reshape link opens Reshape and rolls one', async ({ page }) => {
+		// Arrives from the page the link lives on, so a moved or renamed link fails here.
+		await openSection(page, '/changelog');
+		await page.getByRole('link', { name: 'Give it a try!' }).click();
+		await expect(currentTab(page)).toHaveText('Artifact odds');
+		await expect(page.getByRole('radio', { name: 'Reshape' })).toHaveAttribute(
+			'aria-checked',
+			'true'
+		);
+		await expect(
+			page.getByRole('dialog', { name: /Standard reshape|Select a result to keep/ }),
+			'a roll plays'
+		).toBeVisible();
+		expect(page.url(), 'the action is consumed, not left in the URL').not.toContain('do=');
 	});
 });
 
