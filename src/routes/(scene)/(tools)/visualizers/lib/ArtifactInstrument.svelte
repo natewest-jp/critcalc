@@ -1034,6 +1034,10 @@
 			placed[i].y = Math.max(placed[i].y, placed[i - 1].y + DOT_LABEL_GAP);
 		const headY = yOf(markDots[0].p);
 		for (const l of placed) if (Math.abs(l.y - headY) < DOT_LABEL_GAP) l.y = headY - DOT_LABEL_GAP;
+		// Pushed right (a phone), Drop's Outbreak label would sit on the Domain
+		// curve rising past it, so it goes under the Domain's dot instead: below
+		// a rising curve is the side it leaves empty.
+		if (view === 'drop' && !left) for (const l of placed) l.y = headY + DOT_LABEL_GAP + 2;
 		// A dot label that would sit on a crossing's label goes to the marker's
 		// other side.
 		const boxes = crossings.map((c) => {

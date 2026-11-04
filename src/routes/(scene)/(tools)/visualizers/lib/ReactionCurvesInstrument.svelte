@@ -497,6 +497,14 @@
 			.sort((a, b) => a.y - b.y);
 		for (let k = 1; k < placed.length; k++)
 			placed[k].y = Math.max(placed[k].y, placed[k - 1].y + DOT_LABEL_GAP);
+		// …then back up from the plot's floor, so a short plot (a phone) never
+		// stacks them down onto the strip's label.
+		const floor = plotY1 - 6;
+		for (let k = placed.length - 1; k >= 0; k--)
+			placed[k].y = Math.min(
+				placed[k].y,
+				k === placed.length - 1 ? floor : placed[k + 1].y - DOT_LABEL_GAP
+			);
 		return placed.map((l) => ({
 			...l,
 			x: left ? x - 8 : x + 8,
