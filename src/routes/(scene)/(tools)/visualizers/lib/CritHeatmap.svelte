@@ -1,107 +1,109 @@
 <script lang="ts">
+	/**
+	 * THE FIELD (design §7: the 1:2 ray and the CV isoline through your point),
+	 * with its companion strip on the shared CRIT Rate axis. The instrument
+	 * measures the chart and lays it out (`rect`, `strip`); this draws it and
+	 * takes the presses. Two canvases under one SVG: the field's colours, the
+	 * no-crit shading over them, then every line, word and mark.
+	 */
 	import {
 		CR_MIN,
 		CR_MAX,
 		CD_MIN,
 		CD_MAX,
-		SIZE,
-		PAD,
-		HEATMAP_MIN_ASPECT,
-		HEATMAP_MAX_ASPECT,
-		AXIS_INK,
-		AXIS_TITLE_GAP,
+		CR_AXIS_MIN,
 		ISOLINE_VALUES,
 		clamp,
 		averageDamageMultiplier,
 		zeroCritProbability,
-		zeroCritRiskColor,
 		critValue,
 		cvLineCR,
 		bestSplit,
 		formatMultiplier,
-		formatChance,
+		countAtRate,
+		countLabels,
 		cdToX,
 		crToY,
 		xToCD,
 		yToCR,
-		plotWidth,
-		plotHeight,
-		type PlotGeometry
+		type FieldRect
 	} from './crit';
 	import { buildRampLut, RAMP_LUT_SIZE, type RGB } from './critRamp';
-
-	// Axis tick positions
-	const CD_TICKS = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
-	const CR_TICKS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
-
-	type Anchor = 'start' | 'end';
-	type IsolineData = {
-		value: number;
-		path: string;
-		label: {
-			x: number;
-			y: number;
-			anchor: Anchor;
-		};
-	};
 
 	let {
 		critRate = $bindable(0.7),
 		critDamage = $bindable(1.4),
-		showVariance = false,
-		hitsPerRotation = 8,
-		showCvLine = true,
-		pinned = null
+		width,
+		height,
+		rect,
+		strip,
+		hits,
+		distribution,
+		shading,
+		pinned,
+		pinnedDelta,
+		readCount,
+		hoverCount = $bindable(null)
 	}: {
 		critRate?: number;
 		critDamage?: number;
-		showVariance?: boolean;
-		hitsPerRotation?: number;
-		showCvLine?: boolean;
-		pinned?: { critRate: number; critDamage: number } | null;
+		/** The SVG's size: the chart box. */
+		width: number;
+		height: number;
+		/** The field's plot. */
+		rect: FieldRect;
+		/** The companion strip, at the chart's left edge outside the CRIT Rate
+		 *  handle: its left edge and width. Its rows grow leftward from its right.
+		 *  Width 0 where it lives under the chart instead (the instrument draws it). */
+		strip: { x0: number; w: number };
+		hits: number;
+		/** The chance of each crit count, 0 … hits. */
+		distribution: number[];
+		/** Darken the field by its no-crit risk. */
+		shading: boolean;
+		pinned: { critRate: number; critDamage: number } | null;
+		/** Your average over the pinned build's, less one. */
+		pinnedDelta: number;
+		/** The strip's row the fine print reads (hovered, tapped or rolled). */
+		readCount: number | null;
+		/** The row under the pointer; the instrument reads it. */
+		hoverCount?: number | null;
 	} = $props();
 
-	// Three rendering layers stacked in .cv-map-frame:
-	//   1. canvasEl         — heatmap field (redrawn when the box resizes)
-	//   2. overlayCanvasEl  — variance overlay (redrawn on showVariance / hitsPerRotation / resize)
-	//   3. overlayEl        — SVG: isolines, axes, draggable marker, tooltip (reactive)
-	let canvasEl = $state<HTMLCanvasElement | null>(null);
-	let overlayCanvasEl = $state<HTMLCanvasElement | null>(null);
-	let overlayEl: SVGSVGElement | null = null;
-	let dragging = $state(false);
+	const CD_TICKS = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
+	const CR_TICKS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+	/** The y axis's numbers end this far left of the plot. */
+	const TICK_GAP = 6;
+	/** 🎛️ A strip row's thickness: most of the space a row has, within these.
+	 *  ↻ ROW_MAX 22, was 10 (Nate 2026-11-03: at 8 hits the rows stood 95px
+	 *  apart as hairlines). Not the whole gap: a solid block of bars would
+	 *  read as one shape, not a count. */
+	const ROW_SHARE = 0.72;
+	const ROW_MIN = 1.5;
+	const ROW_MAX = 22;
+	/** 🎛️ The strip's crit counts: a column at its outer edge, numbers
+	 *  right-aligned COUNT_W in, the bars growing to COUNT_GAP short of them.
+	 *  COUNT_MIN_GAP is the least room between two labels before they thin
+	 *  (crit.ts, countLabels). */
+	const COUNT_W = 14;
+	const COUNT_GAP = 5;
+	const COUNT_MIN_GAP = 12;
+	/** 🎛️ The contours' white, width and dash. Dotted (round dots, CONTOUR_GAP
+	 *  apart), after dashed (5 4) and solid were both tried (Nate 2026-11-03):
+	 *  dots read as a guide drawn over the colour, not a line on it, and stay
+	 *  clear of the one solid line, the CV's. Solid: CONTOUR_DASH 'none'. */
+	const CONTOUR_INK = 0.6;
+	const CONTOUR_W = 2;
+	const CONTOUR_GAP = 5;
+	const CONTOUR_DASH = `0 ${CONTOUR_GAP}`;
+	/** 🎛️ How much the night veils the unreachable 0–5% band. */
+	const VEIL = 0.62;
 
-	// ── Responsive geometry (Option 2: bounded-aspect fill) ─────────────────────
-	// The chart fills the box its shell gives it, but the width:height ratio is
-	// clamped so it never stretches into an unreadable sliver. JS measures the
-	// shell (a ResizeObserver) and derives the drawn box (boxW × boxH); the SVG
-	// viewBox, canvas buffers, and every coordinate mapping track that box.
-	const MIN_ASPECT = HEATMAP_MIN_ASPECT;
-	const MAX_ASPECT = HEATMAP_MAX_ASPECT;
-	let shellEl = $state<HTMLDivElement | null>(null);
-	let boxW = $state(SIZE);
-	let boxH = $state(SIZE);
-
-	const geom = $derived<PlotGeometry>({ width: boxW, height: boxH, pad: PAD });
-	const plotW = $derived(plotWidth(geom));
-	const plotH = $derived(plotHeight(geom));
-
-	// Largest rectangle inside (availW × availH) whose aspect sits in the clamp
-	// band; equal to the container when its own aspect is already in range.
-	function fitBox(availW: number, availH: number) {
-		if (availW < 1 || availH < 1) return;
-		const aspect = availW / availH;
-		let w = availW;
-		let h = availH;
-		if (aspect > MAX_ASPECT) w = availH * MAX_ASPECT;
-		else if (aspect < MIN_ASPECT) h = availW / MIN_ASPECT;
-		boxW = Math.round(w);
-		boxH = Math.round(h);
-	}
-
-	// Cubehelix-inspired color ramp: deep blue → teal → green → yellow → orange → red-purple.
-	// Mapped over the multiplier range [1.0, 4.0]; the curve between the stops
-	// is critRamp.ts's (an OKLab B-spline with its chroma handed back — that file
-	// says why).
+	// Cubehelix-inspired colour ramp: deep blue → teal → green → yellow →
+	// orange → red-purple, over ×1 to ×4; the curve between the stops is
+	// critRamp.ts's. ⚓ Kept (Nate 2026-11-03) over four ramps whose lightness
+	// only rises, though its own peaks at ×2.8 (docs/rounds/
+	// viz-stage-crit-2026-11-03.md §3).
 	const colorStops: readonly RGB[] = [
 		[12, 24, 74],
 		[22, 78, 148],
@@ -112,739 +114,556 @@
 		[208, 52, 72],
 		[138, 30, 138]
 	];
-
-	// SVG chrome ink — white at varying alpha, single-sourced (chart data colors live in crit.ts / colorStops)
-	const ink = (alpha: number) => `rgba(255, 255, 255, ${alpha})`;
-
-	// ── Derived: marker position and stats ────────────────────────────────────
-	// Values render clamped to axis bounds; the parent owns the raw bindables.
-	const shownCR = $derived(clamp(critRate, CR_MIN, CR_MAX));
-	const shownCD = $derived(clamp(critDamage, CD_MIN, CD_MAX));
-	const dotX = $derived(cdToX(shownCD, geom));
-	const dotY = $derived(crToY(shownCR, geom));
-	const dotMultiplier = $derived(averageDamageMultiplier(shownCR, shownCD));
-	const zeroCritRisk = $derived(zeroCritProbability(shownCR, hitsPerRotation));
-
-	// Color for the no-crit risk line in the tooltip (green → yellow → orange → red)
-	const riskColor = $derived(zeroCritRiskColor(zeroCritRisk));
-
-	// ── Derived: crit-value budget line ────────────────────────────────────────
-	// The equal-CV curve through the current marker. Because the line follows the
-	// marker's CV, dragging *along* it keeps the line stationary — so the player can
-	// slide along a fixed budget and watch the multiplier peak at the isoline tangency.
-	const cv = $derived(critValue(shownCR, shownCD));
-	const cvPath = $derived(buildCvLinePath(cv, geom));
-	const cvLabel = $derived(buildCvLineLabel(cv, geom));
-
-	// The axis titles, AXIS_TITLE_GAP of clear space between their glyphs and
-	// the glyphs of the tick labels beside them (crit.ts has the metrics). Both
-	// rotated titles face the plot with their BASELINE; CRIT DMG with its caps.
-	const crTitleX = $derived(
-		PAD.left - 10 - AXIS_INK.crTickInk - AXIS_TITLE_GAP - AXIS_INK.belowBaseline
-	);
-	const cdTitleY = $derived(
-		PAD.top + plotH + 22 + AXIS_INK.belowBaseline + AXIS_TITLE_GAP + AXIS_INK.capHeight
-	);
-	const avgTitleX = $derived(
-		PAD.left + plotW + 8 + AXIS_INK.isoTickInk + AXIS_TITLE_GAP + AXIS_INK.belowBaseline
-	);
-
-	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
-	// Shown with the CV line: a fixed budget's multiplier peaks where the budget
-	// line crosses this diagonal (CD = CV/2, CR = CV/4) — unless that point is
-	// out of the game's reach (CR past 100%), when bestSplit clamps it along the
-	// line and the circle leaves the diagonal, which is the honest answer.
-	const RATIO_CD0 = Math.max(CD_MIN, 2 * CR_MIN);
-	const RATIO_CD1 = Math.min(CD_MAX, 2 * CR_MAX);
-	const best = $derived(bestSplit(cv));
-	const tangentInPlot = $derived(
-		best.critDamage >= CD_MIN &&
-			best.critDamage <= CD_MAX &&
-			best.critRate >= CR_MIN &&
-			best.critRate <= CR_MAX
-	);
-
-	// ── Derived: pinned build marker ───────────────────────────────────────────
-	const pinnedX = $derived(pinned ? cdToX(clamp(pinned.critDamage, CD_MIN, CD_MAX), geom) : 0);
-	const pinnedY = $derived(pinned ? crToY(clamp(pinned.critRate, CR_MIN, CR_MAX), geom) : 0);
-
-	// ── Derived: tooltip layout ────────────────────────────────────────────────
-	// Tooltip floats near the marker, flipping sides and clamping to stay inside the plot area.
-	const tooltip = $derived.by(() => {
-		const width = 132;
-		const height = showVariance ? 78 : 62;
-		const margin = 12;
-		const prefersLeft = dotX > PAD.left + plotW * 0.72;
-		let x = prefersLeft ? dotX - width - margin : dotX + margin;
-		let y = dotY - height - margin;
-
-		// Flip below the marker if it would clip the top edge
-		if (y < PAD.top + 4) {
-			y = dotY + margin;
-		}
-
-		x = clamp(x, PAD.left + 4, PAD.left + plotW - width - 4);
-		y = clamp(y, PAD.top + 4, PAD.top + plotH - height - 4);
-
-		return { x, y, width, height };
-	});
-
-	// ── Canvas rendering ───────────────────────────────────────────────────────
-
 	const rampLut = buildRampLut(colorStops);
 
-	// Maps a damage multiplier value to an RGB color via the ramp's lookup table
-	function damageToColor(value: number): [number, number, number] {
-		const normalized = clamp((value - 1.0) / (4.0 - 1.0), 0, 1);
-		const i = Math.round(normalized * (RAMP_LUT_SIZE - 1)) * 3;
-		return [rampLut[i], rampLut[i + 1], rampLut[i + 2]];
-	}
+	// The two words on the field the marker owns sit in white at an alpha;
+	// the rest of the chart's ink is the stage's (--chart-ink, --chart-dim).
+	const ink = (alpha: number) => `rgba(255, 255, 255, ${alpha})`;
 
-	// Draws the heatmap field onto canvasEl at the current box size. The marker/CV
-	// line move in the SVG layer; this only re-runs when the drawn box resizes.
-	function drawHeatmap() {
-		if (!canvasEl) return;
+	// ── Positions ─────────────────────────────────────────────────────────
+	const x = (cd: number) => cdToX(cd, rect);
+	const y = (cr: number) => crToY(cr, rect);
+	const right = $derived(rect.x0 + rect.w);
+	const bottom = $derived(rect.y0 + rect.h);
 
-		const context = canvasEl.getContext('2d');
-		if (!context) return;
+	const shownCR = $derived(clamp(critRate, CR_MIN, CR_MAX));
+	const shownCD = $derived(clamp(critDamage, CD_MIN, CD_MAX));
+	const dotX = $derived(x(shownCD));
+	const dotY = $derived(y(shownCR));
 
-		// Size the buffer here — setting width/height clears the canvas, so doing it
-		// right before painting keeps resize + repaint atomic (a reactive width=
-		// binding would clear it a beat out of step with this draw and blank it out).
-		if (canvasEl.width !== boxW) canvasEl.width = boxW;
-		if (canvasEl.height !== boxH) canvasEl.height = boxH;
-
-		const pw = Math.max(1, Math.round(plotW));
-		const ph = Math.max(1, Math.round(plotH));
-
-		// ⚓ 2026-08-13: CLEAR, DON'T FILL. This used to paint the whole box with
-		// --frame-bg before writing the plot pixels — which is how the axis-label
-		// margin got its ground, and why removing `.frame`'s CSS background alone
-		// would have changed nothing here: the slab was being drawn by the canvas.
-		// Clearing leaves the margin transparent so the scene reads through it,
-		// and the plot image itself is opaque (alpha 255), so the chart is
-		// unchanged where it actually draws.
-		//
-		// ⚠ --frame-bg IS STILL THE GROUND OF RECORD, it just has no painter here
-		// any more. If the deferred PNG export lands, it reads that token and
-		// fills this rect for real (the planner's --rp-chart-bg does exactly
-		// this) — do NOT hardcode a literal there: one once silently detached
-		// the heatmap from --frame-bg tuning, and it was the one frame that
-		// didn't follow devtools edits (Nate 2026-07-31).
-		context.clearRect(0, 0, boxW, boxH);
-
-		const image = context.createImageData(pw, ph);
-		const data = image.data;
-		let index = 0;
-
-		for (let py = 0; py < ph; py += 1) {
-			const critRate = yToCR(PAD.top + py, geom);
-
-			for (let px = 0; px < pw; px += 1) {
-				const critDamage = xToCD(PAD.left + px, geom);
-				const multiplier = averageDamageMultiplier(critRate, critDamage);
-				const [r, g, b] = damageToColor(multiplier);
-
-				data[index] = r;
-				data[index + 1] = g;
-				data[index + 2] = b;
-				data[index + 3] = 255;
-				index += 4;
-			}
-		}
-
-		context.putImageData(image, PAD.left, PAD.top);
-
-		// Subtle plot-area border
-		context.strokeStyle = ink(0.24);
-		context.lineWidth = 1;
-		context.strokeRect(PAD.left + 0.5, PAD.top + 0.5, pw - 1, ph - 1);
-	}
-
-	// Draws the variance overlay onto overlayCanvasEl. Alpha per row is proportional to
-	// zero-crit probability at that CR value, so low-CR regions darken more strongly.
-	// Uses mix-blend-mode: multiply in CSS to darken the heatmap beneath it.
-	function drawVarianceOverlay(enabled: boolean, hits: number) {
-		if (!overlayCanvasEl) return;
-
-		const context = overlayCanvasEl.getContext('2d');
-		if (!context) return;
-
-		if (overlayCanvasEl.width !== boxW) overlayCanvasEl.width = boxW;
-		if (overlayCanvasEl.height !== boxH) overlayCanvasEl.height = boxH;
-
-		context.clearRect(0, 0, boxW, boxH);
-		if (!enabled) return;
-
-		const pw = Math.max(1, Math.round(plotW));
-		const ph = Math.max(1, Math.round(plotH));
-		const image = context.createImageData(pw, ph);
-		const data = image.data;
-		let index = 0;
-
-		for (let py = 0; py < ph; py += 1) {
-			const rowCritRate = yToCR(PAD.top + py, geom);
-			const alpha = Math.round(zeroCritProbability(rowCritRate, hits) * 210);
-
-			for (let px = 0; px < pw; px += 1) {
-				data[index] = 0;
-				data[index + 1] = 0;
-				data[index + 2] = 0;
-				data[index + 3] = alpha;
-				index += 4;
-			}
-		}
-
-		context.putImageData(image, PAD.left, PAD.top);
-	}
-
-	// ── Isoline builders ───────────────────────────────────────────────────────
-	// An isoline for multiplier M is the curve where 1 + CR × CD = M,
-	// i.e. CR = (M - 1) / CD. We step along X and compute the Y coordinate.
-
-	function buildIsolinePath(target: number, g: PlotGeometry) {
-		let path = '';
-		let firstPoint = true;
-		const right = g.pad.left + plotWidth(g);
-
-		for (let x = g.pad.left; x <= right; x += 2) {
-			const critDamage = xToCD(x, g);
-			const critRate = (target - 1) / critDamage;
-
-			if (critRate < CR_MIN || critRate > CR_MAX) continue;
-
-			const y = crToY(critRate, g);
-			path += `${firstPoint ? 'M' : ' L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-			firstPoint = false;
-		}
-
-		return path;
-	}
-
-	// Labels sit just OUTSIDE the right plot edge (like the axis tick labels),
-	// vertically centered on where their line exits; falls back to the top edge
-	// if the line leaves the plot before reaching the right side.
-	function buildIsolineLabel(target: number, g: PlotGeometry): IsolineData['label'] {
-		const crAtRightEdge = (target - 1) / CD_MAX;
-
-		if (crAtRightEdge >= CR_MIN && crAtRightEdge <= CR_MAX) {
-			return {
-				x: g.pad.left + plotWidth(g) + 8,
-				y: crToY(crAtRightEdge, g) + 3.5,
-				anchor: 'start'
-			};
-		}
-
-		const cdAtTopEdge = (target - 1) / CR_MAX;
-		if (cdAtTopEdge >= CD_MIN && cdAtTopEdge <= CD_MAX) {
-			return { x: cdToX(cdAtTopEdge, g) + 4, y: g.pad.top + 14, anchor: 'start' };
-		}
-
-		return { x: g.pad.left + 8, y: g.pad.top + 12, anchor: 'start' };
-	}
-
-	// Traces the equal-CV budget line CR = (CV − CD) / 2 across the plot, same
-	// stepping approach as the isoline paths.
-	function buildCvLinePath(cvTarget: number, g: PlotGeometry) {
-		let path = '';
-		let firstPoint = true;
-		const right = g.pad.left + plotWidth(g);
-
-		for (let x = g.pad.left; x <= right; x += 2) {
-			const cd = xToCD(x, g);
-			const cr = cvLineCR(cvTarget, cd);
-
-			if (cr < CR_MIN || cr > CR_MAX) continue;
-
-			const y = crToY(cr, g);
-			path += `${firstPoint ? 'M' : ' L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-			firstPoint = false;
-		}
-
-		return path;
-	}
-
-	// Places the CV label where the budget line enters the plot: at the left edge
-	// when the line crosses it, otherwise where it descends from the top edge.
-	function buildCvLineLabel(cvTarget: number, g: PlotGeometry) {
-		const crAtLeftEdge = cvLineCR(cvTarget, CD_MIN);
-		if (crAtLeftEdge >= CR_MIN && crAtLeftEdge <= CR_MAX) {
-			return { x: g.pad.left + 8, y: crToY(crAtLeftEdge, g) - 8 };
-		}
-
-		const cdAtTopEdge = cvTarget - 2 * CR_MAX;
-		if (cdAtTopEdge >= CD_MIN && cdAtTopEdge <= CD_MAX) {
-			return { x: cdToX(cdAtTopEdge, g) + 8, y: g.pad.top + 16 };
-		}
-
-		return { x: g.pad.left + 8, y: g.pad.top + 16 };
-	}
-
-	// ── Pointer / drag handling ────────────────────────────────────────────────
-	// Pointer capture on the SVG ensures dragging outside the element still tracks.
-
-	function pointerToStats(event: PointerEvent) {
-		if (!overlayEl) return null;
-
-		const rect = overlayEl.getBoundingClientRect();
-		const scaleX = boxW / rect.width;
-		const scaleY = boxH / rect.height;
-		const x = (event.clientX - rect.left) * scaleX;
-		const y = (event.clientY - rect.top) * scaleY;
-
-		return {
-			critRate: clamp(yToCR(y, geom), CR_MIN, CR_MAX),
-			critDamage: clamp(xToCD(x, geom), CD_MIN, CD_MAX)
-		};
-	}
-
-	function updateFromPointer(event: PointerEvent) {
-		const stats = pointerToStats(event);
-		if (!stats) return;
-		critRate = Number(stats.critRate.toFixed(3));
-		critDamage = Number(stats.critDamage.toFixed(3));
-	}
-
-	function onPointerDown(event: PointerEvent) {
-		if (event.pointerType === 'mouse' && event.button !== 0) return;
-		dragging = true;
-		updateFromPointer(event);
-		overlayEl?.setPointerCapture(event.pointerId);
-	}
-
-	function onPointerMove(event: PointerEvent) {
-		if (!dragging) return;
-		updateFromPointer(event);
-	}
-
-	function onPointerUp(event: PointerEvent) {
-		dragging = false;
-		if (overlayEl?.hasPointerCapture(event.pointerId)) {
-			overlayEl.releasePointerCapture(event.pointerId);
-		}
-	}
-
-	// ── Isolines ────────────────────────────────────────────────────────────────
-	// Independent of the marker, but they DO depend on the box geometry, so they
-	// rebuild when the chart is resized (cheap — a handful of short paths).
-	const isolines = $derived(
-		ISOLINE_VALUES.map((value) => ({
-			value,
-			path: buildIsolinePath(value, geom),
-			label: buildIsolineLabel(value, geom)
-		}))
+	// The equal-CV line through your build: sliding along it keeps it still,
+	// so the multiplier's peak on it (the best split) is found by eye.
+	const cv = $derived(critValue(shownCR, shownCD));
+	const best = $derived(bestSplit(cv));
+	const atBest = $derived(
+		Math.abs(best.critRate - shownCR) < 0.004 && Math.abs(best.critDamage - shownCD) < 0.008
 	);
 
-	// ── Effects ────────────────────────────────────────────────────────────────
+	function linePath(crAt: (cd: number) => number, floor = CR_AXIS_MIN) {
+		let d = '';
+		for (let px = rect.x0; px <= right + 0.01; px += 2) {
+			const cr = crAt(xToCD(px, rect));
+			if (cr < floor || cr > CR_MAX) continue;
+			d += `${d ? ' L' : 'M'}${px.toFixed(1)},${y(cr).toFixed(1)}`;
+		}
+		return d;
+	}
 
-	// Keep the drawn box in sync with the shell's measured size.
-	$effect(() => {
-		if (!shellEl) return;
-		fitBox(shellEl.clientWidth, shellEl.clientHeight);
-		const ro = new ResizeObserver((entries) => {
-			const box = entries[0]?.contentRect;
-			if (box) fitBox(box.width, box.height);
-		});
-		ro.observe(shellEl);
-		return () => ro.disconnect();
+	// ⚓ THE RIGHT EDGE IS THE AVERAGE'S AXIS. Along CRIT DMG 300% the average
+	// is 1 + 3 × CRIT Rate, a straight line in CRIT Rate, so the edge is an
+	// exact ×1 (at 0%) to ×4 (at 100%) scale, and every contour meets it at its
+	// own value: the labels there are an axis, not a legend.
+	const avgY = (m: number) => y((m - 1) / CD_MAX);
+	const AVG_ENDS = [1, 4];
+	/** 🎛️ A fixed contour's value hides when it is this close to yours. */
+	const AVG_CLEAR = 12;
+
+	// Your average, marked on its axis: the headline's figure on the scale
+	// the contours are read by. ⛔ Not as a contour of its own: two more lines
+	// through the marker were too many (Nate 2026-11-03).
+	const yourM = $derived(averageDamageMultiplier(shownCR, shownCD));
+	const yourY = $derived(avgY(yourM));
+
+	const isolines = $derived(
+		ISOLINE_VALUES.map((m) => ({
+			m,
+			d: linePath((cd) => (m - 1) / cd),
+			y: avgY(m),
+			shown: Math.abs(avgY(m) - yourY) >= AVG_CLEAR
+		}))
+	);
+	// Builds only: the line stops at the base 5%.
+	const cvPath = $derived(linePath((cd) => cvLineCR(cv, cd), CR_MIN));
+	// The CV label where its line enters the field: the left edge, else the top.
+	const cvLabel = $derived.by(() => {
+		const crLeft = cvLineCR(cv, CD_MIN);
+		if (crLeft <= CR_MAX) return { x: rect.x0 + 6, y: y(crLeft) - 6 };
+		return { x: x(cv - 2 * CR_MAX) + 8, y: rect.y0 + 14 };
 	});
 
-	// Redraw the heatmap when the box changes (drawHeatmap reads boxW/boxH/geom).
-	$effect(() => {
-		if (!canvasEl) return;
-		drawHeatmap();
+	const pinnedX = $derived(pinned ? x(clamp(pinned.critDamage, CD_MIN, CD_MAX)) : 0);
+	const pinnedY = $derived(pinned ? y(clamp(pinned.critRate, CR_MIN, CR_MAX)) : 0);
+	// ⏭ i18n: the locale moves here with the ledger; the sign is ICU's.
+	const deltaFormat = new Intl.NumberFormat('en-US', {
+		style: 'percent',
+		signDisplay: 'exceptZero',
+		maximumFractionDigits: 1
 	});
 
-	// Redraw variance overlay when the toggle, hit count, or box changes
+	// ── The strip: one row per crit count, at its share of the hits ────────
+	const n = $derived(Math.max(1, Math.round(hits)));
+	const peak = $derived(Math.max(...distribution));
+	const rowH = $derived(
+		clamp(((rect.h * (1 / n)) / (CR_MAX - CR_AXIS_MIN)) * ROW_SHARE, ROW_MIN, ROW_MAX)
+	);
+	const stripRight = $derived(strip.x0 + strip.w);
+	const barRoom = $derived(Math.max(0, strip.w - COUNT_W - COUNT_GAP));
+	const countLabelKs = $derived(
+		countLabels(n, rect.h / n / (CR_MAX - CR_AXIS_MIN), COUNT_MIN_GAP, readCount)
+	);
+	const rows = $derived(
+		distribution.map((chance, k) => {
+			const len = peak > 0 ? (chance / peak) * barRoom : 0;
+			return {
+				k,
+				y: y(k / n),
+				len,
+				x: stripRight - len
+			};
+		})
+	);
+
+	// ── The canvases ──────────────────────────────────────────────────────
+	let fieldCanvas = $state<HTMLCanvasElement | null>(null);
+	let shadeCanvas = $state<HTMLCanvasElement | null>(null);
+
+	function size(canvas: HTMLCanvasElement) {
+		const w = Math.max(1, Math.round(rect.w));
+		const h = Math.max(1, Math.round(rect.h));
+		// Setting a size clears the canvas, so it happens right before the paint.
+		if (canvas.width !== w) canvas.width = w;
+		if (canvas.height !== h) canvas.height = h;
+		return [w, h] as const;
+	}
+
+	function paintField(canvas: HTMLCanvasElement) {
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+		const [w, h] = size(canvas);
+		const img = ctx.createImageData(w, h);
+		let i = 0;
+		for (let py = 0; py < h; py++) {
+			const cr = yToCR(rect.y0 + py, rect);
+			for (let px = 0; px < w; px++) {
+				const m = averageDamageMultiplier(cr, xToCD(rect.x0 + px, rect));
+				const k = Math.round(clamp((m - 1) / 3, 0, 1) * (RAMP_LUT_SIZE - 1)) * 3;
+				img.data[i] = rampLut[k];
+				img.data[i + 1] = rampLut[k + 1];
+				img.data[i + 2] = rampLut[k + 2];
+				img.data[i + 3] = 255;
+				i += 4;
+			}
+		}
+		ctx.putImageData(img, 0, 0);
+	}
+
+	// Each CRIT Rate's row darkened by its chance of a whole rotation without
+	// a crit (multiplied over the field in CSS).
+	function paintShade(canvas: HTMLCanvasElement, on: boolean, hitCount: number) {
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+		const [w, h] = size(canvas);
+		ctx.clearRect(0, 0, w, h);
+		if (!on) return;
+		const img = ctx.createImageData(w, h);
+		let i = 0;
+		for (let py = 0; py < h; py++) {
+			const alpha = Math.round(zeroCritProbability(yToCR(rect.y0 + py, rect), hitCount) * 210);
+			for (let px = 0; px < w; px++) {
+				img.data[i + 3] = alpha;
+				i += 4;
+			}
+		}
+		ctx.putImageData(img, 0, 0);
+	}
+
 	$effect(() => {
-		if (!overlayCanvasEl) return;
-		drawVarianceOverlay(showVariance, hitsPerRotation);
+		if (fieldCanvas) paintField(fieldCanvas);
 	});
+	$effect(() => {
+		if (shadeCanvas) paintShade(shadeCanvas, shading, hits);
+	});
+
+	/** 🎛️ On the best split, the ring is drawn around your dot instead, which
+	 *  would hide it (Nate 2026-11-04: at the defaults nobody saw the ring the
+	 *  fine print names). */
+	const BEST_RING_R = 13;
+	/** 🎛️ The ring's press target: wider than its 5px, for a finger. */
+	const RING_HIT_R = 12;
+	function toBest() {
+		// ⚠ Both read before either is written: setting CRIT Rate moves the CV,
+		// and `best` with it.
+		const { critRate: cr, critDamage: cd } = best;
+		critRate = Number(cr.toFixed(3));
+		critDamage = Number(cd.toFixed(3));
+		hoverCount = null;
+	}
+
+	// ── Presses ───────────────────────────────────────────────────────────
+	// A press on the field moves your build there and drags it; a press on
+	// the strip reads a row (a hover does too, where there is one).
+	let svgEl: SVGSVGElement | null = null;
+	let dragging = $state(false);
+	const SLACK = 10;
+
+	function local(e: PointerEvent) {
+		const box = svgEl!.getBoundingClientRect();
+		return { px: e.clientX - box.left, py: e.clientY - box.top };
+	}
+	const inField = (px: number, py: number) =>
+		px >= rect.x0 - SLACK && px <= right + SLACK && py >= rect.y0 - SLACK && py <= bottom + SLACK;
+	const inStrip = (px: number, py: number) =>
+		px >= strip.x0 - 4 && px <= stripRight + 4 && py >= rect.y0 - SLACK && py <= bottom;
+
+	function moveTo(px: number, py: number) {
+		critRate = Number(clamp(yToCR(py, rect), CR_MIN, CR_MAX).toFixed(3));
+		critDamage = Number(clamp(xToCD(px, rect), CD_MIN, CD_MAX).toFixed(3));
+	}
+
+	function onDown(e: PointerEvent) {
+		if (e.pointerType === 'mouse' && e.button !== 0) return;
+		const { px, py } = local(e);
+		if (inStrip(px, py)) {
+			hoverCount = countAtRate(yToCR(py, rect), n);
+			return;
+		}
+		if (!inField(px, py)) return;
+		hoverCount = null;
+		dragging = true;
+		svgEl?.setPointerCapture(e.pointerId);
+		moveTo(px, py);
+	}
+
+	function onMove(e: PointerEvent) {
+		const { px, py } = local(e);
+		if (dragging) {
+			moveTo(px, py);
+			return;
+		}
+		if (e.pointerType !== 'mouse') return;
+		hoverCount = inStrip(px, py) ? countAtRate(yToCR(py, rect), n) : null;
+	}
+
+	function onUp(e: PointerEvent) {
+		dragging = false;
+		if (svgEl?.hasPointerCapture(e.pointerId)) svgEl.releasePointerCapture(e.pointerId);
+	}
+
+	// A tap's reading stays until the next press; a mouse's goes with it.
+	function onLeave(e: PointerEvent) {
+		if (e.pointerType === 'mouse' && !dragging) hoverCount = null;
+	}
+
+	let cursorKind = $state('crosshair');
+	function onHoverCursor(e: PointerEvent) {
+		if (dragging) return;
+		const { px, py } = local(e);
+		cursorKind = inField(px, py) ? 'crosshair' : inStrip(px, py) ? 'pointer' : 'default';
+	}
 </script>
 
-<div class="cv-heatmap-shell" bind:this={shellEl}>
-	<div class="cv-map ctx-dark" style:width={`${boxW}px`} style:height={`${boxH}px`}>
-		<!-- Layer 1: heatmap field (redrawn on resize via canvas 2D API). The buffer
-		     size is set imperatively inside drawHeatmap, not via a reactive width=. -->
-		<canvas bind:this={canvasEl} aria-hidden="true"></canvas>
+<div class="cv-chart">
+	<canvas
+		bind:this={fieldCanvas}
+		class="cv-canvas"
+		style:left="{rect.x0}px"
+		style:top="{rect.y0}px"
+		style:width="{rect.w}px"
+		style:height="{rect.h}px"
+		aria-hidden="true"
+	></canvas>
+	<canvas
+		bind:this={shadeCanvas}
+		class="cv-canvas cv-shade"
+		style:left="{rect.x0}px"
+		style:top="{rect.y0}px"
+		style:width="{rect.w}px"
+		style:height="{rect.h}px"
+		aria-hidden="true"
+	></canvas>
 
-		<!-- Layer 2: variance overlay (multiply blend darkens high-risk regions) -->
-		<canvas bind:this={overlayCanvasEl} class="cv-overlay-canvas" aria-hidden="true"></canvas>
+	<svg
+		bind:this={svgEl}
+		{width}
+		{height}
+		role="img"
+		aria-label="Crit rate and crit damage heatmap"
+		onpointerdown={onDown}
+		onpointermove={(e) => {
+			onMove(e);
+			onHoverCursor(e);
+		}}
+		onpointerup={onUp}
+		onpointercancel={onUp}
+		onpointerleave={onLeave}
+		style:cursor={dragging ? 'grabbing' : cursorKind}
+	>
+		<!-- The unreachable band: no build has less than the base 5% -->
+		<rect
+			x={rect.x0}
+			y={y(CR_MIN)}
+			width={rect.w}
+			height={bottom - y(CR_MIN)}
+			fill="var(--frame-bg)"
+			fill-opacity={VEIL}
+		/>
+		{#if bottom - y(CR_MIN) >= 12}
+			<text
+				class="stage-word"
+				x={rect.x0 + 6}
+				y={(bottom + y(CR_MIN)) / 2 + 3.5}
+				fill="var(--chart-ink)"
+				font-size="10"
+			>
+				below the base 5% CRIT Rate
+			</text>
+		{/if}
 
-		<!-- Layer 3: SVG — isolines, axes, crosshairs, marker, tooltip (all reactive) -->
-		<svg
-			bind:this={overlayEl}
-			viewBox={`0 0 ${boxW} ${boxH}`}
-			role="img"
-			aria-label="Crit rate and crit damage heatmap"
-			onpointerdown={onPointerDown}
-			onpointermove={onPointerMove}
-			onpointerup={onPointerUp}
-			onpointercancel={onPointerUp}
-			onpointerleave={onPointerUp}
-			style:cursor={dragging ? 'grabbing' : 'crosshair'}
-		>
-			<!-- Plot area border -->
-			<rect
-				x={PAD.left}
-				y={PAD.top}
-				width={plotW}
-				height={plotH}
+		<rect
+			x={rect.x0 + 0.5}
+			y={rect.y0 + 0.5}
+			width={rect.w - 1}
+			height={rect.h - 1}
+			fill="none"
+			stroke={ink(0.18)}
+		/>
+
+		<!-- The contours: builds with the same average, each valued where it
+		     meets the average's axis on the right (CONTOUR_* above). -->
+		{#each isolines as iso (iso.m)}
+			<path
+				d={iso.d}
 				fill="none"
-				stroke={ink(0.15)}
-				stroke-width="1"
+				stroke={ink(CONTOUR_INK)}
+				stroke-width={CONTOUR_W}
+				stroke-dasharray={CONTOUR_DASH}
+				stroke-linecap="round"
 			/>
+		{/each}
 
-			<!-- Isolines -->
-			{#each isolines as isoline (isoline.value)}
-				{#if isoline.path}
-					<path
-						d={isoline.path}
-						fill="none"
-						stroke={ink(0.34)}
-						stroke-width="1.1"
-						stroke-dasharray="5 4"
-					/>
-					<text
-						x={isoline.label.x}
-						y={isoline.label.y}
-						fill={ink(0.62)}
-						font-size="10"
-						text-anchor={isoline.label.anchor}
-					>
-						{formatMultiplier(isoline.value)}
-					</text>
-				{/if}
-			{/each}
+		<!-- The equal-CV line through your build, and its best split: the
+		     one solid line on the field -->
+		<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.5" stroke-opacity="0.85" />
+		<text
+			class="stage-word"
+			x={cvLabel.x}
+			y={cvLabel.y}
+			fill="var(--text)"
+			font-size="10"
+			font-weight="600"
+		>
+			{Math.round(cv * 100)} CV
+		</text>
+		{#if !atBest}
+			<circle
+				cx={x(best.critDamage)}
+				cy={y(best.critRate)}
+				r="5"
+				fill="none"
+				stroke="var(--text)"
+				stroke-width="1.5"
+			/>
+			<text
+				class="stage-word"
+				x={x(best.critDamage) + 9}
+				y={y(best.critRate) - 8}
+				fill={ink(0.8)}
+				font-size="10"
+			>
+				best split of this budget
+			</text>
+		{/if}
 
-			<!-- Crit-value budget line: every build reachable at the marker's total CV -->
-			{#if showCvLine && cvPath}
-				<!-- Balanced-ratio diagonal + tangency: where this budget pays out best -->
-				<line
-					x1={cdToX(RATIO_CD0, geom)}
-					y1={crToY(RATIO_CD0 / 2, geom)}
-					x2={cdToX(RATIO_CD1, geom)}
-					y2={crToY(RATIO_CD1 / 2, geom)}
-					stroke={ink(0.3)}
-					stroke-width="1"
-					stroke-dasharray="7 5"
+		<!-- The axes' numbers -->
+		{#each CD_TICKS as t (t)}
+			<line x1={x(t)} y1={bottom} x2={x(t)} y2={bottom + 4} stroke="var(--chart-rule)" />
+			<text
+				x={x(t)}
+				y={bottom + 16}
+				fill="var(--chart-ink)"
+				font-size="10"
+				text-anchor={t === CD_MIN ? 'start' : t === CD_MAX ? 'end' : 'middle'}
+			>
+				{Math.round(t * 100)}%
+			</text>
+		{/each}
+		{#each CR_TICKS as t (t)}
+			<text
+				x={rect.x0 - TICK_GAP}
+				y={y(t) + 3.5}
+				fill="var(--chart-ink)"
+				font-size="10"
+				text-anchor="end"
+			>
+				{Math.round(t * 100)}%
+			</text>
+		{/each}
+
+		<!-- THE AVERAGE'S AXIS, the field's right edge: the contours' values
+		     where they meet it, the ends, and yours, in the headline's ink -->
+		<text x={width - 2} y={rect.y0 - 8} fill="var(--chart-dim)" font-size="10" text-anchor="end">
+			average damage
+		</text>
+		{#each AVG_ENDS as m (m)}
+			{#if Math.abs(avgY(m) - yourY) >= AVG_CLEAR}
+				<text x={right + 6} y={avgY(m) + 3.5} fill="var(--chart-ink)" font-size="10">
+					{formatMultiplier(m)}
+				</text>
+			{/if}
+		{/each}
+		{#each isolines as iso (iso.m)}
+			<line x1={right} y1={iso.y} x2={right + 4} y2={iso.y} stroke="var(--chart-rule)" />
+			{#if iso.shown}
+				<text x={right + 6} y={iso.y + 3.5} fill="var(--chart-ink)" font-size="10">
+					{formatMultiplier(iso.m)}
+				</text>
+			{/if}
+		{/each}
+		<!-- Yours: a notch where your build's contour would meet the axis -->
+		<path d="M{right + 1},{yourY} l5,-4 v8 z" fill="var(--text)" />
+		<text x={right + 9} y={yourY + 4} fill="var(--text)" font-size="12" font-weight="700">
+			{formatMultiplier(yourM)}
+		</text>
+
+		<!-- The companion: how many of the hits crit, on the CRIT Rate axis,
+		     each row labelled with its count in a column at the outer edge,
+		     outside the CRIT Rate handle; each row grows away from the field -->
+		{#if strip.w > 0}
+			<line x1={stripRight} y1={rect.y0} x2={stripRight} y2={bottom} stroke="var(--chart-rule)" />
+			{#each rows as r (r.k)}
+				<rect
+					x={r.x}
+					y={r.y - rowH / 2}
+					width={Math.max(r.len, 0)}
+					height={rowH}
+					rx="1"
+					fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
+					fill-opacity={readCount === r.k ? 1 : 0.45}
 				/>
+			{/each}
+			{#each countLabelKs as k (k)}
 				<text
-					x={cdToX(RATIO_CD1, geom) + 4}
-					y={crToY(RATIO_CD1 / 2, geom) + 12}
-					fill={ink(0.5)}
+					x={strip.x0 + COUNT_W}
+					y={y(k / n) + 3.5}
+					fill={readCount === k ? 'var(--text)' : 'var(--chart-ink)'}
 					font-size="10"
+					font-weight={readCount === k ? 700 : null}
+					text-anchor="end">{k}</text
 				>
-					CD = 2×CR
-				</text>
-				<path
-					d={cvPath}
-					fill="none"
-					stroke="var(--text)"
-					stroke-width="1.6"
-					stroke-opacity="0.85"
-				/>
-				<text x={cvLabel.x} y={cvLabel.y} fill="var(--text)" font-size="10" font-weight="600">
-					{Math.round(cv * 100)} CV
-				</text>
-				{#if tangentInPlot}
-					<circle
-						cx={cdToX(best.critDamage, geom)}
-						cy={crToY(best.critRate, geom)}
-						r="5"
-						fill="none"
-						stroke="var(--text)"
-						stroke-width="1.5"
-					/>
-					<text
-						x={cdToX(best.critDamage, geom) + 9}
-						y={crToY(best.critRate, geom) - 8}
-						fill={ink(0.75)}
-						font-size="10"
-					>
-						best split of this budget
-					</text>
-				{/if}
-			{/if}
-
-			<!-- X-axis ticks and labels (Crit Damage) -->
-			{#each CD_TICKS as tick (tick)}
-				<line
-					x1={cdToX(tick, geom)}
-					y1={PAD.top + plotH}
-					x2={cdToX(tick, geom)}
-					y2={PAD.top + plotH + 6}
-					stroke={ink(0.5)}
-					stroke-width="1"
-				/>
-				<text
-					x={cdToX(tick, geom)}
-					y={PAD.top + plotH + 22}
-					fill={ink(0.68)}
-					font-size="11"
-					text-anchor="middle"
-				>
-					{Math.round(tick * 100)}%
-				</text>
 			{/each}
-
-			<!-- Y-axis ticks and labels (Crit Rate) -->
-			{#each CR_TICKS as tick (tick)}
-				<line
-					x1={PAD.left - 6}
-					y1={crToY(tick, geom)}
-					x2={PAD.left}
-					y2={crToY(tick, geom)}
-					stroke={ink(0.5)}
-					stroke-width="1"
-				/>
-				<text
-					x={PAD.left - 10}
-					y={crToY(tick, geom) + 4}
-					fill={ink(0.68)}
-					font-size="11"
-					text-anchor="end"
-				>
-					{Math.round(tick * 100)}%
-				</text>
-			{/each}
-
-			<!-- Right-edge identity for the isoline column: the corner max plus a
-			     rotated axis-style label (mirrors CRIT RATE on the left) -->
-			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10">
-				{formatMultiplier(4)}
-			</text>
 			<text
-				x={avgTitleX}
-				y={PAD.top + plotH / 2}
-				fill={ink(0.56)}
-				font-size="11"
-				text-anchor="middle"
-				letter-spacing="0.2em"
-				class="cv-axis-title"
-				transform={`rotate(90, ${avgTitleX}, ${PAD.top + plotH / 2})`}
+				class="stage-word"
+				x={stripRight}
+				y={bottom + 16}
+				fill="var(--chart-dim)"
+				font-size="10"
+				text-anchor="end"
 			>
-				Average DMG
+				crits in {n}
+				{n === 1 ? 'hit' : 'hits'}
 			</text>
+		{/if}
 
-			<!-- Axis labels -->
-			<text
-				x={PAD.left + plotW / 2}
-				y={cdTitleY}
-				fill={ink(0.56)}
-				font-size="11"
-				text-anchor="middle"
-				letter-spacing="0.2em"
-				class="cv-axis-title"
-			>
-				CRIT DMG
-			</text>
-			<text
-				x={crTitleX}
-				y={PAD.top + plotH / 2}
-				fill={ink(0.56)}
-				font-size="11"
-				text-anchor="middle"
-				letter-spacing="0.2em"
-				class="cv-axis-title"
-				transform={`rotate(-90, ${crTitleX}, ${PAD.top + plotH / 2})`}
-			>
-				CRIT Rate
-			</text>
-
-			<!-- Crosshair lines extending from the marker to the axes -->
+		<!-- The pinned build, and the move from it to yours -->
+		{#if pinned}
 			<line
-				x1={PAD.left}
-				y1={dotY}
-				x2={PAD.left + plotW}
-				y2={dotY}
-				stroke={ink(0.2)}
-				stroke-width="1"
-				stroke-dasharray="3 4"
-			/>
-			<line
-				x1={dotX}
-				y1={PAD.top}
+				x1={pinnedX}
+				y1={pinnedY}
 				x2={dotX}
-				y2={PAD.top + plotH}
-				stroke={ink(0.2)}
+				y2={dotY}
+				stroke={ink(0.55)}
 				stroke-width="1"
-				stroke-dasharray="3 4"
+				stroke-dasharray="2 4"
 			/>
-
-			<!-- Pinned build: dimmed dot + dashed connector showing the move from pin to marker -->
-			{#if pinned}
-				<line
-					x1={pinnedX}
-					y1={pinnedY}
-					x2={dotX}
-					y2={dotY}
-					stroke={ink(0.28)}
-					stroke-width="1"
-					stroke-dasharray="2 5"
-				/>
-				<circle
-					cx={pinnedX}
-					cy={pinnedY}
-					r="5.5"
-					fill={ink(0.5)}
-					stroke="rgba(0,0,0,0.4)"
-					stroke-width="1.5"
-				/>
-			{/if}
-
-			<!-- Marker: soft halo + solid dot -->
-			<circle cx={dotX} cy={dotY} r="17" fill={ink(0.08)} />
-			<!-- ↻ 2026-08-13: the dot's fill was a stray #f7fafc — a cool near-white
-			     literal in the one file that has a single-sourced ink helper five
-			     lines above it. Same colour to the eye, one fewer value to drift.
-			     ⏸ The black halo STAYS and is the deliberate exception: the
-			     "semi-transparent black ring" idiom was retired for the slider
-			     knob because that knob rides a track of known colour. This dot
-			     rides a rainbow, and white-on-pale-yellow is exactly where it
-			     would disappear. -->
-			<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
-
-			<!-- ══ Floating readout — ⚓ NATE 2026-08-13: DARK GLASS, MODAL CORNER ══
-			     It had three bespoke values: rgba(5,10,24,.82) invented on the
-			     spot, a white-at-.22 outline, and rx="7" — a radius that exists
-			     nowhere else in the system (the scale is 1/3/6).
-
-			     THE CORNER IS --r-md, and 6px is not an arbitrary pick: this is a
-			     popover floating over content with no ground to belong to, which
-			     is the MODAL role, and the modal corner is the one place the
-			     softer radius survived the 6 → 3 re-cut. It is also why the
-			     OUTLINE stays when edge borders retired everywhere else — a modal
-			     is the documented survivor. Now --line-soft.
-
-			     ⚠ AND THAT IS WHY THE RECT CLAIMS .ctx-glass. Both :root and
-			     .ctx-dark declare --line-soft as an OPAQUE mix (#50555e, cut
-			     against slate-800) — correct over a known ground, and a stripe of
-			     the wrong colour over a rainbow. .ctx-glass is the one context
-			     whose line stops carry ALPHA, for exactly this reason: the ground
-			     behind a pane is unknown. The class costs nothing else here (the
-			     rect names no other role, and the text beside it uses ink()
-			     literals) and it is honest — this object IS glass.
-
-			     THE FILL IS --glass-bar, and it is the darkest glass we have —
-			     but by DENSITY, not by hue, which is the thing worth writing down:
-			         --glass-well  slate-900 @ .45  darkest COLOUR, thinnest
-			         --glass-panel slate-700 @ .58
-			         --glass-bar   #2c3549   @ .80  darkest RESULT
-			     Over the plot's brightest region (~rgb(188,212,46)) the well
-			     composites to a muddy olive that puts white text at ~2.6:1, and
-			     the bar to ~rgb(73,84,67), which carries it at ~8.6:1. Density is
-			     what a readout over a SATURATED field needs; the darkest hue at a
-			     thin alpha just takes on whatever it is lying over.
-			     ⚠ Borrowing the planner's bar material is legitimate precisely
-			     because that round made it a MATERIAL rather than a colour — it
-			     stopped meaning "buff" the day it stopped being paint. -->
-			<rect
-				class="ctx-glass"
-				x={tooltip.x}
-				y={tooltip.y}
-				width={tooltip.width}
-				height={tooltip.height}
-				rx="6"
-				fill="var(--glass-bar)"
-				stroke="var(--line-soft)"
-				stroke-width="1"
+			<circle
+				cx={pinnedX}
+				cy={pinnedY}
+				r="5.5"
+				fill={ink(0.55)}
+				stroke="rgba(0,0,0,0.4)"
+				stroke-width="1.5"
 			/>
-			<text x={tooltip.x + 10} y={tooltip.y + 17} fill={ink(0.72)} font-size="10">
-				CR {(shownCR * 100).toFixed(1)}%
-			</text>
-			<text x={tooltip.x + 10} y={tooltip.y + 33} fill={ink(0.72)} font-size="10">
-				CD {(shownCD * 100).toFixed(1)}%
-			</text>
-			<text x={tooltip.x + 10} y={tooltip.y + 51} fill={ink(1)} font-size="13" font-weight="700">
-				{formatMultiplier(dotMultiplier)}
-			</text>
-			{#if showVariance}
-				<text x={tooltip.x + 10} y={tooltip.y + 67} fill={riskColor} font-size="10">
-					No-crit risk {formatChance(zeroCritRisk)}
+			{#if Math.hypot(dotX - pinnedX, dotY - pinnedY) > 40}
+				<text
+					class="stage-word"
+					x={(pinnedX + dotX) / 2 + 6}
+					y={(pinnedY + dotY) / 2 - 6}
+					fill="var(--text)"
+					font-size="11"
+					font-weight="600"
+				>
+					{deltaFormat.format(pinnedDelta)} vs pinned
 				</text>
 			{/if}
-		</svg>
-	</div>
+		{/if}
+
+		<!-- Your build -->
+		<circle cx={dotX} cy={dotY} r="17" fill={ink(0.08)} />
+		<!-- ⏸ The black ring is deliberate: this dot rides a rainbow, and white
+		     on pale yellow is where it would disappear. -->
+		<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
+		{#if atBest}
+			<circle
+				cx={dotX}
+				cy={dotY}
+				r={BEST_RING_R}
+				fill="none"
+				stroke="var(--text)"
+				stroke-width="1.5"
+			/>
+		{/if}
+		<!-- THE RING IS A BUTTON: one press moves your build to the best split
+		     of its budget. Last, so it sits over the marker and the lines. -->
+		{#if !atBest}
+			<circle
+				class="cv-ring-hit"
+				cx={x(best.critDamage)}
+				cy={y(best.critRate)}
+				r={RING_HIT_R}
+				fill="transparent"
+				role="button"
+				tabindex="0"
+				aria-label="Move to the best split of this budget"
+				onpointerdown={(e) => e.stopPropagation()}
+				onclick={toBest}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						toBest();
+					}
+				}}
+			>
+				<title>Move to the best split of this budget</title>
+			</circle>
+		{/if}
+	</svg>
 </div>
 
 <style>
-	/* The shell is the box the chart measures itself against, and it is sized
-	   entirely BY the instrument: CritInstrument gives the panel around it a
-	   height (a width-derived square, shrunk to leave the control strip on
-	   screen; the tile's full height in the wide layout), and the shell fills
-	   it. JS then fits the drawn frame inside at a clamped aspect.
-	   ↻ 2026-10-02: the narrow layout's square used to live HERE (aspect-ratio
-	   1, max-height 70svh), which is why the controls under it fell below the
-	   fold — the shell could see its width and nothing else. */
-	.cv-heatmap-shell {
-		width: 100%;
-		height: 100%;
-		display: grid;
-		/* TOP, centred across: when the aspect clamp letterboxes the drawn box,
-		   the spare height goes below it, so the chart starts at the same line
-		   as every other instrument's first edge (⚓ Nate 2026-10-02). */
-		place-items: start center;
-		/* The shell is sized BY the layout, never by the box it contains — on
-		   BOTH axes. JS sets the drawn frame's width AND height inline in px, so
-		   the shell's automatic minimums (min-width/min-height: auto = the
-		   content's min-content) resolve to whatever the box measured LAST time.
-		   Coming back from a wide lineup that stale box then wins: horizontally
-		   the shell refuses to shrink and spills over the next instrument, and
-		   vertically the stale height beats the layout's. Zeroing both lets the
-		   layout decide; the ResizeObserver below then refits the box into it. */
-		min-width: 0;
-		min-height: 0;
-	}
-
-	/* The drawn rectangle. Its pixel size (boxW × boxH) is set inline by JS to fill
-	   the shell at a clamped aspect; grid-centered so any letterbox is symmetric.
-	   ⚓ 2026-08-13: no ground — the axis margin is the night now (drawHeatmap
-	   clears rather than fills; app.css's `.frame` retirement note has the why).
-	   ⚠ THE RADIUS AND THE CLIP STAY, and this is the one instrument where they
-	   should: the plot is a painted IMAGE with hard edges of its own, so it is an
-	   object on the world rather than ink drawn on it. Corners get cut for the
-	   same reason a portrait's do. */
-	.cv-map {
-		position: relative;
-		border-radius: var(--r-sm);
-		overflow: hidden;
-		user-select: none;
-		-webkit-user-select: none;
-	}
-
-	/* All three layers fill the frame exactly */
-	canvas,
-	svg {
+	.cv-chart {
 		position: absolute;
 		inset: 0;
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-
-	/* Variance overlay uses multiply blend so it darkens without replacing heatmap color */
-	.cv-overlay-canvas {
-		pointer-events: none;
-		mix-blend-mode: multiply;
-	}
-
-	svg {
-		touch-action: none;
 		user-select: none;
 		-webkit-user-select: none;
 	}
 
-	/* Chart labels are data: axis ticks, isoline values, tooltip readouts */
-	svg text {
-		font-family: var(--font-body);
+	.cv-chart svg {
+		position: absolute;
+		inset: 0;
+		/* A 2-D control: a drag on the field moves the build, never the page. */
+		touch-action: none;
 	}
 
-	/* The three axis titles are written in sentence case and SHOWN in capitals
-	   (conventions §D: a locale file must not carry shouting English, and CJK
-	   has no case to shout with). ⚠ Their placement is measured on capital ink
-	   (AXIS_INK in crit.ts) — this rule is what keeps that measurement true. */
-	.cv-axis-title {
-		text-transform: uppercase;
+	/* The field is a painted image with hard edges of its own, so it is an
+	   object on the night rather than ink drawn on it: its corners are cut. */
+	.cv-canvas {
+		position: absolute;
+		display: block;
+		border-radius: var(--r-sm);
+	}
+
+	.cv-ring-hit {
+		cursor: pointer;
+		outline: none;
+	}
+	/* Focus draws its own ring: Safari's outline on SVG is unreliable. */
+	.cv-ring-hit:focus-visible {
+		stroke: var(--accent);
+		stroke-width: 2;
+	}
+
+	.cv-shade {
+		pointer-events: none;
+		mix-blend-mode: multiply;
 	}
 </style>

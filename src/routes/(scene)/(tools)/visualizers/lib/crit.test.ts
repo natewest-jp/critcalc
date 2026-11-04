@@ -21,9 +21,10 @@ import {
 	crToY,
 	xToCD,
 	yToCR,
-	PAD,
-	PLOT_WIDTH,
-	PLOT_HEIGHT
+	CR_AXIS_MIN,
+	countAtRate,
+	countLabels,
+	HITS_MAX
 } from './crit';
 
 describe('averageDamageMultiplier', () => {
@@ -134,17 +135,30 @@ describe('zeroCritRiskColor', () => {
 	});
 });
 
-describe('coordinate transforms', () => {
+describe("the field's axes", () => {
+	const rect = { x0: 50, y0: 30, w: 800, h: 500 };
+
 	it('round-trips stat → pixel → stat', () => {
-		expect(xToCD(cdToX(1.4))).toBeCloseTo(1.4);
-		expect(yToCR(crToY(0.7))).toBeCloseTo(0.7);
+		expect(xToCD(cdToX(1.4, rect), rect)).toBeCloseTo(1.4);
+		expect(yToCR(crToY(0.7, rect), rect)).toBeCloseTo(0.7);
 	});
 
-	it('maps axis bounds to plot edges', () => {
-		expect(cdToX(CD_MIN)).toBeCloseTo(PAD.left);
-		expect(cdToX(CD_MAX)).toBeCloseTo(PAD.left + PLOT_WIDTH);
-		expect(crToY(CR_MAX)).toBeCloseTo(PAD.top);
-		expect(crToY(CR_MIN)).toBeCloseTo(PAD.top + PLOT_HEIGHT);
+	it('maps the axis bounds to the plot edges, CRIT Rate down to 0%', () => {
+		expect(cdToX(CD_MIN, rect)).toBeCloseTo(50);
+		expect(cdToX(CD_MAX, rect)).toBeCloseTo(850);
+		expect(crToY(CR_MAX, rect)).toBeCloseTo(30);
+		expect(crToY(CR_AXIS_MIN, rect)).toBeCloseTo(530);
+		// the lowest build sits 5% of the way up, over the veiled band
+		expect(crToY(CR_MIN, rect)).toBeCloseTo(505);
+	});
+
+	it("puts a crit count's row at its share of the hits", () => {
+		// 3 of 8 is 37.5%: the strip's row and the axis agree
+		expect(countAtRate(0.375, 8)).toBe(3);
+		expect(countAtRate(0.7, 8)).toBe(6); // 5.6 rounds to the nearer row
+		expect(countAtRate(-0.2, 8)).toBe(0);
+		expect(countAtRate(1.4, 8)).toBe(8);
+		expect(countAtRate(0.5, 0)).toBe(1); // at least one hit, as the distribution
 	});
 });
 
@@ -191,9 +205,9 @@ describe('critCountDistribution', () => {
 		expect(d[8]).toBeCloseTo(Math.pow(0.7, 8), 12);
 	});
 
-	it('sums to 1 and its first bar is the no-crit risk, up to 40 hits', () => {
+	it('sums to 1 and its first bar is the no-crit risk, up to 60 hits', () => {
 		for (const cr of [0.05, 0.37, 0.7, 0.95]) {
-			for (const hits of [1, 8, 40]) {
+			for (const hits of [1, 8, 40, HITS_MAX]) {
 				const d = critCountDistribution(cr, hits);
 				expect(d.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
 				expect(d[0]).toBeCloseTo(zeroCritProbability(cr, hits), 12);
@@ -210,5 +224,27 @@ describe('critCountDistribution', () => {
 		const d = critCountDistribution(0.7, 8);
 		const mean = d.reduce((sum, p, k) => sum + p * rotationMultiplier(k, 8, 1.4), 0);
 		expect(mean).toBeCloseTo(averageDamageMultiplier(0.7, 1.4), 12);
+	});
+});
+
+describe("the strip's crit counts", () => {
+	it('labels every count where the rows have room', () => {
+		expect(countLabels(8, 70, 12)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+	});
+
+	it('thins to every 2nd, 5th or 10th count as the rows close up', () => {
+		expect(countLabels(60, 10, 12)).toEqual([...Array(31).keys()].map((i) => i * 2));
+		expect(countLabels(60, 4, 12)).toEqual([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]);
+		expect(countLabels(60, 1, 12)).toEqual([0, 10, 20, 30, 40, 50, 60]);
+	});
+
+	it('always labels the read count, clearing the labels that would crowd it', () => {
+		// every 2nd count at 10px apart; 7 is read, so 6 and 8 (10px off) give way
+		const labels = countLabels(60, 10, 12, 7);
+		expect(labels).toContain(7);
+		expect(labels).not.toContain(6);
+		expect(labels).not.toContain(8);
+		expect(labels).toContain(4);
+		expect(labels).toContain(10);
 	});
 });

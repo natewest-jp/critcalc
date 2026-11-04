@@ -645,11 +645,11 @@
 	}
 
 	/* Both minimums are load-bearing, and min-width is the one that bites.
-	   A grid item's automatic minimum is its MIN-CONTENT size, and the heatmap
-	   sets its drawn frame's width inline in px — so after a wide lineup the
+	   A grid item's automatic minimum is its MIN-CONTENT size, and a stage chart
+	   sets its SVG's width inline in px — so after a wide lineup the
 	   body's min-content is that stale wide box and the body refuses to shrink
 	   with the tile, spilling over the neighbouring instrument. Zero here lets
-	   the tile drive the width; the chart's ResizeObserver then refits into it.
+	   the tile drive the width; the chart's measured width then refits into it.
 	   Same law as the frames' min-height chain, one axis over. */
 	.ws-body {
 		flex: 1;
@@ -693,7 +693,7 @@
 		   tile is a SIZE container. Its height is the row's now — definite, and
 		   never its content's — so the containment the rule above warns about
 		   has nothing to collapse, and `100cqh` is the tile's height: what the
-		   stage and the Crit Heatmap's stage measure their width against
+		   stage measures its width against
 		   (app.css § THE STAGE). The name and the
 		   width queries are unchanged; layout containment already came with
 		   inline-size, so nothing positioned inside moves. */
