@@ -47,3 +47,17 @@ export function evenShare(interval: number, params: IcdParams): { applies: numbe
 	const window = next > 0 ? sim.slice(0, next) : sim;
 	return { applies: window.filter((h) => h.applies).length, of: window.length };
 }
+
+/**
+ * THE COMPANION: how often an even string's element lands, as the seconds
+ * between applications. The everyday question beside the headline's share,
+ * and not its mirror: attacking slower can land the element MORE often
+ * (under Standard ICD, every 4s at 2s apart but every 2.5s at 2.5s apart,
+ * where each hit meets the timer as it runs out). Applications fall evenly
+ * across a window only on average, so this is the window's length over its
+ * applications.
+ */
+export function landsEvery(interval: number, params: IcdParams): number {
+	const { applies, of } = evenShare(interval, params);
+	return (of * interval) / applies;
+}

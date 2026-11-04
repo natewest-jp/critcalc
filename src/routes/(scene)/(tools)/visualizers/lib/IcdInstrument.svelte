@@ -5,7 +5,7 @@
 	import { simulateIcd, STANDARD_ICD, NO_ICD, type IcdParams } from '$lib/utils/icd';
 	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 	import { ICD_EXAMPLES, type IcdExampleId } from './icdExamples';
-	import { evenHits, evenShare, evenSpan } from './icdTimeline';
+	import { evenHits, evenShare, evenSpan, landsEvery } from './icdTimeline';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'] as const;
@@ -212,9 +212,9 @@
 	const STALK = 50;
 	/** Everything in the chart but the stalk, at k = 1: the bracket's and the
 	 *  icons' room over it; the counter, the timer and the axis under it; and,
-	 *  for an even string, the share strip under the axis. */
+	 *  for an even string, the companion strip under the axis. */
 	const TOP = $derived(example ? 26 : 46);
-	const FIXED = $derived(TOP + 50 + (example ? 20 : 60));
+	const FIXED = $derived(TOP + 50 + (example ? 20 : 96));
 	const natural = $derived(FIXED + STALK);
 	const k = $derived(Math.min(K_MAX, Math.max(1, graphH / natural)));
 	const stalk = $derived(Math.min(k * STALK * STALK_GROW, Math.max(k * STALK, graphH - k * FIXED)));
@@ -224,8 +224,8 @@
 		const bandTop = hitBottom + 28 * k;
 		const bandH = 14 * k;
 		const axisY = bandTop + bandH + 8 * k;
-		const stripTop = axisY + 24 * k;
-		const stripH = 30 * k;
+		const stripTop = axisY + 42 * k;
+		const stripH = 48 * k;
 		return {
 			bracketY: 16 * k,
 			hitTop,
@@ -234,6 +234,7 @@
 			bandTop,
 			bandH,
 			axisY,
+			stripTitleY: axisY + 34 * k,
 			stripTop,
 			stripBottom: stripTop + stripH,
 			stripH,
@@ -278,7 +279,7 @@
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((t: number) => PADL + (t / domain) * plotW);
 
-	/** 🎛️ The reading stands right of the share strip, under the chart it
+	/** 🎛️ The reading stands right of the companion strip, under the chart it
 	 *  explains, where at least BESIDE_MIN px are left there; otherwise (a
 	 *  phone, an example) it is a line of its own under the chart. */
 	const BESIDE_MIN = 360;
@@ -366,34 +367,55 @@
 		return { x0: xs[0], x1: xs[share.of - 1], text: `${share.applies} of these ${share.of}` };
 	});
 
-	// ── The share strip: the headline at every interval, along the handle ───
-	// The handle's track runs 0.1–3s on the time axis's scale, so the strip
-	// drawn on that span under the axis is the slider's landscape: where the
-	// share steps up as the interval grows. Sampled every 0.01s; it depends on
-	// the rule alone, so dragging the handle only moves its dot.
-	const SHARE_STEP = 0.01;
-	const shares = $derived.by(() => {
+	// ── The companion: how often the element lands, along the handle ──────
+	// ⚓ Nate 2026-11-04, replacing the share at every interval, which answered
+	// a theorycrafter's question. This is the everyday one, and it surprises:
+	// slower can land more often (icdTimeline.ts `landsEvery`). The handle's
+	// track runs 0.1–3s on the time axis's scale, so the strip on that span
+	// under the axis is the slider's landscape. Sampled every 0.01s; it depends
+	// on the rule alone, so dragging the handle only moves its dot. Taller is a
+	// longer wait, read off the seconds in the lanes' margin.
+	const LANDS_STEP = 0.01;
+	const lands = $derived.by(() => {
 		if (example) return [];
-		const n = Math.round((INTERVAL_MAX - INTERVAL_MIN) / SHARE_STEP);
+		const n = Math.round((INTERVAL_MAX - INTERVAL_MIN) / LANDS_STEP);
 		return Array.from({ length: n + 1 }, (_, i) => {
-			const v = INTERVAL_MIN + i * SHARE_STEP;
-			const s = evenShare(v, params);
-			return { v, r: s.applies / s.of };
+			const v = INTERVAL_MIN + i * LANDS_STEP;
+			return { v, g: landsEvery(v, params) };
 		});
 	});
-	const stripPath = $derived.by(() => {
-		if (!shares.length) return '';
-		const y = (r: number) => (ROW.stripBottom - r * ROW.stripH).toFixed(1);
-		let d = `M${xOf(INTERVAL_MIN).toFixed(1)},${ROW.stripBottom}`;
-		let prev = shares[0].r;
-		d += ` L${xOf(INTERVAL_MIN).toFixed(1)},${y(prev)}`;
-		for (const { v, r } of shares) {
-			if (r === prev) continue;
-			const x = xOf(v).toFixed(1);
-			d += ` L${x},${y(prev)} L${x},${y(r)}`;
-			prev = r;
-		}
-		return `${d} L${xOf(INTERVAL_MAX).toFixed(1)},${y(prev)} L${xOf(INTERVAL_MAX).toFixed(1)},${ROW.stripBottom} Z`;
+	/** The strip's scale: a round step giving at most three gridlines. */
+	const landsScale = $derived.by(() => {
+		const top = Math.max(1, ...lands.map((l) => l.g));
+		const step = [0.5, 1, 2, 5, 10].find((st) => top / st <= 3) ?? 20;
+		const max = Math.ceil(top / step - 1e-9) * step;
+		return {
+			max,
+			ticks: Array.from({ length: Math.round(max / step) }, (_, i) => (i + 1) * step)
+		};
+	});
+	const landsY = (g: number) => ROW.stripBottom - (g / landsScale.max) * ROW.stripH;
+	const landsPath = $derived(
+		lands
+			.map((l, i) => `${i ? 'L' : 'M'}${xOf(l.v).toFixed(1)},${landsY(l.g).toFixed(1)}`)
+			.join(' ')
+	);
+	const landsNow = $derived(example ? null : landsEvery(interval, params));
+	/** The dot's label goes left of it where the strip's end is near. */
+	const landsLabelLeft = $derived(xOf(interval) > xOf(INTERVAL_MAX) - 80 * k);
+	/** 🎛️ The label's width, generously ("every 1.25s" at 11px condensed). */
+	const LANDS_LABEL_W = 66;
+	/** The label sits over the curve wherever it spans, so the line never
+	 *  runs through it: above the highest point under the label, and never
+	 *  above the strip's top. */
+	const landsLabelY = $derived.by(() => {
+		if (landsNow === null) return 0;
+		const x0 = xOf(interval);
+		const x1 = x0 + (landsLabelLeft ? -1 : 1) * (8 + LANDS_LABEL_W) * k;
+		const [lo, hi] = x0 < x1 ? [x0, x1] : [x1, x0];
+		const under = lands.filter((l) => xOf(l.v) >= lo && xOf(l.v) <= hi).map((l) => l.g);
+		const top = Math.max(landsNow, ...under);
+		return Math.max(ROW.stripTop + 9 * k, landsY(top) - 5 * k);
 	});
 
 	// ── Point to read ────────────────────────────────────────────────────────
@@ -482,16 +504,7 @@
 			name: 'Timer',
 			y: ROW.bandTop + ROW.bandH / 2 + LANE_FS * 0.35,
 			tip: 'Each band is a timer window, started by a hit that applies once the timer has run out. Its number is how many hits it applied.'
-		},
-		...(example
-			? []
-			: [
-					{
-						name: 'Share',
-						y: ROW.stripTop + ROW.stripH / 2 + LANE_FS * 0.35,
-						tip: 'The share of hits that apply at every hit interval, along the slider under it.'
-					}
-				])
+		}
 	]);
 
 	const RULES: { id: Rule; label: string }[] = [
@@ -778,16 +791,36 @@
 						</text>
 					{/each}
 
-					<!-- The share strip: the headline at every interval the handle
-					     under it reaches, and a dot where it is now -->
-					{#if stripPath && share}
-						<line
-							x1={xOf(INTERVAL_MIN)}
-							y1={ROW.stripTop}
-							x2={xOf(INTERVAL_MAX)}
-							y2={ROW.stripTop}
-							stroke="var(--chart-grid)"
-						/>
+					<!-- The companion strip: how often the element lands at every
+					     interval the handle under it reaches, and a dot where it is now -->
+					{#if landsPath && landsNow !== null}
+						<text
+							class="stage-word"
+							x={xOf(INTERVAL_MIN)}
+							y={ROW.stripTitleY}
+							fill="var(--chart-dim)"
+							font-size={LANE_FS}
+						>
+							How often the element lands, at each hit interval
+						</text>
+						{#each landsScale.ticks as t (t)}
+							<line
+								x1={xOf(INTERVAL_MIN)}
+								y1={landsY(t)}
+								x2={xOf(INTERVAL_MAX)}
+								y2={landsY(t)}
+								stroke="var(--chart-grid)"
+							/>
+							<text
+								x={PADL - LANE_GAP}
+								y={landsY(t) + LANE_FS * 0.35}
+								fill="var(--chart-ink)"
+								font-size={LANE_FS}
+								text-anchor="end"
+							>
+								{fmtS(t)}
+							</text>
+						{/each}
 						<line
 							x1={xOf(INTERVAL_MIN)}
 							y1={ROW.stripBottom}
@@ -795,23 +828,33 @@
 							y2={ROW.stripBottom}
 							stroke="var(--chart-rule)"
 						/>
-						<path d={stripPath} fill="var(--chart-ink)" fill-opacity="0.45" />
+						<path d={landsPath} fill="none" stroke="var(--chart-ink)" stroke-width={1.5 * k} />
 						<line
 							x1={xOf(interval)}
 							y1={ROW.stripTop}
 							x2={xOf(interval)}
 							y2={ROW.stripBottom}
 							stroke="var(--chart-ink)"
-							stroke-width="1.5"
+							stroke-dasharray="2 2"
 						/>
 						<circle
 							cx={xOf(interval)}
-							cy={ROW.stripBottom - (share.applies / share.of) * ROW.stripH}
+							cy={landsY(landsNow)}
 							r={3.5 * k}
 							fill="var(--accent)"
 							style="stroke: var(--frame-bg)"
 							stroke-width="1.5"
 						/>
+						<text
+							class="stage-word"
+							x={xOf(interval) + (landsLabelLeft ? -8 : 8) * k}
+							y={landsLabelY}
+							fill="var(--text)"
+							font-size={11 * k}
+							text-anchor={landsLabelLeft ? 'end' : 'start'}
+						>
+							every {fmtS(landsNow)}
+						</text>
 					{/if}
 				</svg>
 				{#if beside}
@@ -820,7 +863,7 @@
 						aria-live="polite"
 						style:left="{besideX}px"
 						style:right="{PADR}px"
-						style:top="{ROW.stripTop - 2}px"
+						style:top="{ROW.stripTitleY - LANE_FS}px"
 					>
 						{@render readingText()}
 					</div>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NO_ICD, STANDARD_ICD, simulateIcd } from '$lib/utils/icd';
-import { evenHits, evenShare, evenSpan } from './icdTimeline';
+import { evenHits, evenShare, evenSpan, landsEvery } from './icdTimeline';
 
 describe('evenShare: the headline', () => {
 	// Hand-read off the standard rule (2.5s timer, every 3rd hit): T timer,
@@ -50,5 +50,21 @@ describe('evenSpan and evenHits: the fixed axis', () => {
 	it('fills the axis with hits that land before its end', () => {
 		expect(evenHits(0.5, 7.5)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7]);
 		expect(evenHits(3, 7.5)).toEqual([0, 3, 6]);
+	});
+});
+
+describe('landsEvery: how often the element lands', () => {
+	it.each([
+		[0.5, 1.25],
+		[1, 3],
+		[1.25, 2.5],
+		[2, 4], // the second hit is just inside the timer, so only every other one lands
+		[2.5, 2.5] // slower, yet more often: each hit meets the timer as it runs out
+	])('at %ss under Standard ICD, every %ss', (interval, every) => {
+		expect(landsEvery(interval, STANDARD_ICD)).toBeCloseTo(every, 9);
+	});
+
+	it('is the interval itself with no ICD', () => {
+		expect(landsEvery(0.7, NO_ICD)).toBeCloseTo(0.7, 9);
 	});
 });

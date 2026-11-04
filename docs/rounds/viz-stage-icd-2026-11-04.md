@@ -211,3 +211,31 @@ and the rule's segment, one size with them (lit only while the interval is a pre
 band labels lose the chart words' halo, the band being their ground; and the rule row's last
 range input ran 2px past the stage's edge (Chrome's range margin, the trap the axis handles
 already guard) and scrolled the tile sideways, now zeroed.
+
+## 10. The companion, changed: how often the element lands
+
+Nate: the share strip is interesting, "perhaps the graph true theorycrafters would gain the
+most from", but obtuse to everyday players, himself included. Claude's reading: it answered a
+theorycrafter's question (what fraction of my hits apply); the everyday one is how often the
+element lands. Offered with a plain-spoken share strip, the aura on the enemy (set aside:
+at 1U per application nearly every string keeps it on, and a reaction eating it is the
+Gauge explorer's job), and hits against applications as two staircases (set aside: it repeats
+the stems). ⚓ Nate picked how often it lands.
+
+The strip is now the seconds between applications at every interval on the handle's span
+(`icdTimeline.ts` `landsEvery`, tested: Standard ICD lands every 1.25s at 0.5s, 3s at 1s,
+2.5s at 1.25s, 4s at 2s, and 2.5s at 2.5s). It is a sawtooth, and its drops are the
+surprise: attacking slower can land the element more often, where each hit meets the timer
+as it runs out. Drawn as a line (taller is a longer wait), its seconds in the lanes' margin,
+its title over it, and the dot's value beside the dot, lifted over the curve wherever the
+label spans so the line never runs through it. The strip is no longer the headline's own
+number; the two answer different questions.
+
+Copy (proposed): "How often the element lands, at each hit interval" (the strip's title);
+"every 1.25s" (the dot); the seconds on its scale ("2s", "4s", "6s"). Gone: "Share" and its
+tooltip.
+
+Help §8's second paragraph, revised for it: "…For evenly spaced hits, the handle under the
+chart sets the interval, and the strip along it shows how often the element lands at every
+interval: sometimes a slower string lands it more often. Under the chart, **ICD** sets the
+rule…"
