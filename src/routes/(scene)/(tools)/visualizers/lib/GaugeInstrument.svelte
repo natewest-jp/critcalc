@@ -3,9 +3,9 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import {
 		simulateGauge,
-		gaugesAt,
 		GAUGE_OPTIONS,
 		type Application,
+		type AttachMode,
 		type ElementId,
 		type ReactionKind,
 		type SimEvent
@@ -14,7 +14,7 @@
 	import { elementPalette, shiftHue } from '$lib/utils/elementColors';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import Emphasis from '$lib/components/Emphasis.svelte';
-	import EventLog, { type EventLogRow } from '$lib/components/EventLog.svelte';
+	import { aurasAt, dropMarks, gaugeHead, widestHead } from './gaugeStage';
 	import { tick } from 'svelte';
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
@@ -50,6 +50,14 @@
 		burning: 'Burning',
 		hyperbloom: 'Hyperbloom',
 		burgeon: 'Burgeon'
+	};
+
+	/** The word over a pill for what it did to its own element's aura. A fresh
+	 *  aura and a trigger reacted away say nothing: the curve shows both. */
+	const ATTACH_WORD: Partial<Record<AttachMode, string>> = {
+		topUp: 'Topped up',
+		pyroRefresh: 'Refreshed',
+		tooWeak: 'Too weak'
 	};
 
 	type PresetDef = {
@@ -120,7 +128,7 @@
 		},
 		{
 			// ⚓ Added 2026-10-02: Top-up's exception, and the only scenario that
-			// shows the log's two Pyro-only lines (too weak · refreshed). gcsim
+			// shows the two Pyro-only words (too weak · refreshed). gcsim
 			// `attachOverlapRefreshDuration`: below the standing aura → no-op; at
 			// or above → the gauge AND the decay rate are replaced.
 			// 2U at 0 stands at ~1.47U at 1s (beats a 0.8U taxed hit) and ~0.67U
@@ -272,8 +280,8 @@
 	// and nothing is selected unless its editor is open.
 	//
 	// 🐛 The list is kept SORTED BY TIME. `simulateGauge` hands `apply` events an
-	// `appIndex` in time order, so a list in insertion order let the log's #1 be
-	// some other row. Sorting makes the chart, the editor and the log one story.
+	// `appIndex` in time order, so a list in insertion order let a marker
+	// describe some other row. Sorting makes the chart and the editor one story.
 	type AppRow = Application & { id: number };
 	/** ⚠ IDENTITY, NOT POSITION. The list re-sorts under a drag, so every consumer
 	 *  — the open editor, the in-flight drag, the keyed `{#each}` over the
@@ -507,16 +515,16 @@
 	 * is a different thing, with a job: following a rotation in game, by ear.)
 	 *
 	 * What stayed is the PIN. A press or drag on the plot leaves a cursor at
-	 * that moment and the Readout reads it. A touch has no hover, so on a phone
+	 * that moment and the headline reads it. A touch has no hover, so on a phone
 	 * the pin is the only way to read a moment; on a desktop it holds a reading
-	 * while the pointer travels to the Readout, where hover would have let go.
+	 * while the pointer travels elsewhere, where hover would have let go.
 	 */
 	let pinT = $state<number | null>(null);
 	const displayT = $derived(pinT === null ? null : Math.min(pinT, domain));
 	/**
 	 * ⚓ HOVER READS (2026-10-02, ⚓ Nate). Pointing at the plot reads that moment
-	 * into the Readout. The pointer wins while it is over the plot; leaving
-	 * hands the Readout back to the pin, then to the summary. ⚠ Not during a
+	 * into the headline. The pointer wins while it is over the plot; leaving
+	 * hands the headline back to the pin, then to the bare-from. ⚠ Not during a
 	 * pin drag, where the pin is the thing being moved.
 	 */
 	let hoverT = $state<number | null>(null);
@@ -573,9 +581,9 @@
 		sim.events.filter((e): e is Extract<SimEvent, { kind: 'apply' }> => e.kind === 'apply')
 	);
 	/**
-	 * The application disc's fill and its halo, for the chart pill AND the log
-	 * pip — ⚓ they are the same object in the marker grammar, so a paint change
-	 * to one is a paint change to both.
+	 * The application disc's fill and its halo, for the chart pill and the
+	 * band's ghost — ⚓ the same object in the marker grammar (shared with the
+	 * planner's event log pip), so a paint change to one is a change to both.
 	 *
 	 * ↻ ⚓ NATE 2026-08-17: white on a halo, on the `bar` rung, replacing dark ink
 	 * on `main`. The planner's bars retired that idiom in 2026-08-11 and these
@@ -595,10 +603,14 @@
 					(r): r is Extract<SimEvent, { kind: 'reaction' }> =>
 						// ⚠ A Burning tick's Burgeon names the burn's OWNER in
 						// `appIndex` but happens at the tick, seconds later — it is
-						// not this pill's. The log lists it at its own time.
+						// not this pill's.
 						r.kind === 'reaction' && r.appIndex === e.appIndex && !r.internal
 				)
 				.map((r) => REACTION_NAME[r.reaction]);
+			// What the application did to its own aura, where that is the lesson
+			// (Top-up, Pyro refresh): the old log's words, nearest the pill.
+			const attach = ATTACH_WORD[e.attach];
+			if (attach) names.push(attach);
 			// ⚠ `appIndex` INDEXES `appRows` — that is the whole reason the list is
 			// kept in time order (see AppRow). `simulateGauge` numbers its events by
 			// position in its own time-sorted copy, so the two agree as long as both
@@ -692,154 +704,7 @@
 	});
 	const cores = $derived(sim.events.filter((e) => e.kind === 'core'));
 
-	// ── Event log (burning self-ticks hidden; EC drains collapsed into runs) ──
-	type LogRow =
-		| { kind: 'event'; event: SimEvent }
-		| { kind: 'ecRun'; t0: number; t1: number; count: number };
-	const logRows = $derived.by(() => {
-		const rows: LogRow[] = [];
-		for (const event of sim.events) {
-			if (event.kind === 'burningTick') continue;
-			if (event.kind === 'ecTick') {
-				const last = rows[rows.length - 1];
-				if (last?.kind === 'ecRun') {
-					last.t1 = event.time;
-					last.count += 1;
-				} else {
-					rows.push({ kind: 'ecRun', t0: event.time, t1: event.time, count: 1 });
-				}
-				continue;
-			}
-			rows.push({ kind: 'event', event });
-		}
-		return rows;
-	});
-
-	const fmtU = (u: number) => `${u.toFixed(2).replace(/\.?0+$/, '')}U`;
-	const fmtT = (t: number) => `${t.toFixed(2)}s`;
-
-	// ══ THE LOG'S VOICE (tightened 2026-08-17, ⚓ NATE: "a bit wordy") ═════════
-	//
-	// ⚓ A LOG LINE SAYS WHAT CHANGED, not what the mechanic is called. Every row
-	// used to restate its own inputs — "Pyro 1U · applies 0.8U aura (×0.8 tax)"
-	// repeats the element, the size AND a rule, when the pip beside it already
-	// carries the size and the scenario note above already explains the tax.
-	// Stripped to the outcome, the column becomes scannable, which is the only
-	// thing a transcript is for.
-	//
-	// ⚠️ THE TEACHING DID NOT MOVE, it was already elsewhere: the ×0.8 tax is
-	// stated in the Single Aura scenario note, the reaction multipliers ride the
-	// reaction NAMES, and the unit is defined at the top of the Applications
-	// panel. ⛔ Don't restore an explanation here that another surface owns —
-	// three copies of one sentence is how they come to disagree.
-	// ⛔ NO `→`. The first cut wrote "Pyro → 0.8U", which reads well and is on the
-	// mark sweep's banned list (e2e/marks.spec.ts): an arrow is a CONTROL glyph
-	// here, not prose, and the sweep caught it. ⚠ The exemption the icon-set note
-	// grants `× · →` covers the help chapters' prose, which that spec skips by
-	// selector — a readout panel is not prose. "aura" carries the same meaning in
-	// a word the body face actually has.
-	// ↻ 2026-10-02 (worksheet 03, ⚓ Nate): a line's qualifier rides in
-	// PARENTHESES after the thing it qualifies, where a `·` used to glue
-	// fragments together — a translator can see a phrase now. ⛔ Never two
-	// parentheticals in a row.
 	const elName = (el: ElementId) => ELEMENT_LABEL[el];
-	function attachText(e: Extract<SimEvent, { kind: 'apply' }>): string {
-		const el = elName(e.element);
-		switch (e.attach) {
-			case 'new':
-				return `${el} (${fmtU(e.auraAfter)} after tax)`;
-			// ⚠ "topped up TO", not "after tax": a top-up keeps the LARGER of the
-			// standing aura and the new taxed gauge, so the number can be the old
-			// aura, untouched by this hit.
-			case 'topUp':
-				return `${el} (topped up to ${fmtU(e.auraAfter)}, rate kept)`;
-			case 'pyroRefresh':
-				return `${el} (${fmtU(e.auraAfter)} after tax, refreshed, new rate)`;
-			case 'tooWeak':
-				return `${el} (too weak to attach)`;
-			case 'none':
-				return e.element === 'anemo' || e.element === 'geo'
-					? `${el} (never attaches)`
-					: `${el} (fully reacted)`;
-		}
-	}
-
-	/** "Vaporize ×2: −2U Pyro, −1U Hydro trigger" — what the aura lost AND what the
-	 *  trigger spent, because the two differ by the reaction's modifier, which is
-	 *  the Vaporize / Reverse Melt lesson. */
-	function reactionText(e: Extract<SimEvent, { kind: 'reaction' }>): string {
-		const name =
-			REACTION_NAME[e.reaction] +
-			(e.of && (e.reaction === 'swirl' || e.reaction === 'crystallize')
-				? ` (${MOD_META[e.of].label})`
-				: '');
-		if (e.reaction === 'crystallizeBlocked') return 'Crystallize (blocked by its 1s cooldown)';
-		if (!e.consumed.length && (e.reaction === 'aggravate' || e.reaction === 'spread'))
-			return `${name} (no gauge spent)`;
-		const parts = e.consumed.map((c) => `−${fmtU(c.amount)} ${MOD_META[c.mod].label}`);
-		if (e.spent > 0) {
-			// ⚠ `appRows`, which `appIndex` addresses (see AppRow) — ⛔ not
-			// `applyEvents`, whose positions shift with Burning's own re-applications.
-			const trigger = e.appIndex === null ? null : appRows[e.appIndex]?.element;
-			parts.push(`−${fmtU(e.spent)}${trigger ? ` ${elName(trigger)}` : ''} trigger`);
-		}
-		return parts.length ? `${name}: ${parts.join(', ')}` : name;
-	}
-
-	/**
-	 * The transcript, in the shared row grammar (`$lib/components/EventLog`).
-	 *
-	 * ⚓ THE PIP CARRIES THE GAUGE, NOT THE ROW NUMBER (⚓ Nate) — see EventLog's
-	 * header. It makes a log line and its marker on the chart the same object.
-	 */
-	const logRowsOut = $derived.by(() => {
-		const rows: EventLogRow[] = [];
-		for (const row of logRows) {
-			if (row.kind === 'ecRun') {
-				rows.push({
-					time: row.t0,
-					// ⚠ The START only, with the count in the text — the lane reached the
-					// same answer for the same reason (`collapseReactionRuns`): a run's
-					// extent is a chart's job, and a range in a time column is twice the
-					// width of every other row's.
-					// ⚠ "ticks", not a bare "Electro-Charged ×N". The reaction itself
-					// already has its own row where it fired, so an unqualified repeat
-					// reads as the reaction happening N more times rather than as the
-					// drain it actually is. "from both" names what −0.4U comes off.
-					text:
-						row.count === 1
-							? 'Electro-Charged tick (−0.4U from both)'
-							: `${row.count} Electro-Charged ticks (−0.4U from both each tick)`,
-					tone: 'quiet'
-				});
-				continue;
-			}
-			const e = row.event;
-			if (e.kind === 'apply') {
-				rows.push({
-					time: e.time,
-					pip: { text: `${e.gauge}`, ...pipPaint(e.element) },
-					text: attachText(e),
-					tone: 'lead'
-				});
-			} else if (e.kind === 'reaction') {
-				rows.push({ text: reactionText(e), tone: 'sub' });
-			} else if (e.kind === 'drained') {
-				rows.push({ time: e.time, text: `${MOD_META[e.mod].label} gone`, tone: 'quiet' });
-			} else if (e.kind === 'burningEnd') {
-				const swept = e.swept.length
-					? ` (${e.swept.map((m) => MOD_META[m].label).join(', ')} gone)`
-					: '';
-				rows.push({ time: e.time, text: `Burning ends${swept}`, tone: 'quiet' });
-			} else if (e.kind === 'core') {
-				// ⛔ The 🌱 that used to close this line went with the 🎲 in the crit
-				// sampler: an emoji is drawn by whichever fallback face the engine
-				// picks, in colour, at a weight nothing here chose.
-				rows.push({ time: e.time, text: 'Dendro Core', tone: 'quiet' });
-			}
-		}
-		return rows;
-	});
 
 	// ══ POINTER: THE BAND EDITS, THE PLOT PINS ════════════════════════════════
 	// One spatial rule, and it is the grammar's own: everything ABOVE the plot
@@ -1012,23 +877,64 @@
 		}
 		insertRow(timeAtX(e.clientX), bandElement);
 	}
-	const hoverGauges = $derived(
-		readT === null
-			? null
-			: MOD_ORDER.flatMap((mod) => {
-					const u = gaugesAt(sim.series, readT!)[mod];
-					return u === undefined ? [] : [{ mod, meta: MOD_META[mod], u }];
-				})
-	);
+	// ══ THE HEADLINE (the stage, ⚓ Nate 2026-11-04) ══════════════════════════
+	// The aura on the target at the moment you point at or pin; at rest, when
+	// the target goes bare (`gaugeStage.ts`, tested). It replaced the Readout's
+	// top half, and its place is fixed, so pointing moves nothing.
+	const head = $derived(gaugeHead(sim.series, readT));
+	const widest = $derived(widestHead(sim.series, sim.duration));
+	/** Where the moment's reading meets each curve: a dot per aura. */
+	const readDots = $derived(readT === null ? [] : aurasAt(sim.series, readT));
+	/** What each reaction took off a curve, written beside its drop. These and
+	 *  the attach words over the pills are the old aura log, drawn (design §8). */
+	const drops = $derived(dropMarks(sim.series, sim.events));
 </script>
 
-<div class="instrument">
-	<div class="gx-chart instrument-chart ctx-dark">
-		<!-- ══ THE TOOLBAR ADDS (2026-11-01, ⚓ Nate) ═══════════════════════════════
-		     One element button per element, each adding a 1U application 1s after
-		     the latest, and Clear. ⛔ Nothing here edits an existing application:
-		     that is the pill's own editor (see THE APPLICATION LIST). -->
-		<div class="panel gx-toolbar">
+<!-- THE STAGE (design §6, §8). One box: the chart head (the aura at the
+     moment you point at or pin, and at rest, when the target goes bare); the
+     add buttons and Clear on the chart's top edge; the applications' band, the
+     overlaid aura areas and the aura strips on one time axis; then the
+     scenarios, out in the open (⚓ Nate: loading one is how a player learns
+     the reactions), with the chosen one's note last. -->
+{#snippet headLine(h: { figure: string; sentence: string }, ghost: boolean)}
+	<p class="readout-head stage-head gx-head" class:gx-head--ghost={ghost} inert={ghost}>
+		<span class="gx-head-figure"
+			>{#each h.figure.split(' · ') as part, i (i)}{i ? ' · ' : ''}<span class="gx-aura"
+					>{part}</span
+				>{/each}</span
+		><span class="readout-sentence gx-head-sentence"
+			>{h.sentence}
+			{#if ghost || pinT !== null}
+				<button
+					class="btn btn--sm btn--icon gx-unpin"
+					aria-label="Unpin"
+					title="Unpin"
+					onclick={() => (pinT = null)}
+				>
+					<Mark name="close" />
+				</button>
+			{/if}</span
+		>
+	</p>
+{/snippet}
+
+<div class="stage-root">
+	<div class="stage ctx-dark">
+		<!-- The headline, over a hidden copy of the longest one this sequence
+		     can show, in one cell: the cell keeps that room, so a long reading
+		     wraps into it and nothing under the headline moves (design §4). -->
+		<div class="gx-head-cell">
+			{@render headLine(widest, true)}
+			{@render headLine(head, false)}
+		</div>
+
+		<!-- ══ THE TOOLBAR ADDS (2026-11-01, ⚓ Nate) ═══════════════════════════
+		     One element button per element, each adding a 1U application 1s
+		     after the latest, and Clear. ⛔ Nothing here edits an existing
+		     application: that is the pill's own editor (see THE APPLICATION
+		     LIST). A plate of actions, not a segment: a segment's track says
+		     "one of these is chosen". -->
+		<div class="stage-toolbar">
 			<div class="gx-adds" role="group" aria-label="Add an application">
 				<span class="gx-add-label" aria-hidden="true">
 					<Mark name="plus" />
@@ -1036,7 +942,7 @@
 				</span>
 				{#each ELEMENTS as e (e)}
 					<button
-						class="chip chip--icon gx-el"
+						class="btn gx-el"
 						style:--chip-color="var(--el-{e}-main)"
 						aria-label="Add {elName(e)}"
 						title={appRows.length >= MAX_APPS
@@ -1050,7 +956,7 @@
 				{/each}
 			</div>
 			<button
-				class="btn btn--sm"
+				class="btn btn--glass ctx-glass gx-clear"
 				aria-label="Clear"
 				title="Remove every application"
 				disabled={appRows.length === 0}
@@ -1061,7 +967,7 @@
 			</button>
 		</div>
 		<div
-			class="gx-graph instrument-graph"
+			class="stage-graph instrument-graph gx-graph"
 			style:--graph-min="{PLOT_MIN + chromeH}px"
 			bind:clientWidth={graphW}
 			bind:clientHeight={graphH}
@@ -1298,7 +1204,7 @@
 						     the pointer: as a sibling it painted on top of the hit target, so
 						     a press landing on the digit fell through to the SVG and flung
 						     the pin instead of grabbing the marker.
-						     ↻ ⚓ NATE 2026-08-17: WHITE ON A HALO, matching the log's pip and
+						     ↻ ⚓ NATE 2026-08-17: WHITE ON A HALO, matching the event log's pip and
 						     the planner's bars — the disc took `bar` and the digit takes the
 						     chart's own two-shadow recipe. ⚠ `text-shadow` on SVG text, which
 						     is a CSS property SVG2 applies to <text>; the alternative
@@ -1359,6 +1265,20 @@
 					/>
 				{/each}
 
+				<!-- What each reaction took off the aura, beside the curve's drop:
+				     the old log's "−2U Pyro", where it happened. -->
+				{#each drops as d, di (di)}
+					<text
+						class="stage-word gx-drop"
+						x={xOf(d.time) + 4}
+						y={(yOf(d.after) + yOf(d.after + d.amount)) / 2 + 3.5}
+						fill={MOD_META[d.mod].color}
+						font-size="10"
+					>
+						−{+d.amount.toFixed(2)}U
+					</text>
+				{/each}
+
 				<!-- Dendro cores -->
 				{#each cores as c, ci (ci)}
 					<circle cx={xOf(c.time)} cy={plotY1 - 5} r="4" fill="var(--rx-dendro-core)" />
@@ -1390,7 +1310,7 @@
 					{/each}
 				{/each}
 
-				<!-- The hover cursor: the moment the Readout is reading, fainter than the
+				<!-- The hover cursor: the moment the headline is reading, fainter than the
 				     pin because nothing is parked there. -->
 				{#if hoverT !== null && readT === hoverT}
 					<line
@@ -1416,6 +1336,20 @@
 						stroke-width="1.5"
 					/>
 				{/if}
+
+				<!-- The headline's reading on the chart: a dot where the moment
+				     meets each aura's curve. -->
+				{#each readDots as r (r.mod)}
+					<circle
+						cx={xOf(readT!)}
+						cy={yOf(r.u)}
+						r="3.5"
+						fill={MOD_META[r.mod].color}
+						stroke="var(--frame-bg)"
+						stroke-width="1.5"
+						pointer-events="none"
+					/>
+				{/each}
 			</svg>
 
 			<!-- ══ THE PILL'S EDITOR (2026-11-01, ⚓ Nate) ══════════════════════════
@@ -1510,95 +1444,47 @@
 				</div>
 			{/if}
 		</div>
-	</div>
 
-	<!-- The rail's first panel (round 3, design §3). The live controls are the
-	     chart's own toolbar and pills, so the rail holds the scenarios, then the
-	     Readout. They take the LIVE slot: loading one is where working in the
-	     Gauge starts, and an empty live row would still draw its grid gap above
-	     the rail. ⚓ Out in the open, never folded into a menu: loading one is
-	     how a player learns the reactions. One section: the chips and their
-	     note on the control rung (app.css § THE SPACING LADDER). -->
-	<div class="panel inst-section gx-scenarios instrument-live">
-		<p class="kicker">Example scenarios</p>
-		<div class="chips gx-chips-dense">
-			{#each PRESETS as p (p.id)}
-				<button
-					class="chip chip--control gx-preset-chip"
-					class:active={preset === p.id}
-					onclick={() => loadPreset(p)}
-				>
-					<span class="gx-chip-els" aria-hidden="true">
-						{#each presetElements(p) as e (e)}
-							<img src={elementIcon(e)} alt="" width="14" height="14" />
-						{/each}
-					</span>
-					{p.label}
-				</button>
-			{/each}
-		</div>
-		<p class="note">
-			<Emphasis text={PRESETS.find((p) => p.id === preset)?.note ?? CUSTOM_NOTE} />
+		<p class="stage-fine gx-hint">
+			Point at the chart to read the aura at that moment, or press it to pin the moment. Tap a pill
+			to edit it, or drag it to move it.
 		</p>
-	</div>
 
-	<!-- ⚓ ONE PAPER CARD PER INSTRUMENT (2026-08-13). This was two panels —
-	     Enemy Status and Event Log — and the Gauge is the case that showed why
-	     the rule has to be a rule: they say ONE thing at two speeds (what is
-	     true at the pin, and how it got there), and as two sheets of the
-	     brightest material on the page they competed to be the answer. One
-	     card, the state on top, the transcript under a quiet label. -->
-	<div class="panel panel--paper gx-readout instrument-readout">
-		<p class="kicker">Readout</p>
-		{#if hoverGauges}
-			<div class="gx-read-at">
-				<p class="note">at {fmtT(readT!)}</p>
-				{#if pinT !== null}
+		<!-- The scenarios, out in the open. ⚠ The notes run one to four lines,
+		     and a pill's first edit swaps the scenario's for the custom one, so
+		     every note is stacked in one cell and the cell is the longest: the
+		     chart's height never follows the note (design §4). -->
+		<div class="gx-scenarios" role="group" aria-labelledby="gx-scenarios-name">
+			<span class="gx-scenarios-name" id="gx-scenarios-name">Example scenarios</span>
+			<div class="segment gx-presets" role="radiogroup" aria-labelledby="gx-scenarios-name">
+				{#each PRESETS as p (p.id)}
 					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Unpin"
-						title="Unpin"
-						onclick={() => (pinT = null)}
+						class="btn gx-preset"
+						class:is-active={preset === p.id}
+						role="radio"
+						aria-checked={preset === p.id}
+						onclick={() => loadPreset(p)}
 					>
-						<Mark name="close" />
+						<span class="gx-chip-els" aria-hidden="true">
+							{#each presetElements(p) as e (e)}
+								<img src={elementIcon(e)} alt="" width="14" height="14" />
+							{/each}
+						</span>
+						{p.label}
 					</button>
-				{/if}
+				{/each}
 			</div>
-			{#if hoverGauges.length === 0}
-				<p class="gx-meta">No aura — the next element applies fresh.</p>
-			{:else}
-				{#each hoverGauges as h (h.mod)}
-					<p class="gx-meta gx-status-row">
-						<img src={elementIcon(h.meta.icon)} alt="" width="14" height="14" />
-						<span>{h.meta.label}</span>
-						<span class="gx-strong">{fmtU(h.u)}</span>
+			<div class="gx-notes">
+				{#each [...PRESETS.map( (p) => ({ id: p.id, note: p.note }) ), { id: 'custom', note: CUSTOM_NOTE }] as n (n.id)}
+					<p
+						class="stage-fine gx-note"
+						class:gx-note--on={n.id === preset}
+						aria-hidden={n.id !== preset}
+					>
+						<Emphasis text={n.note} />
 					</p>
 				{/each}
-			{/if}
-		{:else}
-			<p class="note">
-				Point at the chart to read the enemy’s aura state at a moment in time, or click to pin it.
-				Tap a pill to edit it.
-			</p>
-			{#each stripRows as row (row.mod)}
-				<p class="gx-meta gx-status-row">
-					<img src={elementIcon(row.meta.icon)} alt="" width="14" height="14" />
-					<span>{row.meta.label}</span>
-					<span class="gx-strong">
-						{row.intervals.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`).join(', ')}
-					</span>
-				</p>
-			{/each}
-		{/if}
-
-		<!-- ⚓ THE ROW GRAMMAR IS SHARED WITH THE PLANNER'S SIDE COLUMN
-		     (2026-08-17) — see $lib/components/EventLog. Only the row BUILDING
-		     is local, because only this tool can see `crystallizeBlocked`, a
-		     reverse multiplier or a per-reaction consumption; the IR has
-		     collapsed all three by the time the planner reads it. -->
-		<p class="gx-sub">Aura log</p>
-		<div class="gx-log">
-			<EventLog rows={logRowsOut} empty="Nothing lands on the target." />
+			</div>
 		</div>
 	</div>
 </div>
@@ -1609,8 +1495,10 @@
 	   left together; what remains is a layout box.
 	   ⚠ .ctx-dark stays CLAIMED and is doing real work: at TOOL_DIM the crest IS a
 	   dark ground, and --frame-bg has to keep resolving somewhere for the --chart-*
-	   stops that mix against it. Unpainted reference, not a leftover. (.gx-chart
-	   is otherwise only the layout's chart slot — see app.css .instrument.) */
+	   stops that mix against it. Unpainted reference, not a leftover. It is the
+	   stage's (.stage.ctx-dark) now.
+	   ⚠ `touch-action: none`, over the stage's `pan-y`: a press on the plot
+	   pins and a press on a pill drags, both sideways. */
 	.gx-graph svg {
 		display: block;
 		touch-action: none;
@@ -1618,45 +1506,69 @@
 		-webkit-user-select: none;
 	}
 
-	/* The layout is app.css's .instrument — whose rail is 25rem wide because
-	   of THIS log: its widest application line holds one line there (see
-	   --instrument-side). Reactions may still wrap. */
+	/* ── The chart head ──────────────────────────────────────────────────────── */
+
+	/* The figure's figures held, so the sentence after it never jitters as you
+	   scrub. */
+	.gx-head-figure {
+		font-variant-numeric: tabular-nums;
+	}
+	/* ⚠ The head wraps here, between the auras, where app.css keeps a stage
+	   headline on one line: three auras outrun a two-up tile. Each aura holds
+	   together. */
+	.gx-head-cell {
+		display: grid;
+	}
+	.gx-head-cell > .gx-head {
+		grid-area: 1 / 1;
+		flex-wrap: wrap;
+		white-space: normal;
+	}
+	.gx-aura {
+		white-space: nowrap;
+	}
+	.gx-head--ghost {
+		visibility: hidden;
+	}
+	/* Unpin rides the sentence's line, on a phone too, where the sentence
+	   sits under the figure. */
+	.gx-head-sentence {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
 
 	/* ── The toolbar ─────────────────────────────────────────────────────────── */
 
-	/* ══ ONE ROW: THE ADD BUTTONS, THEN CLEAR (2026-11-01) ══════════════════════
-	   ↻ Was four groups (playback, then the selected application's element,
-	   size, time and remove, then Add) on one or two rows by a measured 55rem
-	   container switch. Playback retired and the editing moved into the pill's
-	   editor, so what is left fits one row; it wraps only in the narrowest
-	   tiles. */
-	.gx-toolbar {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.6rem 1.25rem;
-		padding: 0.5rem 0.7rem;
-		margin-bottom: 0.5rem;
-	}
-
+	/* The add buttons: a plate of actions (the setup bar's glass), the plus and
+	   its word leading. Clear holds the toolbar's far end. */
 	.gx-adds {
-		display: flex;
+		display: inline-flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.35rem;
-		min-width: 0;
+		gap: 2px;
+		max-width: 100%;
+		padding: 2px;
+		border-radius: var(--r-sm);
+		background: var(--glass-panel);
 	}
 
-	/* ⚠ An ADD button, not a filter. `.chip--icon` is the site's on/off idiom
-	   (dim at .35 means "off"), and at that dim the seven read as disabled. They
-	   are actions: full strength at rest, the element's tint under the pointer,
-	   and dim only when the cap really does disable them. */
-	.gx-adds .gx-el {
-		opacity: 1;
+	.gx-clear {
+		margin-left: auto;
+		gap: 0.4rem;
 	}
-	.gx-adds .gx-el:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--chip-color) 22%, transparent);
+
+	/* ⚠ An ADD button, not a filter: full strength at rest, the element's tint
+	   under the pointer, and dim only when the cap really does disable them. */
+	.gx-adds .gx-el {
+		padding-inline: 0.45rem;
+		border-radius: var(--r-xs);
+		background: transparent;
+	}
+	@media (hover: hover) {
+		.gx-adds .gx-el:hover:not(:disabled) {
+			background: color-mix(in srgb, var(--chip-color) 22%, transparent);
+		}
 	}
 	.gx-adds .gx-el:disabled {
 		opacity: 0.35;
@@ -1667,9 +1579,9 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
-		margin-right: 0.25rem;
+		padding-inline: 0.5rem 0.25rem;
 		font-size: var(--fs-md);
-		color: var(--muted);
+		color: var(--chart-ink);
 	}
 
 	/* Below `compact` the label and Clear keep their MARK and drop their WORD —
@@ -1679,6 +1591,53 @@
 		.gx-add-word {
 			display: none;
 		}
+	}
+
+	/* ── Under the chart: the hint, the scenarios, the note ─────────────────── */
+
+	.gx-hint {
+		margin-top: calc(-1 * var(--inst-gap-control) + 0.35rem);
+	}
+
+	/* A section of its own, on the ladder's section rung (the stage's control
+	   gap plus this): the name over its segment, as on the ICD timeline's rule. */
+	.gx-scenarios {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: start;
+		gap: var(--inst-gap-in);
+		margin-top: calc(var(--inst-gap-section) - var(--inst-gap-control));
+	}
+
+	.gx-scenarios-name {
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	.gx-presets {
+		flex-wrap: wrap;
+		max-width: 100%;
+	}
+
+	.gx-preset {
+		gap: 0.4rem;
+	}
+
+	/* Every note in one cell, so the cell is the longest and the chart above
+	   never resizes when a scenario loads or an edit makes the chart your own.
+	   🎛️ 60rem keeps a four-line note a reading length. */
+	.gx-notes {
+		display: grid;
+		max-width: 60rem;
+		margin-top: 0.25rem;
+	}
+	.gx-note {
+		grid-area: 1 / 1;
+		visibility: hidden;
+	}
+	.gx-note--on {
+		visibility: visible;
 	}
 
 	.gx-stepper {
@@ -1747,7 +1706,7 @@
 	   carries reaction names, pills and hairlines, and a dashed outline or a
 	   hover plate under all of that would compete with the chart it annotates.
 	   `copy` and `pointer` are the platform's own words for these two acts, and
-	   the Readout's prompt says them in prose for anyone who never hovers. The
+	   the hint under the chart says them in prose for anyone who never hovers. The
 	   pill alone also takes a faint ring under the pointer (below): it is one
 	   small disc, not the band. */
 	.gx-add-zone {
@@ -1805,17 +1764,6 @@
 		outline-offset: 1px;
 	}
 
-	/* Condensed trial: the scenario row (14 chips) is the densest chip cluster */
-	.gx-chips-dense :global(.chip) {
-		font-family: var(--font-condensed);
-	}
-
-	.gx-preset-chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
 	/* Overlapping element badges inside a scenario chip */
 	.gx-chip-els {
 		display: inline-flex;
@@ -1829,10 +1777,6 @@
 	.gx-chip-els img + img {
 		margin-left: -5px;
 	}
-
-	/* ── Panels ─────────────────────────────────────────────────────────────── */
-
-	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
 	/* The editor's element and size rows. */
 
@@ -1867,82 +1811,5 @@
 	   press. */
 	.gx-ghost {
 		pointer-events: none;
-	}
-
-	/* ── Readout / log ──────────────────────────────────────────────────────── */
-
-	.gx-meta {
-		margin: 0;
-		font-size: var(--fs-xl);
-		line-height: 1.5rem;
-		color: var(--muted);
-	}
-
-	/* ↻ 2026-10-02: the element NAME is in ink, the icon carries the colour.
-	   The name used to wear the element's own colour, and on parchment Frozen's
-	   and Cryo's pale ice all but vanished. */
-	.gx-status-row {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.gx-status-row img {
-		display: block;
-	}
-
-	/* "at 2.40s" and, while a pin is set, the button that lifts it. */
-	.gx-read-at {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-	}
-
-	.gx-strong {
-		font-family: var(--font-body);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-
-	/* The transcript's label inside the merged readout card. ⚠ DELIBERATELY NOT A
-	   .kicker: a kicker is gold, and gold names a BLOCK — a second one in one card
-	   would say "second panel" exactly where the merge was trying to stop saying
-	   it. A small semibold label in sentence case (the caps voice is the
-	   kicker's alone, design §5) with a hairline over it, which is the
-	   section-divider weight, not the rule weight.
-	   The log is the card's second section, so the space above the hairline is
-	   the section rung: the margin tops up the panel's own 0.7rem gap (app.css
-	   `.panel`) to --inst-gap-section. */
-	.gx-sub {
-		margin: calc(var(--inst-gap-section) - 0.7rem) 0 0;
-		padding-top: 0.6rem;
-		border-top: 1px solid var(--line-faint);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
-
-	/* ⛔ `.gx-log-apply` / `-n` / `-reaction` / `-tick` and `.gx-dim` RETIRED
-	   (2026-08-17): the row grammar moved to the shared <EventLog>, so what is
-	   left here is the box that holds it.
-	   ↻ Round 3: no height cap and no scroller of its own, at any width. The
-	   Readout is last in the rail (app.css § THE RAIL), so a log that grows a
-	   line per application moves nothing you touch, and it is bounded anyway
-	   (at most MAX_GAUGE_APPS applications, Burning's self-ticks hidden and
-	   Electro-Charged's drains collapsed into runs). The old caps fought that:
-	   the narrow tier's 21rem with `overflow: hidden` clipped a long log, and
-	   the mid and wide tiers gave the Readout a fixed height and scrolled the
-	   log inside it. */
-	.gx-log {
-		display: grid;
-		padding-right: 0.3rem;
-		/* ⚠⚠ THE ANCHOR ON PAPER IS --muted, NOT --text. `.ctx-light` inverts the
-		   ink ladder — measured here, --text is #495366 and --muted #3b4255 — so
-		   handing EventLog its dark-context default would draw every application
-		   FAINTER than the reaction hanging under it. See that component's note;
-		   it takes one ink and derives the rest, precisely so this is a single
-		   declaration rather than three overrides. */
-		--el-ink: var(--muted);
 	}
 </style>

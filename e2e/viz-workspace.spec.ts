@@ -183,7 +183,5 @@ test('the ICD timeline hands its hits off to the Gauge explorer', async ({ page 
 	// panel moved to the head of the flow (see its note — CSS multicolumn was
 	// moving it between columns mid-edit), so a positional selector here would
 	// have been pinning panel ORDER from a test about a handoff.
-	await expect(
-		page.locator('.gx-scenarios .note').filter({ hasText: 'Your own sequence' })
-	).toBeVisible();
+	await expect(page.locator('.gx-note--on').filter({ hasText: 'Your own sequence' })).toBeVisible();
 });

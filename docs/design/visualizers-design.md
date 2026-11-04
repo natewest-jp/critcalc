@@ -225,10 +225,13 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   rule is the thing you play with (a live control, §3), so the strings are view tabs and the
   rule's three numbers are sliders on the surface; and the chart sizes up as a whole with
   the stage, every mark and word, not only its stems.
-- **Gauge explorer:** the overlaid areas stay. ⚓ Nate: few auras coexist (Electro-Charged,
+- **Gauge explorer** (built: `docs/rounds/viz-stage-gauge-2026-11-04.md`): the overlaid areas stay. ⚓ Nate: few auras coexist (Electro-Charged,
   Frozen, Burning, Quicken), because most reactions clear one or both elements, so lanes per
   element would gain little; the overlay also matches the Planner's aura lane. The aura log's
-  reactions become marks on the timeline.
+  reactions become marks on the timeline: what a reaction took off, beside its drop, and what an
+  application did to its own aura, over its pill. ⚓ Nate: the headline is the aura at the moment
+  pointed at or pinned (at rest, when the target goes bare), and the scenarios are chips under
+  the chart, never in a popover.
 - **Crit heatmap** (built: `docs/rounds/viz-stage-crit-2026-11-03.md`): the field fills the
   stage at any aspect (its axes are normalised separately), with a handle on each axis, CRIT
   Rate's upright, the strip outside it on the left, and the right edge the average's axis (along
@@ -274,4 +277,4 @@ Grouped by family, so each family's marks are built once and reused at once:
 6. Crit heatmap: the field, its strip on the CRIT Rate axis (`docs/rounds/viz-stage-crit-2026-11-03.md`).
 7. ICD timeline: the timeline family, its lanes and the interval on the time axis
    (`docs/rounds/viz-stage-icd-2026-11-04.md`).
-8. Gauge explorer.
+8. Gauge explorer: the last off the rail (`docs/rounds/viz-stage-gauge-2026-11-04.md`).
