@@ -1,7 +1,7 @@
 # The stage: the pre-push layout sweep (2026-11-04)
 
-**Status:** on `polish/viz-stage-sweep`, not merged. The fixes are built; Nate's eye is still
-to come, and the What's new entry is proposed, not landed.
+**Status:** on `polish/viz-stage-sweep`, not merged. Nate checked fixes 2 and 3 on his phone
+("looking good"). The What's new entry (§6) is landed in his wording, waiting for his look.
 
 ## 1. Why
 
@@ -48,3 +48,20 @@ overlapping text, and was screenshotted. The phones were read by eye.
 
 Vitest 2796, svelte-check, lint and build clean; Chrome e2e 72 passed. After the fixes, the sweep finds no errors,
 overflow or clipping at any of the viewports, or two or three up.
+
+## 6. What's new, and a link that rolls a reshape
+
+The entry, "A new layout for the visualizers" (November 4), is Nate's wording: the shared
+layout, remembered settings, and Try a reshape, with two typos fixed ("remembers",
+"simulates"). Two drafted paragraphs were dropped at his call (side by side from Layout, and
+ICD's new strip).
+
+Nate asked whether "Give it a try!" could open Reshape and start a roll. A share link couldn't,
+because a link's state replaces the reader's saved state, so it would replace their piece with
+the demo. Instead, `?do=` is a one-shot action beside `?i=`: the page holds it until the
+profile's saved state is on the instrument (`pendingAct`), then calls the handle's `act`.
+Artifact odds' `act('reshape')` opens Reshape and rolls, on the reader's own piece; a piece
+that can't be reshaped yet shows Reshape's own prompt. Driven on the production build: a cold
+load of the link, a click from `/changelog`, a reader whose saved view was Drop, and a phone
+tap all land on Reshape with the roll playing, the address bar clean, and no page errors.
+⏭ Proposed, not added: a case for it in `e2e/viz-workspace.spec.ts`.
