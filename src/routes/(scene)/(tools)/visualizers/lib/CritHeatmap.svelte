@@ -21,6 +21,7 @@
 		bestSplit,
 		formatMultiplier,
 		countAtRate,
+		countLabels,
 		cdToX,
 		crToY,
 		xToCD,
@@ -80,6 +81,13 @@
 	const ROW_SHARE = 0.72;
 	const ROW_MIN = 1.5;
 	const ROW_MAX = 22;
+	/** 🎛️ The strip's crit counts: a column at its outer edge, numbers
+	 *  right-aligned COUNT_W in, the bars growing to COUNT_GAP short of them.
+	 *  COUNT_MIN_GAP is the least room between two labels before they thin
+	 *  (crit.ts, countLabels). */
+	const COUNT_W = 14;
+	const COUNT_GAP = 5;
+	const COUNT_MIN_GAP = 12;
 	/** 🎛️ The contours' white, width and dash. Dotted (round dots, CONTOUR_GAP
 	 *  apart), after dashed (5 4) and solid were both tried (Nate 2026-11-03):
 	 *  dots read as a guide drawn over the colour, not a line on it, and stay
@@ -189,9 +197,13 @@
 		clamp(((rect.h * (1 / n)) / (CR_MAX - CR_AXIS_MIN)) * ROW_SHARE, ROW_MIN, ROW_MAX)
 	);
 	const stripRight = $derived(strip.x0 + strip.w);
+	const barRoom = $derived(Math.max(0, strip.w - COUNT_W - COUNT_GAP));
+	const countLabelKs = $derived(
+		countLabels(n, rect.h / n / (CR_MAX - CR_AXIS_MIN), COUNT_MIN_GAP, readCount)
+	);
 	const rows = $derived(
 		distribution.map((chance, k) => {
-			const len = peak > 0 ? (chance / peak) * strip.w : 0;
+			const len = peak > 0 ? (chance / peak) * barRoom : 0;
 			return {
 				k,
 				y: y(k / n),
@@ -262,6 +274,10 @@
 		if (shadeCanvas) paintShade(shadeCanvas, shading, hits);
 	});
 
+	/** 🎛️ On the best split, the ring is drawn around your dot instead, which
+	 *  would hide it (Nate 2026-11-04: at the defaults nobody saw the ring the
+	 *  fine print names). */
+	const BEST_RING_R = 13;
 	/** 🎛️ The ring's press target: wider than its 5px, for a finger. */
 	const RING_HIT_R = 12;
 	function toBest() {
@@ -428,15 +444,15 @@
 		>
 			{Math.round(cv * 100)} CV
 		</text>
-		<circle
-			cx={x(best.critDamage)}
-			cy={y(best.critRate)}
-			r="5"
-			fill="none"
-			stroke="var(--text)"
-			stroke-width="1.5"
-		/>
 		{#if !atBest}
+			<circle
+				cx={x(best.critDamage)}
+				cy={y(best.critRate)}
+				r="5"
+				fill="none"
+				stroke="var(--text)"
+				stroke-width="1.5"
+			/>
 			<text
 				class="stage-word"
 				x={x(best.critDamage) + 9}
@@ -500,6 +516,7 @@
 		</text>
 
 		<!-- The companion: how many of the hits crit, on the CRIT Rate axis,
+		     each row labelled with its count in a column at the outer edge,
 		     outside the CRIT Rate handle; each row grows away from the field -->
 		{#if strip.w > 0}
 			<line x1={stripRight} y1={rect.y0} x2={stripRight} y2={bottom} stroke="var(--chart-rule)" />
@@ -513,6 +530,16 @@
 					fill={readCount === r.k ? 'var(--text)' : 'var(--chart-ink)'}
 					fill-opacity={readCount === r.k ? 1 : 0.45}
 				/>
+			{/each}
+			{#each countLabelKs as k (k)}
+				<text
+					x={strip.x0 + COUNT_W}
+					y={y(k / n) + 3.5}
+					fill={readCount === k ? 'var(--text)' : 'var(--chart-ink)'}
+					font-size="10"
+					font-weight={readCount === k ? 700 : null}
+					text-anchor="end">{k}</text
+				>
 			{/each}
 			<text
 				class="stage-word"
@@ -565,6 +592,16 @@
 		<!-- ⏸ The black ring is deliberate: this dot rides a rainbow, and white
 		     on pale yellow is where it would disappear. -->
 		<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
+		{#if atBest}
+			<circle
+				cx={dotX}
+				cy={dotY}
+				r={BEST_RING_R}
+				fill="none"
+				stroke="var(--text)"
+				stroke-width="1.5"
+			/>
+		{/if}
 		<!-- THE RING IS A BUTTON: one press moves your build to the best split
 		     of its budget. Last, so it sits over the marker and the lines. -->
 		{#if !atBest}

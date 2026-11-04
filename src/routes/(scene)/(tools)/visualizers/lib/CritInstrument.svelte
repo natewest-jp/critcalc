@@ -18,6 +18,7 @@
 		formatMultiplier,
 		formatChance,
 		critCountDistribution,
+		countLabels,
 		rotationMultiplier,
 		type FieldRect
 	} from './crit';
@@ -101,8 +102,8 @@
 	 *  and lies under the chart on its own axis (⚓ Nate 2026-11-03: on the
 	 *  phone it took the field's width). */
 	const STRIP_SIDE_MIN = 560;
-	/** 🎛️ The strip under the chart: its height, bars and numbers. */
-	const STRIP_BELOW_H = 56;
+	/** 🎛️ The strip under the chart: its height, bars, counts and name. */
+	const STRIP_BELOW_H = 68;
 	/** 🎛️ THE FIELD'S WIDEST, as a multiple of its height (⚓ Nate
 	 *  2026-11-03: one up on a wide screen it stretched past 2:1). From 1024px
 	 *  the chart's column is capped at the width that gives the field this
@@ -140,7 +141,11 @@
 	// width, 0 at the left.
 	const belowPeak = $derived(Math.max(...distribution));
 	const belowColW = $derived(rect.w / distribution.length);
-	const BELOW_AXIS = 14;
+	/** 🎛️ Under the bars: a row of counts, then the strip's name. Counts
+	 *  thin (crit.ts, countLabels) below BELOW_COUNT_GAP px apart. */
+	const BELOW_AXIS = 28;
+	const BELOW_COUNT_GAP = 16;
+	const belowCounts = $derived(countLabels(hitsPerRotation, belowColW, BELOW_COUNT_GAP, readCount));
 	function pickBelow(e: PointerEvent) {
 		const box = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
 		const k = Math.floor((e.clientX - box.left - rect.x0) / belowColW);
@@ -264,10 +269,12 @@
 				</div>
 
 				<!-- The chart tools: one group, so they wrap together and hold the
-				     toolbar's far end. -->
+				     toolbar's far end. Dark glass, as the tile's bar above them: on
+				     the stage's slate a lit plate didn't stand out from a resting
+				     one (Nate 2026-11-04). -->
 				<div class="cv-tools">
 					<button
-						class="btn"
+						class="btn btn--glass ctx-glass"
 						class:is-active={shading}
 						aria-pressed={shading}
 						title="Darkens each CRIT Rate by its chance of a whole rotation without a single crit"
@@ -276,10 +283,10 @@
 						No-crit shading
 					</button>
 
-					<!-- Pin and Roll: a mark and a word, the word gone where the tile is
-				     narrow. Pin's two words share one cell, so it keeps one width. -->
+					<!-- Pin: a mark and a word, the word gone where the tile is narrow.
+					     Its two words share one cell, so it keeps one width. -->
 					<button
-						class="btn cv-tool"
+						class="btn btn--glass ctx-glass cv-tool"
 						aria-pressed={!!pinned}
 						aria-label={pinned ? 'Clear pin' : 'Pin this build'}
 						onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
@@ -289,16 +296,6 @@
 							<span class:cv-ghost={!!pinned}>Pin this build</span>
 							<span class:cv-ghost={!pinned}>Clear pin</span>
 						</span>
-					</button>
-					<button
-						class="btn cv-tool"
-						aria-label="Roll {hitsPerRotation} {hitsWord(hitsPerRotation)}"
-						onclick={rollIt}
-					>
-						<Mark name="dice" size={12} />
-						<span class="cv-tool-word" aria-hidden="true"
-							>Roll {hitsPerRotation} {hitsWord(hitsPerRotation)}</span
-						>
 					</button>
 				</div>
 			</div>
@@ -382,20 +379,16 @@
 							y2={STRIP_BELOW_H - BELOW_AXIS}
 							stroke="var(--chart-rule)"
 						/>
-						<text
-							x={rect.x0 + belowColW / 2}
-							y={STRIP_BELOW_H - 2}
-							fill="var(--chart-ink)"
-							font-size="10"
-							text-anchor="middle">0</text
-						>
-						<text
-							x={rect.x0 + rect.w - belowColW / 2}
-							y={STRIP_BELOW_H - 2}
-							fill="var(--chart-ink)"
-							font-size="10"
-							text-anchor="middle">{hitsPerRotation}</text
-						>
+						{#each belowCounts as k (k)}
+							<text
+								x={rect.x0 + (k + 0.5) * belowColW}
+								y={STRIP_BELOW_H - BELOW_AXIS + 12}
+								fill={readCount === k ? 'var(--text)' : 'var(--chart-ink)'}
+								font-size="10"
+								font-weight={readCount === k ? 700 : null}
+								text-anchor="middle">{k}</text
+							>
+						{/each}
 						<text
 							x={rect.x0 + rect.w / 2}
 							y={STRIP_BELOW_H - 2}
@@ -411,49 +404,61 @@
 			</div>
 		</div>
 
-		<!-- The fine print: the strip read (a hover, a tap or a roll), over a
-		     ghost of its longest form, so reading never moves the stage. -->
+		<!-- The fine print. One rotation is one place (Nate 2026-11-04): Roll,
+		     its dots and its sentence under it, and the strip's read (a hover or
+		     a tap) in the same slot, over a ghost of the rest line's longest form.
+		     In the side form this column stands beside the strip. Last, so a
+		     roll's dots grow into the space under it and move nothing. -->
 		<div class="stage-fine cv-fine">
-			<p class="cv-stack" aria-live="polite">
-				<span>
-					{#if hoverCount !== null}
-						{@render countLine(hoverCount, formatChance(distribution[hoverCount]))}
-					{:else if rollResult}
-						{rollCrits} of {rollResult.length}
-						{hitsWord(rollResult.length)} crit:
-						<strong
-							>{formatMultiplier(rotationMultiplier(rollCrits, rollResult.length, myCD))}</strong
-						>
-						this time.
-						{#key rollNonce}
-							<span class="cv-roll-dots" aria-hidden="true">
-								{#each rollResult as crit, i (i)}
-									<span
-										class="cv-roll-dot"
-										class:cv-roll-crit={crit}
-										style:animation-delay="{i * 45}ms"
-									></span>
-								{/each}
-							</span>
-						{/key}
-					{:else}
-						A hit that doesn’t crit is ×1. On average {averageCrits.toFixed(1)} of {hitsPerRotation}
-						{hitsWord(hitsPerRotation)} crit, and {formatChance(zeroCritRisk)} of rotations land none.
-					{/if}
-				</span>
-				<span class="cv-ghost" aria-hidden="true">
-					A hit that doesn’t crit is ×1. On average 59.4 of 60 hits crit, and &lt;0.1% of rotations
-					land none.
-				</span>
-			</p>
-			<!-- ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
+			<p>A hit that doesn’t crit is ×1.</p>
+			<!-- The guide: one paragraph per mark, in the order the eye meets them.
+			     ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
 			     "280 CV" for artifact CV, where 280 is near impossible. -->
+			<p>Each dotted curve joins the builds with one average, read on the right edge.</p>
 			<p>
-				Each curve joins the builds with one average, read on the right edge. The straight line is
-				every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value (CV), 2 × CRIT
-				Rate + CRIT DMG with base crit stats included, and its ring is that budget’s best split: press
-				it to move there. Hover or tap a bar to read one rotation.
+				The solid line is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value
+				(CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Its ring marks that budget’s best split;
+				press it to move there.
 			</p>
+			<p>Each bar is a number of crits in one rotation. Hover or tap one to read it.</p>
+			<div class="cv-rotation">
+				<button class="btn btn--glass ctx-glass cv-roll" onclick={rollIt}>
+					<Mark name="dice" size={12} />
+					Roll {hitsPerRotation}
+					{hitsWord(hitsPerRotation)}
+				</button>
+				<p class="cv-stack" aria-live="polite">
+					<span>
+						{#if hoverCount !== null}
+							{@render countLine(hoverCount, formatChance(distribution[hoverCount]))}
+						{:else if rollResult}
+							{#key rollNonce}
+								<span class="cv-roll-dots" aria-hidden="true">
+									{#each rollResult as crit, i (i)}
+										<span
+											class="cv-roll-dot"
+											class:cv-roll-crit={crit}
+											style:animation-delay="{i * 45}ms"
+										></span>
+									{/each}
+								</span>
+							{/key}
+							{rollCrits} of {rollResult.length}
+							{hitsWord(rollResult.length)} crit:
+							<strong
+								>{formatMultiplier(rotationMultiplier(rollCrits, rollResult.length, myCD))}</strong
+							>
+							this time.
+						{:else}
+							On average {averageCrits.toFixed(1)} of {hitsPerRotation}
+							{hitsWord(hitsPerRotation)} crit, and {formatChance(zeroCritRisk)} of rotations never crit.
+						{/if}
+					</span>
+					<span class="cv-ghost" aria-hidden="true">
+						On average 59.4 of 60 hits crit, and &lt;0.1% of rotations never crit.
+					</span>
+				</p>
+			</div>
 		</div>
 	</div>
 </div>
@@ -616,8 +621,9 @@
 		gap: 0.4rem;
 	}
 	/* 🎛️ Below the width the whole row needs with its words (measured about
-	   836px), Pin and Roll keep their marks alone. */
-	@container cv-toolbar (max-width: 52rem) {
+	   700px, the CRIT Rate block at its widest about 710), Pin keeps its mark
+	   alone. */
+	@container cv-toolbar (max-width: 46rem) {
 		.cv-tool .cv-tool-word {
 			display: none;
 		}
@@ -650,13 +656,25 @@
 		touch-action: pan-y;
 	}
 
+	/* 🎛️ The fine print's spacing: between its paragraphs, and their lines
+	   (Nate 2026-11-04: room to breathe where the column has it). */
 	.cv-fine {
 		display: grid;
-		gap: 0.25rem;
+		gap: var(--cv-fine-gap, 0.75rem);
 		align-content: start;
+		line-height: var(--lh-normal);
 	}
 	.cv-fine p {
 		margin: 0;
+	}
+	/* Roll, then its dots and sentence (or a bar's read) under it. */
+	.cv-rotation {
+		display: grid;
+		gap: 0.5rem;
+		justify-items: start;
+	}
+	.cv-roll {
+		gap: 0.4rem;
 	}
 	.cv-fine strong {
 		font-weight: var(--fw-semibold);
@@ -678,12 +696,12 @@
 	/* One rolled rotation: a hit that didn't crit is a ring, a crit the same
 	   ink filled. ⚠ The ring is an inset shadow: Chrome floors a 1.5px border
 	   to 1px. */
+	/* Their own line, over the sentence. */
 	.cv-roll-dots {
-		display: inline-flex;
+		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem;
-		margin-left: 0.4rem;
-		vertical-align: -1px;
+		margin-bottom: 0.35rem;
 	}
 	.cv-roll-dot {
 		width: 9px;

@@ -1,9 +1,9 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
-**Status (2026-11-03, end of session):** built on `feat/viz-crit-stage`, not merged. Nate: "the
-dots read much better … everything else is looking good." Four passes on Nate's looks (§3a–§3d)
-and one fix (§3e). Left for the next session: the copy (§5) and Help (§6), to finalize with
-Nate; real Safari; `npm run test:e2e` (both engines) before the merge; then the merge and the
+**Status (2026-11-04):** built on `feat/viz-crit-stage`, not merged. Nate: "the
+dots read much better … everything else is looking good." Five passes on Nate's looks (§3a–§3d,
+§3f) and one fix (§3e). The fine print's copy is approved (§5 items 7 and 9, as revised in §3f).
+Left: Help (§6), to finalize with Nate; Nate's look at §3f; real Safari; `npm run test:e2e` (both engines) before the merge; then the merge and the
 copy ledger's note (`docs/text/ledger/notes/vz_crit.md`, rewritten for the stage).
 
 ## 1. The round's three openings
@@ -205,6 +205,36 @@ the chart's SVG, later in the page, sat over it and took its presses (measured: 
 under the track's middle was the `svg`). Keyboard and the field still worked, which hid it.
 Fixed with `z-index: 1` on the hung track; a drag now moves it at 1600 and on a touch phone.
 
+## 3f. Nate's fifth look: counts, glass, one place for a rotation (2026-11-04)
+
+Nate: "overall happy", with four points; Claude added one. All built as proposed, with Nate's
+two wording changes.
+
+1. **The strip's bars carry their crit counts**, in a column at the strip's outer edge, the
+   bars growing toward it: the strip's own axis, under its "crits in {n} hits". Without it the
+   5-crits row at 62.5% read as the field's 60%. Where the rows close up the labels thin to
+   every 2nd, 5th or 10th count; the read row's count (hovered, tapped or rolled) is always
+   there in bold, and the labels that would crowd it give way (`countLabels` in `crit.ts`,
+   tested). 🎛️ `COUNT_W` 14, `COUNT_GAP` 5, `COUNT_MIN_GAP` 12. On the phone the same counts
+   stand under the columns, the strip's name on a row below them (🎛️ `STRIP_BELOW_H` 68,
+   `BELOW_AXIS` 28, `BELOW_COUNT_GAP` 16).
+2. **The chart's buttons are dark glass** (`.btn.btn--glass.ctx-glass`, as the tile's Defaults
+   and Copy link): on the stage's slate the lit No-crit shading plate barely differed from a
+   resting one. The lit plate itself is unchanged (⚓ Nate).
+3. **Roll leaves the toolbar for the fine print**, with its dots on their own line under it and
+   its sentence under them, in the slot that also holds a bar's read and the rest line. In the
+   side form that column stands beside the strip, so the button, the dots, the sentence and the
+   lit bar are in one place. The block ends the column, so a roll's dots (three rows at 60 hits)
+   grow into empty space and move nothing. Rejected: the dots beside the button in the toolbar
+   (60 don't fit, and the row would reflow each roll) and the dots on the strip (they crowd the
+   bars). With Roll gone the toolbar row measures about 700px with Pin's word, so Pin drops its
+   word below a 46rem toolbar (was 52rem).
+4. **The fine print is spaced out**: a paragraph per mark, 🎛️ `--cv-fine-gap` 0.75rem between them
+   (was 0.25rem), at `--lh-normal` (was `--lh-snug`). The copy is in §5.
+5. **The ring shows at the best split** (Claude's addition): at the defaults you sit on it, so
+   the dot covered it while the fine print named it. On the best split the ring is drawn around
+   the dot instead (🎛️ `BEST_RING_R` 13).
+
 ## 4. For Nate's eye
 
 1. The side form: the head and fine print at the left edge, the chart beside them; at 1024×768
@@ -226,23 +256,26 @@ Fixed with `z-index: 1` on the hung track; a drag now moves it at 1600 and on a 
    retired with it.
 3. The hits popover's note is retired: the fine print says the same (Nate: it did double duty).
 4. The shading popover's note became the toggle's tooltip (item 2).
-5. The chart tools: "Pin this build" / "Clear pin" and "Roll {8} hits" (kept), each after its
-   mark, the words dropping where the toolbar is narrow (the names stay for screen readers).
+5. The chart tools: "Pin this build" / "Clear pin" (kept), after its mark, the words dropping
+   where the toolbar is narrow (the names stay for screen readers). "Roll {8} hits" (kept) is in
+   the fine print since §3f, with its words always.
    The ring's name: "Move to the best split of this budget" (new, its tooltip and its label).
 6. On the chart: "{280} CV" (kept), "best split of this budget" (kept), "{+3.3%} vs pinned" (was
    "+3.3% average DMG vs pinned" in the card), "crits in {8} hits" (new, the strip's name), "below
    the base 5% CRIT Rate" (new, the veil), "average damage" (the right axis's name, was the title
    "Average DMG").
-7. The fine print at rest: "A hit that doesn’t crit is ×1. On average {5.6} of {8} hits crit,
-   and {<0.1%} of rotations land none." The card's gloss ("Average DMG per hit. A hit that
-   doesn't crit is ×1.") lent the first sentence.
+7. ✅ The fine print (approved 2026-11-04, with Nate's "never crit"): "A hit that doesn’t crit
+   is ×1." on its own line; at rest, under Roll, "On average {5.6} of {8} hits crit, and {<0.1%}
+   of rotations never crit." (was "land none"). The card's gloss ("Average DMG per hit. A hit
+   that doesn't crit is ×1.") lent the first sentence.
 8. A row read: "{6} of {8} hits crit: {×2.05}, in {29.6%} of rotations." After a roll: "{3} of
    {8} hits crit: {×1.52} this time." Both were an em dash before the figure; a colon now.
-9. The standing line: "Each curve joins the builds with one average, read on the right edge. The
-   straight line is every build with your {280} total crit value (CV), 2 × CRIT Rate + CRIT DMG
-   with base crit stats included, and its ring is that budget’s best split: press it to move
-   there. Hover or tap a bar to read one rotation." ⚓ It keeps the card's TOTAL (Nate
-   2026-10-02): a bare "280 CV" reads as artifact CV.
+9. ✅ The guide, a paragraph per mark (approved 2026-11-04): "Each dotted curve joins the builds
+   with one average, read on the right edge." · "The solid line is every build with your {280}
+   total crit value (CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Its ring marks
+   that budget’s best split; press it to move there." · "Each bar is a number of crits in one
+   rotation. Hover or tap one to read it." (Nate cut "as long as its chance".) ⚓ It keeps the
+   card's TOTAL (Nate 2026-10-02): a bare "280 CV" reads as artifact CV.
 10. The handles' labels: "CRIT Rate", "CRIT DMG" (kept, now the axes' only names).
 
 Retired: "Current build", "Average DMG per hit. …", "Ratio (CD:CR)" (and its trial at the marker), "CD = 2×CR" (with its ray), "Total crit value (CV)"

@@ -23,6 +23,7 @@ import {
 	yToCR,
 	CR_AXIS_MIN,
 	countAtRate,
+	countLabels,
 	HITS_MAX
 } from './crit';
 
@@ -223,5 +224,27 @@ describe('critCountDistribution', () => {
 		const d = critCountDistribution(0.7, 8);
 		const mean = d.reduce((sum, p, k) => sum + p * rotationMultiplier(k, 8, 1.4), 0);
 		expect(mean).toBeCloseTo(averageDamageMultiplier(0.7, 1.4), 12);
+	});
+});
+
+describe("the strip's crit counts", () => {
+	it('labels every count where the rows have room', () => {
+		expect(countLabels(8, 70, 12)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+	});
+
+	it('thins to every 2nd, 5th or 10th count as the rows close up', () => {
+		expect(countLabels(60, 10, 12)).toEqual([...Array(31).keys()].map((i) => i * 2));
+		expect(countLabels(60, 4, 12)).toEqual([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]);
+		expect(countLabels(60, 1, 12)).toEqual([0, 10, 20, 30, 40, 50, 60]);
+	});
+
+	it('always labels the read count, clearing the labels that would crowd it', () => {
+		// every 2nd count at 10px apart; 7 is read, so 6 and 8 (10px off) give way
+		const labels = countLabels(60, 10, 12, 7);
+		expect(labels).toContain(7);
+		expect(labels).not.toContain(6);
+		expect(labels).not.toContain(8);
+		expect(labels).toContain(4);
+		expect(labels).toContain(10);
 	});
 });

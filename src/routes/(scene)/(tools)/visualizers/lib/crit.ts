@@ -226,3 +226,28 @@ export const countAtRate = (rate: number, hits: number) => {
 	const n = Math.max(1, Math.round(hits));
 	return clamp(Math.round(rate * n), 0, n);
 };
+
+/** The steps a crit-count axis thins to, least first. */
+const COUNT_STEPS = [1, 2, 5, 10];
+
+/**
+ * The crit counts a strip labels, 0 … hits, where one count is `pitch` px
+ * from the next and labels need `minGap` px: every count where there is room,
+ * else every 2nd, 5th or 10th. The `read` count (hovered, tapped or rolled) is
+ * always labelled, and its neighbours that would crowd it are not.
+ */
+export function countLabels(
+	hits: number,
+	pitch: number,
+	minGap: number,
+	read: number | null = null
+): number[] {
+	const n = Math.max(1, Math.round(hits));
+	const step = COUNT_STEPS.find((s) => s * pitch >= minGap) ?? COUNT_STEPS[COUNT_STEPS.length - 1];
+	const out: number[] = [];
+	for (let k = 0; k <= n; k++) {
+		if (k === read) out.push(k);
+		else if (k % step === 0 && (read === null || Math.abs(k - read) * pitch >= minGap)) out.push(k);
+	}
+	return out;
+}
