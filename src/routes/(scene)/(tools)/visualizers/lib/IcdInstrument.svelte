@@ -701,8 +701,9 @@
 							stroke-opacity="0.75"
 						/>
 						{#if w.count !== null && w.w >= BAND_DIGIT * k}
+							<!-- No halo (Nate 2026-11-04): the band is its own ground. -->
 							<text
-								class="stage-word"
+								class="icd-band-word"
 								x={w.x0 + 5 * k}
 								y={ROW.bandTop + ROW.bandH / 2 + fs * 0.35}
 								fill="var(--text)"
@@ -850,11 +851,15 @@
 						snap={toInterval}
 					>
 						{#snippet headerEnd()}
-							<span class="chips icd-anchors">
+							<!-- The strings' and the rule's segment, so the three rows
+							     of choices are one size (Nate 2026-11-04). Lit only
+							     while the interval is a preset's. -->
+							<span class="segment icd-anchors" role="group" aria-label="Interval presets">
 								{#each ANCHORS as a (a.v)}
 									<button
-										class="chip chip--control"
-										class:active={interval === a.v}
+										class="btn"
+										class:is-active={interval === a.v}
+										aria-pressed={interval === a.v}
 										onclick={() => (interval = a.v)}
 									>
 										{a.label}
@@ -1008,10 +1013,12 @@
 		margin-left: 0.5rem;
 	}
 
-	.icd-anchors :global(.chip) {
+	.icd-anchors {
+		flex-wrap: wrap;
+	}
+
+	.stage-graph text.icd-band-word {
 		font-family: var(--font-condensed);
-		text-transform: none;
-		letter-spacing: var(--ls-mid);
 	}
 
 	/* ── The reading ───────────────────────────────────────────────────────── */
@@ -1074,6 +1081,12 @@
 
 	/* The name over the presets, as a slider's label is over its track: the
 	   name level with the labels, the presets' foot with the tracks'. */
+	/* ⚠ Chrome gives a range input 2px side margins, which put the last
+	   column's track 2px past the stage's edge and scrolled the tile. */
+	.icd-rule :global(.slider) {
+		margin-inline: 0;
+	}
+
 	.icd-rule-head {
 		display: flex;
 		flex-direction: column;

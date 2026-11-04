@@ -205,3 +205,9 @@ is already there, but if it's tidied up it might solve it."
 For Nate's eye: at 2000×1045 about 250px of night is left at the foot, because the chart
 stops at its cap (`K_MAX` 1.6 × the type, then the stems to `STALK_GROW` 2); either knob
 fills more of it.
+
+Then Nate: "This is so much more tidy." Three touch-ups: the interval presets are the strings'
+and the rule's segment, one size with them (lit only while the interval is a preset's); the
+band labels lose the chart words' halo, the band being their ground; and the rule row's last
+range input ran 2px past the stage's edge (Chrome's range margin, the trap the axis handles
+already guard) and scrolled the tile sideways, now zeroed.
