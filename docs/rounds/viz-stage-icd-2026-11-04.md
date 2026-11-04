@@ -4,7 +4,7 @@
 is so much more tidy", then "it's looking good!". All copy approved (§5, §7, §10, §12); Help
 (§6, superseded by §8 and §10) landed. Five passes after the first build: less spare (§7),
 the layout (§9), the companion (§10), tints and the strip apart (§11), the strip flush (§12).
-Real Safari is Nate's to check.
+Real Safari checked by Nate, and pushed, on 2026-11-04.
 
 ## 1. The headline
 

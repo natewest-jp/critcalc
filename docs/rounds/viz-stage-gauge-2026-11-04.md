@@ -1,8 +1,8 @@
 # The stage, round 8: Gauge explorer (2026-11-04)
 
 **Status:** ✅ merged into `main` on 2026-11-04 (`feat/viz-stage-gauge`). Nate: "an easy win", the copy approved
-(§5). One pass after the first build (§8). Help (§6) landed, approved. Real Safari is
-Nate's to check. This is the last instrument on the rail, so every Visualizer now uses the stage.
+(§5). One pass after the first build (§8). Help (§6) landed, approved. Real Safari checked by Nate,
+and pushed, on 2026-11-04. This is the last instrument on the rail, so every Visualizer now uses the stage.
 
 ## 1. The rulings
 

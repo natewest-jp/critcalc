@@ -2,7 +2,7 @@
 
 **Status:** ✅ merged into `main` on 2026-11-03 (`feat/viz-defres-stage`). Nate: "a hole-in-one
 … I don't think there's anything I'd change about it." The copy (§4) and Help (§5) approved as
-proposed; Claude's three closing fixes (§3a) approved and landed. Real Safari is still Nate's.
+proposed; Claude's three closing fixes (§3a) approved and landed. Real Safari checked by Nate, and pushed, on 2026-11-04.
 
 ## 1. The headline
 

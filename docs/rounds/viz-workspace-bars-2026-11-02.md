@@ -1,6 +1,6 @@
 # Visualizers overhaul, round 1: the workspace and the bars (2026-11-02)
 
-**Status:** ✅ merged to `main` 2026-11-02 (`feat/viz-workspace-bars`, merged in order with the overhaul's other rounds; not pushed). Nate: "All of these changes are solid"; refinement continues in a fresh session. The copy in §5 approved by Nate on 2026-11-03 (`docs/rounds/viz-stage-tidy-2026-11-03.md`). ⏭ real Safari and iPhone.
+**Status:** ✅ merged to `main` 2026-11-02 (`feat/viz-workspace-bars`, merged in order with the overhaul's other rounds; pushed 2026-11-04). Nate: "All of these changes are solid"; refinement continues in a fresh session. The copy in §5 approved by Nate on 2026-11-03 (`docs/rounds/viz-stage-tidy-2026-11-03.md`). Real Safari checked by Nate on 2026-11-04; the phone pass is on the to-do.
 
 ## 1. Why
 

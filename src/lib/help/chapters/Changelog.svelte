@@ -13,6 +13,9 @@
 	 plan would stay true, and a plan with no date is a promise. Known gaps is
 	 the exception, for long-term limits only, written as what the tools don't
 	 do YET (style guide §1.3: ⛔ never "never" about the future).
+	 ⚓ Nate 2026-11-04: a change across a whole tool is one entry about what
+	 changed everywhere, plus only the standout new features, not a paragraph
+	 per part.
 
 	 To add an entry: one <article> at the top of its month's .timeline, newest
 	 first; a new month is a new <section> with an <h2 id="YYYY-MM"> and its own
