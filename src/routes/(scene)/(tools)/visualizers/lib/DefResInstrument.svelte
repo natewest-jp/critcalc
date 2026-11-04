@@ -229,23 +229,25 @@
 	type Rect = { x0: number; x1: number; y0: number; y1: number };
 	const rects = $derived.by((): { res: Rect; def: Rect; h: number } => {
 		const h = Math.max(minH, graphH);
+		// A hidden tile measures 0 wide; floor it, or the drag rect's width goes negative.
+		const W = Math.max(graphW, PADL + PADR + PANEL_GAP + PLOT_MIN);
 		if (side) {
-			const w = graphW - PADL - PADR - PANEL_GAP;
+			const w = W - PADL - PADR - PANEL_GAP;
 			const y0 = TOP;
 			const y1 = h - AXIS_H;
 			const resX1 = PADL + w * RES_SHARE;
 			return {
 				res: { x0: PADL, x1: resX1, y0, y1 },
-				def: { x0: resX1 + PANEL_GAP, x1: graphW - PADR, y0, y1 },
+				def: { x0: resX1 + PANEL_GAP, x1: W - PADR, y0, y1 },
 				h
 			};
 		}
 		const each = (h - 2 * (TOP + AXIS_H)) / 2;
 		return {
-			def: { x0: PADL, x1: graphW - PADR, y0: TOP, y1: TOP + each },
+			def: { x0: PADL, x1: W - PADR, y0: TOP, y1: TOP + each },
 			res: {
 				x0: PADL,
-				x1: graphW - PADR,
+				x1: W - PADR,
 				y0: 2 * TOP + AXIS_H + each,
 				y1: 2 * TOP + AXIS_H + 2 * each
 			},
