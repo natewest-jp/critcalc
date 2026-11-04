@@ -1,10 +1,9 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
-**Status (2026-11-04):** built on `feat/viz-crit-stage`, not merged. Nate: "the
-dots read much better … everything else is looking good." Six passes on Nate's looks (§3a–§3d,
-§3f, §3g) and one fix (§3e). The copy is approved (§5, as revised in §3f and §3g) and Help is
-landed (§6). Left: real Safari; `npm run test:e2e` (both engines) before the merge; then the merge and the
-copy ledger's note (`docs/text/ledger/notes/vz_crit.md`, rewritten for the stage).
+**Status (2026-11-04): merged.** Nate: "the dots read much better … everything else is looking
+good", then "Safari looked great." Six passes on Nate's looks (§3a–§3d, §3f, §3g) and one fix
+(§3e). The copy is approved (§5, as revised in §3f and §3g), Help is landed (§6), and the copy
+ledger's note (`docs/text/ledger/notes/vz_crit.md`) is rewritten for the stage.
 
 ## 1. The round's three openings
 
@@ -248,7 +247,9 @@ Nate: "really good", with one fix and two wordings.
    average, read on the right edge.")
 3. **Help's first paragraph ends** (⚓ Nate): "The right edge and the curves that extend from it
    reveal bands of average damage increase over many rotations." (was "Each curve joins the
-   builds with one average, read off the right edge.") The rest of §6 is approved as proposed.
+   builds with one average, read off the right edge.") The rest of §6 is approved as proposed,
+   with one name changed (⚓ Nate): its third paragraph bolds **No-crit shading**, the toggle's
+   label, where it said "the **no-crit risk** shading".
 
 Gates, and `npm run test:e2e` (both engines): 144 passed.
 
@@ -317,8 +318,8 @@ Equal-budget toggle and "the chart under the map". Proposed:
    yours shows how much the move changes your average."
 3. Third paragraph: "The average hides how uneven a rotation can be. The bars beside the map (under it, on a phone)
    share its CRIT Rate axis: one for each number of crits in a rotation, set at that number’s
-   share of the hits, as long as its chance. Set the hits over the map. The
-   **no-crit risk** shading darkens builds by their chance of a whole rotation without a single
+   share of the hits, as long as its chance. Set the hits over the map.
+   **No-crit shading** darkens builds by their chance of a whole rotation without a single
    crit, and **Roll** plays one rotation and lights the bar it lands on."
 
 The credit paragraph is unchanged.

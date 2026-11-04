@@ -63,8 +63,8 @@
 	<p>
 		The average hides how uneven a rotation can be. The bars beside the map (under it, on a phone)
 		share its CRIT Rate axis: one for each number of crits in a rotation, set at that number’s share
-		of the hits, as long as its chance. Set the hits over the map. The <strong>no-crit risk</strong>
-		shading darkens builds by their chance of a whole rotation without a single crit, and
+		of the hits, as long as its chance. Set the hits over the map. <strong>No-crit shading</strong>
+		darkens builds by their chance of a whole rotation without a single crit, and
 		<strong>Roll</strong> plays one rotation and lights the bar it lands on.
 	</p>
 	<p>
