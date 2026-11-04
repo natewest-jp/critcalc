@@ -65,3 +65,5 @@ that can't be reshaped yet shows Reshape's own prompt. Driven on the production 
 load of the link, a click from `/changelog`, a reader whose saved view was Drop, and a phone
 tap all land on Reshape with the roll playing, the address bar clean, and no page errors.
 ⏭ Proposed, not added: a case for it in `e2e/viz-workspace.spec.ts`.
+
+Gates after it: Vitest 2796, svelte-check, lint and build clean; e2e both engines 144 passed.
