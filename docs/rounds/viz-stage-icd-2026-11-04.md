@@ -175,3 +175,33 @@ you set under the chart.", and the rule's line in words.
    interval. Under the chart, **ICD** sets the rule: **Standard**, **No ICD**, or the
    example’s own fill in its timer, hit counter, and limit per window, and moving any of
    them makes it **Custom**."
+
+## 9. The third pass: layout and order
+
+Nate (2026-11-04): an improvement, the rule's sliders "really nice"; what was left was layout,
+with things placed oddly and the chart's edges loose. Claude's reading of what goes together:
+the hits (which string, how far apart, what element), the result (the chart, the bracket,
+the strip, the reading), and the rule. The interval has to stay on the time axis, so the hits
+bracket the chart: which string above it, how far apart at its foot. Nate: "similar to what
+is already there, but if it's tidied up it might solve it."
+
+- **Top-aligned** under the headline, as every stage instrument is; the room the chart can't
+  use falls at the foot. Centring had left a gap between the answer and its chart.
+- **The chart's edges:** the lanes' names follow the chart's type only up to 13px, and their
+  column is the widest name, about half the old one; the right margin is half the last time
+  label, so the axis ends at the stage's edge.
+- **The interval's presets** follow its field on the header line (`InstrumentSlider`'s new
+  `headerEnd` slot), instead of at the row's far end; the track keeps the axis's span and the
+  line runs on past it.
+- **The reading** stands right of the share strip, under the chart it explains, where 360px
+  are left there; otherwise (a phone, an example) it is a line under the chart.
+- **The rule is one row** across the stage, its edges the chart's: the ICD name over its
+  presets, as a label over its track, then Timer, Hit counter and Limit per window; the
+  definition under the row. Stacked under 52rem.
+- **The element swatches** are a segment, the strings' track and height, at the toolbar's
+  far end before Send.
+- On an example the bracket's room at the chart's top goes, and 🎛️ `STALK_GROW` is 2.
+
+For Nate's eye: at 2000×1045 about 250px of night is left at the foot, because the chart
+stops at its cap (`K_MAX` 1.6 × the type, then the stems to `STALK_GROW` 2); either knob
+fills more of it.

@@ -208,12 +208,12 @@
 	 * A phone's stage is its natural height, so it stays at k = 1.
 	 */
 	const K_MAX = 1.6;
-	const STALK_GROW = 1.5;
+	const STALK_GROW = 2;
 	const STALK = 50;
 	/** Everything in the chart but the stalk, at k = 1: the bracket's and the
 	 *  icons' room over it; the counter, the timer and the axis under it; and,
 	 *  for an even string, the share strip under the axis. */
-	const TOP = 46;
+	const TOP = $derived(example ? 26 : 46);
 	const FIXED = $derived(TOP + 50 + (example ? 20 : 60));
 	const natural = $derived(FIXED + STALK);
 	const k = $derived(Math.min(K_MAX, Math.max(1, graphH / natural)));
@@ -248,9 +248,15 @@
 	/** The chart's type, scaled with it. */
 	const fs = $derived(10 * k);
 
-	/** 🎛️ The left margin holds the lanes' names; every mark starts right of it. */
-	const PADL = $derived(58 * k);
-	const PADR = 16;
+	/** The lanes' names are labels, not marks: they follow the chart's type up
+	 *  to 🎛️ 13px and stop, and their column is the widest name ("Counter",
+	 *  about 3.5em in the condensed face) and LANE_GAP. Every mark starts right
+	 *  of it. ↻ Was 58 × k, about 100px at full size (Nate: snug the edges). */
+	const LANE_FS = $derived(Math.min(13, fs));
+	const LANE_GAP = 8;
+	const PADL = $derived(Math.ceil(3.5 * LANE_FS) + LANE_GAP);
+	/** The right margin is half the last time label, so it ends at the edge. */
+	const PADR = $derived(Math.ceil(1.2 * fs));
 
 	const lastHit = $derived(times.length ? times[times.length - 1] : 0);
 	const gap = $derived(
@@ -271,6 +277,14 @@
 	const domain = $derived(example ? lastHit + Math.min(gap, 1) : span);
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((t: number) => PADL + (t / domain) * plotW);
+
+	/** 🎛️ The reading stands right of the share strip, under the chart it
+	 *  explains, where at least BESIDE_MIN px are left there; otherwise (a
+	 *  phone, an example) it is a line of its own under the chart. */
+	const BESIDE_MIN = 360;
+	const BESIDE_GAP = 32;
+	const besideX = $derived(xOf(INTERVAL_MAX) + BESIDE_GAP);
+	const beside = $derived(!example && graphW - PADR - besideX >= BESIDE_MIN);
 
 	// Axis steps that keep their labels ≥ 44px apart (scaled with the type).
 	const STEPS = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20];
@@ -454,7 +468,7 @@
 	const LANES = $derived([
 		{
 			name: 'Hits',
-			y: ROW.hitTop + stalk / 2 + fs * 0.35,
+			y: ROW.hitTop + stalk / 2 + LANE_FS * 0.35,
 			tip: 'A tall stem with the element’s icon applies its element. A short, faint one is blocked by ICD.'
 		},
 		{
@@ -466,7 +480,7 @@
 		},
 		{
 			name: 'Timer',
-			y: ROW.bandTop + ROW.bandH / 2 + fs * 0.35,
+			y: ROW.bandTop + ROW.bandH / 2 + LANE_FS * 0.35,
 			tip: 'Each band is a timer window, started by a hit that applies once the timer has run out. Its number is how many hits it applied.'
 		},
 		...(example
@@ -474,7 +488,7 @@
 			: [
 					{
 						name: 'Share',
-						y: ROW.stripTop + ROW.stripH / 2 + fs * 0.35,
+						y: ROW.stripTop + ROW.stripH / 2 + LANE_FS * 0.35,
 						tip: 'The share of hits that apply at every hit interval, along the slider under it.'
 					}
 				])
@@ -495,6 +509,17 @@
      at every interval along it; the pointed hit's reading; and the rule.
      ⚓ The ICD timeline has no setup bar (⚓ Nate 2026-11-04): its rule is the
      thing you play with, a live control, so it is on the surface. -->
+{#snippet readingText()}
+	{#if reading}
+		<p>
+			<span class="icd-reading-head">{reading.head}</span>
+			<strong>{reading.applies ? 'applies' : 'blocked'}</strong>. {reading.why}
+		</p>
+	{:else}
+		<p>Point at a hit to read why it applies or is blocked.</p>
+	{/if}
+{/snippet}
+
 <div class="stage-root">
 	<div class="stage ctx-dark">
 		<p class="readout-head stage-head">
@@ -528,14 +553,13 @@
 
 				<!-- The chart tools: one group, so they wrap together and hold the
 				     toolbar's far end. The element colours the hits and is what a
-				     hand-off sends. -->
+				     hand-off sends; its track matches the strings'. -->
 				<div class="icd-tools">
-					<div class="icd-elements" role="radiogroup" aria-label="Element">
+					<div class="segment icd-elements" role="radiogroup" aria-label="Element">
 						{#each ELEMENTS as e (e)}
 							<button
-								class="chip chip--icon"
-								class:active={element === e}
-								style:--chip-color="var(--el-{e}-main)"
+								class="btn icd-el"
+								class:is-active={element === e}
 								role="radio"
 								aria-checked={element === e}
 								onclick={() => (element = e)}
@@ -614,10 +638,10 @@
 					{#each LANES as lane (lane.name)}
 						<text
 							class="stage-word icd-lane"
-							x={PADL - 10 * k}
+							x={PADL - LANE_GAP}
 							y={lane.y}
 							fill="var(--chart-dim)"
-							font-size={fs}
+							font-size={LANE_FS}
 							text-anchor="end"
 						>
 							{lane.name}<title>{lane.tip}</title>
@@ -789,6 +813,17 @@
 						/>
 					{/if}
 				</svg>
+				{#if beside}
+					<div
+						class="icd-reading icd-reading--beside"
+						aria-live="polite"
+						style:left="{besideX}px"
+						style:right="{PADR}px"
+						style:top="{ROW.stripTop - 2}px"
+					>
+						{@render readingText()}
+					</div>
+				{/if}
 			</div>
 
 			<!-- THE HANDLE (design §6): the interval is a time, so its track runs
@@ -797,76 +832,72 @@
 			     holds still under the drag. An example has no handle: its hits
 			     are gcsim's, and its note takes the handle's place. -->
 			{#if !example}
-				<div class="icd-handle-row">
-					<div
-						class="stage-handle icd-handle"
-						style:--stage-handle-l="{xOf(INTERVAL_MIN) - THUMB_R}px"
-						style:--stage-handle-r="{graphW - xOf(INTERVAL_MAX) - THUMB_R}px"
+				<div
+					class="stage-handle icd-handle"
+					style:--stage-handle-l="{xOf(INTERVAL_MIN) - THUMB_R}px"
+					style:--stage-handle-r="0px"
+					style:--icd-track-w="{xOf(INTERVAL_MAX) - xOf(INTERVAL_MIN) + 2 * THUMB_R}px"
+				>
+					<InstrumentSlider
+						label="Hit interval"
+						aria="Hit interval in seconds"
+						bind:value={interval}
+						min={INTERVAL_MIN}
+						max={INTERVAL_MAX}
+						step={0.05}
+						unit="s"
+						decimals={3}
+						snap={toInterval}
 					>
-						<InstrumentSlider
-							label="Hit interval"
-							aria="Hit interval in seconds"
-							bind:value={interval}
-							min={INTERVAL_MIN}
-							max={INTERVAL_MAX}
-							step={0.05}
-							unit="s"
-							decimals={3}
-							snap={toInterval}
-						/>
-					</div>
-					<div class="chips icd-anchors">
-						{#each ANCHORS as a (a.v)}
-							<button
-								class="chip chip--control"
-								class:active={interval === a.v}
-								onclick={() => (interval = a.v)}
-							>
-								{a.label}
-							</button>
-						{/each}
-					</div>
+						{#snippet headerEnd()}
+							<span class="chips icd-anchors">
+								{#each ANCHORS as a (a.v)}
+									<button
+										class="chip chip--control"
+										class:active={interval === a.v}
+										onclick={() => (interval = a.v)}
+									>
+										{a.label}
+									</button>
+								{/each}
+							</span>
+						{/snippet}
+					</InstrumentSlider>
 				</div>
 			{:else}
 				<p class="stage-fine">{example.note}</p>
 			{/if}
 
-			<!-- The pointed hit's reading. ⚓ Two lines reserved, so pointing
-			     never moves what's under it (design §4). -->
-			<div class="icd-reading" aria-live="polite">
-				{#if reading}
-					<p>
-						<span class="icd-reading-head">{reading.head}</span>
-						<strong>{reading.applies ? 'applies' : 'blocked'}</strong>. {reading.why}
-					</p>
-				{:else}
-					<p>Point at a hit to read why it applies or is blocked.</p>
-				{/if}
-			</div>
+			<!-- The pointed hit's reading, where there is no room beside the strip.
+			     ⚓ Two lines reserved, so pointing never moves what's under it
+			     (design §4). -->
+			{#if !beside}
+				<div class="icd-reading" aria-live="polite">{@render readingText()}</div>
+			{/if}
 
 			<!-- THE RULE, on the surface: the presets fill in its three numbers,
 			     and moving one makes it Custom (editRule). Last, so a preset that
 			     comes and goes ("Its own") moves nothing under the hand. -->
 			<div class="icd-rule" role="group" aria-label="ICD rule">
-				<div class="icd-rule-head">
-					<span class="icd-rule-name">ICD</span>
-					<div class="segment" role="radiogroup" aria-label="ICD rule">
-						{#each RULES as r (r.id)}
-							{#if r.id !== 'own' || example}
-								<button
-									class="btn"
-									class:is-active={rule === r.id}
-									role="radio"
-									aria-checked={rule === r.id}
-									onclick={() => (r.id === 'custom' ? pickCustom() : (rule = r.id))}
-								>
-									{r.label}
-								</button>
-							{/if}
-						{/each}
+				<div class="icd-rule-grid">
+					<div class="icd-rule-head">
+						<span class="icd-rule-name">ICD</span>
+						<div class="segment" role="radiogroup" aria-label="ICD rule">
+							{#each RULES as r (r.id)}
+								{#if r.id !== 'own' || example}
+									<button
+										class="btn"
+										class:is-active={rule === r.id}
+										role="radio"
+										aria-checked={rule === r.id}
+										onclick={() => (r.id === 'custom' ? pickCustom() : (rule = r.id))}
+									>
+										{r.label}
+									</button>
+								{/if}
+							{/each}
+						</div>
 					</div>
-				</div>
-				<div class="icd-rule-sliders">
 					<!-- The tracks' ends are words: typed, "off" and "none" land there too. -->
 					<InstrumentSlider
 						label="Timer"
@@ -913,17 +944,20 @@
 </div>
 
 <style>
-	/* Everything under the headline is one group, and it centres in the room
-	   under it once the chart stops growing (the graph's max-height, K_MAX and
-	   STALK_GROW). Narrow, the stage is its natural height and there is
-	   nothing to centre in. */
+	/* Everything under the headline, top-aligned under it as on every stage
+	   instrument; the chart grows into the room (K_MAX, STALK_GROW) and what
+	   it can't use is bare night at the foot. ↻ Was centred, which left a gap
+	   between the answer and its chart (Nate 2026-11-04). */
 	.icd-body {
 		display: flex;
 		flex: 1 1 auto;
 		flex-direction: column;
-		justify-content: center;
 		gap: var(--inst-gap-control);
 		min-height: 0;
+	}
+
+	.icd-graph {
+		position: relative;
 	}
 
 	.icd-lane {
@@ -945,40 +979,33 @@
 	}
 
 	.icd-elements {
-		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
 	}
 
-	/* ── The handle and its anchors ────────────────────────────────────────── */
-
-	/* The anchors sit at the row's far end, level with the handle's name and
-	   field, in the room the track leaves; on a narrow tile they wrap under. */
-	.icd-handle-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 0.5rem 1rem;
+	.icd-el {
+		padding-inline: 0.45rem;
 	}
 
-	/* The track's width is the axis's, so the handle takes the row's width;
-	   its name and field may run past a short track without widening it. */
-	.icd-handle {
-		flex: 1 0 100%;
-	}
+	/* ── The handle and its presets ────────────────────────────────────────── */
 
+	/* The track is the interval's span of the time axis (--icd-track-w), and
+	   the header line under it runs on past its end: the name, the field, and
+	   the presets after them, wrapping on a phone. */
 	.icd-handle :global(.slider-control) {
 		grid-template-columns: minmax(0, 1fr);
 	}
 
+	.icd-handle :global(.is-track) {
+		width: var(--icd-track-w);
+	}
+
 	.icd-handle :global(.slider-header) {
-		white-space: nowrap;
+		flex-wrap: wrap;
+		row-gap: 0.5rem;
 	}
 
 	.icd-anchors {
-		margin-left: auto;
-		padding-right: 16px;
+		margin-left: 0.5rem;
 	}
 
 	.icd-anchors :global(.chip) {
@@ -987,37 +1014,32 @@
 		letter-spacing: var(--ls-mid);
 	}
 
-	/* Wide enough, the anchors share the handle's name line, at its end. */
-	@container instrument (min-width: 44rem) {
-		.icd-handle-row {
-			position: relative;
-		}
-		.icd-anchors {
-			position: absolute;
-			right: 0;
-			bottom: 0;
-			margin: 0;
-		}
-	}
-
 	/* ── The reading ───────────────────────────────────────────────────────── */
 
 	.icd-reading {
 		min-height: calc(2 * var(--lh-snug) * var(--fs-md));
 	}
 
-	.icd-reading p {
+	/* Beside the strip: under the chart's right part, level with the strip's
+	   top. Pointing passes through it to the chart. */
+	.icd-reading--beside {
+		position: absolute;
+		min-height: 0;
+		pointer-events: none;
+	}
+
+	.icd-reading :global(p) {
 		margin: 0;
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 		color: var(--chart-ink);
 	}
 
-	.icd-reading-head {
+	.icd-reading :global(.icd-reading-head) {
 		font-variant-numeric: tabular-nums;
 	}
 
-	.icd-reading strong {
+	.icd-reading :global(strong) {
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -1031,29 +1053,39 @@
 		/* minmax(0), or the implicit `auto` column takes the sliders' min-content
 		   and the section runs off a phone's edge. */
 		grid-template-columns: minmax(0, 1fr);
-		gap: var(--inst-gap-control);
+		gap: var(--inst-gap-in);
 		margin-top: calc(var(--inst-gap-section) - var(--inst-gap-control));
 	}
 
+	/* ONE ROW across the stage, its edges the chart's: the rule's name and
+	   presets, then its three numbers. Stacked on a narrow tile. */
+	.icd-rule-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--inst-gap-control) 2.5rem;
+		align-items: end;
+	}
+
+	@container instrument (min-width: 52rem) {
+		.icd-rule-grid {
+			grid-template-columns: auto repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	/* The name over the presets, as a slider's label is over its track: the
+	   name level with the labels, the presets' foot with the tracks'. */
 	.icd-rule-head {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 0.75rem;
+		flex-direction: column;
+		align-self: stretch;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.5rem;
 	}
 
 	.icd-rule-name {
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-	}
-
-	/* Three short sliders in a row; 🎛️ capped so each track stays a slider's
-	   length on a wide stage. They wrap under each other on a phone. */
-	.icd-rule-sliders {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
-		gap: var(--inst-gap-control) 2rem;
-		max-width: 60rem;
 	}
 </style>
