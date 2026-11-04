@@ -2717,6 +2717,14 @@ img {
 	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--ink-active);
 }
+/* AN ELEMENT IS CHOSEN IN ITS OWN TINT (Nate 2026-11-04): an element picker's
+   segment (the ICD timeline's, Enemy RES & DEF's) lights in the element's
+   colour, the Gauge explorer's hover recipe, not gold. Each button sets
+   --seg-el to its `--el-*-main`. */
+.segment > .btn.seg-el.is-active,
+.segment > .btn.seg-el.is-active:hover {
+	background: color-mix(in srgb, var(--seg-el) 22%, transparent);
+}
 /* ── Chips ────────────────────────────────────────────────────────────── */
 .chips {
 	display: flex;

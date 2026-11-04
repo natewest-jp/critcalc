@@ -197,6 +197,38 @@
 	// ── Graph geometry — pixel-true (width measured, not viewBox-scaled) ──────
 	let graphW = $state(720);
 	let graphH = $state(0);
+	const lastHit = $derived(times.length ? times[times.length - 1] : 0);
+	const gap = $derived(
+		example
+			? Math.max(
+					0.1,
+					...times
+						.slice(1)
+						.map((t, i) => t - times[i])
+						.filter((d) => d > 0)
+				)
+			: interval
+	);
+	// ⚓ An example's axis ends just after its last hit, even when its timer runs
+	// on (Chevreuse's 3s window over 0.6s of shells): a window drawn running off
+	// the edge says "and more" without squeezing eight hits into a fifth of the
+	// chart. An even string's is the rule's span, which the handle doesn't move.
+	const domain = $derived(example ? lastHit + Math.min(gap, 1) : span);
+
+	/**
+	 * ⚓ THE STRIP STANDS APART WHERE IT WOULD BE SMALL (Nate 2026-11-04). On
+	 * the time axis's scale the companion and the handle span only 0.1–3s of
+	 * it, a fifth or less on a phone (and of a 20s custom axis). Below 🎛️
+	 * TIED_MIN px of that span they take the plot's full width on a scale of
+	 * their own (0–3s, its seconds under the strip), and the thumb is no
+	 * longer on hit 2. Decided from the width and the axis alone, ahead of
+	 * the type's scale `k` (which depends on the height this decides).
+	 */
+	const TIED_MIN = 360;
+	const detached = $derived(
+		!example && (INTERVAL_MAX / domain) * Math.max(1, graphW - 70) < TIED_MIN
+	);
+
 	/**
 	 * ⚓ THE CHART SIZES UP AS A WHOLE (⚓ Nate 2026-11-04, replacing "the stalks
 	 * grow, and only a little" of 2026-10-06, when the chart sat in the rail).
@@ -214,7 +246,7 @@
 	 *  icons' room over it; the counter, the timer and the axis under it; and,
 	 *  for an even string, the companion strip under the axis. */
 	const TOP = $derived(example ? 26 : 46);
-	const FIXED = $derived(TOP + 50 + (example ? 20 : 96));
+	const FIXED = $derived(TOP + 50 + (example ? 20 : detached ? 108 : 96));
 	const natural = $derived(FIXED + STALK);
 	const k = $derived(Math.min(K_MAX, Math.max(1, graphH / natural)));
 	const stalk = $derived(Math.min(k * STALK * STALK_GROW, Math.max(k * STALK, graphH - k * FIXED)));
@@ -238,7 +270,7 @@
 			stripTop,
 			stripBottom: stripTop + stripH,
 			stripH,
-			H: example ? axisY + 20 * k : stripTop + stripH + 6 * k
+			H: example ? axisY + 20 * k : stripTop + stripH + (detached ? 18 : 6) * k
 		};
 	});
 	/** A blocked hit's tick starts this far down its stalk — short at any length. */
@@ -259,25 +291,12 @@
 	/** The right margin is half the last time label, so it ends at the edge. */
 	const PADR = $derived(Math.ceil(1.2 * fs));
 
-	const lastHit = $derived(times.length ? times[times.length - 1] : 0);
-	const gap = $derived(
-		example
-			? Math.max(
-					0.1,
-					...times
-						.slice(1)
-						.map((t, i) => t - times[i])
-						.filter((d) => d > 0)
-				)
-			: interval
-	);
-	// ⚓ An example's axis ends just after its last hit, even when its timer runs
-	// on (Chevreuse's 3s window over 0.6s of shells): a window drawn running off
-	// the edge says "and more" without squeezing eight hits into a fifth of the
-	// chart. An even string's is the rule's span, which the handle doesn't move.
-	const domain = $derived(example ? lastHit + Math.min(gap, 1) : span);
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((t: number) => PADL + (t / domain) * plotW);
+	/** An interval's x on the strip and the handle: the time axis's, or the
+	 *  strip's own scale where it stands apart. */
+	const xl = $derived((v: number) => (detached ? PADL + (v / INTERVAL_MAX) * plotW : xOf(v)));
+	const stripTicks = [0.5, 1, 1.5, 2, 2.5, 3];
 
 	/** 🎛️ The reading stands right of the companion strip, under the chart it
 	 *  explains, where at least BESIDE_MIN px are left there; otherwise (a
@@ -285,7 +304,13 @@
 	const BESIDE_MIN = 360;
 	const BESIDE_GAP = 32;
 	const besideX = $derived(xOf(INTERVAL_MAX) + BESIDE_GAP);
-	const beside = $derived(!example && graphW - PADR - besideX >= BESIDE_MIN);
+	const beside = $derived(!example && !detached && graphW - PADR - besideX >= BESIDE_MIN);
+	/** The handle's height, so the reading can centre in the open space beside
+	 *  the strip and the handle together. */
+	let handleH = $state(0);
+	/** The handle's top under the chart: the body's gap less the stage
+	 *  handle's pull-up (app.css § THE STAGE, .stage-handle), 0.15rem. */
+	const HANDLE_GAP = 2.4;
 
 	// Axis steps that keep their labels ≥ 44px apart (scaled with the type).
 	const STEPS = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20];
@@ -396,13 +421,11 @@
 	});
 	const landsY = (g: number) => ROW.stripBottom - (g / landsScale.max) * ROW.stripH;
 	const landsPath = $derived(
-		lands
-			.map((l, i) => `${i ? 'L' : 'M'}${xOf(l.v).toFixed(1)},${landsY(l.g).toFixed(1)}`)
-			.join(' ')
+		lands.map((l, i) => `${i ? 'L' : 'M'}${xl(l.v).toFixed(1)},${landsY(l.g).toFixed(1)}`).join(' ')
 	);
 	const landsNow = $derived(example ? null : landsEvery(interval, params));
 	/** The dot's label goes left of it where the strip's end is near. */
-	const landsLabelLeft = $derived(xOf(interval) > xOf(INTERVAL_MAX) - 80 * k);
+	const landsLabelLeft = $derived(xl(interval) > xl(INTERVAL_MAX) - 80 * k);
 	/** 🎛️ The label's width, generously ("every 1.25s" at 11px condensed). */
 	const LANDS_LABEL_W = 66;
 	/** The label sits over the curve wherever it spans, so the line never
@@ -410,10 +433,10 @@
 	 *  above the strip's top. */
 	const landsLabelY = $derived.by(() => {
 		if (landsNow === null) return 0;
-		const x0 = xOf(interval);
+		const x0 = xl(interval);
 		const x1 = x0 + (landsLabelLeft ? -1 : 1) * (8 + LANDS_LABEL_W) * k;
 		const [lo, hi] = x0 < x1 ? [x0, x1] : [x1, x0];
-		const under = lands.filter((l) => xOf(l.v) >= lo && xOf(l.v) <= hi).map((l) => l.g);
+		const under = lands.filter((l) => xl(l.v) >= lo && xl(l.v) <= hi).map((l) => l.g);
 		const top = Math.max(landsNow, ...under);
 		return Math.max(ROW.stripTop + 9 * k, landsY(top) - 5 * k);
 	});
@@ -571,8 +594,9 @@
 					<div class="segment icd-elements" role="radiogroup" aria-label="Element">
 						{#each ELEMENTS as e (e)}
 							<button
-								class="btn icd-el"
+								class="btn icd-el seg-el"
 								class:is-active={element === e}
+								style:--seg-el="var(--el-{e}-main)"
 								role="radio"
 								aria-checked={element === e}
 								onclick={() => (element = e)}
@@ -796,7 +820,7 @@
 					{#if landsPath && landsNow !== null}
 						<text
 							class="stage-word"
-							x={xOf(INTERVAL_MIN)}
+							x={xl(INTERVAL_MIN)}
 							y={ROW.stripTitleY}
 							fill="var(--chart-dim)"
 							font-size={LANE_FS}
@@ -805,9 +829,9 @@
 						</text>
 						{#each landsScale.ticks as t (t)}
 							<line
-								x1={xOf(INTERVAL_MIN)}
+								x1={xl(INTERVAL_MIN)}
 								y1={landsY(t)}
-								x2={xOf(INTERVAL_MAX)}
+								x2={xl(INTERVAL_MAX)}
 								y2={landsY(t)}
 								stroke="var(--chart-grid)"
 							/>
@@ -822,23 +846,36 @@
 							</text>
 						{/each}
 						<line
-							x1={xOf(INTERVAL_MIN)}
+							x1={xl(INTERVAL_MIN)}
 							y1={ROW.stripBottom}
-							x2={xOf(INTERVAL_MAX)}
+							x2={xl(INTERVAL_MAX)}
 							y2={ROW.stripBottom}
 							stroke="var(--chart-rule)"
 						/>
+						{#if detached}
+							{#each stripTicks as t (t)}
+								<text
+									x={xl(t)}
+									y={ROW.stripBottom + 13 * k}
+									fill="var(--chart-ink)"
+									font-size={LANE_FS}
+									text-anchor="middle"
+								>
+									{fmtS(t)}
+								</text>
+							{/each}
+						{/if}
 						<path d={landsPath} fill="none" stroke="var(--chart-ink)" stroke-width={1.5 * k} />
 						<line
-							x1={xOf(interval)}
+							x1={xl(interval)}
 							y1={ROW.stripTop}
-							x2={xOf(interval)}
+							x2={xl(interval)}
 							y2={ROW.stripBottom}
 							stroke="var(--chart-ink)"
 							stroke-dasharray="2 2"
 						/>
 						<circle
-							cx={xOf(interval)}
+							cx={xl(interval)}
 							cy={landsY(landsNow)}
 							r={3.5 * k}
 							fill="var(--accent)"
@@ -847,7 +884,7 @@
 						/>
 						<text
 							class="stage-word"
-							x={xOf(interval) + (landsLabelLeft ? -8 : 8) * k}
+							x={xl(interval) + (landsLabelLeft ? -8 : 8) * k}
 							y={landsLabelY}
 							fill="var(--text)"
 							font-size={11 * k}
@@ -864,6 +901,7 @@
 						style:left="{besideX}px"
 						style:right="{PADR}px"
 						style:top="{ROW.stripTitleY - LANE_FS}px"
+						style:height="{ROW.H - (ROW.stripTitleY - LANE_FS) + HANDLE_GAP + handleH}px"
 					>
 						{@render readingText()}
 					</div>
@@ -878,9 +916,10 @@
 			{#if !example}
 				<div
 					class="stage-handle icd-handle"
-					style:--stage-handle-l="{xOf(INTERVAL_MIN) - THUMB_R}px"
+					bind:clientHeight={handleH}
+					style:--stage-handle-l="{xl(INTERVAL_MIN) - THUMB_R}px"
 					style:--stage-handle-r="0px"
-					style:--icd-track-w="{xOf(INTERVAL_MAX) - xOf(INTERVAL_MIN) + 2 * THUMB_R}px"
+					style:--icd-track-w="{xl(INTERVAL_MAX) - xl(INTERVAL_MIN) + 2 * THUMB_R}px"
 				>
 					<InstrumentSlider
 						label="Hit interval"
@@ -1072,10 +1111,19 @@
 
 	/* Beside the strip: under the chart's right part, level with the strip's
 	   top. Pointing passes through it to the chart. */
+	/* Beside the strip it centres in the open space there, the strip's title
+	   to the handle's foot (Nate 2026-11-04: it hugged the timeline over an
+	   empty space). 🎛️ 40rem keeps its two lines a reading length. */
 	.icd-reading--beside {
 		position: absolute;
+		display: grid;
+		place-items: center;
 		min-height: 0;
+		text-align: center;
 		pointer-events: none;
+	}
+	.icd-reading--beside :global(p) {
+		max-width: 40rem;
 	}
 
 	.icd-reading :global(p) {

@@ -239,3 +239,24 @@ Help §8's second paragraph, revised for it: "…For evenly spaced hits, the han
 chart sets the interval, and the strip along it shows how often the element lands at every
 interval: sometimes a slower string lands it more often. Under the chart, **ICD** sets the
 rule…"
+
+## 11. Element tints, the strip apart, the reading centred
+
+Nate: the headline and the strip complement each other, and the strings (§5, §7, §10) are
+approved. Three more:
+
+- **An element is chosen in its own tint**, here and in Enemy RES & DEF: `.segment >
+.btn.seg-el.is-active` in `app.css` (by `.segment`), the Gauge explorer's hover recipe
+  (the element's `--el-*-main` at 22% over the ground), each button setting `--seg-el`.
+  Physical takes `--el-none-main`.
+- **The strip stands apart where it would be small.** Tied to the time axis it spans
+  0.1–3s of it, a fifth or less on a phone or a 20s custom axis. Below 🎛️ `TIED_MIN`
+  (360px of that span) the strip and the handle take the plot's full width on a 0–3s scale
+  of their own, its seconds under the strip, and the thumb leaves hit 2. Wide, it stays
+  tied. Decided from the width and the axis only, ahead of the type's scale, which depends
+  on the height this decides.
+- **The reading centres** in the open space beside the strip, from the strip's title to the
+  handle's foot, at most 40rem wide.
+
+Driven at 2000×1045 (tied, reading centred), 900×800 and 390×844 (apart), and Enemy RES &
+DEF at 1400×860 (Pyro in its tint); no sideways scroll, no page errors.
