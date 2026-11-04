@@ -1,8 +1,8 @@
 # The stage: retiring the rail (2026-11-04)
 
-**Status:** on `polish/viz-rail-retire`, not merged. The tidy that `viz-stage-gauge-2026-11-04.md`
-§7 left: with the Gauge explorer on the stage, the rail's CSS had no users. No visual change
-is intended, so there is nothing for Nate's eye.
+**Status:** ✅ merged into `main` on 2026-11-04 (`polish/viz-rail-retire`), approved by Nate. The
+tidy that `viz-stage-gauge-2026-11-04.md` §7 left: with the Gauge explorer on the stage, the
+rail's CSS had no users. No visual change, so there was nothing for Nate's eye.
 
 ## 1. What went
 
