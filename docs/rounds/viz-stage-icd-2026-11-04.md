@@ -1,9 +1,10 @@
 # The stage, round 7: ICD timeline (2026-11-04)
 
-**Status:** built on `feat/viz-stage-icd`. Nate's first look: "Looking pretty good!", the copy
-(§5) approved, the interval slider liked, and one problem, that the tool looked spare (it did
-on the rail too). The second pass (§7) answers it and waits for his look; §7's copy and Help
-(§8) are proposals.
+**Status:** ✅ merged into `main` on 2026-11-04 (`feat/viz-stage-icd`). Nate: "There we go! This
+is so much more tidy", then "it's looking good!". All copy approved (§5, §7, §10, §12); Help
+(§6, superseded by §8 and §10) landed. Five passes after the first build: less spare (§7),
+the layout (§9), the companion (§10), tints and the strip apart (§11), the strip flush (§12).
+Real Safari is Nate's to check.
 
 ## 1. The headline
 
@@ -260,3 +261,20 @@ approved. Three more:
 
 Driven at 2000×1045 (tied, reading centred), 900×800 and 390×844 (apart), and Enemy RES &
 DEF at 1400×860 (Pyro in its tint); no sideways scroll, no page errors.
+
+## 12. Close
+
+- **The strip apart is flush with the timeline:** its own scale runs 0.1–3s across the plot's
+  exact width, so its gridlines start and end with the timeline's (measured: 43→852 at 900px,
+  43→346 at 390px).
+- **"On average"** (Nate's question, Claude's wording): the element lands at uneven gaps inside
+  a window (1.5s then 1s at 0.5s apart under Standard ICD), so "every 1.25s" is their average.
+  The strip's title is "How often the element lands on average, at each hit interval"; the dot
+  stays "every 1.25s", under it.
+- **Help** landed as §8's first paragraph and §10's revision of the second, in one with the
+  string row, the strip and the rule's presets. The third paragraph (the rule explained) still
+  holds.
+- The copy ledger's note `docs/text/ledger/notes/vz_icd.md` still describes the rail; it joins
+  the to-do's string-inventory item with the other stage rounds' orphaned notes.
+
+Gates: Vitest 2782, svelte-check, lint, build; e2e both engines 144 passed.

@@ -220,7 +220,7 @@
 	 * the time axis's scale the companion and the handle span only 0.1–3s of
 	 * it, a fifth or less on a phone (and of a 20s custom axis). Below 🎛️
 	 * TIED_MIN px of that span they take the plot's full width on a scale of
-	 * their own (0–3s, its seconds under the strip), and the thumb is no
+	 * their own (0.1–3s, flush with the timeline's edges, its seconds under it), and the thumb is no
 	 * longer on hit 2. Decided from the width and the axis alone, ahead of
 	 * the type's scale `k` (which depends on the height this decides).
 	 */
@@ -293,9 +293,12 @@
 
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((t: number) => PADL + (t / domain) * plotW);
-	/** An interval's x on the strip and the handle: the time axis's, or the
-	 *  strip's own scale where it stands apart. */
-	const xl = $derived((v: number) => (detached ? PADL + (v / INTERVAL_MAX) * plotW : xOf(v)));
+	/** An interval's x on the strip and the handle: the time axis's, or, where
+	 *  the strip stands apart, its own 0.1–3s across the plot's exact width, so
+	 *  its gridlines start and end with the timeline's (Nate 2026-11-04). */
+	const xl = $derived((v: number) =>
+		detached ? PADL + ((v - INTERVAL_MIN) / (INTERVAL_MAX - INTERVAL_MIN)) * plotW : xOf(v)
+	);
 	const stripTicks = [0.5, 1, 1.5, 2, 2.5, 3];
 
 	/** 🎛️ The reading stands right of the companion strip, under the chart it
@@ -825,7 +828,7 @@
 							fill="var(--chart-dim)"
 							font-size={LANE_FS}
 						>
-							How often the element lands, at each hit interval
+							How often the element lands on average, at each hit interval
 						</text>
 						{#each landsScale.ticks as t (t)}
 							<line
