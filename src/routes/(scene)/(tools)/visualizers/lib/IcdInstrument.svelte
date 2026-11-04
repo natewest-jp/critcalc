@@ -2,7 +2,6 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { ELEMENT_LABEL } from '$lib/utils/auraDisplay';
 	import Mark from '$lib/components/Mark.svelte';
-	import BandMenu from '$lib/components/BandMenu.svelte';
 	import { simulateIcd, STANDARD_ICD, NO_ICD, type IcdParams } from '$lib/utils/icd';
 	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 	import { ICD_EXAMPLES, type IcdExampleId } from './icdExamples';
@@ -49,11 +48,13 @@
 
 	// ── The rule ──────────────────────────────────────────────────────────────
 	let rule = $state<Rule>('standard');
+	/** The Custom rule's timer, 0–10s; 0 is no timer (every hit applies). */
 	let customTimer = $state(2.5);
 	/** Hit counter, 1–8; `COUNTER_OFF` = only the first hit of a window applies. */
 	let customHits = $state(3);
 	/** Applications per window, 1–8; `NO_LIMIT` = unlimited. */
 	let customCap = $state(8);
+	const TIMER_MAX = 10;
 	const COUNTER_OFF = 9;
 	const NO_LIMIT = 9;
 
@@ -90,10 +91,20 @@
 	/** Custom starts from the rule on screen, so it opens as an edit of it. */
 	function pickCustom() {
 		const p = params;
-		customTimer = p.timer > 0 ? Math.min(Math.max(p.timer, 0.5), 10) : 2.5;
+		customTimer = Math.min(p.timer, TIMER_MAX);
 		customHits = p.hits === Infinity ? COUNTER_OFF : Math.min(p.hits, 8);
 		customCap = p.cap === undefined ? NO_LIMIT : Math.min(p.cap, 8);
 		rule = 'custom';
+	}
+
+	/**
+	 * ⚓ THE RULE IS ON THE SURFACE (⚓ Nate 2026-11-04): its three numbers are
+	 * always shown, a preset only fills them in, and moving one makes the rule
+	 * Custom, starting from the preset's numbers.
+	 */
+	function editRule(set: () => void) {
+		if (rule !== 'custom') pickCustom();
+		set();
 	}
 
 	// ── Workspace handle (share) ───────────────────────────────────────────────
@@ -129,7 +140,7 @@
 			pickSource(s.source as Source);
 		interval = num(s.interval, INTERVAL_MIN, INTERVAL_MAX, INTERVAL_PER) ?? interval;
 		if (Array.isArray(s.custom)) {
-			customTimer = num(s.custom[0], 0.5, 10, TIMER_PER) ?? customTimer;
+			customTimer = num(s.custom[0], 0, TIMER_MAX, TIMER_PER) ?? customTimer;
 			customHits = num(s.custom[1], 1, COUNTER_OFF) ?? customHits;
 			customCap = num(s.custom[2], 1, NO_LIMIT) ?? customCap;
 		}
@@ -153,6 +164,13 @@
 						}
 	);
 
+	/** The rule's three numbers as its sliders show them, whichever rule is on. */
+	const shown = $derived({
+		timer: Math.min(params.timer, TIMER_MAX),
+		hits: params.hits === Infinity ? COUNTER_OFF : Math.min(params.hits, 8),
+		cap: params.cap === undefined ? NO_LIMIT : Math.min(params.cap, 8)
+	});
+
 	const span = $derived(evenSpan(params));
 	const times = $derived(example ? example.hits : evenHits(interval, span));
 	const sim = $derived(simulateIcd(times, params));
@@ -162,73 +180,77 @@
 	// An even string's share is its repeating window's (icdTimeline.ts), so it
 	// follows the interval and nothing else; an example is a whole story, so
 	// its share is the list's.
+	const share = $derived(example ? null : evenShare(interval, params));
 	const head = $derived.by(() => {
-		if (example)
+		if (!share)
 			return apps === sim.length
 				? { figure: `All ${sim.length}`, sentence: 'hits apply their element' }
 				: { figure: `${apps} of ${sim.length}`, sentence: 'hits apply their element' };
-		const { applies, of } = evenShare(interval, params);
-		return applies === of
+		return share.applies === share.of
 			? { figure: 'Every hit', sentence: 'applies its element' }
-			: { figure: `${applies} of every ${of}`, sentence: 'hits apply their element' };
+			: { figure: `${share.applies} of every ${share.of}`, sentence: 'hits apply their element' };
 	});
 
-	// ── The rule in words ────────────────────────────────────────────────────
 	const ordinal = (n: number) => (n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`);
 	const fmtS = (s: number) => `${+s.toFixed(2)}s`;
-
-	const RULE_NAME: Record<Rule, string> = {
-		standard: 'Standard',
-		none: 'No ICD',
-		own: 'Its own',
-		custom: 'Custom'
-	};
-
-	const ruleText = $derived.by(() => {
-		const { timer, hits, cap } = params;
-		if (timer === 0) return 'Every hit applies its element';
-		const parts = [`${fmtS(timer)} timer`];
-		if (hits === Infinity) parts.push('first hit only');
-		else if (hits === 1) parts.push('every hit');
-		else parts.push(`every ${ordinal(hits)} hit`);
-		if (cap !== undefined && hits !== Infinity) parts.push(`at most ${cap} per window`);
-		return parts.join(' · ');
-	});
 
 	// ── Graph geometry — pixel-true (width measured, not viewBox-scaled) ──────
 	let graphW = $state(720);
 	let graphH = $state(0);
-	/** 🎛️ The left margin holds the lanes' names; every mark starts right of it. */
-	const PADL = 58;
-	const PADR = 16;
 	/**
-	 * ⚓ THE STALKS GROW, AND ONLY A LITTLE (2026-10-06, ⚓ Nate). Given a taller
-	 * box the hits lengthen — the counter, the timer and the axis keep their
-	 * size — up to STALK_GROW × their natural length; past that the lanes and
-	 * their toolbar and handle centre in the stage (.icd-body) and the rest is
-	 * bare night. A one-row strip has no vertical scale to fill, so a taller
-	 * one only says the same thing louder.
+	 * ⚓ THE CHART SIZES UP AS A WHOLE (⚓ Nate 2026-11-04, replacing "the stalks
+	 * grow, and only a little" of 2026-10-06, when the chart sat in the rail).
+	 * On the stage a strip that only lengthened its stems looked spare. Given a
+	 * taller box, every mark and word scales by `k` (icons, stems, digits,
+	 * rings, bands, labels, the margins) up to 🎛️ K_MAX; then the stems
+	 * lengthen, up to 🎛️ STALK_GROW × their scaled length; past that the
+	 * group centres in the stage (.icd-body) and the rest is bare night.
+	 * A phone's stage is its natural height, so it stays at k = 1.
 	 */
+	const K_MAX = 1.6;
+	const STALK_GROW = 1.5;
 	const STALK = 50;
-	const STALK_GROW = 2; // 🎛️
-	/** Everything in the chart but the stalk: the icons' room over it, the
-	 *  counter and timer lanes and the axis under it. */
-	const FIXED = 94;
-	const H_MIN = STALK + FIXED;
-	const stalk = $derived(Math.min(STALK * STALK_GROW, Math.max(STALK, graphH - FIXED)));
+	/** Everything in the chart but the stalk, at k = 1: the bracket's and the
+	 *  icons' room over it; the counter, the timer and the axis under it; and,
+	 *  for an even string, the share strip under the axis. */
+	const TOP = 46;
+	const FIXED = $derived(TOP + 50 + (example ? 20 : 60));
+	const natural = $derived(FIXED + STALK);
+	const k = $derived(Math.min(K_MAX, Math.max(1, graphH / natural)));
+	const stalk = $derived(Math.min(k * STALK * STALK_GROW, Math.max(k * STALK, graphH - k * FIXED)));
 	const ROW = $derived.by(() => {
-		const hitTop = 24;
+		const hitTop = TOP * k;
 		const hitBottom = hitTop + stalk;
-		const bandTop = hitBottom + 28;
-		const bandH = 14;
-		const axisY = bandTop + bandH + 8;
-		return { hitTop, hitBottom, counterY: hitBottom + 18, bandTop, bandH, axisY, H: axisY + 20 };
+		const bandTop = hitBottom + 28 * k;
+		const bandH = 14 * k;
+		const axisY = bandTop + bandH + 8 * k;
+		const stripTop = axisY + 24 * k;
+		const stripH = 30 * k;
+		return {
+			bracketY: 16 * k,
+			hitTop,
+			hitBottom,
+			counterY: hitBottom + 18 * k,
+			bandTop,
+			bandH,
+			axisY,
+			stripTop,
+			stripBottom: stripTop + stripH,
+			stripH,
+			H: example ? axisY + 20 * k : stripTop + stripH + 6 * k
+		};
 	});
 	/** A blocked hit's tick starts this far down its stalk — short at any length. */
 	const BLOCKED_DROP = 18 / STALK;
 	/** Half the slider thumb's 15px (app.css `.slider`): the handle's track runs
 	 *  this far past each end of its range, so the thumb sits on hit 2. */
 	const THUMB_R = 7.5;
+	/** The chart's type, scaled with it. */
+	const fs = $derived(10 * k);
+
+	/** 🎛️ The left margin holds the lanes' names; every mark starts right of it. */
+	const PADL = $derived(58 * k);
+	const PADR = 16;
 
 	const lastHit = $derived(times.length ? times[times.length - 1] : 0);
 	const gap = $derived(
@@ -250,10 +272,9 @@
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((t: number) => PADL + (t / domain) * plotW);
 
-	// Axis steps that keep their labels ≥ 44px apart (a 90s string used to print
-	// a label every second, ~8px apart).
+	// Axis steps that keep their labels ≥ 44px apart (scaled with the type).
 	const STEPS = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20];
-	const tickStep = $derived(STEPS.find((s) => (s / domain) * plotW >= 44) ?? 30);
+	const tickStep = $derived(STEPS.find((s) => (s / domain) * plotW >= 44 * k) ?? 30);
 	const ticks = $derived(
 		Array.from({ length: Math.floor(domain / tickStep + 1e-9) + 1 }, (_, i) => i * tickStep)
 	);
@@ -268,14 +289,14 @@
 		times.forEach((t, i) => (groups[Math.round(t * 1e6)] ??= []).push(i));
 		const out = new Array<number>(times.length);
 		for (const idx of Object.values(groups))
-			idx.forEach((i, k) => (out[i] = xOf(times[i]) + (k - (idx.length - 1) / 2) * FAN));
+			idx.forEach((i, j) => (out[i] = xOf(times[i]) + (j - (idx.length - 1) / 2) * FAN * k));
 		return out;
 	});
 
-	/** 🎛️ Below this many px between hits, the counter lane writes only the
-	 *  applying hits' numbers, or a 0.1s string's digits run together. */
+	/** 🎛️ Below this many px between hits (at k = 1), the counter lane writes
+	 *  only the applying hits' numbers, or a 0.1s string's digits run together. */
 	const DIGIT_ROOM = 11;
-	const dense = $derived(!example && (interval / domain) * plotW < DIGIT_ROOM);
+	const dense = $derived(!example && (interval / domain) * plotW < DIGIT_ROOM * k);
 
 	const el = $derived(`var(--el-${element}-main)`);
 	// ⚓ A blocked hit is still an ELEMENTAL hit (⚓ Nate, 2026-10-04) — it lands,
@@ -303,12 +324,12 @@
 	const windows = $derived.by(() => {
 		if (params.timer === 0) return [];
 		const starts = sim.flatMap((h, i) => (h.viaTimer ? [i] : []));
-		return starts.map((s, k) => {
-			const end = k + 1 < starts.length ? starts[k + 1] : sim.length;
+		return starts.map((s, j) => {
+			const end = j + 1 < starts.length ? starts[j + 1] : sim.length;
 			const t0 = sim[s].time;
 			const x0 = xOf(t0);
 			const x1 = xOf(Math.min(t0 + params.timer, domain));
-			const whole = !!example || k + 1 < starts.length;
+			const whole = !!example || j + 1 < starts.length;
 			return {
 				i: s,
 				x0,
@@ -318,10 +339,48 @@
 			};
 		});
 	});
-	/** 🎛️ A band this wide says "2 applied"; narrower, just "2"; under the
-	 *  second, nothing. */
+	/** 🎛️ A band this wide (at k = 1) says "2 applied"; narrower, just "2";
+	 *  under the second, nothing. */
 	const BAND_WORDS = 62;
 	const BAND_DIGIT = 16;
+
+	// ── The headline's window, bracketed (on trial: ⚓ Nate 2026-11-04) ──────
+	// The hits the headline counts, over the first window: "2 of these 5". Not
+	// on an example (its share is the whole list) or when every hit applies.
+	const bracket = $derived.by(() => {
+		if (!share || share.applies === share.of || share.of > xs.length) return null;
+		return { x0: xs[0], x1: xs[share.of - 1], text: `${share.applies} of these ${share.of}` };
+	});
+
+	// ── The share strip: the headline at every interval, along the handle ───
+	// The handle's track runs 0.1–3s on the time axis's scale, so the strip
+	// drawn on that span under the axis is the slider's landscape: where the
+	// share steps up as the interval grows. Sampled every 0.01s; it depends on
+	// the rule alone, so dragging the handle only moves its dot.
+	const SHARE_STEP = 0.01;
+	const shares = $derived.by(() => {
+		if (example) return [];
+		const n = Math.round((INTERVAL_MAX - INTERVAL_MIN) / SHARE_STEP);
+		return Array.from({ length: n + 1 }, (_, i) => {
+			const v = INTERVAL_MIN + i * SHARE_STEP;
+			const s = evenShare(v, params);
+			return { v, r: s.applies / s.of };
+		});
+	});
+	const stripPath = $derived.by(() => {
+		if (!shares.length) return '';
+		const y = (r: number) => (ROW.stripBottom - r * ROW.stripH).toFixed(1);
+		let d = `M${xOf(INTERVAL_MIN).toFixed(1)},${ROW.stripBottom}`;
+		let prev = shares[0].r;
+		d += ` L${xOf(INTERVAL_MIN).toFixed(1)},${y(prev)}`;
+		for (const { v, r } of shares) {
+			if (r === prev) continue;
+			const x = xOf(v).toFixed(1);
+			d += ` L${x},${y(prev)} L${x},${y(r)}`;
+			prev = r;
+		}
+		return `${d} L${xOf(INTERVAL_MAX).toFixed(1)},${y(prev)} L${xOf(INTERVAL_MAX).toFixed(1)},${ROW.stripBottom} Z`;
+	});
 
 	// ── Point to read ────────────────────────────────────────────────────────
 	let pointed = $state<number | null>(null);
@@ -343,7 +402,7 @@
 
 	/** The timer-driven application that opened hit `i`'s window. */
 	const windowStart = (i: number) => {
-		for (let k = i; k >= 0; k--) if (sim[k].viaTimer) return k;
+		for (let j = i; j >= 0; j--) if (sim[j].viaTimer) return j;
 		return 0;
 	};
 
@@ -354,8 +413,8 @@
 		const { timer, hits, cap } = params;
 		const head = `Hit ${i + 1} · ${h.time.toFixed(2)}s`;
 		if (timer === 0) return { head, applies: true, why: 'With no ICD, every hit applies.' };
-		const k = windowStart(i);
-		const left = fmtS(Math.max(0, sim[k].time + timer - h.time));
+		const j = windowStart(i);
+		const left = fmtS(Math.max(0, sim[j].time + timer - h.time));
 		if (h.viaTimer)
 			return {
 				head,
@@ -369,24 +428,24 @@
 			return {
 				head,
 				applies: true,
-				why: `Every ${ordinal(hits)} hit applies. The timer from hit ${k + 1} keeps running, with ${left} left.`
+				why: `Every ${ordinal(hits)} hit applies. The timer from hit ${j + 1} keeps running, with ${left} left.`
 			};
 		if (h.capped)
 			return {
 				head,
 				applies: false,
-				why: `This window's ${cap} ${cap === 1 ? 'application is' : 'applications are'} used up until the timer from hit ${k + 1} runs out, in ${left}.`
+				why: `This window's ${cap} ${cap === 1 ? 'application is' : 'applications are'} used up until the timer from hit ${j + 1} runs out, in ${left}.`
 			};
 		if (hits === Infinity)
 			return {
 				head,
 				applies: false,
-				why: `Only the first hit in a window applies. The timer from hit ${k + 1} has ${left} left.`
+				why: `Only the first hit in a window applies. The timer from hit ${j + 1} has ${left} left.`
 			};
 		return {
 			head,
 			applies: false,
-			why: `The counter is on ${h.count} of ${hits}, and the timer from hit ${k + 1} has ${left} left.`
+			why: `The counter is on ${h.count} of ${hits}, and the timer from hit ${j + 1} has ${left} left.`
 		};
 	});
 
@@ -395,29 +454,47 @@
 	const LANES = $derived([
 		{
 			name: 'Hits',
-			y: () => ROW.hitTop + stalk / 2 + 3.5,
+			y: ROW.hitTop + stalk / 2 + fs * 0.35,
 			tip: 'A tall stem with the element’s icon applies its element. A short, faint one is blocked by ICD.'
 		},
 		{
 			name: 'Counter',
-			y: () => ROW.counterY,
+			y: ROW.counterY,
 			tip:
 				'The hit counter. A ringed number is a hit the counter let through.' +
 				(params.cap !== undefined && counting ? ' A dash: the window’s limit is reached.' : '')
 		},
 		{
 			name: 'Timer',
-			y: () => ROW.bandTop + ROW.bandH - 3.5,
+			y: ROW.bandTop + ROW.bandH / 2 + fs * 0.35,
 			tip: 'Each band is a timer window, started by a hit that applies once the timer has run out. Its number is how many hits it applied.'
-		}
+		},
+		...(example
+			? []
+			: [
+					{
+						name: 'Share',
+						y: ROW.stripTop + ROW.stripH / 2 + fs * 0.35,
+						tip: 'The share of hits that apply at every hit interval, along the slider under it.'
+					}
+				])
 	]);
+
+	const RULES: { id: Rule; label: string }[] = [
+		{ id: 'standard', label: 'Standard' },
+		{ id: 'none', label: 'No ICD' },
+		{ id: 'own', label: 'Its own' },
+		{ id: 'custom', label: 'Custom' }
+	];
 </script>
 
 <!-- THE STAGE (design §6, §8). One box: the chart head (the share of hits
-     that apply), the setup bar and the chart tools on the chart's top edge,
-     three lanes on one time axis (the hits, the counter, the timer windows),
-     the interval's handle on that axis with its thumb on hit 2, and the
-     pointed hit's reading under it. -->
+     that apply); the strings and the chart tools on the chart's top edge;
+     three lanes on one time axis (the hits, the counter, the timer windows);
+     the interval's handle on that axis, its thumb on hit 2, with the share
+     at every interval along it; the pointed hit's reading; and the rule.
+     ⚓ The ICD timeline has no setup bar (⚓ Nate 2026-11-04): its rule is the
+     thing you play with, a live control, so it is on the surface. -->
 <div class="stage-root">
 	<div class="stage ctx-dark">
 		<p class="readout-head stage-head">
@@ -426,171 +503,49 @@
 
 		<div class="icd-body">
 			<div class="stage-toolbar">
-				<div class="setup-bar" role="group" aria-label="Setup">
-					<BandMenu
-						role="dialog"
-						align="start"
-						ariaLabel="String: {example?.label ?? 'Even spacing'}"
+				<div class="segment stage-tabs" role="radiogroup" aria-label="String">
+					<button
+						class="btn"
+						class:is-active={source === 'even'}
+						role="radio"
+						aria-checked={source === 'even'}
+						onclick={() => pickSource('even')}
 					>
-						{#snippet face()}
-							<span class="setup-key">String</span>
-							<span class="setup-val">{example?.label ?? 'Even spacing'}</span>
-						{/snippet}
-						{#snippet items(close)}
-							<div class="setup-pop">
-								<div class="icd-picks" role="radiogroup" aria-label="String">
-									<button
-										class="icd-pick"
-										class:is-on={source === 'even'}
-										role="radio"
-										aria-checked={source === 'even'}
-										onclick={() => {
-											pickSource('even');
-											close();
-										}}
-									>
-										<span class="icd-pick-name">Even spacing</span>
-										<span class="icd-pick-detail"
-											>Hits at the interval you set under the chart.</span
-										>
-									</button>
-									{#each ICD_EXAMPLES as ex (ex.id)}
-										<button
-											class="icd-pick"
-											class:is-on={source === ex.id}
-											role="radio"
-											aria-checked={source === ex.id}
-											onclick={() => {
-												pickSource(ex.id);
-												close();
-											}}
-										>
-											<span class="icd-pick-name">{ex.label}</span>
-											<span class="icd-pick-detail">{ex.note}</span>
-										</button>
-									{/each}
-								</div>
-							</div>
-						{/snippet}
-					</BandMenu>
-
-					<BandMenu role="dialog" align="start" ariaLabel="ICD: {RULE_NAME[rule]}">
-						{#snippet face()}
-							<span class="setup-key">ICD</span>
-							<span class="setup-val">{RULE_NAME[rule]}</span>
-						{/snippet}
-						{#snippet items()}
-							<div class="setup-pop">
-								<p class="icd-pop-note">
-									Internal Cooldown — the hidden rule that stops some hits from applying their
-									element.
-								</p>
-								<div class="chips">
-									<button
-										class="chip chip--control"
-										class:active={rule === 'standard'}
-										onclick={() => (rule = 'standard')}
-									>
-										Standard
-									</button>
-									<button
-										class="chip chip--control"
-										class:active={rule === 'none'}
-										onclick={() => (rule = 'none')}
-									>
-										No ICD
-									</button>
-									{#if example}
-										<button
-											class="chip chip--control"
-											class:active={rule === 'own'}
-											onclick={() => (rule = 'own')}
-										>
-											Its own
-										</button>
-									{/if}
-									<button
-										class="chip chip--control"
-										class:active={rule === 'custom'}
-										onclick={pickCustom}
-									>
-										Custom
-									</button>
-								</div>
-								{#if rule !== 'custom'}
-									<p class="icd-pop-note">{ruleText}</p>
-								{:else}
-									<InstrumentSlider
-										label="Timer"
-										aria="ICD timer in seconds"
-										bind:value={customTimer}
-										min={0.5}
-										max={10}
-										step={0.1}
-										unit="s"
-										decimals={2}
-										snap={toTimer}
-									/>
-									<!-- The track's last stop is the word: typed, "off" lands there too. -->
-									<InstrumentSlider
-										label="Hit counter"
-										aria="ICD hit counter"
-										bind:value={customHits}
-										min={1}
-										max={COUNTER_OFF}
-										step={1}
-										snap={Math.round}
-										text={customHits === COUNTER_OFF ? 'Off' : null}
-										words={{ off: COUNTER_OFF }}
-									/>
-									<InstrumentSlider
-										label="Limit per window"
-										aria="Applications allowed per ICD timer window"
-										bind:value={customCap}
-										min={1}
-										max={NO_LIMIT}
-										step={1}
-										snap={Math.round}
-										text={customCap === NO_LIMIT ? 'None' : null}
-										words={{ none: NO_LIMIT }}
-									/>
-								{/if}
-							</div>
-						{/snippet}
-					</BandMenu>
+						Even spacing
+					</button>
+					{#each ICD_EXAMPLES as ex (ex.id)}
+						<button
+							class="btn"
+							class:is-active={source === ex.id}
+							role="radio"
+							aria-checked={source === ex.id}
+							onclick={() => pickSource(ex.id)}
+						>
+							{ex.label}
+						</button>
+					{/each}
 				</div>
 
 				<!-- The chart tools: one group, so they wrap together and hold the
 				     toolbar's far end. The element colours the hits and is what a
 				     hand-off sends. -->
 				<div class="icd-tools">
-					<BandMenu glass role="dialog" ariaLabel="Element: {ELEMENT_LABEL[element]}">
-						{#snippet face()}
-							<img src={elementIcon(element)} alt="" width="16" height="16" />
-							<span>{ELEMENT_LABEL[element]}</span>
-						{/snippet}
-						{#snippet items(close)}
-							<div class="icd-elements" role="radiogroup" aria-label="Element">
-								{#each ELEMENTS as e (e)}
-									<button
-										class="chip chip--icon"
-										class:active={element === e}
-										style:--chip-color="var(--el-{e}-main)"
-										role="radio"
-										aria-checked={element === e}
-										onclick={() => {
-											element = e;
-											close();
-										}}
-										aria-label={ELEMENT_LABEL[e]}
-										title={ELEMENT_LABEL[e]}
-									>
-										<img src={elementIcon(e)} alt="" width="16" height="16" />
-									</button>
-								{/each}
-							</div>
-						{/snippet}
-					</BandMenu>
+					<div class="icd-elements" role="radiogroup" aria-label="Element">
+						{#each ELEMENTS as e (e)}
+							<button
+								class="chip chip--icon"
+								class:active={element === e}
+								style:--chip-color="var(--el-{e}-main)"
+								role="radio"
+								aria-checked={element === e}
+								onclick={() => (element = e)}
+								aria-label={ELEMENT_LABEL[e]}
+								title={ELEMENT_LABEL[e]}
+							>
+								<img src={elementIcon(e)} alt="" width="16" height="16" />
+							</button>
+						{/each}
+					</div>
 
 					{#if onHandoff}
 						<button
@@ -612,8 +567,8 @@
 
 			<div
 				class="stage-graph instrument-graph icd-graph"
-				style:--graph-min="{H_MIN}px"
-				style:max-height="{STALK * STALK_GROW + FIXED}px"
+				style:--graph-min="{natural}px"
+				style:max-height="{K_MAX * (FIXED + STALK * STALK_GROW)}px"
 				bind:clientWidth={graphW}
 				bind:clientHeight={graphH}
 			>
@@ -632,16 +587,16 @@
 					{#each ticks as s (s)}
 						<line
 							x1={xOf(s)}
-							y1={ROW.hitTop - 4}
+							y1={ROW.hitTop - 4 * k}
 							x2={xOf(s)}
 							y2={ROW.axisY}
 							stroke="var(--chart-grid)"
 						/>
 						<text
 							x={xOf(s)}
-							y={ROW.axisY + 14}
+							y={ROW.axisY + 14 * k}
 							fill="var(--chart-ink)"
-							font-size="10"
+							font-size={fs}
 							text-anchor="middle"
 						>
 							{fmtS(s)}
@@ -659,21 +614,41 @@
 					{#each LANES as lane (lane.name)}
 						<text
 							class="stage-word icd-lane"
-							x={PADL - 10}
-							y={lane.y()}
+							x={PADL - 10 * k}
+							y={lane.y}
 							fill="var(--chart-dim)"
-							font-size="10"
+							font-size={fs}
 							text-anchor="end"
 						>
 							{lane.name}<title>{lane.tip}</title>
 						</text>
 					{/each}
 
+					<!-- The headline's window, bracketed over its hits -->
+					{#if bracket}
+						<path
+							d="M{bracket.x0},{ROW.bracketY + 5 * k} V{ROW.bracketY} H{bracket.x1} V{ROW.bracketY +
+								5 * k}"
+							fill="none"
+							stroke="var(--chart-ink)"
+							stroke-width="1"
+						/>
+						<text
+							class="stage-word"
+							x={bracket.x0}
+							y={ROW.bracketY - 4 * k}
+							fill="var(--text)"
+							font-size={11 * k}
+						>
+							{bracket.text}
+						</text>
+					{/if}
+
 					<!-- The pointed hit's column -->
 					{#if pointed !== null && xs[pointed] !== undefined}
 						<line
 							x1={xs[pointed]}
-							y1={ROW.hitTop - 4}
+							y1={ROW.hitTop - 4 * k}
 							x2={xs[pointed]}
 							y2={ROW.axisY}
 							stroke="var(--chart-ink)"
@@ -688,7 +663,7 @@
 							y={ROW.bandTop}
 							width={w.w}
 							height={ROW.bandH}
-							rx="2"
+							rx={2 * k}
 							fill={el}
 							fill-opacity="0.22"
 						/>
@@ -698,18 +673,18 @@
 							x2={w.x0}
 							y2={ROW.bandTop + ROW.bandH + 1}
 							stroke={el}
-							stroke-width="2"
+							stroke-width={2 * k}
 							stroke-opacity="0.75"
 						/>
-						{#if w.count !== null && w.w >= BAND_DIGIT}
+						{#if w.count !== null && w.w >= BAND_DIGIT * k}
 							<text
 								class="stage-word"
-								x={w.x0 + 5}
-								y={ROW.bandTop + ROW.bandH - 3.5}
+								x={w.x0 + 5 * k}
+								y={ROW.bandTop + ROW.bandH / 2 + fs * 0.35}
 								fill="var(--text)"
-								font-size="10"
+								font-size={fs}
 							>
-								{w.w >= BAND_WORDS ? `${w.count} applied` : w.count}
+								{w.w >= BAND_WORDS * k ? `${w.count} applied` : w.count}
 							</text>
 						{/if}
 					{/each}
@@ -736,14 +711,14 @@
 								x2={x}
 								y2={ROW.hitBottom}
 								stroke={el}
-								stroke-width="2.5"
+								stroke-width={2.5 * k}
 							/>
 							<image
 								href={elementIcon(element)}
-								x={x - 8}
-								y={ROW.hitTop - 20}
-								width="16"
-								height="16"
+								x={x - 8 * k}
+								y={ROW.hitTop - 20 * k}
+								width={16 * k}
+								height={16 * k}
 							/>
 						{:else}
 							<line
@@ -753,30 +728,66 @@
 								y2={ROW.hitBottom}
 								stroke={el}
 								stroke-opacity={BLOCKED_ALPHA}
-								stroke-width="1.5"
+								stroke-width={1.5 * k}
 							/>
 						{/if}
 						{#if h.applies && !h.viaTimer}
 							<circle
 								cx={x}
-								cy={ROW.counterY - 3.5}
-								r="7"
+								cy={ROW.counterY - fs * 0.35}
+								r={7 * k}
 								fill="none"
 								stroke={el}
-								stroke-width="1.25"
+								stroke-width={1.25 * k}
 							/>
 						{/if}
 						<text
 							{x}
 							y={ROW.counterY}
 							fill={h.applies ? el : 'var(--chart-dim)'}
-							font-size="10"
+							font-size={fs}
 							font-weight={h.applies ? 700 : 400}
 							text-anchor="middle"
 						>
 							{counterText(i)}
 						</text>
 					{/each}
+
+					<!-- The share strip: the headline at every interval the handle
+					     under it reaches, and a dot where it is now -->
+					{#if stripPath && share}
+						<line
+							x1={xOf(INTERVAL_MIN)}
+							y1={ROW.stripTop}
+							x2={xOf(INTERVAL_MAX)}
+							y2={ROW.stripTop}
+							stroke="var(--chart-grid)"
+						/>
+						<line
+							x1={xOf(INTERVAL_MIN)}
+							y1={ROW.stripBottom}
+							x2={xOf(INTERVAL_MAX)}
+							y2={ROW.stripBottom}
+							stroke="var(--chart-rule)"
+						/>
+						<path d={stripPath} fill="var(--chart-ink)" fill-opacity="0.45" />
+						<line
+							x1={xOf(interval)}
+							y1={ROW.stripTop}
+							x2={xOf(interval)}
+							y2={ROW.stripBottom}
+							stroke="var(--chart-ink)"
+							stroke-width="1.5"
+						/>
+						<circle
+							cx={xOf(interval)}
+							cy={ROW.stripBottom - (share.applies / share.of) * ROW.stripH}
+							r={3.5 * k}
+							fill="var(--accent)"
+							style="stroke: var(--frame-bg)"
+							stroke-width="1.5"
+						/>
+					{/if}
 				</svg>
 			</div>
 
@@ -784,7 +795,7 @@
 			     the time axis from its least to its most, and the thumb sits on
 			     hit 2. The axis is the rule's (icdTimeline.ts `evenSpan`), so it
 			     holds still under the drag. An example has no handle: its hits
-			     are gcsim's. -->
+			     are gcsim's, and its note takes the handle's place. -->
 			{#if !example}
 				<div class="icd-handle-row">
 					<div
@@ -816,6 +827,8 @@
 						{/each}
 					</div>
 				</div>
+			{:else}
+				<p class="stage-fine">{example.note}</p>
 			{/if}
 
 			<!-- The pointed hit's reading. ⚓ Two lines reserved, so pointing
@@ -831,18 +844,79 @@
 				{/if}
 			</div>
 
-			{#if example}
-				<p class="stage-fine">{example.note}</p>
-			{/if}
+			<!-- THE RULE, on the surface: the presets fill in its three numbers,
+			     and moving one makes it Custom (editRule). Last, so a preset that
+			     comes and goes ("Its own") moves nothing under the hand. -->
+			<div class="icd-rule" role="group" aria-label="ICD rule">
+				<div class="icd-rule-head">
+					<span class="icd-rule-name">ICD</span>
+					<div class="segment" role="radiogroup" aria-label="ICD rule">
+						{#each RULES as r (r.id)}
+							{#if r.id !== 'own' || example}
+								<button
+									class="btn"
+									class:is-active={rule === r.id}
+									role="radio"
+									aria-checked={rule === r.id}
+									onclick={() => (r.id === 'custom' ? pickCustom() : (rule = r.id))}
+								>
+									{r.label}
+								</button>
+							{/if}
+						{/each}
+					</div>
+				</div>
+				<div class="icd-rule-sliders">
+					<!-- The tracks' ends are words: typed, "off" and "none" land there too. -->
+					<InstrumentSlider
+						label="Timer"
+						aria="ICD timer in seconds"
+						bind:value={() => shown.timer, (v) => editRule(() => (customTimer = v))}
+						min={0}
+						max={TIMER_MAX}
+						step={0.1}
+						unit="s"
+						decimals={2}
+						snap={toTimer}
+						text={shown.timer === 0 ? 'Off' : null}
+						words={{ off: 0 }}
+					/>
+					<InstrumentSlider
+						label="Hit counter"
+						aria="ICD hit counter"
+						bind:value={() => shown.hits, (v) => editRule(() => (customHits = v))}
+						min={1}
+						max={COUNTER_OFF}
+						step={1}
+						snap={Math.round}
+						text={shown.hits === COUNTER_OFF ? 'Off' : null}
+						words={{ off: COUNTER_OFF }}
+					/>
+					<InstrumentSlider
+						label="Limit per window"
+						aria="Applications allowed per ICD timer window"
+						bind:value={() => shown.cap, (v) => editRule(() => (customCap = v))}
+						min={1}
+						max={NO_LIMIT}
+						step={1}
+						snap={Math.round}
+						text={shown.cap === NO_LIMIT ? 'None' : null}
+						words={{ none: NO_LIMIT }}
+					/>
+				</div>
+				<p class="stage-fine">
+					Internal Cooldown — the hidden rule that stops some hits from applying their element.
+				</p>
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
-	/* The toolbar, the lanes, the handle and the reading are one group, and
-	   it centres in the room under the headline once the stalks stop growing
-	   (the graph's max-height, STALK_GROW). Narrow, the stage is its natural
-	   height and there is nothing to centre in. */
+	/* Everything under the headline is one group, and it centres in the room
+	   under it once the chart stops growing (the graph's max-height, K_MAX and
+	   STALK_GROW). Narrow, the stage is its natural height and there is
+	   nothing to centre in. */
 	.icd-body {
 		display: flex;
 		flex: 1 1 auto;
@@ -861,12 +935,9 @@
 	.icd-tools {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		align-items: center;
+		gap: 0.5rem 1rem;
 		margin-left: auto;
-	}
-
-	.icd-tools :global(.band-menu-trigger) {
-		gap: 0.4rem;
 	}
 
 	.icd-send {
@@ -877,59 +948,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem;
-		padding: 0.5rem;
-	}
-
-	/* ── The String segment's list: a row per string, its note under it ────── */
-
-	.icd-picks {
-		display: grid;
-		gap: 0.15rem;
-	}
-
-	.icd-pick {
-		display: grid;
-		gap: 0.1rem;
-		padding: 0.3rem 0.5rem;
-		border: 0;
-		border-radius: var(--radius-sm);
-		background: transparent;
-		color: inherit;
-		font: inherit;
-		text-align: left;
-		cursor: pointer;
-	}
-
-	@media (hover: hover) {
-		.icd-pick:hover {
-			background: color-mix(in srgb, var(--text) 7%, transparent);
-		}
-	}
-
-	.icd-pick.is-on {
-		background: color-mix(in srgb, var(--text) 12%, transparent);
-	}
-
-	.icd-pick:focus-visible {
-		outline: 2px solid var(--accent);
-		outline-offset: -2px;
-	}
-
-	.icd-pick-name {
-		font-weight: var(--fw-semibold);
-	}
-
-	.icd-pick-detail {
-		font-size: var(--fs-sm);
-		line-height: var(--lh-snug);
-		color: var(--muted);
-	}
-
-	.icd-pop-note {
-		margin: 0;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-snug);
-		color: var(--muted);
 	}
 
 	/* ── The handle and its anchors ────────────────────────────────────────── */
@@ -1002,5 +1020,40 @@
 	.icd-reading strong {
 		font-weight: var(--fw-semibold);
 		color: var(--text);
+	}
+
+	/* ── The rule ──────────────────────────────────────────────────────────── */
+
+	/* A section of its own: the ladder's section rung above it (the body's
+	   control gap plus this). */
+	.icd-rule {
+		display: grid;
+		/* minmax(0), or the implicit `auto` column takes the sliders' min-content
+		   and the section runs off a phone's edge. */
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--inst-gap-control);
+		margin-top: calc(var(--inst-gap-section) - var(--inst-gap-control));
+	}
+
+	.icd-rule-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+	}
+
+	.icd-rule-name {
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	/* Three short sliders in a row; 🎛️ capped so each track stays a slider's
+	   length on a wide stage. They wrap under each other on a phone. */
+	.icd-rule-sliders {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+		gap: var(--inst-gap-control) 2rem;
+		max-width: 60rem;
 	}
 </style>

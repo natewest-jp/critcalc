@@ -221,7 +221,10 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   time axis (the hits, the hit counter, the timer's windows), so why a hit is blocked is
   visible without pointing at it. The hit interval is a handle on that axis, its thumb on
   hit 2, so an even string's axis is set by the rule (three timer windows), never by the
-  string, which would rescale under the thumb.
+  string, which would rescale under the thumb. ⚓ Nate: it has no setup bar, because its
+  rule is the thing you play with (a live control, §3), so the strings are view tabs and the
+  rule's three numbers are sliders on the surface; and the chart sizes up as a whole with
+  the stage, every mark and word, not only its stems.
 - **Gauge explorer:** the overlaid areas stay. ⚓ Nate: few auras coexist (Electro-Charged,
   Frozen, Burning, Quicken), because most reactions clear one or both elements, so lanes per
   element would gain little; the overlay also matches the Planner's aura lane. The aura log's
