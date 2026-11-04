@@ -414,7 +414,7 @@
 			<!-- The guide: one paragraph per mark, in the order the eye meets them.
 			     ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
 			     "280 CV" for artifact CV, where 280 is near impossible. -->
-			<p>Each dotted curve joins the builds with one average, read on the right edge.</p>
+			<p>The curving bands show how much your damage would increase over many rotations.</p>
 			<p>
 				The solid line is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value
 				(CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Its ring marks that budget’s best split;
@@ -555,11 +555,12 @@
 	   from the column. */
 	.cv-handles {
 		display: grid;
-		grid-template-columns: auto auto;
+		/* ⚠ The second column takes the rest: two auto columns sized the grid
+		   to the names, and the CRIT DMG track across them shrank with it. */
+		grid-template-columns: auto minmax(0, 1fr);
 		grid-template-areas:
 			'cd-track cd-track'
 			'cr-head cd-head';
-		justify-content: start;
 		column-gap: 1rem;
 		row-gap: var(--inst-gap-in, 0.5rem);
 		/* The names take the stage's full width; only the track keeps the

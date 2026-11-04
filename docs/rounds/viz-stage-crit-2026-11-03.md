@@ -1,9 +1,9 @@
 # The stage, round 6: Crit heatmap (2026-11-03)
 
 **Status (2026-11-04):** built on `feat/viz-crit-stage`, not merged. Nate: "the
-dots read much better … everything else is looking good." Five passes on Nate's looks (§3a–§3d,
-§3f) and one fix (§3e). The fine print's copy is approved (§5 items 7 and 9, as revised in §3f).
-Left: Help (§6), to finalize with Nate; Nate's look at §3f; real Safari; `npm run test:e2e` (both engines) before the merge; then the merge and the
+dots read much better … everything else is looking good." Six passes on Nate's looks (§3a–§3d,
+§3f, §3g) and one fix (§3e). The copy is approved (§5, as revised in §3f and §3g) and Help is
+landed (§6). Left: real Safari; `npm run test:e2e` (both engines) before the merge; then the merge and the
 copy ledger's note (`docs/text/ledger/notes/vz_crit.md`, rewritten for the stage).
 
 ## 1. The round's three openings
@@ -235,6 +235,23 @@ two wording changes.
    the dot covered it while the fine print named it. On the best split the ring is drawn around
    the dot instead (🎛️ `BEST_RING_R` 13).
 
+## 3g. Nate's last look before the merge (2026-11-04)
+
+Nate: "really good", with one fix and two wordings.
+
+1. **On the phone the CRIT DMG track shrank.** Its handles' grid was two `auto` columns, so it
+   was as wide as the two names under it, and the track across both shrank with them. The second
+   column now takes the rest (`auto minmax(0, 1fr)`); measured at 390, the track runs the plot
+   plus `THUMB_R` each side again, with the names still side by side.
+2. **The contours' sentence on the stage** (⚓ Nate): "The curving bands show how much your damage
+   would increase over many rotations." (was "Each dotted curve joins the builds with one
+   average, read on the right edge.")
+3. **Help's first paragraph ends** (⚓ Nate): "The right edge and the curves that extend from it
+   reveal bands of average damage increase over many rotations." (was "Each curve joins the
+   builds with one average, read off the right edge.") The rest of §6 is approved as proposed.
+
+Gates, and `npm run test:e2e` (both engines): 144 passed.
+
 ## 4. For Nate's eye
 
 1. The side form: the head and fine print at the left edge, the chart beside them; at 1024×768
@@ -270,8 +287,8 @@ two wording changes.
    that doesn't crit is ×1.") lent the first sentence.
 8. A row read: "{6} of {8} hits crit: {×2.05}, in {29.6%} of rotations." After a roll: "{3} of
    {8} hits crit: {×1.52} this time." Both were an em dash before the figure; a colon now.
-9. ✅ The guide, a paragraph per mark (approved 2026-11-04): "Each dotted curve joins the builds
-   with one average, read on the right edge." · "The solid line is every build with your {280}
+9. ✅ The guide, a paragraph per mark (approved 2026-11-04): "The curving bands show how much your
+   damage would increase over many rotations." (§3g) · "The solid line is every build with your {280}
    total crit value (CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Its ring marks
    that budget’s best split; press it to move there." · "Each bar is a number of crits in one
    rotation. Hover or tap one to read it." (Nate cut "as long as its chance".) ⚓ It keeps the
@@ -284,7 +301,7 @@ rotation of {n} hits", "Equal-budget line (CV)", "No-crit risk overlay" with "ch
 rotation lands zero crits", the axis titles "CRIT Rate" and "CRIT DMG", and
 the marker tooltip's lines.
 
-## 6. Help (proposed, not landed)
+## 6. Help (✅ landed 2026-11-04; paragraph 1's last sentence is Nate's, §3g)
 
 `src/lib/help/chapters/Visualizers.svelte` § Crit heatmap still describes the sliders, the
 Equal-budget toggle and "the chart under the map". Proposed:

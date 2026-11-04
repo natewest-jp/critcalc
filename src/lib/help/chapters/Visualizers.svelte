@@ -48,23 +48,24 @@
 <section>
 	<h2 id="crit-heatmap">Crit heatmap</h2>
 	<p>
-		Your average damage multiplier, 1&nbsp;+&nbsp;CRIT Rate&nbsp;×&nbsp;CRIT DMG, across every split
-		of CRIT Rate (up the side) and CRIT DMG (along the bottom). Press anywhere on the map to move
-		your build there, or use the sliders and number fields. The dashed contours join builds with the
-		same average.
+		Your average damage per hit, 1&nbsp;+&nbsp;CRIT Rate&nbsp;×&nbsp;CRIT DMG, across every split of
+		CRIT Rate (up the side) and CRIT DMG (along the bottom). Press anywhere on the map to move your
+		build there, or drag a handle on either axis, or type a value beside it. The right edge and the
+		curves that extend from it reveal bands of average damage increase over many rotations.
 	</p>
 	<p>
-		The <strong>Equal-budget line</strong> draws every build with your total crit value (CV),
-		counted as 2&nbsp;×&nbsp;CRIT Rate&nbsp;+&nbsp;CRIT DMG with the base 5% and 50% included. A
-		ring marks that budget’s best split, which sits on the 1:2 diagonal until CRIT Rate would pass
-		100% and then leaves it. <strong>Pin this build</strong> holds a second marker so you can compare
-		a trade.
+		The solid line through your build is every build with your total crit value (CV), counted as
+		2&nbsp;×&nbsp;CRIT Rate&nbsp;+&nbsp;CRIT DMG with base crit stats included. A ring marks that
+		budget’s best split, which sits on the 1:2 ratio until CRIT Rate would pass 100% and then leaves
+		it; press it to move your build there. <strong>Pin this build</strong> holds a second marker, and
+		the line from it to yours shows how much the move changes your average.
 	</p>
 	<p>
-		The average hides how uneven a rotation can be. The <strong>no-crit risk</strong> shading
-		darkens builds by their chance of a whole rotation without a single crit, and the chart under
-		the map shows every outcome for one rotation of however many hits you set.
-		<strong>Roll</strong> simulates one rotation’s hits.
+		The average hides how uneven a rotation can be. The bars beside the map (under it, on a phone)
+		share its CRIT Rate axis: one for each number of crits in a rotation, set at that number’s share
+		of the hits, as long as its chance. Set the hits over the map. The <strong>no-crit risk</strong>
+		shading darkens builds by their chance of a whole rotation without a single crit, and
+		<strong>Roll</strong> plays one rotation and lights the bar it lands on.
 	</p>
 	<p>
 		I came up with the concept for the crit heatmap and wondered how best to present it visually,
