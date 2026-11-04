@@ -160,10 +160,12 @@ test('the ICD timeline hands its hits off to the Gauge explorer', async ({ page 
 	await openTool(page, '/visualizers?i=icd');
 	await expect(currentTab(page)).toHaveText('ICD timeline');
 
-	const applying = parseInt(
-		await page.locator('.ws-tile:not(.ws-hidden) .readout-head').first().innerText(),
-		10
-	);
+	// ↻ 2026-11-04 (the stage): counted on the chart. The headline is a share
+	// now ("2 of every 5"), not the string's count.
+	const applying = await page
+		.locator('.ws-tile:not(.ws-hidden) .icd-graph line.icd-applies')
+		.count();
+	expect(applying).toBeGreaterThan(0);
 	await page.locator('.icd-send').click();
 
 	// One up, the gauge takes the tile (side by side, it opens beside the source).

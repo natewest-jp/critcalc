@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import { clamp, decimalsOf, fieldChars, formatField, parseField } from './numberField';
 
 	/**
@@ -53,6 +53,7 @@
 		track,
 		trackStyle,
 		vertical = false,
+		headerEnd,
 		disabled = false,
 		class: className = ''
 	}: {
@@ -96,6 +97,9 @@
 		/** The track stands upright, its minimum at the foot (the Crit heatmap's
 		 *  CRIT Rate handle, on its y axis). Where the track goes is the caller's. */
 		vertical?: boolean;
+		/** Controls that belong to the value, after its field on the header line
+		 *  (the ICD timeline's interval presets). */
+		headerEnd?: Snippet;
 		disabled?: boolean;
 		class?: string;
 	} = $props();
@@ -262,6 +266,7 @@
 		{:else}
 			<span class="readout is-readout">{restText}{text === null ? unit : ''}</span>
 		{/if}
+		{@render headerEnd?.()}
 	</div>
 	<div class="is-track" class:is-track--marked={marks.length > 0}>
 		<input

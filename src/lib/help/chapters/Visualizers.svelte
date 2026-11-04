@@ -115,16 +115,22 @@
 <section>
 	<h2 id="icd-timeline">ICD timeline</h2>
 	<p>
-		Which hits in a string actually apply their element. Each hit is a stem: tall in the element’s
-		color if it applies, a short faint tick if ICD blocks it. The digit under each hit is the hit
-		counter, ringed where the counter is what let it through, and the bands underneath are the timer
-		windows. Point at a hit to read why it did or didn’t apply.
+		Which hits in a string actually apply their element. The headline is the share that do: for
+		evenly spaced hits, the pattern that repeats in every timer window (“2 of every 5”, bracketed
+		over its hits on the chart), and for an example, its whole list. The chart has three lanes on
+		one time axis. In <strong>Hits</strong>, a tall stem in the element’s color applies and a short,
+		faint tick is blocked. <strong>Counter</strong> is the hit counter, ringed where the counter let
+		a hit through. <strong>Timer</strong> shows the timer windows, each with how many hits it applied.
+		Point at a hit to read why it did or didn’t apply.
 	</p>
 	<p>
-		The attack string is either evenly spaced hits, with a slider for the interval, or one of four
-		real examples taken from gcsim: Fischl’s Oz, Hu Tao’s charged attacks, Chevreuse’s burst, and
-		Layla’s Shooting Stars. The available ICD rules are <strong>Standard</strong>,
-		<strong>No ICD</strong>, the example’s own, or <strong>Custom</strong>.
+		The row over the chart picks the string: evenly spaced hits, or one of four real examples from
+		gcsim (Fischl’s Oz, Hu Tao’s charged attacks, Chevreuse’s burst, and Layla’s Shooting Stars).
+		For evenly spaced hits, the handle under the chart sets the interval, and the strip along it
+		shows how often the element lands at every interval: sometimes a slower string lands it more
+		often. Under the chart, <strong>ICD</strong> sets the rule: <strong>Standard</strong>,
+		<strong>No ICD</strong>, or the example’s own fill in its timer, hit counter, and limit per
+		window, and moving any of them makes it <strong>Custom</strong>.
 	</p>
 	<p>
 		Standard ICD is a 2.5s timer and every third hit, and it stops after eight applications in one

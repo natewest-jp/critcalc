@@ -690,8 +690,9 @@
 			<div class="segment stage-tabs dr-elements" role="radiogroup" aria-label="The hit's element">
 				{#each SHRED_ELEMENTS as e (e)}
 					<button
-						class="btn"
+						class="btn seg-el"
 						class:is-active={element === e}
+						style:--seg-el="var(--el-{e === 'physical' ? 'none' : e}-main)"
 						role="radio"
 						aria-checked={element === e}
 						aria-label={ELEMENT_NAME[e]}

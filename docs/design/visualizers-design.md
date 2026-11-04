@@ -217,8 +217,14 @@ plots share the y axis (how much of the hit is kept), not the x, so they sit sid
   (Scaling, DMG Bonus, EM, Base DMG Bonus, Elevation) to change that stat. Each roll draws as a
   cap on the column it lifts, as tall as its gain on the log axis, the best gold. Horizontal rows
   below 900px, by the width alone, so a tab never turns the chart.
-- **ICD timeline:** three lanes on one time axis (the timer's windows, the hit counter, the
-  result), so why a hit is blocked is visible without pointing at it.
+- **ICD timeline** (built: `docs/rounds/viz-stage-icd-2026-11-04.md`): three lanes on one
+  time axis (the hits, the hit counter, the timer's windows), so why a hit is blocked is
+  visible without pointing at it. The hit interval is a handle on that axis, its thumb on
+  hit 2, so an even string's axis is set by the rule (three timer windows), never by the
+  string, which would rescale under the thumb. ⚓ Nate: it has no setup bar, because its
+  rule is the thing you play with (a live control, §3), so the strings are view tabs and the
+  rule's three numbers are sliders on the surface; and the chart sizes up as a whole with
+  the stage, every mark and word, not only its stems.
 - **Gauge explorer:** the overlaid areas stay. ⚓ Nate: few auras coexist (Electro-Charged,
   Frozen, Burning, Quicken), because most reactions clear one or both elements, so lanes per
   element would gain little; the overlay also matches the Planner's aura lane. The aura log's
@@ -266,5 +272,6 @@ Grouped by family, so each family's marks are built once and reused at once:
 4. Enemy RES & DEF: the two-plot response pair (`docs/rounds/viz-stage-defres-2026-11-03.md`).
 5. Damage breakdown: the bridge, upright (`docs/rounds/viz-stage-breakdown-2026-11-03.md`).
 6. Crit heatmap: the field, its strip on the CRIT Rate axis (`docs/rounds/viz-stage-crit-2026-11-03.md`).
-7. ICD timeline.
+7. ICD timeline: the timeline family, its lanes and the interval on the time axis
+   (`docs/rounds/viz-stage-icd-2026-11-04.md`).
 8. Gauge explorer.
