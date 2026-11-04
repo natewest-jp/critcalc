@@ -1,7 +1,7 @@
 # The stage, round 8: Gauge explorer (2026-11-04)
 
-**Status:** built on `feat/viz-stage-gauge`, not merged. Nate: "an easy win", the copy approved
-(§5). One pass after the first build (§8). Help is proposed and not yet in (§6). Real Safari is
+**Status:** ✅ merged into `main` on 2026-11-04 (`feat/viz-stage-gauge`). Nate: "an easy win", the copy approved
+(§5). One pass after the first build (§8). Help (§6) landed, approved. Real Safari is
 Nate's to check. This is the last instrument on the rail, so every Visualizer now uses the stage.
 
 ## 1. The rulings
@@ -106,7 +106,7 @@ Gates: Vitest 2794, svelte-check, lint, build; Chrome e2e 72 passed.
 Gone: "Readout", the prompt ("Point at the chart to read the enemy’s aura state…"), "No aura — the
 next element applies fresh.", "Aura log" and every log line, "Nothing lands on the target."
 
-## 6. Help (proposed, not landed)
+## 6. Help (landed, approved by Nate)
 
 `src/lib/help/chapters/Visualizers.svelte` § Gauge explorer:
 
@@ -142,9 +142,11 @@ working. `widestHead` now takes the longest figure and the longest sentence apar
 bound. On a phone the chart starts about 80px higher than in the first build (213 against ~290
 at 390px). Measured: no movement while pinning through a burn at 2000, 1400 and 390px.
 
-Copy (proposed, in the build): "with {u}U {aura} · {u}U {aura} at {t}s" as the sentence when
+Copy (approved): "with {u}U {aura} · {u}U {aura} at {t}s" as the sentence when
 more than one aura is on the target.
 
 Also: **Reverse Melt keeps two Cryo hits** (⚓ Nate), the third removed (§3's finding).
 
 Gates: Vitest 2796, svelte-check, lint, build; Chrome e2e 72 passed.
+
+At the merge, with Help in: Vitest 2796, svelte-check, lint, build; e2e both engines 144 passed.
