@@ -1136,6 +1136,15 @@
 		resetRefs();
 	}
 
+	/** A link's action: `reshape` opens Reshape on your piece and rolls one,
+	 *  as Try a reshape does. A piece that can't be reshaped yet shows
+	 *  Reshape's own prompt instead. */
+	export function act(action: string) {
+		if (action !== 'reshape') return;
+		view = 'reshape';
+		if (!emptyReason) tryReshape();
+	}
+
 	export function getShareState() {
 		return {
 			v: 1,

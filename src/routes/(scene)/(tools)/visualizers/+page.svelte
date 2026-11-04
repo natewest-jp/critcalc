@@ -261,6 +261,7 @@
 		if (!url || !url.pathname.startsWith('/visualizers')) return;
 		const param = url.searchParams.get('i');
 		if (!param) return;
+		const action = url.searchParams.get('do');
 		stripDeepLinkParams(url);
 		const decoded = await decodeInstrumentParam(param);
 		if (!decoded || !INSTRUMENTS.some((i) => i.id === decoded.id)) {
@@ -281,6 +282,25 @@
 			linked.add(id);
 			handles[id]?.applyShareState?.(decoded.state);
 		}
+		if (action) pendingAct = { id, action };
+	});
+
+	// ── `?do=` link actions ────────────────────────────────────────────────
+	// One-shot, beside `?i=` (What's new's "Give it a try!" opens Artifact
+	// odds' Reshape and rolls one). Held until the profile's saved state is on
+	// the instrument, so the action runs on what the reader will see, and so
+	// a saved state applied afterwards can't undo it on a cold load.
+	let pendingAct = $state<{ id: InstrumentId; action: string } | null>(null);
+	$effect(() => {
+		const p = pendingAct;
+		const pid = storageSession.profile?.id;
+		if (!p || !pid || shownFor[p.id] !== pid) return;
+		const h = handles[p.id];
+		if (!h) return;
+		untrack(() => {
+			pendingAct = null;
+			h.act?.(p.action);
+		});
 	});
 
 	// ── Per-tile share ─────────────────────────────────────────────────────
