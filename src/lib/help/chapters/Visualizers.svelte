@@ -83,14 +83,16 @@
 		button over the chart adds a 1U application 1s after the last one, and a click on the empty band
 		above the chart adds one at that moment instead. Drag a pill to move it, or tap it to change its
 		element, size or time, or to remove it. A focused pill moves with the arrow keys, 0.1s at a time
-		or 1s with Shift. Enter opens its editor, and Delete removes it. <strong>Clear</strong> empties the
-		chart, and the menu contains fourteen examples that each demonstrate an interesting aspect of Genshin’s
-		elemental gauge system.
+		or 1s with Shift. Enter opens its editor, and Delete removes it. <strong>Clear</strong> empties
+		the chart, and <strong>Example scenarios</strong>, under the chart, loads fourteen examples that
+		each demonstrate an interesting aspect of Genshin’s elemental gauge system.
 	</p>
 	<p>
-		The chart draws each aura’s gauge over time, and marks each reaction above the application that
-		triggered it. Point at the chart to read that moment in the Readout, or click to pin it. The
-		aura log below lists every application and reaction with what each took off the gauge.
+		The chart draws each aura’s gauge over time. Over each application are the reactions it
+		triggered, and what it did to its own aura where that matters (topped up, refreshed, or too weak
+		to attach). Beside each drop in a curve is what the reaction took off it. Point at the chart and
+		the headline reads the aura on the target at that moment; press to pin the moment, which is how
+		to read one on touch. With nothing pointed at, the headline says when the target is left bare.
 	</p>
 	<p>
 		The model is based on KQM’s study of Genshin’s elemental gauge, checked against gcsim and

@@ -24,7 +24,7 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 
 ## The stage
 
-- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds, Artifact odds, Reaction curves, Enemy RES & DEF, Damage breakdown, the Crit heatmap and the ICD timeline wear it. It is one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE.
+- The stage replaces the rail one instrument at a time (design §6, §11); Wish odds, Artifact odds, Reaction curves, Enemy RES & DEF, Damage breakdown, the Crit heatmap, the ICD timeline and the Gauge explorer wear it, so the rail has no users left. It is one box, with the headline at the chart head and no answer card. Its CSS is `app.css` § THE STAGE.
 - A typeable card field (`StatField.svelte`) only ever sets an option from its list: typing is a search (`statEntry.ts`, tested).
 - An axis handle is an `InstrumentSlider` whose track runs the plot's x range plus `THUMB_R` each side, so the thumb sits on the marker line. ⚠️ Zero the range input's margin, or Chrome's 2px puts it off the line.
 - A y-axis handle is the same slider with `vertical` (the Crit heatmap's CRIT Rate), its track placed by the instrument over the y range plus `THUMB_R` each end.
@@ -46,8 +46,8 @@ Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-20
 ## The Gauge Explorer
 
 - The toolbar adds and the pill edits: an element button appends a 1U application 1s after the latest, and only the editor a tap on a pill opens changes an existing one, so no control both adds and edits. Drag a pill to move it; a click on bare band adds the toolbar's last element there; ←/→ nudge 0.1s (Shift: 1s), Enter opens the editor, Delete or Backspace removes.
-- It has no playback. A press on the plot pins a moment for the Readout, which is the only way to read one on touch.
-- `appRows` is sorted by time with stable ids, so the log's numbering and the editor agree.
+- It has no playback. A press on the plot pins a moment for the headline, which is the only way to read one on touch.
+- `appRows` is sorted by time with stable ids, so the sim's `appIndex` addresses the row a marker draws and the editor edits.
 - ⚠️ The axis freezes during a drag (`dragDomain`), or the domain grows out from under the pill.
 - It holds at most `MAX_GAUGE_APPS` (8) applications, so it can't take a real rotation, which makes about 230. That is settled.
 - Its markers share the planner's application-marker grammar (`.claude/rules/timeline.md`).
