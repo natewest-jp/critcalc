@@ -40,6 +40,25 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
+				<h3>Mitya and Valeriy, the Witch’s Revelation, and Kokomi’s jellyfish</h3>
+				<time class="entry-date" datetime="2026-11-06">November 6</time>
+			</header>
+			<p>
+				Mitya and Valeriy are in the roster. Their kits come from the game’s own text, and their
+				casts use generic timing until frame data exists for them.
+			</p>
+			<p>
+				Diona’s, Mizuki’s, and Cyno’s Witch’s Revelation talents were cross-checked against gcsim.
+				Diona’s extra Icy Paws now apply Cryo, her C6 bonuses follow the Stellar reaction the team
+				enables, and Mizuki’s C2 lowers enemy RES for as long as Dreamdrifter lasts.
+			</p>
+			<p>
+				Kokomi’s burst now refreshes a Bake-Kurage that’s still out, as Tamakushi Casket says, and
+				Nicole’s Guidance of Theosis no longer lands on Nicole herself.
+			</p>
+		</article>
+		<article class="entry">
+			<header class="entry-head">
 				<h3>A new layout for the visualizers</h3>
 				<time class="entry-date" datetime="2026-11-04">November 4</time>
 			</header>
