@@ -33,7 +33,7 @@ The site runs the profiles layout: each profile holds its own documents in Index
 - `/assets/*` is immutable and add-only. A redrawn asset ships under a new name (`-v2`), never as an overwrite.
 - Mechanics are verified against the local gcsim checkout at `~/Code/gcsim` (tick cadences, scalings, targeting, in `internal/characters/{id}/`). Fetch it first.
 - Terminology follows KQM (Keqing Mains) throughout.
-- Node 22 (`.nvmrc`). Scripts import TypeScript modules through Node's native type stripping, which needs 22.18 or later.
+- Node 24 (`.nvmrc`). Scripts import TypeScript modules through Node's native type stripping.
 
 ## Gates and verification
 

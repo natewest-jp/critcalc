@@ -20,7 +20,7 @@ SvelteKit (Svelte 5 runes) and TypeScript, built with `adapter-static` and deplo
 
 ## Running it
 
-Requires Node 22.18 or later (`.nvmrc`).
+Requires Node 24 (`.nvmrc`).
 
 ```sh
 npm install

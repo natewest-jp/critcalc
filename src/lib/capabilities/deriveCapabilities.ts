@@ -15,7 +15,7 @@
  * about curation gaps is handled by callers via `isCurated` (characterLint).
  *
  * This module is intentionally free of runtime imports (types only) so plain
- * Node ≥22.18 can execute it via native type stripping — the generator and
+ * Node 24 can execute it via native type stripping — the generator and
  * audit scripts import it directly with a `.ts` specifier.
  */
 

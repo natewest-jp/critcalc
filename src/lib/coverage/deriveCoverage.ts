@@ -18,7 +18,7 @@
  *
  * Runtime-import-free except for sibling modules that are themselves
  * runtime-import-free, imported with their `.ts` extension, so plain Node
- * ≥22.18 can execute it via native type stripping (the generator imports it).
+ * 24 can execute it via native type stripping (the generator imports it).
  */
 
 import type { CharacterData } from '$lib/types/character';

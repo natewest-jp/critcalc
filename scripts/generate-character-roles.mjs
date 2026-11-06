@@ -10,7 +10,7 @@
  * index; the Team Builder joins this sidecar by id. Names are reconciled to
  * roster ids at build time — the report below flags anything to review.
  *
- * Imports the shared pure parser via type stripping (Node ≥22.18, .nvmrc);
+ * Imports the shared pure parser via type stripping (Node 24, .nvmrc);
  * parseRolesCsv.ts must stay free of runtime imports.
  *
  * Run after editing the CSV (e.g. a new character gets a role pass):
