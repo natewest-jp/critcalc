@@ -41,6 +41,7 @@ Hu Tao, Pyro,✔,✘,✔,✘,✘
  Traveler (Hydro), Hydro,✔,✘,✔,✘,✘
  Varesa, Electro,✔,✘,✔,✘,✘
  Varka, Anemo,✔,✘,✔,✘,✘
+Vesna,Anemo,✔,✘,✔,✘,✘
  Wanderer, Anemo,✔,✘,✔,✘,✘
  Wriothesley, Cryo,✔,✘,✔,✘,✘
  Xiao, Anemo,✔,✘,✔,✘,✘
@@ -50,6 +51,7 @@ Hu Tao, Pyro,✔,✘,✔,✘,✘
  Zibai, Geo,✔,✘,✔,✘,✘
  Aino, Hydro,✘,✔,✔,✘,✘
  Albedo, Geo,✘,✔,✔,✘,✘
+Alyosha,Electro,✘,✔,✘,✔,✔
  Amber, Pyro,✘,✔,✔,✘,✘
  Baizhu, Dendro,✘,✔,✘,✔,✔
  Barbara, Hydro,✘,✔,✘,✘,✔
@@ -96,6 +98,7 @@ Hu Tao, Pyro,✔,✘,✔,✘,✘
  Nahida, Dendro,✘,✔,✔,✔,✘
  Nicole, Pyro,✘,✔,✘,✔,✔
  Nilou, Hydro,✘,✔,✔,✔,✘
+Odette,Cryo,✘,✔,✔,✔,✘
  Ororon, Electro,✘,✔,✔,✘,✘
  Prune, Anemo,✘,✔,✔,✔,✘
  Qiqi, Cryo,✘,✔,✘,✘,✔
@@ -106,11 +109,13 @@ Hu Tao, Pyro,✔,✘,✔,✘,✘
  Sigewinne, Hydro,✘,✔,✘,✔,✔
  Sucrose, Anemo,✘,✔,✘,✔,✘
  Thoma, Pyro,✘,✔,✘,✘,✔
+Traveler (Cryo),Cryo,✘,✔,✔,✘,✘
  Traveler (Dendro), Dendro,✘,✔,✔,✘,✘
  Traveler (Electro), Electro,✘,✔,✘,✔,✘
  Traveler (Geo), Geo,✘,✔,✔,✘,✘
  Traveler (Pyro), Pyro,✘,✔,✔,✘,✘
  Venti, Anemo,✘,✔,✔,✔,✘
+Vodyanitsa,Hydro,✘,✔,✘,✔,✔
  Xiangling, Pyro,✘,✔,✔,✘,✘
  Xianyun, Anemo,✘,✔,✘,✔,✔
  Xilonen, Geo,✘,✔,✘,✔,✔

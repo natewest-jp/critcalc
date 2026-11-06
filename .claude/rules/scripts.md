@@ -15,6 +15,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - `audit-gcsim-frames.mjs` diffs every FrameMap, summon cadence and cast application against gcsim into `docs/curation/gcsim-frames-diff.md`. `scripts/lib/gcsim-map.mjs` is the one place that says which capture describes which authored map. Per-character prerequisites live in `scripts/gcsim-dump/drivers.json`.
 - `audit-genshin-db-diff.mjs` diffs shipped scalars (energy cost, cooldown, identity) against a fresh genshin-db stub. genshin-db cooldowns can be wrong for newer characters: verify against gcsim, and suppress verified rows in `GDB_CD_KNOWN_WRONG`.
 - `audit-genshin-db-text.mjs --names` checks corpus names against genshin-db.
+- `audit-character-roles.mjs` diffs the roles CSV against Fandom's Character Role table (one MediaWiki request). The daily check-in runs it.
 - `audit-data-outliers.mjs` is a self-consistency sweep (decimal-form leaks, RES shred sign stored negative, placeholder zeros, magnitude outliers).
 - `normalize-talent-levels.mjs` enforces the talent-level-10 convention.
 - The network scripts are `fetch-wiki-capabilities.mjs` (MediaWiki API; WebFetch is blocked there) and `fetch-endgame.mjs` (lunaris.moe → `src/lib/data/endgame/stygian.json`, then `build-endgame-art.mjs`). No leaks: a season ships only once `season-dates.json` names it, one hand-added line per patch.

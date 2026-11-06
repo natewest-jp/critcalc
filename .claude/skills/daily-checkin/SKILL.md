@@ -1,6 +1,6 @@
 ---
 name: daily-checkin
-description: The daily check-in — read user feedback (the Google Form's Sheet, GitHub issues/PRs), pull gcsim and see which characters moved, check lunaris.moe for a new Abyss cycle or Stygian season, check genshin-db and the live site, and sweep the to-do list (`docs/todo.md`) for finished items. Produces ONE triage list, read against the to-do list, then a reallocation talk; acts only on what Nate picks. Use when Nate says "check-in", "daily check", "morning routine", or asks what's new upstream / in feedback.
+description: The daily check-in — read user feedback (the Google Form's Sheet, GitHub issues/PRs), pull gcsim and see which characters moved, check lunaris.moe for a new Abyss cycle or Stygian season, check genshin-db, the Fandom character roles and the live site, and sweep the to-do list (`docs/todo.md`) for finished items. Produces ONE triage list, read against the to-do list, then a reallocation talk; acts only on what Nate picks. Use when Nate says "check-in", "daily check", "morning routine", or asks what's new upstream / in feedback.
 ---
 
 # Daily check-in
@@ -129,7 +129,22 @@ Compare with `genshinDb` in state. A new version is a FLAG, never an upgrade
 here — ⚠️ an upgrade is not additive (CLAUDE.md: run
 `audit-genshin-db-text.mjs` and re-read numbers on any renamed trigger).
 
-### 1f. The live site
+### 1f. Character roles: the Fandom table
+
+```sh
+node scripts/audit-character-roles.mjs
+```
+
+It diffs `docs/library/game/genshin-character-roles.csv` against Fandom's
+Character Role table (Genshin's Imaginarium Theater roles). A **new** row is
+printed as a CSV line: it goes into its position block (on-field, then
+off-field, each alphabetical), then `npm run generate-character-roles`, and it
+can ride the check-in's commit. **Amended** rows are the documented editorial
+divergences and stay. **Unrated** is a character the wiki lists before Genshin
+has rated it: wait. A **differs** row is a change to an existing role, which is
+Nate's call (`.claude/rules/data.md`): report it, ⛔ don't apply it.
+
+### 1g. The live site
 
 ```sh
 gh api repos/natewest-jp/critcalc/commits/main/check-runs --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
@@ -141,7 +156,7 @@ The `Cloudflare Pages` check run is the deploy of `main`. The site has
 launched, so an `x-robots-tag: noindex` header is a bug. ⏭ Add Search Console
 coverage errors here.
 
-### 1g. The to-do sweep: finished items still listed
+### 1h. The to-do sweep: finished items still listed
 
 Read-only, like the rest of DETECT. List what has landed on `main` since the
 last sweep:
@@ -157,7 +172,7 @@ For every item in Now, Next and Queue, ask whether it is done:
   round's record in `docs/rounds/` if it has one);
 - its premise is gone (read the CURRENT code or data, ⛔ not the item's own
   description: the list can be stale in the same way memory can);
-- an upstream finding from 1c–1e closes it (gcsim added the character, the
+- an upstream finding from 1c–1f closes it (gcsim added the character, the
   season shipped).
 
 Report each as **looks done** (with the hash) or **partly done** (what's
@@ -175,7 +190,7 @@ dumps; the audit diff and gcsim commits are read, not pasted.
 
 Then a short **to-do** block, in this order:
 
-1. **Looks done:** items from 1g to remove (hash each).
+1. **Looks done:** items from 1h to remove (hash each).
 2. **New candidates:** items from feedback or upstream, each with a
    suggested section.
 3. **Suggested reallocation:** at most a few moves (promote to Now, demote,
@@ -199,15 +214,15 @@ entry names a character only when the change is worth announcing. Keep its
 Known gaps section in step too: a shipped gap comes off it.
 
 Then act only on Nate's picks. Each is a branch (`data/…`, `fix/…`) and goes through
-the normal gates. Endgame data updates are the exception that can ride the
-check-in's own commit: they are data the fetcher wrote, behind its own guard.
+the normal gates. Endgame data and new role rows are the exceptions that can ride the
+check-in's own commit: they are data a fetcher or the official table wrote, each behind a guard or a diff.
 
 ## 4. Close out
 
 Update `docs/checkin/state.json` to what was SEEN (gcsim hash audited,
 newest feedback row, `lastSeen` timestamps, genshin-db version, newest
 season/cycle shipped, `pending` for anything waiting upstream, and
-`todo.lastSwept` = the `main` hash the 1g sweep read up to). Append one
+`todo.lastSwept` = the `main` hash the 1h sweep read up to). Append one
 line to `docs/checkin/log.md`:
 
 ```

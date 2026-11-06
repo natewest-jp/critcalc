@@ -1,8 +1,8 @@
 /**
  * scripts/fetch-wiki-capabilities.mjs
  *
- * Network side of the wiki capability sweep — the ONLY script that talks to
- * the Genshin Impact Fandom wiki. Fetches capability-category membership via
+ * Network side of the wiki capability sweep (the other Fandom reader is
+ * audit-character-roles.mjs, one request). Fetches capability-category membership via
  * the MediaWiki API and resolves each member title to a corpus character +
  * ability, writing a committed snapshot so the diff itself
  * (audit-capability-sweep.mjs) runs offline and reproducibly.
