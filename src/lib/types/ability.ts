@@ -2452,14 +2452,22 @@ export type NormalHit = {
  *    conditions: { type: "state", state: "inStance" },
  *    delta: 4, maxExtensions: 2 }`.
  *
- * Parser dispatch is currently wired only for `onCast` triggers. Other trigger
- * types (`onReaction`, `onHit`, etc.) are accepted in schema but don't yet
- * fire extensions at runtime — those characters' curator notes flag the gap.
+ * Parser dispatch is wired for `onCast` (stances, and summons for `refreshTo`)
+ * and `onReaction` (stances and summons). Other trigger types are accepted in
+ * schema and inert; lint warns on them.
+ *
+ * ⚓ A REFRESH IS NOT AN EXTENSION (Kokomi round, 2026-11-06). `refreshTo`
+ * SETS the window's remaining life instead of adding to it: Kokomi's A1 sets
+ * her Bake-Kurage to 12 s remaining 46 frames after her burst, if it is still
+ * out (gcsim `kokomi/asc.go` a1: `Status.Add("kokomiskill", 12*60+1)`). It can
+ * shorten as well as lengthen, exactly as a status overwrite does. Applied as
+ * a signed change to the one owner-uptime accumulator, so the window end, the
+ * live tick chain (`sim/aura.ts`) and the finalize markers keep reading one
+ * number, and the tick phase is untouched. Summon-hosted, `onCast` only
+ * (lint D.33b): that is the one dispatch path that reads it.
  */
 export type DurationExtension = {
 	trigger: Trigger;
-	/** Seconds added to the window end time per extension. Fractional allowed. */
-	delta: number;
 	/** Cap on total extensions per window (resets when the window re-opens).
 	 *  Omit for unlimited. */
 	maxExtensions?: number;
@@ -2467,7 +2475,23 @@ export type DurationExtension = {
 	procCooldown?: number;
 	/** Additional gating beyond the trigger (e.g. a `state` condition). */
 	conditions?: Condition;
-};
+} & (
+	| {
+			/** Seconds added to the window end time per extension. Fractional allowed. */
+			delta: number;
+			refreshTo?: never;
+			refreshDelay?: never;
+	  }
+	| {
+			/** Seconds of life the window has left after the fire, replacing whatever
+			 *  it had. See the ⚓ note above. */
+			refreshTo: number;
+			/** FRAMES after the trigger at which the refresh happens, and at which
+			 *  the window must still be live for it to happen at all. */
+			refreshDelay?: number;
+			delta?: never;
+	  }
+);
 
 // ---------------------------------------------------------------------------
 // Ability — discriminated union over abilityType (and behavior on skill/burst)

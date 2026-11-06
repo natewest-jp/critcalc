@@ -1585,6 +1585,7 @@ export function runRotation(
 				) {
 					cs.summonExt = {
 						endTime: castStart + dur,
+						spawnAt: castStart + spawn,
 						extensions: primarySummon.durationExtensions,
 						castRef: castEvent,
 						ownerUptime: dur,

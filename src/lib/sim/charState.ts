@@ -94,6 +94,10 @@ export type StanceRecord = {
  *  cast; skipped once `endTime` is in the past. */
 export type SummonExtRecord = {
 	endTime: number;
+	/** Absolute spawn instant (FRAMES): the cast plus its summon offset. The
+	 *  summon's live end is `spawnAt + ownerUptime` (`summonEndAt`), which a
+	 *  `refreshTo` needs and `endTime` (cast-anchored) is not. */
+	spawnAt: number;
 	extensions: DurationExtension[];
 	/** The cast event that spawned the extension-bearing summon; the finalize
 	 *  pass stamps `castRef.uptime = ownerUptime` before bars are projected. */

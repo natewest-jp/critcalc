@@ -2651,11 +2651,17 @@ function lintCastAbility(
 		);
 	}
 	if (a.behavior === 'stance' && a.durationExtensions) {
-		lintDurationExtensions(a.durationExtensions, a.id, a.id, push);
+		lintDurationExtensions(a.durationExtensions, a.id, a.id, push, 'stance');
 	}
 	for (const v of a.variants ?? []) {
 		if (v.durationExtensions) {
-			lintDurationExtensions(v.durationExtensions, `${a.id} variant "${v.label}"`, a.id, push);
+			lintDurationExtensions(
+				v.durationExtensions,
+				`${a.id} variant "${v.label}"`,
+				a.id,
+				push,
+				'stance'
+			);
 		}
 		// A variant's frames REPLACE the base's, so they carry the same obligations.
 		if (v.frames) {
@@ -2983,7 +2989,13 @@ function lintSummonEffects(
 
 		// (D.33) durationExtensions[] on summons
 		if (s.durationExtensions) {
-			lintDurationExtensions(s.durationExtensions, `${a.id} summon "${s.label}"`, a.id, push);
+			lintDurationExtensions(
+				s.durationExtensions,
+				`${a.id} summon "${s.label}"`,
+				a.id,
+				push,
+				'summon'
+			);
 		}
 	}
 }
@@ -3000,13 +3012,55 @@ function lintDurationExtensions(
 	exts: import('$lib/types/ability').DurationExtension[],
 	location: string,
 	abilityId: string,
-	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void,
+	host: 'stance' | 'summon'
 ): void {
 	for (let i = 0; i < exts.length; i++) {
 		const ext = exts[i];
 		const where = `${location} durationExtensions[${i}]`;
 
-		if (typeof ext.delta !== 'number' || ext.delta <= 0 || !Number.isFinite(ext.delta)) {
+		// (D.33b) A window either grows by `delta` or is SET by `refreshTo` —
+		// exactly one. A refresh is read on one path only, a summon's onCast
+		// dispatch (`dispatchOnCastExtensions`), so it is refused anywhere else
+		// rather than authored and silently inert.
+		const hasRefresh = ext.refreshTo !== undefined;
+		if (hasRefresh) {
+			if (ext.delta !== undefined)
+				push(
+					'strict',
+					'durationext-delta-and-refresh',
+					`${where} carries both delta and refreshTo`,
+					abilityId
+				);
+			if (
+				typeof ext.refreshTo !== 'number' ||
+				ext.refreshTo <= 0 ||
+				!Number.isFinite(ext.refreshTo)
+			)
+				push(
+					'strict',
+					'durationext-refresh-invalid',
+					`${where} refreshTo must be a positive finite number (seconds), got ${JSON.stringify(ext.refreshTo)}`,
+					abilityId
+				);
+			if (
+				ext.refreshDelay !== undefined &&
+				(!Number.isInteger(ext.refreshDelay) || ext.refreshDelay < 0)
+			)
+				push(
+					'strict',
+					'durationext-refresh-delay-invalid',
+					`${where} refreshDelay must be a non-negative integer (frames), got ${JSON.stringify(ext.refreshDelay)}`,
+					abilityId
+				);
+			if (host !== 'summon' || ext.trigger?.type !== 'onCast')
+				push(
+					'strict',
+					'durationext-refresh-host',
+					`${where} refreshTo is read only on a summon's onCast extension`,
+					abilityId
+				);
+		} else if (typeof ext.delta !== 'number' || ext.delta <= 0 || !Number.isFinite(ext.delta)) {
 			push(
 				'strict',
 				'durationext-delta-invalid',
