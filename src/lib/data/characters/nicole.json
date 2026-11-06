@@ -236,7 +236,8 @@
 						"⚓ The C6 waiver is the second half of the same field: cons.go c6OnUpgrade upgrades every other member the moment Nicole’s own upgrades, so nobody waits. Composed as one `any`, which is why the waiver is a Condition rather than a bespoke faction key.",
 						"⚠️ The revert-on-swap-out needed no authoring: an active-target buff is already sliced per on-field segment, so leaving the field ends the slice, and only the LAST segment runs to the buff’s own end. ⚠️ NOT modelled: at C6 it stops reverting, so all four members hold it at once — a single active-target effect cannot say that, and the caveat carries it.",
 						"⚠️ 2026-08-18: \"the caveat carries it\" is NOT TRUE as things stand — that caveat sits on this EFFECT, and an effect-level `caveat` reaches no reader (`collectSlotCaveats`, timeline/slotCaveats.ts:58-67, reads `caveat` on ability/passive/constellation hosts only; `Effect` has no rendered caveat channel). The C6 no-revert divergence is currently disclosed nowhere. ⚠️⚠️ If it is moved to the passive's own `caveat` to fix that, KEEP the \"at C6\" wording in the sentence: `slotCaveats` gates a caveat by its host ENTRY's constellation level, and a PASSIVE has no entry level, so the note will show at C0 too — the prefix is the only thing that makes it honest there. ⛔ Do not solve it by moving the text onto the C6 constellation entry: the buff being described is the A1's, and this file already keeps A1 and C6 separate for that reason.",
-						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders."
+						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders.",
+						"↻ 2026-11-06 (Revelation round, gcsim #3259 `asc.go` a1Init: `if next == c.Index() { return }`): the observation upgrades only the OTHER active members, as the kit says, so this effect carries `state: offField`. In a per-segment slice of an active-target buff the holder's field fact is per slice (`gateFor(…, sourceIsActive ? 'onField' : 'offField')`), so offField reads exactly as \"the receiver is not Nicole\". Before this, `Nicole E … ~4s` drew Guidance on Nicole's own segment. Nicole's own Guidance is A4 Philokalia's self effect, untouched."
 					],
 					"onFieldDelay": {
 						"seconds": 3,
@@ -253,6 +254,10 @@
 								}
 							]
 						}
+					},
+					"conditions": {
+						"type": "state",
+						"state": "offField"
 					}
 				}
 			],
@@ -422,7 +427,8 @@
 					"_curatorNotes": [
 						"[A7b] AUTHORED 2026-07-20 (implement-first): Pathfinder's Blessing as an active-target normalFlatDmg buff scaling 70% of the caster's ATK (gcsim cons.go c4Init: FlatDmg += 0.7*Nicole.TotalAtk), onCast skill / 20s fixed, mirroring the sibling C2 (+300 flat ATK) and C6 shapes which model the Guidance window optimistically. Single-class authoring (normalFlatDmg only) per the Escoffier C2 legibility precedent — in game the add covers N/CA/Plunge/E/Q from one shared pool.",
 						"↻ 2026-08-18: `onFieldDelay` added. ⚓ Pathfinder’s Blessing is granted BY the Guidance upgrade (gcsim c4OnUpgrade is called from a1UpgradeBuff), so it inherits A1’s 3s observation and its Hexerei waiver exactly — it cannot start at the cast, which is what this used to claim.",
-						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0.",
+						"↻ 2026-11-06: gated `state: offField` with the A1 effect it rides (Pathfinder's Blessing is granted by the Guidance upgrade, gcsim `c4OnUpgrade` from `a1UpgradeBuff`), so it reaches teammates only."
 					],
 					"onFieldDelay": {
 						"seconds": 3,
@@ -441,8 +447,17 @@
 						}
 					},
 					"conditions": {
-						"type": "constellation",
-						"level": 4
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 4
+							},
+							{
+								"type": "state",
+								"state": "offField"
+							}
+						]
 					}
 				}
 			],

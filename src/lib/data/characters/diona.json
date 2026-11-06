@@ -133,6 +133,39 @@
 							"scaling": 22.68,
 							"stat": "hp",
 							"flat": 2667.51
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onReaction",
+								"reaction": ["superConduct", "stellarConduct", "cryoSwirl", "stellarSwirl"],
+								"source": "team",
+								"armedFor": 20
+							},
+							"procCooldown": 3.5,
+							"scaling": 75.46,
+							"stat": "atk",
+							"element": "cryo",
+							"application": [
+								{
+									"frame": 10,
+									"element": "cryo",
+									"units": 1
+								},
+								{
+									"frame": 11,
+									"element": "cryo"
+								},
+								{
+									"frame": 12,
+									"element": "cryo"
+								}
+							],
+							"_curatorNotes": [
+								"Witch's Revelation passive Choice Treasures, clause 1 (gcsim #3254 `diona/stellar.go` revelationInit). Within 20s of the skill, a party Superconduct, Stellar-Conduct, Cryo Swirl or Stellar Swirl fires three Icy Paws, once per 3.5s (`revelationICDKey` 3.5*60). Each paw: 1U Cryo (Durability 25), ICDTagElementalArt / ICDGroupDefault, `paw[9]` = 75.456% ATK, landing at the fire + skillTravel + i (travel default 10f) for i = 0..2, hence frames 10/11/12. Standard ICD (icdGate absent): one of three applies per fire, since fires are 3.5s apart and the group's timer is 2.5s. No particles and no shield (kit text).",
+								"⚠️ The 20s window opens at the CAST here (`armedFor` contract); gcsim opens it at the skill's hitmark (5f Press, 29f Hold). Assumes the talent is unlocked, as the passive's other half does."
+							]
 						}
 					],
 					"application": [
@@ -175,6 +208,39 @@
 					"scaling": 12.96,
 					"stat": "hp",
 					"flat": 1524.29
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["superConduct", "stellarConduct", "cryoSwirl", "stellarSwirl"],
+						"source": "team",
+						"armedFor": 20
+					},
+					"procCooldown": 3.5,
+					"scaling": 75.46,
+					"stat": "atk",
+					"element": "cryo",
+					"application": [
+						{
+							"frame": 10,
+							"element": "cryo",
+							"units": 1
+						},
+						{
+							"frame": 11,
+							"element": "cryo"
+						},
+						{
+							"frame": 12,
+							"element": "cryo"
+						}
+					],
+					"_curatorNotes": [
+						"Witch's Revelation passive Choice Treasures, clause 1 (gcsim #3254 `diona/stellar.go` revelationInit). Within 20s of the skill, a party Superconduct, Stellar-Conduct, Cryo Swirl or Stellar Swirl fires three Icy Paws, once per 3.5s (`revelationICDKey` 3.5*60). Each paw: 1U Cryo (Durability 25), ICDTagElementalArt / ICDGroupDefault, `paw[9]` = 75.456% ATK, landing at the fire + skillTravel + i (travel default 10f) for i = 0..2, hence frames 10/11/12. Standard ICD (icdGate absent): one of three applies per fire, since fires are 3.5s apart and the group's timer is 2.5s. No particles and no shield (kit text).",
+						"⚠️ The 20s window opens at the CAST here (`armedFor` contract); gcsim opens it at the skill's hitmark (5f Press, 29f Hold). Assumes the talent is unlocked, as the passive's other half does."
+					]
 				}
 			],
 			"caveat": "Assumes every paw lands — 2 on Press, 5 on Hold — so the shield is drawn at its full length. Fewer hits give a shorter one.",
@@ -306,9 +372,10 @@
 				"Clause 1 is NOT stellar-gated: Superconduct and Cryo Swirl fire it with no enabler present, so no teamEnablesReaction condition applies. Its own gates (20s post-skill window + 3.5s proc CD) would need a damage-emitting effect to hang on; none exists.",
 				"Clause 2 ('when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state') carries no stat payload of its own — it is the unlock for the C6 'Radiance: Stellar-Conduct' block, which IS authored (see the C6 node). Polestar Fields only exist while Stellar-Conduct is enabled, which is why the C6 effect is gated on teamEnablesReaction:stellarConduct.",
 				"No scaling sidecar row exists for this talent (docs/curation/talents/diona.json predates the Revelation passive); the wiki page lists scale_att1 = ATK but publishes no per-level table.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — that can be named. The paws are explicitly damage-only — the wiki text the curator note quotes says they generate no particles and no shield — so no bar, no shield span and no energy is missing. The one candidate pixel would be extra Cryo application pips on the aura lane, but no source gives these paws a gauge, so the caveat cannot honestly claim it; the rest (the 20s window, the 3.5s cadence) is cadence for something the tool never draws. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — that can be named. The paws are explicitly damage-only — the wiki text the curator note quotes says they generate no particles and no shield — so no bar, no shield span and no energy is missing. The one candidate pixel would be extra Cryo application pips on the aura lane, but no source gives these paws a gauge, so the caveat cannot honestly claim it; the rest (the 20s window, the 3.5s cadence) is cadence for something the tool never draws. Category: invisible-omission.",
+				"↻ 2026-11-06 (Revelation round): gcsim implemented this talent (#3254, `stellar.go` revelationInit) and the wiki now lists Stellar Swirl as a fourth trigger. Clause 1 is AUTHORED now, on the skill (`diona__skill__icy_paws`, base and Hold), as an armed `onReaction` damage proc: the paws apply 1U Cryo each (gcsim Durability 25, ICDTagElementalArt), which is an aura-lane pixel, so the 2026-08-19 \"no source gives these paws a gauge\" no longer holds. The proc hangs on the cast because `armedFor` counts from the host cast (gcsim `revelationOnSkill`: 20s status at the skill's hitmark)."
 			],
-			"description": "Within 20s after using the Elemental Skill Icy Paws, Diona will also fire off three Icy Paws when party members trigger Superconduct, Stellar-Conduct, or Cryo Swirl reactions. Icy Paws fired this way cannot generate Elemental Particles, nor will they generate a shield upon hitting opponents. This effect can occur once every 3.5s.\nAdditionally, when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state."
+			"description": "Within 20s after using the Elemental Skill Icy Paws, Diona will also fire off three Icy Paws when party members trigger Superconduct, Stellar-Conduct, Cryo Swirl, or Stellar Swirl reactions. Icy Paws fired this way cannot generate Elemental Particles, nor will they generate a shield upon hitting opponents. This effect can occur once every 3.5s.\nAdditionally, when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state."
 		}
 	],
 	"constellations": [
@@ -386,7 +453,8 @@
 				"[Stellar round, updated 2026-07-29 under Nate's bucket-5 ruling] All three thirds of clause (b) are now authored on the Reaction-Bonus stat family (stellarConduct/superConduct/cryoSwirl ReactionBonus — bucket 5, additive with the EM bonus; the wiki's 'Stellar-Conduct DMG Bonus Constellations' category maps there). The whole Radiance clause is field-gated in game, so all three ride teamEnablesReaction with the field caveat — including the Superconduct and Cryo Swirl halves, which without the Radiance state do not apply at all.",
 				"[Stellar round] The narrower real gate (Polestar Field present AND target standing in the burst radius) is beyond the condition vocabulary; carried in the caveat instead. The in-radius restriction also applies to the pre-existing EM buff and is unchanged by this pass.",
 				"[Stellar round] Wiki 'Stellar-Conduct' page confirms the Base Reaction Coefficient table reads 1 / 1.45 / … / 2.0 (1 + 0.40 + 0.05×n, n≤12) — resolves the NEEDS-CONFIRM in docs/library/game/stellar-reactions.md in favour of the assumed reading. Not a Diona effect; recorded for the doc owner.",
-				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6 Cat's Tail Closing Time — effects[0] (buff em 200) RE-TRIGGERED. gcsim: `diona/cons.go:26-61` (`c6`), called from `diona/burst.go:75` — a task every 30f for 750f checks the ACTIVE character: inside `burstBuffArea` (radius 7, `burst.go:48`) and `CurrentHPRatio() > 0.5` → +200 EM for 120f; else → +0.3 Incoming Healing Bonus for 120f. Keep the 0.5s re-check cadence and the 120f per-grant length as the reason `duration: 12.5` is the window and not the grant; retire the \"⛔ Neither half is authorable today\" paragraph — `recipientHpBelow` resolving to `null` and rendering optimistically IS the house behaviour, so the condition gap was never the blocker. ⚠️ Both branches draw at once — that is the optimistic-render contract, carried by the caveat. ⚠️ `not(recipientHpBelow: 50)` is *not* HP ≥ 50: the kit's healing branch is \"≤ 50%\" and ours is \"< 50%\", a one-point edge that no surface can resolve. The active-target pass dedupes by `stat` — `em` and `incomingHealingBonus` differ, and both differ from the three `*ReactionBonus` effects on this node, so nothing collapses. A change here needs `npm run generate-character-index`."
+				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6 Cat's Tail Closing Time — effects[0] (buff em 200) RE-TRIGGERED. gcsim: `diona/cons.go:26-61` (`c6`), called from `diona/burst.go:75` — a task every 30f for 750f checks the ACTIVE character: inside `burstBuffArea` (radius 7, `burst.go:48`) and `CurrentHPRatio() > 0.5` → +200 EM for 120f; else → +0.3 Incoming Healing Bonus for 120f. Keep the 0.5s re-check cadence and the 120f per-grant length as the reason `duration: 12.5` is the window and not the grant; retire the \"⛔ Neither half is authorable today\" paragraph — `recipientHpBelow` resolving to `null` and rendering optimistically IS the house behaviour, so the condition gap was never the blocker. ⚠️ Both branches draw at once — that is the optimistic-render contract, carried by the caveat. ⚠️ `not(recipientHpBelow: 50)` is *not* HP ≥ 50: the kit's healing branch is \"≤ 50%\" and ours is \"< 50%\", a one-point edge that no surface can resolve. The active-target pass dedupes by `stat` — `em` and `incomingHealingBonus` differ, and both differ from the three `*ReactionBonus` effects on this node, so nothing collapses. A change here needs `npm run generate-character-index`.",
+				"↻ 2026-11-06 (Revelation round, gcsim #3254 `cons.go` c6 + Fandom |buff): the Radiance clause now has TWO branches. Radiance: Stellar-Conduct (inside a Polestar Field) gives Superconduct + Stellar-Conduct +40%; Radiance: Stellar Swirl gives Cryo Swirl + Stellar Swirl +40% (gcsim `getRadiance`: PolestarFieldKey first, else RadianceSwirlKey). Cryo Swirl moved from the Stellar-Conduct gate to `teamEnablesReaction: stellarSwirl`, and the Stellar Swirl third is new. ⚠️ The 2026-07-29 notes above that say \"all three ride teamEnablesReaction stellarConduct\" describe the old text. gcsim grants each branch for 120f per 30f check while the active character is in the radius; ours stays a 12.5s window from the burst, as before."
 			],
 			"effects": [
 				{
@@ -484,7 +552,7 @@
 					},
 					"conditions": {
 						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
+						"reaction": "stellarSwirl"
 					},
 					"duration": 12.5,
 					"durationType": "fixed",
@@ -492,9 +560,27 @@
 					"stat": "cryoSwirlReactionBonus",
 					"value": 40,
 					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarSwirl"
+					},
+					"duration": 12.5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "stellarSwirlReactionBonus",
+					"value": 40,
+					"snapshottable": false
 				}
 			],
-			"description": "Characters within Signature Mix's radius will gain the following effects based on their HP amounts:\n·Increases Incoming Healing Bonus by 30% when HP falls below or is equal to 50%.\n·Elemental Mastery increased by 200 when HP is above 50%.\nAdditionally, Diona's Max HP is increased by 25%.\n\nRadiance: Stellar-Conduct\nCharacters within Signature Mix's radius deal 40% increased Superconduct, Stellar-Conduct, and Cryo Swirl Reaction DMG."
+			"description": "Characters within Signature Mix's radius will gain the following effects based on their HP levels:\n·The Incoming Healing Bonus is increased by 30% when HP is at, or lower than, 50%.\n·Elemental Mastery is increased by 200 when HP is above 50%.\nAdditionally, Diona's Max HP is increased by 25%.\n\nRadiance: Stellar Glimmer: Characters within the Signature Mix field deal increased DMG for the following reactions:\nRadiance: Stellar-Conduct: Superconduct, Stellar-Conduct reaction DMG increased by 40%.\nRadiance: Stellar Swirl: Cryo Swirl, Stellar Swirl reaction DMG increased by 40%."
 		}
 	],
 	"meta": {

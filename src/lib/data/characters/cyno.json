@@ -120,7 +120,7 @@
 					"name": "N4",
 					"frames": {
 						"anim": 36,
-						"hit": 5,
+						"hit": 14,
 						"lands": [5, 14],
 						"N": 27
 					}
@@ -148,7 +148,8 @@
 				"timer": 30
 			},
 			"_curatorNotes": [
-				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing.",
+				"↻ 2026-11-06 (Revelation round): N4's `hit` 5 → 14 by `migrate-frames-shape.mjs --char cyno`. gcsim #3250 `attack.go` now builds the N4 cancel slice off the SECOND hitmark (`attackBHitmarks[3][1]`), so a swap, dash or skill after N4 waits for both hits; `lands` [5, 14] is unchanged."
 			]
 		},
 		{
@@ -340,7 +341,8 @@
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] NEW talent this patch - Cyno's Witch's Revelation Passive, unlocked by the quest \"Witch's Revelation: Duty's Instruction\" (Fandom \"Witch's Revelation\" system page: character must be owned and Lv70+). Authored as a plain passive because the schema has no additional-talent kind; its mechanical half lives on the skill as opensTransientState {inStance, 6s}.",
 				"[Stellar 2026-07-29] The Radiance: Stellar-Conduct state is the REAL gate for every \"Radiance: Stellar-Conduct\" clause on this character (A1 Starsame bolts, C1 Together We Rise, C2 Stellar-Conduct DMG stacks, C4 energy return): per the Witch's Revelation page, a character enters it \"when they are within a Polestar Field\". teamEnablesReaction {stellarConduct} is the closest gate the schema has - strictly broader (party has Sandrone) than field presence, hence the caveats.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Assumes this talent is unlocked - the skill always opens its 6s Pactsworn Pathclearer. The Radiance state it grants needs a Polestar Field, which is not shown.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Assumes this talent is unlocked - the skill always opens its 6s Pactsworn Pathclearer. The Radiance state it grants needs a Polestar Field, which is not shown.\"",
+				"↻ 2026-11-06 (Revelation round): cross-checked against gcsim's implementation (#3250, `stellar.go` revelationOnSkill; fixes #3263/#3264). AGREES: the skill opens a 6s Pactsworn when not already in it (gcsim 379f), it cannot be extended (`burstExtension = 2`, so Mortuary Rite's +4s stays burst-only, as authored), Endseer ticks inside it (`a1OnSkillRevelation`, first at +265f), Radiance is gated on standing in a Polestar Field (ours: `teamEnablesReaction`, as caveated), Starsame bolts are Stellar-Conduct DMG with no Durability (0U), C1's Together We Rise lasts the Pactsworn's own length (712f from the burst = our 11.87s) and passes to the incoming character, and C4's Revelation half is 20 Energy once per 18s. ⏭ STILL OMITTED: Together We Rise also opens with the SKILL-opened Pactsworn (gcsim `c1RevelationOnPactsworn(379)`). An `onState: inStance` trigger would cover both openings, but the onState pass refuses `target: 'active'` (`buffWindows.ts`, `isActiveTargetOnly`) and the state's span ends at Cyno's swap, which is exactly when the buff should move to the incoming character. Needs a primitive decision; see the round record. gcsim quirk, not followed: `c2RevStacks` is never reset between Together We Rise windows."
 			],
 			"modeledBy": "cyno__skill__secret_rite_chasmic_soulfarer"
 		}
