@@ -9,7 +9,7 @@ import {
 } from './docLock';
 
 /**
- * A minimal Web Locks stand-in (Node 22 has no `navigator.locks`): exclusive
+ * A minimal, deterministic Web Locks stand-in (each test gets its own): exclusive
  * locks, `ifAvailable`, `steal`, and a plain request that WAITS its turn
  * (abortable by `signal`), per the spec's observable behaviour — a stolen
  * holder's `request()` promise rejects with an AbortError.

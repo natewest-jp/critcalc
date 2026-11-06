@@ -4,7 +4,7 @@
  * Teaches plain Node how to resolve SvelteKit's `$lib/*` alias, so an audit
  * script can import the real parser instead of a re-implementation of it.
  *
- * Scripts in this directory already import `.ts` modules directly (Node ≥22.18
+ * Scripts in this directory already import `.ts` modules directly (Node 24
  * strips types natively — see `audit-capabilities.mjs`), but that only works
  * for modules whose import graph is relative. `notationParser.ts` is not one:
  * it reaches for `$lib/utils/tokenizer`, `$lib/data/weaponLookup` and a dozen

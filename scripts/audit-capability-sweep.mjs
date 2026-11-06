@@ -26,7 +26,7 @@
  *       # +1 wiki-missing; qiqi:heal → +1 role-unbacked; diona:heal → no role
  *       # finding (her shield still backs survivability — correct).
  *
- * Imports TS modules via native type stripping (Node ≥22.18; .nvmrc pins 22).
+ * Imports TS modules via native type stripping (Node 24, pinned by .nvmrc).
  */
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
