@@ -47,8 +47,8 @@ Gates: Vitest 2804 passed · svelte-check 0 errors · lint clean · build · Chr
 
 ## 4. Copy for Nate (proposals, not landed)
 
-1. **Diona C6's caveat is now stale.** It says the three Reaction Bonus lines draw "whenever a teammate enables Stellar-Conduct". Proposed: "The Elemental Mastery and Incoming Healing bars are drawn together, the Superconduct and Stellar-Conduct lines whenever a teammate enables Stellar-Conduct, and the Cryo Swirl and Stellar Swirl lines whenever one enables Stellar Swirl. In game a character gets only the one their HP qualifies for, the Reaction Bonus lines also need the matching Radiance, and all of them need standing inside the burst's radius."
-2. **Mizuki C6's `notModeled` line was removed** ("The Rotation Planner doesn't draw damage amounts, and this only lets Swirl damage land critical hits."). Lint refuses `notModeled` beside authored effects, and the line was no longer true. The Swirl-crit half has no pixel, so no replacement is proposed. Say if you want one.
+1. **Diona C6's caveat is now stale.** ✅ Nate 2026-11-06: deleted, no replacement. It says the three Reaction Bonus lines draw "whenever a teammate enables Stellar-Conduct". Proposed: "The Elemental Mastery and Incoming Healing bars are drawn together, the Superconduct and Stellar-Conduct lines whenever a teammate enables Stellar-Conduct, and the Cryo Swirl and Stellar Swirl lines whenever one enables Stellar Swirl. In game a character gets only the one their HP qualifies for, the Reaction Bonus lines also need the matching Radiance, and all of them need standing inside the burst's radius."
+2. **Mizuki C6's `notModeled` line was removed** (✅ Nate 2026-11-06: no replacement) ("The Rotation Planner doesn't draw damage amounts, and this only lets Swirl damage land critical hits."). Lint refuses `notModeled` beside authored effects, and the line was no longer true. The Swirl-crit half has no pixel, so no replacement is proposed. Say if you want one.
 
 ## 5. For Nate's eye
 
