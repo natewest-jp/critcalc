@@ -122,7 +122,14 @@ describe('roster parser invariants — hard gate', () => {
 // exempts any future effect-only hold (same timing, different element/effect).
 const TAP_TOKENS = new Set(['E', 'tE', 'pE']);
 const HOLD_TOKENS = ['hE', 'h1E', 'h2E'];
-const HOLD_TIMING_EXEMPT = new Set<string>(); // "<charId>:<holdToken>" — empty today
+// "<charId>:<holdToken>"
+const HOLD_TIMING_EXEMPT = new Set<string>([
+	// Mitya (7.2, frameless): the hold DOES resolve (it spawns Detection Core:
+	// Overloaded where the tap spawns Steady State), but neither form has frames
+	// or a measured cooldown yet, so their timing is identical. ⏭ Drop this when
+	// gcsim ships Mitya and the hold gets its own frames.
+	'mitya:hE'
+]);
 
 const timingSig = (b: { castTime: number; cooldown: number; uptime: number }) =>
 	`${b.castTime}|${b.cooldown}|${b.uptime}`;

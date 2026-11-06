@@ -1,0 +1,383 @@
+{
+	"id": "mitya",
+	"name": "Mitya",
+	"displayName": "Mitya",
+	"element": "electro",
+	"weapon": "catalyst",
+	"gender": "Male",
+	"affiliation": "Royal Energy Commission of Snezhnaya",
+	"region": "Snezhnaya",
+	"rarity": 5,
+	"enablesReactions": ["stellarConduct"],
+	"release": "7.2",
+	"abilities": [
+		{
+			"id": "mitya__normal__chain_reaction",
+			"name": "Chain Reaction",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs a maximum of 3 attacks that deal Electro DMG.\n"
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to deal AoE Electro DMG to the area in front after a short casting time.\nMitya will instead perform the special Charged Attack Gradient Detonation, which consumes no Stamina, if a **Detection Core: Overload** created by Mitya himself is currently on the field and he has at least 1 **Gradient Beacon**: Deals 1 instance of AoE Electro DMG to the area in front and continuously consumes Gradient Beacons while held. Each Gradient Beacon consumed deals 1 instance of AoE Electro DMG to the area in front that is considered Stellar-Conduct reaction DMG.\n"
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Electro DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG to the area in front after a short casting time.\nMitya will instead perform the special Charged Attack Gradient Detonation, which consumes no Stamina, if a **Detection Core: Overload** created by Mitya himself is currently on the field and he has at least 1 **Gradient Beacon**: Deals 1 instance of AoE Electro DMG to the area in front and continuously consumes Gradient Beacons while held. Each Gradient Beacon consumed deals 1 instance of AoE Electro DMG to the area in front that is considered Stellar-Conduct reaction DMG.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Electro DMG upon impact.",
+			"_curatorNotes": [
+				"Gradient Detonation (the special Charged Attack) NOT modeled: it replaces the ordinary Charged Attack only while Mitya's own Detection Core: Overloaded is on the field AND he holds at least 1 Gradient Beacon, then consumes Beacons continuously while held, each one dealing a separate instance of Stellar-Conduct DMG (403.2% EM at T10; the swing itself 302.4% ATK). Both gates are untracked: the Core's state has no State member (see the skill's notes) and the Beacon count is not tracked (see the root notes), and no source states the consumption rate, so a `C` resolves to the ordinary Charged Attack. Damage magnitude besides. Kit text: Fandom \"Chain Reaction\" (2026-11-06), genshin-db 5.2.15."
+			]
+		},
+		{
+			"id": "mitya__skill__principle_variable_detection",
+			"name": "Principle: Variable Detection",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 18,
+			"tags": ["summon"],
+			"effects": [],
+			"description": "Conducts a theoretically relatively safe experiment at a theoretically relatively safe yield, dealing AoE Electro DMG and creating a **Detection Core** in different ways depending on whether the Skill is tapped or held.\n\nTapping the Elemental Skill Principle: Variable Detection again within 6s after using it changes the Detection Core's state. The Detection Core's state can be changed in this way every 1.5s.",
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Detection Core: Steady State",
+					"duration": 25,
+					"terminatesOn": "recast"
+				}
+			],
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"summons": [
+						{
+							"label": "Detection Core: Overloaded",
+							"duration": 25,
+							"terminatesOn": "recast"
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Tap creates a Detection Core in the Steady State, Hold an Overloaded one (Detection Core tooltip: Fandom \"Principle: Variable Detection\" Extra Effect, and the game's own hover text N11360002 via Ambr gi.yatta.moe avatar 10000136, both 2026-11-06). Both last 25s (sidecar row \"Detection Core Duration\", every level). Authored as one summon per form, named with the tooltip's own headings; the Hold variant REPLACES the base's summons, so each cast draws exactly one Core. `terminatesOn: recast` because \"another Detection Core is created\" ends the old one (and the Steady Core detonates its Beacons on the way out).",
+				"Stub `duration: 25` removed: it was a stray on an instant cast that no accessor reads (schema.md, the activeDuration note); the 25s lives on the summons now.",
+				"NO tick series on either Core. The Steady State Core \"continuously follows nearby opponents and intermittently deals AoE Electro DMG\" (129.6% ATK at T10) — no source states the interval, and gcsim has no Mitya (main and PRs, 2026-11-06), so ⛔ no summonTick. The Overloaded Core deals nothing of its own; it is the gate for Gradient Detonation. The Steady Core's two Beacon-consumption damages (144% EM per Beacon consumed at max count; 165.6% EM per Beacon at its end or replacement) ride the untracked Beacon count. No `dealsNothing` on the Steady Core: it does deal damage, we just cannot place it.",
+				"⚠️ NOT MODELED: \"Tapping the Elemental Skill again within 6s after using it changes the Detection Core's state. The state can be changed in this way every 1.5s.\" In game the second tap is a state switch on the standing Core, not a cast (the skill is on its 18s cooldown). The planner has no shape for a re-press that toggles a summon's form, so the form is the one the cast chose for the Core's whole life. Every effect that reads the form (A1 Steady State, C2 EM) keys off the cast's token (`E` vs `hE`) for that reason.",
+				"⚠️ The Core's form is NOT a State: a `steadyCore`/`overloadedCore` pair (opened by each summon's `opensState`) would let A1/C1/C2 bind with `whileState` and end exactly with the Core, but adding a State member is a shared-schema edit (the union + characterLint STATES) outside this pass. Until then the form-bound effects are 25s windows from the cast, which overrun by up to 7s when a recast of the OTHER form replaces the Core early (18s CD < 25s life).",
+				"No frames and no `application[]` (frameless, FRAMELESS_EXEMPT): the cast applies Electro provisionally at the press. Tap 163.3% / Hold 233.3% ATK at T10."
+			],
+			"caveat": "A second tap within 6s switches the Detection Core's state in game. The timeline keeps the state the cast chose."
+		},
+		{
+			"id": "mitya__burst__analysis_gradient_theory",
+			"name": "Analysis: Gradient Theory",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [],
+			"description": "Let the elements burst forth like inspiration itself! Deals AoE Electro DMG and creates 3 **Gradient Beacons**.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"AoE Electro DMG (600.5% ATK + 1201% EM at T10) and 3 Gradient Beacons. The Beacons are not authored: the count is untracked (see the root notes). What they feed — A1's per-Beacon EM, A4's CRIT Rate stacks, C1's energy, C4's detonation — is recorded on each of those entries. Energy 60 / CD 15s verified against the sidecar and Fandom \"Analysis: Gradient Theory\" (2026-11-06)."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "mitya__passive__baseline_stress_test",
+			"name": "Baseline Stress Test",
+			"abilityType": "passive",
+			"description": "The **Detection Core** created by the Elemental Skill Principle: Variable Detection is enhanced. Depending on the state of the Detection Core created:\n·Steady State: All nearby party members gain 30 Elemental Mastery for each **Gradient Beacon** Mitya has;\n·Overloaded: After nearby party members trigger Stellar-Conduct reactions, instead obtain 1 Gradient Beacon every 1.5s for 6s.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E"]
+					},
+					"duration": 25,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": {
+						"type": "unknown",
+						"description": "+30 per Gradient Beacon Mitya holds, up to +120 (+150 at C1)"
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Steady State half AUTHORED as a team EM window over the Steady Core's 25s life (tap `E` only), value `unknown`: the magnitude is 30 EM × the Beacons Mitya holds at each instant, and the Beacon count is untracked (root notes). ⛔ Not a number: the count is 0 at the press (a new Core consumes every Beacon the old one had) and climbs only as Stellar-Conduct reactions and the burst create Beacons, so any literal would be invented. Max 4 Beacons (+120 EM), 5 at C1 (+150) — Gradient Beacon tooltip (game hover text N11360001 via Ambr) and C1. ⚠️ The unknown description is tooltip text: proposed to Nate in the curation report, not yet approved.",
+				"⛔ A `perStack` value was considered and refused: it needs a `gradientBeacon` stack key fed by Stellar-Conduct reactions at \"1 Beacon every 1.5s for 3s\" (whether that is two Beacons or three is unstated), drained by Gradient Detonation at an unstated rate, and spent by the Core at max count. Every one of those numbers would be invented. `whileStacks` also refuses a key granted with a `lifetime`, and Beacons have one (6s, 10s with A4, shared and refreshed on every creation).",
+				"Overloaded half NOT modeled: after a party Stellar-Conduct the Beacon stream runs 6s instead of the Jubilee's 3s. It only changes the untracked Beacon count.",
+				"Source: Fandom \"Baseline Stress Test\" (2026-11-06); text matches genshin-db 5.2.15 and Ambr."
+			]
+		},
+		{
+			"id": "mitya__passive__explosive_reagent_safe_limits_exceeded",
+			"name": "Explosive Reagent: Safe Limits Exceeded",
+			"abilityType": "passive",
+			"description": "The duration of **Gradient Beacons** is increased to 10s. Additionally, Mitya's CRIT Rate increases by 5% for 15s after creating a Gradient Beacon. This effect can stack up to 4 times.",
+			"_curatorNotes": [
+				"NOT authored, both halves. (1) Beacon duration 6s → 10s only moves the untracked Beacon count. (2) Self CRIT Rate +5% for 15s per Beacon CREATED, max 4 stacks: the only deterministic creator is the burst (3 Beacons at once, +1 from the skill at C1), and the text does not say whether three Beacons created at once are three stacks or one, nor whether stacks keep separate timers. Authoring +5% would under-print what is probably +15%, and +15% would be an inference. The rest of the stacks come from Stellar-Conduct reactions on an unstated cadence. Self-only, so it moves no team-facing capability. ⏭ Author once a source (gcsim or an in-game check) settles the per-creation count.",
+				"Source: Fandom \"Explosive Reagent: Safe Limits Exceeded\" (2026-11-06)."
+			],
+			"notModeled": {
+				"reason": "The planner doesn't track Gradient Beacons, and this raises Mitya's CRIT Rate for each one created."
+			}
+		},
+		{
+			"id": "mitya__passive__stellar_jubilee_topsecret_protocol",
+			"name": "Stellar Jubilee: Top-Secret Protocol",
+			"abilityType": "passive",
+			"description": "When party members trigger Superconduct, it will be changed to Stellar-Conduct. Stellar-Conduct reactions will no longer create Starlight Prisms, and will instead create 1 **Gradient Beacon** nearby every 1.5s for 3s. These Beacons can be carried by Mitya and transform the area around them into an even larger Polestar Field. Triggering another Stellar-Conduct reaction will refresh the duration of the aforementioned effects.\nAdditionally, the Base Stellar-Conduct DMG dealt by all nearby party members will be increased based on Mitya's Elemental Mastery: Every point of Elemental Mastery he has increases Base Stellar-Conduct DMG by 0.028%. The maximum Base DMG increase that can be gained this way is 14%. While within a Polestar Field, Mitya will also enter the Radiance: Stellar-Conduct state.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "stellarConductDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 2.8,
+						"cap": 14
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"THE FOURTH STELLAR-CONDUCT ENABLER, Conduct only: `enablesReactions: ['stellarConduct']` at the root converts every party Superconduct. Unlike Sandrone, Odette and the Cryo Traveler, the text names Superconduct alone (no Cryo Swirl), so he enables nothing for Stellar Swirl and the buff sits on `stellarConductDmgBonus`, not the family-wide `stellarGlimmerDmgBonus` (Vesna is the Swirl-only mirror). ⚠️ genshin-db files this in the `passive3` slot, so `ingest-character.mjs` sent it to the sidecar's `extraPassives` (the positional-split trap, ingest recipe Stage 0); pulled in by hand 2026-11-06. Fandom files it under the bare title \"Top-Secret Protocol\".",
+				"Base Stellar-Conduct DMG: 0.028% per point of EM = 2.8% per 100 EM → scaling ratio 2.8 (the per-100 convention, Sandrone's 0.7%/100 ATK is 0.7), cap 14 (reached at 500 EM). Party-wide (\"all nearby party members\"), always on, bucket 3 (\"Base DMG\") → `*DmgBonus` per the label rule in docs/library/game/stellar-reactions.md.",
+				"⚠️⚠️ FOR THE ORCHESTRATOR — the Polestar Field engine (`src/lib/sim/fields.ts`) draws a 7s Starlight Prism on every party Stellar-Conduct. With Mitya in the party there are NO Prisms: each Stellar-Conduct creates Gradient Beacons instead (1 every 1.5s for 3s; 6s at A1 Overloaded), each Beacon lives 6s (10s with A4), every creation resets all of them, they follow the active character, and they make \"an even larger\" Polestar Field. So the field's span in a Mitya party runs roughly from the reaction to last creation + Beacon life (≈13s at A4 off one reaction), not 7s, and whether the Prism's hit ledger (the 20–40% Cryo/Electro bonus, −40% Physical RES) still runs without a Prism is unstated. Not authored here (an engine change, shared file); see the report.",
+				"Radiance: Stellar-Conduct (inside a Polestar Field) is named but gates nothing in his kit, so there is nothing to bind to it.",
+				"Sources: genshin-db 5.2.15 passive3 (description kept verbatim); Fandom \"Top-Secret Protocol\" (2026-11-06) — ⚠️ the Fandom text OMITS the sentence \"Triggering another Stellar-Conduct reaction will refresh the duration of the aforementioned effects\", which genshin-db and Ambr both carry; the game text wins."
+			],
+			"caveat": "With Mitya in the party, Stellar-Conduct creates Gradient Beacons instead of a Starlight Prism. The Polestar Field span shown is the Prism's 7s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "mitya__constellation__the_observer_seeking_what_is_missing",
+			"name": "The Observer Seeking What Is Missing",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 25,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"procCooldown": 8,
+					"amount": 10
+				}
+			],
+			"description": "The maximum number of **Gradient Beacons** Mitya can carry is increased to 5. Using the Elemental Skill Principle: Variable Detection additionally creates 1 Gradient Beacon.\nWhile the **Detection Core** is present, your own active character's CRIT DMG is increased by 40%.\nAdditionally, Mitya regenerates 10 Elemental Energy when a Gradient Beacon is created. This effect can be triggered once every 8s.",
+			"_curatorNotes": [
+				"CRIT DMG +40% to the active character \"while the Detection Core is present\": a 25s window from either cast (the Core's life, either form). Same overrun caveat as every Core-bound window (skill notes).",
+				"Energy: 10 per Beacon created, once per 8s. ONE effect per in-game source, so one clock, and the trigger is the reaction that creates the stream of Beacons (any party Stellar-Conduct; Alyosha C1's shape). ⚠️ The burst's 3 Beacons and the skill's +1 also fire it in game (net burst cost ≈50 when off cooldown); a second effect on `onCast` would run a second 8s clock, so it is left to this note. Energy reaches no planner surface; the Team Builder reads it.",
+				"NOT modeled: max Beacons 4 → 5 and +1 Beacon on skill use (the Beacon count is untracked; the 5 is reflected in A1's unknown-value description).",
+				"Source: Fandom \"The Observer Seeking What Is Missing\" (2026-11-06)."
+			]
+		},
+		{
+			"id": "mitya__constellation__the_matter_that_slumbers_beyond_inertness",
+			"name": "The Matter That Slumbers Beyond Inertness",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 25,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					},
+					"element": "cryo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 25,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					},
+					"element": "electro",
+					"value": -20
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E"]
+					},
+					"duration": 25,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 123,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"duration": 25,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 234,
+					"snapshottable": false
+				}
+			],
+			"description": "While the **Detection Core** is present, all opponents within the Polestar Field have their Cryo RES and Electro RES decreased by 20%.\nAdditionally, if the Detection Core created is:\n·Steady State: All nearby party members gain 123 Elemental Mastery;\n·Overloaded: Your own active character gains 234 Elemental Mastery.",
+			"_curatorNotes": [
+				"RES −20% Cryo and Electro on \"opponents within the Polestar Field\" while the Detection Core is present: 25s from either cast, gated on the team being able to make the field at all — a Stellar-Conduct needs a Cryo teammate (he is Electro), the house Radiance idiom (docs/library/game/stellar-reactions.md) with the enabler leaf kept for the Team Builder. The field itself is assumed entered (⚓ Nate, 2026-08-31). Two effects, one per element, as Odette C2.",
+				"EM split by the Core's form, read off the cast token since the form has no State (skill notes): Steady State (tap `E`) +123 to the party, Overloaded (`hE`) +234 to the active character. The text says \"if the Detection Core created is\", i.e. bound to the Core, so both are its 25s. ⚠️ A re-tap within 6s switches the form in game and is not modeled.",
+				"Source: Fandom \"The Matter That Slumbers Beyond Inertness\" (2026-11-06)."
+			],
+			"caveat": "After a tapped Elemental Skill, the team Elemental Mastery bar shows the per-Beacon bonus; in game this +123 applies on top."
+		},
+		{
+			"id": "mitya__constellation__the_knotted_string_of_invariant_topology",
+			"name": "The Knotted String of Invariant Topology",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"effects": [],
+			"description": "Increases the Level of the Elemental Skill **Principle: Variable Detection** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "mitya__constellation__the_isotopes_born_of_decay",
+			"name": "The Isotopes Born of Decay",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [],
+			"description": "**Detection Cores** created by Mitya himself deals 1 instance of AoE Electro DMG equal to 300% of Mitya's Elemental Mastery to nearby opponents for every 5 **Gradient Beacons** consumed while it is on the field. This DMG is considered Stellar-Conduct reaction DMG.",
+			"_curatorNotes": [
+				"NOT modeled: 300% EM Stellar-Conduct DMG from the Core per 5 Beacons consumed — a damage instance keyed to the untracked Beacon count, and damage magnitude. Source: Fandom \"The Isotopes Born of Decay\" (2026-11-06)."
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this is extra damage from the Detection Core."
+			}
+		},
+		{
+			"id": "mitya__constellation__the_periodic_law_that_orders_all",
+			"name": "The Periodic Law That Orders All",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"effects": [],
+			"description": "Increases the Level of Normal Attack: **Chain Reaction** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "mitya__constellation__elemental_transition_at_the_gate_of_reason",
+			"name": "Elemental Transition at the Gate of Reason",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"reactions": ["stellarConduct"],
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"description": "**Detection Core** is enhanced. If the Detection Core:\n · Is in the Steady State: Detection Core deals 115% of its original DMG.\n· Is Overloaded: There is a 34% chance to create 1 new **Gradient Beacon** whenever Mitya consumes a Gradient Beacon with the **Detection Core**.\nAdditionally, Stellar-Conduct reaction DMG dealt by all nearby party members is **Elevated** by 20%.",
+			"_curatorNotes": [
+				"Elevate +20% on Stellar-Conduct DMG for \"all nearby party members\" → target team, always on. ⚠️ Like Sandrone C6, a `trigger: passive` elevate reaches no planner surface (elevate rendering is frozen; see Sandrone's C6 notes) — authored as the truth, not to be re-keyed as a buff.",
+				"NOT modeled: Steady State Core deals 115% of its DMG (magnitude, on ticks we cannot place); Overloaded 34% chance of a new Beacon per Beacon consumed (⛔ a coin flip is never drawn, and the count is untracked anyway).",
+				"Source: Fandom \"Elemental Transition at the Gate of Reason\" (2026-11-06)."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-11-06T00:57:00.762Z"
+	},
+	"_curatorNotes": [
+		"Stage 1–2 pass 2026-11-06 (7.2, live 2026-11-04). FRAMELESS: gcsim has no Mitya on main or in any PR, so no FrameMaps, no `application[]`, no tick cadences. Kit from Fandom (character page, the three talents, the three combat passives under their own titles, C1/C2/C4/C6) plus the game's own hover text for the two Extra Effects (Detection Core N11360002, Gradient Beacons N11360001) via Ambr gi.yatta.moe avatar 10000136 — Fandom has no Gradient Beacon tooltip yet. Values at T10 from docs/curation/talents/mitya.json, which matches Fandom's Attribute Scaling tables.",
+		"⚓ THE GRADIENT BEACON IS THE KIT'S RESOURCE AND IT IS NOT TRACKED. Tooltip: created by a party Stellar-Conduct in place of a Starlight Prism, lasts 6s (10s with A4), follows the active character and turns a larger area into a Polestar Field, max 4 (5 at C1), and every creation resets all of their durations. Sources: the burst (+3), the skill at C1 (+1), each Stellar-Conduct (1 every 1.5s for 3s; 6s with A1 Overloaded; refreshed by another reaction), C6 Overloaded (34% per consumption). Sinks: Gradient Detonation (continuous, rate unstated), the Steady Core at max count and at its end. Too many of those are unstated to build a stack key without inventing numbers, so A1's magnitude, A4, C1's +1/max 5, C4 and the Detonation gate are notes, not effects.",
+		"Extra passive \"Energy Catalysis\" (passive4: destructible rocks, Kresnik Energy) stays out — open-world utility.",
+		"No heal, shield, cleanse or grouping anywhere in the kit."
+	]
+}

@@ -26,13 +26,13 @@ import { encodeBoard } from '../src/lib/utils/boardUrl';
  * is the audit's job (`scripts/audit-capabilities.mjs`). This is UI behavior.
  */
 
-/** 124 = 125 character JSONs minus the `blank` placeholder the grid filters out.
+/** 129 = 130 character JSONs minus the `blank` placeholder the grid filters out.
  *  ⚠️ HARDCODED ON PURPOSE — deriving it from the corpus would make the test
  *  agree with whatever the app renders, which is the one thing it exists to
  *  check. ⛔ So it must be bumped by hand on every character ingest; the
- *  ingest-character recipe's Stage 3 says so. Last bumped 2026-09-22 (+Vesna,
- *  +Vodyanitsa). */
-const ROSTER_SIZE = 127;
+ *  ingest-character recipe's Stage 3 says so. Last bumped 2026-11-06 (+Mitya,
+ *  +Valeriy). */
+const ROSTER_SIZE = 129;
 
 /** A real profile for the roster's tests: Theorycraft has every character at
  *  every level and no roster, so the old storage must hold one owned

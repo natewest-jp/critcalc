@@ -1,0 +1,524 @@
+{
+	"id": "valeriy",
+	"name": "Valeriy",
+	"displayName": "Valeriy",
+	"element": "electro",
+	"weapon": "sword",
+	"gender": "Male",
+	"affiliation": "Fatui Grenadier Guards First Regiment",
+	"region": "Snezhnaya",
+	"rarity": 4,
+	"release": "7.2",
+	"abilities": [
+		{
+			"id": "valeriy__normal__guard_tactics_sword_and_shield",
+			"name": "Guard Tactics: Sword and Shield",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 consecutive sword strikes.\n"
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to leap forward and slam the ground, dealing Physical DMG to nearby opponents.\nWhen Valeriy has at least 40 **Impact Momentum**, he will consume all Impact Momentum to instead perform the special Charged Attack **Direct-Fire Mortar: Point-Blank Bombardment**.\n"
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to leap forward and slam the ground, dealing Physical DMG to nearby opponents.\nWhen Valeriy has at least 40 **Impact Momentum**, he will consume all Impact Momentum to instead perform the special Charged Attack **Direct-Fire Mortar: Point-Blank Bombardment**.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 18,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "impactMomentum",
+								"min": 40
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["cryo"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 43.78
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 18,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "impactMomentum",
+								"min": 40
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["cryo"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "chargeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 43.78
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 18,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "impactMomentum",
+								"min": 40
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["cryo"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "plungeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 43.78
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 18,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "impactMomentum",
+								"min": 40
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["cryo"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "skillFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 43.78
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 18,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "impactMomentum",
+								"min": 40
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["cryo"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "burstFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 43.78
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "impactMomentum",
+						"min": 40
+					},
+					"key": "impactMomentum",
+					"amount": "all"
+				}
+			],
+			"_curatorNotes": [
+				"THE BOMBARDMENT IS A `C` AT 40+ MOMENTUM. Extra Effect N11370001: \"Using a Charged Attack while he has at least 40 Impact Momentum consumes all Impact Momentum to unleash this special Charged Attack instead, dealing AoE Electro DMG in front of him and granting 15 stacks of Offensive Directive. When this special Charged Attack is used again, the Offensive Directive stack count will be refreshed.\" So every effect here is `onHit` / `charged`, gated `stacks impactMomentum min 40`, and the `consumeStacks 'all'` spends the pool after the hit's snapshot (gains → snapshot → consumes), so the gate reads the pre-spend count.",
+				"`sC` DELIBERATELY NOT DECLARED. The token reads `specialChargeFrames`, which a frameless kit cannot carry, and the editor flags an `sC` on a character with no special charge as \"timed as a plain C\". In game the choice is the Momentum count, not the input, which the stack gate already says. Revisit when frames land: the bombardment's animation will want `specialChargeFrames`, and then a `C` below 40 and an `sC` are two timings.",
+				"OFFENSIVE DIRECTIVE, outside Radiance. Extra Effect N11370002: \"When a nearby active character in the party deals Electro DMG to an opponent with a Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, or Elemental Burst, 1 stack of Offensive Directive is consumed to increase that DMG, with the increase based on Valeriy's ATK.\" Value: sidecar \"Electro DMG Bonus\" 43.78% ATK at TL10 (its label says Bonus; the Extra Effect says it is an added amount, hence `*FlatDmg`). 15 stacks / 18s from the \"Offensive Directive Stacks\" and \"Duration\" rows. Authored on Shenhe's Icy Quill shape: all five `*FlatDmg` classes, ATK-scaled, `target: 'active'` (\"active character\"), `durationType: 'refresh'` (a recast refreshes the stacks). NOT enforced: Electro DMG only, and the 15-stack spend (one per opponent hit, so a multi-target hit spends several). `snapshottable: false`: no source says.",
+				"OFFENSIVE DIRECTIVE, in Radiance: \"When a nearby active character in the party deals Electro DMG considered Stellar-Conduct reaction DMG ... 1 stack ... is consumed to increase that DMG\", by the sidecar's \"Stellar-Conduct DMG Bonus\" row, 131.33% ATK at TL10. ⛔ NOT AUTHORED: it adds to Stellar-Conduct reaction DMG instances only, and the Stat union has no Stellar-Conduct flat-DMG key (its per-reaction flat family is `lunarCrystallizeFlatDmg` alone, \"other flavors added on demand\"). Putting 131.33% on the class `*FlatDmg` keys would claim it on every Electro hit. Cyno's A4 (Starsame bolts, 600% EM) is the same gap. ⏭ A `stellarConductFlatDmg` Stat would make it a one-effect-per-class pair with the branch above.",
+				"THE RADIANCE GATE is the stellar-reactions.md idiom for an Electro holder (Alyosha's form): `teamEnablesReaction stellarConduct` + a Cryo teammate. The authored branch is `not(Radiance)`, so it goes dark in a Conduct team, which is correct while its partner is unauthored rather than drawing the wrong number. `inPolestarField` deliberately NOT used: the buff passes do not resolve it (only tick series, onHit procs/grants and infusion do), so both it and its `not` would come back null and draw.",
+				"NOT MODELLED: \"Within 0.8s after using the Elemental Skill Active Defense: Bastion Charge or the Elemental Burst Focused Fire: Lightning Salvo, if Valeriy has at least 40 Impact Momentum, the next Normal Attack he uses will be converted to the special Charged Attack\" (N11370001). It needs a 0.8s post-cast state, and a new `State` member is schema. As authored, `E N1` draws an ordinary swing and no Offensive Directive; the bombardment is written `C`.",
+				"Description: genshin-db's trailing `****` (an empty `{LINK#N11370002}{/LINK}` rendered as bold markers) stripped from the description and the plunging section; the wiki's text ends there too."
+			],
+			"caveat": "Shown for the full 18s at its base amount; in game each Electro hit spends one of 15 stacks, only Electro DMG gets the bonus, and the amount grows with the Impact Momentum spent. A Normal Attack within 0.8s of the skill or burst becomes Direct-Fire Mortar in game; write it as C to draw Offensive Directive."
+		},
+		{
+			"id": "valeriy__skill__active_defense_bastion_charge",
+			"name": "Active Defense: Bastion Charge",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 10,
+			"tags": ["shield"],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 18,
+					"scaling": 376.01,
+					"stat": "atk",
+					"flat": 2881.42,
+					"label": "Supercharged Shield"
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 4
+						}
+					},
+					"key": "impactMomentum",
+					"amount": 40,
+					"max": 100,
+					"scope": "rotation"
+				}
+			],
+			"description": "Valeriy raises his shield cannon and charges forward, dealing AoE Electro DMG, gaining 40 **Impact Momentum**, and deploying a Supercharged Shield.\nThe Supercharged Shield's DMG Absorption scales with Valeriy's ATK, and has 250% absorption efficiency against Electro DMG.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Supercharged Shield at TL10: sidecar \"Shield DMG Absorption\" 376.0% ATK + 2881 (genshin-db param2[9] 3.760128, param3[9] 2881.4229 → 376.01 / 2881.42), 18s from \"Shield Duration\". `label` is the kit's own name. `target: 'active'`, the corpus convention for a deployed shield. ⚠️ The 250% absorption efficiency against Electro has no schema field and nothing draws absorption, so it is recorded here only.",
+				"+40 Impact Momentum on the cast (kit text). Gated `not(constellation 4)` because C4's grant differs in both amount (+30% charging efficiency: 52) and `max` (130), and `constellationScaling` overrides the amount only. The C4 grant lives on the C4 entry.",
+				"The generator's ability-level `duration: 18` was the shield's duration row: removed (an instant cast's stray `duration` is dead data); the shield effect carries it.",
+				"Particle generation unpublished (no consumer anyway)."
+			]
+		},
+		{
+			"id": "valeriy__burst__focused_fire_lightning_salvo",
+			"name": "Focused Fire: Lightning Salvo",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [],
+			"description": "Deals AoE Electro DMG to nearby opponents and fires a Thunderburst Shell high into the air. The Thunderburst Shell disperses into a barrage of projectiles that rain down, dealing AoE Electro DMG to nearby opponents.",
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Thunderburst Shells",
+					"duration": 12
+				}
+			],
+			"_curatorNotes": [
+				"`summons[0]` \"Thunderburst Shells\", 12s, from the burst's \"Duration 12s\" row. ⚠️ An INFERENCE that the row is the barrage's: it is the burst's only duration, the shells are the only lasting thing it makes, and A1 says \"while the Thunderburst Shells from his Elemental Burst ... are falling\". No spawn delay, no mobility and no shell cadence are published, so the summon carries no `spawnsAt`, no `mobility` and no `summonTick` (never fake timing). The generator's ability-level `duration: 12` moved into the summon.",
+				"The shells are off-field damage in game (A1's \"another nearby active character\" hits while they fall, so they outlive Valeriy's turn), but with no damage series the derivation cannot see it. ⏭ Author the series when a cadence is published (gcsim or KQM); it is also what A1 needs to read `duringSummon:burst` against a real window."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "valeriy__passive__advance_with_the_creeping_barrage",
+			"name": "Advance With the Creeping Barrage",
+			"abilityType": "passive",
+			"description": "Valeriy gains 5 **Impact Momentum** whenever another nearby active character in the party hits an opponent with an Electro attack while the Thunderburst Shells from his Elemental Burst **Focused Fire: Lightning Salvo** are falling. He can gain up to 80 Impact Momentum in this way after each use of his Elemental Burst.",
+			"_curatorNotes": [
+				"⛔ NOT AUTHORED: an ENGINE GAP, measured, not a data choice. The grant is a teammate-hit `gainStacks` into the same key the skill writes, and those two land in different containers: `dispatchGainStacksOnHit`'s non-self branch writes `CharState.onHitStacks` whatever the key's `scope` (stacks.ts, the `team/others` arms), while a rotation-scoped `self` grant writes `rotationStacks`; at every settle point `syncOnHitToStackState` and then `syncRotationStacksToStackState` each OVERWRITE the segment copy, so the two never sum. The consume side already routes by `homeOf` (its 2026-09-21 Illuga note); the gain side does not. Measured on a draft (`source: 'active'`, `filter.element: electro`, gated `duringSummon:burst`): `Valeriy Q > Fischl N1 > Raiden Shogun E Q N4 N4 N4 N4 > Valeriy C` drew no Offensive Directive, so no grant reached the pool.",
+				"Two more gaps the same effect would hit after that fix: (1) \"He can gain up to 80 Impact Momentum in this way after each use of his Elemental Burst\" (C4: 104) is a per-cast grant cap, and `gainStacks` has no such field (`max` caps the pool, which is 100); (2) \"ANOTHER nearby active character\": `holderStatesAt` publishes no `offField`, so `source: 'active'` would also count Valeriy's own Electro skill and bombardment hits during the shells. `source: 'others'` is worse: it admits entity ticks (Oz), which are not the active character.",
+				"⚠️ Workaround checked and ruled out: a `{impactMomentum:N}` notation assertion does not reach a rotation-scoped key (`Valeriy {impactMomentum:100} C` draws nothing), so a player cannot assert the A1 Momentum by hand either.",
+				"Wiki wording differs trivially from genshin-db (\"an attack whose Elemental Type is Electro\"); genshin-db's kept."
+			],
+			"caveat": "Impact Momentum from the burst isn't counted, so a Charged Attack after it only becomes Direct-Fire Mortar here if the skill supplied the Momentum."
+		},
+		{
+			"id": "valeriy__passive__into_the_breach",
+			"name": "Into the Breach",
+			"abilityType": "passive",
+			"description": "**Offensive Directive** is enhanced based on the amount of **Impact Momentum** consumed when performing his special Charged Attack **Direct-Fire Mortar: Point-Blank Bombardment**. Each point consumed further increases the DMG Bonus granted by Offensive Directive. If Valeriy is:\n·In the Radiance: Stellar-Conduct state: Each point of Impact Momentum consumed increases this DMG Bonus by an amount equal to 0.9% of Valeriy's ATK;\n·Not in the Radiance: Stellar-Conduct state: Each point of Impact Momentum consumed increases this DMG Bonus by an amount equal to 0.3% of Valeriy's ATK.",
+			"_curatorNotes": [
+				"⛔ NOT AUTHORED, measured. The per-point term (0.3% of Valeriy's ATK per Momentum consumed outside Radiance) adds to the SAME Offensive Directive amount, so it would be a `perStack` buff (`key: impactMomentum`, `per: {stat: atk, ratio: 0.3}`) on the same five `*FlatDmg` stats. `deriveBuffWindows` keeps the first survivor per stat per event (`dedupByStat`), so that line never draws beside the base one: a draft drew the base bar and nothing else. Consequence: the Offensive Directive bar prints 43.78% ATK where the true add is 43.78% + 0.3% × Momentum spent (+12% at 40, +30% at 100). ⏭ Fixable either by a composed BuffValue (base + perStack) or by letting a perStack sibling survive the dedupe.",
+				"The Radiance half (0.9% per point) rides the Radiance Offensive Directive, which is itself unauthored (no Stellar-Conduct flat-DMG Stat; see the normal ability's notes).",
+				"genshin-db says \"DMG Bonus\", the wiki \"DMG\"; the Extra Effect settles that it is an added amount. genshin-db's text kept as the game's."
+			]
+		},
+		{
+			"id": "valeriy__passive__subzero_conditioning",
+			"name": "Subzero Conditioning",
+			"abilityType": "passive",
+			"description": "Valeriy enters the Radiance: Stellar-Conduct state while within a **Polestar Field**.",
+			"_curatorNotes": [
+				"⚠️ Filed in the sidecar's `extraPassives` by the generator's positional split (genshin-db `passive3`); pulled in by hand 2026-11-06, the Diona/Alyosha/Vesna trap. \"Tundra Operational Intelligence\" (expedition rewards) stays out.",
+				"No effects: it carries no payload. It is the unlock for every Radiance: Stellar-Conduct clause in the kit (Offensive Directive's Stellar-Conduct branch and Into the Breach's 0.9% half, both unauthored for want of a Stat; see the normal ability's notes), and the reason those clauses would use the Radiance idiom."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "valeriy__constellation__the_cadence_of_suppressive_fire",
+			"name": "The Cadence of Suppressive Fire",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "impactMomentum",
+						"min": 40
+					},
+					"procCooldown": 15,
+					"amount": 6
+				}
+			],
+			"description": "Valeriy regenerates 6 Elemental Energy after performing the special Charged Attack **Direct-Fire Mortar: Point-Blank Bombardment**. For every 10 **Impact Momentum** consumed beyond 40 when performing this special Charged Attack, he regenerates an additional 1.5 Elemental Energy. Each time he performs Direct-Fire Mortar: Point-Blank Bombardment, he can regenerate up to 15 Elemental Energy in this way. This effect can trigger once every 15s.\nAdditionally, each time Valeriy enters combat, the first time he uses his Elemental Skill **Active Defense: Bastion Charge**, he gains an additional amount of Impact Momentum equal to 150% of the amount normally gained.",
+			"_curatorNotes": [
+				"Energy: 6 on the bombardment (`onHit` charged at 40+ Momentum), once per 15s. The amount is the FLOOR: +1.5 per 10 Momentum beyond 40, capped at 15 per bombardment (so 15 at 100). An `energy` amount cannot read the stack count; 6 is the stated base. ⚠️ Inert on every surface: `energy` has no planner consumer (Cyno's, Alyosha's notes).",
+				"NOT AUTHORED: \"each time Valeriy enters combat, the first time he uses his Elemental Skill ... he gains an additional amount of Impact Momentum equal to 150% of the amount normally gained\" (40 → 100). No condition says \"first cast of the rotation\". Under-claim: the opener's bombardment reads 40 Momentum."
+			]
+		},
+		{
+			"id": "valeriy__constellation__ranks_that_charge_as_one",
+			"name": "Ranks That Charge as One",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 18,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false
+				}
+			],
+			"description": "All nearby party members gain 100 Elemental Mastery for 18s after Valeriy uses his Elemental Skill **Active Defense: Bastion Charge**.\nAdditionally, while protected by a Supercharged Shield, if Valeriy is already at maximum **Impact Momentum**, any further Impact Momentum he would gain is instead converted into increased DMG Absorption for the shield. Each point of excess Impact Momentum increases the Supercharged Shield's DMG Absorption by an amount equal to 8% of Valeriy's ATK. Up to 20 excess Impact Momentum can be converted in this way.",
+			"_curatorNotes": [
+				"+100 EM to all nearby party members for 18s after the skill: `team`, `onCast skill`, `refresh` (the skill's 10s cooldown re-casts inside the 18s).",
+				"NOT AUTHORED: the excess-Momentum shield growth (8% ATK per point past the cap while shielded, up to 20 points). It needs the overflow of a saturating grant, which `gainStacks` discards, and it changes absorption only, which nothing draws."
+			]
+		},
+		{
+			"id": "valeriy__constellation__vigilance_at_close_quarters",
+			"name": "Vigilance at Close Quarters",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"effects": [],
+			"description": "Increases the Level of Normal Attack **Guard Tactics: Sword and Shield** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "valeriy__constellation__fortitude_unshaken_by_attrition",
+			"name": "Fortitude Unshaken by Attrition",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"key": "impactMomentum",
+					"amount": 52,
+					"max": 130,
+					"scope": "rotation"
+				}
+			],
+			"description": "**Impact Momentum**'s limit is increased by 30, and its charging efficiency is increased by 30%.\nAdditionally, the Ascension Talent **Advance With the Creeping Barrage** is enhanced: The maximum amount of Impact Momentum that can be gained from this Talent after using the Elemental Burst is 104. You must unlock the Ascension Talent Advance With the Creeping Barrage to gain access to this effect.",
+			"_curatorNotes": [
+				"Authored half: the skill's grant at C4, 40 × 1.3 = 52 into a 130 cap (\"limit is increased by 30, and its charging efficiency is increased by 30%\"). The base grant on the skill is gated `not(constellation 4)` so the two never both fire.",
+				"NOT AUTHORED: the A1 enhancement (6.5 per hit, 104 per burst): the same engine gap as A1 itself (see its notes)."
+			]
+		},
+		{
+			"id": "valeriy__constellation__resolve_to_divide_and_destroy",
+			"name": "Resolve to Divide and Destroy",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"effects": [],
+			"description": "Increases the Level of the Elemental Skill **Active Defense: Bastion Charge** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "valeriy__constellation__the_strength_to_breach_enemy_lines",
+			"name": "The Strength to Breach Enemy Lines",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [],
+			"description": "The special Charged Attack **Direct-Fire Mortar: Point-Blank Bombardment** and Thunderburst Shells from Elemental Burst **Focused Fire: Lightning Salvo** are enhanced: Their DMG is increased by 100%, and opponents they hit have the CRIT Rate of Electro DMG they take increased by 10% for 7s. If the Electro DMG taken is Stellar-Conduct reaction DMG, that DMG instance's CRIT DMG is also increased by 40%.",
+			"_curatorNotes": [
+				"NOTHING AUTHORED. (1) +100% DMG to the bombardment and the Thunderburst Shells: damage magnitude. (2) \"opponents they hit have the CRIT Rate of Electro DMG they take increased by 10% for 7s\": an enemy-side, Electro-scoped CRIT Rate; the Stat union has element CRIT DMG keys only and no element CRIT Rate, and a team `critRate` would claim it on every element. (3) \"If the Electro DMG taken is Stellar-Conduct reaction DMG, that DMG instance's CRIT DMG is also increased by 40%\": no Stellar-Conduct-scoped CRIT key (`electroCritDmg` would over-claim to every Electro hit)."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-11-06T00:57:01.904Z"
+	},
+	"_curatorNotes": [
+		"Stage 1–2 curated 2026-11-06 (7.2, live 2026-11-04). Sources: genshin-db 5.2.15 (the stub and `docs/curation/talents/valeriy.json`, values at talent level 10 = each row's 10th column); Fandom MediaWiki API pages \"Valeriy\", \"Guard Tactics: Sword and Shield\", \"Active Defense: Bastion Charge\", \"Focused Fire: Lightning Salvo\", \"Advance With the Creeping Barrage\", \"Into the Breach\" (all `{{Stub}}` with no Extra Effect tooltips on 2026-11-06; \"Subzero Conditioning\" has no page); and Project Amber's mirror (gi.yatta.moe/api/v2/en/avatar/10000137), whose `dictionary.effectsInfo` carries the three Extra Effects the kit text links to (`{LINK#N11370001..3}`) and that genshin-db drops. Those three texts are the authority for every mechanic below; quoted where used.",
+		"FRAMELESS: gcsim has no Valeriy (main and open PRs checked at Stage 0), so no FrameMaps, no `hits` timing, no `application[]` and no tick cadences. He is in `FRAMELESS_EXEMPT`; his casts apply Electro at the cast instant, provisional.",
+		"⛔ NOT A STELLAR ENABLER. Subzero Conditioning only puts him in Radiance: Stellar-Conduct inside a Polestar Field; he converts nothing, so `enablesReactions` is deliberately absent (the Alyosha ruling).",
+		"IMPACT MOMENTUM is the stack key `impactMomentum`. Extra Effect N11370003: \"A special energy Valeriy uses to enhance his combat capabilities. Its initial maximum is 100. When he has at least 40 Impact Momentum, he can perform the special Charged Attack Direct-Fire Mortar: Point-Blank Bombardment. Valeriy can gain Impact Momentum in the following ways: By using his Elemental Skill Active Defense: Bastion Charge; After unlocking the Ascension Talent \\\"Advance With the Creeping Barrage,\\\" while his Elemental Burst Focused Fire: Lightning Salvo is active, when a nearby active character in the party hits an opponent with an Electro attack.\" `scope: 'rotation'`: the resource is his and survives a swap (the A1 source accrues while he is benched by construction). Authored grant: the skill (+40, max 100; C4 +52, max 130). Spent whole by the bombardment. NOT authored: A1 (engine gap, see its notes) and C1's first-skill bonus. No decay is stated, so none is authored.",
+		"Measured 2026-11-06 on a scratch parse probe (deleted): `Valeriy E C ~2s` draws one 18s Offensive Directive bar from the Charged Attack's landing; `E C C` draws one (the second C is a plain Charged Attack, 0 Momentum); `E > Fischl E > Valeriy C` keeps the 40 across the swap; a lone `C` draws nothing; with Sandrone in the party nothing draws (Radiance branch, unauthored). ⚠️ A trailing `C` with nothing after it lands past the parse's end on generic timing and draws nothing; that is the frameless fallback, not this data."
+	]
+}
