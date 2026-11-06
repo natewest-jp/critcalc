@@ -2187,7 +2187,11 @@ const FRAMELESS_EXEMPT = new Set([
 	// 7.1, ingested 2026-09-22 (the patch went live the next day). Stubs only:
 	// gcsim has nothing for either yet — check open PRs before assuming.
 	'vesna',
-	'vodyanitsa'
+	'vodyanitsa',
+	// 7.2 (live 2026-11-04), ingested 2026-11-06 from genshin-db 5.2.15. Stubs
+	// with kits from the wiki: gcsim has nothing for either yet (main and PRs).
+	'mitya',
+	'valeriy'
 ]);
 
 describe('FrameMap coverage', () => {

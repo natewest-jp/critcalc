@@ -7,11 +7,12 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (0)
+## Expected capability missing entirely (2)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- _none_
+- **mitya** — expected offFieldDamage (C0) — nothing derives ⚠️check — Detection Core: Steady State follows opponents and deals AoE Electro DMG intermittently; no source states the interval
+- **valeriy** — expected offFieldDamage (C0) — nothing derives ⚠️check — Thunderburst Shells fall for 12s and keep falling after the swap (A1 counts other characters' hits during them); no cadence published
 
 ## Constellation gate later than in-game (0)
 
@@ -62,12 +63,14 @@ Verify these kits genuinely offer nothing team-facing.
 - **chasca** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (4)
+## Uncurated stubs (6)
 
 Excluded from capability trust; shown honestly in the UI.
 
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
+- **mitya** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
+- **valeriy** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **vesna** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **vodyanitsa** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 

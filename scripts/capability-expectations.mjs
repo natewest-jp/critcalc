@@ -780,6 +780,82 @@ export const EXPECTED = [
 		note: 'A4 ramping all-DMG bonus during Q'
 	},
 
+	// --------------------------------------------- 7.2 ingest 2026-11-06
+	// From the wiki and Ambr's tooltips, researched before authoring. Neither has
+	// gcsim yet, so the two damage entries have no tick series to match.
+	{
+		id: 'mitya',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		target: 'team',
+		note: "Stellar Jubilee: Top-Secret Protocol: party Stellar-Conduct DMG +0.028% per point of Mitya's EM, up to 14%"
+	},
+	{
+		id: 'mitya',
+		kind: 'buff',
+		family: 'em',
+		minCon: 0,
+		target: 'team',
+		note: 'A1 Baseline Stress Test: party EM +30 per Gradient Beacon held while a Steady State Core stands (C2 adds a flat +123)'
+	},
+	{
+		id: 'mitya',
+		kind: 'buff',
+		family: 'crit',
+		minCon: 1,
+		target: 'active',
+		note: 'C1: active character CRIT DMG +40% while the Detection Core is out'
+	},
+	{
+		id: 'mitya',
+		kind: 'buff',
+		family: 'em',
+		minCon: 2,
+		target: 'active',
+		note: 'C2: the Overloaded (hold) Core gives the active character +234 EM'
+	},
+	{
+		id: 'mitya',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		confidence: 'check',
+		note: 'Detection Core: Steady State follows opponents and deals AoE Electro DMG intermittently; no source states the interval'
+	},
+	{
+		id: 'valeriy',
+		kind: 'shield',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'skill',
+		note: 'Supercharged Shield: 376% ATK + 2881 at TL10, 18s'
+	},
+	{
+		id: 'valeriy',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		target: 'active',
+		note: 'Offensive Directive after Direct-Fire Mortar: 15 stacks over 18s of flat Electro DMG on the active character'
+	},
+	{
+		id: 'valeriy',
+		kind: 'buff',
+		family: 'em',
+		minCon: 2,
+		target: 'team',
+		note: 'C2 Ranks That Charge as One: party EM +100 for 18s after the skill'
+	},
+	{
+		id: 'valeriy',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		confidence: 'check',
+		note: "Thunderburst Shells fall for 12s and keep falling after the swap (A1 counts other characters' hits during them); no cadence published"
+	},
+
 	// ------------------------------------------------- cleanse & grouping
 	// A4 vocabulary (2026-07-12) — regression anchors for the new tags.
 	{ id: 'barbara', kind: 'cleanse', minCon: 0, fromAbilityType: 'skill' },
