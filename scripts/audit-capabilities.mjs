@@ -10,7 +10,7 @@
  *   node scripts/audit-capabilities.mjs            # stdout summary
  *   node scripts/audit-capabilities.mjs --write    # + docs/curation/capability-audit.md
  *
- * Imports TS modules via native type stripping (Node 24, pinned by .nvmrc).
+ * Imports TS modules via native type stripping (Node 26, pinned by .nvmrc).
  */
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
