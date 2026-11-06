@@ -27,8 +27,19 @@ import type { StoreName } from './db';
 
 const lockName = (docId: string) => `critcalc:doc:${docId}`;
 
-/** The browser's lock manager, where it has one. */
-const browserLocks = (): LockManager | undefined => globalThis.navigator?.locks;
+/**
+ * The browser's lock manager, where it has one: THIS page's own.
+ *
+ * ⚠️ A bare `navigator`, never `globalThis.navigator`. On a reload WebKit
+ * rejects the dying page's held lock with an AbortError, which reads as a
+ * steal, so that page asks to wait for the document again. `globalThis` is
+ * the window proxy, which by then points at the NEW page, so the request
+ * landed in the new page's lock manager and held the lock forever: every
+ * reload in Safari opened its own document read-only. The bare name resolves
+ * on the page's own window, whose manager is gone with it.
+ */
+const browserLocks = (): LockManager | undefined =>
+	typeof navigator === 'undefined' ? undefined : navigator.locks;
 
 /** What a hold is without a lock manager: always granted, nothing to release. */
 const UNLOCKED: DocumentLock = { release() {} };
