@@ -16,6 +16,7 @@ import {
 	liveSeasons,
 	spriteImage
 } from './endgame';
+import seasonDates from './data/endgame/season-dates.json';
 
 /**
  * The endgame presets' data (lineups design §2.6). It is GENERATED from
@@ -128,5 +129,25 @@ describe('the Abyss', () => {
 		expect(currentAbyss(new Date(`${newest.end}T00:00:00Z`), [newest, next])?.start).toBe(
 			newest.end
 		);
+	});
+});
+
+describe('the hand-kept dates follow the release calendar', () => {
+	// docs/library/game/release-calendar.md (Nate, 2026-11-06): Stygian goes live
+	// the Wednesday after its patch and runs six weeks; the Abyss resets on the
+	// 16th. A failure here means a typo, or the game broke a rule, and then the
+	// calendar page should say so.
+	const DAY = 86_400_000;
+	const utc = (d: string) => Date.parse(`${d}T00:00:00Z`);
+
+	it('every Stygian season starts on a Wednesday, 42 days after the one before', () => {
+		const starts = Object.entries(seasonDates.stygian).sort((a, b) => utc(a[1]) - utc(b[1]));
+		for (const [version, date] of starts) expect(new Date(utc(date)).getUTCDay(), version).toBe(3);
+		for (let i = 1; i < starts.length; i++)
+			expect((utc(starts[i][1]) - utc(starts[i - 1][1])) / DAY, starts[i][0]).toBe(42);
+	});
+
+	it('every Abyss cycle starts on the 16th', () => {
+		for (const date of Object.keys(seasonDates.abyss)) expect(date.slice(8), date).toBe('16');
 	});
 });
