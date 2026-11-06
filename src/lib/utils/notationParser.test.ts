@@ -2301,8 +2301,10 @@ describe('parseNotation — Mizuki: Dreamdrifter holds the field (2026-10-16)', 
 		const [w] = stances(r);
 		expect(w.end - w.start).toBe(framesOf(10));
 		expect(turn(r).activeEnd).toBe(w.end);
-		// The last applying cloud of a 10s stance is gcsim's launch at 558 → lands 588.
-		expect(Math.max(...clouds(r, w.start))).toBe(588);
+		// The last applying cloud of a 10s stance is gcsim's launch at 546 → lands 576.
+		// ↻ 2026-11-06: gcsim #3208 moved the cloud from 45f to 44f apart (14 per
+		// stance); the 14th lands at 620, inside the 72f ICD timer, and applies nothing.
+		expect(Math.max(...clouds(r, w.start))).toBe(576);
 	});
 
 	it('a trailing ~Xs is the swap: the stance ends there, and no cloud launches after it', () => {

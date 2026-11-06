@@ -54,6 +54,7 @@ export const shredSources: ShredSource[] = [
 	{"owner":"xingqiu","ownerName":"Xingqiu","ownerKind":"character","ability":"Rainbow Upon the Azure Sky","stat":"res","elements":["hydro"],"amount":15,"minCon":2,"caveats":[]},
 	{"owner":"xinyan","ownerName":"Xinyan","ownerKind":"character","ability":"Wildfire Rhythm","stat":"res","elements":["physical"],"amount":15,"minCon":4,"caveats":[]},
 	{"owner":"yae_miko","ownerName":"Yae Miko","ownerKind":"character","ability":"Forbidden Art: Daisesshou","stat":"ignore","scope":"skill","elements":[],"amount":60,"minCon":6,"target":"self","caveats":[]},
+	{"owner":"yumemizuki_mizuki","ownerName":"Mizuki","ownerKind":"character","ability":"Your Echo I Meet in Dreams","stat":"res","elements":["pyro","hydro","anemo","electro","cryo"],"amount":20,"minCon":2,"mod":"mizukiC2Revelation","caveats":[]},
 	{"owner":"zhongli","ownerName":"Zhongli","ownerKind":"character","ability":"Dominus Lapidis","stat":"res","elements":["pyro","hydro","anemo","electro","dendro","cryo","geo","physical"],"amount":20,"minCon":0,"mod":"jadeShield","caveats":[]},
 	{"owner":"deepwood_memories","ownerName":"Deepwood Memories","ownerKind":"artifact","ability":"Deepwood Memories","stat":"res","elements":["dendro"],"amount":30,"minCon":0,"mod":"deepwood_memories","caveats":[]},
 	{"owner":"viridescent_venerer","ownerName":"Viridescent Venerer","ownerKind":"artifact","ability":"Viridescent Venerer","stat":"res","elements":["pyro","hydro","electro","cryo"],"amount":40,"minCon":0,"mod":"viridescent_venerer","caveats":[]}

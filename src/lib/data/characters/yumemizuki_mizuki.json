@@ -171,7 +171,8 @@
 				"↻ AUTHORED 2026-09-16 (T0.5) — and the blocker this note used to state was STALE. It read \"gcsim adds it via AddReactBonusMod which we don't have a primitive for\"; the 7.0 round minted exactly that primitive, because bucket-5 `*ReactionBonus` IS AddReactBonusMod. What was missing was a family-wide `swirlReactionBonus` Stat member, added in the same commit on the `stellarGlimmerReactionBonus` precedent — gcsim returns ONE number from a single switch arm over the four AttackTagSwirl* tags (skill.go:149-154), and the official talent row is likewise one row, \"Elemental Mastery-Based Swirl DMG Increase\". ⛔ It does not replace the per-flavour members: Diona's C6 names Cryo Swirl alone.",
 				"Values: swirlDMG[10] = 0.45 and gcsim computes `swirlDMG * EM * 0.01`, i.e. 0.45% per EM point = ratio 45 (⚓ `ratio` is per 100 STAT UNITS), which is the sidecar's \"0.45% per Point\" row verbatim. The Stellar half is stellarSwirlDMG[10] = 0.045 through the identical formula, so ratio 4.5 — a tenth of the base, authored as its own effect because it is its own Stat and its own reaction. ↻ 2026-10-16: the window follows the stance now (own length 10s, clipped by `whileState: inStance`). It was the base 5s, and the A1 extension (+2.5s ×2 per Swirl) moved the STANCE and not this window.",
 				"⛔ SUPERSEDED 2026-10-16 (Mizuki round) — kept as history: ⛔ Still not modeled here: the cloud runs on the WRONG ICD. gcsim gives it ICDGroupMizukiSkill (72f timer, sequence {1,0,0,0}) and the activation hit ICDTagNone, while all 8 `application[]` entries go through our standard 150f/every-3 cast counter — measured `Mizuki E Q` at C0 applies at f2/138/183/318 where gcsim applies at f2/48/138/228/318. The `IcdWindow` shape exists (summonTick.icdGate, chargedIcdWindow) but has no home on a cast's application[]; schema + engine.",
-				"↻ 2026-10-16 (Mizuki round): THE STANCE HOLDS THE FIELD. Dreamdrifter attacks on its own and takes no Normal Attack (gcsim `ActionReady` refuses everything but swap, dash, burst and the cancelling E), so a rotation has nothing to type between `E` and the swap, and the swap cut a 5–10s stance at 30f. `holdsField` makes the turn-ending swap wait for the stance's LIVE end — A1's Swirls land during the wait and push it — and the player ends it early with a TRAILING `~Xs` (swap there; the Sacrificial double-E opens it for ~2s) or by pressing E again (the sibling `End Dreamdrifter`, `endsStance`). The cloud is authored to the stance's longest life (13 launches, 48 + 45k, to 588f = 10s) and every cloud entry is `whileStance` with gcsim's 30f travel: gcsim re-queues `cloudTask` only while `dreamdrifter-state` is active, so a cloud launched before the stance ends still lands after it, and none launches after. Before this, all eight entries were scheduled at the cast and landed through a swap, while an extended stance went silent after 318f. The ICD needed nothing: `icdGate {timer: 72}` + the activation's `noICD` already gave gcsim's 48/138/228/318 (the ⛔ note above was stale). ⚠️ The frames audit's §4c replays `whileStance` at the BASE 5s, which is what its empty-core capture sees."
+				"↻ 2026-10-16 (Mizuki round): THE STANCE HOLDS THE FIELD. Dreamdrifter attacks on its own and takes no Normal Attack (gcsim `ActionReady` refuses everything but swap, dash, burst and the cancelling E), so a rotation has nothing to type between `E` and the swap, and the swap cut a 5–10s stance at 30f. `holdsField` makes the turn-ending swap wait for the stance's LIVE end — A1's Swirls land during the wait and push it — and the player ends it early with a TRAILING `~Xs` (swap there; the Sacrificial double-E opens it for ~2s) or by pressing E again (the sibling `End Dreamdrifter`, `endsStance`). The cloud is authored to the stance's longest life (13 launches, 48 + 45k, to 588f = 10s) and every cloud entry is `whileStance` with gcsim's 30f travel: gcsim re-queues `cloudTask` only while `dreamdrifter-state` is active, so a cloud launched before the stance ends still lands after it, and none launches after. Before this, all eight entries were scheduled at the cast and landed through a swap, while an extended stance went silent after 318f. The ICD needed nothing: `icdGate {timer: 72}` + the activation's `noICD` already gave gcsim's 48/138/228/318 (the ⛔ note above was stale). ⚠️ The frames audit's §4c replays `whileStance` at the BASE 5s, which is what its empty-core capture sees.",
+				"↻ 2026-11-06 (Revelation round, gcsim #3208): `cloudHitInterval` 45 → 44 (\"Adjust skill tickrate to 44 to align with 14 ticks per skill\"). The cloud is now 14 entries at 48 + 44k (k = 0..13): a launch at 18 + 44k must fall inside the stance, and the longest stance (5s + 2 × 2.5s = 600f) admits k = 13 (launch 590f, landing 620f). The note above that says \"13 launches, 48 + 45k, to 588f\" describes the old cadence. Every other entry still carries `units` under the 72f `icdGate` (44 < 72 < 88)."
 			],
 			"description": "Weaves memories of lovely dreams, entering a Dreamdrifter state where Yumemizuki Mizuki floats above the ground, and dealing 1 instance of AoE Anemo DMG to nearby opponents.\n\nDreamdrifter\n·While in the Dreamdrifter state, Yumemizuki Mizuki will continuously drift forward, dealing AoE Anemo DMG to nearby opponents at regular intervals.\n·During this time, Yumemizuki Mizuki can control her direction of drift, and the pick-up distance of Yumemi Style Special Snacks from the Elemental Burst Anraku Secret Spring Therapy will be increased.\n·Increases the Swirl DMG and Stellar Swirl reaction DMG that nearby party members deal based on Yumemizuki Mizuki's Elemental Mastery.\n·Dreamdrifter will end when Mizuki leaves the field or uses her Elemental Skill again.",
 			"application": [
@@ -185,73 +186,106 @@
 					"frame": 48,
 					"element": "anemo",
 					"units": 1,
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
 				},
 				{
-					"frame": 93,
+					"frame": 92,
 					"element": "anemo",
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
 				},
 				{
-					"frame": 138,
-					"element": "anemo",
-					"units": 1,
-					"whileStance": { "travel": 30 }
-				},
-				{
-					"frame": 183,
-					"element": "anemo",
-					"whileStance": { "travel": 30 }
-				},
-				{
-					"frame": 228,
+					"frame": 136,
 					"element": "anemo",
 					"units": 1,
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
 				},
 				{
-					"frame": 273,
+					"frame": 180,
 					"element": "anemo",
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
 				},
 				{
-					"frame": 318,
-					"element": "anemo",
-					"units": 1,
-					"whileStance": { "travel": 30 }
-				},
-				{
-					"frame": 363,
-					"element": "anemo",
-					"whileStance": { "travel": 30 }
-				},
-				{
-					"frame": 408,
+					"frame": 224,
 					"element": "anemo",
 					"units": 1,
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
 				},
 				{
-					"frame": 453,
+					"frame": 268,
 					"element": "anemo",
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
 				},
 				{
-					"frame": 498,
-					"element": "anemo",
-					"units": 1,
-					"whileStance": { "travel": 30 }
-				},
-				{
-					"frame": 543,
-					"element": "anemo",
-					"whileStance": { "travel": 30 }
-				},
-				{
-					"frame": 588,
+					"frame": 312,
 					"element": "anemo",
 					"units": 1,
-					"whileStance": { "travel": 30 }
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 356,
+					"element": "anemo",
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 400,
+					"element": "anemo",
+					"units": 1,
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 444,
+					"element": "anemo",
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 488,
+					"element": "anemo",
+					"units": 1,
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 532,
+					"element": "anemo",
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 576,
+					"element": "anemo",
+					"units": 1,
+					"whileStance": {
+						"travel": 30
+					}
+				},
+				{
+					"frame": 620,
+					"element": "anemo",
+					"whileStance": {
+						"travel": 30
+					}
 				}
 			],
 			"icdGate": {
@@ -510,9 +544,10 @@
 			"constellationLevel": 2,
 			"_curatorNotes": [
 				"Per-EM damage bonus to teammates' Pyro/Hydro/Cryo/Electro DMG during Dreamdrifter (0.04% per EM, no cap mentioned). Not modellable cleanly — the buff is per-element-type and per-EM-point. Removed prior placeholder 0.04 EM stat buff which made no sense (the 0.04 was the per-EM ratio, not a stat value). Description-only.",
-				"↻ AUTHORED 2026-09-16 (T0.5). The note above (\"Not modellable cleanly — the buff is per-element-type and per-EM-point\") predates the `scaling` BuffValue being used for exactly this shape (Varka A1, Cryo Traveler A4): 0.04% per EM point is ratio 4, since ⚓ `ratio` is per 100 STAT UNITS. Four effects because the constellation names four DMG Bonus stats and each is its own Stat key — they share a trigger and a span, so they pool into one row. The window is the Dreamdrifter stance, which is what \"until the Dreamdrifter state ends\" means: ↻ 2026-10-16 its own length is the stance's longest life (10s) and `whileState: inStance` clips it to the stance as it ran, so the A1 extension, a swap and the E re-press all move it now (it was a flat 5s)."
+				"↻ AUTHORED 2026-09-16 (T0.5). The note above (\"Not modellable cleanly — the buff is per-element-type and per-EM-point\") predates the `scaling` BuffValue being used for exactly this shape (Varka A1, Cryo Traveler A4): 0.04% per EM point is ratio 4, since ⚓ `ratio` is per 100 STAT UNITS. Four effects because the constellation names four DMG Bonus stats and each is its own Stat key — they share a trigger and a span, so they pool into one row. The window is the Dreamdrifter stance, which is what \"until the Dreamdrifter state ends\" means: ↻ 2026-10-16 its own length is the stance's longest life (10s) and `whileState: inStance` clips it to the stance as it ran, so the A1 extension, a swap and the E re-press all move it now (it was a flat 5s).",
+				"Witch's Revelation (Fandom |buff, buffType Revelation; gcsim #3208 `cons.go` c2ShredTask): while Dreamdrifter lasts, nearby opponents take −20% Pyro, Hydro, Cryo, Electro and Anemo RES. gcsim re-applies five 1s modifiers every 0.7s while `dreamdrifter-state` is active, so the debuff is co-extensive with the stance (plus up to 1s of tail). Authored as five `onState: inStance` shreds sharing one `mod`, the Mavuika pattern: the span IS the state's window, extensions and early ends included. Assumes the talent is unlocked, like the rest of her Revelation."
 			],
-			"description": "When Yumemizuki Mizuki enters the Dreamdrifter state, every Elemental Mastery point she has will increase all nearby party members' Pyro, Hydro, Cryo, and Electro DMG Bonuses by 0.04% until the Dreamdrifter state ends.",
+			"description": "When Yumemizuki Mizuki enters the Dreamdrifter state, every Elemental Mastery point she has will increase all nearby party members' Pyro, Hydro, Cryo, and Electro DMG Bonuses by 0.04% until the Dreamdrifter state ends.\nAdditionally, while Yumemizuki Mizuki is in the Dreamdrifter state, the Pyro RES, Hydro RES, Cryo RES, Electro RES, and Anemo RES of nearby opponents are lowered by 20%.",
 			"effects": [
 				{
 					"type": "buff",
@@ -589,6 +624,61 @@
 						"ratio": 4
 					},
 					"snapshottable": false
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onState",
+						"state": "inStance"
+					},
+					"element": "pyro",
+					"value": -20,
+					"mod": "mizukiC2Revelation"
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onState",
+						"state": "inStance"
+					},
+					"element": "hydro",
+					"value": -20,
+					"mod": "mizukiC2Revelation"
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onState",
+						"state": "inStance"
+					},
+					"element": "cryo",
+					"value": -20,
+					"mod": "mizukiC2Revelation"
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onState",
+						"state": "inStance"
+					},
+					"element": "electro",
+					"value": -20,
+					"mod": "mizukiC2Revelation"
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onState",
+						"state": "inStance"
+					},
+					"element": "anemo",
+					"value": -20,
+					"mod": "mizukiC2Revelation"
 				}
 			]
 		},
@@ -605,9 +695,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Snack pickup grants both heal and damage + 5 Energy to Mizuki, max 4 procs per Q. Energy effect would over-fire; depends on snack-pickup events we don't model. Description-only."
+				"Snack pickup grants both heal and damage + 5 Energy to Mizuki, max 4 procs per Q. Energy effect would over-fire; depends on snack-pickup events we don't model. Description-only.",
+				"↻ 2026-11-06 (Revelation round, gcsim #3208 `c4RevelationHeal`): the Revelation adds a heal of 266% EM to the lowest-HP party member other than Mizuki on each snack pickup. Still description-only for the same reason as the energy: it rides snack-pickup events we don't model."
 			],
-			"description": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal, and will restore 5 Energy to Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration.",
+			"description": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal. It will also heal a nearby party member with lower HP for 266% of Yumemizuki Mizuki's Elemental Mastery, as well as regenerate 5 Energy for Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration.",
 			"notModeled": {
 				"reason": "The Rotation Planner doesn't model picking up Yumemi Style Special Snacks, so their healing, damage and Energy aren't shown."
 			}
@@ -626,12 +717,46 @@
 			"constellationLevel": 6,
 			"_curatorNotes": [
 				"Swirl can crit during Dreamdrifter: CR fixed 30%, CDmg fixed 100%. Schema doesn't have per-reaction crit overrides; Swirl in our model isn't subject to crit at all. Description-only.",
-				"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): gained a second clause — Stellar Swirl DMG from those characters also gets +10% CRIT Rate and +20% CRIT DMG. Still description-only for the same reason as the first clause: the schema has no per-reaction crit override and Swirl is not subject to crit in our model at all."
+				"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): gained a second clause — Stellar Swirl DMG from those characters also gets +10% CRIT Rate and +20% CRIT DMG. Still description-only for the same reason as the first clause: the schema has no per-reaction crit override and Swirl is not subject to crit in our model at all.",
+				"↻ 2026-11-06 (Revelation round): the Revelation version (Fandom |buff) adds a self CRIT clause — 0.04% CRIT Rate and 0.16% CRIT DMG per EM point above 500, up to 20% / 80% — authored as two passive scaling buffs (`offset: 500`, `cap`). ⚠️ gcsim #3208 `c6RevelationUpdate` writes `max(excessEM*0.0016, 0.8)` and `max(excessEM*0.0004, 0.2)`, which makes the caps FLOORS (a C6 Mizuki at 0 excess EM gets the full 20% / 80%). That contradicts the kit text and reads as a min/max slip, not in-game testing, so we follow the text. The Stellar Swirl +10% / +20% clause the note above records is absent from the current wiki text (both |description and |buff) while gcsim still has it (`c6StellarCR`/`c6StellarCD`); unchanged here, since it was description-only anyway."
 			],
-			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl reaction DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%. Any Stellar Swirl reaction DMG dealt by these characters will also have its CRIT Rate and CRIT DMG increased by 10% and 20%, respectively.",
-			"notModeled": {
-				"reason": "The Rotation Planner doesn't draw damage amounts, and this only lets Swirl damage land critical hits."
-			}
+			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%.\nEvery point of Elemental Mastery Yumemizuki Mizuki has in excess of 500 increases her CRIT Rate by 0.04% and her CRIT DMG by 0.16%. Yumemizuki Mizuki's CRIT Rate and CRIT DMG can be increased by up to 20% and 80% in this way, respectively.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "critRate",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 4,
+						"offset": 500,
+						"cap": 20
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "critDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 16,
+						"offset": 500,
+						"cap": 80
+					},
+					"snapshottable": false
+				}
+			]
 		}
 	],
 	"meta": {

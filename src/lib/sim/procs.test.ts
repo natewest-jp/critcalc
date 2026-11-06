@@ -497,3 +497,34 @@ describe('onHit damage procs — the coordinated attack that answers damage', ()
 		expect(outside).toBe(1);
 	});
 });
+
+describe("Diona — Choice Treasures (Witch's Revelation), end to end", () => {
+	// gcsim #3254 `diona/stellar.go`: within 20 s of the skill, a party
+	// Superconduct, Stellar-Conduct, Cryo Swirl or Stellar Swirl fires three Icy
+	// Paws (1U Cryo each, ICDTagElementalArt), once per 3.5 s.
+	it('applies nothing beyond her own paws when no reaction happens', () => {
+		expect(appsOf('Diona E', 'diona')).toEqual([[0.17, 1]]);
+		// The burst is not the host: only the skill arms the listener.
+		expect(appsOf('Chongyun E > Beidou E', 'diona')).toEqual([]);
+	});
+
+	it('fires off a Superconduct she did not cause, and only one of the three paws applies', () => {
+		// Beidou's Electro on Diona's Cryo. The three paws land 10/11/12 frames after
+		// the reaction; the standard ICD lets the first through.
+		expect(appsOf('Diona E > Beidou E', 'diona')).toEqual([
+			[0.17, 1],
+			[0.95, 1]
+		]);
+		// The Hold variant restates its effects, so it carries the proc too.
+		expect(appsOf('Diona hE > Beidou E', 'diona').at(-1)).toEqual([1.17, 1]);
+	});
+
+	it('⚓ is armed for 20 s from the cast, and not after', () => {
+		// Chongyun supplies the Cryo so the reaction does not depend on Diona's aura.
+		expect(appsOf('Diona E ~18s > Chongyun E > Beidou E', 'diona')).toEqual([
+			[0.17, 1],
+			[19.9, 1]
+		]);
+		expect(appsOf('Diona E ~21s > Chongyun E > Beidou E', 'diona')).toEqual([[0.17, 1]]);
+	});
+});

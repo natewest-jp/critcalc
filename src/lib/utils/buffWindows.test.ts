@@ -1558,3 +1558,122 @@ describe('an onHit buff on a swing keeps its own procCooldown', () => {
 		expect(fromSwings).toHaveLength(1);
 	});
 });
+
+describe("Diona C6 under the Witch's Revelation: the Radiance block splits by enabler", () => {
+	// gcsim #3254 `diona/cons.go` c6: Radiance: Stellar-Conduct gives Superconduct +
+	// Stellar-Conduct +40%; Radiance: Stellar Swirl gives Cryo Swirl + Stellar Swirl
+	// +40%. Vesna enables Stellar Swirl alone; Sandrone enables both.
+	const modules = import.meta.glob<{ default: CharacterData }>('$lib/data/characters/*.json', {
+		eager: true
+	});
+	const byName = new Map(Object.values(modules).map((m) => [m.default.name, m.default]));
+	const lookup = (n: string) => byName.get(n) ?? null;
+	const reactionBonuses = (partner: string) => {
+		const team = ['Diona', partner].map(lookup);
+		const r = parseNotation(`Diona Q > ${partner} E`, lookup, 8, { diona: 6 }, {}, team);
+		return [
+			...new Set(
+				r.windows.flatMap((w) =>
+					w.kind === 'buff' && w.characterId === 'diona'
+						? w.effects.flatMap((fx) =>
+								fx.type === 'buff' && fx.stat.endsWith('ReactionBonus') ? [fx.stat] : []
+							)
+						: []
+				)
+			)
+		].sort();
+	};
+
+	it('a Stellar Swirl enabler draws the Cryo Swirl and Stellar Swirl lines only', () => {
+		expect(reactionBonuses('Vesna')).toEqual([
+			'cryoSwirlReactionBonus',
+			'stellarSwirlReactionBonus'
+		]);
+	});
+
+	it('an enabler of both draws all four', () => {
+		expect(reactionBonuses('Sandrone')).toEqual([
+			'cryoSwirlReactionBonus',
+			'stellarConductReactionBonus',
+			'stellarSwirlReactionBonus',
+			'superConductReactionBonus'
+		]);
+	});
+});
+
+describe("Mizuki C2 under the Witch's Revelation: the RES shred is the stance's own span", () => {
+	// gcsim #3208 `mizuki/cons.go` c2ShredTask: −20% Pyro/Hydro/Cryo/Electro/Anemo
+	// RES on nearby opponents, re-applied every 0.7s while Dreamdrifter is active.
+	const modules = import.meta.glob<{ default: CharacterData }>('$lib/data/characters/*.json', {
+		eager: true
+	});
+	const byName = new Map(Object.values(modules).map((m) => [m.default.name, m.default]));
+	const lookup = (n: string) => byName.get(n) ?? null;
+	const MZ = 'yumemizuki_mizuki';
+	const parse = (n: string, c: number) => parseNotation(n, lookup, 8, { [MZ]: c });
+	const shreds = (r: ReturnType<typeof parse>) =>
+		r.windows.filter(
+			(w): w is Extract<typeof w, { kind: 'buff' }> =>
+				w.kind === 'buff' &&
+				w.characterId === MZ &&
+				w.debuff === true &&
+				w.effects.some((fx) => fx.type === 'resShred')
+		);
+	const stance = (r: ReturnType<typeof parse>) =>
+		r.windows.find((w) => w.kind === 'state' && w.characterId === MZ && w.name === 'inStance')!;
+
+	it('follows the stance through its A1 extensions, as one bar of five elements', () => {
+		// Diluc's Pyro gives the cloud Swirls to extend on: the stance runs 10s.
+		const r = parse('Diluc E > Yumemizuki Mizuki E > Diluc E', 2);
+		const [w] = shreds(r);
+		const s = stance(r);
+		expect(shreds(r)).toHaveLength(1);
+		expect([w.start, w.end]).toEqual([s.start, s.end]);
+		expect(s.end - s.start).toBe(600);
+		expect(w.effects.flatMap((fx) => (fx.type === 'resShred' ? [fx.element] : [])).sort()).toEqual([
+			'anemo',
+			'cryo',
+			'electro',
+			'hydro',
+			'pyro'
+		]);
+	});
+
+	it('ends where the player ends the stance, and is absent below C2', () => {
+		const r = parse('Diluc E > Yumemizuki Mizuki E ~2s > Diluc E', 2);
+		expect(shreds(r)[0].end).toBe(stance(r).end);
+		expect(shreds(parse('Diluc E > Yumemizuki Mizuki E > Diluc E', 1))).toHaveLength(0);
+	});
+});
+
+describe('Nicole A1 Methexis: the observation upgrades teammates, never Nicole', () => {
+	// Kit: "continuously observe the OTHER current active party members"; gcsim
+	// #3259 `nicole/asc.go` a1Init returns when the incoming character is Nicole.
+	// (Nicole's own Guidance comes from A4 Philokalia, a separate self effect.)
+	const modules = import.meta.glob<{ default: CharacterData }>('$lib/data/characters/*.json', {
+		eager: true
+	});
+	const byName = new Map(Object.values(modules).map((m) => [m.default.name, m.default]));
+	const lookup = (n: string) => byName.get(n) ?? null;
+	const guidanceReceivers = (n: string) =>
+		[
+			...new Set(
+				parseNotation(n, lookup, 8).windows.flatMap((w) =>
+					w.kind === 'buff' &&
+					w.characterId === 'nicole' &&
+					w.effects.some(
+						(fx) =>
+							fx.type === 'buff' && fx.target === 'active' && fx.stat === 'atk' && fx.value === 300
+					)
+						? [w.receiverId]
+						: []
+				)
+			)
+		].sort();
+
+	it('reaches the teammate after 3s on field, and not Nicole while she stays out', () => {
+		expect(guidanceReceivers('Nicole E N3 ~4s > Bennett N3 ~4s > Nicole N3 ~4s')).toEqual([
+			'bennett'
+		]);
+	});
+});
