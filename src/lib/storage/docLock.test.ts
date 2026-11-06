@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	exclusively,
 	holdDocument,
@@ -148,6 +148,11 @@ describe('waiting for a document', () => {
 });
 
 describe('without Web Locks (an insecure context, Safari before 15.4)', () => {
+	// Passing `undefined` for `locks` falls back to the default parameter,
+	// which reads `navigator.locks`, and Node 24+ has one. Take it away.
+	beforeEach(() => vi.stubGlobal('navigator', {}));
+	afterEach(() => vi.unstubAllGlobals());
+
 	it('every document is held here, as one tab would', async () => {
 		expect(await holdDocument('d1', {}, undefined)).not.toBeNull();
 		expect(await holdDocument('d1', {}, undefined)).not.toBeNull();
