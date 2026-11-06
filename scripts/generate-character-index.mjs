@@ -7,7 +7,7 @@
  * (CharacterIndexEntry); full payloads are code-split and lazy-loaded via
  * src/lib/data/characterData.ts.
  *
- * Imports TypeScript modules directly (native type stripping — Node 24,
+ * Imports TypeScript modules directly (native type stripping — Node 26,
  * pinned by .nvmrc); the imported modules must stay free of runtime imports.
  *
  * Run after the (external) character generator updates the JSONs:
