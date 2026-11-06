@@ -49,34 +49,73 @@ export function dispatchOnCastExtensions(
 	// settling), so presence alone would let a cast long after the stance
 	// died retroactively extend the dead window. Mirrors the summon path's
 	// `endTime > castTime` check.
-	const st = ctx.getCharState(charId).stance;
-	if (!st || st.end <= castTime) return;
-	const exts = getDurationExtensions(st.ownerAbility);
-	if (!exts || exts.length === 0) return;
-	const counts = st.extCounts;
-	const lastFires = st.extLastFire;
-	for (let idx = 0; idx < exts.length; idx++) {
-		const ext = exts[idx];
-		if (ext.trigger.type !== 'onCast') continue;
-		if (ext.trigger.ability !== undefined && ext.trigger.ability !== castType) continue;
-		const condResult = evalCondition(
-			ext.conditions,
-			DEFAULT_ASCENSION,
-			preStates,
-			constellation,
-			chainIdx,
-			stacks
-		);
-		if (condResult !== true) continue;
-		const used = counts.get(idx) ?? 0;
-		if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
-		const lastFire = lastFires.get(idx) ?? -Infinity;
-		if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
-			continue;
-		const delta = framesOf(ext.delta);
-		extendStance(ctx.getCharState(charId), st, delta);
-		counts.set(idx, used + 1);
+	/** The entries of `exts` this cast fires, each with its index — the gates
+	 *  both windows share (trigger, condition, cap, cooldown). The caller
+	 *  applies the fire and records it. */
+	const firing = (
+		exts: DurationExtension[] | undefined,
+		counts: Map<number, number>,
+		lastFires: Map<number, number>
+	): Array<[DurationExtension, number]> => {
+		const out: Array<[DurationExtension, number]> = [];
+		for (let idx = 0; idx < (exts?.length ?? 0); idx++) {
+			const ext = exts![idx];
+			if (ext.trigger.type !== 'onCast') continue;
+			if (ext.trigger.ability !== undefined && ext.trigger.ability !== castType) continue;
+			const condResult = evalCondition(
+				ext.conditions,
+				DEFAULT_ASCENSION,
+				preStates,
+				constellation,
+				chainIdx,
+				stacks
+			);
+			if (condResult !== true) continue;
+			const used = counts.get(idx) ?? 0;
+			if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
+			const lastFire = lastFires.get(idx) ?? -Infinity;
+			if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
+				continue;
+			out.push([ext, idx]);
+		}
+		return out;
+	};
+	const record = (counts: Map<number, number>, lastFires: Map<number, number>, idx: number) => {
+		counts.set(idx, (counts.get(idx) ?? 0) + 1);
 		lastFires.set(idx, castTime);
+	};
+
+	const cs = ctx.getCharState(charId);
+	const st = cs.stance;
+	if (st && st.end > castTime) {
+		for (const [ext, idx] of firing(
+			getDurationExtensions(st.ownerAbility),
+			st.extCounts,
+			st.extLastFire
+		)) {
+			// Lint D.33b keeps `refreshTo` off a stance; nothing here reads it.
+			if (ext.delta === undefined) continue;
+			extendStance(cs, st, framesOf(ext.delta));
+			record(st.extCounts, st.extLastFire, idx);
+		}
+	}
+
+	// ⚓ The summon window (Kokomi A1): an onCast `refreshTo` on the character's
+	// live extension-bearing summon. ⛔ Never the cast that spawned it — that
+	// cast registered the record a moment ago and is not a later event.
+	const so = cs.summonExt;
+	if (so && so.castRef.time !== castTime) {
+		for (const [ext, idx] of firing(so.extensions, so.counts, so.lastFires)) {
+			if (ext.refreshTo === undefined) continue;
+			const at = castTime + (ext.refreshDelay ?? 0);
+			// Live AT the refresh instant, the way gcsim asks `Status.Duration > 0`
+			// when the delayed task runs: spawned, and not yet expired.
+			if (so.spawnAt > at || so.spawnAt + so.ownerUptime <= at) continue;
+			const uptime = at + framesOf(ext.refreshTo) - so.spawnAt;
+			so.endTime += uptime - so.ownerUptime;
+			so.ownerUptime = uptime;
+			record(so.counts, so.lastFires, idx);
+		}
 	}
 }
 
@@ -143,6 +182,8 @@ export function dispatchOnReactionExtensions(
 				continue;
 			// extendWindow bumps both the gating end and the owner-bar uptime
 			// accumulator (P4 — the owner bar is stamped at finalize, not here).
+			// Lint D.33b keeps `refreshTo` off onReaction; nothing here reads it.
+			if (ext.delta === undefined) continue;
 			extendWindow(framesOf(ext.delta));
 			counts.set(idx, used + 1);
 			lastFires.set(idx, castTime);

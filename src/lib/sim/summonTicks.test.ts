@@ -420,3 +420,46 @@ describe("Nilou's Tranquility Aura — applies, never hits (2026-10-17)", () => 
 		expect((run(1).aura as { ticks?: number[] }).ticks).toBeUndefined();
 	});
 });
+
+describe('Kokomi A1 Tamakushi Casket: the burst refreshes a live Bake-Kurage (2026-11-06)', () => {
+	// gcsim `kokomi/burst.go` queues `a1` 46f after the burst; `asc.go` a1 SETS the
+	// jellyfish's status to 12 s remaining if it is still out. The tick task keeps
+	// its phase. gcsim (E at f1, Q at f264): 7 ticks without the burst, 9 with it.
+	const KK = 'sangonomiya_kokomi';
+	const run = (n: string) => {
+		const r = parse(n);
+		const jelly = r.windows.find((w) => w.kind === 'summon' && w.characterId === KK)!;
+		const ticks = r.applications
+			.filter((a) => a.characterId === KK && a.castKind === 'skill')
+			.map((a) => a.time);
+		return { end: jelly.end, ticks };
+	};
+	/** The markers the lane draws (finalize's walk), as instants. */
+	const markers = (n: string) =>
+		(
+			parse(n).windows.find((w) => w.kind === 'summon' && w.characterId === KK) as {
+				ticks?: { time: number }[] | number[];
+			}
+		).ticks?.map((t) => (typeof t === 'number' ? t : t.time));
+
+	it('without a burst the jellyfish lives its 12.5 s and ticks 7 times', () => {
+		expect(run('Kokomi E')).toEqual({ end: 774, ticks: [24, 144, 264, 384, 504, 624, 744] });
+	});
+
+	it('⚓ a burst while it is out sets 12 s remaining at Q + 46f, and the 2 s phase holds', () => {
+		// Q at 263f → refresh at 309f → end 309 + 720 = 1029f; ticks go on at 864, 984.
+		expect(run('Kokomi E ~3.37s Q')).toEqual({
+			end: 1029,
+			ticks: [24, 144, 264, 384, 504, 624, 744, 864, 984]
+		});
+	});
+
+	it("⚓⚓ the lane's markers and the gauge's ticks read one answer", () => {
+		for (const n of ['Kokomi E', 'Kokomi E ~3.37s Q']) expect(markers(n)).toEqual(run(n).ticks);
+	});
+
+	it('a burst after it has gone, or whose 46f lands after its end, refreshes nothing', () => {
+		expect(run('Kokomi E ~11.5s Q').end).toBe(774);
+		expect(run('Kokomi E ~14s Q').end).toBe(774);
+	});
+});

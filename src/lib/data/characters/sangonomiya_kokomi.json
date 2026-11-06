@@ -152,6 +152,16 @@
 							},
 							"attribution": "C2: The Clouds Like Waves Rippling"
 						}
+					],
+					"durationExtensions": [
+						{
+							"trigger": {
+								"type": "onCast",
+								"ability": "burst"
+							},
+							"refreshTo": 12,
+							"refreshDelay": 46
+						}
 					]
 				}
 			],
@@ -235,7 +245,12 @@
 			"id": "sangonomiya_kokomi__passive__tamakushi_casket",
 			"name": "Tamakushi Casket",
 			"abilityType": "passive",
-			"description": "If Sangonomiya Kokomi's own Bake-Kurage is on the field when she uses Nereid's Ascension, the Bake-Kurage's duration will be refreshed."
+			"description": "If Sangonomiya Kokomi's own Bake-Kurage is on the field when she uses Nereid's Ascension, the Bake-Kurage's duration will be refreshed.",
+			"modeledBy": "sangonomiya_kokomi__skill__kurages_oath",
+			"_curatorNotes": [
+				"A1 Tamakushi Casket, authored 2026-11-06 (Kokomi round; player report 2026-10-27) as a `refreshTo` duration extension on the Bake-Kurage. gcsim `kokomi/burst.go` queues `a1` 46 frames after the burst; `asc.go` a1: if `kokomiskill` is still live it is SET to 12*60+1 frames remaining. Ours: `{ trigger: onCast burst, refreshTo: 12, refreshDelay: 46 }`, so the jellyfish lives 12 s past Q + 46f. gcsim's +1 frame exists to dodge a same-frame expiry against the tick task and is not carried. The tick task keeps its 2 s phase (it re-checks the status each tick, `skillTickTask`), and so do we: the refresh moves the window's end and nothing else. A burst after the jellyfish is gone refreshes nothing.",
+				"The same report's C4 ATK SPD stays unmodelled (no attack speed anywhere; On hold in docs/todo.md)."
+			]
 		},
 		{
 			"id": "sangonomiya_kokomi__passive__song_of_pearls",
