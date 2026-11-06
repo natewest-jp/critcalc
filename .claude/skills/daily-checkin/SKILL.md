@@ -98,7 +98,14 @@ does not mean nothing moved — mechanics live outside the frames.
 
 ### 1d. Endgame: lunaris.moe
 
-Compare what lunaris has against `src/lib/data/endgame/season-dates.json`:
+First work out what the calendar expects (`docs/library/game/release-calendar.md`:
+patches on Wednesdays every six weeks, Stygian the Wednesday after, the Abyss
+on the 16th, Imaginarium Theater on the 1st). Say in the report which version
+is live and when the next Stygian season, Abyss cycle and Theater season are
+due. A line in `season-dates.json` that is due and missing is a finding; one
+for a date still ahead waits.
+
+Then compare what lunaris has against `src/lib/data/endgame/season-dates.json`:
 
 - **Abyss** resets on the 16th of each month. The newest cycles on lunaris,
   from the newest data version that serves a list:
@@ -110,7 +117,7 @@ Compare what lunaris has against `src/lib/data/endgame/season-dates.json`:
   arrives FIRST as a beta record with only `chsBuffName` and beta dates;
   ⏭ wait until `enBuffName` is filled, then add `"<date>": "<English name>"`
   to `abyss` in `season-dates.json` and run `node scripts/fetch-endgame.mjs`.
-- **Stygian** seasons start on each patch day (six weeks). A season ships only
+- **Stygian** seasons start the Wednesday after each patch and run six weeks. A season ships only
   once `season-dates.json` names its version — ⚓ no leaks: lunaris tracks
   BETA builds. Add the line from stygian.moe's live date, then run the fetcher
   and `node scripts/build-endgame-art.mjs`.
@@ -125,7 +132,8 @@ work around the guard.
 npm view genshin-db version
 ```
 
-Compare with `genshinDb` in state. A new version is a FLAG, never an upgrade
+Compare with `genshinDb` in state. Say whether any character it adds belongs to a
+version that is live yet (the calendar above). A new version is a FLAG, never an upgrade
 here — ⚠️ an upgrade is not additive (CLAUDE.md: run
 `audit-genshin-db-text.mjs` and re-read numbers on any renamed trigger).
 
