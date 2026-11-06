@@ -76,7 +76,8 @@
 				"⚠️ NOT MODELED: \"Tapping the Elemental Skill again within 6s after using it changes the Detection Core's state. The state can be changed in this way every 1.5s.\" In game the second tap is a state switch on the standing Core, not a cast (the skill is on its 18s cooldown). The planner has no shape for a re-press that toggles a summon's form, so the form is the one the cast chose for the Core's whole life. Every effect that reads the form (A1 Steady State, C2 EM) keys off the cast's token (`E` vs `hE`) for that reason.",
 				"⚠️ The Core's form is NOT a State: a `steadyCore`/`overloadedCore` pair (opened by each summon's `opensState`) would let A1/C1/C2 bind with `whileState` and end exactly with the Core, but adding a State member is a shared-schema edit (the union + characterLint STATES) outside this pass. Until then the form-bound effects are 25s windows from the cast, which overrun by up to 7s when a recast of the OTHER form replaces the Core early (18s CD < 25s life).",
 				"No frames and no `application[]` (frameless, FRAMELESS_EXEMPT): the cast applies Electro provisionally at the press. Tap 163.3% / Hold 233.3% ATK at T10."
-			]
+			],
+			"caveat": "A second tap within 6s switches the Detection Core's state in game. The timeline keeps the state the cast chose."
 		},
 		{
 			"id": "mitya__burst__analysis_gradient_theory",
@@ -135,7 +136,10 @@
 			"_curatorNotes": [
 				"NOT authored, both halves. (1) Beacon duration 6s → 10s only moves the untracked Beacon count. (2) Self CRIT Rate +5% for 15s per Beacon CREATED, max 4 stacks: the only deterministic creator is the burst (3 Beacons at once, +1 from the skill at C1), and the text does not say whether three Beacons created at once are three stacks or one, nor whether stacks keep separate timers. Authoring +5% would under-print what is probably +15%, and +15% would be an inference. The rest of the stacks come from Stellar-Conduct reactions on an unstated cadence. Self-only, so it moves no team-facing capability. ⏭ Author once a source (gcsim or an in-game check) settles the per-creation count.",
 				"Source: Fandom \"Explosive Reagent: Safe Limits Exceeded\" (2026-11-06)."
-			]
+			],
+			"notModeled": {
+				"reason": "The planner doesn't track Gradient Beacons, and this raises Mitya's CRIT Rate for each one created."
+			}
 		},
 		{
 			"id": "mitya__passive__stellar_jubilee_topsecret_protocol",
@@ -166,7 +170,8 @@
 				"⚠️⚠️ FOR THE ORCHESTRATOR — the Polestar Field engine (`src/lib/sim/fields.ts`) draws a 7s Starlight Prism on every party Stellar-Conduct. With Mitya in the party there are NO Prisms: each Stellar-Conduct creates Gradient Beacons instead (1 every 1.5s for 3s; 6s at A1 Overloaded), each Beacon lives 6s (10s with A4), every creation resets all of them, they follow the active character, and they make \"an even larger\" Polestar Field. So the field's span in a Mitya party runs roughly from the reaction to last creation + Beacon life (≈13s at A4 off one reaction), not 7s, and whether the Prism's hit ledger (the 20–40% Cryo/Electro bonus, −40% Physical RES) still runs without a Prism is unstated. Not authored here (an engine change, shared file); see the report.",
 				"Radiance: Stellar-Conduct (inside a Polestar Field) is named but gates nothing in his kit, so there is nothing to bind to it.",
 				"Sources: genshin-db 5.2.15 passive3 (description kept verbatim); Fandom \"Top-Secret Protocol\" (2026-11-06) — ⚠️ the Fandom text OMITS the sentence \"Triggering another Stellar-Conduct reaction will refresh the duration of the aforementioned effects\", which genshin-db and Ambr both carry; the game text wins."
-			]
+			],
+			"caveat": "With Mitya in the party, Stellar-Conduct creates Gradient Beacons instead of a Starlight Prism. The Polestar Field span shown is the Prism's 7s."
 		}
 	],
 	"constellations": [
@@ -306,7 +311,8 @@
 				"RES −20% Cryo and Electro on \"opponents within the Polestar Field\" while the Detection Core is present: 25s from either cast, gated on the team being able to make the field at all — a Stellar-Conduct needs a Cryo teammate (he is Electro), the house Radiance idiom (docs/library/game/stellar-reactions.md) with the enabler leaf kept for the Team Builder. The field itself is assumed entered (⚓ Nate, 2026-08-31). Two effects, one per element, as Odette C2.",
 				"EM split by the Core's form, read off the cast token since the form has no State (skill notes): Steady State (tap `E`) +123 to the party, Overloaded (`hE`) +234 to the active character. The text says \"if the Detection Core created is\", i.e. bound to the Core, so both are its 25s. ⚠️ A re-tap within 6s switches the form in game and is not modeled.",
 				"Source: Fandom \"The Matter That Slumbers Beyond Inertness\" (2026-11-06)."
-			]
+			],
+			"caveat": "After a tapped Elemental Skill, the team Elemental Mastery bar shows the per-Beacon bonus; in game this +123 applies on top."
 		},
 		{
 			"id": "mitya__constellation__the_knotted_string_of_invariant_topology",
@@ -325,7 +331,10 @@
 			"description": "**Detection Cores** created by Mitya himself deals 1 instance of AoE Electro DMG equal to 300% of Mitya's Elemental Mastery to nearby opponents for every 5 **Gradient Beacons** consumed while it is on the field. This DMG is considered Stellar-Conduct reaction DMG.",
 			"_curatorNotes": [
 				"NOT modeled: 300% EM Stellar-Conduct DMG from the Core per 5 Beacons consumed — a damage instance keyed to the untracked Beacon count, and damage magnitude. Source: Fandom \"The Isotopes Born of Decay\" (2026-11-06)."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this is extra damage from the Detection Core."
+			}
 		},
 		{
 			"id": "mitya__constellation__the_periodic_law_that_orders_all",

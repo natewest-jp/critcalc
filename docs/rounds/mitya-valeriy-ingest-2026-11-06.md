@@ -38,7 +38,9 @@ Both stubs came from `ingest-character.mjs` and are frameless: gcsim has no sour
 4. **No `stellarConductFlatDmg` stat.** It would unlock Valeriy's Radiance branch, and Cyno's Starsame A4 too. A schema call.
 5. The Detection Core's form is not a planner state, so form-dependent effects key off the cast token, and a recast of the other form can leave a 25s window up to about 7s too long.
 
-## 4. Copy for Nate (proposals, not landed unless marked)
+## 4. Copy for Nate
+
+✅ All eight approved by Nate on 2026-11-06 and landed. Valeriy's two normal-attack lines share one `caveat` (a host carries one string), which puts it at 307 characters, over the 280 soft cap (`caveat-lint.mjs` warns; the hard cap is 400).
 
 1. **Landed, needs approval:** Mitya A1's unknown-value tooltip reads "+30 per Gradient Beacon Mitya holds, up to +120 (+150 at C1)". (An `unknown` value must carry a description.)
 2. Mitya skill caveat: "A second tap within 6s switches the Detection Core's state in game. The timeline keeps the state the cast chose."

@@ -289,7 +289,8 @@
 				"THE RADIANCE GATE is the stellar-reactions.md idiom for an Electro holder (Alyosha's form): `teamEnablesReaction stellarConduct` + a Cryo teammate. The authored branch is `not(Radiance)`, so it goes dark in a Conduct team, which is correct while its partner is unauthored rather than drawing the wrong number. `inPolestarField` deliberately NOT used: the buff passes do not resolve it (only tick series, onHit procs/grants and infusion do), so both it and its `not` would come back null and draw.",
 				"NOT MODELLED: \"Within 0.8s after using the Elemental Skill Active Defense: Bastion Charge or the Elemental Burst Focused Fire: Lightning Salvo, if Valeriy has at least 40 Impact Momentum, the next Normal Attack he uses will be converted to the special Charged Attack\" (N11370001). It needs a 0.8s post-cast state, and a new `State` member is schema. As authored, `E N1` draws an ordinary swing and no Offensive Directive; the bombardment is written `C`.",
 				"Description: genshin-db's trailing `****` (an empty `{LINK#N11370002}{/LINK}` rendered as bold markers) stripped from the description and the plunging section; the wiki's text ends there too."
-			]
+			],
+			"caveat": "Shown for the full 18s at its base amount; in game each Electro hit spends one of 15 stacks, only Electro DMG gets the bonus, and the amount grows with the Impact Momentum spent. A Normal Attack within 0.8s of the skill or burst becomes Direct-Fire Mortar in game; write it as C to draw Offensive Directive."
 		},
 		{
 			"id": "valeriy__skill__active_defense_bastion_charge",
@@ -375,7 +376,8 @@
 				"Two more gaps the same effect would hit after that fix: (1) \"He can gain up to 80 Impact Momentum in this way after each use of his Elemental Burst\" (C4: 104) is a per-cast grant cap, and `gainStacks` has no such field (`max` caps the pool, which is 100); (2) \"ANOTHER nearby active character\": `holderStatesAt` publishes no `offField`, so `source: 'active'` would also count Valeriy's own Electro skill and bombardment hits during the shells. `source: 'others'` is worse: it admits entity ticks (Oz), which are not the active character.",
 				"⚠️ Workaround checked and ruled out: a `{impactMomentum:N}` notation assertion does not reach a rotation-scoped key (`Valeriy {impactMomentum:100} C` draws nothing), so a player cannot assert the A1 Momentum by hand either.",
 				"Wiki wording differs trivially from genshin-db (\"an attack whose Elemental Type is Electro\"); genshin-db's kept."
-			]
+			],
+			"caveat": "Impact Momentum from the burst isn't counted, so a Charged Attack after it only becomes Direct-Fire Mortar here if the skill supplied the Momentum."
 		},
 		{
 			"id": "valeriy__passive__into_the_breach",
