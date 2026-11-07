@@ -246,7 +246,15 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 
 	// 4. Shield windows.
 	for (const rec of ctx.shieldWindowRecs) {
+		// ⚓ A shield that takes its cast's absorbed element reads that cast's
+		// lock (`cast#id`, the key `run.ts` polls under) — settled by now.
+		const lock = rec.takesAbsorbed ? ctx.absorbLocks.get(`cast#${rec.sourceCastId}`) : undefined;
+		const absorbed =
+			lock?.element !== undefined && lock.at !== undefined && lock.at < rec.end
+				? { time: Math.max(lock.at, rec.start), element: lock.element }
+				: undefined;
 		windows.push({
+			...(absorbed ? { absorbed } : {}),
 			kind: 'shield',
 			characterId: rec.characterId,
 			source: rec.source,

@@ -4752,6 +4752,17 @@ describe('parseNotation — Lan Yan: the A1 absorption reaches the rings (2026-1
 			.applications.filter((a) => a.characterId === 'lan_yan')
 			.map((a) => `${a.time} ${a.element}`);
 
+	it('the shield takes the element from the lock, like an absorbing summon', () => {
+		const shield = (src: string) =>
+			parseNotation(src, lookup, 8, {}, undefined, [lanYan, bennett]).windows.find(
+				(w) => w.kind === 'shield' && w.characterId === 'lan_yan'
+			);
+		const w = shield('Bennett E > Lan Yan E N');
+		expect(w && w.kind === 'shield' && w.absorbed).toEqual({ time: 56, element: 'pyro' });
+		const bare = shield('Lan Yan E N');
+		expect(bare && bare.kind === 'shield' && bare.absorbed).toBeUndefined();
+	});
+
 	for (const press of ['E', 'N']) {
 		it(`the ${press} follow-up twins each ring in the dash's element`, () => {
 			// Dash at 49 locks Pyro at 56; rings from 82: 38f → 120. One twin and one

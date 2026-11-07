@@ -210,8 +210,12 @@
 						"Duration 12.5s fixed: gcsim shield.go genShield sets Expires = Core.F + 12.5*60; sidecar 'Shield Duration' row is a flat 12.5s at every level. durationType 'fixed' — each qualifying cast replaces the prior LanyanShield with a fresh 12.5s window (not a stack/refresh).",
 						"Target 'active': gcsim shield Tmpl Target=-1 (player-wide, protects the on-field character). Standard active-character shield.",
 						"Shield generates only on the Detect hit (gcsim leapBack() → genShield fired from the hit callback; miss path genShields only via the fallback task if no shield already exists). Modeled as onCast/skill per the corpus convention (cf. Diona 'forms a shield on hit'); the detect-hit conditionality is surfaced to the player via the ability caveat.",
-						"Shield element matches the A1-absorbed element (defaults to Anemo); shield Effect has no element field, so the element type is not modeled — noted here only."
-					]
+						"Shield element matches the A1-absorbed element (defaults to Anemo); shield Effect has no element field, so the element type is not modeled — noted here only.",
+						"↻ 2026-11-07 (⚓ Nate: show it like the Anemo summons): `element: {type: 'absorbed'}` — the shield bar turns into the element the dash locked, from the lock (7f), with the summons' fade (`summonMarks`). gcsim `genShield(c.absorbedElement)` 11f after the Detect hit. Nothing absorbed → it stays Anemo. Supersedes \"the element type is not modeled\" above."
+					],
+					"element": {
+						"type": "absorbed"
+					}
 				}
 			],
 			"description": "Lan Yan strikes forward with a brief detect hitbox at frame 7. If it hits an enemy, she leaps backwards, generating a Shield of Safe Transport-style Anemo shield (12.5s, scales off ATK + flat) and entering a 66f window during which her next N or E press fires Feathermoon Ring instead. The detect-miss path skips the leap-back window and uses a faster cancel slice (skillMissFrames: swap=49, N=45, Q=46, D=47, J=47).",

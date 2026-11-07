@@ -93,6 +93,7 @@ export function registerShieldOnCast(
 		ability: 'skill' | 'burst';
 		endTime: number;
 		label?: string;
+		takesAbsorbed?: true;
 		/** Ability-hosted, as opposed to passive/constellation-hosted. Only the
 		 *  ability half may satisfy `authorsShieldEffect` or be reconciled
 		 *  against a stand-in summon — see both sites below. */
@@ -127,7 +128,8 @@ export function registerShieldOnCast(
 			ability: castKind,
 			endTime: castTime + framesOf(eff.duration),
 			fromAbility,
-			...(eff.label !== undefined ? { label: eff.label } : {})
+			...(eff.label !== undefined ? { label: eff.label } : {}),
+			...(eff.element?.type === 'absorbed' ? { takesAbsorbed: true as const } : {})
 		});
 	};
 	// Case 2 FIRST — it is the one that wins (see the precedence note above).
@@ -265,7 +267,8 @@ export function registerShieldOnCast(
 			end: w.endTime,
 			sourceCastId,
 			...(w.label !== undefined ? { label: w.label } : {}),
-			...(w.coveredBySummon ? { coveredBySummon: true as const } : {})
+			...(w.coveredBySummon ? { coveredBySummon: true as const } : {}),
+			...(w.takesAbsorbed ? { takesAbsorbed: true as const } : {})
 		});
 	}
 	existing.sort((a, b) => a.endTime - b.endTime);

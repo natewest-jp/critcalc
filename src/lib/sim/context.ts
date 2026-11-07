@@ -78,6 +78,9 @@ export type ShieldWindowRec = {
 	sourceCastId: number;
 	label?: string;
 	coveredBySummon?: true;
+	/** `ShieldEffect.element: {type: 'absorbed'}` — resolved at finalize off
+	 *  `absorbLocks`, keyed by the source cast. */
+	takesAbsorbed?: true;
 };
 
 export type WeaponProcRec = { start: number; end: number; sourceCastId: number };

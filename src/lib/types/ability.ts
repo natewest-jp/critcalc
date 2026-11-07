@@ -1958,6 +1958,11 @@ export type Effect =
 			 *  ⛔ Do not invent one: a wrong name reads as fact, and the fallback
 			 *  is honest. Take it from the talent text or leave it off. */
 			label?: string;
+			/** ⚓ The shield TAKES ITS CAST'S ABSORBED ELEMENT (Lan Yan round,
+			 *  2026-11-07): the bar turns into the element the cast's `absorbs` lock
+			 *  held, from the lock, the summon rule (`summonMarks`). Nothing locked,
+			 *  the bar stays the caster's. Lan Yan's A1 Swallow-Wisp Shield. */
+			element?: { type: 'absorbed' };
 	  })
 	| (EffectBase & {
 			type: 'resShred';

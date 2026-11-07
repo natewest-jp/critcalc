@@ -772,6 +772,14 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 						a.id
 					);
 			}
+			// A shield that takes the absorbed element reads its own cast's lock.
+			for (const e of a.effects ?? []) {
+				if (e.type !== 'shield' || e.element === undefined) continue;
+				if (!isAbsorbedRef(e.element))
+					bad(`${a.id}: a shield's element is {type: 'absorbed'} or absent`, a.id);
+				else if (!a.absorbs)
+					bad(`${a.id}: a shield taking the absorbed element needs the cast's \`absorbs\``, a.id);
+			}
 			for (const sm of a.summons ?? []) {
 				checkSpec(sm.absorbs, `${a.id} summon "${sm.label}"`, a.id);
 				for (const e of sm.effects ?? []) {
