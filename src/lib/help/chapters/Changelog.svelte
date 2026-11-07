@@ -15,7 +15,9 @@
 	 do YET (style guide §1.3: ⛔ never "never" about the future).
 	 ⚓ Nate 2026-11-04: a change across a whole tool is one entry about what
 	 changed everywhere, plus only the standout new features, not a paragraph
-	 per part.
+	 per part. ⚓ Nate 2026-11-07: an entry covering several characters gives
+	 each one its own paragraph, and leaves out timing a player would not
+	 notice (when a hit applies its element).
 
 	 To add an entry: one <article> at the top of its month's .timeline, newest
 	 first; a new month is a new <section> with an <h2 id="YYYY-MM"> and its own
