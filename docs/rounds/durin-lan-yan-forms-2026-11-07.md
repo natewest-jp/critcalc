@@ -67,12 +67,19 @@ constellation.
 **Rejected:** routing the N press through the E ring's application list. It would
 have reached into every normal-swing path for one character.
 
-**Not drawn, and right:** the shield's element (no shield carries one, and incoming
-damage is not modelled), the twin's 50% (a damage number).
+**Not drawn, and right:** the twin's 50% (a damage number).
+
+**The shield takes the element (⚓ Nate, follow-up):** "show Lan Yan's shield absorb
+an element just like other Anemo characters' summons". `ShieldEffect.element:
+{type: 'absorbed'}` (new) makes finalize read the source cast's lock onto the
+shield window (`absorbed: {time, element}`), the shield row's bar carries it, and
+`summonMarks` turns it exactly as it turns a summon at its first absorbed tick, with
+no stub. The turn starts at the lock (7f); gcsim raises the shield 11f later, in
+the element. Lint D.54: the shield's host cast must carry `absorbs`.
 
 Tests: `notationParser.test.ts`, "Lan Yan: the A1 absorption reaches the rings".
 
-## 3. Copy landed in the existing patterns, for Nate's ruling
+## 3. Copy landed in the existing patterns (✅ Nate approved all five)
 
 New strings, each mirroring its neighbours:
 
@@ -86,8 +93,9 @@ New strings, each mirroring its neighbours:
 
 ## 4. What's new
 
-The draft held in `lan-yan-durin-check-2026-11-07.md` §4 waits on Nate, now that
-both rounds have landed.
+✅ Nate approved the title "Durin's two dragons and Lan Yan's Feathermoon Rings" and
+asked for the held draft (`lan-yan-durin-check-2026-11-07.md` §4) and the new
+lines as one paragraph. Landed in `Changelog.svelte`, dated November 7.
 
 ## Gates
 
