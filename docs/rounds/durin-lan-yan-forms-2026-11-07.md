@@ -99,5 +99,6 @@ lines as one paragraph. Landed in `Changelog.svelte`, dated November 7.
 
 ## Gates
 
-Vitest 2843, svelte-check, lint and build green on both commits; Chrome e2e 73
-passed on `feat/lan-yan-absorption`. Both engines run before the merge.
+Before the merge: Vitest 2842, svelte-check, lint and build green; e2e 147 passed on
+Chrome and WebKit. Merged as `fb85b6c2` (Durin) and `7ac0abec` (Lan Yan, the shield
+fill, What's new) and pushed. ✅ Nate checked it in real Safari.
