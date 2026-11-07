@@ -1,11 +1,11 @@
 {
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
-		"audited": "2a79dae67",
-		"seenUpstream": "2a79dae67",
-		"date": "2026-11-06",
-		"tag": "v2.49.6",
-		"note": "clone fast-forwarded 3877a1a35 → 2a79dae67 (8 commits): Cyno Revelation #3250 + fixes #3263/#3264 (frames audit: Pactsworn N4 swap 5→14), Nicole A1 skips herself #3259, Skirk rift double-absorb #3258 (unmodelled), Thoma A4 guard typo and ascension guards (damage only); Cyno and Nicole folded into the Revelation item in Next"
+		"audited": "5dacbb4f0",
+		"seenUpstream": "5dacbb4f0",
+		"date": "2026-11-07",
+		"tag": "v2.49.7",
+		"note": "clone fast-forwarded 2a79dae67 → 5dacbb4f0 (3 commits): Cyno A1 ticker source capture #3266 and Mizuki walk during Dreamdrifter #3267 (nothing we model moved), catalog pipeline #3268; frames audit byte-stable"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,22 +13,22 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-06T00:00:00Z"
+		"lastSeen": "2026-11-07T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
 		"stygian": "7.1",
 		"abyss": "2026-11-16 Resounding Moon",
 		"pending": [
-			"Stygian 7.2: expected ~2026-11-11, add once stygian.moe has the live date",
-			"Abyss: the cycle after Resounding Moon (lunaris beta 甲霰之月 / 霰烁之月) — beta only, no live date"
+			"Stygian 7.2: due 2026-11-11, add once stygian.moe has the live date",
+			"Abyss: the cycle after Resounding Moon (lunaris beta 甲霰之月) — beta only, no English name yet; due 2026-12-16"
 		]
 	},
 	"todo": {
-		"lastSwept": "8278a2ce"
+		"lastSwept": "8cddce79"
 	},
 	"roles": {
-		"audited": "2026-11-06",
+		"audited": "2026-11-07",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
