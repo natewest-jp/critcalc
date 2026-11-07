@@ -44,13 +44,15 @@
 				<time class="entry-date" datetime="2026-11-07">November 7</time>
 			</header>
 			<p>
+				After Durin’s Denial of Darkness, his next Normal Attack starts the string again from the
+				first hit. Durin’s passives and constellations now follow the dragon that is out, so the
+				White and Dark forms draw their own effects.
+			</p>
+			<p>
 				Pressing Normal Attack right after Lan Yan’s Swallow-Wisp Pinion Dance now throws her
-				Feathermoon Rings, as it does in game, instead of an ordinary Normal Attack. Both follow-ups
-				now apply Anemo when the first ring lands, not at the press. After Durin’s Denial of
-				Darkness, his next Normal Attack starts the string again from the first hit. Durin’s
-				passives and constellations now follow the dragon that is out, so the White and Dark forms
-				draw their own effects. Lan Yan’s Feathermoon Rings now also deal damage in the element her
-				dash absorbs, and her first constellation’s extra rings appear.
+				Feathermoon Rings, as it does in game, instead of an ordinary Normal Attack. Lan Yan’s
+				Feathermoon Rings now also deal damage in the element her dash absorbs, her shield becomes
+				infused, and her first constellation’s extra rings appear.
 			</p>
 		</article>
 		<article class="entry">
