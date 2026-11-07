@@ -75,7 +75,13 @@ export function computeShieldSubrows(
 			rowMap.set(key, row);
 			order.push(row);
 		}
-		row.bars.push({ start: sw.start, end: sw.end, source: sw.source, ticks: [] });
+		row.bars.push({
+			start: sw.start,
+			end: sw.end,
+			source: sw.source,
+			ticks: [],
+			...(sw.absorbed ? { absorbed: sw.absorbed } : {})
+		});
 	}
 
 	// Windows arrive in the parser's final start-order, so a row's bars are

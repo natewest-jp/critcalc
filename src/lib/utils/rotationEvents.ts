@@ -522,6 +522,8 @@ export type TimelineWindow =
 			source: 'skill' | 'burst';
 			start: number;
 			end: number;
+			/** The element the shield took, and from when (`ShieldEffect.element`). */
+			absorbed?: { time: number; element: Element };
 			/** The shield's in-game name, from `ShieldEffect.label` — the shield
 			 *  lane's row label. Absent renders a plain "Shield". */
 			label?: string;

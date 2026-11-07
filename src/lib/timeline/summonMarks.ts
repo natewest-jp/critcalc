@@ -44,6 +44,8 @@ export const LUNAR_GLEAM_STOPS: readonly [number, string][] = [
 type MarkedBar = {
 	ticks: number[];
 	absorbedTicks?: { time: number; element: string }[];
+	/** A shield's turn (`SummonBar.absorbed`): the same fill, no stub. */
+	absorbed?: { time: number; element: string };
 };
 
 export type SummonMarks = {
@@ -54,7 +56,7 @@ export type SummonMarks = {
 };
 
 export function summonMarks(bar: MarkedBar): SummonMarks {
-	const first = bar.absorbedTicks?.[0];
+	const first = bar.absorbed ?? bar.absorbedTicks?.[0];
 	const at = first?.time ?? Infinity;
 	const frames = [...new Set([...bar.ticks, ...(bar.absorbedTicks ?? []).map((a) => a.time)])].sort(
 		(a, b) => a - b

@@ -261,6 +261,7 @@ const STATES = new Set([
 	'soloDanceDouble',
 	// Mavuika's Ring (DEF & RES pass, 2026-10-06).
 	'searingRing',
+	'charmAbsorbed',
 	'pneuma',
 	// Lauma's two charged forms (charged-forms round, 2026-09-16).
 	'spiritEnvoy',
@@ -727,7 +728,25 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				bad(`${where}: absorbs.every must be positive integer FRAMES`, id);
 			if (spec.polls !== undefined && (!frames(spec.polls, 1) || spec.every === undefined))
 				bad(`${where}: absorbs.polls needs \`every\` and a positive count`, id);
+			const os = spec.opensState;
+			if (os !== undefined && (!STATES.has(os.state) || !(os.duration > 0)))
+				bad(`${where}: absorbs.opensState needs a known State and a positive duration`, id);
 		};
+		// ⚓ `absorbedFrom: 'stance'` reads the lock of the cast that opened the
+		// stance, so a stance-opening skill of the character must carry one.
+		const stanceLock = c.abilities.some(
+			(b) =>
+				(b.abilityType === 'skill' || b.abilityType === 'burst') &&
+				b.behavior === 'stance' &&
+				b.absorbs !== undefined
+		);
+		for (const a of c.abilities) {
+			const from = (a as { absorbedFrom?: unknown }).absorbedFrom;
+			if (from === undefined) continue;
+			if (from !== 'stance') bad(`${a.id}: absorbedFrom must be 'stance'`, a.id);
+			else if (!stanceLock)
+				bad(`${a.id}: absorbedFrom 'stance' but no stance of this character absorbs`, a.id);
+		}
 		const isAbsorbedRef = (el: unknown) =>
 			typeof el === 'object' && el !== null && (el as { type?: string }).type === 'absorbed';
 		for (const a of c.abilities) {
@@ -743,8 +762,23 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				];
 			for (const f of forms) {
 				checkSpec(f.absorbs, f.label, a.id);
-				if ((f.application ?? []).some((e) => isAbsorbedRef(e.element)) && !f.absorbs)
-					bad(`${f.label}: an absorbed application entry needs an \`absorbs\` lock`, a.id);
+				if (
+					(f.application ?? []).some((e) => isAbsorbedRef(e.element)) &&
+					!f.absorbs &&
+					a.absorbedFrom === undefined
+				)
+					bad(
+						`${f.label}: an absorbed application entry needs an \`absorbs\` lock or \`absorbedFrom\``,
+						a.id
+					);
+			}
+			// A shield that takes the absorbed element reads its own cast's lock.
+			for (const e of a.effects ?? []) {
+				if (e.type !== 'shield' || e.element === undefined) continue;
+				if (!isAbsorbedRef(e.element))
+					bad(`${a.id}: a shield's element is {type: 'absorbed'} or absent`, a.id);
+				else if (!a.absorbs)
+					bad(`${a.id}: a shield taking the absorbed element needs the cast's \`absorbs\``, a.id);
 			}
 			for (const sm of a.summons ?? []) {
 				checkSpec(sm.absorbs, `${a.id} summon "${sm.label}"`, a.id);
@@ -2117,8 +2151,13 @@ function lintNormal(
 	if (a.coInfusion !== undefined) {
 		const issue = elementRefIssue(a.coInfusion, CHARACTER_ELEMENTS);
 		if (issue) push('strict', 'invalid-element', `coInfusion: ${issue}`, a.id);
-		if (a.infusion === undefined)
+		// ⚓ Except an ABSORBED twin (Lan Yan's rings, 2026-11-07): a catalyst's
+		// swing already lands her element, and the twin is the second hand.
+		const absorbedTwin = typeof a.coInfusion === 'object' && a.coInfusion.type === 'absorbed';
+		if (a.infusion === undefined && !(absorbedTwin && c.weapon === 'catalyst'))
 			push('strict', 'invalid-element', 'coInfusion without infusion', a.id);
+		if (absorbedTwin && a.absorbedFrom === undefined)
+			push('strict', 'absorb-shape', 'an absorbed coInfusion needs `absorbedFrom`', a.id);
 	}
 	// (C.19c) infusionWhileStacks names a key, and gates an infusion that exists.
 	if (a.infusionWhileStacks !== undefined) {

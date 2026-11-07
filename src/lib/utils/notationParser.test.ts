@@ -4740,6 +4740,50 @@ describe('parseNotation — Lan Yan: the Feathermoon Ring follow-ups (2026-11-07
 // ⚓ DURIN: THE DARK COMMIT IS NOT A SWING OF THE COMBO (2026-11-07). gcsim
 // attack.go returns `skillRecastBlack()` before `AdvanceNormalIndex`, so the N
 // after `E N` is N1 again; it used to play N2's frames.
+describe('parseNotation — Lan Yan: the A1 absorption reaches the rings (2026-11-07)', () => {
+	// Measured before: `Bennett E > Lan Yan E N` and `… E E` applied Anemo only,
+	// with no Pyro twin and no second Swirl, at every constellation.
+	const lanYan = lanYanJson as unknown as CharacterData;
+	const bennett = bennettJson as unknown as CharacterData;
+	const byName: Record<string, CharacterData> = { 'Lan Yan': lanYan, Bennett: bennett };
+	const lookup = (n: string): CharacterData | null => byName[n] ?? null;
+	const apps = (src: string, cons = 0) =>
+		parseNotation(src, lookup, 8, { lan_yan: cons }, undefined, [lanYan, bennett])
+			.applications.filter((a) => a.characterId === 'lan_yan')
+			.map((a) => `${a.time} ${a.element}`);
+
+	it('the shield takes the element from the lock, like an absorbing summon', () => {
+		const shield = (src: string) =>
+			parseNotation(src, lookup, 8, {}, undefined, [lanYan, bennett]).windows.find(
+				(w) => w.kind === 'shield' && w.characterId === 'lan_yan'
+			);
+		const w = shield('Bennett E > Lan Yan E N');
+		expect(w && w.kind === 'shield' && w.absorbed).toEqual({ time: 56, element: 'pyro' });
+		const bare = shield('Lan Yan E N');
+		expect(bare && bare.kind === 'shield' && bare.absorbed).toBeUndefined();
+	});
+
+	for (const press of ['E', 'N']) {
+		it(`the ${press} follow-up twins each ring in the dash's element`, () => {
+			// Dash at 49 locks Pyro at 56; rings from 82: 38f → 120. One twin and one
+			// Anemo ring apply per standard counter, three rings in.
+			expect(apps(`Bennett E > Lan Yan E ${press}`)).toEqual(['120 anemo', '120 pyro']);
+		});
+		it(`with nothing to absorb the ${press} follow-up is Anemo alone`, () => {
+			expect(apps(`Lan Yan E ${press}`, 1)).toEqual(['71 anemo']);
+		});
+		it(`C1 adds a second set after an absorbing dash (${press})`, () => {
+			// [38, 38, 62, 64, 85, 90]: the counters apply at 38 and at 64.
+			expect(apps(`Bennett E > Lan Yan E ${press}`, 1)).toEqual([
+				'120 anemo',
+				'120 pyro',
+				'146 anemo',
+				'146 pyro'
+			]);
+		});
+	}
+});
+
 describe('parseNotation — Durin: the Normal Attack after the Dark commit (2026-11-07)', () => {
 	const durin = durinJson as unknown as CharacterData;
 	const lookup = (n: string): CharacterData | null => (n === 'Durin' ? durin : null);

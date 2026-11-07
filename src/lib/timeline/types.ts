@@ -138,6 +138,9 @@ export type SummonBar = {
 	 *  the first turns the bar into that element, and all merge into `ticks`
 	 *  one stub per frame (`summonMarks`). Read off the window, never derived. */
 	absorbedTicks?: { time: number; element: string }[];
+	/** A SHIELD's absorbed element (`ShieldEffect.element`): the bar turns at
+	 *  `time` like a summon's at its first absorbed tick, with no tick drawn. */
+	absorbed?: { time: number; element: string };
 	/** A drawn stack count's steps (`stackRows.ts`): the bar is drawn stepped,
 	 *  full strength at `stepMax`, and its tooltip reads the step. */
 	steps?: BarStep[];
