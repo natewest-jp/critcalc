@@ -1248,7 +1248,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 		}
 
-		// ── onState team-target buffs (once per character) ──
+		// ── onState team- and self-target buffs (once per character) ──
 		//
 		// ⚓ The span IS the state's window. Every other trigger here measures a
 		// duration from an instant; this one is co-extensive with a window the
@@ -1275,7 +1275,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const seenStatsState = new Set<string>();
 					const qualifiedState = stateGroup.effects.filter((effect): effect is BuffEffect => {
 						if (effect.type !== 'buff') return false;
-						if (!targetsTeamOrActive(effect.target)) return false;
+						// ⚓ `self` too (Durin round, 2026-11-07): his A1 Vaporize/Melt bonus
+						// and C6 DEF ignore are his own, for exactly as long as his Dark
+						// dragon is out. The window's receivers come from `target`, as at
+						// every other site.
+						if (!targetsTeamOrActive(effect.target) && effect.target !== 'self') return false;
 						if (isActiveTargetOnly(effect.target)) return false;
 						if (
 							evalCondition(

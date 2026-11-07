@@ -40,7 +40,7 @@ export type ShredSource = {
 	ability: string;
 	stat: ShredStat;
 	/** `ignore` only: the attack class it is limited to (Yae C6's ticks). */
-	scope?: 'skill';
+	scope?: 'skill' | 'burst';
 	/** `res` only: the elements it lowers. Empty for DEF shred and ignore. */
 	elements: ShredElement[];
 	/** A positive percent. */
@@ -78,6 +78,9 @@ export function characterShredSources(
 		} else if (cap.kind === 'buff' && cap.detail === 'skillDefIgnore') {
 			stat = 'ignore';
 			scope = 'skill';
+		} else if (cap.kind === 'buff' && cap.detail === 'burstDefIgnore') {
+			stat = 'ignore';
+			scope = 'burst';
 		} else continue;
 		const ability = cap.source.abilityName;
 		let key = [stat, scope ?? '', cap.mod ?? ability, cap.amount].join('|');

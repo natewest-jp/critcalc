@@ -83,6 +83,8 @@ const STATE_PHRASE: Record<State, string> = {
 	transmuting: 'during Essential Transmutation',
 	whiteForm: 'during Confirmation of Purity',
 	darkForm: 'during Denial of Darkness',
+	whiteDragon: 'while the Dragon of White Flame is present',
+	darkDragon: 'while the Dragon of Dark Decay is present',
 	codaWindow: "while Adagio: Coda at Dawn's Tolling is ready",
 	soloDanceDouble: 'while the Solo Dance Double is present',
 	searingRing: 'while the Ring of Searing Radiance is present',
