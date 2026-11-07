@@ -2712,6 +2712,19 @@ export type NormalAbility = AbilityCommon & {
 	 */
 	chargeLandsAfterCancel?: true;
 	/**
+	 * ⚓ THE ATTACK BUTTON ROUTED TO A SKILL (2026-11-07). While this sibling's
+	 * `conditions` hold, gcsim's `Attack()` hands the press to a skill action
+	 * (Durin's Denial of Darkness, Lan Yan's Feathermoon Ring) that returns
+	 * `SkillState` and never calls `AdvanceNormalIndex`. So the press is not a
+	 * swing of the combo: the next N is still N1, no Normal Attack state opens
+	 * for a listener, and its hits are queued at the press, landing on their own
+	 * frames whatever cancels it (`chargeLandsAfterCancel`'s rule).
+	 * ⚠️ It is still a normal to the rest of the engine: its hit records say
+	 * `normal`, and it spends the normal ICD clock unless it names an
+	 * `icdCounter`.
+	 */
+	routesToSkill?: true;
+	/**
 	 * Whether a swing of this class is a PROJECTILE — released at its `hit` /
 	 * `lands` frame and landing `PROJECTILE_TRAVEL_F` later (projectile-travel
 	 * round, 2026-09-21). Read through `projectileTravelOf()`.

@@ -2071,9 +2071,12 @@ export function runRotation(
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
 					let anchorId: number | undefined;
+					// ⚓ An attack press gcsim routes to a skill (`routesToSkill`) is not a
+					// swing of the combo: it reads and advances no combo position.
+					const skillRouted: boolean = activeNormal?.routesToSkill === true;
 					for (let k = 0; k < count; k++) {
 						const nElement = swingElement();
-						const hitIndex = normalCounter % hits.length;
+						const hitIndex = skillRouted ? k % hits.length : normalCounter % hits.length;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
 						const castS = resolveNormalCastTime(
 							hits,
@@ -2097,7 +2100,7 @@ export function runRotation(
 						// listener's cadence carries straight across it.
 						// ⚠️ BEFORE the advance: the fires land inside the span, so they
 						// have to be queued while the clock still stands at its start.
-						notifyNormalAttack(ctx, clock, clock.now, clock.now + (castS ?? 0));
+						if (!skillRouted) notifyNormalAttack(ctx, clock, clock.now, clock.now + (castS ?? 0));
 						// The swing's landing — see `landSwing`. Offer the swing to the
 						// aura, behind the normal-attack ICD clock (ICD round): a catalyst
 						// `N5` applies on swings 1, 4 and 6 at the corpus cadence, not on
@@ -2177,10 +2180,11 @@ export function runRotation(
 							castS,
 							hits[hitIndex]?.frames,
 							landNormal,
-							projectileTravelOf(char.weapon, activeNormal, 'normal')
+							projectileTravelOf(char.weapon, activeNormal, 'normal'),
+							skillRouted
 						);
 						if (castS !== null) clock.advance(clock.now + castS);
-						normalCounter++;
+						if (!skillRouted) normalCounter++;
 						// Normal-opened transient state (post-P4 #2): the FIRST swing's
 						// recovery opens the window, once per N token — the analog of
 						// the plunge-landing opener. Gated on the token-start state
