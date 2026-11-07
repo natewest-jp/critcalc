@@ -72,3 +72,15 @@ consumer, so it is left for its own round.
 Tests: `notationParser.test.ts`, "Lan Yan: the Feathermoon Ring follow-ups" and
 "Durin: the Normal Attack after the Dark commit", written against the measured
 wrong output first.
+
+## 4. What's new, drafted and paused (⚓ Nate 2026-11-07)
+
+Held until the queued Lan Yan absorption and Durin form rounds land, so one
+entry can cover all of it. The draft for this round alone:
+
+- Title: "Lan Yan's Feathermoon Rings and Durin's attack string"
+- "Pressing Normal Attack right after Lan Yan's Swallow-Wisp Pinion Dance now
+  throws her Feathermoon Rings, as it does in game, instead of an ordinary
+  Normal Attack. Both follow-ups now apply Anemo when the first ring lands, not
+  at the press. After Durin's Denial of Darkness, his next Normal Attack starts
+  the string again from the first hit."

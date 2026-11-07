@@ -506,7 +506,7 @@ All three tools are built, merged, and on `main`. Launch readiness has been a **
 
 From the old working memories (`docs/rounds/instructions-overhaul-round.md` §14), each checked against the code on 2026-10-30; the record is `docs/rounds/memory-triage-round.md`. `docs/todo.md` carries one line pointing here.
 
-- **Elemental absorption leftovers** (`docs/rounds/elemental-absorption-survey.md` §8.1): Kazuha's plunge add-on (only his Q absorbs), Lan Yan, Wanderer A1, Sucrose C6's element bonus on the lock, Jahoda.
+- **Elemental absorption leftovers** (`docs/rounds/elemental-absorption-survey.md` §8.1): Kazuha's plunge add-on (only his Q absorbs), Lan Yan (its own `docs/todo.md` item since 2026-11-07), Wanderer A1, Sucrose C6's element bonus on the lock, Jahoda.
 - **Kit gaps:**
   - Prune's recast, "Clang Clang! Witch-tribution Comes!" (`prune.json` notes).
   - Traveler (Hydro) C4 needs a channel window (the skill is `instant`; the shield is deliberately inert, `docs/rounds/constellation-shield-gap.md`).
