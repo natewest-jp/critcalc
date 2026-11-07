@@ -2082,7 +2082,10 @@ function lintNormal(
 		// `hit` is the 80 multi-hit normals saying what `hit` (their last hitmark,
 		// and their cancel tier) cannot.
 		const last = Array.isArray(fm.lands) ? Math.max(...fm.lands) : fm.lands;
-		if (isPositiveInt(fm.anim) && last > fm.anim)
+		// A press gcsim routes to a skill queues its hits at the press, so they
+		// land after the animation by design (`routesToSkill`, Lan Yan's rings).
+		const queuedAtPress = cls === 'normal' && a.routesToSkill === true;
+		if (isPositiveInt(fm.anim) && last > fm.anim && !queuedAtPress)
 			push(
 				'strict',
 				'frame-value-invalid',

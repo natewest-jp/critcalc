@@ -81,37 +81,43 @@
 			]
 		},
 		{
-			"id": "lan_yan__skill__feathermoon_ring_n",
+			"id": "lan_yan__normal__feathermoon_ring",
 			"name": "Feathermoon Ring (N follow-up)",
 			"input": ["N"],
-			"abilityType": "skill",
+			"abilityType": "normal",
 			"conditions": {
 				"type": "state",
 				"state": "inStance"
 			},
-			"frames": {
-				"anim": 41,
-				"N": 37,
-				"Q": 39,
-				"D": 38,
-				"J": 39,
-				"swap": 41
-			},
-			"cooldown": 0,
-			"noICD": true,
 			"tags": [],
-			"behavior": "instant",
+			"icdCounter": "feathermoonRing",
+			"hits": [
+				{
+					"name": "Feathermoon Ring",
+					"frames": {
+						"anim": 41,
+						"lands": [38, 62, 85],
+						"N": 37,
+						"Q": 39,
+						"D": 38,
+						"J": 39,
+						"swap": 41
+					}
+				}
+			],
 			"description": "When pressed during the Swallow-Wisp Pinion Dance leap-back window (66f after a successful Detect hit), N fires Feathermoon Ring instead of a normal attack — three Anemo hits at frames 38, 62, 85. Schema-typed as a skill (not a normal) because gcsim categorises it as `SkillState` with elemental-art ICD/scaling, even though the input is N.",
 			"_curatorNotes": [
-				"gcsim categorisation: pressing N while leapBackStatus is active calls reathermoonRings() which returns action.SkillState with AttackTagElementalArt. So this entry is `abilityType: \"skill\"` despite the N input — more truthful than a normal-attack entry that would inherit normal-attack ICD.",
+				"↻ RE-AUTHORED 2026-11-07 as a state-gated NORMAL (the Durin Dark-commit and Nilou Sword Dance shape). It was a skill sibling with `input: [\"N\"]`, and `resolveActiveAbility` matches by abilityType and conditions, never by input: an N press only ever looks at normals, so `Lan Yan E N` drew an ordinary N1 (anemo at +11, normal cancels), and an E press found THIS entry first and wore its name. Measured before the fix: `E N Q` put Q 44f after the N instead of 39f, and the rings applied nothing at their landings.",
+				"gcsim attack.go `Attack()`: while `leapBackStatus` (66f from the Detect hit) is active, the attack button calls `reathermoonRings()` — three Anemo ring hits at `ringHitmarks` [38, 62, 85], Durability 25, `ICDTagLanyanRingAttack` / `ICDGroupLanyanRingAttack` (the standard 3-hit / 150f shape on a group of its own), with `ringsFrames` (InitAbilSlice(41); Attack 37, Burst 39, Dash 38, Jump 39). The three landings ride `lands`; Lan Yan's normals are Anemo, so the swing's element needs no infusion.",
+				"⚠️ gcsim tags the rings `AttackTagElementalArt` and returns `SkillState`. As with Durin's Dark commit, this entry is a normal to the engine, so a teammate's effect that listens for Normal Attacks sees it. `icdCounter: feathermoonRing` keeps the rings off her normal-attack clock and shares one counter with the E follow-up, as gcsim's one ring group does.",
 				"Three hit frames from gcsim ringHitmarks=[38, 62, 85]; not authored as hits[] because SkillAbility's schema only carries a single FrameMap. Reviewer may extend the schema to support per-hit timing on stance-fired skill abilities.",
-				"Cooldown 0: gcsim's reathermoonRings does not call SetCD. ActionReady override returns true for E during leapBackStatus regardless of base skill CD — the in-stance follow-up bypasses the 16s skill cooldown. Same applies to the in-stance E variant below.",
 				"A4 (anemo mastery): each ring hit gains FlatDmg += EM × 3.09. Scaling buff — value field omitted per recipe; reviewer to wire as BuffValue.scaling with scalingStat 'em'.",
 				"A1 (Four Sealing Divination Charms): if the parent Detect hit triggered an elemental absorption (Pyro/Hydro/Electro/Cryo), each ring hit also fires a 'mixed' hit at 50% multiplier with the absorbed element (separate ICDGroup ICDGroupLanyanRingAttackMix, reset_timer=150). Recipe.md § 3.5 says don't author element-absorption-conditional damage; flagged here only.",
 				"C1 (\"As One Might Stride Betwixt the Clouds\") extra hits at frames [38, 64, 90] when the absorbed element is non-Anemo. Same A1-conditional logic; not modeled, flagged on the C1 entry.",
-				"Casting this ability ends leapBackStatus (gcsim DeleteStatus(leapBackStatus) at top of reathermoonRings). The schema's stance window does not have an explicit 'in-stance ability ends stance' field; reviewer to handle in parser. The 1.1s stance duration on the base skill makes the practical impact small."
+				"Casting this ability ends leapBackStatus (gcsim DeleteStatus(leapBackStatus) at top of reathermoonRings). The schema's stance window does not have an explicit 'in-stance ability ends stance' field; reviewer to handle in parser. The 1.1s stance duration on the base skill makes the practical impact small.",
+				"`routesToSkill` (2026-11-07): gcsim's `reathermoonRings()` never calls `AdvanceNormalIndex`, so the next N after the rings is N1, and its hits are queued at the press (`QueueAttack` with a delay), so the 62f and 85f rings still land when the 37f N cancel or a swap cuts the throw."
 			],
-			"nothingToModel": true
+			"routesToSkill": true
 		},
 		{
 			"id": "lan_yan__skill__swallow_wisp_pinion_dance",
@@ -200,15 +206,31 @@
 				"swap": 41
 			},
 			"cooldown": 0,
-			"noICD": true,
 			"tags": [],
 			"behavior": "instant",
 			"description": "When pressed during the Swallow-Wisp Pinion Dance leap-back window, E re-fires the Feathermoon Ring (three Anemo hits at frames 38, 62, 85) — same frames and behavior as the N follow-up. Both inputs route to the same ringsFrames in gcsim; this entry exists so that 'E E' notation routes correctly.",
 			"_curatorNotes": [
 				"Three hit frames from gcsim ringHitmarks=[38, 62, 85]; not authored as hits[] (single FrameMap only on skill abilities). Frames identical to lan_yan__skill__feathermoon_ring_n above — both map to gcsim ringsFrames. The two entries differ only in `input`. See A1/A4/C1 flags on the N variant; same applies here.",
-				"ActionReady override (lanyan.go) returns true for E during leapBackStatus regardless of base skill CD; this in-stance E bypasses the 16s skill CD."
+				"ActionReady override (lanyan.go) returns true for E during leapBackStatus regardless of base skill CD; this in-stance E bypasses the 16s skill CD.",
+				"application[] AUTHORED 2026-11-07: gcsim `ringHitmarks` [38, 62, 85], Anemo, Durability 25 on `ICDGroupLanyanRingAttack` (standard 3-hit / 150f), so only the first applies. Absent, the cast fell back to Anemo at the press, provisional, 38f early. `icdCounter: feathermoonRing` shares the ring counter with the N follow-up (`lan_yan__normal__feathermoon_ring`)."
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"icdCounter": "feathermoonRing",
+			"application": [
+				{
+					"frame": 38,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 62,
+					"element": "anemo"
+				},
+				{
+					"frame": 85,
+					"element": "anemo"
+				}
+			]
 		},
 		{
 			"id": "lan_yan__burst__lustrous_moonrise",

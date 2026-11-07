@@ -31,6 +31,7 @@ import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
 import cynoJson from '$lib/data/characters/cyno.json';
 import yumemizukiJson from '$lib/data/characters/yumemizuki_mizuki.json';
 import colleiJson from '$lib/data/characters/collei.json';
+import lanYanJson from '$lib/data/characters/lan_yan.json';
 import linneaForTest from '$lib/data/characters/linnea.json';
 import flinsForTest from '$lib/data/characters/flins.json';
 import varesaForTest from '$lib/data/characters/varesa.json';
@@ -4680,5 +4681,77 @@ describe('parseNotation — a same-character `>` times as one segment (join roun
 
 	it('an unknown name between two segments is still a swap', () => {
 		expect(comboOf(parse('Xilonen E N2 > Nobody N1 > Xilonen N2'))).toEqual([0, 1, 0, 1]);
+	});
+});
+
+// ⚓ LAN YAN'S FEATHERMOON RINGS (2026-11-07). After a landed Swallow-Wisp Pinion
+// Dance, gcsim routes BOTH the attack and the skill button to `reathermoonRings`
+// for 66f (`leapBackStatus`): three Anemo ring hits at 38/62/85f on their own ICD
+// group (`ICDGroupLanyanRingAttack`), with `ringsFrames` (Q cancel 39f). The N
+// follow-up used to be a skill sibling with `input: ["N"]`, which an N press never
+// reaches, so `E N` drew an ordinary N1; and an E press found that sibling first.
+describe('parseNotation — Lan Yan: the Feathermoon Ring follow-ups (2026-11-07)', () => {
+	const lanYan = lanYanJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'Lan Yan' ? lanYan : null);
+	const LY = 'lan_yan';
+	const own = (r: ReturnType<typeof parseNotation>) =>
+		r.events.filter(
+			(e) => (e.kind === 'cast' || e.kind === 'action') && e.characterId === LY
+		) as Array<TimelineEvent & { abilityId: string; time: number }>;
+	const anemoAt = (r: ReturnType<typeof parseNotation>) =>
+		r.applications.filter((a) => a.characterId === LY && a.element === 'anemo').map((a) => a.time);
+
+	it('an N inside the leap-back window throws the rings, with the rings’ own cancels', () => {
+		const r = parseNotation('Lan Yan E N Q', lookup, 8);
+		const [e, ring, q] = own(r);
+		expect(ring.time).toBe(e.time + 33);
+		expect(ring.abilityId).toBe('lan_yan__normal__feathermoon_ring');
+		expect(q.time).toBe(ring.time + 39);
+		// The first ring applies at its landing, not at the press.
+		expect(anemoAt(r)).toContain(ring.time + 38);
+	});
+
+	it('an E inside the window throws the E follow-up, which lands at the rings’ hitmark', () => {
+		const r = parseNotation('Lan Yan E E', lookup, 8);
+		const [, ring] = own(r);
+		expect(ring.abilityId).toBe('lan_yan__skill__feathermoon_ring_e');
+		expect(anemoAt(r)).toEqual([ring.time + 38]);
+	});
+
+	it('a ring throw is not a Normal Attack, so Rainbow Bladework does not answer it', () => {
+		const withXq = (n: string): CharacterData | null =>
+			n === 'Xingqiu' ? (xingqiuJson as unknown as CharacterData) : lookup(n);
+		const rainSwords = (notation: string) =>
+			parseNotation(notation, withXq, 8).applications.filter((a) => a.characterId === 'xingqiu');
+		// Control: a real swing in the same spot draws a wave.
+		expect(rainSwords('Xingqiu Q > Lan Yan N1').length).toBeGreaterThan(0);
+		expect(rainSwords('Xingqiu Q > Lan Yan E N')).toEqual([]);
+	});
+
+	it('the rings spend their own ICD counter, so the normal attack after them still applies', () => {
+		const r = parseNotation('Lan Yan E N N1', lookup, 8);
+		const [, ring, n1] = own(r);
+		expect(n1.abilityId).toBe('lan_yan__normal__normal_attack');
+		expect(anemoAt(r)).toEqual([ring.time + 38, n1.time + 11]);
+	});
+});
+
+// ⚓ DURIN: THE DARK COMMIT IS NOT A SWING OF THE COMBO (2026-11-07). gcsim
+// attack.go returns `skillRecastBlack()` before `AdvanceNormalIndex`, so the N
+// after `E N` is N1 again; it used to play N2's frames.
+describe('parseNotation — Durin: the Normal Attack after the Dark commit (2026-11-07)', () => {
+	const durin = durinJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'Durin' ? durin : null);
+	const swings = (r: ReturnType<typeof parseNotation>) =>
+		r.events.filter(
+			(e): e is TimelineEvent & { kind: 'action'; abilityId: string; comboIndex: number } =>
+				e.kind === 'action'
+		);
+
+	it('the N after the commit is N1, and the one after that N2', () => {
+		const [commit, n1, n2] = swings(parseNotation('Durin E N N2', lookup, 8));
+		expect(commit.abilityId).toBe('durin__normal__transmutation_denial_of_darkness');
+		expect([n1.abilityId, n1.comboIndex]).toEqual(['durin__normal__radiant_wingslash', 0]);
+		expect(n2.comboIndex).toBe(1);
 	});
 });
