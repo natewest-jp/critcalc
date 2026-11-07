@@ -1233,6 +1233,9 @@ export type State =
 	 *  Ring summon itself (`Summon.opensState`), so it spans the Ring's life
 	 *  exactly, Tap to Burst. Her C2 DEF shred is clipped to it (2026-10-06). */
 	| 'searingRing'
+	/** Lan Yan: her dash absorbed an element (A1) — opened at the lock by the
+	 *  dash's `absorbs.opensState`, for the leap-back window. Her C1 rings read it. */
+	| 'charmAbsorbed'
 	/** Furina: her Arkhe alignment is PNEUMA. ⚓ THE ONLY TOGGLE STATE IN THE
 	 *  CORPUS, and the only one whose absence is itself a meaning — Furina
 	 *  starts in Ousia (gcsim `furina.go:61`) and her Charged Attack flips
@@ -2800,6 +2803,8 @@ export type NormalAbility = AbilityCommon & {
 	 * swings, which is what makes the self-swirl land rather than alternate.
 	 */
 	coInfusion?: ElementRef;
+	/** The lock a `coInfusion: {type: 'absorbed'}` reads — see `AbsorbedFrom`. */
+	absorbedFrom?: AbsorbedFrom;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
 	 *  Read by the parser's ICD clocks: at every normal/charged/plunge swing on
@@ -2991,7 +2996,25 @@ export type AbsorbSpec = {
 	from: number;
 	every?: number;
 	polls?: number;
+	/**
+	 * ⚓ A named state opened AT THE LOCK, for `duration` seconds (Lan Yan round,
+	 * 2026-11-07) — what a later ability's `conditions` read to ask "did this
+	 * absorb". Lan Yan's C1 rings exist only after a dash that absorbed (gcsim
+	 * `absorbedElement != Anemo`). Nothing locked, nothing opens.
+	 */
+	opensState?: { state: State; duration: number };
 };
+
+/**
+ * ⚓ WHOSE LOCK A FOLLOW-UP READS (Lan Yan round, 2026-11-07). `'stance'`: the
+ * lock of the cast that opened the caster's current stance, so a later press
+ * inside it lands the element that cast absorbed — Lan Yan's Feathermoon Rings
+ * twin in the element her dash locked (gcsim keeps `absorbedElement` on the
+ * character from the dash to the rings). It is what lets a cast's
+ * `{type: 'absorbed'}` entries, or a normal's `coInfusion: {type: 'absorbed'}`,
+ * stand on an ability with no `absorbs` of its own (lint D.54).
+ */
+export type AbsorbedFrom = 'stance';
 
 export type ElementalApplication = {
 	/** Frames (60fps) from cast start to the hitmark. */
@@ -3325,6 +3348,8 @@ type SkillCommonFields = AbilityCommon & {
 	/** This cast's absorption lock — see `AbsorbSpec`; its `application[]`
 	 *  entries in `{type: 'absorbed'}` read it. */
 	absorbs?: AbsorbSpec;
+	/** Read another cast's lock instead — see `AbsorbedFrom`. */
+	absorbedFrom?: AbsorbedFrom;
 	/** The sibling skill whose charge pool this one spends — one in-game skill
 	 *  in two forms (Varesa's Rush and Fiery Passion Rush; gcsim has ONE
 	 *  `ActionSkill`). Without it each form keeps its own charges. */
@@ -3564,6 +3589,8 @@ type BurstCommonFields = AbilityCommon & {
 	/** This cast's absorption lock — see `AbsorbSpec`; its `application[]`
 	 *  entries in `{type: 'absorbed'}` read it. */
 	absorbs?: AbsorbSpec;
+	/** Read another cast's lock instead — see `AbsorbedFrom`. */
+	absorbedFrom?: AbsorbedFrom;
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast

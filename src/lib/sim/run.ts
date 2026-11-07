@@ -55,7 +55,7 @@ import {
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
-import { schedulePolls } from './absorb';
+import { lockedAt, lockOf, schedulePolls } from './absorb';
 import {
 	hasFreeSkill,
 	takeFreeSkill,
@@ -1679,12 +1679,55 @@ export function runRotation(
 				// the locked element — or not at all (Heizou's Iris, Ifa's Mark).
 				{
 					const absorbs = variant?.absorbs ?? active.absorbs;
+					// ⚓ A follow-up that reads ANOTHER cast's lock (`absorbedFrom`,
+					// Lan Yan round 2026-11-07): the stance opener's, so her rings twin
+					// in the element her dash locked.
+					const fromStance =
+						!absorbs &&
+						active.absorbedFrom === 'stance' &&
+						cs.stance &&
+						cs.stance.sourceCastId !== castId
+							? `cast#${cs.stance.sourceCastId}`
+							: undefined;
+					if (fromStance) {
+						emitAbsorbedAtCast(
+							ctx,
+							clock,
+							char,
+							kind,
+							castStart,
+							castApps,
+							fromStance,
+							states,
+							charConstellationLevel,
+							chainIdx,
+							stackState
+						);
+					}
 					if (absorbs) {
 						const key = `cast#${castId}`;
 						// A held cast polls only while it is held (gcsim's `duration/12`).
 						schedulePolls(ctx, clock, key, absorbs, castStart, (at) =>
 							held ? at - castStart - held.from <= heldFor : true
 						);
+						// ⚓ The lock's own state (`absorbs.opensState`), opened AT the lock.
+						const opens = absorbs.opensState;
+						if (opens) {
+							lockOf(ctx, key).onLock.push((_el, at) =>
+								applyTransientState(
+									ctx,
+									{ state: opens.state, duration: opens.duration },
+									cs,
+									char.id,
+									at,
+									states,
+									charConstellationLevel,
+									{ sourceCastId: castId, source: kind },
+									chainIdx,
+									stackState
+								)
+							);
+						}
 						emitAbsorbedAtCast(
 							ctx,
 							clock,
@@ -2105,7 +2148,16 @@ export function runRotation(
 						// aura, behind the normal-attack ICD clock (ICD round): a catalyst
 						// `N5` applies on swings 1, 4 and 6 at the corpus cadence, not on
 						// all five.
-						const coN = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+						// ⚓ `{type: 'absorbed'}` reads the stance opener's lock at the
+						// press (Lan Yan's ring twins; the dash locked 7f in, so the
+						// element is decided before any follow-up can be pressed).
+						const coRef = activeNormal?.coInfusion;
+						const coN =
+							typeof coRef === 'object' && coRef.type === 'absorbed'
+								? activeNormal?.absorbedFrom === 'stance' && cs.stance
+									? lockedAt(ctx, `cast#${cs.stance.sourceCastId}`, clock.now)
+									: undefined
+								: resolveElementRef(coRef, variantCtx);
 						const landNormal = (at: number, live = true): void => {
 							// ⚓ A form's swing spends Nightsoul at its landing (Mavuika's
 							// Flamestrider, 1 — gcsim `attack.go`, after `QueueAttack`).

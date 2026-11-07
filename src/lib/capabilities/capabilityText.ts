@@ -88,6 +88,7 @@ const STATE_PHRASE: Record<State, string> = {
 	codaWindow: "while Adagio: Coda at Dawn's Tolling is ready",
 	soloDanceDouble: 'while the Solo Dance Double is present',
 	searingRing: 'while the Ring of Searing Radiance is present',
+	charmAbsorbed: 'after an Elemental Absorption',
 	pneuma: 'in Pneuma alignment',
 	spiritEnvoy: 'during Spirit Envoy Metamorphosis',
 	envoyCooldown: 'while Spirit Envoy is on cooldown',
