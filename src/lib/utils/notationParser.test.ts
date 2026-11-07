@@ -24,6 +24,7 @@ import ganyuJson from '$lib/data/characters/ganyu.json';
 import flinsJson from '$lib/data/characters/flins.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
+import fischlJson from '$lib/data/characters/fischl.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
 import xilonenJson from '$lib/data/characters/xilonen.json';
 import ifaJson from '$lib/data/characters/ifa.json';
@@ -4753,5 +4754,104 @@ describe('parseNotation — Durin: the Normal Attack after the Dark commit (2026
 		expect(commit.abilityId).toBe('durin__normal__transmutation_denial_of_darkness');
 		expect([n1.abilityId, n1.comboIndex]).toEqual(['durin__normal__radiant_wingslash', 0]);
 		expect(n2.comboIndex).toBe(1);
+	});
+});
+
+describe('parseNotation — Durin: which dragon is out (2026-11-07)', () => {
+	// Measured before: every gate below read `duringSummon`, true for either
+	// dragon, so `E N Q` drew A1's White-only RES shred, no Vaporize/Melt bonus,
+	// and C6's 30% DEF ignore for 20s from the press.
+	const durin = durinJson as unknown as CharacterData;
+	const fischl = fischlJson as unknown as CharacterData;
+	const xingqiu = xingqiuJson as unknown as CharacterData;
+	const byName: Record<string, CharacterData> = { Durin: durin, Fischl: fischl, Xingqiu: xingqiu };
+	const lookup = (n: string): CharacterData | null => byName[n] ?? null;
+	const parse = (src: string, cons: number, team: CharacterData[] = [durin, xingqiu]) =>
+		parseNotation(src, lookup, 8, { durin: cons }, undefined, team);
+	type Win = ReturnType<typeof parseNotation>['windows'][number];
+	const states = (r: ReturnType<typeof parseNotation>, name: string) =>
+		r.windows
+			.filter((w): w is Extract<Win, { kind: 'state' }> => w.kind === 'state' && w.name === name)
+			.map((w) => [w.start, w.end]);
+	const buffs = (r: ReturnType<typeof parseNotation>, stat: string) =>
+		r.windows
+			.filter(
+				(w): w is Extract<Win, { kind: 'buff' }> =>
+					w.kind === 'buff' &&
+					w.characterId === 'durin' &&
+					w.effects.some(
+						(e) => ('stat' in e && e.stat === stat) || ('shredStat' in e && e.shredStat === stat)
+					)
+			)
+			// ⚓ A state's buffs pool into one window (A1's and C6's share the Dark one).
+			.map((w) => [
+				w.start,
+				w.end,
+				(
+					w.effects.find(
+						(e) => ('stat' in e && e.stat === stat) || ('shredStat' in e && e.shredStat === stat)
+					) as { value?: unknown } | undefined
+				)?.value
+			]);
+	const resShreds = (r: ReturnType<typeof parseNotation>) =>
+		r.windows.filter(
+			(w) =>
+				w.kind === 'buff' &&
+				w.characterId === 'durin' &&
+				w.effects.some((e) => e.type === 'resShred' && !('shredStat' in e && e.shredStat === 'def'))
+		);
+
+	it('each burst opens its own dragon at its first hit, for 20.5s', () => {
+		expect(states(parse('Durin E N Q', 0), 'darkDragon')).toEqual([[158, 158 + 1230]]);
+		expect(states(parse('Durin E N Q', 0), 'whiteDragon')).toEqual([]);
+		expect(states(parse('Durin E E Q', 0), 'whiteDragon')).toEqual([[162, 162 + 1230]]);
+	});
+
+	it('E Q N is the White dragon, though it leaves the Dark form open', () => {
+		const r = parse('Durin E Q N', 0);
+		expect(states(r, 'whiteDragon')).toHaveLength(1);
+		expect(states(r, 'darkForm')).toHaveLength(1);
+	});
+
+	it('a Dark burst ends the White dragon and its status', () => {
+		const r = parse('Durin E E Q W18 E N Q', 0);
+		const white = r.windows.find((w) => w.kind === 'summon' && w.label === 'Dragon of White Flame');
+		const dark = r.windows.find((w) => w.kind === 'summon' && w.label === 'Dragon of Dark Decay');
+		// gcsim stops the old ticks at the new cast (`burstSrc`), 97f before the spawn.
+		expect(white?.end).toBe((dark?.start ?? 0) - 97);
+		expect(states(r, 'whiteDragon')[0][1]).toBe(dark?.start);
+	});
+
+	it("A1's RES shred is the White dragon's only", () => {
+		const team = [durin, fischl];
+		expect(resShreds(parse('Durin E E Q > Fischl E > Durin N3', 0, team)).length).toBeGreaterThan(
+			0
+		);
+		expect(resShreds(parse('Durin E N Q > Fischl E > Durin N3', 0, team))).toEqual([]);
+	});
+
+	it("A1's Dark half: +40% Vaporize and Melt for the Dark status, 70% with two Hexerei", () => {
+		expect(buffs(parse('Durin E N Q', 0), 'amplifyingReactionBonus')).toEqual([[158, 1388, 40]]);
+		expect(buffs(parse('Durin E N Q', 0, [durin, fischl]), 'amplifyingReactionBonus')).toEqual([
+			[158, 1388, 70]
+		]);
+		expect(buffs(parse('Durin E E Q', 0), 'amplifyingReactionBonus')).toEqual([]);
+	});
+
+	it("C6's DEF ignore is 30% for the White dragon and 70% for the Dark, on Burst DMG", () => {
+		expect(buffs(parse('Durin E E Q', 6), 'burstDefIgnore')).toEqual([[162, 1392, 30]]);
+		expect(buffs(parse('Durin E N Q', 6), 'burstDefIgnore')).toEqual([[158, 1388, 70]]);
+		expect(buffs(parse('Durin E N Q', 6), 'def')).toEqual([]);
+		// The White DEF shred rides his Burst hits: first hit to 6s past the last tick.
+		const shred = buffs(parse('Durin E E Q', 6), 'def');
+		expect(Math.min(...shred.map((w) => w[0] as number))).toBe(162);
+		expect(Math.max(...shred.map((w) => w[1] as number))).toBeGreaterThan(1600);
+	});
+
+	it("C1's Dark half: 20 stacks, 2 per Burst hit, so the bar ends at the tenth", () => {
+		expect(buffs(parse('Durin E N Q', 1), 'burstFlatDmg').map((w) => [w[0], w[1]])).toEqual([
+			[158, 690]
+		]);
+		expect(buffs(parse('Durin E E Q', 1), 'burstFlatDmg')).toEqual([]);
 	});
 });

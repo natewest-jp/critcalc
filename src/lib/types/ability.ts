@@ -174,6 +174,10 @@ export type Stat =
 	| 'lunarChargedReactionBonus'
 	| 'lunarBloomReactionBonus'
 	| 'lunarCrystallizeReactionBonus'
+	// Family-wide over the two AMPLIFYING reactions (KQM's term), Vaporize and
+	// Melt: gcsim gates such a bonus on `ai.Amped`, one flag for both, and the
+	// kits that name one name both in one number (Durin A1's Dark form).
+	| 'amplifyingReactionBonus'
 	// Attacker-side DEF ignore — the recipient's attacks ignore this % of the
 	// enemy's DEF (Nicole C6: 40% for Guidance holders; Durin C6 Burst: 30%,
 	// 70% in Dark form). Distinct from the enemy-side `resShred` shredStat:'def'
@@ -183,6 +187,9 @@ export type Stat =
 	// family's precedent. Yae C6: Sesshou Sakura ticks ignore 60% (her skill
 	// deals damage ONLY through them, so the class is exactly the totems).
 	| 'skillDefIgnore'
+	// The same, scoped to Elemental Burst DMG. Durin C6: his Burst and both
+	// dragons ignore 30% (70% in the Dark form); his other hits do not.
+	| 'burstDefIgnore'
 	| 'cdReduction'
 	| 'healingBonus'
 	| 'incomingHealingBonus'
@@ -1198,6 +1205,15 @@ export type State =
 	 *  gates the Principle of Darkness burst. Opened by the Dark commit
 	 *  (a Normal Attack during `transmuting`); displaced by the White commit. */
 	| 'darkForm'
+	/** Durin: the Dragon of White Flame is out (gcsim `durin-burst-white`,
+	 *  20.5s from the burst's first hit). Opened by Principle of Purity,
+	 *  closed by Principle of Darkness. ⚠️ Not `whiteForm`: `E Q N` casts the
+	 *  White burst and then opens `darkForm`, so the form says which burst the
+	 *  NEXT Q will be, and this says which dragon is out now. */
+	| 'whiteDragon'
+	/** Durin: the Dragon of Dark Decay is out (gcsim `durin-burst-black`).
+	 *  The mirror of `whiteDragon`. */
+	| 'darkDragon'
 	/** Odette: the 6s window opened by BOTH her skill and her burst, during
 	 *  which her Elemental Skill is replaced by the special skill Adagio: Coda
 	 *  at Dawn's Tolling. Two openers is the whole reason it is a transient
@@ -1439,7 +1455,9 @@ export type Summon = {
 	 *  `skillRingTask` returns once the armament is not the ring), Gorou's War
 	 *  Banner is destroyed by his burst. ⚠️ At the CAST START, not at a spawn —
 	 *  nothing of the terminating cast has to exist yet. Naming the host
-	 *  ability's OWN kind is `recast` and lint says so (D.22b). */
+	 *  ability's OWN kind is `recast` and lint says so (D.22b), unless a sibling
+	 *  of that kind leaves a differently-named summon: Durin's two dragons each
+	 *  end at ANY burst of his, which a label-keyed `recast` cannot say. */
 	terminatesOn?: 'swap' | 'recast' | 'skill' | 'burst';
 	/** The summon lives only while its holder is in this state — its window and
 	 *  its ticks end where the holder's window of this name that contains the

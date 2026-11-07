@@ -23,6 +23,7 @@ export function isPctStat(stat: Stat): boolean {
 		stat === 'cdReduction' ||
 		stat === 'defIgnore' ||
 		stat === 'skillDefIgnore' ||
+		stat === 'burstDefIgnore' ||
 		stat === 'incomingHealingBonus'
 	);
 }

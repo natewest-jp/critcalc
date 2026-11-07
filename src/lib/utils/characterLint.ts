@@ -183,6 +183,7 @@ const STATS = new Set([
 	'lunarChargedReactionBonus',
 	'lunarBloomReactionBonus',
 	'lunarCrystallizeReactionBonus',
+	'amplifyingReactionBonus',
 	'skillDmgBonus',
 	'burstDmgBonus',
 	'normalDmgBonus',
@@ -191,6 +192,7 @@ const STATS = new Set([
 	'cdReduction',
 	'defIgnore',
 	'skillDefIgnore',
+	'burstDefIgnore',
 	'healingBonus',
 	'incomingHealingBonus',
 	'interruptionRes',
@@ -247,6 +249,8 @@ const STATES = new Set([
 	'transmuting',
 	'whiteForm',
 	'darkForm',
+	'whiteDragon',
+	'darkDragon',
 	// ⚠️⚠️ `codaWindow` was added to the `State` union in the Odette Stage-2 round
 	// and NOT here, and nothing noticed for four days — this list is checked only
 	// for `isCurated` characters and Odette is in FRAMELESS_EXEMPT, so her
@@ -1582,7 +1586,7 @@ function lintAbility(
 			break;
 		case 'skill':
 		case 'burst':
-			lintCastAbility(a, push);
+			lintCastAbility(c, a, push);
 			lintSummonEffects(c, a, push);
 			lintEndsStance(c, a, push);
 			lintHoldsField(a, push);
@@ -2318,6 +2322,7 @@ function lintStanceTimeCooldown(
 }
 
 function lintCastAbility(
+	c: CharacterData,
 	a: SkillAbility | BurstAbility,
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
 ): void {
@@ -2725,8 +2730,17 @@ function lintCastAbility(
 			);
 		}
 		// (D.22b) 'skill' / 'burst' name the owner's OTHER ability — the cast that
-		// ends this summon. The host's own kind is a recast, which has its own word.
-		if (s.terminatesOn === a.abilityType) {
+		// ends this summon. The host's own kind is a recast, which has its own word,
+		// ⚓ unless a SIBLING of that kind leaves a differently-named summon (Durin's
+		// two dragons, 2026-11-07): a recast is keyed by label, so only the kind can
+		// say "any burst of his ends this one", at the cast, as gcsim's `burstSrc` does.
+		const siblingSummons = c.abilities.some(
+			(b) =>
+				b !== a &&
+				b.abilityType === a.abilityType &&
+				((b as { summons?: { label: string }[] }).summons ?? []).some((t) => t.label !== s.label)
+		);
+		if (s.terminatesOn === a.abilityType && !siblingSummons) {
 			push(
 				'strict',
 				'summon-terminates-own-kind',

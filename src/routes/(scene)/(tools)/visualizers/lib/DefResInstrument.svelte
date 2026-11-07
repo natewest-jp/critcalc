@@ -183,9 +183,11 @@
 			? null
 			: g.scope === 'skill'
 				? 'own Skill DMG only'
-				: g.target === 'team'
-					? 'whole party'
-					: 'own hits';
+				: g.scope === 'burst'
+					? 'own Burst DMG only'
+					: g.target === 'team'
+						? 'whole party'
+						: 'own hits';
 	const abilityOf = (g: SourceGroup) =>
 		g.options.find((o) => o.amount === picks[g.key])?.ability ?? g.options[0].ability;
 
