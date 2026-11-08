@@ -3,9 +3,9 @@
 	"gcsim": {
 		"audited": "5dacbb4f0",
 		"seenUpstream": "5dacbb4f0",
-		"date": "2026-11-07",
+		"date": "2026-11-08",
 		"tag": "v2.49.7",
-		"note": "clone fast-forwarded 2a79dae67 → 5dacbb4f0 (3 commits): Cyno A1 ticker source capture #3266 and Mizuki walk during Dreamdrifter #3267 (nothing we model moved), catalog pipeline #3268; frames audit byte-stable"
+		"note": "no new upstream commits since 5dacbb4f0 (2026-11-06)"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-07T00:00:00Z"
+		"lastSeen": "2026-11-08T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -25,10 +25,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "8cddce79"
+		"lastSwept": "a67a4150"
 	},
 	"roles": {
-		"audited": "2026-11-07",
+		"audited": "2026-11-08",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
