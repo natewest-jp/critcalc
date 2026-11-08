@@ -531,3 +531,23 @@ describe("Navia's Cannon Fire Support runs gcsim's 42/48/42 gap cycle (2026-11-0
 		for (const t of applied) expect(at).toContain(t);
 	});
 });
+
+describe("Amber's Fiery Rain is gcsim's three arrow loops on one counter (2026-11-08)", () => {
+	// gcsim `amber/burst.go`: from burstStart (72f), arrows every 12f, 24f and 36f,
+	// each loop `i <= 120`: 10 + 5 + 3 = 18 arrows on 10 distinct frames, all on
+	// ICDGroupAmber (60f, every 3rd). gcsim applies 7 of the 18.
+	const AM = 'amber';
+	it('the lane draws the ten distinct instants, the 2 s end included', () => {
+		const ticks = parse('Amber Q')
+			.windows.filter((w) => w.kind === 'summon' && w.characterId === AM)
+			.flatMap((w) => (w as { ticks?: number[] }).ticks ?? []);
+		expect(ticks).toEqual([84, 96, 108, 120, 132, 144, 156, 168, 180, 192]);
+	});
+
+	it('⚓ the 18 arrows spend one counter: 7 apply, as in gcsim', () => {
+		const applied = parse('Amber Q').applications.filter(
+			(a) => a.characterId === AM && a.castKind === 'burst'
+		);
+		expect(applied.map((a) => a.time)).toEqual([84, 108, 120, 144, 156, 180, 192]);
+	});
+});

@@ -119,13 +119,62 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
+								"interval": 0.4,
+								"firstTickDelay": 0.4,
+								"icdGate": {
+									"timer": 60,
+									"every": 3,
+									"cap": 8
+								},
+								"icdCounter": "amberBurst",
+								"tickCap": 5
+							},
+							"scaling": 50.544,
+							"stat": "atk",
+							"element": "pyro",
+							"_curatorNotes": [
+								"The 24f loop, queued first in gcsim (2026-11-08, summon tick drift round): arrows at burstStart + 24, 48, … 120, five of them. Was folded into the 12f series.",
+								"tickCap 5: the loop is i <= 120, so the arrow on the 2s end lands; the cap widens our half-open walk by one interval for it.",
+								"icdCounter amberBurst: all three loops are one ICDGroupAmber counter in gcsim (one AttackInfo, one tag). See the 12f series."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.6,
+								"firstTickDelay": 0.6,
+								"icdGate": {
+									"timer": 60,
+									"every": 3,
+									"cap": 8
+								},
+								"icdCounter": "amberBurst"
+							},
+							"scaling": 50.544,
+							"stat": "atk",
+							"element": "pyro",
+							"_curatorNotes": [
+								"The 36f loop (2026-11-08): arrows at burstStart + 36, 72, 108, three of them. Was folded into the 12f series.",
+								"No tickCap: the window derives the three (36, 72 and 108; the next would be past i <= 120).",
+								"icdCounter amberBurst, as the 24f loop."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
 								"interval": 0.2,
 								"firstTickDelay": 0.2,
 								"icdGate": {
 									"timer": 60,
 									"every": 3,
 									"cap": 8
-								}
+								},
+								"icdCounter": "amberBurst",
+								"tickCap": 10
 							},
 							"scaling": 50.544,
 							"stat": "atk",
@@ -133,9 +182,9 @@
 							"_curatorNotes": [
 								"gcsim internal/characters/amber/burst.go, func Burst: three QueueAttackWithSnap loops (i += 24, i += 36, i += 12, all `i <= 120`) fire 5 + 3 + 10 = 18 arrows at burstStart(72) + i. Earliest offset is i=12 → frame 84 and the modal gap is 12 frames, matching the measured row (Fiery Rain 84f / 12f × 18). interval = 12/60 = 0.2s; firstTickDelay = (84 − 72)/60 = 0.2s (observed first frame minus the summon's authored spawnsAt = burstStart).",
 								"scaling = burstTick[9] (talent level 10) = 0.50544 in zz_amber.dm.go, i.e. 50.544%. Cross-checks against the sidecar talents.burst row 'Fiery Rain DMG Per Wave', 10th value 50.5%, and against 'Total Fiery Rain DMG' 909.79% = 50.544 × 18. stat = atk: ai has no Mult modification and c.Snapshot(&ai) is the plain ATK snapshot. Element Pyro, Durability 25 (1U) are literal on the ai.",
-								"APPROXIMATION: our schema expresses one uniform cadence, so a 0.2s interval over the 2s window draws 9 ticks where gcsim fires 18 — gcsim's 18 arrows land on only 10 DISTINCT frames (every 12f from +12 to +120; the three loops stack duplicates on 24/36/48/72/96/108/120, with 72 carrying three), and `collectSummonTicks` walks `t < endAt`, so the arrow landing exactly at the summon's 2s end is dropped. Total damage is therefore understated; the aura cadence (the reason this series exists) is correct at its fastest rate.",
-								"NO tickCap, deliberately (tick-cap round, 2026-08-18): the 9-vs-18 gap is a SHAPE our schema cannot express, not a count. gcsim fires three overlapping loops (i += 24, 36, 12) whose 18 arrows land on only 10 distinct frames with duplicates stacked on 24/36/48/72/96/108/120 - a tick cap would have us draw 10 evenly spaced markers where the game stacks them, which is a different lie from the one we have. The approximation note above stands.",
-								"icdGate authored 2026-08-17 (ICD-group round b), superseding the note that said our schema could not express it: gcsim burst.go:32 sets ICDGroupAmber on this AttackInfo, whose table entry (pkg/core/attacks/icd_groups.dm.go) is a 60f reset window with every 3rd hit applying inside it. Measured 13/18 applied against standard ICD's 6. ⚠️ The pair is read off gcsim's exported tables by the dumper's probe rather than inferred from the applied count — the `other` verdict said only THAT standard was wrong, never what was right."
+								"THREE SERIES, one per gcsim loop (2026-11-08, summon tick drift round; replaces the one-series approximation and its notes). The 18 arrows land on 10 distinct frames, stacked where loops coincide (two on 96, 108, 168, 180; three on 120 and 144; 192 carries the 12f and 24f arrows), and the lane draws the distinct frames. Before, one 0.2s series drew 9 arrows: the stacks and the 2s-end arrow were missing, so total damage was understated.",
+								"tickCap 10: the loop is i <= 120, so the arrow on the 2s end (192f) lands, which our half-open walk dropped. The cap widens the window by one interval for it.",
+								"icdGate authored 2026-08-17 (ICD-group round b), superseding the note that said our schema could not express it: gcsim burst.go:32 sets ICDGroupAmber on this AttackInfo, whose table entry (pkg/core/attacks/icd_groups.dm.go) is a 60f reset window with every 3rd hit applying inside it. Measured 13/18 applied against standard ICD's 6. ⚠️ The pair is read off gcsim's exported tables by the dumper's probe rather than inferred from the applied count — the `other` verdict said only THAT standard was wrong, never what was right. ↻ 2026-11-08: the audit measures 7/18 applied today, not the 13/18 above, and the three loops now share the counter through icdCounter amberBurst, so we apply the same 7."
 							]
 						}
 					]
