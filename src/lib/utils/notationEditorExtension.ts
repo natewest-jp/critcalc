@@ -563,14 +563,14 @@ const notationTheme = EditorView.theme({
 	'.rp-tok-unset': { color: dim(52), paddingRight: '2px' },
 	'.rp-tok-optional': { color: dim(50), paddingRight: '2px' },
 	'.rp-tok-label': { color: 'var(--muted)', paddingRight: '2px' },
-	// stack-assert: neutral gray, italic — visually subordinate to action tokens
-	// since the assertion itself is metadata (no timeline event). Time (~Xs) and
+	// stack-assert and bar-length (the braces): neutral gray and upright (Nate
+	// 2026-11-08), visually subordinate to action tokens since both are metadata
+	// (no timeline event of their own). Time (~Xs) and
 	// stacks are held to the same non-infused gray so element tint stays the sole
 	// signal of "this hits with an element" (Nate 2026-07-22).
 	'.rp-tok-stack': {
 		color: dim(70),
 		paddingRight: '2px',
-		fontStyle: 'italic',
 		fontSize: '0.92em'
 	},
 	'.rp-tok-or-alt': { color: dim(50), paddingRight: '2px' },
