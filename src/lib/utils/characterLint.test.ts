@@ -1121,6 +1121,25 @@ describe('onHit gainStacks boundedness lint (onHit wiring, 2026-07-17)', () => {
 		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')).toBeUndefined();
 	});
 
+	it('accepts a team-sourced grant of a rotation-scoped key with a max (Valeriy A1-shape)', () => {
+		const c = makeStubWithOnHitGain(
+			{ type: 'onHit', source: 'others', filter: { element: 'electro' } },
+			{ scope: 'rotation' }
+		);
+		const issues = lintCharacter(c);
+		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')).toBeUndefined();
+		expect(issues.find((i) => i.check.startsWith('gainstacks-scope'))).toBeUndefined();
+	});
+
+	it('still flags a rotation-scoped team grant with no max', () => {
+		const c = makeStubWithOnHitGain(
+			{ type: 'onHit', source: 'team' },
+			{ scope: 'rotation', max: undefined }
+		);
+		const issues = lintCharacter(c);
+		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')?.severity).toBe('strict');
+	});
+
 	it('accepts others-sourced onHit gainStacks with sourceLifetime (Skirk A4-shape)', () => {
 		const c = makeStubWithOnHitGain(
 			{ type: 'onHit', source: 'others', filter: { element: 'cryo' } },

@@ -886,22 +886,35 @@ export function dispatchGainStacksOnHit(
 					}
 					mirrorKey(target, fx.key);
 					if (fx.drain) hcs.drainAnchors.set(fx.key, hit.time);
-				} else if (fx.lifetime !== undefined) {
-					// team/others — rotation-wide instance accrual (onReaction shape).
-					const instances = grantInstances(
-						hcs.onHitStackInstances.get(fx.key) ?? [],
-						fx,
-						effAmount,
-						hit.time
-					);
-					hcs.onHitStackInstances.set(fx.key, instances);
-					hcs.onHitStacks.set(fx.key, instances.length);
 				} else {
-					// team/others without a decay shape — lint-rejected; saturate
-					// defensively so unlinted fixtures stay bounded at `max`.
-					const current = hcs.onHitStacks.get(fx.key) ?? 0;
-					const next = current + effAmount;
-					hcs.onHitStacks.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+					// team/others — rotation-wide accrual, in the key's HOME (2026-11-08):
+					// `onHitStacks` for a key only these grants write, `rotationStacks`
+					// for a rotation-scoped key the holder's own casts also grant
+					// (Valeriy's Impact Momentum). ⛔ Writing `onHitStacks` whatever the
+					// key split one count across two pools that never added up. The
+					// consume arm asks the same `homeOf`. No mirror: `segPools` is the
+					// HITTER's pool, and the holder's next settle point carries the key.
+					const pools =
+						stackScopeOf(holder, fx.key) === 'rotation'
+							? { state: hcs.rotationStacks, instances: hcs.rotationStackInstances }
+							: { state: hcs.onHitStacks, instances: hcs.onHitStackInstances };
+					if (fx.lifetime !== undefined) {
+						// Instance accrual (onReaction shape).
+						const instances = grantInstances(
+							pools.instances.get(fx.key) ?? [],
+							fx,
+							effAmount,
+							hit.time
+						);
+						pools.instances.set(fx.key, instances);
+						pools.state.set(fx.key, instances.length);
+					} else {
+						// No decay shape: bounded only by `max`. Lint rejects it for an
+						// `onHitStacks` key; a rotation-scoped key is bounded by its own.
+						const current = pools.state.get(fx.key) ?? 0;
+						const next = current + effAmount;
+						pools.state.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+					}
 				}
 			}
 		}
@@ -1021,6 +1034,10 @@ export function syncOnHitToStackState(
 			const srcMode = fx.trigger.source ?? 'self';
 			if (srcMode === 'self') continue;
 			if (fx.sourceLifetime !== undefined) continue;
+			// A rotation-scoped key lives in `rotationStacks` and has its own sync
+			// (`syncRotationStacksToStackState`); syncing it from here would write
+			// this pool's 0 over it.
+			if (stackScopeOf(holder, fx.key) === 'rotation') continue;
 			if (keysOnHit.has(fx.key)) continue;
 			keysOnHit.set(fx.key, { lifetime: fx.lifetime !== undefined });
 		}
