@@ -218,11 +218,15 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 1.5
+								"interval": 1.5,
+								"firstTickDelay": 1.517
 							},
 							"scaling": 110.34,
 							"stat": "def",
-							"element": "geo"
+							"element": "geo",
+							"_curatorNotes": [
+								"firstTickDelay 1.517 (91f), 2026-11-08 (summon tick drift round): gcsim burst.go queues gorouCrystalCollapse 90f after the burst hitmark and every 90f after, and each task QueueAttacks with delay 1, so the hit lands 1f after the task. The tick is the hit, so ours stood 1f early. The C4 heal series stays at the task frame: Player.Heal has no delay."
+							]
 						},
 						{
 							"type": "heal",

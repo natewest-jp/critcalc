@@ -10,7 +10,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/rounds/gauge-ro
 - characters: **130** authored · **120** with a gcsim source
 - FrameMaps: **1237** authored · **1106** matching gcsim exactly · **45** disagreeing · **86** uncovered
 - skill/burst application schedules observed: **322** · unobserved: **21**
-- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **13**
+- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **7**
 - hits carrying a measured gcsim ICD cadence: **3393** of **3396**
 
 ⛔ **No gcsim source (10)** — cannot be oracled at all, and nothing here may be written to them:
@@ -676,13 +676,13 @@ which the pair alone cannot state.
 | fischl | `midnight_phantasmagoria` | Oz 74f / 59f × 9 · 300f / every 4 · 8 max | Oz (Burst) 192f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** ⚠️ **drift up to −118f, from tick 1** | 300f / every 4 · 8 max |
 | furina | `salon_solitaire` | Salon Solitaire 132f / 202f × 9 · 1800f / every 2 · 12 max<br>Salon Solitaire 110f / 98f × 18 · 1800f / every 2 · 12 max<br>Salon Solitaire 131f / 314f × 6 · `none` | — | — |
 | ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 · 2/2 `either` | `none` |
-| gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f × 5 · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` ⚠️ **drift up to −1f, from tick 1** | 150f / every 3 · 8 max |
-| ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f × 10 · `none` | Birgitta 110f / 119f × 10 · 10/10 `none` ⚠️ **drift up to +9f, from tick 2** | `none` |
-| ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 120f × 10 · `none` | Birgitta 153f / 119f × 10 · 10/10 `none` ⚠️ **drift up to +9f, from tick 2** | `none` |
+| gorou | `juuga_forward_unto_victory` | General's Glory 122f / 90f × 5 · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` | 150f / every 3 · 8 max |
+| ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 119f × 10 · `none` | Birgitta 110f / 119f × 10 · 10/10 `none` | `none` |
+| ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 119f × 10 · `none` | Birgitta 153f / 119f × 10 · 10/10 `none` | `none` |
 | kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f × 5 · `none`<br>Autumn Whirlwind 140f / 117f × 5 · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
 | kaeya | `glacial_waltz` | Glacial Waltz 53f / 40f × 13 `cap` · `standard` | Glacial Waltz 53f / 40f × 13 · 7/13 `standard` | 150f / every 3 · 8 max |
 | kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f × 6 · `standard` | — | — |
-| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f × 8 `cap` · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · shares the cast's counter ✅ · 4/8 `standard` ⚠️ **drift up to −2f, from tick 1** | 150f / every 3 · 8 max |
+| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 115f / 90f × 8 `cap` · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · shares the cast's counter ✅ · 4/8 `standard` | 150f / every 3 · 8 max |
 | kuki_shinobu | `gyoei_narukami_kariyama_rite` | Gyoei Narukami Kariyama Rite 50f / 17f × 7 `cap` · `standard` | Gyoei Narukami Kariyama Rite 50f / 17f × 7 · 3/7 `standard` | 150f / every 3 · 8 max |
 | lauma | `runo_dawnless_rest_of_karsikko` | Frostgrove Sanctuary 62f / 117f × 8 · `none` | Frostgrove Sanctuary 62f / 117f × 8 · 8/8 `none` | `none` |
 | layla | `dream_of_the_starstream_shaker` | Celestial Dreamsphere 114f / 90f × 8 · `standard` | Starlight Slug 114f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
@@ -719,13 +719,13 @@ which the pair alone cannot state.
 | xiangling | `pyronado` | Pyronado 56f / 73f × 9 · `none` | Pyronado 56f / 73f × 9 · 9/9 `none` | `none` |
 | xingqiu | `guhua_sword_fatal_rainscreen` | — | Xingqiu Orbital 44f / 135f × 7 · 7/7 `none` | `none` |
 | xingqiu | `guhua_sword_raincutter` | — | Xingqiu Orbital 19f / 135f × 7 · 7/7 `none` | `none` |
-| yae_miko | `yakan_evocation_sesshou_sakura` | Sesshou Sakura 120f / 176f × 8 · `standard` | Sesshou Sakura Tick 121f / 176f × 8 · 8/8 `either` ⚠️ **drift up to −1f, from tick 1** | 150f / every 3 · 8 max |
+| yae_miko | `yakan_evocation_sesshou_sakura` | Sesshou Sakura 121f / 176f × 8 · `standard` | Sesshou Sakura Tick 121f / 176f × 8 · 8/8 `either` | 150f / every 3 · 8 max |
 | yaoyao | `raphanus_sky_cluster` | Yuegui: Throwing Mode 105f / 60f × 10 · 150f / first only | Radish (Skill) 105f / 60f × 10 · 4/10 `standard` | 150f / first only |
 | yaoyao | `moonjade_descent` | Yuegui: Jumping Mode 146f / 60f × 4 `cap` · 90f / first only | — | — |
-| yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 183f / 90f × 8 `cap` · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` ⚠️ **drift up to −18f, from tick 1** | 150f / every 3 · 8 max |
+| yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 201f / 90f × 8 `cap` · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | zhongli | `dominus_lapidis` | Stone Stele 144f / 120f × 15 `cap` · `standard` | Stone Stele (Tick) 144f / 120f × 15 · shares the cast's counter ✅ · 7/15 `other` | 150f / every 3 · 8 max |
 
-### 5a. Tick instants that drift from gcsim's (13)
+### 5a. Tick instants that drift from gcsim's (7)
 
 ⚓ Our walk (`collectSummonTicks`) against every tick gcsim fired, on one-to-one
 pairings, over the ticks both sides have. Negative is ours early. The first tick
@@ -737,15 +737,9 @@ rounding a fractional interval; read the Go before calling it a finding.
 - durin `principle_of_purity_as_the_light_shifts` · Dragon of White Flame: up to +4f, from tick 2
 - durin `principle_of_darkness_as_the_stars_smolder` · Dragon of Dark Decay: up to +6f, from tick 2
 - fischl `midnight_phantasmagoria` · Oz (Burst): up to −118f, from tick 1
-- gorou `juuga_forward_unto_victory` · Crystal Collapse: up to −1f, from tick 1
-- ineffa `cleaning_mode_carrier_frequency` · Birgitta: up to +9f, from tick 2
-- ineffa `supreme_instruction_cyclonic_exterminator` · Birgitta: up to +9f, from tick 2
-- kuki_shinobu `sanctifying_ring` · Grass Ring of Sanctification: up to −2f, from tick 1
 - navia `as_the_sunlit_skys_singing_salute` · Cannon Fire Support: up to −30f, from tick 3
 - traveler_cryo `ice_fog_piercer` · Frostpierce Star: up to +339f, from tick 2
 - traveler_cryo@lumine `ice_fog_piercer` · Frostpierce Star: up to +339f, from tick 2
-- yae_miko `yakan_evocation_sesshou_sakura` · Sesshou Sakura Tick: up to −1f, from tick 1
-- yumemizuki_mizuki `anraku_secret_spring_therapy` · Munen Shockwave: up to −18f, from tick 1
 
 ### 5b. Tick series whose measured cadence is neither standard nor none
 

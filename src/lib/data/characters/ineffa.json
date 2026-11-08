@@ -119,13 +119,16 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2,
+								"interval": 1.983,
 								"firstTickDelay": 0.7,
 								"icdGate": "none"
 							},
 							"scaling": 172.8,
 							"stat": "atk",
-							"element": "electro"
+							"element": "electro",
+							"_curatorNotes": [
+								"interval 1.983 (119f), 2026-11-08 (summon tick drift round): gcsim skill.go birgittaDischarge re-queues itself with Tasks.Add(…, 119), not 120. Ten discharges either way inside the 20s status; ours ran 1f late per discharge, 9f by the tenth."
+							]
 						}
 					]
 				}
@@ -192,13 +195,16 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2,
+								"interval": 1.983,
 								"firstTickDelay": 0.7,
 								"icdGate": "none"
 							},
 							"scaling": 172.8,
 							"stat": "atk",
-							"element": "electro"
+							"element": "electro",
+							"_curatorNotes": [
+								"interval 1.983 (119f), 2026-11-08 (summon tick drift round): the burst re-summons the same Birgitta (burst.go calls summonBirgitta), whose birgittaDischarge re-queues itself every 119f. See the skill series."
+							]
 						}
 					]
 				}

@@ -465,3 +465,42 @@ describe('Kokomi A1 Tamakushi Casket: the burst refreshes a live Bake-Kurage (20
 		expect(run('Kokomi E ~14s Q').end).toBe(774);
 	});
 });
+
+describe('summon ticks land on the frame gcsim deals their damage (2026-11-08)', () => {
+	// ⚓ A tick's instant is when its hit lands, not when gcsim's tick task runs:
+	// `QueueAttack(ai, pattern, delay, …)` lands `delay` frames after the task.
+	// Read from the Go, then checked against `audit-gcsim-frames.mjs` §5a.
+	const markers = (notation: string, characterId: string) =>
+		parse(notation)
+			.windows.filter((w) => w.kind === 'summon' && w.characterId === characterId)
+			.flatMap((w) => (w as { ticks?: number[] }).ticks ?? []);
+
+	it("Gorou's Crystal Collapse lands 1f after its 90f task (`gorou/burst.go`)", () => {
+		expect(markers('Gorou Q', 'gorou')).toEqual([122, 212, 302, 392, 482]);
+	});
+
+	it("Kuki's ring hits 2f after its bell task; the heal is the task's own frame (`kuki/skill.go`)", () => {
+		const damage = [115, 205, 295, 385, 475, 565, 655, 745];
+		const heal = damage.map((t) => t - 2);
+		expect(markers('Kuki Shinobu E', 'kuki_shinobu')).toEqual(
+			[...damage, ...heal].sort((a, b) => a - b)
+		);
+	});
+
+	it("Yae's Sesshou Sakura strikes 1f after its 176f task (`yaemiko/kitsune.go`)", () => {
+		expect(markers('Yae Miko E', 'yae_miko')).toEqual([121, 297, 473, 649, 825, 1001, 1177, 1353]);
+	});
+
+	it("Mizuki's snacks burst at the end of their 0.3 s pickup lock (`mizuki/snack.go`)", () => {
+		// Spawned every 90f from the burst's hitmark (93f); a snack can't be picked
+		// up for 18f, and the Munen Shockwave (or the heal) is the pickup.
+		const at = [201, 291, 381, 471, 561, 651, 741, 831];
+		expect(markers('Mizuki Q', 'yumemizuki_mizuki')).toEqual(at);
+	});
+
+	it("Ineffa's Birgitta discharges every 119f (`ineffa/skill.go`)", () => {
+		expect(markers('Ineffa E', 'ineffa')).toEqual([
+			110, 229, 348, 467, 586, 705, 824, 943, 1062, 1181
+		]);
+	});
+});
