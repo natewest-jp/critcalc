@@ -159,6 +159,50 @@ describe('summonTick lint rules (P3)', () => {
 		expect(hit?.severity).toBe('strict');
 	});
 
+	it('flags an intervalCycle shorter than two gaps or with a non-positive gap', () => {
+		const withCycle = (intervalCycle: number[]) =>
+			lintCharacter(
+				makeStubCharacter({
+					abilities: [
+						{
+							id: 'lintstub__normal__attack',
+							name: 'Attack',
+							input: ['N'],
+							abilityType: 'normal',
+							hits: [{ frames: { anim: 10 } }]
+						},
+						{
+							id: 'lintstub__skill__cast',
+							name: 'Cast',
+							input: ['E'],
+							abilityType: 'skill',
+							behavior: 'instant',
+							frames: { anim: 20 },
+							cooldown: 10,
+							summons: [
+								{
+									label: 'Doll',
+									duration: 10,
+									effects: [
+										{
+											type: 'damage',
+											target: 'enemy',
+											trigger: { type: 'summonTick', interval: 0.7, intervalCycle },
+											scaling: 100,
+											stat: 'atk'
+										}
+									]
+								}
+							]
+						}
+					]
+				})
+			).find((i) => i.check === 'summon-tick-interval-cycle-invalid');
+		expect(withCycle([0.7])?.severity).toBe('strict');
+		expect(withCycle([0.7, 0])?.severity).toBe('strict');
+		expect(withCycle([0.7, 0.8, 0.7])).toBeUndefined();
+	});
+
 	it('flags summonTick used on a regular ability effect (must live in summons[])', () => {
 		const c = makeStubCharacter({
 			abilities: [

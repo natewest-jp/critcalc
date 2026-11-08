@@ -49,7 +49,7 @@ import {
 } from '$lib/utils/icd';
 import {
 	findSummonsForBar,
-	nextTickAt,
+	tickAt,
 	summonEndAt,
 	summonOwnerIsStance,
 	summonSpawnAt,
@@ -1453,9 +1453,9 @@ export function scheduleSummonTicks(
 			const appliesOnlyTick =
 				series.effect.trigger.type === 'summonTick' && series.effect.trigger.appliesOnly === true;
 
-			// The chain's first tick: the second is `secondGap` after it (`nextTickAt`).
+			// The chain's first tick; tick `k` is `tickAt(series, chainFirst, k)`.
 			let chainFirst = NaN;
-			const fire = (at: number): void => {
+			const fire = (at: number, k: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
 				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
 				if (!liveAt(at - travel)) return;
@@ -1482,16 +1482,16 @@ export function scheduleSummonTicks(
 						}
 					) === false
 				) {
-					const skipTo = nextTickAt(series, chainFirst, at);
-					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
+					const skipTo = tickAt(series, chainFirst, k + 1);
+					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo, k + 1));
 					return;
 				}
 				// ⚓ An ABSORBED tick lands in the lock's element; a twin before the
 				// lock is refused and keeps its cadence, as a field-gated one does.
 				const element = absorbedMode ? lockedAt(ctx, absorbKey, at) : staticElement;
 				if (absorbedMode && element === undefined) {
-					const skipTo = nextTickAt(series, chainFirst, at);
-					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
+					const skipTo = tickAt(series, chainFirst, k + 1);
+					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo, k + 1));
 					return;
 				}
 				fired += 1;
@@ -1537,8 +1537,9 @@ export function scheduleSummonTicks(
 				// ⚓ …unless it only APPLIES (Nilou's aura): no hit record, no `onHit`
 				// stream, no stack dispatch — and the chain runs on regardless.
 				if (appliesOnlyTick) {
-					const next = nextTickAt(series, chainFirst, at);
-					if (!capReached() && inLife(next)) clock.schedule(next, Band.TICK, () => fire(next));
+					const next = tickAt(series, chainFirst, k + 1);
+					if (!capReached() && inLife(next))
+						clock.schedule(next, Band.TICK, () => fire(next, k + 1));
 					return;
 				}
 				// ⚓ THE TICK IS DAMAGE, whether or not it applied. An ICD-suppressed
@@ -1589,11 +1590,11 @@ export function scheduleSummonTicks(
 				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
 				// hit still happened, still spent its counter slot, and the series
 				// must not stop because of it.
-				const next = nextTickAt(series, chainFirst, at);
+				const next = tickAt(series, chainFirst, k + 1);
 				// ⚠️ Stop SCHEDULING at the cap too, not only firing: a capped series
 				// whose summon outlives its ticks would otherwise queue a task per
 				// interval for the rest of the window, each one an immediate no-op.
-				if (!capReached() && inLife(next)) clock.schedule(next, Band.TICK, () => fire(next));
+				if (!capReached() && inLife(next)) clock.schedule(next, Band.TICK, () => fire(next, k + 1));
 			};
 
 			// ⚓ A STREAM starts at the lock, phased from it; everything else at the
@@ -1602,12 +1603,12 @@ export function scheduleSummonTicks(
 				lockOf(ctx, absorbKey).onLock.push((_el, lockAt) => {
 					const first = lockAt + series.firstDelay;
 					chainFirst = first;
-					if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first));
+					if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first, 0));
 				});
 			} else {
 				const first = spawnAt + series.firstDelay;
 				chainFirst = first;
-				if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first));
+				if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first, 0));
 			}
 		}
 
@@ -1633,17 +1634,17 @@ export function scheduleSummonTicks(
 			(e) => e.type === 'gainStacks' || e.type === 'consumeStacks',
 			tickConditionCtx(ctx, char.id)
 		)) {
-			const k = `${series.firstDelay}/${series.secondGap}/${series.interval}`;
-			const group = cadences.get(k);
+			const key = `${series.firstDelay}/${series.secondGap}/${series.interval}/${series.cycle?.join(',') ?? ''}`;
+			const group = cadences.get(key);
 			if (group) group.push(series);
-			else cadences.set(k, [series]);
+			else cadences.set(key, [series]);
 		}
 		for (const group of cadences.values()) {
 			const { firstDelay } = group[0];
 			const effects = group.map((g) => g.effect);
-			// The chain's first tick: the second is `secondGap` after it (`nextTickAt`).
+			// The chain's first tick; tick `k` is `tickAt(group[0], chainFirst, k)`.
 			let chainFirst = NaN;
-			const fire = (at: number): void => {
+			const fire = (at: number, k: number): void => {
 				if (!liveAt(at) || at >= endNow()) return;
 				// ⚓ Whether the OWNER is on field at this instant is a live fact the
 				// tick can answer and a buff pass cannot — `ctx.activeCharId` is the
@@ -1659,12 +1660,12 @@ export function scheduleSummonTicks(
 					cLevel,
 					tickConditionCtx(ctx, char.id)
 				);
-				const next = nextTickAt(group[0], chainFirst, at);
-				if (next < endNow()) clock.schedule(next, Band.TICK, () => fire(next));
+				const next = tickAt(group[0], chainFirst, k + 1);
+				if (next < endNow()) clock.schedule(next, Band.TICK, () => fire(next, k + 1));
 			};
 			const first = spawnAt + firstDelay;
 			chainFirst = first;
-			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
+			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first, 0));
 		}
 	});
 }

@@ -10,7 +10,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/rounds/gauge-ro
 - characters: **130** authored · **120** with a gcsim source
 - FrameMaps: **1237** authored · **1106** matching gcsim exactly · **45** disagreeing · **86** uncovered
 - skill/burst application schedules observed: **322** · unobserved: **21**
-- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **7**
+- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **6**
 - hits carrying a measured gcsim ICD cadence: **3393** of **3396**
 
 ⛔ **No gcsim source (10)** — cannot be oracled at all, and nothing here may be written to them:
@@ -691,7 +691,7 @@ which the pair alone cannot state.
 | mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
 | mavuika | `hour_of_burning_skies` | Rings of Searing Radiance 120f / 120f × 6 · `none` | — | — |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
-| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` ⚠️ **drift up to −30f, from tick 3** | 720f / every 3 · 8 max |
+| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 · 8 max |
 | nilou | `whirling_steps_3` | Tranquility Aura 41f / 30f × 25 `cap` · 114f / first only | Tranquility Aura 41f / 30f × 25 · 7/25 `other` ⚠️ **authored disagrees** | 114f / every 4 · 3 max |
 | ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` | `none` |
 | odette | `adagio_phantom_night_dancers` | Solo Dance Double 157f / 234f × 5 · `none`<br>Solo Dance Double 266f / 234f × 5 · `none` | "Plume" Dance Move 157f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 266f / 234f × 5 · 5/5 `either` | `none`<br>`none` |
@@ -725,7 +725,7 @@ which the pair alone cannot state.
 | yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 201f / 90f × 8 `cap` · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | zhongli | `dominus_lapidis` | Stone Stele 144f / 120f × 15 `cap` · `standard` | Stone Stele (Tick) 144f / 120f × 15 · shares the cast's counter ✅ · 7/15 `other` | 150f / every 3 · 8 max |
 
-### 5a. Tick instants that drift from gcsim's (7)
+### 5a. Tick instants that drift from gcsim's (6)
 
 ⚓ Our walk (`collectSummonTicks`) against every tick gcsim fired, on one-to-one
 pairings, over the ticks both sides have. Negative is ours early. The first tick
@@ -737,7 +737,6 @@ rounding a fractional interval; read the Go before calling it a finding.
 - durin `principle_of_purity_as_the_light_shifts` · Dragon of White Flame: up to +4f, from tick 2
 - durin `principle_of_darkness_as_the_stars_smolder` · Dragon of Dark Decay: up to +6f, from tick 2
 - fischl `midnight_phantasmagoria` · Oz (Burst): up to −118f, from tick 1
-- navia `as_the_sunlit_skys_singing_salute` · Cannon Fire Support: up to −30f, from tick 3
 - traveler_cryo `ice_fog_piercer` · Frostpierce Star: up to +339f, from tick 2
 - traveler_cryo@lumine `ice_fog_piercer` · Frostpierce Star: up to +339f, from tick 2
 

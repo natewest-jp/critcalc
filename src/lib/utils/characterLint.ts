@@ -2953,6 +2953,18 @@ function lintSummonEffects(
 						a.id
 					);
 				}
+				if (
+					eff.trigger.intervalCycle !== undefined &&
+					(eff.trigger.intervalCycle.length < 2 ||
+						!eff.trigger.intervalCycle.every(isPositiveNumber))
+				) {
+					push(
+						'strict',
+						'summon-tick-interval-cycle-invalid',
+						`summonTick effect on summon "${s.label}" requires an intervalCycle of two or more positive gaps in seconds (got ${JSON.stringify(eff.trigger.intervalCycle)})`,
+						a.id
+					);
+				}
 				if (eff.trigger.firstTickDelay !== undefined && eff.trigger.firstTickDelay < 0) {
 					push(
 						'strict',

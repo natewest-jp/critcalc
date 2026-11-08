@@ -957,6 +957,12 @@ export type Trigger =
 	 *    Kokomi's Bake-Kurage: gcsim ticks at the hitmark, then queues its
 	 *    repeating task 126f later (2.1s), then every 120f.
 	 *
+	 *  - `intervalCycle` — the gaps between ticks in seconds, when they are a
+	 *    repeating pattern rather than one interval: the gap after tick 1 is the
+	 *    first entry, and the list repeats. `interval` stays the modal gap (the
+	 *    cap's one-interval widening and the audit read it). Navia's Cannon Fire
+	 *    Support: gcsim's 42/48/42f, so `[0.7, 0.8, 0.7]`.
+	 *
 	 *  Reference: Fischl Oz, Zhongli Stone Stele, Albedo Solar Isotoma blossom,
 	 *  Ororon Supersonic Oculus, Mavuika Ring of Searing Radiance. */
 	| {
@@ -964,6 +970,7 @@ export type Trigger =
 			interval: number;
 			firstTickDelay?: number;
 			secondTickDelay?: number;
+			intervalCycle?: number[];
 			/**
 			 * ⚓ Elemental-application gating for THIS tick series (gauge round
 			 * L5e-a¾). Absent means **standard ICD** — `icd.ts` at
