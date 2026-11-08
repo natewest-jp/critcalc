@@ -114,13 +114,15 @@
 									},
 									"ticks": 10
 								},
-								"sharesCastCounter": true
+								"sharesCastCounter": true,
+								"firstTickDelay": 1.533
 							},
 							"scaling": 45.43,
 							"stat": "atk",
 							"element": "electro",
 							"_curatorNotes": [
-								"tickCap 8 / 10 at C2 (tick-cap round, 2026-08-18): gcsim skill.go `skilldur := 720` (900 at C2) with bellTick self-rescheduling every 90f while the ring status is live, so the tick landing on the window boundary fires. Measured 8 at C0 and 10 at C6; our duration-derived counts were 7 and 9. The C2 override is required, not decorative - a flat cap would freeze the constellation at 8."
+								"tickCap 8 / 10 at C2 (tick-cap round, 2026-08-18): gcsim skill.go `skilldur := 720` (900 at C2) with bellTick self-rescheduling every 90f while the ring status is live, so the tick landing on the window boundary fires. Measured 8 at C0 and 10 at C6; our duration-derived counts were 7 and 9. The C2 override is required, not decorative - a flat cap would freeze the constellation at 8.",
+								"firstTickDelay 1.533 (92f), 2026-11-08 (summon tick drift round): gcsim skill.go bellTick runs every 90f from the ring's start and QueueAttacks with delay 2, so the hit lands 2f after the task; the heal in the same task is immediate and keeps the 1.5s default. The tick cap still widens the window by one interval, so the eighth (tenth at C2) hit lands."
 							]
 						},
 						{

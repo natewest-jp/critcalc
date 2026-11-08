@@ -342,14 +342,15 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 1.5,
-								"firstTickDelay": 1.5,
+								"firstTickDelay": 1.8,
 								"tickCap": 8
 							},
 							"scaling": 235,
 							"stat": "em",
 							"flat": 692,
 							"_curatorNotes": [
-								"tickCap 8, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): same interval and first delay, so it is one gcsim tick emitting both. The oracle cannot measure a heal, so this rides the damage measurement rather than a reading of its own."
+								"tickCap 8, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): same interval and first delay, so it is one gcsim tick emitting both. The oracle cannot measure a heal, so this rides the damage measurement rather than a reading of its own.",
+								"firstTickDelay 1.8, mirroring the damage series (2026-11-08): the heal is the same pickup as the shockwave (snack.go onPickedUp), behind the same 0.3s pickup lock."
 							]
 						},
 						{
@@ -358,14 +359,15 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 1.5,
-								"firstTickDelay": 1.5,
+								"firstTickDelay": 1.8,
 								"tickCap": 8
 							},
 							"scaling": 127.01,
 							"stat": "atk",
 							"element": "anemo",
 							"_curatorNotes": [
-								"tickCap 8 (tick-cap round, 2026-08-18): gcsim burst.go `for i := int(snackInterval); i <= burstDuration; i += snackInterval` with snackInterval 90 and burstDuration 720 - the bound is INCLUSIVE, so the tick landing exactly on the 12s end fires and our half-open walk dropped it. Measured 8 at both C0 and C6; we derived 7."
+								"tickCap 8 (tick-cap round, 2026-08-18): gcsim burst.go `for i := int(snackInterval); i <= burstDuration; i += snackInterval` with snackInterval 90 and burstDuration 720 - the bound is INCLUSIVE, so the tick landing exactly on the 12s end fires and our half-open walk dropped it. Measured 8 at both C0 and C6; we derived 7.",
+								"firstTickDelay 1.8 (108f), 2026-11-08 (summon tick drift round): gcsim burst.go spawns a snack every 90f from the hitmark, and snack.go refuses a pickup for snackCantTriggerDuration (0.3s, 18f); the Munen Shockwave is the pickup, so the earliest it lands is spawn + 18f. Ours sat on the spawn. A snack nobody picks up explodes 4s later; the series draws the earliest pickup."
 							]
 						}
 					]

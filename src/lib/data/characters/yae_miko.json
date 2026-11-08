@@ -128,11 +128,14 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 2.933,
-								"firstTickDelay": 1.433
+								"firstTickDelay": 1.45
 							},
 							"scaling": 170.64,
 							"stat": "atk",
-							"element": "electro"
+							"element": "electro",
+							"_curatorNotes": [
+								"firstTickDelay 1.45 (87f), 2026-11-08 (summon tick drift round): gcsim kitsune.go starts kitsuneTick 120 − skillStart after the cast and each strike QueueAttacks with delay 1, so the hit lands at 121f; 1.433 (86f) was the task frame."
+							]
 						}
 					],
 					"_curatorNotes": [
