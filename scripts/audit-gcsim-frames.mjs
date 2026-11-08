@@ -55,7 +55,8 @@ import {
 const { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } = await import('../src/lib/utils/icd.ts');
 // ⚓ Same law: the tick-CAP rule is imported, never restated. An audit that
 // re-derives a rule comes to measure a model we no longer have (L4d).
-const { tickCapOf, summonTickSeries } = await import('../src/lib/sim/summons.ts');
+const { tickCapOf, summonTickSeries, collectSummonTicks } =
+	await import('../src/lib/sim/summons.ts');
 // ⚓ And the cast-side rule (ICD cap round, 2026-10-04): §4c replays each authored
 // `application[]` through the planner's OWN per-cast resolution, so the comparison
 // against gcsim's applied flags is the planner's answer, not a re-derivation of it.
@@ -141,9 +142,21 @@ function authoredTicks(ability) {
 			const end = s.duration !== undefined ? f(s.duration) : null;
 			const derived =
 				end !== null && interval > 0 ? Math.max(0, Math.ceil((end - firstDelay) / interval)) : null;
+			// ⚓ EVERY INSTANT, from the planner's own walk (2026-11-08). The first tick
+			// and the interval alone cannot see a series whose second gap differs
+			// (Kokomi's Bake-Kurage, 6f) or a pattern that is not one interval
+			// (Navia's cannon), so §5 compares the whole list. ⛔ Not re-derived here.
+			const spawnAt = s.spawnsAt ?? 0;
+			const instants =
+				end !== null
+					? collectSummonTicks(s, spawnAt, spawnAt + end, DUMP_CONS, (x) => x === e).map(
+							(x) => x.time
+						)
+					: null;
 			out.push({
 				label: s.label,
 				kind: e.type,
+				instants,
 				spawnsAt: s.spawnsAt ?? 0,
 				firstTick: (s.spawnsAt ?? 0) + firstDelay,
 				interval,
@@ -252,6 +265,12 @@ function icdGateFor(icd) {
 /** An AUTHORED gate in the same shorthand the measured column uses, so the two
  *  can be read against each other at a glance. ⚓ Since sub-landing b the field
  *  can hold a window, and printing an object here read `[object Object]`. */
+/** "up to −30f, from tick 3" — the largest drift and the first tick that drifts. */
+function fmtDrift(o) {
+	const sign = o.drift > 0 ? '+' : '−';
+	return `up to ${sign}${Math.abs(o.drift)}f, from tick ${o.driftFrom + 1}`;
+}
+
 function fmtGate(gate) {
 	if (gate === 'standard' || gate === 'none') return `\`${gate}\``;
 	return `${gate.timer}f / ${gate.every ? `every ${gate.every}` : 'first only'}${gate.cap ? ` · ${gate.cap} max` : ''}`;
@@ -665,6 +684,22 @@ function main() {
 							? 'none'
 							: 'other';
 			}
+			// ⚓ Instant by instant, on a ONE-to-ONE pairing only (the count check's
+			// rule), over the ticks both sides have: a short side is the count
+			// check's finding, and the dumper's horizon cuts gcsim's list.
+			if (authored.length === 1 && observed.length === 1 && authored[0].instants) {
+				const ours = authored[0].instants;
+				const theirs = streams.get(observed[0].abil);
+				let drift = 0;
+				let firstAt = -1;
+				for (let i = 0; i < Math.min(ours.length, theirs.length); i++) {
+					const dv = ours[i] - theirs[i];
+					if (dv !== 0 && firstAt < 0) firstAt = i;
+					if (Math.abs(dv) > Math.abs(drift)) drift = dv;
+				}
+				observed[0].drift = drift;
+				observed[0].driftFrom = firstAt;
+			}
 			if (!authored.length && !observed.length) continue;
 			tickRows.push({ id: char.id, path: a.id, authored, observed });
 		}
@@ -725,7 +760,9 @@ function renderReport(d) {
 	p(
 		`- skill/burst application schedules observed: **${d.applicationRows.length}** · unobserved: **${d.noApplication.length}**`
 	);
-	p(`- summon tick streams cross-checked: **${d.tickRows.length}**`);
+	p(
+		`- summon tick streams cross-checked: **${d.tickRows.length}** · drifting from gcsim's instants: **${d.tickRows.filter((t) => t.observed.some((o) => o.drift)).length}**`
+	);
 	p(
 		`- hits carrying a measured gcsim ICD cadence: **${d.icdCoverage.seen}** of **${d.icdCoverage.hits}**`
 	);
@@ -1095,13 +1132,29 @@ function renderReport(d) {
 								: x.sharesCast
 									? " · shares the cast's counter ✅"
 									: '';
-						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${share}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}${nOff ? ` ⚠️ **count ${mine}→${x.n}**` : ''}`;
+						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${share}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}${nOff ? ` ⚠️ **count ${mine}→${x.n}**` : ''}${x.drift ? ` ⚠️ **drift ${fmtDrift(x)}**` : ''}`;
 					})
 					.join('<br>')
 			: '—';
 		const cad = t.observed.length ? t.observed.map((x) => fmtIcd(x.icd)).join('<br>') : '—';
 		p(`| ${t.id} | \`${t.path.split('__').pop()}\` | ${a} | ${o} | ${cad} |`);
 	}
+	p();
+
+	// --- the drift list ---------------------------------------------------------
+	const drifting = d.tickRows.filter((t) => t.observed.some((o) => o.drift));
+	p(`### 5a. Tick instants that drift from gcsim's (${drifting.length})`);
+	p();
+	p('⚓ Our walk (`collectSummonTicks`) against every tick gcsim fired, on one-to-one');
+	p('pairings, over the ticks both sides have. Negative is ours early. The first tick');
+	p('and the interval can both match while this does not: a different second gap, or a');
+	p('cadence that is a pattern rather than one interval. ⚠️ A ±1 alternation is gcsim');
+	p('rounding a fractional interval; read the Go before calling it a finding.');
+	p();
+	for (const t of drifting)
+		for (const o of t.observed.filter((x) => x.drift))
+			p(`- ${t.id} \`${t.path.split('__').pop()}\` · ${o.abil}: ${fmtDrift(o)}`);
+	if (!drifting.length) p('None.');
 	p();
 
 	// --- the window census --------------------------------------------------

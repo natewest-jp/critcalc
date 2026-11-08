@@ -45,6 +45,7 @@ _Empty: Nate picks the next item._
   - Nate's real-Safari/iPhone look at the lineup fit (`fbfb6c69`).
 - **The landing's announcements box: a small design improvement (⚓ Nate 2026-10-30).** The contents are right; the shape of the improvement isn't decided yet.
 - **Per-receiver stacks: Durin C1's White half.** Each other party member gets their own 20 Cycle of Enlightenment stacks and spends them on their own hits while active; a stack pool lives on one holder. Record: `docs/rounds/durin-lan-yan-forms-2026-11-07.md` §1.
+- **Summon tick drift from the frames audit's §5a.** Thirteen streams whose tick instants differ from gcsim's, sorted in `docs/rounds/audit-tick-instants-2026-11-08.md` §2. First: Navia's Cannon Fire Support (−30f), Amber's Fiery Rain (+36f), Mizuki's Munen Shockwave (−18f), Ineffa's Birgitta (+9f from tick 2). Each is read from gcsim and fixed as its own small round (Kokomi's `secondTickDelay` is the model for a second-gap shape).
 - **Engine gaps from the 2026-11-06 rounds** (records: `docs/rounds/revelation-gcsim-2026-11-06.md` §3, `kokomi-a1-refresh-2026-11-06.md` §4, `mitya-valeriy-ingest-2026-11-06.md` §3).
   - **Same-stat buffs from one cast collapse to one bar** (`dedupByStat`, `buffWindows.ts`): hides Mitya's C2 +123 EM and Valeriy's A4. Needs a decision: pool them or draw both.
   - **A Mitya party still draws a 7s Starlight Prism** (`sim/fields.ts`); the kit says Stellar-Conduct then makes Gradient Beacons instead.
