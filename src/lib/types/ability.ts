@@ -952,12 +952,18 @@ export type Trigger =
 	 *    to `interval` (mirrors gcsim's "first tick after one interval"
 	 *    convention for most summons).
 	 *
+	 *  - `secondTickDelay` — seconds from the first tick to the second, when
+	 *    that gap is not `interval`; every later tick is `interval` apart.
+	 *    Kokomi's Bake-Kurage: gcsim ticks at the hitmark, then queues its
+	 *    repeating task 126f later (2.1s), then every 120f.
+	 *
 	 *  Reference: Fischl Oz, Zhongli Stone Stele, Albedo Solar Isotoma blossom,
 	 *  Ororon Supersonic Oculus, Mavuika Ring of Searing Radiance. */
 	| {
 			type: 'summonTick';
 			interval: number;
 			firstTickDelay?: number;
+			secondTickDelay?: number;
 			/**
 			 * ⚓ Elemental-application gating for THIS tick series (gauge round
 			 * L5e-a¾). Absent means **standard ICD** — `icd.ts` at

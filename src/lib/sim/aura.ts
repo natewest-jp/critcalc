@@ -49,6 +49,7 @@ import {
 } from '$lib/utils/icd';
 import {
 	findSummonsForBar,
+	nextTickAt,
 	summonEndAt,
 	summonOwnerIsStance,
 	summonSpawnAt,
@@ -1452,6 +1453,8 @@ export function scheduleSummonTicks(
 			const appliesOnlyTick =
 				series.effect.trigger.type === 'summonTick' && series.effect.trigger.appliesOnly === true;
 
+			// The chain's first tick: the second is `secondGap` after it (`nextTickAt`).
+			let chainFirst = NaN;
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
 				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
@@ -1479,7 +1482,7 @@ export function scheduleSummonTicks(
 						}
 					) === false
 				) {
-					const skipTo = at + series.interval;
+					const skipTo = nextTickAt(series, chainFirst, at);
 					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
 					return;
 				}
@@ -1487,7 +1490,7 @@ export function scheduleSummonTicks(
 				// lock is refused and keeps its cadence, as a field-gated one does.
 				const element = absorbedMode ? lockedAt(ctx, absorbKey, at) : staticElement;
 				if (absorbedMode && element === undefined) {
-					const skipTo = at + series.interval;
+					const skipTo = nextTickAt(series, chainFirst, at);
 					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
 					return;
 				}
@@ -1534,7 +1537,7 @@ export function scheduleSummonTicks(
 				// ⚓ …unless it only APPLIES (Nilou's aura): no hit record, no `onHit`
 				// stream, no stack dispatch — and the chain runs on regardless.
 				if (appliesOnlyTick) {
-					const next = at + series.interval;
+					const next = nextTickAt(series, chainFirst, at);
 					if (!capReached() && inLife(next)) clock.schedule(next, Band.TICK, () => fire(next));
 					return;
 				}
@@ -1586,7 +1589,7 @@ export function scheduleSummonTicks(
 				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
 				// hit still happened, still spent its counter slot, and the series
 				// must not stop because of it.
-				const next = at + series.interval;
+				const next = nextTickAt(series, chainFirst, at);
 				// ⚠️ Stop SCHEDULING at the cap too, not only firing: a capped series
 				// whose summon outlives its ticks would otherwise queue a task per
 				// interval for the rest of the window, each one an immediate no-op.
@@ -1598,10 +1601,12 @@ export function scheduleSummonTicks(
 			if (absorbedMode === 'stream') {
 				lockOf(ctx, absorbKey).onLock.push((_el, lockAt) => {
 					const first = lockAt + series.firstDelay;
+					chainFirst = first;
 					if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first));
 				});
 			} else {
 				const first = spawnAt + series.firstDelay;
+				chainFirst = first;
 				if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first));
 			}
 		}
@@ -1628,14 +1633,16 @@ export function scheduleSummonTicks(
 			(e) => e.type === 'gainStacks' || e.type === 'consumeStacks',
 			tickConditionCtx(ctx, char.id)
 		)) {
-			const k = `${series.firstDelay}/${series.interval}`;
+			const k = `${series.firstDelay}/${series.secondGap}/${series.interval}`;
 			const group = cadences.get(k);
 			if (group) group.push(series);
 			else cadences.set(k, [series]);
 		}
 		for (const group of cadences.values()) {
-			const { interval, firstDelay } = group[0];
+			const { firstDelay } = group[0];
 			const effects = group.map((g) => g.effect);
+			// The chain's first tick: the second is `secondGap` after it (`nextTickAt`).
+			let chainFirst = NaN;
 			const fire = (at: number): void => {
 				if (!liveAt(at) || at >= endNow()) return;
 				// ⚓ Whether the OWNER is on field at this instant is a live fact the
@@ -1652,10 +1659,11 @@ export function scheduleSummonTicks(
 					cLevel,
 					tickConditionCtx(ctx, char.id)
 				);
-				const next = at + interval;
+				const next = nextTickAt(group[0], chainFirst, at);
 				if (next < endNow()) clock.schedule(next, Band.TICK, () => fire(next));
 			};
 			const first = spawnAt + firstDelay;
+			chainFirst = first;
 			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
 	});

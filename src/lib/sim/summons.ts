@@ -308,7 +308,8 @@ export function collectSummonTicks(
 		// runs on underneath it.
 		const asksField = fieldOpenAt !== undefined && mentionsPolestarField(s.effect.conditions);
 		let n = 0;
-		for (let t = spawnAt + s.firstDelay; t < limit; t += s.interval) {
+		const first = spawnAt + s.firstDelay;
+		for (let t = first; t < limit; t = nextTickAt(s, first, t)) {
 			if (cap !== null && n >= cap) break;
 			if (
 				asksField &&
@@ -363,7 +364,21 @@ export type SummonTickSeries = {
 	index: number;
 	interval: number;
 	firstDelay: number;
+	/** Frames from the first tick to the second (`summonTick.secondTickDelay`),
+	 *  `interval` when unauthored. Read only through {@link nextTickAt}. */
+	secondGap: number;
 };
+
+/** The tick after `at` in a series whose first tick fell at `first`. ⚓ THE ONE
+ *  STEP every tick chain takes (the walk below, `aura.ts`'s live chains), so the
+ *  second tick's gap cannot differ between what is drawn and what fires. */
+export function nextTickAt(
+	series: Pick<SummonTickSeries, 'interval' | 'secondGap'>,
+	first: number,
+	at: number
+): number {
+	return at + (at === first ? series.secondGap : series.interval);
+}
 
 /**
  * ⚓ THE ONE ACCEPTANCE RULE for a summon's tick series — which effects tick,
@@ -400,7 +415,9 @@ export function summonTickSeries(
 		if (!(interval > 0)) return;
 		const firstDelay =
 			eff.trigger.firstTickDelay !== undefined ? framesOf(eff.trigger.firstTickDelay) : interval;
-		out.push({ effect: eff, index, interval, firstDelay });
+		const secondGap =
+			eff.trigger.secondTickDelay !== undefined ? framesOf(eff.trigger.secondTickDelay) : interval;
+		out.push({ effect: eff, index, interval, firstDelay, secondGap });
 	});
 	return out;
 }
