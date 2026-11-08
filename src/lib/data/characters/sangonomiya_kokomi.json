@@ -108,7 +108,8 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 2,
-								"firstTickDelay": 0
+								"firstTickDelay": 0,
+								"secondTickDelay": 2.1
 							},
 							"scaling": 7.92,
 							"stat": "hp",
@@ -121,7 +122,8 @@
 								"type": "summonTick",
 								"interval": 2,
 								"firstTickDelay": 0,
-								"icdGate": "none"
+								"icdGate": "none",
+								"secondTickDelay": 2.1
 							},
 							"scaling": 196.54,
 							"stat": "atk",
@@ -133,7 +135,8 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 2,
-								"firstTickDelay": 0
+								"firstTickDelay": 0,
+								"secondTickDelay": 2.1
 							},
 							"scaling": 4.5,
 							"stat": "hp",

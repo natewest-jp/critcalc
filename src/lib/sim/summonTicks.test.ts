@@ -443,14 +443,16 @@ describe('Kokomi A1 Tamakushi Casket: the burst refreshes a live Bake-Kurage (20
 		).ticks?.map((t) => (typeof t === 'number' ? t : t.time));
 
 	it('without a burst the jellyfish lives its 12.5 s and ticks 7 times', () => {
-		expect(run('Kokomi E')).toEqual({ end: 774, ticks: [24, 144, 264, 384, 504, 624, 744] });
+		// gcsim `skill.go`: a tick at the hitmark (24f), then the repeating task
+		// queued at hitmark + 126, then every 120f (2026-11-08; was 6f early).
+		expect(run('Kokomi E')).toEqual({ end: 774, ticks: [24, 150, 270, 390, 510, 630, 750] });
 	});
 
 	it('⚓ a burst while it is out sets 12 s remaining at Q + 46f, and the 2 s phase holds', () => {
-		// Q at 263f → refresh at 309f → end 309 + 720 = 1029f; ticks go on at 864, 984.
+		// Q at 263f → refresh at 309f → end 309 + 720 = 1029f; ticks go on at 870, 990.
 		expect(run('Kokomi E ~3.37s Q')).toEqual({
 			end: 1029,
-			ticks: [24, 144, 264, 384, 504, 624, 744, 864, 984]
+			ticks: [24, 150, 270, 390, 510, 630, 750, 870, 990]
 		});
 	});
 

@@ -2942,6 +2942,17 @@ function lintSummonEffects(
 						a.id
 					);
 				}
+				if (
+					eff.trigger.secondTickDelay !== undefined &&
+					!isPositiveNumber(eff.trigger.secondTickDelay)
+				) {
+					push(
+						'strict',
+						'summon-tick-second-delay-invalid',
+						`summonTick effect on summon "${s.label}" requires a positive secondTickDelay in seconds (got ${eff.trigger.secondTickDelay})`,
+						a.id
+					);
+				}
 				if (eff.trigger.firstTickDelay !== undefined && eff.trigger.firstTickDelay < 0) {
 					push(
 						'strict',
