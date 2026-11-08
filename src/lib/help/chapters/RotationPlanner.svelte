@@ -148,8 +148,9 @@
 	</p>
 	<p>
 		A rotation can only use one Blank (if you would like support for more than one Blank, please
-		request it). Its actions use generic timing, and none of them hit, grant a buff, or apply an
-		element.
+		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the external form -->
+		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">request it</a>). Its
+		actions use generic timing, and none of them hit, grant a buff, or apply an element.
 	</p>
 	<p>
 		Blank counts as no element. It never breaks a rule like Nilou’s (no Pyro, Cryo, Electro, Anemo,
