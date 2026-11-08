@@ -10,7 +10,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/rounds/gauge-ro
 - characters: **130** authored · **120** with a gcsim source
 - FrameMaps: **1237** authored · **1106** matching gcsim exactly · **45** disagreeing · **86** uncovered
 - skill/burst application schedules observed: **322** · unobserved: **21**
-- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **6**
+- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **5**
 - hits carrying a measured gcsim ICD cadence: **3393** of **3396**
 
 ⛔ **No gcsim source (10)** — cannot be oracled at all, and nothing here may be written to them:
@@ -660,7 +660,7 @@ which the pair alone cannot state.
 | aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 133f / 90f × 10 · `standard`<br>Cool Your Jets Ducky 133f / 42f × 21 `cap` · 108f / first only | Cool Your Jets Ducky 133f / 90f × 10 · 5/10 `standard` | 150f / every 3 · 8 max |
 | alyosha | `hunters_advance` | Tugarin 118f / 118f × 7 · 96f / first only<br>Fulgurite Hunting Field 79f / 118f × 7 · 96f / first only | Fulgurite Hunting Field 79f / 118f × 7 · 7/7 `none`<br>Tugarin 118f / 118f × 7 · 0/7 `other` | 96f / first only<br>96f / first only |
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
-| amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 · 8 max | Fiery Rain 84f / 12f × 18 · 7/18 `other` ⚠️ **count 9→18** ⚠️ **drift up to +36f, from tick 3** | 60f / every 3 · 8 max |
+| amber | `fiery_rain` | Fiery Rain 96f / 24f × 5 `cap` · 60f / every 3 · 8 max<br>Fiery Rain 108f / 36f × 3 · 60f / every 3 · 8 max<br>Fiery Rain 84f / 12f × 10 `cap` · 60f / every 3 · 8 max | Fiery Rain 84f / 12f × 18 · 7/18 `other` | 60f / every 3 · 8 max |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |
 | chiori | `fluttering_hasode` | Tamoto 60f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · shares the cast's counter ✅ · 4/5 `other` | 114f / first only |
 | citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / first only | — | — |
@@ -725,7 +725,7 @@ which the pair alone cannot state.
 | yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 201f / 90f × 8 `cap` · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | zhongli | `dominus_lapidis` | Stone Stele 144f / 120f × 15 `cap` · `standard` | Stone Stele (Tick) 144f / 120f × 15 · shares the cast's counter ✅ · 7/15 `other` | 150f / every 3 · 8 max |
 
-### 5a. Tick instants that drift from gcsim's (6)
+### 5a. Tick instants that drift from gcsim's (5)
 
 ⚓ Our walk (`collectSummonTicks`) against every tick gcsim fired, on one-to-one
 pairings, over the ticks both sides have. Negative is ours early. The first tick
@@ -733,7 +733,6 @@ and the interval can both match while this does not: a different second gap, or 
 cadence that is a pattern rather than one interval. ⚠️ A ±1 alternation is gcsim
 rounding a fractional interval; read the Go before calling it a finding.
 
-- amber `fiery_rain` · Fiery Rain: up to +36f, from tick 3
 - durin `principle_of_purity_as_the_light_shifts` · Dragon of White Flame: up to +4f, from tick 2
 - durin `principle_of_darkness_as_the_stars_smolder` · Dragon of Dark Decay: up to +6f, from tick 2
 - fischl `midnight_phantasmagoria` · Oz (Burst): up to −118f, from tick 1
@@ -759,7 +758,7 @@ Level-1 stream carries her bespoke one, so her burst is deliberately left bare.
 | --- | --- | --- | --- | --- | --- |
 | alyosha | `hunters_advance` | Fulgurite Hunting Field | 7/7 `none` | 96f / first only | ⚠️ pair by eye (2 authored / 2 observed) — currently — |
 | alyosha | `hunters_advance` | Tugarin | 0/7 `other` | 96f / first only | ⚠️ pair by eye (2 authored / 2 observed) — currently — |
-| amber | `fiery_rain` | Fiery Rain | 7/18 `other` | 60f / every 3 · 8 max | ✅ authored |
+| amber | `fiery_rain` | Fiery Rain | 7/18 `other` | 60f / every 3 · 8 max | ⚠️ pair by eye (3 authored / 1 observed) — currently — |
 | chiori | `fluttering_hasode` | Fluttering Hasode (Tamato) | 4/5 `other` | 114f / first only | ✅ authored |
 | collei | `trumpcard_kitty` | Trump-Card Kitty (Leap) | 2/12 `other` | 180f / first only | ✅ authored |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame | 10/20 `other` | 90f / first only | ✅ authored |
