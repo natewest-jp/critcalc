@@ -46,7 +46,11 @@ length", plus `tokenizer`, `barPhases`, `kqmExport` and `notationFlags` cases.
 
 - **An element for Blank (⚓ Nate: keep as a note to revisit).** Blank's attacks
   don't hit, so an element would change nothing on the aura lane. Where it would
-  matter is teammates whose kits count the party's elements: Nilou's Bountiful
-  Cores, Chevreuse, elemental resonance. Today a Blank counts as no element, so a
-  Blank in a Nilou team switches her passive off.
+  matter is teammates whose kits count the party's elements. Blank counts as no
+  element, so it never breaks a "no other elements" rule (Nilou's Bountiful Cores
+  pass with a Blank), but it can't supply one a teammate needs either: the Electro
+  member Chevreuse looks for, a resonance's second Pyro, or the fourth element of
+  Protective Canopy. ↻ Corrected the same day: the first draft said a Blank
+  switches Nilou off; her rule is "no Pyro, Cryo, Electro, Anemo, or Geo", which
+  an elementless Blank passes.
 - The Help section, written now that the shape has settled. Copy is Nate's.
