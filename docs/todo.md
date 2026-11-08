@@ -8,7 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-1. **Blank character: the Help section.** The shape settled 2026-11-08 and is built on `feat/blank-bars` (no cooldowns, `E{8s}`/`Q{12s}` bars, no element, one Blank; record `docs/rounds/blank-bars-2026-11-08.md`). Left: the Help section, copy proposed first. An element for Blank stays a note to revisit (record §3).
+_Empty: Nate picks the next item._
 
 ## ⏭ Next
 
