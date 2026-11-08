@@ -10,7 +10,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/rounds/gauge-ro
 - characters: **130** authored · **120** with a gcsim source
 - FrameMaps: **1237** authored · **1106** matching gcsim exactly · **45** disagreeing · **86** uncovered
 - skill/burst application schedules observed: **322** · unobserved: **21**
-- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **5**
+- summon tick streams cross-checked: **67** · drifting from gcsim's instants: **3**
 - hits carrying a measured gcsim ICD cadence: **3393** of **3396**
 
 ⛔ **No gcsim source (10)** — cannot be oracled at all, and nothing here may be written to them:
@@ -667,8 +667,8 @@ which the pair alone cannot state.
 | collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 12 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · shares the cast's counter ✅ · 2/12 `other` | 180f / first only |
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
 | diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · shares the cast's counter ✅ · 3/6 `standard` | 150f / every 3 · 8 max |
-| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` ⚠️ **drift up to +4f, from tick 2** | 90f / first only |
-| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 185f / 74f × 16 · 120f / first only | Dragon of Dark Decay 185f / 74f × 16 · 8/16 `other` ⚠️ **drift up to +6f, from tick 2** | 120f / first only |
+| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` | 90f / first only |
+| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 185f / 74f × 16 · 120f / first only | Dragon of Dark Decay 185f / 74f × 16 · 8/16 `other` | 120f / first only |
 | emilie | `fragrance_extraction` | Lumidouce Case 111f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | emilie | `aromatic_explication` | Lumidouce Case 126f / 54f × 3 · `standard`<br>Lumidouce Case 401f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 153f / 59f × 19 · 90f / first only | — | — |
@@ -725,7 +725,7 @@ which the pair alone cannot state.
 | yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 201f / 90f × 8 `cap` · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | zhongli | `dominus_lapidis` | Stone Stele 144f / 120f × 15 `cap` · `standard` | Stone Stele (Tick) 144f / 120f × 15 · shares the cast's counter ✅ · 7/15 `other` | 150f / every 3 · 8 max |
 
-### 5a. Tick instants that drift from gcsim's (5)
+### 5a. Tick instants that drift from gcsim's (3)
 
 ⚓ Our walk (`collectSummonTicks`) against every tick gcsim fired, on one-to-one
 pairings, over the ticks both sides have. Negative is ours early. The first tick
@@ -733,8 +733,6 @@ and the interval can both match while this does not: a different second gap, or 
 cadence that is a pattern rather than one interval. ⚠️ A ±1 alternation is gcsim
 rounding a fractional interval; read the Go before calling it a finding.
 
-- durin `principle_of_purity_as_the_light_shifts` · Dragon of White Flame: up to +4f, from tick 2
-- durin `principle_of_darkness_as_the_stars_smolder` · Dragon of Dark Decay: up to +6f, from tick 2
 - fischl `midnight_phantasmagoria` · Oz (Burst): up to −118f, from tick 1
 - traveler_cryo `ice_fog_piercer` · Frostpierce Star: up to +339f, from tick 2
 - traveler_cryo@lumine `ice_fog_piercer` · Frostpierce Star: up to +339f, from tick 2

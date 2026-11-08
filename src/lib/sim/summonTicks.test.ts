@@ -551,3 +551,33 @@ describe("Amber's Fiery Rain is gcsim's three arrow loops on one counter (2026-1
 		expect(applied.map((a) => a.time)).toEqual([84, 108, 120, 144, 156, 180, 192]);
 	});
 });
+
+describe("Durin's dragons tick on gcsim's fractional cadence (2026-11-08)", () => {
+	// gcsim `durin/burst.go` queues tick i at ceil(first + 58.8·i) (White) or
+	// ceil(first + 73.6·i) (Dark, then 9f travel). Five intervals are whole frames
+	// (294f, 368f), so the ceil'd gaps repeat every five ticks.
+	const DU = 'durin';
+	const markers = (n: string) =>
+		parse(n)
+			.windows.filter((w) => w.kind === 'summon' && w.characterId === DU)
+			.flatMap((w) => (w as { ticks?: number[] }).ticks ?? []);
+	it('the Dragon of White Flame: 20 ticks, gaps 58/59/59/59/59', () => {
+		expect(markers('Durin Q')).toEqual([
+			156, 214, 273, 332, 391, 450, 508, 567, 626, 685, 744, 802, 861, 920, 979, 1038, 1096, 1155,
+			1214, 1273
+		]);
+	});
+
+	it('the Dragon of Dark Decay: 16 ticks, gaps 73/74/74/73/74, from its spawn', () => {
+		// The dumper's Dark burst is cast at f0, so its instants less the 97f spawn.
+		const gcsim = [
+			185, 258, 332, 406, 479, 553, 626, 700, 774, 847, 921, 994, 1068, 1142, 1215, 1289
+		];
+		const r = parse('Durin E N Q');
+		const dark = r.windows.find(
+			(w) => w.kind === 'summon' && w.characterId === DU && w.label === 'Dragon of Dark Decay'
+		)!;
+		const ticks = (dark as { ticks?: number[] }).ticks ?? [];
+		expect(ticks.map((t) => t - dark.start)).toEqual(gcsim.map((t) => t - 97));
+	});
+});

@@ -257,7 +257,8 @@
 								"firstTickDelay": 0.983,
 								"icdGate": {
 									"timer": 90
-								}
+								},
+								"intervalCycle": [0.967, 0.983, 0.983, 0.983, 0.983]
 							},
 							"scaling": 170.4,
 							"stat": "atk",
@@ -266,7 +267,8 @@
 								"Dragon of White Flame periodic AoE Pyro tick, 170.4% ATK at T10 (gcsim burst.go burstWhiteDoT[9]=1.70352). 20 ticks, interval 58.8f = 0.98s (burstTicksWhite=20, burstIntervalWhite=58.8). Follows the active character. A4 Primordial Fusion amp (up to +75% on the first 10 ticks, +3% per 100 ATK) is NOT baked in — dynamic ATK-scaling, per-tick consumption.",
 								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:120 sets ICDGroupDurinBurstWhite on this tick, whose table entry is a 90f reset window in which only the FIRST hit applies. Measured 7/13 applied against standard ICD's 6. ⚠️ The Dark Decay counterpart is deliberately NOT authored — gcsim gives it ICDGroupDurinBurstBlack (120f, first only), but the oracle has no capture of the dark form (the driver cannot reach it), and an unmeasured pair is a claim rather than data.",
 								"↻ 2026-09-04 (stale-application[] pass, tier 2): firstTickDelay 0.983 authored EXPLICITLY. ⚠️ It was absent, and absent does NOT mean zero — `summonTickSeries` defaults firstDelay to the INTERVAL (summons.ts:296), which put the first tick at 97 + 58.8 = 155.8 against gcsim's 156. So this is a no-op numerically and is authored for exactness and for symmetry with the Dark series, where the same default was 5 frames early. gcsim burst.go: burstFirstTickDelayWhite = 154 + 60 - 58.8 = 155.2, first task at ceil() = 156 from the cast; the summon spawns at 97 (burstInitHitmark[0]), so 59f = 0.983s from spawn.",
-								"⛔ NO tickCap, and that is checked rather than assumed: gcsim fires burstTicksWhite = 20, and our window (spawnsAt 97 + 20s) with this firstTickDelay and interval yields exactly 20. The tick-cap round's rule is that absent is right unless the count diverges from duration ÷ interval, and here it does not."
+								"⛔ NO tickCap, and that is checked rather than assumed: gcsim fires burstTicksWhite = 20, and our window (spawnsAt 97 + 20s) with this firstTickDelay and interval yields exactly 20. The tick-cap round's rule is that absent is right unless the count diverges from duration ÷ interval, and here it does not.",
+								"intervalCycle [58, 59, 59, 59, 59]f, 2026-11-08 (summon tick drift round): gcsim burst.go queues tick i at ceil(burstFirstTickDelayWhite + 58.8·i), with the first at 155.2 → 156. Five intervals are 294f, a whole frame, so the ceil'd gaps repeat every five ticks from the first. One 0.98s interval rounded every gap to 59f and ran up to 4f late. interval stays 0.98, the mean, which rounds to the modal 59f."
 							]
 						}
 					],
@@ -341,7 +343,8 @@
 								"firstTickDelay": 1.4667,
 								"icdGate": {
 									"timer": 120
-								}
+								},
+								"intervalCycle": [1.217, 1.233, 1.233, 1.217, 1.233]
 							},
 							"scaling": 233.7,
 							"stat": "atk",
@@ -350,7 +353,8 @@
 								"Dragon of Dark Decay periodic single-target Pyro tick, 233.7% ATK at T10 (gcsim burst.go burstBlackDoT[9]=2.33712). 16 ticks, interval 73.6f = 1.227s (burstTicksBlack=16, burstIntervalBlack=73.6). Follows the active character, targets one opponent. A4 Primordial Fusion amp not baked in (see the White tick note on the base Burst).",
 								"icdGate {timer: 120} authored: gcsim ICDGroupDurinBurstBlack (icd_groups.dm.go:95) is a 2s window with sequence {1,0} — only the first hit in the window applies. It was ABSENT, i.e. the standard 2.5s/every-third, which is a different rule. ⚠️ The White series has carried its own {timer: 90} all along; the two forms are on DIFFERENT ICD groups, which is why the gate belongs on the series and not on the character. ⚠️⚠️ The ICD-group round (2026-08-18) authored the WHITE series' gate and missed this one, and the reason is the same blind spot that let the white tick stream into this ability's application[]: the dumper runs one ability at C0 in an empty core and cannot reach a state-gated form, so drivers.json gives durin `darkForm: []` and it 'gets no row'. ⚓ A form the oracle cannot reach is where to look when a per-series field is missing on one half of a pair.",
 								"↻ 2026-09-04 (stale-application[] pass, tier 2): firstTickDelay 1.317 authored, and here it is a REAL correction. ⚠️ Absent does not mean zero — the default is the INTERVAL (summons.ts:296), which put the first tick at 97 + 73.8 = 170.8 against gcsim's 176: five frames early, and every one of the 16 ticks inherited it. gcsim burst.go: burstFirstTickDelayBlack = 154 + 95 - 73.6 = 175.4, first task at ceil() = 176 from the cast, so 79f = 1.317s from the summon's spawn at 97. Interval sharpened 1.23 → 1.227: burstIntervalBlack is 73.6f = 1.2267s and 1.23 was 73.8f, a 0.2f drift per tick.",
-								"⛔ NO tickCap, and that is checked rather than assumed: gcsim fires burstTicksBlack = 16, and our window (spawnsAt 97 + 20s) with this firstTickDelay and interval yields exactly 16. The tick-cap round's rule is that absent is right unless the count diverges from duration ÷ interval, and here it does not."
+								"⛔ NO tickCap, and that is checked rather than assumed: gcsim fires burstTicksBlack = 16, and our window (spawnsAt 97 + 20s) with this firstTickDelay and interval yields exactly 16. The tick-cap round's rule is that absent is right unless the count diverges from duration ÷ interval, and here it does not.",
+								"intervalCycle [73, 74, 74, 73, 74]f, 2026-11-08 (summon tick drift round): gcsim burst.go queues tick i at ceil(burstFirstTickDelayBlack + 73.6·i), with the first at 175.4 → 176, and each lands 9f later (travel). Five intervals are 368f, so the ceil'd gaps repeat every five ticks. One 1.227s interval rounded every gap to 74f and ran up to 6f late. interval stays 1.227, rounding to the modal 74f."
 							]
 						}
 					],

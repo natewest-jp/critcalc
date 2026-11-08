@@ -37,7 +37,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - Re-measure a suspect series in the isolated core: a second character skews the first's cadence.
 - An applied count says only that the default is wrong, never what is right.
 - A `× 1` row in `gcsim-frames-diff.md` §5 is not a cadence.
-- §5a compares every tick instant through the planner's own walk. A ±1 alternation is gcsim rounding a fractional interval, and a stream whose count already disagrees (paired shots) drifts by construction; read the Go before calling either a finding.
+- §5a compares every tick instant through the planner's own walk. A ±1 alternation is gcsim rounding a fractional interval (an `intervalCycle` states it exactly, as Durin's does), and a stream whose count already disagrees (paired shots) drifts by construction; read the Go before calling either a finding.
 - A capture behind a prerequisite sees the prerequisite's summon ticking.
 - None of the remaining misses is a rule we believe wrong. Reopen a specific mechanic (Oz's burst geometry, construct resonance), never "counter sharing" as a programme. Record: `docs/rounds/icd-group-round.md` §9–§10.
 
