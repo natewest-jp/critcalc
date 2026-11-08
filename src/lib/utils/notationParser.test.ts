@@ -4896,8 +4896,9 @@ describe('parseNotation — Durin: which dragon is out (2026-11-07)', () => {
 	});
 
 	it("C1's Dark half: 20 stacks, 2 per Burst hit, so the bar ends at the tenth", () => {
+		// The tenth hit is a Dark Decay tick, on gcsim's 73/74f gaps (2026-11-08; was 690).
 		expect(buffs(parse('Durin E N Q', 1), 'burstFlatDmg').map((w) => [w[0], w[1]])).toEqual([
-			[158, 690]
+			[158, 687]
 		]);
 		expect(buffs(parse('Durin E E Q', 1), 'burstFlatDmg')).toEqual([]);
 	});
