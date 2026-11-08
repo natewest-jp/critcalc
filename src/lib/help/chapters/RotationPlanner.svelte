@@ -132,6 +132,33 @@
 </section>
 
 <section>
+	<!-- Nate's wording, 2026-11-08. Braces are written as string expressions
+	     because a bare `{` opens a Svelte expression. -->
+	<h2 id="blank">Blank, a stand-in character</h2>
+	<p>
+		Type “Blank” in the notation box to create a stand-in for a character the planner doesn’t have,
+		such as one you’re theorycrafting before release. Write it like any other character:
+		<code>Blank E N3 Q</code>.
+	</p>
+	<p>
+		To show how long a skill or burst lasts, put the length in braces right after it:
+		<code>{'Blank E{8s}'}</code> draws an 8-second bar, and <code>{'Q{12s}'}</code> a 12-second one. Blank
+		has no cooldowns, so casting an ability again right away ends the bar before it. Please note that
+		Blank’s ability durations are left out of the KQM notation export.
+	</p>
+	<p>
+		A rotation can only use one Blank (if you would like support for more than one Blank, please
+		request it). Its actions use generic timing, and none of them hit, grant a buff, or apply an
+		element.
+	</p>
+	<p>
+		Blank counts as no element. It never breaks a rule like Nilou’s (no Pyro, Cryo, Electro, Anemo,
+		or Geo teammates), but it can’t supply an element a teammate needs either, like the Electro
+		member Chevreuse looks for.
+	</p>
+</section>
+
+<section>
 	<h2 id="timeline">Reading the timeline</h2>
 	<p>
 		Each character gets a group of rows: their skill, then any summons and shields, then their
