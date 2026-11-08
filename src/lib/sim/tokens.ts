@@ -20,7 +20,11 @@ import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
  *  Exported for the driver, which joins a same-character `>` into one lookahead
  *  and needs to know where a peek would stop. */
 export const isInert = (t: Token | undefined): boolean =>
-	!!t && (t.kind === 'stack-assert' || t.kind === 'or-alt' || t.kind === 'optional');
+	!!t &&
+	(t.kind === 'stack-assert' ||
+		t.kind === 'bar-length' ||
+		t.kind === 'or-alt' ||
+		t.kind === 'optional');
 
 /**
  * Maps the next token after position j to the ActionKey used for cancel-window

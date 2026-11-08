@@ -101,3 +101,9 @@ describe('toKqmNotation', () => {
 		});
 	});
 });
+
+describe('toKqmNotation — the bar-length annotation (2026-11-08)', () => {
+	it('drops {Xs}, which KQM has no word for', () => {
+		expect(toKqmNotation('Blank E{8s} Q {12s} N2')).toBe('Blank E Q N2');
+	});
+});

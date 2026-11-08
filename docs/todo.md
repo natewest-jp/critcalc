@@ -8,7 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-1. **Blank character: Help section + possible changes (OPEN DISCUSSION).** Today `blank.json` is N/E/Q at corpus medians (E 12s CD, Q 15s CD / 60 energy), no element, hits or effects; a rotation holds at most ONE Blank. Nate's use case: theorycrafters placing an UNRELEASED character among existing ones. Claude's proposal (2026-10-20, awaiting Nate): `~Xs` already covers field time; missing are (a) cooldowns, (b) a WINDOW for the E/Q's off-field effect drawn as a generic bar, (c) an element, (d) more than one Blank, ideally NAMED. Home: the notation (single truth, `?r=` carries it; KQM export strips it). Help written AFTER the shape settles.
+_Empty: Nate picks the next item._
 
 ## ⏭ Next
 

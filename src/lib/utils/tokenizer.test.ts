@@ -93,3 +93,25 @@ describe('tokenizeNotation — sQ short-burst token (sQ primitive, 2026-07-17)',
 		expect(shape('Traveler sQ')).toEqual(['character:Traveler', 'Q:sQ']);
 	});
 });
+
+describe('tokenizeNotation — the bar-length annotation {Xs} (2026-11-08)', () => {
+	it('reads {8s} after an E or Q, spaced or not', () => {
+		expect(shape('Blank E{8s} Q {12.5s}')).toEqual([
+			'character:Blank',
+			'E:E',
+			'bar-length:{8s}',
+			'Q:Q',
+			'bar-length:{12.5s}'
+		]);
+	});
+	it('ends a character name like any other token', () => {
+		expect(shape('Blank {8s}')).toEqual(['character:Blank', 'bar-length:{8s}']);
+	});
+	it('stays apart from a stack assertion', () => {
+		expect(shape('Heizou {declension:4} E')).toEqual([
+			'character:Heizou',
+			'stack-assert:{declension:4}',
+			'E:E'
+		]);
+	});
+});

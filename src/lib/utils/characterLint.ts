@@ -2518,7 +2518,8 @@ function lintCastAbility(
 	}
 
 	// (A.3) burst energyCost
-	if (a.abilityType === 'burst') {
+	// Blank, the planner's placeholder, costs nothing on purpose (Nate 2026-11-08).
+	if (a.abilityType === 'burst' && !(c.id === 'blank' && a.energyCost === 0)) {
 		if (!isPositiveInt(a.energyCost)) {
 			push('strict', 'invalid-energy-cost', `burst energyCost must be a positive integer`, a.id);
 		}

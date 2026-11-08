@@ -52,7 +52,7 @@ import {
 	getDefaultDamageTag,
 	getNormalHitDamageTag
 } from '$lib/types/ability';
-import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
+import { BAR_LENGTH_RE, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
 import { lockedAt, lockOf, schedulePolls } from './absorb';
@@ -1164,6 +1164,25 @@ export function runRotation(
 				if (landings.length > 0) {
 					castEvent.firstHitAt = castStart + landings[0].frame;
 					castEvent.hitsAt = landings.map((l) => castStart + l.frame);
+				}
+				// ⚓ Blank's bar length (Nate 2026-11-08): `E{8s}` draws the cast as an
+				// 8s bar. Read only off the token right after the cast, only for Blank
+				// (the editor flags it anywhere else), and it moves nothing: the token
+				// is inert to every lookahead. A recast ends the bar it replaces, cut
+				// here on the earlier cast: Blank has no summon or window that reads
+				// the uncut length. ⛔ Not `pillCuts`: it lands after the E/Q bars are
+				// projected (finalize 1b), so the drawn bar would keep its full length.
+				if (char.id === 'blank') {
+					const next = expandedTokens[j + 1];
+					const len = next?.kind === 'bar-length' ? next.text.match(BAR_LENGTH_RE) : null;
+					if (len) castEvent.uptime = framesOf(parseFloat(len[1]));
+					for (let e = ctx.events.length - 1; e >= 0; e--) {
+						const prev = ctx.events[e];
+						if (prev.kind !== 'cast' || prev.characterId !== char.id || prev.ability !== kind)
+							continue;
+						if (prev.time + prev.uptime > castStart) prev.uptime = castStart - prev.time;
+						break;
+					}
 				}
 				ctx.events.push(castEvent);
 				ctx.castRecords.push({ ev: castEvent, track });
@@ -3125,7 +3144,7 @@ export function runRotation(
 		// the stance at the press (`endsStance`), after which there is nothing to
 		// wait for. ⚠️ Only the LAST token counts — `E ~1s Q` still holds.
 		if (!continues && cs.stance?.holdsField) {
-			const SKIP = new Set(['optional', 'or-alt', 'stack-assert', 'separator']);
+			const SKIP = new Set(['optional', 'or-alt', 'stack-assert', 'bar-length', 'separator']);
 			let last = expandedTokens.length - 1;
 			while (last >= 0 && SKIP.has(expandedTokens[last].kind)) last--;
 			const endsOnWait = last >= 0 && expandedTokens[last].kind === 'time';

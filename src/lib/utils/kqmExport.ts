@@ -35,6 +35,7 @@ const DROPPED_KINDS: ReadonlySet<TokenKind> = new Set<TokenKind>([
 	'time', // ~Xs on-field-time advance
 	'unset-time', // ~?s duration placeholder
 	'stack-assert', // {key:N} resource assertion
+	'bar-length', // {Xs} Blank's bar length
 	'or-alt' // the /alt side of an E/Q or-pair (only the first option is real)
 ]);
 

@@ -29,6 +29,9 @@
  *                  (Heizou Declension, Yanfei Scarlet Seals, etc.). Updates
  *                  per-character stack state for subsequent ability/effect
  *                  resolution. Key must be lowercase identifier.
+ *   bar-length  — {Xs} after an E or Q: the length of Blank's bar for that cast
+ *                  (`E{8s}`). Planner-only, like `{key:N}`; other characters
+ *                  ignore it and the editor flags it.
  *   or-alt      — the alternative side of a slash pair (E/Q → E active, /Q or-alt).
  *                 Dimmed in the editor; ignored by the parser. Only the first option
  *                 before the slash is placed on the timeline.
@@ -58,6 +61,7 @@ export type TokenKind =
 	| 'optional'
 	| 'label'
 	| 'stack-assert'
+	| 'bar-length'
 	| 'or-alt'
 	| 'unknown';
 
@@ -130,6 +134,11 @@ export const MAX_NOTATION_CHARS = 16_384;
  *  Captures: [1] = key, [2] = count (as string). */
 export const STACK_ASSERT_RE = /^\{([a-z][a-zA-Z0-9_-]*):(\d+)\}$/;
 
+/** Pattern matching the `{Xs}` bar-length form (`{8s}`, `{2.5s}`, `{.5s}`).
+ *  Anchored. The number has the time token's unambiguous shape (see the note
+ *  on `~Xs` above). Captures: [1] = seconds (as string). */
+export const BAR_LENGTH_RE = /^\{((?:\d+(?:\.\d+)?|\.\d+))s\}$/;
+
 // ---------------------------------------------------------------------------
 // Internal classification helpers
 // ---------------------------------------------------------------------------
@@ -183,6 +192,7 @@ function classifySubToken(text: string): TokenKind {
 	if (/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(text)) return 'label';
 	// Stack assertions: {seal:4}, {declension:0}
 	if (STACK_ASSERT_RE.test(text)) return 'stack-assert';
+	if (BAR_LENGTH_RE.test(text)) return 'bar-length';
 	// Slash alternatives: /Q, /E, /N1 etc. — the or-alt side of a slash pair
 	if (text.startsWith('/')) return 'or-alt';
 	return classifyWord(text);
@@ -209,7 +219,7 @@ const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpsNCADJWPF');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|sE|hP|lP|sQ|sC[1-9]?|N[1-9]?|C[1-9]?|[QEADJWPF]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|\{(?:\d+(?:\.\d+)?|\.\d+)s\}|h1E|h2E|hE|tE|pE|sE|hP|lP|sQ|sC[1-9]?|N[1-9]?|C[1-9]?|[QEADJWPF]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.
@@ -300,7 +310,7 @@ export function tokenizeNotation(notation: string): Token[] {
 	// Note the final word alternative is [^\s>]+, not \S+: an unspaced '>'
 	// ('Q>Raiden') must still terminate the word so the separator is emitted.
 	const re =
-		/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|>|[^\s>]+/g;
+		/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|\{(?:\d+(?:\.\d+)?|\.\d+)s\}|>|[^\s>]+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 
@@ -339,6 +349,7 @@ export function tokenizeNotation(notation: string): Token[] {
 					/^\([^)]*\)$/.test(nextText) ||
 					/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(nextText) ||
 					STACK_ASSERT_RE.test(nextText) ||
+					BAR_LENGTH_RE.test(nextText) ||
 					classifySubToken(nextText) !== 'unknown' ||
 					isActionRun(nextText)
 				) {
@@ -360,6 +371,8 @@ export function tokenizeNotation(notation: string): Token[] {
 			tokens.push({ from, to, kind: 'label', text });
 		} else if (STACK_ASSERT_RE.test(text)) {
 			tokens.push({ from, to, kind: 'stack-assert', text });
+		} else if (BAR_LENGTH_RE.test(text)) {
+			tokens.push({ from, to, kind: 'bar-length', text });
 		} else {
 			// \S+ non-character word: greedily split into action tokens.
 			// splitConcatenated handles both single-token words and concatenated runs.

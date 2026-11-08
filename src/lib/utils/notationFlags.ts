@@ -209,6 +209,26 @@ export function flagNotation(
 			}
 		}
 
+		// `{Xs}` sets the length of Blank's E/Q bar and nothing else. Anywhere
+		// else the parser ignores it, so it takes the warning register.
+		for (let b = 0; b < body.length; b++) {
+			const tok = body[b];
+			if (tok.kind !== 'bar-length') continue;
+			const prev = body[b - 1];
+			const afterCast = prev?.kind === 'E' || prev?.kind === 'Q';
+			if (entry.id === 'blank' && afterCast) continue;
+			flags.push({
+				from: tok.from,
+				to: tok.to,
+				text: tok.text,
+				reason: 'unsupported-token',
+				message:
+					entry.id === 'blank'
+						? `A bar length goes right after Blank's E or Q.`
+						: `Only Blank takes a bar length. ${entry.displayName}'s bars follow the kit.`
+			});
+		}
+
 		for (const tok of castTokensIn(body)) {
 			// ⛔ NOTHING IS DRAWN for these two, so they take the warning register
 			// rather than the provisional one — see the header for the line.

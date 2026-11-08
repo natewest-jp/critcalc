@@ -169,3 +169,14 @@ describe('charged attacks drawn with a stand-in', () => {
 		expect(flagNotation('Anemo Aether E')).toEqual([]);
 	});
 });
+
+describe('flagNotation — the bar-length annotation (2026-11-08)', () => {
+	it('is quiet after a Blank E or Q', () => {
+		expect(flagNotation('Blank E{8s} Q {12s}')).toEqual([]);
+	});
+	it('flags a length on anyone but Blank, or not after an E or Q', () => {
+		expect(texts('Bennett E{8s} Q')).toEqual(['{8s}']);
+		expect(reasons('Bennett E{8s}')).toEqual(['unsupported-token']);
+		expect(texts('Blank N2{3s} E')).toEqual(['{3s}']);
+	});
+});

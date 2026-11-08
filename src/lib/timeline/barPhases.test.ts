@@ -215,3 +215,13 @@ describe('barPhases — delayed cooldown start (readyAt)', () => {
 		] satisfies BarPhaseSegment[]);
 	});
 });
+
+describe('barPhases — a bar with no cooldown (Blank, 2026-11-08)', () => {
+	it('draws its whole length solid: there is no cooldown for it to outlast', () => {
+		// Blank's `E{8s}`: 0 cooldown, 8s bar. Case B would have drawn the cast
+		// time solid and the rest dim, as if past a cooldown it does not have.
+		expect(barPhases(bar({ start: 1, cooldown: 0, uptime: 8 }), false)).toEqual([
+			{ role: 'uptime', start: 1, span: 8 }
+		]);
+	});
+});

@@ -18,23 +18,23 @@
 			"name": "Elemental Skill",
 			"input": ["E"],
 			"abilityType": "skill",
-			"cooldown": 12,
+			"cooldown": 0,
 			"tags": [],
 			"effects": [],
 			"behavior": "instant",
-			"description": "Placeholder Elemental Skill with the corpus-median cooldown (12s) and cast time. Stands in for \"some character casts an E here.\""
+			"description": "Placeholder Elemental Skill with the corpus-median cast time and no cooldown. Stands in for \"some character casts an E here.\""
 		},
 		{
 			"id": "blank__burst__generic_burst",
 			"name": "Elemental Burst",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"cooldown": 15,
-			"energyCost": 60,
+			"cooldown": 0,
+			"energyCost": 0,
 			"tags": [],
 			"effects": [],
 			"behavior": "instant",
-			"description": "Placeholder Elemental Burst with the corpus-median cooldown (15s), energy cost (60), and cast time. Stands in for \"some character bursts here.\""
+			"description": "Placeholder Elemental Burst with the corpus-median cast time, no cooldown, and no energy cost. Stands in for \"some character bursts here.\""
 		}
 	],
 	"passives": [],
