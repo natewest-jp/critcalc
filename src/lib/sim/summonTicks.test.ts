@@ -504,3 +504,30 @@ describe('summon ticks land on the frame gcsim deals their damage (2026-11-08)',
 		]);
 	});
 });
+
+describe("Navia's Cannon Fire Support runs gcsim's 42/48/42 gap cycle (2026-11-08)", () => {
+	// gcsim `navia/burst.go`: the support starts 154f after the cast, each shell
+	// lands 9f after its task, and the gap after the 2nd, 5th, 8th … shell is 48f
+	// (`tick%3 == 2`), every other gap 42f. 17 shells while `i <= 720`.
+	const NV = 'navia';
+	const at = [163, 205, 253, 295, 337, 385, 427, 469, 517, 559, 601, 649, 691, 733, 781, 823, 865];
+	const markers = () =>
+		parse('Navia Q')
+			.windows.filter((w) => w.kind === 'summon' && w.characterId === NV)
+			.flatMap((w) => (w as { ticks?: number[] }).ticks ?? []);
+	/** Every shell the gauge was offered, applied or not, read off the hit stream. */
+	const gauge = () =>
+		parse('Navia Q')
+			.applications.filter((a) => a.characterId === NV && a.castKind === 'burst')
+			.map((a) => a.time);
+
+	it('the lane draws the 17 shells on their instants', () => {
+		expect(markers()).toEqual(at);
+	});
+
+	it('⚓ the gauge applies on the same instants (a subset, by its ICD group)', () => {
+		const applied = gauge().filter((t) => t > 104);
+		expect(applied.length).toBeGreaterThan(0);
+		for (const t of applied) expect(at).toContain(t);
+	});
+});

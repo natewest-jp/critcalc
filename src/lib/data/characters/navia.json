@@ -153,14 +153,15 @@
 									"timer": 720,
 									"every": 3,
 									"cap": 8
-								}
+								},
+								"intervalCycle": [0.7, 0.8, 0.7]
 							},
 							"scaling": 77.67,
 							"stat": "atk",
 							"element": "geo",
 							"_curatorNotes": [
 								"gcsim internal/characters/navia/burst.go Burst(): the QueueCharTask at burstDelay=154 queues Tasks.Add at offsets i, and each QueueAttack uses travel=9, so the first cannon hit lands at 154+0+9=163f from cast start. firstTickDelay = (163 − spawnsAt 154) / 60 = 0.15s.",
-								"Interval = the modal gap. gcsim's loop alternates 42/42/48f (tick%3==2 → nextTick=48, else 42); two of every three gaps are 42f, so interval = 42/60 = 0.7s. Our schema has one interval per series, so the authored cadence runs ~30f (0.5s) ahead of gcsim by the 17th tick. Tick count matches: (12 − 0.15) / 0.7 → 17 ticks, and the gcsim-frames-diff row observes 17.",
+								"Interval = the modal gap, and intervalCycle [0.7, 0.8, 0.7] is the pattern (2026-11-08, summon tick drift round; it was one 0.7s interval, ~30f ahead of gcsim by the 17th shell). gcsim's loop sets the gap after each queued tick: 48f after the 2nd, 5th, 8th … (tick%3 == 2), else 42f. So the gaps run 42, 48, 42, 42, 48, 42, …, the cycle from the first shell's gap. Tick count matches: 17 inside the 12s window, as gcsim fires while i <= 720.",
 								"scaling: gcsim zz_navia.dm.go burst[1] (\"Cannon Fire Support DMG\") index 9 = 0.7767 → 77.67%. Sidecar docs/curation/talents/navia.json talents.burst row \"Cannon Fire Support DMG\" L10 = 77.7% (rounded); gcsim's unrounded value preferred.",
 								"stat: ai.Mult is the only scaling on the AttackInfo and there is no snap modification, so it is plain ATK.",
 								"icdGate authored 2026-08-17 (ICD-group round b), superseding the note that said the group could not be expressed: ICDGroupNaviaBurst's table entry (pkg/core/attacks/icd_groups.dm.go) is a 720f reset window with every 3rd hit applying. Measured 6/17 applied against standard ICD's 9. ⚓ The 12s window is longer than the burst itself, so the counter never gets a reset mid-burst — the TIMER is what makes the difference here, not the period, which is standard's own.",

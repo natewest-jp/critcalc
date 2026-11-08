@@ -309,7 +309,7 @@ export function collectSummonTicks(
 		const asksField = fieldOpenAt !== undefined && mentionsPolestarField(s.effect.conditions);
 		let n = 0;
 		const first = spawnAt + s.firstDelay;
-		for (let t = first; t < limit; t = nextTickAt(s, first, t)) {
+		for (let k = 0, t = first; t < limit; t = tickAt(s, first, ++k)) {
 			if (cap !== null && n >= cap) break;
 			if (
 				asksField &&
@@ -365,19 +365,32 @@ export type SummonTickSeries = {
 	interval: number;
 	firstDelay: number;
 	/** Frames from the first tick to the second (`summonTick.secondTickDelay`),
-	 *  `interval` when unauthored. Read only through {@link nextTickAt}. */
+	 *  else the cycle's first gap, else `interval`. Read only through {@link tickAt}. */
 	secondGap: number;
+	/** `summonTick.intervalCycle` in frames: the gaps between ticks, repeating in
+	 *  order from the first tick's. `null` when every gap is `interval`. */
+	cycle: number[] | null;
 };
 
-/** The tick after `at` in a series whose first tick fell at `first`. ⚓ THE ONE
- *  STEP every tick chain takes (the walk below, `aura.ts`'s live chains), so the
- *  second tick's gap cannot differ between what is drawn and what fires. */
-export function nextTickAt(
-	series: Pick<SummonTickSeries, 'interval' | 'secondGap'>,
+/** The gap after tick `k` (0-based) of a series. */
+function gapAfter(series: Pick<SummonTickSeries, 'interval' | 'secondGap' | 'cycle'>, k: number) {
+	if (k === 0) return series.secondGap;
+	return series.cycle ? series.cycle[k % series.cycle.length] : series.interval;
+}
+
+/** The instant of tick `k` (0-based) in a series whose first tick fell at
+ *  `first`. ⚓ THE ONE STEP every tick chain takes (the walk below, `aura.ts`'s
+ *  live chains), so a second gap or a gap cycle cannot differ between what is
+ *  drawn and what fires. A chain counts every step of the cadence, skipped
+ *  ticks included: the cadence runs on underneath a refused tick. */
+export function tickAt(
+	series: Pick<SummonTickSeries, 'interval' | 'secondGap' | 'cycle'>,
 	first: number,
-	at: number
+	k: number
 ): number {
-	return at + (at === first ? series.secondGap : series.interval);
+	let t = first;
+	for (let j = 0; j < k; j++) t += gapAfter(series, j);
+	return t;
 }
 
 /**
@@ -415,9 +428,14 @@ export function summonTickSeries(
 		if (!(interval > 0)) return;
 		const firstDelay =
 			eff.trigger.firstTickDelay !== undefined ? framesOf(eff.trigger.firstTickDelay) : interval;
+		const cycle = eff.trigger.intervalCycle?.length
+			? eff.trigger.intervalCycle.map(framesOf)
+			: null;
 		const secondGap =
-			eff.trigger.secondTickDelay !== undefined ? framesOf(eff.trigger.secondTickDelay) : interval;
-		out.push({ effect: eff, index, interval, firstDelay, secondGap });
+			eff.trigger.secondTickDelay !== undefined
+				? framesOf(eff.trigger.secondTickDelay)
+				: (cycle?.[0] ?? interval);
+		out.push({ effect: eff, index, interval, firstDelay, secondGap, cycle });
 	});
 	return out;
 }
