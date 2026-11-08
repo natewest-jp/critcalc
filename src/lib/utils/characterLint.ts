@@ -4474,12 +4474,15 @@ function lintEffect(
 		// shape (sourceLifetime or lifetime): the grant accrues ROTATION-WIDE
 		// (the holder may be off-field), so an unbounded shape would grow
 		// without expiry. `source: 'self'` grants are per-segment (a swap
-		// clears them — Yanfei's Scarlet Seals) and may be plain.
+		// clears them — Yanfei's Scarlet Seals) and may be plain. A rotation-scoped
+		// key with a `max` is a resource the holder spends (Valeriy's Impact
+		// Momentum): bounded, and plain is its honest shape.
 		if (
 			eff.trigger.type === 'onHit' &&
 			(eff.trigger.source === 'team' || eff.trigger.source === 'others') &&
 			eff.sourceLifetime === undefined &&
-			eff.lifetime === undefined
+			eff.lifetime === undefined &&
+			!(eff.scope === 'rotation' && eff.max !== undefined)
 		) {
 			push(
 				'strict',
@@ -4533,28 +4536,16 @@ function lintEffect(
 				);
 			}
 		}
-		// (B.13j) gainStacks scope — the two legal values, and ⛔ NOT on a
-		// team/others onHit grant. Those already accrue rotation-wide via
-		// `CharState.onHitStacks`, for a different reason (the HOLDER may be off
-		// field, rather than the RESOURCE outliving a segment) — declaring a scope
-		// there would give one key two homes and split its count between them.
+		// (B.13j) gainStacks scope — the two legal values. A team/others onHit
+		// grant may declare `'rotation'`: the dispatcher writes it to the key's
+		// one home, `rotationStacks` (Valeriy's A1 into the Momentum his skill
+		// grants), and D.39 asks every grant of the key to say so.
 		if (eff.scope !== undefined) {
 			if (eff.scope !== 'segment' && eff.scope !== 'rotation') {
 				push(
 					'strict',
 					'gainstacks-scope-invalid',
 					`gainStacks scope must be "segment" or "rotation" (got ${JSON.stringify(eff.scope)})`,
-					location
-				);
-			} else if (
-				eff.scope === 'rotation' &&
-				eff.trigger.type === 'onHit' &&
-				(eff.trigger.source === 'team' || eff.trigger.source === 'others')
-			) {
-				push(
-					'strict',
-					'gainstacks-scope-redundant',
-					`onHit gainStacks with source "${eff.trigger.source}" already accrues rotation-wide on the holder's CharState; declaring scope "rotation" would split the key between two containers`,
 					location
 				);
 			}

@@ -2163,7 +2163,10 @@ export type Effect =
 			 *  effect (`'team'`/`'others'` grants already accrue rotation-wide
 			 *  because the holder may be off field when the trigger lands); this one
 			 *  says where the stacks THEMSELVES live, and the two are independent —
-			 *  Hunter's Mark is `source: 'self'` and rotation-scoped.
+			 *  Hunter's Mark is `source: 'self'` and rotation-scoped. A team/others
+			 *  grant of a rotation-scoped key (Valeriy's A1 into his skill's Impact
+			 *  Momentum) declares it too, and writes `rotationStacks`, the key's
+			 *  one home, rather than `onHitStacks`.
 			 *
 			 *  ⚓ A rotation-scoped key is stored on the holder's `CharState` and
 			 *  MIRRORED into the live segment pool at every settle point, so every

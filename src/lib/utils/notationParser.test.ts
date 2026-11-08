@@ -42,6 +42,8 @@ import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
 import blankJson from '$lib/data/characters/blank.json';
+import valeriyJson from '$lib/data/characters/valeriy.json';
+import raidenJson from '$lib/data/characters/raiden_shogun.json';
 import tartagliaJson from '$lib/data/characters/tartaglia.json';
 import chascaJson from '$lib/data/characters/chasca.json';
 import yanfeiJson from '$lib/data/characters/yanfei.json';
@@ -4947,5 +4949,44 @@ describe('parseNotation — Blank: no cooldowns, and bars of a stated length (20
 		expect(casts('Bennett E{8s} Q', 'bennett').map((c) => [c.time, c.uptime])).toEqual(
 			casts('Bennett E Q', 'bennett').map((c) => [c.time, c.uptime])
 		);
+	});
+});
+
+describe("parseNotation — a teammate's onHit grant lands in a rotation-scoped key's home (2026-11-08)", () => {
+	// Measured before: a `source: 'others'` grant wrote `onHitStacks` whatever the
+	// key's scope, and the turn's sync then overwrote the rotation pool's count
+	// with that pool's, so the two never added up. The fixture is the shape
+	// Valeriy's A1 needs: +5 Impact Momentum per Electro hit from someone else,
+	// into the rotation-scoped key his skill grants 40 of.
+	const base = valeriyJson as unknown as CharacterData;
+	const valeriy: CharacterData = structuredClone(base);
+	valeriy.passives![0].effects = [
+		...(valeriy.passives![0].effects ?? []),
+		{
+			type: 'gainStacks',
+			target: 'self',
+			trigger: { type: 'onHit', source: 'others', filter: { element: 'electro' } },
+			key: 'impactMomentum',
+			amount: 5,
+			max: 100,
+			scope: 'rotation'
+		} as never
+	];
+	const raiden = raidenJson as unknown as CharacterData;
+	const byName: Record<string, CharacterData> = { Valeriy: valeriy, 'Raiden Shogun': raiden };
+	const lookup = (n: string): CharacterData | null => byName[n] ?? null;
+	const momentumAtCasts = (src: string) =>
+		parseNotation(src, lookup, 8, {}, undefined, [valeriy, raiden])
+			.events.filter((e) => e.kind === 'cast' && e.characterId === 'valeriy')
+			.map((e) => (e.kind === 'cast' ? e.stackContext?.get('impactMomentum') : undefined));
+
+	it("adds a teammate's Electro hits to the skill's Momentum", () => {
+		// 40 from the first E, 5 from Raiden's E hit, 40 more from the second E.
+		expect(momentumAtCasts('Valeriy E > Raiden Shogun E > Valeriy E')).toEqual([40, 85]);
+	});
+
+	it('stops at the cap, wherever the stacks came from', () => {
+		// Raiden's burst string lands far more than twelve Electro hits.
+		expect(momentumAtCasts('Valeriy E > Raiden Shogun Q N4 > Valeriy E')).toEqual([40, 100]);
 	});
 });
