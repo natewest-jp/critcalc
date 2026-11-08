@@ -64,6 +64,8 @@ const TOKEN_CLASS: Partial<Record<TokenKind, string>> = {
 	optional: 'rp-tok-optional',
 	label: 'rp-tok-label',
 	'stack-assert': 'rp-tok-stack',
+	// Planner-only metadata like a stack count, so the same subordinate register.
+	'bar-length': 'rp-tok-stack',
 	'or-alt': 'rp-tok-or-alt',
 	unknown: 'rp-tok-unknown'
 };

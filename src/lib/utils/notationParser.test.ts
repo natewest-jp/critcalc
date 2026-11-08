@@ -41,6 +41,7 @@ import kleeForLanding from '$lib/data/characters/klee.json';
 import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
+import blankJson from '$lib/data/characters/blank.json';
 import tartagliaJson from '$lib/data/characters/tartaglia.json';
 import chascaJson from '$lib/data/characters/chasca.json';
 import yanfeiJson from '$lib/data/characters/yanfei.json';
@@ -4897,5 +4898,54 @@ describe('parseNotation — Durin: which dragon is out (2026-11-07)', () => {
 			[158, 690]
 		]);
 		expect(buffs(parse('Durin E E Q', 1), 'burstFlatDmg')).toEqual([]);
+	});
+});
+
+describe('parseNotation — Blank: no cooldowns, and bars of a stated length (2026-11-08)', () => {
+	// ⚓ Nate 2026-11-08: Blank stands in for an imagined character, so it has no
+	// cooldowns to work around, and `E{8s}` / `Q{12s}` draw its E/Q as a bar of
+	// that length. Measured before: `Blank E E` waited out a 12s cooldown.
+	const blank = blankJson as unknown as CharacterData;
+	const bennett = bennettJson as unknown as CharacterData;
+	const byName: Record<string, CharacterData> = { Blank: blank, Bennett: bennett };
+	const lookup = (n: string): CharacterData | null => byName[n] ?? null;
+	const casts = (src: string, id = 'blank') =>
+		parseNotation(src, lookup, 8, {}, undefined, [blank, bennett]).events.filter(
+			(e) => e.kind === 'cast' && e.characterId === id
+		) as { time: number; uptime: number; castTime: number; ability: string }[];
+
+	it('casts again at once: nothing waits on a cooldown', () => {
+		const [a, b] = casts('Blank E E');
+		expect(b.time).toBe(a.time + a.castTime);
+		const [q1, q2] = casts('Blank Q Q');
+		expect(q2.time).toBe(q1.time + q1.castTime);
+	});
+
+	it('a plain E or Q draws only the cast', () => {
+		expect(casts('Blank E Q').map((c) => c.uptime)).toEqual([0, 0]);
+	});
+
+	it('E{8s} and Q{12s} draw bars of those lengths', () => {
+		expect(casts('Blank E{8s} Q{12s}').map((c) => c.uptime)).toEqual([480, 720]);
+		expect(casts('Blank E {2.5s}').map((c) => c.uptime)).toEqual([150]);
+	});
+
+	it('the length moves nothing: the next action lands where it would without it', () => {
+		expect(casts('Blank E{8s} Q').map((c) => c.time)).toEqual(
+			casts('Blank E Q').map((c) => c.time)
+		);
+	});
+
+	it('a recast ends the bar it replaces, on the drawn bars', () => {
+		const r = parseNotation('Blank E{8s} ~2s E{8s} Q{12s}', lookup, 8, {}, undefined, [blank]);
+		const [a, b] = r.tracks[0].eBars;
+		expect([a.uptime, b.uptime]).toEqual([b.start - a.start, 480]);
+		expect(r.tracks[0].qBars.map((q) => q.uptime)).toEqual([720]);
+	});
+
+	it('on anyone else the length is ignored', () => {
+		expect(casts('Bennett E{8s} Q', 'bennett').map((c) => [c.time, c.uptime])).toEqual(
+			casts('Bennett E Q', 'bennett').map((c) => [c.time, c.uptime])
+		);
 	});
 });

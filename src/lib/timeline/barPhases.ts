@@ -98,7 +98,9 @@ export function barPhases(bar: BarPhaseBar, hasSummon: boolean): BarPhaseSegment
 
 	// Case 2 — Stance ability: caster-state window with optional CD overflow.
 	if (bar.uptime > 0 && !hasSummon) {
-		if (cdSpanFromStart >= fieldOffset + bar.uptime) {
+		// A bar with no cooldown (Blank's `E{8s}`) has nothing to outlast, so it
+		// is case A with no ghost, never case B's solid-then-dim.
+		if (bar.cooldown <= 0 || cdSpanFromStart >= fieldOffset + bar.uptime) {
 			// Case A: cooldown outlasts the stance window.
 			const segs: BarPhaseSegment[] = [{ role: 'uptime', start: fieldStart, span: bar.uptime }];
 			const cdSpan = cdSpanFromStart - fieldOffset - bar.uptime;
