@@ -8,13 +8,14 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-_Empty: Nate picks the next item._
+One session, in this order. The three touch separate areas, so they can be built and reviewed independently.
+
+1. **Radiance gates, and the Mitya party's Prism (⚓ Nate 2026-11-09).** An `inPolestarField` condition exists now; Cyno's and Diona's Radiance clauses still use `teamEnablesReaction`, though gcsim gates Radiance on standing in the field. ⚠️ `conditions.ts` answers it only on the passes that publish the fact (procs, on-hit stacks, summons, infusions), and elsewhere returns the optimistic null, so the cast-anchored buff windows need checking before the data moves. Read each clause's kit text and gcsim first: some of Cyno's follow a teammate after the swap. Cyno's Elemental Mastery caveat will need new wording, proposed to Nate first. A Mitya party still draws a 7s Starlight Prism (`sim/fields.ts`); the kit says Stellar-Conduct then makes Gradient Beacons instead.
+2. **Report a problem is missing on the phone (⚓ Nate 2026-11-09):** only the desktop `?` menu carries it (`TopBar.svelte`); add it to the index's Help group in `MenuState.svelte`, using `feedbackUrl` from `$lib/feedback`. Needs Nate's look on a real phone.
+3. **Clicking the Planner's ruler sets the playback start (⚓ Nate 2026-11-09; agreed 2026-09-30).** `RotationTimeline.svelte` `.rp-ruler` has no handler; parked in `docs/rounds/playback-round-plan.md`. Built and shown to Nate.
 
 ## ⏭ Next
 
-- **Radiance gates, and the Mitya party's Prism (⚓ Nate 2026-11-09).** An `inPolestarField` condition exists now; Cyno's and Diona's Radiance clauses still use `teamEnablesReaction`, though gcsim gates Radiance on standing in the field. A Mitya party still draws a 7s Starlight Prism (`sim/fields.ts`); the kit says Stellar-Conduct then makes Gradient Beacons instead.
-- **Report a problem is missing on the phone (⚓ Nate 2026-11-09):** only the desktop `?` menu carries it; add it to the index's Help group.
-- **Clicking the Planner's ruler sets the playback start (⚓ Nate 2026-11-09).** `RotationTimeline.svelte` `.rp-ruler` has no handler; parked in `docs/rounds/playback-round-plan.md`.
 - **Duplicate teams: let two teams share the same four (⚓ Nate 2026-10-27; moved up 2026-11-09).** The one-team-per-set rule (`docs/design/profiles-and-surfaces-design.md` §3; kept 10-26 in `docs/rounds/teams-surface-round.md` because a rotation finds its team by its four) is being kept alive by code that grows: every place that LOOKS UP a team by set assumes one answer. Prerequisite per that ruling: a rotation → team LINK (an optional `teamId` on the rotation record; absent = today's set match, so no migration and the flip locks nothing in). ⚠️ Do it before more set-keyed consumers pile up.
   - **Questions for Nate:** (1) a linked rotation has a member swapped: drop the link, or keep it and stop inheriting (as the 10-24 loadouts ruling 5 does for a team whose members change)? (2) typed four match two teams and there's no link: no team until chosen, or a picker on the bench? (3) do lineup board teams link to a team too, or stay sets? (4) a team card's "N rotations": linked only, or linked + unlinked set matches?
   - **Set-keyed consumers to convert (new layout):** `rotationTabs.team` (`teamOfSlots` → loadout inheritance, `docs/rounds/team-loadouts-round.md`) · `TeamsPlace` work counts + `menu.teamFilter` key · `LibraryPlace` team filter and row team name · `TeamDetail` clash line ("These four are already a team").

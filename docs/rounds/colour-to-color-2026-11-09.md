@@ -1,6 +1,6 @@
 # `colour` becomes `color` (2026-11-09)
 
-**Status:** on `refactor/colour-to-color`, stacked on `chore/checkin-2026-11-09`.
+**Status:** merged in `0be1edb2`.
 
 Nate's ruling from 2026-10-27, picked up once no feature branch was open: the code follows the site's US English.
 
