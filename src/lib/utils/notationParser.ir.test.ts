@@ -623,7 +623,7 @@ function assertCore(result: ParsedRotation): void {
 /**
  * Every cast and action event points back at the token that produced it
  * (`src`, notation-follows-chart 2026-09-24) — the editor tints that exact
- * range with what the chart resolved, so a wrong offset colours the wrong
+ * range with what the chart resolved, so a wrong offset colors the wrong
  * characters. ⚠ Bracket groups are the case at risk: their inner tokens are
  * re-tokenized from a synthetic string and shifted back onto the source.
  */

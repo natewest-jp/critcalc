@@ -114,7 +114,7 @@ export const ISOLINE_VALUES = [1.3, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5];
 //
 // ⚠ THIS RAMP IS THE PARENT OF --ui-*, NOT A COPY OF IT. The UI state family was
 // taken FROM these four stops (⚓ Nate's pick), which is why they coincide; § Laws
-// still says a UI state colour may not appear inside a visualization, so this
+// still says a UI state color may not appear inside a visualization, so this
 // stays a literal table rather than reaching for var(). The two are a PAIR that
 // has to be re-synced by hand when either moves.
 //
@@ -137,8 +137,8 @@ export const zeroCritRiskColor = (probability: number) =>
 	RISK_STOPS.find((stop) => probability < stop.max)!.color;
 
 /**
- * The risk ramp as a CONTINUOUS colour, for the hits slider's track. The same
- * four colours as RISK_STOPS, each pinned to a risk inside its band and
+ * The risk ramp as a CONTINUOUS color, for the hits slider's track. The same
+ * four colors as RISK_STOPS, each pinned to a risk inside its band and
  * blended in OKLab between them (an sRGB blend of green and orange goes
  * muddy). ⚓ Pure green holds through the low end, so a build that cannot miss
  * — CRIT Rate 100% — paints no yellow at all. 🎛️ The anchors are a look, not
@@ -180,9 +180,9 @@ export const HITS_MIN = 1;
 export const HITS_MAX = 60;
 
 /**
- * The hits-per-rotation slider's track: each hit count painted the risk colour
+ * The hits-per-rotation slider's track: each hit count painted the risk color
  * of a whole rotation landing zero crits AT THAT COUNT, for the build's own
- * CRIT Rate — so the track recolours as CRIT Rate moves.
+ * CRIT Rate — so the track recolors as CRIT Rate moves.
  * ↻ 2026-10-02 (⚓ Nate): it was the four stops spread evenly over 1–40 hits,
  * which painted the default 8 hits orange at any CRIT Rate — at 70% that is a
  * 0.007% risk. One stop per hit, each from the continuous ramp, so CSS has

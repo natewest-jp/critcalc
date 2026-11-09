@@ -1202,8 +1202,8 @@
 		border-radius: var(--r-round);
 		object-fit: cover;
 	}
-	/* ⚓ Nate 2026-10-10: hover recolours the RING itself — no second outline
-	   outside it — and the magnifier turns with it, to the same colour. */
+	/* ⚓ Nate 2026-10-10: hover recolors the RING itself — no second outline
+	   outside it — and the magnifier turns with it, to the same color. */
 	.bv-boss:hover {
 		border-color: var(--sel-ring);
 	}
@@ -1225,12 +1225,12 @@
 			background-color var(--t-snap),
 			box-shadow var(--t-snap);
 	}
-	/* ⚠ The ring's colour is translucent gold laid over the disc's well, so the
-	   magnifier lays the SAME gold over the SAME well — one colour, not two that
+	/* ⚠ The ring's color is translucent gold laid over the disc's well, so the
+	   magnifier lays the SAME gold over the SAME well — one color, not two that
 	   happen to share a token.
 	   ⚠ The gold is an INSET SHADOW filling the 26px circle, never a gradient
-	   layer: a gradient cannot interpolate, so it SNAPPED while the colour under
-	   it faded — a one-frame flash in and, worse, out. A shadow's colour fades
+	   layer: a gradient cannot interpolate, so it SNAPPED while the color under
+	   it faded — a one-frame flash in and, worse, out. A shadow's color fades
 	   with the backing, so the two move as one. */
 	.bv-boss:hover .bv-boss-zoom {
 		background-color: var(--surface-well);
@@ -1354,7 +1354,7 @@
 		white-space: nowrap;
 	}
 	/* The checks on the banner's GLASS lose their pill ground — glass on glass
-	   stacks its alpha — and keep their marks, whose colour and shape carry
+	   stacks its alpha — and keep their marks, whose color and shape carry
 	   the standing. The preview's ring stays, so it keeps its padding. */
 	.bv-team-head--boss :global(.ck) {
 		background: none;

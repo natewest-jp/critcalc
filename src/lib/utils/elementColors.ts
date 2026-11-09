@@ -36,7 +36,7 @@ export type ElementKey =
 // no-op anyway. elementPalette() falls their `bar` back to their own `main`,
 // not to none's, so a physical bar stays physical gray.
 // ⚠ TWO OF THESE SLOTS ARE TRANSCRIBED AND TWO ARE DERIVED. `main` is Genshin's
-// icon palette (measured off the flat-colour source art) and `hi` is their
+// icon palette (measured off the flat-color source art) and `hi` is their
 // in-text `<color=#rrggbbff>` palette — copied tables, NOT to be re-tuned as a
 // set. `bar` (a fill with white on it) and `border` are functions of `main`.
 // The full argument, including why there is no light-context rung and why the
@@ -140,7 +140,7 @@ export const TICK_INK: Partial<Record<ElementKey, string>> = {
 	dendro: '#b1ffa4'
 };
 
-/** The stub colour for a tick in `element` — see `TICK_INK`. */
+/** The stub color for a tick in `element` — see `TICK_INK`. */
 export function tickInk(element: string | undefined): string {
 	return TICK_INK[(element ?? 'none') as ElementKey] ?? elementPalette(element).hi;
 }
@@ -188,7 +188,7 @@ export function elementPalette(element: string | undefined): ElementPalette {
 // on the tiled multi-layer fills that survived every structural fix and never
 // reproduced in headless WebKit. Consistent cross-browser display won over the
 // subtle wave. Don't reintroduce tiled background layers on these bars without
-// a real-Safari pass. Flat has no such hazard: it is one colour.
+// a real-Safari pass. Flat has no such hazard: it is one color.
 export function castFill(bar: string): string {
 	return bar;
 }

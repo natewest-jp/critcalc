@@ -8,7 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Rename `colour` → `color` in code (⚓ Nate 2026-10-27; picked 2026-11-09).** About 400 occurrences in 72 files (identifiers like `ProfileColour`, `colourValue`, comments, `/styleguide` prose); one mechanical commit. ⚠ `colour` is a STORED key on `ProfileRecord` (IndexedDB) and in backup files (`backup.ts` ~135): write `color`, read both, and keep backup import accepting the old spelling forever.
+_Empty: Nate picks the next item._
 
 ## ⏭ Next
 

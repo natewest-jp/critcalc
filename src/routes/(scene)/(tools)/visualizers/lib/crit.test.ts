@@ -116,7 +116,7 @@ describe('zeroCritRiskColor', () => {
 	const stopsOf = (gradient: string) =>
 		gradient.slice('linear-gradient(to right, '.length, -1).split(/, (?=#|rgb)/);
 
-	it("the slider gradient colours each hit count by the build's own risk", () => {
+	it("the slider gradient colors each hit count by the build's own risk", () => {
 		// 100% CR cannot miss: green end to end, no yellow anywhere
 		const sure = stopsOf(riskGradient(1));
 		expect(sure.every((stop) => stop.startsWith('#5be0ac'))).toBe(true);
@@ -128,7 +128,7 @@ describe('zeroCritRiskColor', () => {
 		expect(riskGradient(0.05, 1, 2)).toContain('#e63946 100%');
 	});
 
-	it('the continuous ramp lands on each risk colour at its anchor', () => {
+	it('the continuous ramp lands on each risk color at its anchor', () => {
 		expect(riskColorSmooth(0)).toBe('#5be0ac');
 		expect(riskColorSmooth(0.12)).toBe('rgb(246, 211, 101)'); // = #f6d365
 		expect(riskColorSmooth(0.9)).toBe('#e63946');

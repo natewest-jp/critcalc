@@ -382,7 +382,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// swirl are two debuffs, not one two-element debuff.
 	//
 	// ⚠ BUFF AND DEBUFF NEVER MERGE even off one event and one span (Sandrone
-	// grants both). ⛔ NOT because of paint — the coloured debuff bar was
+	// grants both). ⛔ NOT because of paint — the colored debuff bar was
 	// deleted 2026-08-11 and the two look identical. Because they are different
 	// TARGETS carrying different display formatters: a window is read wholesale
 	// as buff-or-shred (`formatBuffDisplayValue` vs `formatResShredDisplayValue`)

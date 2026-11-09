@@ -8,7 +8,7 @@
 	 * It fills its box and paints in `currentColor`: the consumer decides size
 	 * and state (lit / faint / previewed) by setting `color` on it — PAINT,
 	 * ⛔ never element opacity (the sub-pixel law). A two-tone glyph's shade
-	 * half rides at half whatever colour it wears.
+	 * half rides at half whatever color it wears.
 	 */
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 	import { FINGERPRINT_GLYPHS } from '$lib/fingerprintGlyphs.generated';

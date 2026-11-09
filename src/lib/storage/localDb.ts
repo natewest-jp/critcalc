@@ -19,6 +19,7 @@
 
 import type { Meta, StoreName, Stores } from './db';
 import type { MigrationResult } from './migrate';
+import { respellColor } from './records';
 
 /** The one key the stand-in writes. ⚠ Its presence is what keeps a browser on
  *  the stand-in (`boot.ts`), so a store never splits in two. */
@@ -144,6 +145,19 @@ export class LocalDb {
 
 	replaceAll(result: MigrationResult, meta: Meta): void {
 		this.#storage.setItem(LOCAL_DB_KEY, JSON.stringify(fill(empty(), result, meta)));
+	}
+
+	/** `db.ts` `respellProfileColors`. Writes only if a record changed. */
+	respellProfileColors(): void {
+		const t = this.#read();
+		let changed = false;
+		for (const [id, stored] of Object.entries(t.profiles)) {
+			const next = respellColor(stored);
+			if (next === stored) continue;
+			t.profiles[id] = next;
+			changed = true;
+		}
+		if (changed) this.#storage.setItem(LOCAL_DB_KEY, JSON.stringify(t));
 	}
 
 	/** Every record of every store, tombstones included. */

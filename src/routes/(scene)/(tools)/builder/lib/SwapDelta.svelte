@@ -6,7 +6,7 @@
 	 * icon, a resonance as its element, a capability as its fingerprint glyph,
 	 * a battlefield check as its chip — so a header and the row it predicts
 	 * read as one vocabulary. The SIGN carries the hue; the words never change
-	 * colour.
+	 * color.
 	 */
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { FACETS } from '$lib/capabilities/facets';

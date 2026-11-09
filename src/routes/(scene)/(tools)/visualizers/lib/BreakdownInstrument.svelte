@@ -70,9 +70,9 @@
 	// it sits, and a cut (×0.49) runs back by exactly as far as a ×2.04 runs
 	// on.
 	//
-	// Colour follows the house rule (⚓ Nate, 2026-08-11 bar rework): content
+	// Color follows the house rule (⚓ Nate, 2026-08-11 bar rework): content
 	// gets chroma, annotation doesn't. The reaction is the GAME, so its column
-	// wears the trigger element's colour (the mapping Reaction curves uses);
+	// wears the trigger element's color (the mapping Reaction curves uses);
 	// every stat bracket is our READING of the hit and wears --glass-bar, the
 	// planner's buff material. ⛔ No categorical palette: each column is
 	// labelled at its foot, so a hue per column would carry nothing the label
@@ -124,7 +124,7 @@
 		real: string;
 		/** The multiplier (kind 'mult') or the value (the others) */
 		value: number;
-		/** null = the glass material (annotation); a colour = the game's own chroma */
+		/** null = the glass material (annotation); a color = the game's own chroma */
 		color: string | null;
 		/** The column in a sentence, for whoever hovers or taps it */
 		read: string;
@@ -645,7 +645,7 @@
 	let trackW = $state(0);
 	const chevronsFor = (px: number) => (px <= 0 ? 0 : Math.ceil(px / CHEV_PITCH) + 1);
 
-	/** 🎛️ The reaction's bar: its element colour's share in a mix with the
+	/** 🎛️ The reaction's bar: its element color's share in a mix with the
 	 *  stage's slate (⚓ Nate 2026-11-03: full strength was too vivid as a
 	 *  column). In oklab, which keeps it clean where sRGB greys it. Both sides
 	 *  are literals, so no mix is fed by another (the WebKit trap, ui.md). */

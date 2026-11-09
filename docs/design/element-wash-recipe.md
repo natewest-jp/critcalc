@@ -54,7 +54,7 @@ fills from the shoulders down leaves the two upper corners as the only visible
 ground, and that Genshin's own cards run deep-at-top. **His eye overruled it, and
 the surviving argument is the simpler one:**
 
-> **The colour belongs BEHIND the character, not around their head.**
+> **The color belongs BEHIND the character, not around their head.**
 
 Tinting the top puts the strongest wash directly behind the face — the part of
 the art that has to hold attention — and rings every head in its element.

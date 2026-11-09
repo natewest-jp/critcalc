@@ -227,7 +227,7 @@ describe('freshOutcome', () => {
 		expect(distStats(collapse(out)).mean).toBeCloseTo(9 * 0.85, 9);
 	});
 
-	it('the colour tag is the upgrades into your stats: binomial for a pair', () => {
+	it('the color tag is the upgrades into your stats: binomial for a pair', () => {
 		const out = freshOutcome('cv', ['cr', 'cd'], 5);
 		const byK = Array(6).fill(0);
 		for (const o of out) byK[o.k] += o.p;

@@ -52,7 +52,7 @@ STATE).
 
 **Job:** the outcome of clicking that control. **Place:** the control
 itself. **Look:** its label and mark change ("✓ Copied", "Couldn't copy"),
-with a ring in the severity colour. **Time:** 1.6 s success, 2.4 s failure.
+with a ring in the severity color. **Time:** 1.6 s success, 2.4 s failure.
 **Confirm on the control:** the click-again pattern ("Delete?"), unified at
 3 s on every delete and reset (today 3 s / 4 s / blur-only), announced
 (`aria-live` on the label). **A11y:** the label change is announced.
@@ -67,8 +67,8 @@ click-again delete and reset.
 act on. **Place:** ONE home per page, bottom centre of the surface; on a
 phone tool, above the notation dock. Rendered once, at layout level, for
 every surface (tools, full screen, landing). **Look:** ↻ **PAPER, every kind**
-(⚓ Nate 2026-10-27, §9): body size, a mark in the severity colour (or a
-profile's colour disc), a 4px left stripe in the same colour, optional
+(⚓ Nate 2026-10-27, §9): body size, a mark in the severity color (or a
+profile's color disc), a 4px left stripe in the same color, optional
 buttons, and a ✕ with the time left as a ring round it. (It began as a glass
 plate with a blur for routine news and paper for errors.)
 On a narrow surface the buttons drop to their own row.
@@ -133,13 +133,13 @@ its own shape. What sets it apart, so it never borrows another's:
 - It is ANCHORED to the thing it teaches (a callout pointing at the control),
   never in the toast home or the banner place.
 - It is shown once, its dismissal is remembered (`siteSettings`), and it
-  must never look like an alarm: no severity colour.
+  must never look like an alarm: no severity color.
 - It waits for the streamlining work (the on-hold "one-time dismissible
   hints" item in the to-do list): fixing a control may remove the need.
 
 ## 4. Severity
 
-| Severity | Mark                     | Colour                           | Toast material | Toast time          | Banner             |
+| Severity | Mark                     | Color                            | Toast material | Toast time          | Banner             |
 | -------- | ------------------------ | -------------------------------- | -------------- | ------------------- | ------------------ |
 | Success  | check                    | `--ui-positive`                  | paper          | 4 s                 | –                  |
 | Info     | info (or a profile disc) | `--ui-info`                      | paper          | 6 s                 | –                  |
@@ -160,9 +160,9 @@ its own shape. What sets it apart, so it never borrows another's:
 - A delete is already a tombstone in storage, so the Trash is a screen,
   Restore and the clearing.
 - Two cases to solve: restoring a profile when seven exist (the cap), and a
-  deleted profile's colour taken since. ↻ Both dissolved 2026-10-26: the cap
-  is gone and colours repeat (design §2.3), so a profile always comes back,
-  in its own colour.
+  deleted profile's color taken since. ↻ Both dissolved 2026-10-26: the cap
+  is gone and colors repeat (design §2.3), so a profile always comes back,
+  in its own color.
 - Built after the notice system, so its toasts and confirms are born in the
   new shapes.
 
@@ -242,7 +242,7 @@ touch never shows and nobody finds.
 - ✅ Banners at the top, toasts at the bottom: the placement logic holds on
   both surfaces at every width.
 - ✅ Corners at `--r-md` (6px).
-- ✅ The paper UI colour set, with the red-shifted warning (`#c85d02`),
+- ✅ The paper UI color set, with the red-shifted warning (`#c85d02`),
   landed in app.css `.ctx-light`.
 - ⏳ The timer: **Ring** (an arc round the ✕) or **Edge** (the severity
   rule draining). Kept open while the rest settles; the build carries both
@@ -284,7 +284,7 @@ Peripheral vision catches brightness contrast and the start of a movement,
 not hue, detail or size, and a dark card on dark grounds has neither.
 
 - ✅ **Every toast is paper.** The kind is its mark and a 4px left stripe in
-  the state colour (info is `--ui-info`). It demands attention every time, and
+  the state color (info is `--ui-info`). It demands attention every time, and
   that is accepted: notices are rare, and once seen it can be ignored or
   dismissed. ⚠ A whole-paper surface would blunt it; none exists.
 - ✅ **The arrival rise** for anything that appears unbidden: 30px, quartOut

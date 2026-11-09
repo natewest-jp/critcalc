@@ -13,7 +13,7 @@
 export const BESPOKE_MARKS = {
 	/**
 	 * Lucide's `Hand` with a strike through it — Human timing OFF, so the
-	 * state shows in the SHAPE as well as the colour (⚓ Nate, 2026-10-24).
+	 * state shows in the SHAPE as well as the color (⚓ Nate, 2026-10-24).
 	 * Source: assets-src/tools/hand-off.svg (viewBox 23×22, cropped to its
 	 * ink), translated by (+0.894, +1) — the offset that puts its finger path
 	 * on Hand's own `M18 11V6…`. Values otherwise verbatim.

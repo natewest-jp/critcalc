@@ -335,7 +335,7 @@
 	<div class="scene" class:occluded={$sceneOccluded}>
 		<!-- ⚓ Nate 2026-09-26: what shows where the world has not drawn (the
 		     frames before the renderer is live, or for good if WebGL fails) is
-		     the VEIL GROUND, so a cold load's veil lifts onto its own colours.
+		     the VEIL GROUND, so a cold load's veil lifts onto its own colors.
 		     Unmounted once the renderer owns the frame — the canvas is opaque
 		     and covers it, and a full-viewport SVG filter has no business
 		     sitting under a live canvas. -->
@@ -646,7 +646,7 @@
 		z-index: 1;
 		/* ↻ 2026-09-26 (⚓ Nate): was rgba(2, 9, 31, 1) → rgba(3, 6, 16, 0),
 		   with the re-graded plate; then #0d1124 → transparent; then the veil
-		   ground's top colour (--veil-ground-top, #06080f) at 60% → 0, so it
+		   ground's top color (--veil-ground-top, #06080f) at 60% → 0, so it
 		   blends with both the landing scene AND the VeilGround fallback that
 		   shows where the plate never drew. Written as a literal because an
 		   alpha on a var() would need a color-mix. */

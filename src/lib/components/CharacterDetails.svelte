@@ -353,7 +353,7 @@
 		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. This note reports the SAME
 		   fact the ∅ marker does — frame timing isn't curated — and the
 		   dire-retirement round settled that as a DATA-QUALITY state rather than a
-		   domain colour. It was wearing a borrowed element token; now the note and
+		   domain color. It was wearing a borrowed element token; now the note and
 		   the mark that summarises it speak with one voice.
 		   ↻ 2026-08-12: and that one voice is now --ui-provisional. The 08-11 move
 		   settled state-over-domain; this one settles WHICH state, now that the

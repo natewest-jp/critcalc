@@ -38,7 +38,7 @@
 		kind: Kind;
 		text: string;
 		actions: Action[];
-		/** A profile's colour, shown as a disc in place of the mark. */
+		/** A profile's color, shown as a disc in place of the mark. */
 		swatch?: string;
 		ms: number | null;
 		paused: boolean;
@@ -141,18 +141,18 @@
 
 	// The account switch: the wash, and now words.
 	const PROFILES = [
-		{ name: 'My account', colour: '#5fb3ff' },
-		{ name: 'Alt account', colour: '#ff7a59' },
-		{ name: 'Theorycraft', colour: '#e8e6e1' }
+		{ name: 'My account', color: '#5fb3ff' },
+		{ name: 'Alt account', color: '#ff7a59' },
+		{ name: 'Theorycraft', color: '#e8e6e1' }
 	];
 	let profile = $state(0);
-	let wash = $state<{ key: number; colour: string } | null>(null);
+	let wash = $state<{ key: number; color: string } | null>(null);
 	function switchProfile(): void {
 		profile = (profile + 1) % PROFILES.length;
 		const p = PROFILES[profile];
-		wash = { key: Date.now(), colour: p.colour };
+		wash = { key: Date.now(), color: p.color };
 		setTimeout(() => (wash = null), motion(2000) || 1);
-		toast('info', `Switched to ${p.name}`, [], p.colour);
+		toast('info', `Switched to ${p.name}`, [], p.color);
 	}
 
 	// The control answers for itself.
@@ -338,7 +338,7 @@
 					{#key wash.key}
 						<div
 							class="st-wash"
-							style:--wash={wash.colour}
+							style:--wash={wash.color}
 							style:--wash-ms="{motion(2000)}ms"
 							aria-hidden="true"
 						></div>
@@ -358,7 +358,7 @@
 					<span class="st-acts">
 						<button
 							class="st-pp"
-							style:--pp={PROFILES[profile].colour}
+							style:--pp={PROFILES[profile].color}
 							onclick={switchProfile}
 							title="Switch profile"
 							aria-label="Switch profile"
@@ -575,7 +575,7 @@
 				{@render bannerView('error')}
 			</div>
 
-			<h2 class="nl-h2">The UI colours on paper</h2>
+			<h2 class="nl-h2">The UI colors on paper</h2>
 			<p class="nl-note">
 				Matched at danger's contrast (3.33:1 on parchment), each at the most saturation the screen
 				can show. The second warning keeps the night hue; the first is nudged toward red-orange,
@@ -1297,7 +1297,7 @@
 		color: var(--ui-danger);
 	}
 
-	/* ── paper colours ── */
+	/* ── paper colors ── */
 	.pc {
 		display: flex;
 		flex-direction: column;

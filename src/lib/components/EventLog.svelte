@@ -14,7 +14,7 @@
 	 * tool's vocabulary in here to "unify" them; that is how one of them starts
 	 * lying.
 	 *
-	 * THE ROW, read left to right: WHEN · WHAT LANDED (an element-coloured pip
+	 * THE ROW, read left to right: WHEN · WHAT LANDED (an element-colored pip
 	 * carrying its gauge units) · WHAT IT DID. That is the application marker's
 	 * own order, in prose — ⚓ the pip and the chart's pill are deliberately the
 	 * same object, which is why the pip carries UNITS and not a row number.
@@ -415,7 +415,7 @@
 		outline: 2px solid var(--accent);
 		outline-offset: -1px;
 	}
-	/* ⚓ THE CHART'S CURSOR IS ON THIS ROW. A FILL, not a colour change: the ink
+	/* ⚓ THE CHART'S CURSOR IS ON THIS ROW. A FILL, not a color change: the ink
 	   ladder is already carrying tone (lead / consequence / bookkeeping), so
 	   brightening a row would collide with what its shade already says. A ground
 	   is a different axis, so a lit BOOKKEEPING row still reads as bookkeeping.
@@ -474,14 +474,14 @@
 		   hue. ⛔ Never alpha-reduced white here — the shadow bleeds through the
 		   glyphs, which is why nothing dimmed on the chart carries a halo either.
 		   The fallback is the chart's own near-black, for a caller that hands over
-		   a colour with no halo. */
+		   a color with no halo. */
 		color: #fff;
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
 	/* ⚓ The same statement the chart's tick makes: "could someone MEASURE this?"
-	   — a ring rather than a recolour, so the element still names itself. */
+	   — a ring rather than a recolor, so the element still names itself. */
 	.el-pip--provisional {
 		box-shadow: 0 0 0 1px var(--ui-provisional);
 	}

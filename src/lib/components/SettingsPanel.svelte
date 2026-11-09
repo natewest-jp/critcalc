@@ -127,7 +127,7 @@
 			.then((n) => (storeSince = n));
 	});
 	let savedSince = $derived(storeSince);
-	/** ⚓ Colour only when it is a problem (Nate 2026-10-26), so it keeps
+	/** ⚓ Color only when it is a problem (Nate 2026-10-26), so it keeps
 	 *  meaning something: never, or older than the window, with work since. */
 	const stale = $derived(backupIsStale(lastBackup, savedSince));
 

@@ -7,9 +7,9 @@
 //
 // ⚓ NATE 2026-10-16: the plain mark on the favicon's plate, like the favicon.
 // ↻ It replaces the starfield tile (2026-10-14), which he lived with on his
-// home screen for a few days: beside other apps' flat colours, outlines and
+// home screen for a few days: beside other apps' flat colors, outlines and
 // fills it read as "artsy". Both inputs are build-logo.mjs outputs, so the
-// plate colour and the path have ONE source and this cannot drift from the
+// plate color and the path have ONE source and this cannot drift from the
 // favicon — run build-logo first when the mark changes.
 //
 // ⚠ NOT the favicon's framing. The favicon crops the mark to 88% of the tile's

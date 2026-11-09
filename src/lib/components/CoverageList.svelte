@@ -510,7 +510,7 @@
 		}
 	}
 
-	/* ---- the five states (one register each; ⛔ never element colours).
+	/* ---- the five states (one register each; ⛔ never element colors).
 	   ⚓ Nate 2026-09-23: modeled is --ui-positive and not-modeled hatches in
 	   --ui-danger, so the strip reads at a glance. ---- */
 	.swatch {

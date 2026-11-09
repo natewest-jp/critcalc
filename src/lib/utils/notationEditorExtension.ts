@@ -129,7 +129,7 @@ function elementTintForToken(
  *
  * ⚠ `doc` is the text that was PARSED. A tint list for any other text is stale
  * and refused — the parse can land a beat after a keystroke, and a range from
- * the old text would colour the wrong characters.
+ * the old text would color the wrong characters.
  */
 export const setResolvedTints = StateEffect.define<{ doc: string; tints: NotationTint[] }>();
 
@@ -137,7 +137,7 @@ export const setResolvedTints = StateEffect.define<{ doc: string; tints: Notatio
  * The accepted tints, kept honest across edits until the next parse arrives:
  * every range is MAPPED through each change, and a range the change touched is
  * dropped — the token being typed falls back to the guess for the frame or so
- * until the parse catches up, and everything else keeps its colour (no flash).
+ * until the parse catches up, and everything else keeps its color (no flash).
  */
 type ResolvedTints = {
 	tints: NotationTint[];
@@ -216,7 +216,7 @@ const pickedRange = StateField.define<DecorationSet>({
  *  The warning one is the tokenizer's existing unrecognized-token treatment,
  *  reused rather than twinned: an unresolvable NAME and an unrecognized TOKEN
  *  are the same sentence to the reader ("this didn't parse"), so they must not
- *  arrive in two different colours. */
+ *  arrive in two different colors. */
 const FLAG_CLASS = {
 	warning: 'rp-tok-unknown',
 	provisional: 'rp-flag-approx'
@@ -327,7 +327,7 @@ const notationHighlight = ViewPlugin.fromClass(
 			}
 			// A resolved tint that matched no top-level token is an input INSIDE a
 			// bracket group (`3[N1 C]`) — the group is one token to the tokenizer,
-			// so these colour its inner tokens as nested marks, which the text-only
+			// so these color its inner tokens as nested marks, which the text-only
 			// guess never could.
 			for (const [key, el] of resolved) {
 				if (!el) continue;
@@ -443,7 +443,7 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
  *  when it sat inside an opaque panel; it is a translucent .field on the bare
  *  scene now (⚓ Nate). So this is a REFERENCE rather than a paint, the same
  *  role --rp-chart-bg plays for the bars: the dimmed tokens still need a known
- *  ground because an alpha TEXT colour renders display-dependently on P3 (the
+ *  ground because an alpha TEXT color renders display-dependently on P3 (the
  *  alpha-compositing law, brightness round 2026-07-31), and a field of
  *  --fill-rest over the dimmed scene composites to within ~15 levels of this.
  *  ⚠ If the field's fill ever moves far from the chart ground, re-ground these
@@ -467,7 +467,7 @@ const notationTheme = EditorView.theme({
 	// ⛔ It is NOT a bordered box any more: `border` → `box-shadow` inset, which
 	// is what .field uses so the ring traces the input rather than adding a
 	// layout edge. The three-state border (Nate 2026-07-19: resting line, hover
-	// accent 50%, focused back to resting) survives as the ring's colour.
+	// accent 50%, focused back to resting) survives as the ring's color.
 	// ⚠ Metrics are mirrored by .rp-notation-placeholder in
 	// RotationTimeline.svelte (the pre-chunk-load stand-in) — keep in lockstep,
 	// or the editor visibly jumps when the lazy chunk lands.
@@ -598,8 +598,8 @@ const notationTheme = EditorView.theme({
 	//
 	// ⚠ IT DOES NOT TAKE THE INK, and that is the whole difference from the
 	// warning above. --ui-provisional is "this is approximate", not "you did
-	// something" — and the token's colour is already carrying real information
-	// (the caster's element tint), which recolouring would destroy to say
+	// something" — and the token's color is already carrying real information
+	// (the caster's element tint), which recoloring would destroy to say
 	// something quieter. So: the underline alone. The two registers are a
 	// measured pair (ΔE .122; see the UI-state block in app.css), which is what
 	// lets one amber squiggle be told from the other at this size.

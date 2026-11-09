@@ -24,7 +24,7 @@
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
 	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
-	import { colourValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
+	import { colorValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
 	import { motion } from '$lib/motion';
 	import { siteSettings } from '$lib/stores';
 	import Mark from './Mark.svelte';
@@ -82,7 +82,7 @@
 		pictureUrlOf(pictureOf(p), $siteSettings.useNewOutfits, p.twin);
 
 	// ── The switch cue (design §9.4; ⚓ Nate 2026-10-22: a wash from the bar) ──
-	// The new profile's colour falls from the top bar and fades; its name rides
+	// The new profile's color falls from the top bar and fades; its name rides
 	// below the picture and folds away with it. 🎛️ Knobs, for Nate's pass.
 	/** How long the wash takes to fade out (ms). */
 	const WASH_MS = 2000;
@@ -91,7 +91,7 @@
 	/** Its strongest alpha, at the bar's edge (percent). */
 	const WASH_PEAK = 32;
 
-	let cue = $state<{ key: number; colour: string; name: string } | null>(null);
+	let cue = $state<{ key: number; color: string; name: string } | null>(null);
 	$effect(() => {
 		const at = storageSession.switchedAt;
 		const p = storageSession.profile;
@@ -99,7 +99,7 @@
 		// Reduced motion: no fade, so no flash; the ring carries the meaning.
 		const ms = motion(WASH_MS);
 		if (!ms || left(at, ms) <= 0) return;
-		cue = { key: at, colour: colourValue(p.colour), name: p.name };
+		cue = { key: at, color: colorValue(p.color), name: p.name };
 		const t = setTimeout(() => (cue = null), left(at, ms));
 		return () => clearTimeout(t);
 	});
@@ -256,7 +256,7 @@
 						title={profile.name}
 						onclick={(e) => toggle('profile', e)}
 					>
-						<span class="pp" style:--pp-color={colourValue(profile.colour)}>
+						<span class="pp" style:--pp-color={colorValue(profile.color)}>
 							{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback"
 									>{profile.name[0]}</span
 								>{/if}
@@ -289,7 +289,7 @@
 										menuState.attempt(() => void storageSession.switchTo(p.id));
 									}}
 								>
-									<span class="pp pp--sm" style:--pp-color={colourValue(p.colour)}>
+									<span class="pp pp--sm" style:--pp-color={colorValue(p.color)}>
 										{#if purl}<img src={purl} alt="" />{/if}
 									</span>
 									{p.name}
@@ -460,7 +460,7 @@
 		<div
 			class="tb-wash"
 			aria-hidden="true"
-			style:--wash={cue.colour}
+			style:--wash={cue.color}
 			style:--wash-ms="{motion(WASH_MS)}ms"
 			style:--wash-reach={WASH_REACH}
 			style:--wash-peak="{WASH_PEAK}%"
@@ -846,7 +846,7 @@
 		cursor: pointer;
 	}
 	/* 🎛️ The picture is a disc among discs: 2px over their height, so with
-	   its colour ring it stands a ring's width proud of them (it was 6px over,
+	   its color ring it stands a ring's width proud of them (it was 6px over,
 	   and outweighed every door). */
 	.pp {
 		display: grid;

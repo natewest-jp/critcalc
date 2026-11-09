@@ -8,7 +8,7 @@
   `/lab/toast-attention` blind test): on a dark site paper is the one big
   brightness step, which is what peripheral vision catches; a glass toast
   could come and go unseen. The kind is the mark and a 4px left stripe in its
-  state colour; an error also stays until dismissed. They arrive on the shared
+  state color; an error also stays until dismissed. They arrive on the shared
   rise (`riseIn`). ⚠ A whole-paper surface would blunt this; none exists, and
   the shadow still separates the card there. The time left is a ring round the ✕ (⚓ Nate
   2026-10-26: the ring over the edge and the line), and the ✕'s hover is the
@@ -207,7 +207,7 @@
 	.nt-swatch {
 		grid-area: mark;
 	}
-	/* The mark wears its stripe's colour. */
+	/* The mark wears its stripe's color. */
 	.nt-mark {
 		display: inline-flex;
 		color: var(--nt-stripe);
@@ -219,7 +219,7 @@
 		border: 2px solid var(--pp);
 		background: color-mix(in srgb, var(--pp) 35%, var(--surface));
 	}
-	/* ⚓ With the profile's picture (Nate 2026-10-27): larger, the colour as a
+	/* ⚓ With the profile's picture (Nate 2026-10-27): larger, the color as a
 	   2px ring outside it, as the top bar wears it, on slate (the disc claims
 	   .ctx-dark, so --surface below is the slate ground). */
 	.nt-swatch.has-picture {

@@ -33,7 +33,7 @@ describe('migrate', () => {
 		});
 		const account = r.profiles.find((p) => p.kind === 'real')!;
 		expect(account.name).toBe(MIGRATED_PROFILE_NAME);
-		expect(account.colour).toBe('anemo');
+		expect(account.color).toBe('anemo');
 		expect(account.twin).toBe('lumine');
 		expect(account.roster.constellations).toEqual({ bennett: 6 });
 		expect(r.activeProfileId).toBe(account.id);

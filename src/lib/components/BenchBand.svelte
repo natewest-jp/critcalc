@@ -497,7 +497,7 @@
 	   Above the ground, below the cards — the cards start RIBBON_PAD inside it,
 	   so nothing overlaps in practice.
 
-	   `fill: currentColor` rather than a token per path: the colour is stated
+	   `fill: currentColor` rather than a token per path: the color is stated
 	   ONCE here and both paths take it, which is the same "one line, two
 	   corners" contract the CSS pair had. */
 	.bb-frame {

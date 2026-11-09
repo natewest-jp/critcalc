@@ -16,7 +16,7 @@
  */
 
 import { BACKUP_KEYS, buildEnvelope, parseBackup } from '$lib/utils/settingsBackup';
-import { getMeta, openDb, writeMigration, type Db } from './db';
+import { getMeta, openDb, respellProfileColors, writeMigration, type Db } from './db';
 import { replayJournals } from './journal';
 import { LocalDb } from './localDb';
 import { migrate } from './migrate';
@@ -140,6 +140,11 @@ async function ready(db: Db, legacy: Storage | null): Promise<Db> {
 			flipNotice: !!legacy && hadLegacyData(legacy)
 		});
 	}
+	// ⚠ A spelling pass must never cost the visitor their store: `ready`
+	// rejecting drops this tab to a store in memory.
+	await respellProfileColors(db).catch((err) =>
+		console.warn('[critcalc] could not respell stored profile colors', err)
+	);
 	// What a page that unloaded mid-save had not written yet (journal.ts).
 	// ⚠ Never into a store in memory: replaying takes the journals, and they
 	// belong to the store a later page opens.

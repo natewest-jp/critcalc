@@ -121,6 +121,17 @@ describe('where the store lives (boot.ts)', () => {
 		expect(await again.profiles()).toHaveLength(2);
 	});
 
+	it('a store saved with the old color spelling opens under the new one', async () => {
+		const profile = { id: 'p1', updatedAt: 5, kind: 'real', name: 'Main', colour: 'hydro' };
+		withLocalStorage({
+			[LOCAL_DB_KEY]: JSON.stringify({ profiles: { p1: profile }, meta: { migratedAt: 1 } })
+		});
+		vi.stubGlobal('indexedDB', undefined);
+		const [opened] = await (await openPage()).profiles();
+		expect(opened).toMatchObject({ id: 'p1', color: 'hydro', updatedAt: 5 });
+		expect(opened).not.toHaveProperty('colour');
+	});
+
 	it('IndexedDB that will not open: this tab in memory, copying nothing and taking no journal', async () => {
 		const journal = { 'critcalc:journal:page1': '{"at":1,"docs":[]}' };
 		const ls = withLocalStorage({ ...legacy, ...journal });

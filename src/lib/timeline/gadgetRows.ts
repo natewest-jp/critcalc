@@ -71,7 +71,7 @@ export type GadgetBar = {
 	start: number;
 	end: number;
 	/** Set when the world took it back before its nominal end — a core eaten by
-	 *  a Hyperbloom. Read by the tooltip and by the end mark's colour; ⛔ never
+	 *  a Hyperbloom. Read by the tooltip and by the end mark's color; ⛔ never
 	 *  re-derive an end from it. */
 	endReason?: 'consumed' | 'popped';
 };

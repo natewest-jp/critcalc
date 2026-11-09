@@ -322,7 +322,7 @@
 	   host pads it to their x (.rp-underchart) and the key simply starts there.
 	   ⚠ Everything else already matched them — size, weight, tracking, uppercase
 	   — so the only other change is the ink: --muted → --chart-dim, the chart's
-	   receding voice, which is what "match its opacity/font-colour to the Team
+	   receding voice, which is what "match its opacity/font-color to the Team
 	   Buffs" means. It now reads as one more lane label at the bottom of the
 	   stack, which is exactly what it is. */
 	.tb-key {

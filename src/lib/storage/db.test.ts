@@ -8,6 +8,7 @@ import {
 	openDb,
 	put,
 	readAll,
+	respellProfileColors,
 	setMeta,
 	tombstone,
 	writeMigration,
@@ -15,7 +16,7 @@ import {
 } from './db';
 import { LocalDb, memoryStorage } from './localDb';
 import { migrate } from './migrate';
-import { THEORYCRAFT_ID, type TeamRecord } from './records';
+import { THEORYCRAFT_ID, type ProfileRecord, type TeamRecord } from './records';
 
 const NOW = 1_800_000_000_000;
 // ⚓ Both homes answer every call alike: the stand-in (`localDb.ts`) runs the
@@ -114,6 +115,46 @@ describe.each(homes)('storage in %s', (_, open) => {
 		await clearAll(db);
 		expect(await getMeta(db)).toEqual({});
 		expect(await writeMigration(db, sample(), NOW + 1)).toBe(true);
+	});
+});
+
+describe.each(homes)('a profile saved with the old color spelling, in %s', (_, open) => {
+	const saved = (id: string, fields: object) =>
+		({
+			id,
+			updatedAt: 5,
+			kind: 'real',
+			name: 'Main',
+			twin: 'aether',
+			roster: { constellations: {}, ownership: {}, loadout: {} },
+			current: {},
+			createdAt: 1,
+			...fields
+		}) as unknown as ProfileRecord;
+
+	it('is respelled, trashed ones too, without moving its clock', async () => {
+		const db = await open();
+		await put(db, 'profiles', saved('live', { colour: 'anemo' }));
+		await put(db, 'profiles', saved('gone', { colour: 'pyro', deleted: true }));
+		await respellProfileColors(db);
+
+		const live = await get(db, 'profiles', 'live');
+		expect(live).toMatchObject({ color: 'anemo', updatedAt: 5 });
+		expect(live).not.toHaveProperty('colour');
+		const gone = await get(db, 'profiles', 'gone');
+		expect(gone).toMatchObject({ color: 'pyro', deleted: true, updatedAt: 5 });
+		expect(gone).not.toHaveProperty('colour');
+	});
+
+	it('leaves a current profile alone, and the current key wins if both exist', async () => {
+		const db = await open();
+		await put(db, 'profiles', saved('new', { color: 'geo' }));
+		await put(db, 'profiles', saved('both', { color: 'cryo', colour: 'hydro' }));
+		await respellProfileColors(db);
+		await respellProfileColors(db);
+
+		expect(await get(db, 'profiles', 'new')).toEqual(saved('new', { color: 'geo' }));
+		expect(await get(db, 'profiles', 'both')).toEqual(saved('both', { color: 'cryo' }));
 	});
 });
 

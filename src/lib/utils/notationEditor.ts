@@ -197,7 +197,7 @@ export function createNotationEditor(
 			return redoDepth(view.state) > 0;
 		},
 		setTints(doc: string, tints: NotationTint[]) {
-			// ⚠ Not a history event: a colour is not an edit.
+			// ⚠ Not a history event: a color is not an edit.
 			view.dispatch({ effects: setResolvedTints.of({ doc, tints }) });
 		},
 		setPicked(doc: string, range: { from: number; to: number } | null) {

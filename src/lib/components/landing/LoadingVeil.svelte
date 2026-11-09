@@ -100,7 +100,7 @@
 		{@html '<noscript><style>#loading-veil{display:none}</style></noscript>'}
 
 		<!-- The night gradient + grain — shared with the 404 (VeilGround.svelte,
-		     colours in app.css --veil-ground-*). -->
+		     colors in app.css --veil-ground-*). -->
 		<VeilGround />
 		<!-- The mark: rule / word / rule as one centered column. The rules are laid
 		     out BY the word rather than the viewport, so they inherit its width
@@ -157,7 +157,7 @@
 		   script still glows without shouting.
 		   ↻ 2026-09-26 (⚓ Nate): #2d98f5 → #24a0fe — HSL saturation 91% → 99%,
 		   hue 208° → 206° (a small step toward cyan), lightness held at 57%.
-		   Ground: the shared VEIL GROUND (VeilGround.svelte; its colours and
+		   Ground: the shared VEIL GROUND (VeilGround.svelte; its colors and
 		   their derivation are the root tokens --veil-ground-* in app.css). */
 		--veil-ink: #24a0fe;
 

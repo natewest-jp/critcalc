@@ -72,7 +72,7 @@ export const BUFF_STAT_ICON: Partial<Record<Stat, string>> = {
 	   "not too worried about using the ATK icon multiple places") — the row
 	   LABEL is what tells them apart, in the tooltip and in the source name on
 	   the bar. ⛔ Don't reach for the buff/debuff split to separate them: the
-	   coloured debuff bar was deleted 2026-08-11 and the two registers look
+	   colored debuff bar was deleted 2026-08-11 and the two registers look
 	   identical now.
 	   ⚠ `allElementalRes` KEEPS omni — that one really is all seven. */
 	physicalRes: '/assets/effects/Icon_Attribute_Attack.webp',

@@ -99,7 +99,7 @@ function localized(cfg, field, at) {
 
 /**
  * The game's markup, normalised: a highlighted run (`<color=#…>x</color>`)
- * becomes `**x**` so the site can emphasise it; a check's separator colour
+ * becomes `**x**` so the site can emphasise it; a check's separator color
  * tags go; `{SPRITE_PRESET#11034}` becomes `{sprite:11034}`; the escaped
  * newline is a newline.
  */

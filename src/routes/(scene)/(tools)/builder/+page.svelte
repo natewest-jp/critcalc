@@ -2215,7 +2215,7 @@
 	/* The destination strip: where a pick goes, keyed by its team's hue. */
 	/* THE DESTINATION BANNER (⚓ Nate 2026-10-13): a full-width narrow band in
 	   the selected team's hue — the team the grid is working FOR, said in
-	   the colour its frames and its row's edge already wear. The hues are
+	   the color its frames and its row's edge already wear. The hues are
 	   bright, so the ink is the bright-fill ink. */
 	.tb-dest {
 		flex: none;

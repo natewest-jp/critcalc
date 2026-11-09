@@ -124,7 +124,7 @@ async function seed() {
 		updatedAt: T,
 		kind: 'real',
 		name: 'Main',
-		colour: 'anemo',
+		color: 'anemo',
 		twin: 'aether',
 		roster: { constellations: { bennett: 6 }, ownership: { bennett: 'owned' }, loadout: {} },
 		current: { planner: 'd1' },

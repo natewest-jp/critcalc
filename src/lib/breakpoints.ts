@@ -8,7 +8,7 @@
  * ⚠⚠ CSS CUSTOM PROPERTIES DO NOT WORK IN MEDIA QUERIES, and `@custom-media`
  * is not shipped. So this table cannot be a set of tokens a stylesheet reads:
  * a component's `@media` has to write the LITERAL. The rule that keeps the
- * literals honest is the same one the layer law uses for colour — a documented
+ * literals honest is the same one the layer law uses for color — a documented
  * table plus a grep — and until a guard exists it is a convention: cite this
  * file in the comment beside every width query, and never mint a threshold
  * that is not in it.

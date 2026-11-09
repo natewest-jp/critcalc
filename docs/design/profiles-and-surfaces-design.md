@@ -61,11 +61,11 @@ Site settings (display, playback, Human timing, swap ping, the Visualizers' layo
 
 ### 2.3 Real profiles
 
-- Created by the user: a **name**, a **profile picture** and a **colour**.
+- Created by the user: a **name**, a **profile picture** and a **color**.
 - ⚓ **The profile picture follows Genshin's own precedent** (Nate, 2026-10-21): the circle avatar of **any character you own** (in that profile's roster), or one of the game's **art profile pictures** — the silhouette-style pictures of moments from the Genshin journey. Nate supplies the art set. ⏭ A profile with an empty roster can still pick from the art set.
-- ⚓ **Each profile has a colour, and colours are exclusive**: the **seven element colours** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⚓ **a browser holds at most seven real profiles** (Nate: nobody actively plays eight accounts, and a cap with a visible reason beats an arbitrary one). At the limit, **Create profile** stays visible but disabled with a one-line reason; deleting a profile frees its colour.
-  - ↻ **2026-10-26 (⚓ Nate): NOT exclusive, and NO cap.** A colour is the picture's FRAME (Genshin's frames are designs, not elements), so two profiles may share one; a new profile starts on the least worn (`nextColour`). Seven was the number of colours, never of accounts, and a browser-local tool has nothing a cap protects, so any number of profiles. A picture may be ANY character, not only an owned one (a new profile has no roster; a loved character you don't own is a fine picture). Only Theorycraft's NAME is reserved (`isReservedName`), since a lookalike would pass for the built-in profile. ⚠ Backup import had dropped a repeated colour and everything past seven, and no longer does.
-- More than one is normal (several accounts). Switching is **loud** (§9.4): the picture, name and colour change in the title bar, and every list, tab and roster-dependent view changes with it.
+- ⚓ **Each profile has a color, and colors are exclusive**: the **seven element colors** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⚓ **a browser holds at most seven real profiles** (Nate: nobody actively plays eight accounts, and a cap with a visible reason beats an arbitrary one). At the limit, **Create profile** stays visible but disabled with a one-line reason; deleting a profile frees its color.
+  - ↻ **2026-10-26 (⚓ Nate): NOT exclusive, and NO cap.** A color is the picture's FRAME (Genshin's frames are designs, not elements), so two profiles may share one; a new profile starts on the least worn (`nextColor`). Seven was the number of colors, never of accounts, and a browser-local tool has nothing a cap protects, so any number of profiles. A picture may be ANY character, not only an owned one (a new profile has no roster; a loved character you don't own is a fine picture). Only Theorycraft's NAME is reserved (`isReservedName`), since a lookalike would pass for the built-in profile. ⚠ Backup import had dropped a repeated color and everything past seven, and no longer does.
+- More than one is normal (several accounts). Switching is **loud** (§9.4): the picture, name and color change in the title bar, and every list, tab and roster-dependent view changes with it.
 - ⚓ **The profile sits in the title bar opposite the logo** (§5.1), ↻ **as its picture only** (draft 5, ⚓ Nate 2026-10-22: a long name or a UID must cost the bar nothing). The NAME shows on hover, at the head of the profile menu, as the menu state's group heading, and **rides the switch cue**: it appears beside (below) the picture with the wash and folds away with it. Clicking the picture opens the profile menu (the switcher, Add an account, Roster, Teams).
 
 ### 2.4 How a document finds its values
@@ -145,9 +145,9 @@ The Library's "team entry" (a names-only `savedNotations` row) and team headings
   - **A what-if** (§2.4): choose a level an owned character doesn't have and the copy opens on its own, already paired.
   - **Compare** in the toolbar: **Duplicate and compare** (copy the current rotation, keep the original as the other side, edit the copy) or **Compare with…** (the Library in **pick mode**, §6.3).
 - **Where a copy is saved follows the routing rule** (§4.3): a copy that fits stays in the profile; a copy that doesn't goes to Theorycraft. ⚓ Weapons and artifacts never open a comparison and never route a copy — a loadout is a document's own choice (§2.4).
-- ⚓ **The guest star** (Nate, 2026-10-22): a Theorycraft document shown inside a real profile is marked with **Theorycraft's white**, which no real profile can wear (§2.3), so it can't be mistaken for any profile's own. While it's on screen the save status reads **Saved · Theorycraft**, and the white always comes with the word (colour is never the only signal). The FIRST time a copy is routed, a one-time notice teaches the rule (working copy: "Saved to Theorycraft · it doesn't match Main's roster"); afterwards the white and the status carry it.
+- ⚓ **The guest star** (Nate, 2026-10-22): a Theorycraft document shown inside a real profile is marked with **Theorycraft's white**, which no real profile can wear (§2.3), so it can't be mistaken for any profile's own. While it's on screen the save status reads **Saved · Theorycraft**, and the white always comes with the word (color is never the only signal). The FIRST time a copy is routed, a one-time notice teaches the rule (working copy: "Saved to Theorycraft · it doesn't match Main's roster"); afterwards the white and the status carry it.
 - **A guest can be changed further without asking**: it is a Theorycraft document, so every value in it is its own (§2.2). A second character's what-if on the white side just edits the copy — which is why the cut linked form's "two characters" rule is unnecessary here.
-- **Precedent:** Firefox's container tabs (one window, one tab marked with another context's colour).
+- **Precedent:** Firefox's container tabs (one window, one tab marked with another context's color).
 - **From inside Theorycraft** (proposal): guests are ordinary Theorycraft documents with a small **from Main** mark; their pair with the real-profile document is not shown, because Theorycraft never reads a real profile.
 - ⏭ **The roster catches up**: when you pull the constellation a guest assumed, the guest is redundant. Say so on it ("Your roster now matches this what-if")? (§12)
 
@@ -350,8 +350,8 @@ This design doesn't redesign the tools' interiors; the structure survey's per-to
 ### 9.4 Switching profiles
 
 - One action from the profile picture. Open tabs, the roster, Teams and the Library all swap, and you land where you last were in that profile (§4.2).
-- ⚓ **The switch cue** (Nate, 2026-10-21): the new profile's colour **washes softly over the UI and fades out over ~2 seconds** — e.g. a gradient falling from the title bar, or a soft frame around the tool; ⏭ the shape is a design question for `/lab`. Precedents: Chrome's per-profile window colour, Firefox's container colours, Slack's workspace colours, the red banner teams put on production.
-- **A permanent cue as well**: the profile picture carries its colour at all times, and ⏭ possibly a thin line of it along the title bar's bottom edge. The flash marks the moment of switching; the permanent cue answers "where am I?" any time after. Colour is never the only signal — the name and picture say it too.
+- ⚓ **The switch cue** (Nate, 2026-10-21): the new profile's color **washes softly over the UI and fades out over ~2 seconds** — e.g. a gradient falling from the title bar, or a soft frame around the tool; ⏭ the shape is a design question for `/lab`. Precedents: Chrome's per-profile window color, Firefox's container colors, Slack's workspace colors, the red banner teams put on production.
+- **A permanent cue as well**: the profile picture carries its color at all times, and ⏭ possibly a thin line of it along the title bar's bottom edge. The flash marks the moment of switching; the permanent cue answers "where am I?" any time after. Color is never the only signal — the name and picture say it too.
 - **Motion:** one soft fade, well clear of the three-flashes-a-second accessibility limit. Under `prefers-reduced-motion` it appears in its end state with no fade (the motion tokens zero, per the motion round); the permanent cue carries the meaning. ⛔ The scene and nav clocks are not borrowed.
 
 ### 9.5 Starting from the Planner
@@ -397,7 +397,7 @@ So nothing below reads as still in force once this design is adopted:
 2. ~~Team order~~: ✅ stored and shown, in party order (draft 5); a rotation's slots carry it too (§8.1).
 3. ~~Team notes~~: ✅ not for now (draft 5).
 4. Which **settings** are per profile, if any (Human timing and swap ping feel personal to the player, not the account)?
-5. ~~Avatar, colour cap~~ — ✅ settled (§2.3): seven real profiles. ↻ 2026-10-26: no cap, colours repeat (§2.3).
+5. ~~Avatar, color cap~~ — ✅ settled (§2.3): seven real profiles. ↻ 2026-10-26: no cap, colors repeat (§2.3).
 
 **Saving**
 
@@ -410,9 +410,9 @@ So nothing below reads as still in force once this design is adopted:
 
 **Journeys**
 
-12. ~~Link while a profile is active~~ — ✅ switch automatically, loudly (§9.3). **Still open:** the shape of the colour wash, and whether the permanent cue includes a title-bar line.
+12. ~~Link while a profile is active~~ — ✅ switch automatically, loudly (§9.3). **Still open:** the shape of the color wash, and whether the permanent cue includes a title-bar line.
 13. ~~Own open tabs~~ — ↻ a profile owns its CURRENT documents (draft 4, §4.2).
-14. ~~The invitation~~: ✅ both places (draft 5): an **Add your account** pill beside the picture in the bar (hidden on a phone, where the bar has no room), and a paper panel where Roster and Teams would be. ⏭ What "Add your account" itself asks for (name, picture, colour) is demo 3's or later.
+14. ~~The invitation~~: ✅ both places (draft 5): an **Add your account** pill beside the picture in the bar (hidden on a phone, where the bar has no room), and a paper panel where Roster and Teams would be. ⏭ What "Add your account" itself asks for (name, picture, color) is demo 3's or later.
 
 **Surfaces**
 

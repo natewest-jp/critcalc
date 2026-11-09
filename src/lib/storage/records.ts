@@ -26,10 +26,10 @@ export type SyncFields = {
 	purged?: true;
 };
 
-/** The seven element colours a real profile's frame can wear, plus
+/** The seven element colors a real profile's frame can wear, plus
  *  Theorycraft's white, which only Theorycraft can (§2.3). ↻ Not exclusive
  *  since 2026-10-26: two profiles may share one (Nate). */
-export type ProfileColour =
+export type ProfileColor =
 	| 'pyro'
 	| 'hydro'
 	| 'anemo'
@@ -56,10 +56,24 @@ export type Roster = {
  *  (`profilePictures.generated.ts`), or a character's circle avatar. */
 export type Picture = { kind: 'art'; name: string } | { kind: 'character'; id: string };
 
+/**
+ * A stored profile under the key's current spelling. ⚠ Profiles saved before
+ * the US-English rename spell it `colour`; a backup file can carry that for
+ * as long as it exists. Hands back the same object when there is nothing to do.
+ */
+export function respellColor(stored: ProfileRecord): ProfileRecord {
+	if (!('colour' in stored)) return stored;
+	const { colour, ...rest } = stored as Omit<ProfileRecord, 'color'> & {
+		color?: ProfileColor;
+		colour: ProfileColor;
+	};
+	return { ...rest, color: rest.color ?? colour };
+}
+
 export type ProfileRecord = SyncFields & {
 	kind: 'theorycraft' | 'real';
 	name: string;
-	colour: ProfileColour;
+	color: ProfileColor;
 	/** Absent on a record migrated before 2026-10-22: read through `pictureOf`. */
 	picture?: Picture;
 	/** ⚓ An account fact (§13.5). Theorycraft's is only a default. */
@@ -184,7 +198,7 @@ export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileReco
 		updatedAt: now,
 		kind: 'theorycraft',
 		name: 'Theorycraft',
-		colour: 'theorycraft',
+		color: 'theorycraft',
 		picture: { kind: 'art', name: THEORYCRAFT_PICTURE.id },
 		twin,
 		roster: emptyRoster(),

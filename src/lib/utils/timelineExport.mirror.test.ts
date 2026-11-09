@@ -26,7 +26,7 @@ const timelineSvelte = readFileSync(
  *
  * 🐛 ⚠ THE VALUE MAY NOT CROSS A NEWLINE, and that is the whole guard against
  * a COMMENT shadowing the real declaration. `[^;]` matches newlines, so
- * `--rx-quicken: when an element closes on a UI colour, spend LIGHTNESS. Hue`
+ * `--rx-quicken: when an element closes on a UI color, spend LIGHTNESS. Hue`
  * — prose in the block comment above the token — matched, ran on across lines
  * to the next `;` anywhere in the file, and handed back a paragraph. The old
  * note here claimed comments were safe because they lack a `:`; that is true of
@@ -149,7 +149,7 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		expect(PALETTE_MIRROR.RX_THUNDERCLOUD).toBe(resolve(cssToken('--rx-thundercloud')));
 	});
 
-	// ⚠ The colours are only half the mirror — the SCREEN reads its --rx-*
+	// ⚠ The colors are only half the mirror — the SCREEN reads its --rx-*
 	// through `auraDisplay.ts` as `var()` references, so a mod pointing at the
 	// wrong token would keep both this test and the CSS honest while still
 	// drawing the wrong hue in one of the two surfaces. This pins the mapping.
@@ -251,7 +251,7 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 
 	// The law itself: nothing may put a color-mix inside a color-mix. Written
 	// as a grep rather than an evaluation because the failure is a CRASH, not a
-	// wrong colour — by the time you can measure it the page is gone.
+	// wrong color — by the time you can measure it the page is gone.
 	it('no color-mix takes a derived value as an input (THE NESTING LAW)', () => {
 		const derived = new Set<string>();
 		for (const m of appCss.matchAll(/^\s*(--[a-z0-9-]+):\s*(color-mix\([^;]+);/gm)) {

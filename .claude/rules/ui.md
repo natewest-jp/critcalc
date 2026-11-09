@@ -29,7 +29,7 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - `--debuff` is not a token: `var(--debuff)` would silently inherit (`conventions.test.ts` checks). Destructive or loss ink is `--ui-danger`. `--ui-warning` means "we cannot take this"; `--ui-provisional` means "we took it, and this is a stand-in".
 - ⚠️ A `color-mix` fed by another `color-mix` crashes WebKit. Derived stops ship as resolved literals, with the recipe checked in the mirror test. `--sel-ring` is itself a mix, so never feed it to another; mix from `--accent`.
 - An opaque `color-mix` hairline has a floor: the ground it mixes against. On night, mix toward `transparent` (`--chart-grid`, `--chart-rule`).
-- Element colours (`--el-*`) were transcribed from Genshin and are never re-tuned as a set. Element marks sit on dark contexts; on parchment they run in one ink (`--ink-900`). When an element colour closes on a UI colour, spend lightness, not hue. Element icons are a build artifact of `--el-*-main` (`scripts/generate-element-icons.mjs`): never hand-recolour one, import `elementIcon()`, and leave the glyph sizing unnormalised (Nate).
+- Element colors (`--el-*`) were transcribed from Genshin and are never re-tuned as a set. Element marks sit on dark contexts; on parchment they run in one ink (`--ink-900`). When an element color closes on a UI color, spend lightness, not hue. Element icons are a build artifact of `--el-*-main` (`scripts/generate-element-icons.mjs`): never hand-recolor one, import `elementIcon()`, and leave the glyph sizing unnormalised (Nate).
 
 ## Materials
 

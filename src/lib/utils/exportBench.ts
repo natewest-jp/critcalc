@@ -9,7 +9,7 @@
  * live strip clips and frames itself with (`ribbonClipPath`,
  * `ribbonFramePath`, Nate's transcribed tail included), and every card number
  * below is the live card's (SlotPortrait.svelte / SidePortrait.svelte), named
- * where it is read. Colours are the live ROLES, resolved from the page at
+ * where it is read. Colors are the live ROLES, resolved from the page at
  * export time (`resolveRoles`), so a palette change reaches the PNG with no
  * mirror to update.
  *
@@ -67,9 +67,9 @@ export type BenchRoles = {
 };
 
 /**
- * Resolve the bench's colour ROLES as the page has them, under `.ctx-dark`
+ * Resolve the bench's color ROLES as the page has them, under `.ctx-dark`
  * (the strip's context). Each is read through a 1×1 canvas fill, never
- * string-parsed — Chrome serialises a mixed colour as `color(srgb …)`, the
+ * string-parsed — Chrome serialises a mixed color as `color(srgb …)`, the
  * same trap sceneGL's `resolveColor` steps around.
  */
 export function resolveRoles(): BenchRoles {

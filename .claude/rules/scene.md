@@ -16,7 +16,7 @@ Budget: about 4,000 characters. Visual verdicts here are Nate's. Read `docs/roun
 - The stars are locked to the plate and are not dimmed separately. Nate: dimming them separately reads as dirt.
 - ⚠️ The dither runs after the dim, so the crest lives on about 6–13 levels per channel.
 - When judging a star figure, composite the ground properly, never as a black wash.
-- Saturation is never done in CSS. The scene plates belong to `npm run optimize-bg`, content-hashed under the immutable `/assets` and imported from `sceneAssets.generated.ts`. A colour change is a re-export from Blender (8-bit master, Dither on), never a CSS, wash or shader knob (Nate).
+- Saturation is never done in CSS. The scene plates belong to `npm run optimize-bg`, content-hashed under the immutable `/assets` and imported from `sceneAssets.generated.ts`. A color change is a re-export from Blender (8-bit master, Dither on), never a CSS, wash or shader knob (Nate).
 - `will-change` goes on `.hero`, never on `.hero__plate`.
 - The scene's clocks (`TOOL_NAV_MS` in `transition.ts`, the camera, the star clock, the veil) are tuned by Nate and never use the motion tokens.
 - The tool surfaces have no mask or shaped scrim over the scene.

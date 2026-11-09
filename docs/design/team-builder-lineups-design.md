@@ -217,12 +217,12 @@ differences are seen as shapes before anything is read.
 
 ### 4.1 ⚓ Four states, presence only (no fill)
 
-| State        | Meaning                                                        | Drawn as                                       |
-| ------------ | -------------------------------------------------------------- | ---------------------------------------------- |
-| **lit**      | provides it                                                    | the glyph in full ink / element-neutral colour |
-| **outlined** | provides it, but **inactive in this team** (a condition fails) | the glyph's outline only                       |
-| **locked**   | provides it only above the current constellation lens          | dim glyph plus the `gated` Mark                |
-| **unknown**  | the kit is uncurated                                           | dim glyph plus the `uncurated` Mark ("?")      |
+| State        | Meaning                                                        | Drawn as                                      |
+| ------------ | -------------------------------------------------------------- | --------------------------------------------- |
+| **lit**      | provides it                                                    | the glyph in full ink / element-neutral color |
+| **outlined** | provides it, but **inactive in this team** (a condition fails) | the glyph's outline only                      |
+| **locked**   | provides it only above the current constellation lens          | dim glyph plus the `gated` Mark               |
+| **unknown**  | the kit is uncurated                                           | dim glyph plus the `uncurated` Mark ("?")     |
 
 - An absent capability is the dim glyph (or an empty place-holder) and keeps its
   POSITION.
@@ -254,7 +254,7 @@ differences are seen as shapes before anything is read.
 |              | Interruption res | ❌ new concept                                                           |
 | **Damage**   | Off-field DMG    | ❌ new concept (⛔ not the role set's "off-fielder", which names a ROLE) |
 
-🎨 **Nate's art list:** the whole set of **15 as single-colour SVGs in one style**:
+🎨 **Nate's art list:** the whole set of **15 as single-color SVGs in one style**:
 
 - 8 traced from the existing webp;
 - 2 redesigned (DMG%, HP/DEF);
@@ -699,9 +699,9 @@ the tool should take" — no lab demo.
   (Claude's suggestion of a ring with + was withdrawn).
 - ⚓ **The whole card picks; a corner MAGNIFIER opens details** (the boss disc's grammar).
   The hover "+ Team" bar retires.
-- ⚓ **Slot frames after the game's** (see the reference image): a coloured corner tab at
+- ⚓ **Slot frames after the game's** (see the reference image): a colored corner tab at
   the card's TOP RIGHT carrying the slot number (1–4), a heavy bar along the BOTTOM in
-  the same colour, thin sides. ⚓ **Our own colours** — the game backs portraits gold/purple
+  the same color, thin sides. ⚓ **Our own colors** — the game backs portraits gold/purple
   by rarity, ours are element-shaded, so its green/blue don't carry over. Whole-pixel
   borders only (Chrome floors fractional widths).
 - ⚓ **Roster curation LEAVES the Builder.** Nate: the only reason to keep a full-width
@@ -740,12 +740,12 @@ the tool should take" — no lab demo.
 
 ### 11.3 Read off the game's screen (reference for the build)
 
-- ⚠️ **The frame colours look PER TEAM, not selected-vs-other** — in the reference,
+- ⚠️ **The frame colors look PER TEAM, not selected-vs-other** — in the reference,
   Battlefield 1's four (incl. the one under "Other Characters") are GREEN and Battlefield
   2's are BLUE, while the SELECTED row is Battlefield 3 (empty; grey frame, gold end
   bar). Nate described them as "green for the active lineup, blue for the non-selected" —
   check which before building (open item 3).
-- The corner number is the SLOT within its team; the colour says which team.
+- The corner number is the SLOT within its team; the color says which team.
 - The grid is SECTIONED: "Exalted Ones" (the mode's featured characters) above "Other
   Characters" — a picked character keeps its place in its section.
 - Every card shows its level ("Lv. 90"); the game's filter is a button at the roster
@@ -759,7 +759,7 @@ the tool should take" — no lab demo.
    under Load to mark what they own. Rename the button "Library"? An entry in the site
    chrome? Build the standalone `/library` page now?
 2. **Does Wishlist stay** in the new Roster tab?
-3. **Frame colours**: per team (as the reference seems to show) or selected vs other
+3. **Frame colors**: per team (as the reference seems to show) or selected vs other
    teams? Which of OUR hues — avoid `--ui-positive` green (it means "met" on the checks)
    and hues that sit badly on element-shaded backs. If per team, the corner number stays
    the slot (the game's way) and Claude's "B2" proposal is moot.
@@ -821,7 +821,7 @@ only; Noelle/Thoma absent too).
    (post-launch). ⛔ No field without a reader.
 6. **Wishlist stays.**
 7. **The Roster tab is designed together** before step 2 is built.
-8. **Frame colours are PER TEAM** (re-reading the reference: Battlefield 1 green,
+8. **Frame colors are PER TEAM** (re-reading the reference: Battlefield 1 green,
    Battlefield 2 blue, the selected Battlefield 3 empty). A placeholder hue per team,
    with a MATCHING-HUE EDGE on each Lineup row as the key, judged live (on element-washed
    backs). The corner number stays the slot.
@@ -843,7 +843,7 @@ only; Noelle/Thoma absent too).
       Plex 12px caps with `--ls-widest` ran a median 509px and a longest 707px; Bitter 13px
       runs 372 / 508, so every English name fits on ONE line. EN names have no length cap
       (longest 69 characters; PT 82, RU 75).
-    - **Colour: white, to be judged** (gold is the game's; the house rule makes a title
+    - **Color: white, to be judged** (gold is the game's; the house rule makes a title
       not gold). It can switch back.
     - **"Open in Planner" moves to the rotation line** under the portraits (📌 pinned
       rotation ▾ · → Open in Planner). That line appears exactly when the team is full,
