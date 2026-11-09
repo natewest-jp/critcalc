@@ -265,6 +265,18 @@ class Playback {
 		if (wasPlaying) this.play();
 	}
 
+	/** Move the start to `t` (a click on the ruler). Playing, it goes again
+	 *  from there with the count-in, as a rewind does; stopped, it parks the
+	 *  cursor there for the next Play. Rewind still returns to 0. */
+	seek(t: number) {
+		if (!this.canPlay) return;
+		const wasPlaying = this.playing;
+		this.#halt();
+		this.#from = Math.min(Math.max(0, t), pv.playbackEnd);
+		this.t = this.#from;
+		if (wasPlaying) this.play();
+	}
+
 	/** Back to the start, silent. The page left, or there is nothing to play. */
 	stop() {
 		this.#halt();

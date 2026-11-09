@@ -2379,6 +2379,12 @@
 	// only at a real destroy; the navigation itself is `beforeNavigate` above.
 	$effect(() => () => playback.stop());
 
+	/** The ruler's click: the same px → seconds the axis draws with. */
+	function seekFromRuler(e: MouseEvent) {
+		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		playback.seek((e.clientX - box.left) / scale);
+	}
+
 	// ⛔ `pv.hasAura = showAuraLane` RETIRED (2026-08-17). It was the notes panel's
 	// second gate, so the standing aura-modelling block could reach a team with no
 	// caveats; that block moved to the head of the aura LOG, and the flag had no
@@ -3303,7 +3309,9 @@
 						{/if}
 						<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
 					     rise to the seam, labels above them. -->
-						<div class="rp-ruler" style:height="{RULER_H}px">
+						<!-- A click or tap sets where Play starts. -->
+						<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+						<div class="rp-ruler" style:height="{RULER_H}px" onclick={seekFromRuler}>
 							{#each ticks as tick (tick.t)}
 								<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
 									{#if tick.major && tick.t > 0}
@@ -4554,6 +4562,7 @@
 	   same thing a second time, in the heaviest way available. */
 	.rp-ruler {
 		position: relative;
+		cursor: pointer;
 		/* Its width comes from .rp-header-inner now — see there. */
 		width: 100%;
 	}
