@@ -8,11 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-One session, in this order. The three touch separate areas, so they can be built and reviewed independently.
-
-1. **Radiance gates (⚓ Nate 2026-11-09).** An `inPolestarField` condition exists now; Cyno's and Diona's Radiance clauses still use `teamEnablesReaction`, though gcsim gates Radiance on standing in the field. ⚠️ `conditions.ts` answers it only on the passes that publish the fact (procs, on-hit stacks, summons, infusions), and elsewhere returns the optimistic null, so the cast-anchored buff windows need checking before the data moves. Read each clause's kit text and gcsim first: some of Cyno's follow a teammate after the swap. Cyno's Elemental Mastery caveat will need new wording, proposed to Nate first.
-2. **Report a problem is missing on the phone (⚓ Nate 2026-11-09):** only the desktop `?` menu carries it (`TopBar.svelte`); add it to the index's Help group in `MenuState.svelte`, using `feedbackUrl` from `$lib/feedback`. Needs Nate's look on a real phone.
-3. **Clicking the Planner's ruler sets the playback start (⚓ Nate 2026-11-09; agreed 2026-09-30).** `RotationTimeline.svelte` `.rp-ruler` has no handler; parked in `docs/rounds/playback-round-plan.md`. Built and shown to Nate.
+Nothing picked yet.
 
 ## ⏭ Next
 
@@ -48,6 +44,7 @@ One session, in this order. The three touch separate areas, so they can be built
   - Nate's real-Safari/iPhone look at the lineup fit (`fbfb6c69`).
 - **The landing's announcements box: a small design improvement (⚓ Nate 2026-10-30).** The contents are right; the shape of the improvement isn't decided yet.
 - **Mitya's party and the Starlight Prism (⚓ Nate 2026-11-09: later, probably once gcsim has him).** A Mitya party still draws a 7s Prism (`sim/fields.ts`) and carries a caveat saying so; the kit makes Gradient Beacons instead. No source settles whether one Stellar-Conduct makes two Beacons or three (a field of 11.5s or 13s with A4), or whether the hit-count bonus runs without a Prism. Nate can also test it in game.
+- **Time a Starlight Prism in game (⚓ Nate 2026-11-09, with the Mitya test).** The planner uses Fandom's 7s (`sim/fields.ts`); gcsim's field lasts 6s and its in-field status about 8s, with no comment, PR discussion, or test behind either. A stopwatch settles which to keep.
 - **Per-receiver stacks: Durin C1's White half.** Each other party member gets their own 20 Cycle of Enlightenment stacks and spends them on their own hits while active; a stack pool lives on one holder. Record: `docs/rounds/durin-lan-yan-forms-2026-11-07.md` §1.
 - **Engine gaps from the 2026-11-06 rounds** (records: `docs/rounds/revelation-gcsim-2026-11-06.md` §3, `kokomi-a1-refresh-2026-11-06.md` §4, `mitya-valeriy-ingest-2026-11-06.md` §3).
   - **Same-stat buffs from one cast collapse to one bar** (`dedupByStat`, `buffWindows.ts`): hides Mitya's C2 +123 EM and Valeriy's A4. Needs a decision: pool them or draw both.
