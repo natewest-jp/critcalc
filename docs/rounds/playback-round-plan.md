@@ -194,7 +194,7 @@ Per round: vitest / check / lint / build. `advance()` and the audio SCHEDULE (a 
 
 **Then:** e2e (two "N passed" lines) → merge `--no-ff` → push when asked. The §6.1–§6.2 strings go to the text sheets when the branches meet.
 
-**Later (parked):** clicking the ruler to set the start point (⚓ agreed 2026-09-30 as the next step, before any draggable playhead) · a guzheng pluck needs an AudioWorklet · the aura log has no lap column · the stream's `src` ranges point past the document (no reader) · the round-A rulings on `pointer: coarse` and the drawer stay with the responsive survey.
+**Later (parked):** a draggable playhead (clicking the ruler to set the start shipped 2026-11-09: `playback.seek`, where a click during play goes again from there with the count-in and Rewind still returns to 0) · a guzheng pluck needs an AudioWorklet · the aura log has no lap column · the stream's `src` ranges point past the document (no reader) · the round-A rulings on `pointer: coarse` and the drawer stay with the responsive survey.
 
 ## Notes carried over from Claude's working memory (2026-10-29)
 
