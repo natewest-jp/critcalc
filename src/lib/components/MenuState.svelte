@@ -12,7 +12,7 @@
   working copy.
 -->
 <script lang="ts">
-	import { onDestroy, tick, type Component } from 'svelte';
+	import { onDestroy, onMount, tick, type Component } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -33,6 +33,7 @@
 		type SectionItem
 	} from '$lib/menuState.svelte';
 	import { findChapter, type ChromeAreaId } from '$lib/help/areas';
+	import { feedbackUrl } from '$lib/feedback';
 	import { TOOLS } from '$lib/tools';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { library } from '$lib/library.svelte';
@@ -120,6 +121,13 @@
 	 *  2026-10-25): the item opens the first chapter, and the chapters show
 	 *  under it while you are in that group. */
 	const FOLDED: Record<string, MarkName> = { help: 'help', about: 'about' };
+	/** The phone's way to report a problem; a desk has the top bar's `?` menu.
+	 *  No tool is prefilled, since the index belongs to none. The browser's
+	 *  details join after mount, so the first paint is deterministic. */
+	let reportHref = $state(feedbackUrl({ category: 'broken' }));
+	onMount(() => {
+		reportHref = feedbackUrl({ category: 'broken', includeTech: true });
+	});
 	const bodyGroups = SECTION_GROUPS.filter((g) => g.id !== 'profile' && g.id !== 'settings');
 	const footItems = SECTION_GROUPS.find((g) => g.id === 'settings')!.items;
 	const profileGroup = SECTION_GROUPS[0];
@@ -406,6 +414,16 @@
 						{/each}
 					</div>
 				{/if}
+				{#if g.id === 'help'}
+					<a
+						class="side-item side-report"
+						href={reportHref}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<span class="side-label"><Mark name="report" size={18} /> Report a problem</span>
+					</a>
+				{/if}
 			{:else}
 				<p class="side-group">{groupTitle(g)}</p>
 				<div class="side-group-items">
@@ -652,6 +670,9 @@
 		text-decoration: none;
 		cursor: pointer;
 		transition: background var(--t-snap);
+	}
+	.side-report {
+		display: none;
 	}
 	.side-item:hover:not(:disabled) {
 		background: var(--surface-hover);
@@ -1000,6 +1021,9 @@
 			padding: 1rem var(--site-pad-x) 2rem;
 		}
 		.menu.is-index .side {
+			display: flex;
+		}
+		.side-report {
 			display: flex;
 		}
 		.menu.is-index .main {
