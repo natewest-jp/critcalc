@@ -454,7 +454,8 @@
 				"[Stellar round] Wiki 'Stellar-Conduct' page confirms the Base Reaction Coefficient table reads 1 / 1.45 / … / 2.0 (1 + 0.40 + 0.05×n, n≤12) — resolves the NEEDS-CONFIRM in docs/library/game/stellar-reactions.md in favour of the assumed reading. Not a Diona effect; recorded for the doc owner.",
 				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6 Cat's Tail Closing Time — effects[0] (buff em 200) RE-TRIGGERED. gcsim: `diona/cons.go:26-61` (`c6`), called from `diona/burst.go:75` — a task every 30f for 750f checks the ACTIVE character: inside `burstBuffArea` (radius 7, `burst.go:48`) and `CurrentHPRatio() > 0.5` → +200 EM for 120f; else → +0.3 Incoming Healing Bonus for 120f. Keep the 0.5s re-check cadence and the 120f per-grant length as the reason `duration: 12.5` is the window and not the grant; retire the \"⛔ Neither half is authorable today\" paragraph — `recipientHpBelow` resolving to `null` and rendering optimistically IS the house behaviour, so the condition gap was never the blocker. ⚠️ Both branches draw at once — that is the optimistic-render contract, carried by the caveat. ⚠️ `not(recipientHpBelow: 50)` is *not* HP ≥ 50: the kit's healing branch is \"≤ 50%\" and ours is \"< 50%\", a one-point edge that no surface can resolve. The active-target pass dedupes by `stat` — `em` and `incomingHealingBonus` differ, and both differ from the three `*ReactionBonus` effects on this node, so nothing collapses. A change here needs `npm run generate-character-index`.",
 				"↻ 2026-11-06 (Revelation round, gcsim #3254 `cons.go` c6 + Fandom |buff): the Radiance clause now has TWO branches. Radiance: Stellar-Conduct (inside a Polestar Field) gives Superconduct + Stellar-Conduct +40%; Radiance: Stellar Swirl gives Cryo Swirl + Stellar Swirl +40% (gcsim `getRadiance`: PolestarFieldKey first, else RadianceSwirlKey). Cryo Swirl moved from the Stellar-Conduct gate to `teamEnablesReaction: stellarSwirl`, and the Stellar Swirl third is new. ⚠️ The 2026-07-29 notes above that say \"all three ride teamEnablesReaction stellarConduct\" describe the old text. gcsim grants each branch for 120f per 30f check while the active character is in the radius; ours stays a 12.5s window from the burst, as before.",
-				"↻ CAVEAT REMOVED 2026-11-06 (Nate): the Revelation split made the old wording stale, and Nate ruled no replacement is needed."
+				"↻ CAVEAT REMOVED 2026-11-06 (Nate): the Revelation split made the old wording stale, and Nate ruled no replacement is needed.",
+				"↻ 2026-11-09 (Radiance gates, docs/rounds/radiance-gates-2026-11-09.md): the Stellar-Conduct and Superconduct thirds carry `whilePolestarField`. gcsim `c6` re-asks `getRadiance()` every 30f across the burst, so a field that opens mid-burst still grants it, and an entry test at the cast would erase the ordinary opener. The bar is burst window ∩ field. gcsim grants 120f per check, so its bonus can run up to 2s past the field; ours ends with the field, the kit's reading of a state held while inside it."
 			],
 			"effects": [
 				{
@@ -523,7 +524,8 @@
 					"source": "character",
 					"stat": "stellarConductReactionBonus",
 					"value": 40,
-					"snapshottable": false
+					"snapshottable": false,
+					"whilePolestarField": true
 				},
 				{
 					"type": "buff",
@@ -541,7 +543,8 @@
 					"source": "character",
 					"stat": "superConductReactionBonus",
 					"value": 40,
-					"snapshottable": false
+					"snapshottable": false,
+					"whilePolestarField": true
 				},
 				{
 					"type": "buff",

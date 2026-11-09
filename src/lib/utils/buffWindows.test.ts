@@ -1591,13 +1591,81 @@ describe("Diona C6 under the Witch's Revelation: the Radiance block splits by en
 		]);
 	});
 
-	it('an enabler of both draws all four', () => {
+	it('an enabler of both draws only the Swirl lines until a field stands', () => {
 		expect(reactionBonuses('Sandrone')).toEqual([
 			'cryoSwirlReactionBonus',
-			'stellarConductReactionBonus',
-			'stellarSwirlReactionBonus',
-			'superConductReactionBonus'
+			'stellarSwirlReactionBonus'
 		]);
+	});
+});
+
+describe('Radiance: Stellar-Conduct against the Polestar Field', () => {
+	const modules = import.meta.glob<{ default: CharacterData }>('$lib/data/characters/*.json', {
+		eager: true
+	});
+	const byName = new Map(Object.values(modules).map((m) => [m.default.name, m.default]));
+	const lookup = (n: string) => byName.get(n) ?? null;
+	type Buff = Extract<ReturnType<typeof parseNotation>['windows'][number], { kind: 'buff' }>;
+	const parse = (notation: string, cons: Record<string, number>, names: string[]) =>
+		parseNotation(notation, lookup, 8, cons, {}, names.map(lookup));
+	const barsOf = (r: ReturnType<typeof parse>, holder: string, stat: string) =>
+		r.windows.filter(
+			(w): w is Buff =>
+				w.kind === 'buff' &&
+				w.characterId === holder &&
+				w.effects.some((fx) => fx.type === 'buff' && fx.stat === stat)
+		);
+	const prisms = (r: ReturnType<typeof parse>) =>
+		r.windows.filter((w) => w.kind === 'gadget' && w.gadget === 'prism');
+	const opener = 'Sandrone E > Fischl E > Sandrone N1 > Fischl N1';
+
+	// gcsim `cyno/cons.go` c1RevelationOnPactsworn: asked once, on entering Pactsworn.
+	describe("Cyno's Together We Rise", () => {
+		const team = ['Cyno', 'Sandrone', 'Fischl'];
+		const togetherWeRise = (r: ReturnType<typeof parse>) =>
+			barsOf(r, 'cyno', 'em').filter((w) =>
+				w.effects.some((fx) => fx.type === 'buff' && fx.value === 200)
+			);
+		it('needs a field standing at the burst', () => {
+			const r = parse('Cyno Q', { cyno: 2 }, team);
+			expect(prisms(r)).toHaveLength(0);
+			expect(togetherWeRise(r)).toHaveLength(0);
+			expect(barsOf(r, 'cyno', 'stellarConductReactionBonus')).toHaveLength(0);
+		});
+
+		it('runs its whole length once granted, past the end of the field', () => {
+			const r = parse(`${opener} > Cyno Q > Fischl N1`, { cyno: 2 }, team);
+			const [field] = prisms(r);
+			const bars = barsOf(r, 'cyno', 'stellarConductReactionBonus');
+			expect(field).toBeDefined();
+			expect(bars.length).toBeGreaterThan(0);
+			expect(togetherWeRise(r).length).toBeGreaterThan(0);
+			const last = Math.max(...bars.map((w) => w.end));
+			expect(last).toBeGreaterThan(field.end);
+		});
+	});
+
+	// gcsim `diona/cons.go` c6: getRadiance() re-asked every 30f across the burst.
+	describe("Diona's C6", () => {
+		const team = ['Diona', 'Sandrone', 'Fischl'];
+		it('draws only inside the field, when the field opens after the burst', () => {
+			const r = parse(`Diona Q > ${opener}`, { diona: 6 }, team);
+			const [field] = prisms(r);
+			expect(field).toBeDefined();
+			for (const stat of ['stellarConductReactionBonus', 'superConductReactionBonus']) {
+				const bars = barsOf(r, 'diona', stat);
+				expect(bars.length).toBeGreaterThan(0);
+				expect(Math.min(...bars.map((w) => w.start))).toBeGreaterThanOrEqual(field.start);
+				expect(Math.max(...bars.map((w) => w.end))).toBeLessThanOrEqual(field.end);
+			}
+		});
+
+		it('leaves the Elemental Mastery branch on the burst window', () => {
+			const r = parse('Diona Q > Sandrone E', { diona: 6 }, team);
+			expect(prisms(r)).toHaveLength(0);
+			expect(barsOf(r, 'diona', 'em').length).toBeGreaterThan(0);
+			expect(barsOf(r, 'diona', 'superConductReactionBonus')).toHaveLength(0);
+		});
 	});
 });
 

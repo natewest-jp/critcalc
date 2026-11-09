@@ -1072,6 +1072,18 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 			if (o.actionOpensState && typeof o.actionOpensState === 'object')
 				for (const spec of Object.values(o.actionOpensState)) specStates(spec);
 			if (o.whileState !== undefined) bound.push({ node: o, field: 'whileState' });
+			if (
+				o.whilePolestarField !== undefined &&
+				!(
+					(o.type === 'buff' || o.type === 'resShred' || o.type === 'elevate') &&
+					typeof o.duration === 'number'
+				)
+			)
+				push(
+					'strict',
+					'while-field-scope',
+					`whilePolestarField on a "${String(o.type)}" effect${typeof o.duration === 'number' ? '' : ' with no duration'}: it clips a drawn window, so it needs a buff-like effect with a duration`
+				);
 			if (o.closesStateWhenEmpty !== undefined)
 				bound.push({ node: o, field: 'closesStateWhenEmpty' });
 			for (const v of Object.values(o)) walkRaw(v);

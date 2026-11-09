@@ -1644,6 +1644,16 @@ export type EffectBase = {
 	 * `offField` or the `after*` states, which have no such window.
 	 */
 	whileState?: State;
+	/**
+	 * The buff exists only while a Polestar Field stands: its window is
+	 * intersected with the field's spans, in the same last pass as `whileState`.
+	 * Use it when the kit re-checks Radiance through the buff's life (Diona's C6,
+	 * gcsim every 30f); a condition `inPolestarField` is an entry test instead,
+	 * asked once at the triggering event (Cyno's Together We Rise).
+	 *
+	 * Lint: a buff-like effect with a `duration`.
+	 */
+	whilePolestarField?: boolean;
 	target: EffectTarget | EffectTarget[];
 	/** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
 	attribution?: string;
