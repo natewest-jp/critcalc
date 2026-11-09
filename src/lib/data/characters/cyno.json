@@ -382,7 +382,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The Elemental Mastery buff needs a Polestar Field in game, but is shown whenever a Stellar-Conduct enabler is in the party. Its length is assumed to match the burst state - the real timer is not published.",
+			"caveat": "The Elemental Mastery buff is drawn only if a Polestar Field is up when the burst is cast. The same buff from the Elemental Skill's Pactsworn Pathclearer is not drawn.",
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] Together We Rise authored from the Fandom constellation `buff` field (buffType Revelation): +200 EM on entering Pactsworn Pathclearer, and it TRANSFERS to the incoming character on swap - hence target 'active' rather than 'self', which slices the window onto whoever is on the field, exactly matching \"the incoming active character will take on the Together We Rise effect for the remaining duration\". The base C1 ATK SPD half stays unauthored (attack speed is out of scope).",
 				"[Stellar 2026-07-29] DURATION IS AN INFERENCE, not a published number: the wiki gives no timer for Together We Rise, only \"for the remaining duration\". Authored at 11.87s to match this character's burst stance duration, since the buff is granted on entering that state. Flagged in the caveat; revise the moment a duration is published.",

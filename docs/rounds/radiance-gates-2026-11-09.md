@@ -4,12 +4,12 @@ Branch `fix/radiance-gates`. Cyno's and Diona's Radiance: Stellar-Conduct clause
 
 ## 1. What each clause asks (gcsim)
 
-| Clause                                           | gcsim                                                         | Authored as                              |
-| ------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------- |
-| Cyno C1, Together We Rise +200 EM                | `isStellarRadiance()` once, on entering Pactsworn             | Entry test at the burst, `inPolestarField` |
-| Cyno C2, +80% Stellar-Conduct DMG                | The hitter holds Together We Rise                             | The same entry test                      |
-| Cyno C4, 20 Energy                               | The reacting teammate holds Together We Rise                  | Unchanged, no planner surface            |
-| Diona C6, Superconduct and Stellar-Conduct +40%  | `getRadiance()` every 30f across the burst, 120f per grant    | `whilePolestarField`                     |
+| Clause                                          | gcsim                                                      | Authored as                                |
+| ----------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
+| Cyno C1, Together We Rise +200 EM               | `isStellarRadiance()` once, on entering Pactsworn          | Entry test at the burst, `inPolestarField` |
+| Cyno C2, +80% Stellar-Conduct DMG               | The hitter holds Together We Rise                          | The same entry test                        |
+| Cyno C4, 20 Energy                              | The reacting teammate holds Together We Rise               | Unchanged, no planner surface              |
+| Diona C6, Superconduct and Stellar-Conduct +40% | `getRadiance()` every 30f across the burst, 120f per grant | `whilePolestarField`                       |
 
 An entry test would have been wrong for Diona: a field usually opens after her burst lands, so it would erase the ordinary opener. A clip would have been wrong for Cyno: Together We Rise outlives the field and follows the swap.
 
@@ -29,5 +29,11 @@ Tests are in `buffWindows.test.ts` § Radiance: Stellar-Conduct against the Pole
 
 ## 4. Open
 
-- Mitya's party still draws the Prism. gcsim has no Mitya and no source states whether "1 every 1.5s for 3s" makes two Beacons or three, so the span is unsettled.
-- Cyno C1's caveat needs new wording, held as a proposal.
+- Mitya's party still draws the Prism (⚓ Nate 2026-11-09: later, probably once gcsim has him; on the to-do list). gcsim has no Mitya and no source states whether "1 every 1.5s for 3s" makes two Beacons or three, so the span is unsettled.
+- Prism length: Fandom's 7s against gcsim's 6s. gcsim's value has no comment, PR discussion, or test behind it, and its 8s is only the second 4s status outlasting the field. Nate will time one in game.
+
+## 5. The same session
+
+- Cyno C1's caveat was reworded, approved by Nate.
+- `fix/report-a-problem-phone`: the phone index carries Report a problem under Help, hidden above the phone breakpoint. Nate checked it on a phone.
+- `feat/ruler-sets-playback-start`: `playback.seek`, recorded in `playback-round-plan.md`. Nate checked it.
