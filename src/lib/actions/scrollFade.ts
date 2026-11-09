@@ -17,8 +17,8 @@
  * fading from the container's ground to transparent — needs a ground to fade
  * FROM. Every consumer sits on the bare dimmed scene (the Team Builder's main
  * box has no frame, and its aside is `asideBare`, a gutter of self-painting
- * groups), so there is no colour a scrim could be. A scrim in ANY colour would
- * be a smear of that colour over the live world. The mask removes the content's
+ * groups), so there is no color a scrim could be. A scrim in ANY color would
+ * be a smear of that color over the live world. The mask removes the content's
  * own alpha instead, which is the only version of this that works over a scene.
  * ⛔ So do not "simplify" this into a ::before gradient later — it will look
  * right only until someone looks at it over a bright part of the sky.

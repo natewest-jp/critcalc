@@ -16,7 +16,7 @@ import type { CharReceivedBuffBar } from './types';
 
 /** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
  *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
- *  OPAQUE fill toward the chart ground, 0.2 still produced a solid colour
+ *  OPAQUE fill toward the chart ground, 0.2 still produced a solid color
  *  near that ground — thin meant "close to the background", and the bar was
  *  always there. Scaling a translucent material by 0.2 gives alpha .116,
  *  which is SHEER, and sheer is retired ("opaque or obviously translucent —

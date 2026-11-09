@@ -207,7 +207,7 @@
 						 figure itself in full gold, and the card's inner line LAST so
 						 the border sits over everything. No outer edge: the near-opaque
 						 glass seats itself against the sky. Every gold thing on the
-						 card is ONE colour at different alphas, so the drawing reads
+						 card is ONE color at different alphas, so the drawing reads
 						 as one set — heroArt.ts says why none of that paint is in the
 						 data.
 
@@ -244,7 +244,7 @@
 						 Kicker (the tool's real name) → the site's centre-mark rule → the
 						 poetic name. The kicker is gold, the name is not — the site's own
 						 rule that gold names a BLOCK, never a word. The rule belongs to
-						 the ARTWORK (the outer ring's colour), not to the label. -->
+						 the ARTWORK (the outer ring's color), not to the label. -->
 					<span class="hero__label">
 						<span class="hero__kicker">{tool.tool}</span>
 						<span class="hero__rule"><HRule variant="center" /></span>
@@ -366,7 +366,7 @@
 		   ⚓ The figure rests at FULL strength — it is the card's subject, so
 		   it is LIT rather than faded, and its whole answer is the hue.
 		   ↻ 2026-09-30 (⚓ Nate): the label's rule left this set — it is the
-		   HRule centre mark in the outer ring's colour now, and like the rings
+		   HRule centre mark in the outer ring's color now, and like the rings
 		   it does not answer hover.
 		   ⚓ THE RINGS DO NOT MOVE (⚓ Nate). They are the artwork's fixed
 		   decorative ladder — they exist to balance a sparse drawing by filling
@@ -378,9 +378,9 @@
 		   :root on purpose — the card is glass over an unknown ground (app.css,
 		   § the night stop). */
 		--ink-figure: var(--accent);
-		/* The label block's .85 as PAINT, one stop per colour in it, because
+		/* The label block's .85 as PAINT, one stop per color in it, because
 		   there is no single fill a text block can carry an alpha on.
-		   ⛔ No colour here may wear a second mix — a color-mix fed by a
+		   ⛔ No color here may wear a second mix — a color-mix fed by a
 		   color-mix crashes WebKit. ⚠ EVERY end mixes
 		   a var that resolves to a LITERAL, which is what keeps that true:
 		   --accent is gold-400, --hero-lit is gold-300, --chrome is #ffffff. */
@@ -515,7 +515,7 @@
 		gap: 0.45em;
 		padding: 0 8%;
 		text-align: center;
-		/* ⛔ NO OPACITY HERE, AND NONE ON ITS CHILDREN — each colour carries
+		/* ⛔ NO OPACITY HERE, AND NONE ON ITS CHILDREN — each color carries
 		   its own alpha in the paint (--ink-* on .hero) and rises with the
 		   figure on hover. This block was element opacity .85 with the rule's
 		   .6 nested inside it: two stacked rasterization units inside a card

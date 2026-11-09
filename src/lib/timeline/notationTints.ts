@@ -1,5 +1,5 @@
 /**
- * The notation box's colours, read off the parse — so a token wears what the
+ * The notation box's colors, read off the parse — so a token wears what the
  * CHART resolved for it (⚓ Nate 2026-09-24, notation-follows-chart).
  *
  * The editor used to guess from the text alone (the caster's element plus the
@@ -9,10 +9,10 @@
  * carries the source range of the token that produced it (`src`), so the
  * answer is a projection of what the chart already draws.
  *
- * ⚓ ONE TOKEN, ONE COLOUR: THE FIRST EVENT'S (⚓ Nate). `N5` is five swings and
+ * ⚓ ONE TOKEN, ONE COLOR: THE FIRST EVENT'S (⚓ Nate). `N5` is five swings and
  * `3[N1 C]` repeats its inner tokens; when the element changes mid-token (a
  * granted infusion lapsing) the chart splits the block but a token has one
- * colour, and the first swing is where the block starts on the chart.
+ * color, and the first swing is where the block starts on the chart.
  * ⚓ E/Q FOLLOW THE PILL EXACTLY — the stance's landed element for a stance
  * opener, else the first hit's, else the caster's (`finalize` step 1b is the
  * rule being mirrored; keep the two in step).

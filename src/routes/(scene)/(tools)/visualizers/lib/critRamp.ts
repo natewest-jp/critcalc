@@ -1,7 +1,7 @@
-// The crit heatmap's colour ramp — the curve BETWEEN its stops (2026-09-30).
+// The crit heatmap's color ramp — the curve BETWEEN its stops (2026-09-30).
 //
 // ⚓ WHY A CURVE, AND WHY OKLAB. The ramp used to blend stop to stop in a
-// straight line through sRGB. With eight close stops the colour SPACE barely
+// straight line through sRGB. With eight close stops the color SPACE barely
 // mattered — every segment's sRGB midpoint lands within .01 of OKLab's in both
 // lightness and chroma — but a straight line per segment changes slope at each
 // stop, and the eye reads each slope change as a crease (a Mach band); worst at
@@ -13,7 +13,7 @@
 // vivid stop is pulled toward its neighbours (mean chroma .145 → .136) — which
 // RAMP_CHROMA_GAIN hands back (→ .146). The end stops are kept: each end gets a
 // REFLECTED phantom point (2·P0 − P1), which keeps the ramp moving at its ends —
-// tripling the end stop instead flattens them into a long band of one colour.
+// tripling the end stop instead flattens them into a long band of one color.
 // ⚓ Nate picked this on the live chart over four rivals, 2026-09-30. ⛔ Tried
 // and rejected: a monotone cubic (flat spots where a channel peaks — emerald and
 // yellow bands); Catmull-Rom and a B-spline solved to pass THROUGH the stops

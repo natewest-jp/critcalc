@@ -22,7 +22,7 @@
  *
  * ⚠️ The compound mods are the case that DOES overlap (Burning sits on its Fuel
  * and on Pyro; Frozen on Cryo), which is why the fill fades to transparent at
- * the baseline and the LINE is what carries the colour — two lines cross
+ * the baseline and the LINE is what carries the color — two lines cross
  * legibly, two solid areas do not.
  *
  * ⚠️ Two things ride ABOVE the plot, because they are POINTS and the plot is a
@@ -249,7 +249,7 @@ export function computeAuraLane(
 	// rotation at resting zoom, the label is 82px and the run it names is 72px.
 	// An extent drawn from the pip is therefore SHORTER than the word above it, so
 	// it renders as an underline of the text rather than as a span — at every
-	// colour tried. ⛔ Don't re-attempt the bracket without checking the ratio
+	// color tried. ⛔ Don't re-attempt the bracket without checking the ratio
 	// first; a chart cannot draw a duration narrower than the duration's own name.
 	//
 	// ⚠ Set on `label` itself rather than a second `displayLabel`, so the string
@@ -457,7 +457,7 @@ export function auraSpanLabels(
 			//
 			// ⚠️ The four compound mods are exempt and must stay exempt. Frozen,
 			// Quicken, Burning and the Fuel wear OUR `--rx-*` hues, for states the
-			// game gives no colour to, so their name is news at every appearance —
+			// game gives no color to, so their name is news at every appearance —
 			// and they are also the mods a reader is least able to infer from
 			// context. See `AuraModMeta.compound`.
 			(AURA_MOD_META[s.mod].compound ? s.spans : s.spans.slice(0, 1)).map((span) => ({

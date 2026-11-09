@@ -2,12 +2,12 @@
   A PROFILE's own section of the menu state (design §2.3; build plan §13,
   phase 2d; ⚓ Nate 2026-10-22: a section, not a dialog). `new` adds an
   account; `edit` changes the active one in place, as everything else saves
-  itself. A name, one of the seven element colours for the picture's frame,
+  itself. A name, one of the seven element colors for the picture's frame,
   and a picture: the art set, or any character.
-  ↻ Nate 2026-10-26: colours and pictures are no longer exclusive or tied to
+  ↻ Nate 2026-10-26: colors and pictures are no longer exclusive or tied to
   the roster. A loved character you don't own is a fine picture, and a new
   profile has no roster yet. A new profile still starts on the least worn
-  colour, and a name matching another account is pointed out, never refused.
+  color, and a name matching another account is pointed out, never refused.
   Only Theorycraft's name is reserved.
 
   Strings are working copy.
@@ -20,14 +20,14 @@
 	import { menu } from '$lib/menuState.svelte';
 	import { notices, named } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
-	import { pictureOf, type Picture, type ProfileColour, type Twin } from '$lib/storage/records';
+	import { pictureOf, type Picture, type ProfileColor, type Twin } from '$lib/storage/records';
 	import { PROFILE_PICTURES } from '$lib/profilePictures.generated';
 	import {
-		COLOUR_NAME,
-		REAL_COLOURS,
-		colourValue,
+		COLOR_NAME,
+		REAL_COLORS,
+		colorValue,
 		isReservedName,
-		nextColour,
+		nextColor,
 		pictureUrl
 	} from '$lib/profileLook';
 	import {
@@ -61,10 +61,10 @@
 
 	// ── The new profile's draft (an edit writes straight through) ───────────
 	let name = $state('');
-	let colour = $state<ProfileColour | null>(null);
+	let color = $state<ProfileColor | null>(null);
 	let picture = $state<Picture | null>(null);
 
-	const shownColour = $derived(editing ? editing.colour : colour);
+	const shownColor = $derived(editing ? editing.color : color);
 	const shownPicture = $derived(editing ? pictureOf(editing) : picture);
 	/** What the profile will wear: a new one with no pick yet gets the
 	 *  Traveler, as `pictureOf` gives any real profile without one. */
@@ -76,11 +76,11 @@
 		)
 	);
 
-	// A new profile starts on the least worn colour.
+	// A new profile starts on the least worn color.
 	$effect(() => {
-		if (mode === 'new' && !colour) {
-			colour = nextColour(
-				storageSession.profiles.filter((p) => p.kind === 'real').map((p) => p.colour)
+		if (mode === 'new' && !color) {
+			color = nextColor(
+				storageSession.profiles.filter((p) => p.kind === 'real').map((p) => p.color)
 			);
 		}
 	});
@@ -104,9 +104,9 @@
 			: undefined
 	);
 
-	function pickColour(c: ProfileColour): void {
-		if (editing) void storageSession.updateProfile(editing.id, { colour: c });
-		else colour = c;
+	function pickColor(c: ProfileColor): void {
+		if (editing) void storageSession.updateProfile(editing.id, { color: c });
+		else color = c;
 	}
 
 	function pickPicture(p: Picture): void {
@@ -159,10 +159,10 @@
 	);
 
 	async function create(): Promise<void> {
-		if (!colour || reserved) return;
+		if (!color || reserved) return;
 		const made = await storageSession.createProfile({
 			name,
-			colour,
+			color,
 			twin: twinDraft,
 			...(picture ? { picture } : {})
 		});
@@ -284,7 +284,7 @@
 		title={pictureName(id)}
 		aria-label={pictureName(id)}
 		aria-pressed={samePicture(shownPicture, p)}
-		style:--sw={shownColour ? colourValue(shownColour) : 'var(--accent)'}
+		style:--sw={shownColor ? colorValue(shownColor) : 'var(--accent)'}
 		onclick={() => pickPicture(p)}
 	>
 		{#if url}<img src={url} alt="" loading="lazy" />{/if}
@@ -390,7 +390,7 @@
 				<span class="sp-ctl">
 					<span
 						class="pf-current"
-						style:--sw={shownColour ? colourValue(shownColour) : 'var(--accent)'}
+						style:--sw={shownColor ? colorValue(shownColor) : 'var(--accent)'}
 					>
 						{#if currentUrl}<img src={currentUrl} alt="" />{/if}
 					</span>
@@ -403,16 +403,16 @@
 				<span class="sp-name">Color</span>
 				<span class="sp-ctl">
 					<span class="swatches" role="radiogroup" aria-label="Color">
-						{#each REAL_COLOURS as c (c)}
+						{#each REAL_COLORS as c (c)}
 							<button
 								class="swatch"
-								class:is-on={shownColour === c}
+								class:is-on={shownColor === c}
 								role="radio"
-								aria-checked={shownColour === c}
-								aria-label={COLOUR_NAME[c]}
-								title={COLOUR_NAME[c]}
-								style:--sw={colourValue(c)}
-								onclick={() => pickColour(c)}
+								aria-checked={shownColor === c}
+								aria-label={COLOR_NAME[c]}
+								title={COLOR_NAME[c]}
+								style:--sw={colorValue(c)}
+								onclick={() => pickColor(c)}
 							></button>
 						{/each}
 					</span>
@@ -425,7 +425,7 @@
 			{#if !editing}
 				<div class="sp-row sp-row--action">
 					<span class="sp-ctl">
-						<button class="btn btn--primary" disabled={!colour || reserved} onclick={create}
+						<button class="btn btn--primary" disabled={!color || reserved} onclick={create}
 							><Mark name="plus" /> Add profile</button
 						>
 					</span>
@@ -464,7 +464,7 @@
 						title={art.name}
 						aria-label={art.name}
 						aria-pressed={samePicture(shownPicture, p)}
-						style:--sw={shownColour ? colourValue(shownColour) : 'var(--accent)'}
+						style:--sw={shownColor ? colorValue(shownColor) : 'var(--accent)'}
 						onclick={() => pickPicture(p)}
 					>
 						<img src={art.url} alt="" loading="lazy" />
@@ -505,7 +505,7 @@
 		color: var(--ui-warning);
 	}
 
-	/* The current picture in its colour's frame, as the top bar shows it. */
+	/* The current picture in its color's frame, as the top bar shows it. */
 	.pf-current {
 		flex: none;
 		width: 3.5rem;

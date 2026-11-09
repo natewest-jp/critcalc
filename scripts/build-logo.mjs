@@ -30,7 +30,7 @@ import sharp from 'sharp';
 // numbers come from that report.
 //
 // FAVICON POLICY — opaque plate, not transparency. The mark is near-white, and
-// a transparent favicon inherits the browser's own tab-strip colour: on a
+// a transparent favicon inherits the browser's own tab-strip color: on a
 // light-themed Chrome or Firefox tab a white-on-nothing mark disappears. The
 // plate also gives the thin swooshes a constant ground at 16px, and iOS
 // composites apple-touch-icon onto white regardless, so an opaque icon is the
@@ -55,7 +55,7 @@ const OUT_FAVICON = join(ROOT, 'src/lib/assets/favicon.svg');
 
 /** Clockwise lean, degrees. Nate 2026-07-28. */
 const ROTATE_DEG = 7;
-/** Mark colour — pure white, the chrome's own (--chrome). ↻ ⚓ NATE
+/** Mark color — pure white, the chrome's own (--chrome). ↻ ⚓ NATE
  *  2026-09-26: was #eef4fd, the source art's off-white, while the shipped
  *  chrome logo had been hand-re-exported white since 2026-08-05 (62cdee4a) —
  *  so every run of this script silently reverted it. The source SVG is white

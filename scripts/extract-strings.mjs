@@ -153,9 +153,9 @@ const TEXT_FIELD_SUFFIX =
 	/(Label|Title|Text|Hint|Desc|Note|Caption|Message|Tooltip|Heading|Unit|Prose|Word|Line)s?$/;
 // Context that holds CODE however the string looks.
 const CODE_FIELD =
-	/^(class|cls|className|style|css|selector|key|keys|id|ids|icon|mark|glyph|kind|type|event|attr|path|href|src|url|font|transform|easing|d|fill|stroke|color|colour|bg|token|tokens|slug|ref|mode|variant|tone|tag|code|axis|element|el|lang|format|mime|ease|role|anchor|zone|group|tier|tab|area|route|param|query|storageKey)$/i;
+	/^(class|cls|className|style|css|selector|key|keys|id|ids|icon|mark|glyph|kind|type|event|attr|path|href|src|url|font|transform|easing|d|fill|stroke|color|bg|token|tokens|slug|ref|mode|variant|tone|tag|code|axis|element|el|lang|format|mime|ease|role|anchor|zone|group|tier|tab|area|route|param|query|storageKey)$/i;
 const CODE_FIELD_SUFFIX =
-	/^(text(Align|Baseline|Anchor|Decoration\w*|Transform|Rendering|Overflow)|line(Cap|Join|Height|Width|Dash\w*)|font\w*|white\w*|globalComposite\w*)$|(Class|Key|Id|Ids|Icon|Mark|Kind|Type|Url|Href|Path|Color|Colour|Var|Token|Selector|Style|Css|Slug|Ref|Mode|Tone|Tag|Zone|Font)$/;
+	/^(text(Align|Baseline|Anchor|Decoration\w*|Transform|Rendering|Overflow)|line(Cap|Join|Height|Width|Dash\w*)|font\w*|white\w*|globalComposite\w*)$|(Class|Key|Id|Ids|Icon|Mark|Kind|Type|Url|Href|Path|Color|Var|Token|Selector|Style|Css|Slug|Ref|Mode|Tone|Tag|Zone|Font)$/;
 
 // Calls whose string arguments are never shown.
 const SKIP_CALLS = new Set([

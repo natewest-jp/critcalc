@@ -192,7 +192,7 @@ const MARKS = {
 	 *  rather than decorative. Replaces a 🎲 EMOJI, which is the icon set's
 	 *  standing hazard rather than a taste call: an emoji is rendered by
 	 *  whichever fallback face the engine picks, at a size and weight this
-	 *  design language never chose, and it lands in COLOUR on a monochrome row.
+	 *  design language never chose, and it lands in COLOR on a monochrome row.
 	 *  `Dices` (two dice) over `Dice5`: at 12px a single die's pips silt into
 	 *  its square, while the pair reads as an object at any size. */
 	dice: 'Dices',
@@ -204,7 +204,7 @@ const MARKS = {
 	 *  Both replace unicode (▶ / ⏸), which is the standing hazard rather than a
 	 *  taste call — those two characters in particular are notorious for
 	 *  resolving to an emoji face on some platforms and a text face on others,
-	 *  so the button's glyph could arrive in colour, at the wrong weight, or
+	 *  so the button's glyph could arrive in color, at the wrong weight, or
 	 *  half a line tall depending on the machine. */
 	play: 'Play',
 	pause: 'Pause',

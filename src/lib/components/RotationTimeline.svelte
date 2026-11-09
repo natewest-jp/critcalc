@@ -388,7 +388,7 @@
 	 *  This used to mix the opaque fill toward --rp-chart-bg, on the
 	 *  alpha-compositing law's "a fill on a KNOWN ground mixes opaquely against
 	 *  it". Two things broke that: the chart has no painted ground any more, and
-	 *  — the sharp one — mixing a translucent colour toward an OPAQUE one raises
+	 *  — the sharp one — mixing a translucent color toward an OPAQUE one raises
 	 *  its alpha as the mix fraction falls, so the old formula would have made a
 	 *  fading buff MORE solid. Backwards, and silently so.
 	 *
@@ -935,7 +935,7 @@
 	// ⚓ ONE GRAMMAR, read top to bottom in both tools: what it CAUSED (the
 	// reaction row above), what LANDED (this pill), and a HAIRLINE down into the
 	// gauge it changed. ↻ It was a 2px stub 6px tall — ⚓ Nate: "incredibly tiny
-	// touch points" — which named its element by colour alone and connected to
+	// touch points" — which named its element by color alone and connected to
 	// nothing. The pill is a target; the hairline is what ties an application to
 	// the step it causes in the plot, which was previously left to the eye.
 	//
@@ -1981,7 +1981,7 @@
 	 * The collapsed strip's text: the notation's LAST non-empty line, painted
 	 * the way the editor paints it (⚓ Nate 2026-10-14). The same two answers
 	 * the editor reads — the tokenizer's kinds, and the parse's per-token tint
-	 * (`notationTints`, keyed by source range) — so a token wears the colour the
+	 * (`notationTints`, keyed by source range) — so a token wears the color the
 	 * chart resolved for it. Gaps between tokens ride along as plain text.
 	 */
 	type TailSpan = { text: string; kind: 'char' | 'sep' | 'plain'; color?: string };
@@ -2218,7 +2218,7 @@
 		return editorApi?.canRedo() ?? false;
 	});
 
-	// ⚓ THE NOTATION WEARS THE CHART'S COLOURS (⚓ Nate 2026-09-24). Each token
+	// ⚓ THE NOTATION WEARS THE CHART'S COLORS (⚓ Nate 2026-09-24). Each token
 	// is tinted with what the parse resolved for it — infusions, stances, party-
 	// resolved elements, swings that land nothing — rather than the editor's
 	// text-only guess. `doc` travels with the list so the editor can refuse (or
@@ -3050,7 +3050,7 @@
 								</div>
 
 								<!-- Application ticks — every gauge the rotation put on the
-							     target. ⚓ The tick carries its ELEMENT'S colour (it belongs
+							     target. ⚓ The tick carries its ELEMENT'S color (it belongs
 							     to the row below it); the --ui-provisional FOOT is the
 							     squiggle rule: we took this application, and its unit value
 							     is our 1U stand-in rather than measured data. -->
@@ -3185,7 +3185,7 @@
 										{/each}
 										<defs>
 											<!-- The fill fades OUT toward the baseline so overlapping
-										     auras stay separable; the colour lives in the line. -->
+										     auras stay separable; the color lives in the line. -->
 											{#each auraPaths as p (p.id)}
 												{#if p.fill}
 													<linearGradient id="rp-aura-{p.id}" x1="0" y1="0" x2="0" y2="1">
@@ -4193,7 +4193,7 @@
 		/* ↻ 2026-08-09 (Genshin Night): this is --surface-well now, a role that
 		   exists BECAUSE of this declaration. The well used to be the literal
 		   #242c40, which was also the old --surface — the two were the same
-		   colour, and the well idiom survived only because the FRAME sat on the
+		   color, and the well idiom survived only because the FRAME sat on the
 		   raised rung above it. That is why it silently inverted in 2026-08-05
 		   when the surface moved. Naming the ground "one rung below the surface"
 		   makes the relationship hold on its own. */
@@ -4576,7 +4576,7 @@
 	   how far up each level reaches, and they are the only thing distinguishing
 	   the two in the ruler now that the labels sit above.
 
-	   ⚠ KEEP THE FOUR VALUES IN TWO PAIRS. tick colour ↔ gradient's first stop,
+	   ⚠ KEEP THE FOUR VALUES IN TWO PAIRS. tick color ↔ gradient's first stop,
 	   per level. Change one and the seam comes back. */
 	.rp-tick {
 		position: absolute;
@@ -4622,7 +4622,7 @@
 	   different hues mid-gradient, where an engine that interpolates
 	   un-premultiplied drags the midpoints toward black. This is the benign
 	   shape — one hue fading to nothing at the END. Gradients interpolate in
-	   PREMULTIPLIED space, where a stop at alpha 0 contributes no colour at all,
+	   PREMULTIPLIED space, where a stop at alpha 0 contributes no color at all,
 	   so the hue is carried by the live stop the whole way down.
 	   And the belt to that brace: the residue is bounded by the ground behind
 	   being the dimmed scene at roughly #12151c–#1e222a, so even a wrong
@@ -4726,7 +4726,7 @@
 
 	   ⚠ WHITE AT .3, NOT THE BAR'S OWN HUE LIGHTENED. It is the only edge left on
 	   the chart, so it is also doing identity work — a neutral highlight reads as
-	   "a lit edge on this material" rather than as a second colour in the
+	   "a lit edge on this material" rather than as a second color in the
 	   register, and it survives whatever the element round does around it.
 	   ⚠ Safe against the timing: the global reset is border-box, so the 2px
 	   comes OUT of the bar's computed width rather than adding to it. A
@@ -4778,9 +4778,9 @@
 		box-shadow: inset 0 0 0 1.5px var(--accent);
 	}
 	/* ⛔ THE DEBUFF VARIANT IS GONE (⚓ NATE 2026-08-11). It carried its own fill
-	   through three colour schemes — dire, then --debuff-fill, then a cool
+	   through three color schemes — dire, then --debuff-fill, then a cool
 	   counterpart — and the round that was supposed to perfect the split killed
-	   it instead: "there's really no need to colour-split the buff/debuff bars.
+	   it instead: "there's really no need to color-split the buff/debuff bars.
 	   They're both good things to the user. Splitting them only adds
 	   complication to the chart, when we want to go in the opposite direction
 	   and simplify." A buff on you and a shred on the enemy are the same fact to
@@ -4794,7 +4794,7 @@
 		object-fit: contain;
 		/* ↻ ⚓ NATE 2026-08-11: half strength, with the labels. ⚠ AND THIS ONE HAS
 		   TO BE ELEMENT OPACITY where the label alongside it uses paint alpha —
-		   an <img> has no colour channel to dim. The sub-pixel laws prefer paint,
+		   an <img> has no color channel to dim. The sub-pixel laws prefer paint,
 		   but they are about transform-placed subtrees, and these icons are
 		   placed by `left`/`width` in px inside a scroller. If a future round
 		   ever transform-animates the track layer, this is the line that will
@@ -4809,12 +4809,12 @@
 		   ↻ 2026-08-11 round two: back to --fs-xs. The bar fills its row again
 		   (see .rp-team-buff-bar), so the label is sized to fit inside one —
 		   --fs-sm was what the slim bar bought and it went back with it. The
-		   colour does NOT go back: full white stays. ⚓ Nate: "all labels back to
+		   color does NOT go back: full white stays. ⚓ Nate: "all labels back to
 		   white, please — especially since we're going right over the scene."
 		   ↻ 2026-08-11: semibold → medium (⚓ Nate), and it is a true 500 — the
 		   body face went variable in the same session, so this rung exists.
 		   ↻ 2026-08-11, once the bars were glass: HALF-STRENGTH white (⚓ Nate).
-		   Alpha in the PAINT, not element opacity — a colour has a channel for
+		   Alpha in the PAINT, not element opacity — a color has a channel for
 		   this and the sub-pixel laws want it used.
 		   ⚠ MEASURED AT ~4:1 ON THE BAR, ~3.6:1 AGAINST A STAR — under the 4.5:1
 		   small-text floor, deliberately. The full table and the reasoning live
@@ -4954,21 +4954,21 @@
 	   few minutes as a ::before at opacity .9 so the labels could stay white.
 	   His own diagnosis is why it went: "the problem is that they're just too
 	   bright right now, and I was trying to solve it with opacity when I should
-	   really be adjusting their colours. Let's hold off until after we adjust
-	   element colours, as that will also affect the brightness/saturation
+	   really be adjusting their colors. Let's hold off until after we adjust
+	   element colors, as that will also affect the brightness/saturation
 	   balance on the timeline."
 
 	   ⚠ WORTH KEEPING AS A RULE: opacity is not a brightness control. Dimming a
 	   fill to fix "too bright" makes it thinner as well as darker, and on a
 	   translucent chart that reads as a different MATERIAL rather than a
-	   different colour — which is a change nobody asked for, applied to the two
+	   different color — which is a change nobody asked for, applied to the two
 	   lanes whose fills are the most deliberately authored on the chart.
 	   ⛔ So the fill is back on the bar itself and the ::before is gone; the
 	   export's globalAlpha went with it. Don't reintroduce either as a
 	   brightness lever.
 
 	   ✅ CLOSED 2026-08-12, AND NOT THE WAY THE NOTE ABOVE EXPECTED. The element
-	   colours did move (twice — Genshin's palette, then the `bar` rung), and
+	   colors did move (twice — Genshin's palette, then the `bar` rung), and
 	   ⚓ Nate looked again: "they fit in pretty well with the new bars. Let's keep
 	   them for now." No palette change here.
 
@@ -4983,7 +4983,7 @@
 	   that they are the LAST TWO LIT BARS on a chart that was flattened
 	   (castFill() went flat the same day); busy reads as bright. Left alone
 	   because Nate's eye is the verdict and his eye now says they fit. ⚠ If it
-	   ever comes back, try FLATTENING before re-colouring. */
+	   ever comes back, try FLATTENING before re-coloring. */
 	/* ⚓ NATE 2026-08-12: the buff register's 2px left edge comes to these two.
 	   It was the buff/proc bars' alone because it was justified by GLASS — two
 	   translucent bars sharing a span stack into one slab with no seam, and every
@@ -5176,12 +5176,12 @@
 		/* ⚠ Alpha in the PAINT, never element opacity — these are
 		   transform-adjacent marks and an opacity subtree rasterizes at rounded
 		   coordinates in WebKit (the sub-pixel laws). The inline background
-		   carries the element colour; the strip itself is what recedes. */
+		   carries the element color; the strip itself is what recedes. */
 		opacity: 0.9;
 	}
 
 	/* ⚓ A RING, because the pip's own body is the ELEMENT and must stay legible
-	   as one — recolouring it to say "focused" would cost the only thing it is
+	   as one — recoloring it to say "focused" would cost the only thing it is
 	   there to say. White reads on every element hue at this size, and it is the
 	   hover register (⛔ gold means SELECTED, and nothing here is).
 	   ⚠ box-shadow rather than a border: a border would grow the 8px disc and
@@ -5193,7 +5193,7 @@
 	}
 	/* ⚓ THE SQUIGGLE RULE, as a FOOT. --ui-provisional is a provenance
 	   statement — "we took this application and its unit value is a stand-in" —
-	   so it must not replace the element colour, which is the tick's identity.
+	   so it must not replace the element color, which is the tick's identity.
 	   It sits under the tick instead: the mark still reads as its element, and
 	   what is uncertain is the ground it stands on. Measured, most rotations run
 	   60–90% defaulted, so a nearly-solid yellow footline is the honest picture
@@ -5201,7 +5201,7 @@
 	/* ↻ A RING, not a foot (2026-08-17). The mark moved with its host: a foot
 	   under a 2px stub became a ring around a disc, which keeps the rule intact —
 	   --ui-provisional is a statement about the VALUE, so it must not replace the
-	   element colour that is the pill's identity. ⚠ Drawn as a box-shadow rather
+	   element color that is the pill's identity. ⚠ Drawn as a box-shadow rather
 	   than a border so the pill's diameter (and therefore its centring on the
 	   hairline) does not change when the flag does. */
 	.rp-aura-tick--provisional {
@@ -5343,7 +5343,7 @@
 	   drawn around bars that are supposed to float.
 
 	   The grouping survives without it, which Nate predicted before the frame
-	   came off: bars are element-coloured PER CHARACTER, the active row shows
+	   came off: bars are element-colored PER CHARACTER, the active row shows
 	   every swap explicitly, and the bench ribbon's cards label each slot group
 	   from the left edge. Three redundant signals; the rule was a fourth.
 	   The vertical rhythm — CHAR_PAD_TOP/BOTTOM either side of ROW_GAP — is what
@@ -5388,7 +5388,7 @@
 	   The cooldown remainder: physically subordinate to the cast pill it flows
 	   out of, its right edge landing on the exact moment the ability comes back
 	   up. It used to be a slim track OUTLINED on top/right/bottom (left open, so
-	   it read as flowing out of the pill), with the outline colour an opaque
+	   it read as flowing out of the pill), with the outline color an opaque
 	   element mix set inline per bar.
 
 	   ↻ ⚓ NATE 2026-08-11, once the buff bars became glass: "the natural next
@@ -5412,7 +5412,7 @@
 	   always cut to do.
 
 	   ⚠ THE INLINE `style:border-color` WENT WITH IT at both markup sites — a
-	   border-colour on a border-less element is a value that resolves, paints
+	   border-color on a border-less element is a value that resolves, paints
 	   nothing, and quietly outlives the reason it existed.
 	   ↻ 2026-10-17: the PNG export kept an outlined, 3px-inset ghost ("flat
 	   paper, no scene") until Nate spotted it — that reasoning died with the
@@ -5493,7 +5493,7 @@
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
 	/* ══ THE LABEL HALO — WHO STILL GETS ONE, AND WHY ═════════════════════════
-	   A halo is a soft shadow in a dark shade of the bar's own element colour
+	   A halo is a soft shadow in a dark shade of the bar's own element color
 	   (--label-halo). Its ONE job is to hold white text off a BRIGHT fill.
 
 	   ↻ 2026-08-11: the bright-chip idiom is retired from this chart (it said
@@ -6152,7 +6152,7 @@
 		font-family: var(--font-mono);
 		font-size: 13px;
 	}
-	/* The editor's two class colours (notationEditorExtension: .rp-tok-char,
+	/* The editor's two class colors (notationEditorExtension: .rp-tok-char,
 	   .rp-tok-sep — the separator is --muted at 30% over the composer ground). */
 	.rp-dock-char {
 		font-weight: 500;

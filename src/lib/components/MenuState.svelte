@@ -21,7 +21,7 @@
 	import type { MarkName } from '$lib/marks.generated';
 	import { siteSettings } from '$lib/stores';
 	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
-	import { colourValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
+	import { colorValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
 	import { HERO_ART } from '$lib/landing/heroArt';
 	import {
 		SECTION_GROUPS,
@@ -124,7 +124,7 @@
 	const footItems = SECTION_GROUPS.find((g) => g.id === 'settings')!.items;
 	const profileGroup = SECTION_GROUPS[0];
 	/** The PROFILE'S places (↻ Nate 2026-10-26): selected, they carry the
-	 *  profile's own colour on their edge; Help, About, Settings and Trash,
+	 *  profile's own color on their edge; Help, About, Settings and Trash,
 	 *  which belong to no profile, keep the gold one. */
 	const MINE = new Set<Section>([
 		...profileGroup.items.map((i) => i.id),
@@ -291,7 +291,7 @@
 	<nav
 		class="side"
 		aria-label="Sections"
-		style:--side-mine={storageSession.profile ? colourValue(storageSession.profile.colour) : null}
+		style:--side-mine={storageSession.profile ? colorValue(storageSession.profile.color) : null}
 	>
 		<!-- Phone: the tools head the index (§5.2) as three large tiles wearing
 		     the landing's figures (Nate 2026-10-25: the index's first job on a
@@ -331,7 +331,7 @@
 				aria-expanded={switching}
 				onclick={() => (switching = !switching)}
 			>
-				<span class="pp" style:--pp-color={colourValue(p.colour)}>
+				<span class="pp" style:--pp-color={colorValue(p.color)}>
 					{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback">{p.name[0]}</span>{/if}
 				</span>
 				<span class="side-switch-name">{p.name}</span>
@@ -349,7 +349,7 @@
 							}}
 						>
 							<span class="side-label">
-								<span class="pp pp--sm" style:--pp-color={colourValue(o.colour)}>
+								<span class="pp pp--sm" style:--pp-color={colorValue(o.color)}>
 									{#if ourl}<img src={ourl} alt="" />{/if}
 								</span>
 								{o.name}

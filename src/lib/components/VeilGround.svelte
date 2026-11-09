@@ -1,6 +1,6 @@
 <!-- The VEIL GROUND: the site's night gradient plus its grain, as one layer.
      ⚓ Nate 2026-09-26 — one formula for the loading veil, the 404, and any
-     future surface that stands in for the world. The colours are the root
+     future surface that stands in for the world. The colors are the root
      tokens --veil-ground-top/-bottom (app.css holds their derivation); this
      component is what keeps the GRAIN with them, which a token cannot.
 

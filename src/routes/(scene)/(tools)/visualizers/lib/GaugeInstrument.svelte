@@ -21,7 +21,7 @@
 
 	// ↻ Gauge round L6: the mod vocabulary moved to `$lib/utils/auraDisplay.ts`
 	// when the planner's aura lane became a second reader. ⛔ Don't re-inline it
-	// — a Frozen bar must be the same colour in both tools.
+	// — a Frozen bar must be the same color in both tools.
 	const MOD_META = AURA_MOD_META;
 	const MOD_ORDER = AURA_MOD_ORDER;
 
@@ -276,7 +276,7 @@
 	// ADD; and an existing application changes only in the small editor that a
 	// tap on its pill opens beside it. ↻ This replaced a toolbar that was the
 	// inspector of an always-selected pill AND the brush for the next one, so a
-	// reader who picked Hydro meaning "the next one is Hydro" re-coloured the
+	// reader who picked Hydro meaning "the next one is Hydro" re-colored the
 	// pill they had just placed (a streamer's first session showed it). Two
 	// rulings went with it: a new application no longer copies the selected one,
 	// and nothing is selected unless its editor is open.
@@ -1165,7 +1165,7 @@
 						<title
 							>{`${elName(m.element)} ${m.gauge}U at ${m.time.toFixed(1)}s. Click to edit, or drag to move.`}</title
 						>
-						<!-- The hover ring: the selected ring's shape in the text colour,
+						<!-- The hover ring: the selected ring's shape in the text color,
 						     faint, so the pill reads as a button before it is pressed.
 						     Gold stays the editor's. Shown by CSS on :hover only. -->
 						<circle

@@ -16,7 +16,7 @@
  *   ~1.0 before the curve and stays there — so the stars separate from the
  *   dust (star ÷ sky luminance 3.49× → 3.53×) while the dust flattens
  *   (highlight ÷ sky 1.67× → 1.38×). Nate: "really crush that galaxy dust."
- * - SATURATION .5 takes colour OUT of the scene and the wash puts it back as a
+ * - SATURATION .5 takes color OUT of the scene and the wash puts it back as a
  *   single tint on the plate's own hue — the sky's saturation lands where the
  *   old dim left it (.459 vs .463), but the dust is no longer greyer than its
  *   surroundings (.48 vs .47).
@@ -63,7 +63,7 @@ export const SCENE_DIM = {
  * dimmed sky had come out a hair MORE saturated than the old dim's (.470 vs
  * .463) and Nate's eye caught it; at 26 it sits at .459.
  *
- * ⚠ HSL and FLOAT on purpose, never a hex: at 9% lightness an 8-bit colour
+ * ⚠ HSL and FLOAT on purpose, never a hex: at 9% lightness an 8-bit color
  * cannot take a 2° step — 226° and 224° both round to #11141d (whose true
  * hue is 225°) — and it does not have to, because the shader works in floats
  * and the final dither averages between output levels, so the exact tint is

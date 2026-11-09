@@ -57,7 +57,7 @@ export type Toast = {
 	kind: NoticeKind;
 	text: NoticeText;
 	actions: NoticeAction[];
-	/** A profile's colour, shown as a disc in place of the mark. */
+	/** A profile's color, shown as a disc in place of the mark. */
 	swatch?: string;
 	/** The profile's picture inside that disc (⚓ Nate 2026-10-27). */
 	picture?: string | null;

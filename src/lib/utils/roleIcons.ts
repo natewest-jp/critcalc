@@ -1,7 +1,7 @@
 /**
  * src/lib/utils/roleIcons.ts
  *
- * Icon + label helpers for editorial Imaginarium Theater roles: the colour
+ * Icon + label helpers for editorial Imaginarium Theater roles: the color
  * glyphs on the role plates of `CharacterFilterStrip`. Assets live in
  * static/assets/roles/color/<slug>.svg — a fixed five-glyph vocabulary (like
  * element icons), so there's no availability manifest. The `monotone/` set

@@ -18,7 +18,13 @@
 
 import { LocalDb } from './localDb';
 import type { MigrationResult } from './migrate';
-import type { DocumentRecord, ProfileRecord, SyncFields, TeamRecord } from './records';
+import {
+	respellColor,
+	type DocumentRecord,
+	type ProfileRecord,
+	type SyncFields,
+	type TeamRecord
+} from './records';
 
 export const DB_NAME = 'critcalc';
 /** ⚠ Bump only with an `onupgradeneeded` step for the old version. */
@@ -256,6 +262,26 @@ export async function replaceAll(
 	for (const d of result.documents) tx.objectStore('documents').put(d);
 	for (const t of result.teams) tx.objectStore('teams').put(t);
 	tx.objectStore(META).put(meta, META_KEY);
+	await done(tx);
+}
+
+/**
+ * Bring every profile to the current spelling of its color key, tombstones
+ * included (the Trash restores them). In one transaction, and `updatedAt`
+ * stays put: nobody changed the profile.
+ *
+ * ⚓ Run at every open rather than by a `DB_VERSION` bump: an older build
+ * can't open a newer database at all, so a rolled-back deploy would strand
+ * every visitor's work. Run again, it finds nothing to do.
+ */
+export async function respellProfileColors(db: Db): Promise<void> {
+	if (db instanceof LocalDb) return db.respellProfileColors();
+	const tx = db.transaction('profiles', 'readwrite');
+	const os = tx.objectStore('profiles');
+	for (const stored of (await request(os.getAll())) as ProfileRecord[]) {
+		const next = respellColor(stored);
+		if (next !== stored) os.put(next);
+	}
 	await done(tx);
 }
 

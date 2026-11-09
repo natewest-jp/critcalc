@@ -24,14 +24,14 @@
  * file exists at all.
  *
  * WHAT THIS MEANS IN PRACTICE:
- *   · Colour, material, geometry and type all track. Glass is real alpha over
+ *   · Color, material, geometry and type all track. Glass is real alpha over
  *     the backdrop (never a composite against CHART_BG), and every chart label
  *     goes through `type()` with the size, weight and letter-spacing the screen
  *     COMPUTES (read off the live page, not off the token names).
  *   · A polish round on the timeline IS obliged to bring this file along. The
  *     2026-10-17 sweep found the cooldown ghosts, corner radii, buff labels,
  *     the ramp/decay envelope and every label's type had been left behind.
- *   · The mirror test pins colours and materials; type and shape have no test
+ *   · The mirror test pins colors and materials; type and shape have no test
  *     — compare a live/PNG pair by eye after touching either.
  *
  * ⚠ Colors here MIRROR the CSS in RotationTimeline.svelte (the same
@@ -128,7 +128,7 @@ const MUTED = '#b7b4ae'; // --muted (ctx-dark) = mix(parchment-100 72%, slate-80
 const CHART_DIM = '#7f8185'; // --chart-dim = mix(--muted 62%, --frame-bg) at :root
 const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // THE ANNOTATION REGISTER — one bar material for buffs, debuffs and procs
-// alike (⚓ Nate 2026-08-11: "there's really no need to colour-split the
+// alike (⚓ Nate 2026-08-11: "there's really no need to color-split the
 // buff/debuff bars"). app.css holds the reasoning.
 //
 // ↻ 2026-10-17 — IT IS GLASS HERE TOO (⚓ Nate: "everything about the current
@@ -165,7 +165,7 @@ const BAR_LABEL = 'rgba(255, 255, 255, 0.65)';
 // moved with it. ⚠ The :root rung, not the ctx-light one: the chart is dark.
 const UI_PROVISIONAL = '#f6d365';
 
-// ── Aura-lane mod colours (gauge round L6) ──────────────────────────────────
+// ── Aura-lane mod colors (gauge round L6) ──────────────────────────────────
 // ⚠ The five elemental mods go through `elementPalette`, which is itself the
 // guarded mirror of --el-*; only the four that are NOT elements need literals
 // here. They are reaction STATES rather than auras of an element (see
@@ -175,7 +175,7 @@ const RX_FROZEN = '#cbeaf3';
 const RX_QUICKEN = '#46c865';
 const RX_BURNING = '#d76822';
 const RX_BURNING_FUEL = '#84b46a';
-// ── Gadget-strip colours (Polestar-Field round, 2026-09-01) ─────────────────
+// ── Gadget-strip colors (Polestar-Field round, 2026-09-01) ─────────────────
 // ⚠ One more --rx-* literal, for the same reason as the four above: a dendro
 // core and a thundercloud are their own OBJECTS, not auras of an element, so
 // neither has an --el-* entry to borrow. ⚓ The Prism and the Moondrift DO have
@@ -600,7 +600,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 	// Cast pill / summon fill — mirrors castFill(), which went FLAT on
 	// 2026-08-11 (the top-light was depth against a raised frame that no longer
-	// exists). Colour is one of the things the export does still track; see the
+	// exists). Color is one of the things the export does still track; see the
 	// decoupling note at the top of this file for what it doesn't.
 	function paintCastFill(
 		px: number,
@@ -739,7 +739,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// ↻ 2026-08-12: the buff register's 2px left edge came to this lane.
 		// ⚠ TWO THINGS DIFFER FROM THE BUFF BARS' EDGE AND BOTH MATTER.
 		// (1) It is painted INSIDE the clip and AFTER the tiles: this fill is a
-		//     stack of tiled layers, not one colour, so drawing it first buries it.
+		//     stack of tiled layers, not one color, so drawing it first buries it.
 		// (2) Real alpha over the painted tiles — ↻ 2026-10-17 BAR_EDGE is that
 		//     same white .3 now (it was a composite against the old opaque buff
 		//     fill), so the two edges are one value.
@@ -828,7 +828,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// (bright-chip idiom, 2026-08-01)" — but that idiom was retired
 					// on screen on 2026-08-11, so the export had been drawing dark
 					// ink under white-labelled pills for three days. ⚠ The mirror
-					// test only covers COLOUR TOKENS, not which ink a label picks,
+					// test only covers COLOR TOKENS, not which ink a label picks,
 					// so nothing caught it; the two branches are now identical and
 					// there is no second treatment left to drift.
 					ctx!.fillStyle = '#fff';
@@ -972,7 +972,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// .rp-summon-label. 🐛 It was dark INK at weight 700, both left
 					// behind by the 2026-08-11 round that took this label to white
 					// and dropped it two rungs to medium (500). Same blind spot as
-					// the E/Q badge above — the mirror test reads colour tokens, not
+					// the E/Q badge above — the mirror test reads color tokens, not
 					// ink choice or font weight.
 					paintCastFill(px, rowTop, pw, snap.summonRowH, p.bar);
 					// A drawn stack count is stepped — mirror steppedSummonBackground:
@@ -1415,7 +1415,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// the grammar shared with the Gauge Explorer (2026-08-17). The
 		// --ui-provisional mark is a RING around the pill, not a foot under a
 		// stub: it states that the VALUE is a stand-in and must not replace the
-		// element colour that identifies the mark.
+		// element color that identifies the mark.
 		const tickY = laneY + snap.auraMarkerH;
 		const pillCy = tickY + snap.auraTickH - snap.auraPillR;
 		for (const tick of snap.auraLane.ticks) {
@@ -1625,7 +1625,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		base.fillText(snap.tabLabel, ox, blockTop + TITLE_LINE_H / 2, w - PAD - ox);
 	}
 
-	// The notation, each token in the colour the composer gives it.
+	// The notation, each token in the color the composer gives it.
 	const tintAt = (i: number) => snap.notationTints.find((t) => i >= t.from && i < t.to);
 	base.font = `${NOTATION_PX}px ${MONO}`;
 	base.textAlign = 'left';
@@ -1641,7 +1641,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			(NOTATION_LINE_H - NOTATION_PX) / 2 -
 			1;
 		for (const word of line) {
-			// One run per colour change inside the word.
+			// One run per color change inside the word.
 			let i = 0;
 			while (i < word.text.length) {
 				const at = word.start + i;

@@ -29,7 +29,7 @@
 	 * The board had grown into an archive of finished rounds — the side
 	 * portrait knobs, the size-up, the night paints, the gold inset, the pane
 	 * states, the parchments, gold in text, the Atlas card proposals, the bench
-	 * on the scene, the element palette and its bar rung, the UI state colours.
+	 * on the scene, the element palette and its bar rung, the UI state colors.
 	 * Every one shipped or was settled, and its values live in app.css / their
 	 * modules as tune(nate) numbers. The full board, with its measuring code
 	 * (contrast, OKLCH ladders, BAR_BALANCE/BAR_DENSITY), is in git at
@@ -219,7 +219,7 @@
 	<!-- ═══════════════════════════════════════════════════ 2 · --ui-info ══ -->
 	<!-- ⚓ Nate 2026-10-27: the new neutral-information blue on every ground,
 	     as prose ink and as a small mark, to judge the PAPER rung by eye. Paper
-	     is shown on both of its rungs, since the colour is tuned against both
+	     is shown on both of its rungs, since the color is tuned against both
 	     (3.31:1 on --surface, 3.71:1 on --surface-broad: a mark, like its family). -->
 	<section>
 		<h2 class="lab-h">--ui-info · neutral information</h2>

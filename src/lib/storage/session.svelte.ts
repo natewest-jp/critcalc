@@ -41,7 +41,7 @@ import {
 	type NoticeKind,
 	type NoticeText
 } from '$lib/notices.svelte';
-import { colourValue, isReservedName, pictureUrl } from '$lib/profileLook';
+import { colorValue, isReservedName, pictureUrl } from '$lib/profileLook';
 import { get as readStore } from 'svelte/store';
 import { ensureStorage, openInMemory, reopenStorage } from './boot';
 import {
@@ -113,7 +113,7 @@ import {
 	newId,
 	pictureOf,
 	type Picture,
-	type ProfileColour,
+	type ProfileColor,
 	type Roster,
 	type Twin,
 	type DocumentRecord,
@@ -136,11 +136,11 @@ import {
 export { rotationAsSaved } from './convert';
 
 /** Approved by Nate 2026-10-23. */
-/** A profile as a toast shows it: its colour as the disc's ring and, ⚓ Nate
+/** A profile as a toast shows it: its color as the disc's ring and, ⚓ Nate
  *  2026-10-27, its picture inside (the one the top bar shows). */
 function toastLook(p: ProfileRecord): { swatch: string; picture: string | null } {
 	return {
-		swatch: colourValue(p.colour),
+		swatch: colorValue(p.color),
 		picture: pictureUrl(pictureOf(p), readStore(siteSettings).useNewOutfits, p.twin)
 	};
 }
@@ -1970,16 +1970,16 @@ class StorageSession {
 	/** When the active profile last CHANGED (ms): the switch cue reads it. */
 	switchedAt = $state<number | null>(null);
 
-	// ↻ NO CAP, NO EXCLUSIVE COLOUR (Nate 2026-10-26). Seven was the number
-	// of colours, never of accounts, and a colour is the avatar's FRAME: two
+	// ↻ NO CAP, NO EXCLUSIVE COLOR (Nate 2026-10-26). Seven was the number
+	// of colors, never of accounts, and a color is the avatar's FRAME: two
 	// profiles may share one, and a new profile starts on the least worn
-	// (`nextColour`). Everything is keyed by id, so nothing in storage cared;
+	// (`nextColor`). Everything is keyed by id, so nothing in storage cared;
 	// a profile made identical to another on purpose is the person's call.
 
 	/** False when nothing was created (no storage, the reserved name). */
 	async createProfile(fields: {
 		name: string;
-		colour: ProfileColour;
+		color: ProfileColor;
 		picture?: Picture;
 		twin: Twin;
 	}): Promise<boolean> {
@@ -1991,7 +1991,7 @@ class StorageSession {
 			updatedAt: now,
 			kind: 'real',
 			name: fields.name.trim() || MIGRATED_PROFILE_NAME,
-			colour: fields.colour,
+			color: fields.color,
 			...(fields.picture ? { picture: fields.picture } : {}),
 			// ⚓ An account fact (§13.5), chosen on the new profile's form.
 			twin: fields.twin,
@@ -2008,9 +2008,9 @@ class StorageSession {
 
 	async updateProfile(
 		id: string,
-		patch: Partial<Pick<ProfileRecord, 'name' | 'colour' | 'picture' | 'twin'>>
+		patch: Partial<Pick<ProfileRecord, 'name' | 'color' | 'picture' | 'twin'>>
 	): Promise<void> {
-		// ⚓ Theorycraft's name, colour and picture are reserved; its Traveler
+		// ⚓ Theorycraft's name, color and picture are reserved; its Traveler
 		// twin is the one thing it may change (Nate 2026-10-26).
 		if (id === THEORYCRAFT_ID && Object.keys(patch).some((k) => k !== 'twin')) return;
 		if (patch.name !== undefined && isReservedName(patch.name)) return;
@@ -2173,7 +2173,7 @@ class StorageSession {
 	}
 
 	/** A profile out of the Trash, with what it took with it, in its own
-	 *  colour: colours are not exclusive. */
+	 *  color: colors are not exclusive. */
 	async #untrashProfile(db: Db, id: string, now: number, say: boolean): Promise<boolean> {
 		const p = await get(db, 'profiles', id);
 		if (!p || !inTrash(p, now)) return false;
@@ -2217,7 +2217,7 @@ class StorageSession {
 	/**
 	 * ⚓ A switch is SAID in words (notices round, 2026-10-26): the wash is
 	 * motion only, gone in 2s and absent under reduced motion. `say` is the
-	 * toast: by default "Switched to X" with the profile's colour; a caller
+	 * toast: by default "Switched to X" with the profile's color; a caller
 	 * with its own reason passes its words, and `null` when something else
 	 * already says it (a link's arrival).
 	 */

@@ -103,7 +103,7 @@
 	   ⚠ It is also the wrong register for this line. The uppercase idiom belongs
 	   to KICKERS — short category words — and this label is data: a character
 	   name, a separator and a measurement, all of which carry their own casing.
-	   The kicker weight, tracking and colour stay, which is what made it read as
+	   The kicker weight, tracking and color stay, which is what made it read as
 	   a header in the first place. */
 	.bt-source {
 		font-size: var(--fs-sm);

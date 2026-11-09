@@ -377,7 +377,7 @@ export const uniformLine = (tiers: number[]): Map<number, number> =>
 
 /** A value distribution in display units (CV, or useful rolls), ascending. */
 export type ValueDist = { x: number; p: number }[];
-/** …tagged with how many upgrades landed in your stats by +20 (the bars' colours). */
+/** …tagged with how many upgrades landed in your stats by +20 (the bars' colors). */
 export type Outcome = { x: number; k: number; p: number }[];
 
 /** One of the piece's four lines, as the engine sees it. */
@@ -463,7 +463,7 @@ export function shownValue(unit: ValueUnit, cr: number, cd: number, rv = 0): num
 /**
  * The value of your stats at +20: four lines, `rolls` upgrades still to
  * come under `floor` on the selected lines. `pastWanted` = upgrades your
- * stats already took (they colour the bars with the new ones).
+ * stats already took (they color the bars with the new ones).
  */
 export function outcome(
 	unit: ValueUnit,
@@ -527,7 +527,7 @@ export function mixOutcomes(parts: { w: number; out: Outcome }[]): Outcome {
 	return [...acc.values()].sort((a, b) => a.x - b.x || a.k - b.k);
 }
 
-/** Drop the colour tag: one chance per value. */
+/** Drop the color tag: one chance per value. */
 export function collapse(out: Outcome): ValueDist {
 	const acc = new Map<number, number>();
 	for (const o of out) acc.set(o.x, (acc.get(o.x) ?? 0) + o.p);

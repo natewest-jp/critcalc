@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 // THE SOURCE CONTRACT (Nate 2026-10-09): a 24-unit viewBox, FILLS ONLY. A
 // two-tone glyph names its quieter half with an id containing "gray" or
 // "shade" (Energy Recharge: `Gray-tone`); everything else is the main fill.
-// The colours in the file are ignored — the component decides them.
+// The colors in the file are ignored — the component decides them.
 //
 // All fifteen facets are drawn (2026-10-12); the two-letter stand-ins are
 // retired. A NEW facet needs a line in GLYPHS — until it has one it draws

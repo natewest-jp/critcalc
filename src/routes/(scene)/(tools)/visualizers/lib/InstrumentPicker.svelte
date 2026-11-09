@@ -184,7 +184,7 @@
 	   Plain glass, hovering and opening through the shared pane idiom.
 
 	   ⚠ IT TAKES THE SLACK — flex: 1 — and that is what keeps the hierarchy after
-	   the colour left. Nothing else in the cell grows, so the nameplate is always
+	   the color left. Nothing else in the cell grows, so the nameplate is always
 	   the long plate and the actions are always the short ones; the tile's title
 	   reads as the title because of its EXTENT, the way the band-B rail does in
 	   the other two tools.

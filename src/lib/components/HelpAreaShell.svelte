@@ -200,7 +200,7 @@
 		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
 		/* The 0.85 rest weight is ALPHA IN THE PAINT (motion sweep, 2026-10-18 —
-		   it was element `opacity`, which the colour transition never reached,
+		   it was element `opacity`, which the color transition never reached,
 		   so the hover's last 15% snapped). One mix over a literal role. */
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 		text-decoration: none;

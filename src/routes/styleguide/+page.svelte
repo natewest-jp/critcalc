@@ -163,7 +163,7 @@
 	const chartInk = pre('--chart-');
 	const metrics = exact('--chrome-h', '--site-footer-h', '--site-pad-x');
 	/** The interface size (app.css § THE INTERFACE SIZE). Claimed before the UI
-	 *  state colours because it shares their `--ui-` prefix and is not one. */
+	 *  state colors because it shares their `--ui-` prefix and is not one. */
 	const interfaceSize = exact('--ui-ctl-h', '--ui-ctl-fs', '--ui-bar-h');
 	const profileTokens = exact('--profile-theorycraft', '--portrait-unowned');
 	const teamHues = pre('--team-hue-');
@@ -391,10 +391,10 @@
 	 * Every glass stop in the system is judged against this and nothing else —
 	 * an average backdrop has never been the binding case.
 	 *
-	 * ⚠⚠ THE SCRIM IS A COLOUR, NOT A MULTIPLIER, and getting that wrong is what
+	 * ⚠⚠ THE SCRIM IS A COLOR, NOT A MULTIPLIER, and getting that wrong is what
 	 * this line exists to prevent recurring. Every star figure in the system was
 	 * once computed as `white × (1 − TOOL_DIM)` — the answer you get if the wash
-	 * is pure black. --scene-dim is a near-black colour composited over the
+	 * is pure black. --scene-dim is a near-black color composited over the
 	 * scene, so the real worst pixel is `dim·wash + (1 − dim)·white`, which is
 	 * lighter, which means LESS contrast. Every published figure was ~0.3–0.4
 	 * optimistic in the one direction that matters, and on 2026-08-10 that was
@@ -403,7 +403,7 @@
 	 * ↻ 2026-09-26: the dim is the renderer's final pass now, not a wash, so
 	 * the star goes through `dimPixel` — the CPU mirror of that pass, the SAME
 	 * module the shader takes its numbers from. The lesson above still holds
-	 * (the ground is a colour, composite it properly); it is simply computed
+	 * (the ground is a color, composite it properly); it is simply computed
 	 * by the formula that actually ships.
 	 */
 	const STAR: [number, number, number] = dimPixel([255, 255, 255]);
@@ -638,13 +638,13 @@
 			<strong>Paint <code>--surface</code>, mix against <code>--frame-bg</code></strong> — in the
 			opaque contexts those are the same value and the distinction had no teeth; here they diverge
 			on purpose, because every <code>color-mix</code>, canvas fill and PNG export still needs a
-			real opaque colour to resolve against. (The bench ribbon painted <code>--frame-bg</code> and
+			real opaque color to resolve against. (The bench ribbon painted <code>--frame-bg</code> and
 			would have come out opaque while everything derived from it behaved otherwise.)
 			<strong>There is no light glass</strong> — translucent paper over a near-black world is the
 			muddy middle by another route, the one finding that survived the reverted toolbar-translucency
 			trial; band B had to stop being <code>ctx-light</code> to wear it.
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
-			through, which reads as a duller colour. ⚠ The alpha alone does not decide it: glass and the
+			through, which reads as a duller color. ⚠ The alpha alone does not decide it: glass and the
 			wash <strong>multiply</strong>, so what reaches the eye is
 			<code>(1 − glass) × gain</code> for a white star —
 			<strong>{(100 * (1 - 0.58) * SCENE_DIM.gain).toFixed(1)}%</strong> for the panel stop at the
@@ -655,7 +655,7 @@
 			has been 17%, 10.5% and now single digits across three rounds, and the prose that travelled
 			with it declared each new value the one that would read as sheer — while the panes went on
 			reading as glass. Sheer failed because a pane over <em>that</em> wash read as a duller version
-			of its own colour; whether that happens is a fact about the composite, not about a number. The
+			of its own color; whether that happens is a fact about the composite, not about a number. The
 			test is the one the rule always stated:
 			<em>can you tell, looking at it, that this is a translucent material?</em> A star still resolves
 			through both stops below.
@@ -672,7 +672,7 @@
 			>
 			<strong>The measurement was wrong.</strong> Every star figure in the system modelled the worst
 			pixel as <code>white × (1 − TOOL_DIM)</code> — the answer you get if the wash is pure black.
-			It is a near-black <em>colour</em> laid over the scene, so the real composite is lighter and
+			It is a near-black <em>color</em> laid over the scene, so the real composite is lighter and
 			every published figure was ~0.3–0.4 optimistic, in the one direction that matters. Corrected,
 			the panel stop as shipped that morning was <strong>4.22:1 — under the floor</strong>,
 			published as 4.53. ⚓ Nate's dim change (.65 → .75, <code>#15161a</code> →
@@ -730,9 +730,9 @@
 		<h3>The annotation register <span class="sg-badge sg-badge--ship">shipped</span></h3>
 		<p class="sg-note">
 			Not everything on a chart is content. An E/Q bar is <strong>the game</strong> — a real
-			ability, element-coloured, saturated. A buff window is
+			ability, element-colored, saturated. A buff window is
 			<strong>our reading of the game</strong>: derived, computed, explanatory. This register is
-			that second thing, and since 2026-08-11 it is not a colour at all — it is a
+			that second thing, and since 2026-08-11 it is not a color at all — it is a
 			<strong>material</strong>, <code>--glass-bar</code>. Which says “our reading of the chart”
 			more plainly than any hue could, and costs less: a chart can carry dozens of these at once,
 			and translucent ones stack up into far less weight.
@@ -758,7 +758,7 @@
 			The first answer was a warm/cool pair at s20 — channel-reversals of each other, so only temperature
 			separated them. ⚓ Nate tested it and retired it the same day:
 			<em
-				>“there's really no need to colour-split the buff/debuff bars. They're both good things to
+				>“there's really no need to color-split the buff/debuff bars. They're both good things to
 				the user. Splitting them only adds complication.”</em
 			> A two-stop answer to a question with one state.
 		</p>
@@ -781,7 +781,7 @@
 			✅ <strong>Closed 2026-08-09</strong>, and it had been open since the archetype landed: every
 			context BORROWED one of its own inks and the world borrowed <code>--chrome</code> white, with
 			the note "a placeholder, not a decision — the system has no accent of its own". It has one
-			now, and it is <strong>gold</strong> — Genshin's ornament and selection colour, the one family
+			now, and it is <strong>gold</strong> — Genshin's ornament and selection color, the one family
 			in their palette that exists to do nothing but emphasise. Because every consumer already read
 			this one alias, picking it was a <em>value change and not a refactor</em>, which is exactly
 			why the alias was worth keeping through three rounds of not knowing the answer.
@@ -1012,7 +1012,7 @@
 		<p class="sg-note">
 			The alphas Fable recovered, and the only translucent tokens in the system. Two fates, and the
 			split is a law: <strong>glass stays genuinely translucent</strong> (resolving it against a
-			ground would produce an opaque colour, which is not glass), while
+			ground would produce an opaque color, which is not glass), while
 			<strong>lines resolve opaque</strong>, because a 1px alpha line renders display-dependently —
 			so the line stops live in the <code>.ctx-*</code> blocks, mixed against each context's own
 			ground, and appear under the surface roles below. ⚠ On <code>.ctx-glass</code> the ground is
@@ -1080,7 +1080,7 @@
 			<em>is this color describing the game, or describing a consequence to the user's data?</em>
 			Game → a domain family. Consequence → here. A UI state color must never appear inside a visualization;
 			a domain color must never appear on a control's destructive state. So: an element bar is a domain
-			colour, but
+			color, but
 			<em>Reset all</em>
 			is <code>--ui-danger</code>.
 			<br />⚠ These are the loudest values in the system by a wide margin (C.15+ against a structure
@@ -1096,10 +1096,11 @@
 			<strong>Not a caution and not an error.</strong>
 			Nothing to click, nothing the user did, nothing wrong with the character; red on 122 cards at once
 			read as "something is broken here".
-			<br />⚠ <strong>It was the first zoned UI state colour</strong> — <code>#f6d365</code> on
-			dark, <code>#998136</code> on <code>.ctx-light</code>, the same move the accent makes. ⛔ And
-			the light rung sits at the GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1
-			text floor it lands ΔE .030 from <code>--gold-700</code>, i.e. it becomes the light accent.
+			<br />⚠ <strong>It was the first zoned UI state color</strong> — <code>#f6d365</code> on dark,
+			<code>#998136</code>
+			on <code>.ctx-light</code>, the same move the accent makes. ⛔ And the light rung sits at the
+			GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1 text floor it lands ΔE
+			.030 from <code>--gold-700</code>, i.e. it becomes the light accent.
 			<strong>Provisional may be a MARK on paper and never prose ink.</strong>
 			<br />↻ <strong>2026-10-26 (the notices round): warning and positive are zoned too.</strong>
 			Paper banners and error toasts gave them a paper consumer. ⚓ Nate: the paper set is matched at
@@ -1216,8 +1217,8 @@
 			hover lift or a 2px nudge is an <em>affordance</em> and has to keep up with the pointer, which
 			makes it a control — 240ms there reads as the element lagging your mouse (measured 2026-08-12;
 			the argument is written out at <code>.rolecard</code> in AtlasView). One resident: the toggle
-			thumb, whose <em>position</em> takes the move band while its <em>colour</em> stays with the
-			track on <code>--t-snap</code>. One colour event, one movement, two clocks.
+			thumb, whose <em>position</em> takes the move band while its <em>color</em> stays with the
+			track on <code>--t-snap</code>. One color event, one movement, two clocks.
 		</p>
 		<p class="sg-note">
 			⚠ <strong>The site chrome is the one exception, and it is a real one.</strong> The brand marks
@@ -1349,11 +1350,11 @@
 
 		<h3>Profiles and teams</h3>
 		<p class="sg-note">
-			<code>--profile-theorycraft</code> is Theorycraft's white, the one profile colour no real
-			profile can wear, so a guest is never mistaken for anyone's own. The other profile colours are
+			<code>--profile-theorycraft</code> is Theorycraft's white, the one profile color no real
+			profile can wear, so a guest is never mistaken for anyone's own. The other profile colors are
 			not tokens: they are the element hues (see <a href="#laws">Laws · Color</a>).
-			<code>--portrait-unowned</code> is a <code>filter</code> value, not a colour: a character you don't
-			own fades with some colour kept, so a team built round one doesn't read as a punishment (⚓ Nate
+			<code>--portrait-unowned</code> is a <code>filter</code> value, not a color: a character you don't
+			own fades with some color kept, so a team built round one doesn't read as a punishment (⚓ Nate
 			2026-10-25). The team hues are ⏳ placeholders (lineups design §11.6 item 8).
 		</p>
 		<div class="sg-swatches">
@@ -1834,7 +1835,7 @@
 				><code>--double</code> is for OPAQUE surfaces only — never on
 				<code>.ctx-glass</code>.</strong
 			>
-			⚓ Nate observed it: the two strokes CROSS, and on glass the line colour carries alpha (that context's
+			⚓ Nate observed it: the two strokes CROSS, and on glass the line color carries alpha (that context's
 			lines have to — the ground behind them is unknown). Alpha composites twice at each crossing, so
 			the frame reads as four dark smudges instead of two arcs. Nothing warns you; it is correct CSS doing
 			exactly what it was asked. The glass sample below is kept deliberately, as the evidence.
@@ -2127,7 +2128,7 @@
 						<code>.scroll-fade-x</code>, ⚓ Nate 2026-08-11): a fading edge says "cut off" where a
 						hard edge reads as "the column ended". It is a mask because there is no ground to fade
 						into: these scrollers sit on the bare dimmed scene, and a gradient scrim would need a
-						colour. ⛔ Don't convert it to a <code>::before</code> gradient. 🎛️ Each consumer's
+						color. ⛔ Don't convert it to a <code>::before</code> gradient. 🎛️ Each consumer's
 						length times
 						<code>--scroll-fade-scale</code>.
 					</li>
@@ -2203,9 +2204,9 @@
 						dot, "✓ Saved" for 1.6s, then nothing. A failure escalates to a banner.
 					</li>
 					<li>
-						<strong>A profile switch</strong> washes the profile's colour down from the bar and
-						shows its name under the picture; under reduced motion a words toast carries it. Both of
-						the cue's fades are linear (the fade law, <a href="#motion">Motion</a>).
+						<strong>A profile switch</strong> washes the profile's color down from the bar and shows
+						its name under the picture; under reduced motion a words toast carries it. Both of the
+						cue's fades are linear (the fade law, <a href="#motion">Motion</a>).
 					</li>
 					<li>
 						The landing hides the tool buttons and keeps their space, so the bar does not shift. The
@@ -2230,7 +2231,7 @@
 						people to micromanage what is on its way out). The profile switcher is its first row and expands
 						in place; Help and About fold to one item each, whose heading is the first chapter's page;
 						Settings sits at the foot. The current item is the hover rung plus a 2px inset edge, gold
-						or the profile's colour.
+						or the profile's color.
 					</li>
 					<li>
 						<strong>The page</strong>: the ✕ pinned to the content area's top right (on a phone, "‹
@@ -2321,7 +2322,7 @@
 						<strong>Five shapes, each with one job</strong>: the control answers for itself; a toast
 						is an event (bottom centre); a banner is a condition (top of the surface); a dialog is a
 						decision whose cause is away from the eye; the status is a state. A sixth, hints, comes
-						later and will never wear a severity colour. A notice never replaces another: toasts
+						later and will never wear a severity color. A notice never replaces another: toasts
 						queue, banners stack.
 					</li>
 					<li>
@@ -2332,7 +2333,7 @@
 						<strong>Materials as shipped</strong> (⚓ Nate: "parchment is really noticeable"): ↻
 						every toast is paper (⚓ Nate 2026-10-27, from the <code>/lab/toast-attention</code>
 						blind test: a glass toast could come and go unseen), its kind a mark and a 4px left stripe
-						in the state colour; an error also stays until dismissed. A banner is paper with a severity
+						in the state color; an error also stays until dismissed. A banner is paper with a severity
 						stripe; the confirm dialog is paper. Corners <code>--r-md</code>. The timer is a ring
 						round the ✕, and the ✕'s hover is that ring's circle. A toast arrives on the shared rise
 						(<code>riseIn</code>: 30px, quartOut 300ms, rounded to whole pixels, a linear 150ms
@@ -2340,7 +2341,7 @@
 						<code>--surface-float</code>. No backdrop blur: the rule stands, and the toast's old one
 						could not be seen (sweep 2.2).
 						<em>Open</em>: paper notices beside an instrument's one paper card (2.4), and the
-						literal ring and hover colours (1.5).
+						literal ring and hover colors (1.5).
 					</li>
 				</ul>
 			</div>
@@ -2375,7 +2376,7 @@
 				<h3>Profile identity</h3>
 				<ul>
 					<li>
-						A profile has a colour (an element hue, or Theorycraft's white: <a href="#laws"
+						A profile has a color (an element hue, or Theorycraft's white: <a href="#laws"
 							>Laws · Color</a
 						>), a picture (<code>profileLook.ts</code>, built art from
 						<code>profilePictures.generated.ts</code>; Theorycraft's is reserved) and a Traveler
@@ -2383,7 +2384,7 @@
 					</li>
 					<li>
 						The guest's mark is Theorycraft's white as a 1.5px inset ring on the current tool's
-						button (TopBar <code>.is-guest</code>), a colour no real profile can wear.
+						button (TopBar <code>.is-guest</code>), a color no real profile can wear.
 					</li>
 					<li>
 						⚓ The UI says "profile", never "account", except for the player's Genshin account:
@@ -2476,7 +2477,7 @@
 			</li>
 			<li>
 				<code>.cov-state--lit / --provisional / --missing / --notModeled / --na</code>: the coverage
-				strip's five registers, in UI state colours (⛔ never element colours: coverage is not a
+				strip's five registers, in UI state colors (⛔ never element colors: coverage is not a
 				mechanic); <code>.is-dim</code> recedes in the paint.
 			</li>
 			<li>
@@ -2596,15 +2597,15 @@
 						a context's accent in the world (landing scene, static pages).
 					</li>
 					<li>
-						<strong>The one sanctioned crossing: a profile's colour is an element hue.</strong> ⚓
-						Nate (profiles design §2.3): the profile colours are the seven elements plus
+						<strong>The one sanctioned crossing: a profile's color is an element hue.</strong> ⚓
+						Nate (profiles design §2.3): the profile colors are the seven elements plus
 						Theorycraft's white (<code>--profile-theorycraft</code>), resolved by
 						<code>profileLook.ts</code>
 						to
 						<code>var(--el-&lt;x&gt;-main)</code>. They mark whose something is, on chrome: the
 						profile picture's ring, the sidebar's current edge on a profile's own places, the
 						Library's guest edge, Trash rows, the switch toast's swatch and the top bar's switch
-						wash. Everywhere else the line above holds. A colour can repeat across profiles (the
+						wash. Everywhere else the line above holds. A color can repeat across profiles (the
 						least worn is offered first).
 					</li>
 					<li>
@@ -2666,7 +2667,7 @@
 						The top bar's current tool is a glass fill (<code>--glass-hover</code>), never gold. The
 						menu state's sidebar marks its current item with the hover rung (<code
 							>--surface-hover</code
-						>) and a 2px inset edge: gold, or the profile's colour on a profile's own places
+						>) and a 2px inset edge: gold, or the profile's color on a profile's own places
 						(Profile, Roster, Teams, Rotations, Lineups; ⚓ Nate,
 						<code>docs/rounds/fullscreen-cleanups-round.md</code>). A selected team member's tile
 						wears a ground that stays plus a gold ring (⚓ Nate rejected ring + glow + badge).
@@ -3038,7 +3039,7 @@
 				<h3>Writing</h3>
 				<ul>
 					<li>
-						<strong>US English everywhere</strong> (Nate 2026-07-27) — color not colour, visualize
+						<strong>US English everywhere</strong> (Nate 2026-07-27) — color not color, visualize
 						not visualise, center not centre, gray not grey, behavior not behaviour. Applies to UI
 						copy, comments, docs and commit messages alike. The repo was swept clean on the same
 						day; the only survivor is <code>GGanalysis</code>, which is a library's actual name.
@@ -3057,12 +3058,11 @@
 						✅ <strong><code>--ui-positive</code> vs anemo — CLOSED 2026-08-12.</strong> The hue
 						nudge (h157, <code>#51c89a</code>) stopped buying separation the moment anemo became
 						Genshin's spring green, and the bar rung closed it to ΔE <strong>.026</strong> from
-						<code>--el-anemo-bar</code> — under the line where two colours stop being two. Fixed by
+						<code>--el-anemo-bar</code> — under the line where two colors stop being two. Fixed by
 						LIGHTNESS instead: <code>#5be0ac</code>, same hue, Genshin's L, ΔE .072. ⚠ The rule this
 						leaves behind:
 						<strong
-							>when an element closes on a UI colour, spend lightness — hue is what the element
-							owns.</strong
+							>when an element closes on a UI color, spend lightness — hue is what the element owns.</strong
 						>
 					</li>
 					<li>
@@ -3073,7 +3073,7 @@
 					</li>
 					<li>
 						<strong>Where does the accent actually get SPENT?</strong> (The accent story itself is
-						<a href="#families">closed</a> — it is gold.) Picking the colour was a value change;
+						<a href="#families">closed</a> — it is gold.) Picking the color was a value change;
 						deciding which affordances earn it is not. Right now every
 						<code>--accent</code>-derived selection ring, hover wash and link in the app turned gold
 						at once, which is more gold than Genshin spends on a screen. ↻ ⚓ Nate 2026-10-27: gold

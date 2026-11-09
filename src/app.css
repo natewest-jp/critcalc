@@ -135,7 +135,7 @@
 	   produce an opaque color, which is not glass — the whole point is that you
 	   see the world through it. Note this does NOT re-open the retired `sheer`
 	   experiment: sheer let 2–3% of scene light through, which reads as a duller
-	   colour; glass at .70 lets 15–30% through, which is the "obviously
+	   color; glass at .70 lets 15–30% through, which is the "obviously
 	   translucent" side of the rule sheer failed. Consumed by .ctx-glass.
 
 	   LINES resolve OPAQUE, because a 1px alpha line renders display-dependently
@@ -169,7 +169,7 @@
 	   of them is a design change. THE MEASUREMENT WAS WRONG: every star figure
 	   in this system modelled the worst pixel as `white × (1 − TOOL_DIM)`, which
 	   is what you get if the wash is pure black — and --scene-dim is a near-
-	   black COLOUR laid over the scene, so the true composite is lighter and
+	   black COLOR laid over the scene, so the true composite is lighter and
 	   every published figure was ~0.3–0.4 optimistic. Under the corrected model
 	   the panel stop as shipped that morning was 4.22:1, i.e. UNDER THE FLOOR,
 	   published as 4.53. Nate's dim change (.65 → .75, #15161a → #101013) is
@@ -194,7 +194,7 @@
 	   painted it; the bands take --glass-panel and --glass-well. */
 	/* ↻ ⚓ NATE 2026-08-10, third move of the day: THE ALPHAS COME DOWN, .68/.55
 	   → .58/.45. This is the deeper wash's other side. Dimming the world to .75
-	   let more of the pane's own colour dominate, and on the specimen board
+	   let more of the pane's own color dominate, and on the specimen board
 	   glass and opaque slate came out reading as the same material — which is
 	   the failure the whole "obviously translucent" rule exists to prevent. The
 	   transmission numbers say it from the other end: the panel stop had fallen
@@ -241,7 +241,7 @@
 	--hero-rule: #333b4b;
 	/* HOVER IS DENSITY, NOT TINT (⚓ NATE 2026-08-10). The same rung as the panel
 	   with the alpha driven hard up, so hovering makes a pane MORE MATERIAL
-	   rather than washing it with a colour. Two things fall out that no tint can
+	   rather than washing it with a color. Two things fall out that no tint can
 	   give: the ink's contrast goes UP under the hand (4.73 → 4.97:1) instead of
 	   down, and no foreign hue ever touches a slate pane.
 	   ⚓ .80 rather than the .70 first tried — "I want the separation between
@@ -270,14 +270,14 @@
 
 	   ↻↻ AND THEN, FROM THE INSPECTOR: "what the buff bars actually want to be is
 	   something a little more blue like the backdrop scene — about #27314b at .8
-	   looked right. Can we get there with just colour mixing our current values,
+	   looked right. Can we get there with just color mixing our current values,
 	   or do we need another glass value?"
 
 	   ⛔ MIXING CANNOT GET THERE, and the measurement says exactly why. His first
 	   pick measured L .317 · C .0488 · H 267.5 — the SLATE RAMP'S OWN HUE (the
 	   site's 262–269° constant) at almost exactly slate-800's lightness (L .328),
 	   carrying 1.8× the chroma. The shipped value is tuned to sit at the NOTATION
-	   FIELD's apparent colour (⚓ Nate: "match them with the apparent colour of
+	   FIELD's apparent color (⚓ Nate: "match them with the apparent color of
 	   the notation box's fill") — the two translucent surfaces on this tool now
 	   read as one material, which is the point of having a register at all:
 
@@ -298,7 +298,7 @@
 	   ⚠ IT IS THE ONE GLASS STOP WHOSE RGB IS NOT A RAMP RUNG. Every other stop
 	   here mirrors one (panel = slate-700, well = slate-900). ⛔ Do not "tidy"
 	   this onto the ramp — putting it there would mean either dragging the whole
-	   ramp's chroma up or picking a rung that is not this colour.
+	   ramp's chroma up or picking a rung that is not this color.
 
 	   AND IT DOES NOT BREAK THE WHISPER BAND, because that law is not about this
 	   kind of thing. "Structure whispers; content carries the chroma" governs
@@ -436,7 +436,7 @@
 
 	   ↻ 2026-08-09 (Genshin Night) ⚓ NATE: warm near-black → NEUTRAL near-black.
 	   His mockups ran a lighter gray wash because "the backdrop was getting too
-	   black", and that is a different axis from the density — the COLOUR sets
+	   black", and that is a different axis from the density — the COLOR sets
 	   how black the floor of the composite is, the alpha sets how much world
 	   survives. Both moved this round (density is TOOL_DIM, now shaped).
 	   What this costs, measured: the warm wash's whole argument above was that
@@ -462,7 +462,7 @@
 	   ↻ ⚓ NATE 2026-08-13: #101013 → #121216, and this time the two axes moved
 	   in OPPOSITE directions — the wash got a hair LIGHTER while TOOL_DIM got
 	   denser (.75 → .875). That is not a contradiction, it is the pair being
-	   used as the pair: density decides how much world survives, colour decides
+	   used as the pair: density decides how much world survives, color decides
 	   what the floor of the composite is, and a deeper wash over a slightly
 	   lifted floor takes the world down without taking it to black. The
 	   Visualizers going onto the scene is what asked for it — with no framed
@@ -471,7 +471,7 @@
 	   rgb(76,76,78).
 
 	   ↻ ⚓ NATE 2026-09-26: #121216 → #11141d, and the token LOST ITS JOB. The
-	   dim is no longer this colour laid over the scene at an opacity: it is the
+	   dim is no longer this color laid over the scene at an opacity: it is the
 	   scene renderer's final pass (sceneGL.ts FS_DIM, formula + values in
 	   landing/sceneDim.ts) — the scene squared, half-desaturated and scaled by a
 	   gain, over a TINT (SCENE_DIM_TINT, HSL 222° / 26% / 9%) at .965. The
@@ -486,7 +486,7 @@
 	   future off-scene page. Drawn by VeilGround.svelte (gradient + grain); use
 	   the component, which keeps the grain with it — these two tokens are the
 	   gradient alone, for plain CSS.
-	   ⚓ NATE 2026-09-26: TAKEN FROM THE DIMMED WORLD — the mean colour of the
+	   ⚓ NATE 2026-09-26: TAKEN FROM THE DIMMED WORLD — the mean color of the
 	   top and bottom rows of the crest view (the tool camera, centre frame)
 	   under the scene dim (landing/sceneDim.ts, `dimPixel` over plate
 	   05f2722f, stars excluded), so a veil lifting onto a tool opens onto the
@@ -554,7 +554,7 @@
 	   slate-700 one rung up. The lines stop being derived from --border and
 	   become the four STOPS below, which is the actual Genshin mechanism: a
 	   hairline is parchment laid on the ground at a low alpha, not a separate
-	   colour that happens to be greyish. */
+	   color that happens to be greyish. */
 	--surface: var(--slate-800);
 	--surface-raised: var(--slate-700);
 	/* The EXTENT axis — a paper distinction (see .ctx-light). Netted here so the
@@ -578,7 +578,7 @@
 	   inheriting these would bake in the dark context's parchment.
 
 	   The three roles below are the names components actually use; the stops are
-	   what they point at, so a surface can move one rung without a new colour.
+	   what they point at, so a surface can move one rung without a new color.
 
 	   ⚠⚠ THE STOPS SHIP AS RESOLVED LITERALS, AND THAT IS NOT LAZINESS — IT IS
 	   THE ONE HARD CONSTRAINT THIS ROUND HIT. Written as color-mix they CRASHED
@@ -649,7 +649,7 @@
 	   element over the world inherits from here, and out there the ground is
 	   unknown (a star, a nebula, nothing at all), so the stop has to CARRY ALPHA
 	   exactly as the glass one does. An opaque mix would be a stripe of the
-	   wrong colour against every backdrop except the one it was mixed for.
+	   wrong color against every backdrop except the one it was mixed for.
 	   ⚠ A literal rather than a color-mix for the same reason: a mix needs a
 	   ground to resolve against, and out here there honestly isn't one.
 	   (Found by the board: the night column's inset fell through to
@@ -784,11 +784,11 @@
 	   (2026-08-05, dire-retirement round) — dire's enemy-facing semantic
 	   survives in the ANNOTATION REGISTER below; gilt's chrome role went to
 	   --chrome and its text roles to the contexts. CALM IS RETIRED TOO
-	   (2026-08-11) — buff and debuff bars stopped being a COLOUR that day and
+	   (2026-08-11) — buff and debuff bars stopped being a COLOR that day and
 	   became a MATERIAL (--glass-bar). The element palette is untouched. */
 
 	/* ══ THE ANNOTATION REGISTER — now a MATERIAL, see --glass-bar ════════════
-	   ⚓ NATE 2026-08-11: "let's rework the buff/debuff colour, they're looking
+	   ⚓ NATE 2026-08-11: "let's rework the buff/debuff color, they're looking
 	   out of place." Two answers landed the same day and the second one is the
 	   one that shipped; both findings are worth keeping.
 
@@ -802,7 +802,7 @@
 	   res-shred window is BENEFICIAL, just aimed elsewhere.
 
 	   THE PRINCIPLE, WHICH SURVIVED BOTH ATTEMPTS. An E/Q bar is the GAME — a
-	   real ability, element-coloured, saturated. A buff window is our READING of
+	   real ability, element-colored, saturated. A buff window is our READING of
 	   the game: derived, computed, explanatory. Content gets chroma; annotation
 	   doesn't.
 
@@ -814,11 +814,11 @@
 	   ⛔ AND NOT TWO STOPS. The first answer was a warm/cool pair at s20 —
 	   --buff-fill #71624b, --debuff-fill #4b6271, channel-reversals of each other
 	   so only temperature separated them. Nate tested it and retired it the same
-	   day: "there's really no need to colour-split the buff/debuff bars. They're
+	   day: "there's really no need to color-split the buff/debuff bars. They're
 	   both good things to the user. Splitting them only adds complication to the
 	   chart, when we want to go in the opposite direction and simplify." A
 	   two-stop answer to a question with one state. What replaced it is a
-	   MATERIAL rather than a colour, which says "our reading of the chart" more
+	   MATERIAL rather than a color, which says "our reading of the chart" more
 	   plainly than any hue could — and being translucent, it also does the other
 	   thing his testing asked for: many bars now cost less. */
 
@@ -882,30 +882,30 @@
 	   buying it, and the bar rung made it worse still:
 
 	     #51c89a (the old nudge) vs --el-anemo-main   ΔE .041
-	     #51c89a                 vs --el-anemo-bar    ΔE .026  ← not two colours
+	     #51c89a                 vs --el-anemo-bar    ΔE .026  ← not two colors
 	     #5be0ac (SHIPPED now)   vs --el-anemo-bar    ΔE .072
 
 	   Same hue, Genshin's lightness. ⚠ THE LESSON, twice proven here and at
-	   --rx-quicken: when an element closes on a UI colour, spend LIGHTNESS. Hue
+	   --rx-quicken: when an element closes on a UI color, spend LIGHTNESS. Hue
 	   is what the element owns.
 	   ✅ --ui-warning vs --rx-burning is RESOLVED, not by touching --ui-warning
 	   but because burning was banked down to an ember in the same round: they
 	   were ΔE .051 and are now .095.
 
 	   ↻ 2026-08-09 (Genshin Night): this family stays OURS. ⚓ NATE kept our UI
-	   palette over Genshin's highlighter colours and asked me to borrow from
+	   palette over Genshin's highlighter colors and asked me to borrow from
 	   theirs only where we had a gap. Two were considered:
 
 	   ⛔ --ui-value (Genshin's numeric blue, #7CCFF0) — REJECTED, and the reason
 	   generalises: WE HAVE NO FREE BLUE. Measured, #7CCFF0 sits ΔH 6.8° / ΔC
 	   .019 from --el-cryo-main, i.e. it IS cryo; the next blue over, our own
 	   --calm, sits ΔH 2.2° from --el-hydro-main. The blue neighbourhood is
-	   fully spoken for by the element palette, and a "this is a number" colour
-	   that reads as an element inside a Genshin tool is worse than no colour at
+	   fully spoken for by the element palette, and a "this is a number" color
+	   that reads as an element inside a Genshin tool is worse than no color at
 	   all. If value-emphasis is ever wanted, it has to come from weight or the
 	   accent, not from hue.
 	   ⛔ --ui-keyword (Genshin's orange keyword emphasis, #E8A33D) — held back:
-	   real as a semantic (§ Laws forbids spending a STATE colour on prose
+	   real as a semantic (§ Laws forbids spending a STATE color on prose
 	   emphasis) but it has no consumer, and no speculative abstractions. */
 	--ui-danger: #e63946; /* destroy · discard · invalid input */
 	--ui-warning: #f4a261; /* parse warning · unknown token — a CAUTION you caused */
@@ -1172,7 +1172,7 @@
 	   inks (parchment on dark, slate on light) and the world borrowed --chrome
 	   white, which was recorded at the time as "a placeholder, not a decision —
 	   the system has no accent of its own". It has one now, and it is GOLD:
-	   Genshin's own ornament and selection colour, and the one family in their
+	   Genshin's own ornament and selection color, and the one family in their
 	   palette that exists to do nothing but emphasise. ⚓ NATE.
 
 	   Because every consumer already reads this one alias, picking it was a
@@ -1191,7 +1191,7 @@
 	   than the tool speaking, and --chrome is that voice.
 
 	   ⚠ gold sits ΔH 0.5° from --el-geo-main. That is fine and deliberate:
-	   geo is an identity colour at C.150 while the accent is ornament at C.066,
+	   geo is an identity color at C.150 while the accent is ornament at C.066,
 	   so chroma is what separates them — the same way Genshin can put gold
 	   trim on a geo icon without the two reading as one thing. Do not "fix"
 	   this by rotating the accent off geo; it would rotate it off parchment.
@@ -1216,8 +1216,8 @@
 	   stops that recurring.
 
 	   THE SLOTS, and what each is FOR:
-	     main   Genshin's ICON palette — measured off the flat-colour source art
-	            (one colour per file, so not an estimate). The element's
+	     main   Genshin's ICON palette — measured off the flat-color source art
+	            (one color per file, so not an estimate). The element's
 	            IDENTITY: glyphs, discs, pips, washes, rings.
 	     hi     Genshin's IN-TEXT palette — the `<color=#rrggbbff>` tag the game
 	            wraps elemental words in, counted out of the genshin-db
@@ -1246,7 +1246,7 @@
 	   then deliberately not built: every --el-*-main is under 3:1 on
 	   parchment-100 (cryo 1.14:1), and so is every other official icon set —
 	   tcg 1.38–2.14, glow 1.01–1.54, gilded 1.15–1.19. Genshin has no light UI,
-	   so there is no light-ground glyph to borrow and no colour that both keeps
+	   so there is no light-ground glyph to borrow and no color that both keeps
 	   its identity and holds the paper.
 	   ⚓ THE RULE INSTEAD: element marks go on DARK contexts. If one is ever
 	   genuinely needed on parchment, run it in ONE INK (--ink-900, 8.00:1) and
@@ -1260,7 +1260,7 @@
 
 	   ══ THE `bar` RUNG (⚓ NATE 2026-08-12) ═════════════════════════════════
 	   ⚓ "We rejected a deeper rung for icons, but I think we might need a deeper
-	   rung for things like BARS — very slightly deeper (colour density) and
+	   rung for things like BARS — very slightly deeper (color density) and
 	   slightly more balanced between the darkness of the scene and the white of
 	   their text."
 
@@ -1370,8 +1370,8 @@
 	   • QUICKEN was boxed in. Its old note read "anemo never draws an aura line,
 	     so the nearby teal doesn't collide" — a rationale that assumed anemo was
 	     TEAL. Genshin's anemo is a spring green, the exact hue quicken had been
-	     pushed to, and the two closed to ΔE .044 (below ~.05 two colours stop
-	     being two colours). It now sits between dendro at 131° and anemo at
+	     pushed to, and the two closed to ΔE .044 (below ~.05 two colors stop
+	     being two colors). It now sits between dendro at 131° and anemo at
 	     165°, so it holds its blue-green hue and buys the gap with LIGHTNESS
 	     instead: L .785 → .740. Spending the free axis keeps the original intent
 	     intact where re-hueing to the midpoint would have thrown it away.
@@ -1573,11 +1573,11 @@
 	--ui-ctl-h: 32px;
 	--ui-ctl-fs: 0.75rem;
 	--ui-bar-h: 56px;
-	/* ⚓ Theorycraft's WHITE (design §2.3): the one profile colour no real
+	/* ⚓ Theorycraft's WHITE (design §2.3): the one profile color no real
 	   profile can wear, so a guest can never be mistaken for anyone's own. */
 	--profile-theorycraft: #dfe3ea;
 	/* A character you don't own (the Roster, Teams): faded, keeping some of
-	   its colour (Nate 2026-10-25), so a team built round one doesn't read as
+	   its color (Nate 2026-10-25), so a team built round one doesn't read as
 	   a punishment. Was grayscale(0.85) brightness(0.6). First value. */
 	--portrait-unowned: saturate(0.45) brightness(0.72);
 }
@@ -1860,7 +1860,7 @@
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
-	/* ⚠ THE ONLY UI STATE COLOUR THAT IS ZONED, and it has to be: --ui-provisional
+	/* ⚠ THE ONLY UI STATE COLOR THAT IS ZONED, and it has to be: --ui-provisional
 	   is #f6d365 on dark and 1.16:1 on this paper, and one of its consumers —
 	   the ∅ on a character card — lives HERE. Same move as the accent above:
 	   same hue, carried down. 3.02:1.
@@ -1869,7 +1869,7 @@
 	   PROVISIONAL IS A MARK ON PAPER AND NEVER PROSE INK. Walking it to the 4.5:1
 	   text floor lands on #786529 — ΔE .030 from --gold-700, i.e. it IS the light
 	   accent, and gold on paper already means "a gap you can click". A provisional
-	   state wearing the actionable colour is the exact confusion the TB card round
+	   state wearing the actionable color is the exact confusion the TB card round
 	   fixed on the coverage chip; do not re-create it here.
 
 	   ↻ 2026-10-26 (the notices round): warning and positive gained a paper
@@ -1936,7 +1936,7 @@
    ⚠ AND IT IS NOT `sheer`. That experiment was built, measured, shipped and
    reverted, and the rule that came out of it stands: opaque, or OBVIOUSLY
    translucent — the middle is not a place. Sheer let 2–3% of scene light
-   through, which reads as a duller colour.
+   through, which reads as a duller color.
    ⚠ The alpha alone does not decide it: glass and the wash MULTIPLY, so the
    world reaching the eye is (1 − glass)(1 − TOOL_DIM). Move one, check the
    other. At TOOL_DIM .875 that is 5.25% for the panel stop and 6.9% for the
@@ -1948,11 +1948,11 @@
    which would make the CURRENTLY SHIPPING configuration the thing this round
    rejected. It is not, and the correction is worth more than the number was:
 
-   ⚓ "The sheer problem was due to different wash colour and glass colours —
+   ⚓ "The sheer problem was due to different wash color and glass colors —
    we don't need to be so strict about it anymore."
 
    Sheer failed because at 2–3% a translucent pane over the wash of that day
-   read as a DULLER VERSION OF ITS OWN COLOUR — the world was present without
+   read as a DULLER VERSION OF ITS OWN COLOR — the world was present without
    being legible, which is the muddy middle. Whether that happens is a fact
    about the composite (how dark the wash is, how dark the pane is, whether a
    star still resolves through it), not about a transmission percentage. At
@@ -1996,8 +1996,8 @@
 	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
 	   two are the same value and the distinction never had teeth; here they
 	   deliberately diverge, and it is the one thing to get right when moving a
-	   surface onto glass. --frame-bg stays a REAL, opaque colour because it is
-	   the REFERENCE ground (the breathing-room rule: it is the colour even
+	   surface onto glass. --frame-bg stays a REAL, opaque color because it is
+	   the REFERENCE ground (the breathing-room rule: it is the color even
 	   where nothing paints it) — every color-mix, canvas fill and PNG export
 	   still needs something to resolve against. Painting it would just give you
 	   an opaque panel that thinks it is glass. */
@@ -2015,7 +2015,7 @@
 	   line mixes OPAQUELY against a known ground, because a 1px alpha line
 	   renders display-dependently (the dire-gradient lesson). On glass the
 	   ground is not known — it is whatever the world is doing behind it — so an
-	   opaque line would be a stripe of the wrong colour. The law refines: mix
+	   opaque line would be a stripe of the wrong color. The law refines: mix
 	   opaque against a KNOWN ground; where the ground is unknown, carry alpha.
 	   These are Fable's recovered stops used as themselves. */
 	--line-faint: rgb(236 229 216 / 0.1);
@@ -2027,7 +2027,7 @@
 	--frame-line-quiet: var(--line-faint);
 	/* The gold inset. ⚠ CARRIES ALPHA, unlike the opaque contexts' copies —
 	   same reason every line here does: the ground behind a pane is unknown, so
-	   an opaque mix would be a stripe of the wrong colour. gold-400's rung,
+	   an opaque mix would be a stripe of the wrong color. gold-400's rung,
 	   since glass is a dark material. */
 	--inset-line: rgb(211 188 142 / 0.18);
 	--inset-line-quiet: rgb(211 188 142 / 0.1);
@@ -2059,7 +2059,7 @@
 	   the world showing through it — which is what made a hovered tab and a
 	   hovered Atlas card read as a different material from their neighbours.
 	   Accent stays the mark of SELECTION here (--sel-fill, --sel-ring, untouched):
-	   hover is a lift, selection is a colour.
+	   hover is a lift, selection is a color.
 
 	   ↻ This reverses the note that stood here for a day — "the hover wash is the
 	   parchment frost, not a neutral tint, because on glass a neutral fill greys
@@ -2315,7 +2315,7 @@ img {
 
 /* The FAQ's questions (and Privacy's sub-heads) are not in the sidebar, so a
    reader finds one by SCANNING (2026-10-18, Nate). It was body size, body
-   colour and half a line of extra space — weight and face alone at 16px. Now
+   color and half a line of extra space — weight and face alone at 16px. Now
    chrome like every other heading, a step up, and spaced to bind DOWN: more
    room above than below makes each question and its answer one block. */
 .prose h3 {
@@ -2358,18 +2358,18 @@ img {
 }
 
 /* Links carry a RESTING underline, and the reason generalises past the family
-   that prompted it. Headings and links were both chrome-coloured, and no colour
+   that prompted it. Headings and links were both chrome-colored, and no color
    change could separate them: every candidate that made a link more distinct
    from a heading made it LESS distinct from the paragraph around it. Hue was
    being asked to carry two distinctions at once. The underline carries one of
-   them instead — no heading will ever have one — which leaves colour free to
+   them instead — no heading will ever have one — which leaves color free to
    mean "this is chrome" for both. Still true now that links are the accent and
    headings are --chrome: those two are much further apart than the old pair,
    but the underline is what makes a link findable in a paragraph, not the hue.
-   ⚓ Measured 2026-09-23: gold on --text is 1.57:1, far under the 3:1 a colour
+   ⚓ Measured 2026-09-23: gold on --text is 1.57:1, far under the 3:1 a color
    cue alone would need, so the resting underline is also the accessible one.
    ↻ It is a real `text-decoration` now, not a border-bottom (⚓ Nate): the
-   border's one advantage — a colour of its own — is `text-decoration-color`'s
+   border's one advantage — a color of its own — is `text-decoration-color`'s
    too, and a real underline wraps with the text and clears descenders. The
    font's own thickness and offset — no spacing away from the text (⚓ Nate). */
 .prose a {
@@ -2382,7 +2382,7 @@ img {
 .prose a:hover,
 .prose a:focus-visible {
 	/* 90%, not full: a straight rule reads brighter than the glyphs it sits
-	   under at the same colour (⚓ Nate 2026-09-23). */
+	   under at the same color (⚓ Nate 2026-09-23). */
 	text-decoration-color: color-mix(in srgb, var(--accent) 90%, transparent);
 }
 
@@ -2392,7 +2392,7 @@ img {
    UI text opts in here and gets the prose treatment — ⚓ Nate 2026-09-23: the
    SAME for every link, accent ink with an underline faint at rest and lit on
    hover. `.link--quiet` keeps the surrounding ink and only draws the
-   underline, for a line whose own colour is the point (the landing banner). */
+   underline, for a line whose own color is the point (the landing banner). */
 .link {
 	color: var(--accent);
 	text-decoration: underline;
@@ -2417,7 +2417,7 @@ img {
    place for the strip (CoverageStrip) and the legend's swatches. ⚓ Nate
    2026-09-23: modeled is --ui-positive and not-modeled hatches in --ui-danger,
    so the strip reads at a glance; stand-in and missing are the editor's own
-   provisional / warning marks. ⛔ Never element colours — coverage is not a
+   provisional / warning marks. ⛔ Never element colors — coverage is not a
    mechanic. `.is-dim` (out of this rotation's reach) recedes in the PAINT,
    never element opacity. The hatch is ONE layer (the Safari veto is on tiled
    multi-layer backgrounds). */
@@ -2719,7 +2719,7 @@ img {
 }
 /* AN ELEMENT IS CHOSEN IN ITS OWN TINT (Nate 2026-11-04): an element picker's
    segment (the ICD timeline's, Enemy RES & DEF's) lights in the element's
-   colour, the Gauge explorer's hover recipe, not gold. Each button sets
+   color, the Gauge explorer's hover recipe, not gold. Each button sets
    --seg-el to its `--el-*-main`. */
 .segment > .btn.seg-el.is-active,
 .segment > .btn.seg-el.is-active:hover {
@@ -2888,10 +2888,10 @@ img {
 	   different bands on purpose. The thumb TRAVELS 1.05rem across its track —
 	   the one place on the site where something crosses a distance as the
 	   result of a state change rather than shifting a pixel or two under a
-	   pointer — so the position takes the band for spatial moves. Its COLOUR is
+	   pointer — so the position takes the band for spatial moves. Its COLOR is
 	   not travelling anywhere: it changes in place, at the same moment the
 	   track's does, so it stays with the track on --t-snap (both are controls)
-	   and the two land together. One colour event, one movement, two clocks. */
+	   and the two land together. One color event, one movement, two clocks. */
 	transition:
 		transform var(--t-move),
 		background var(--t-snap);
@@ -3114,8 +3114,8 @@ img {
    signal. A fading edge says "cut off" in a way a hard edge cannot.
 
    ⚠ IT IS A MASK BECAUSE THERE IS NO GROUND TO FADE INTO. The usual gradient
-   scrim needs the container's own colour; both consumers sit on the bare dimmed
-   scene, so any colour a scrim picked would be a smear over the live world.
+   scrim needs the container's own color; both consumers sit on the bare dimmed
+   scene, so any color a scrim picked would be a smear over the live world.
    ⛔ Don't convert this to a ::before gradient — it will look right only until
    someone sees it over a bright part of the sky.
 
@@ -3357,7 +3357,7 @@ img {
    and generalising them belongs to the card round.
 
    ⚠⚠ OPAQUE SURFACES ONLY — NEVER ON .ctx-glass (⚓ NATE, observed). The two
-   strokes CROSS, and on glass the line colour carries alpha (that context's
+   strokes CROSS, and on glass the line color carries alpha (that context's
    lines have to, since the ground behind them is unknown — see .ctx-glass).
    Alpha composites twice where they overlap, so every crossing paints a
    visibly darker segment and the frame reads as four smudges instead of two

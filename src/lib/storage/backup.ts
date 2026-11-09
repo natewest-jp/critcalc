@@ -39,7 +39,7 @@ import {
 	type DocumentRecord,
 	type LineupBody,
 	type Picture,
-	type ProfileColour,
+	type ProfileColor,
 	type ProfileRecord,
 	type RotationBody,
 	type TeamRecord
@@ -111,7 +111,7 @@ const str = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 const num = (v: unknown, fallback: number): number =>
 	typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 
-const COLOURS: readonly ProfileColour[] = [
+const COLORS: readonly ProfileColor[] = [
 	'pyro',
 	'hydro',
 	'anemo',
@@ -132,8 +132,11 @@ function picture(v: unknown): Picture | undefined {
 function profile(v: unknown, now: number): ProfileRecord | null {
 	if (!isObj(v) || !str(v.id) || (v.kind !== 'real' && v.kind !== 'theorycraft')) return null;
 	if (v.kind === 'theorycraft' && v.id !== THEORYCRAFT_ID) return null;
-	const colour = COLOURS.includes(v.colour as ProfileColour) ? (v.colour as ProfileColour) : null;
-	if (!colour || (v.kind === 'real') === (colour === 'theorycraft')) return null;
+	// ⚠ Files saved before the US-English rename spell the key `colour`, and
+	// a backup can be restored years later, so this reads both forever.
+	const stored = (v.color ?? v.colour) as ProfileColor;
+	const color = COLORS.includes(stored) ? stored : null;
+	if (!color || (v.kind === 'real') === (color === 'theorycraft')) return null;
 	const roster = isObj(v.roster) ? v.roster : {};
 	const current: ProfileRecord['current'] = {};
 	if (isObj(v.current)) {
@@ -147,7 +150,7 @@ function profile(v: unknown, now: number): ProfileRecord | null {
 		updatedAt: num(v.updatedAt, now),
 		kind: v.kind,
 		name: str(v.name) ? v.name.slice(0, 40) : v.kind === 'real' ? 'My profile' : 'Theorycraft',
-		colour,
+		color,
 		twin: v.twin === 'lumine' ? 'lumine' : 'aether',
 		roster: {
 			constellations: sanitizeConstellations(roster.constellations) ?? {},
@@ -247,8 +250,8 @@ function teamLoadoutOf(v: unknown): Pick<TeamRecord, 'loadout'> {
 	return loadout && Object.keys(loadout).length ? { loadout } : {};
 }
 
-/** ↻ Any number of profiles, colours repeating (Nate 2026-10-26). ⚠ This
- *  used to drop a repeated colour and everything past seven, which would
+/** ↻ Any number of profiles, colors repeating (Nate 2026-10-26). ⚠ This
+ *  used to drop a repeated color and everything past seven, which would
  *  silently lose a profile now that both are allowed. */
 function sanitizeStore(v: unknown, now: number): MigrationResult | null {
 	if (!isObj(v) || !Array.isArray(v.profiles)) return null;

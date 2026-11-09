@@ -1,7 +1,7 @@
 /**
  * src/lib/utils/auraDisplay.ts
  *
- * How an aura mod is NAMED, ORDERED and COLOURED — the display vocabulary for
+ * How an aura mod is NAMED, ORDERED and COLORED — the display vocabulary for
  * everything `gauge.ts` can put on a target (gauge round L6).
  *
  * ⚓ EXTRACTED BECAUSE THERE ARE TWO READERS NOW. It lived inside
@@ -31,7 +31,7 @@ export type AuraModMeta = {
 	label: string;
 	/** Element icon key (`$lib/data/elementIcons.generated`). */
 	icon: string;
-	/** CSS colour reference. */
+	/** CSS color reference. */
 	color: string;
 	/** SVG stroke-dasharray, for the one mod that is not really an aura. */
 	dash?: string;
@@ -40,10 +40,10 @@ export type AuraModMeta = {
 	 *
 	 * ⚓ MACHINE-READABLE BECAUSE THE LABEL RULE NEEDS IT (2026-08-17). The plot
 	 * names an element ONCE and a compound state EVERY time, and the reason is
-	 * what colour can say: this audience reads Hydro-blue and Electro-purple
+	 * what color can say: this audience reads Hydro-blue and Electro-purple
 	 * without help (the `--el-*` ramps are Genshin's own, transcribed), so the
 	 * word is only news on first sight. `--rx-frozen` and `--rx-quicken` are OUR
-	 * hues for states the game gives no colour to, so their word is news every
+	 * hues for states the game gives no color to, so their word is news every
 	 * time. See `auraSpanLabels`.
 	 *
 	 * ⛔ Don't infer this from the `--rx-` prefix in `color`. That is sniffing a

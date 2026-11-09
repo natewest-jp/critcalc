@@ -3,7 +3,7 @@
 	 * THE FIELD (design §7: the 1:2 ray and the CV isoline through your point),
 	 * with its companion strip on the shared CRIT Rate axis. The instrument
 	 * measures the chart and lays it out (`rect`, `strip`); this draws it and
-	 * takes the presses. Two canvases under one SVG: the field's colours, the
+	 * takes the presses. Two canvases under one SVG: the field's colors, the
 	 * no-crit shading over them, then every line, word and mark.
 	 */
 	import {
@@ -90,7 +90,7 @@
 	const COUNT_MIN_GAP = 12;
 	/** 🎛️ The contours' white, width and dash. Dotted (round dots, CONTOUR_GAP
 	 *  apart), after dashed (5 4) and solid were both tried (Nate 2026-11-03):
-	 *  dots read as a guide drawn over the colour, not a line on it, and stay
+	 *  dots read as a guide drawn over the color, not a line on it, and stay
 	 *  clear of the one solid line, the CV's. Solid: CONTOUR_DASH 'none'. */
 	const CONTOUR_INK = 0.6;
 	const CONTOUR_W = 2;
@@ -99,7 +99,7 @@
 	/** 🎛️ How much the night veils the unreachable 0–5% band. */
 	const VEIL = 0.62;
 
-	// Cubehelix-inspired colour ramp: deep blue → teal → green → yellow →
+	// Cubehelix-inspired color ramp: deep blue → teal → green → yellow →
 	// orange → red-purple, over ×1 to ×4; the curve between the stops is
 	// critRamp.ts's. ⚓ Kept (Nate 2026-11-03) over four ramps whose lightness
 	// only rises, though its own peaks at ×2.8 (docs/rounds/

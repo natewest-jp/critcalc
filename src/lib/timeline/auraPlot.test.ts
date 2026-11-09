@@ -547,7 +547,7 @@ describe('auraSpanLabels — an element names itself once', () => {
 	});
 
 	// ⚠ The four compound mods are exempt on purpose: their hues are ours, for
-	// states the game gives no colour to, so the word is news every time.
+	// states the game gives no color to, so the word is news every time.
 	it('labels EVERY span of a compound mod', () => {
 		const series: AuraSeries[] = [
 			{

@@ -128,7 +128,7 @@
 		 *  stays in its slot, dimmed — never gone. */
 		resting?: boolean;
 		/** The character the inspector is showing (inspector round): the ring
-		 *  HOLDS its hover gold, the site's selected colour (⚓ Nate). */
+		 *  HOLDS its hover gold, the site's selected color (⚓ Nate). */
 		picked?: boolean;
 		/** The RAIL: the host's slot commands (⇄ · ✕), stacked at the card's
 		 *  left and splitting the portrait's height. Desk only — the compact
@@ -778,7 +778,7 @@
 		align-self: baseline;
 		/* Not a domain color — a data-quality consequence, not a game fact
 		   (dire-retirement round, 2026-08-05; mirrors .cc-namemark).
-		   ↻ 2026-08-12: and the right STATE colour is --ui-provisional, not
+		   ↻ 2026-08-12: and the right STATE color is --ui-provisional, not
 		   --ui-danger. That round settled which FAMILY this belongs to and red was
 		   just the only rung left; the family has a fourth value now. ⚠ The bench
 		   is always dark, so this takes the :root rung — the roster card's twin
@@ -975,7 +975,7 @@
 	   v3 flat --frame-bg failed in 2026-08-06: the pill was a GRADIENT then, and
 	   a flat wash punched lighter DISCS into it (Nate spotted them at zoom).
 	   ↻ 2026-08-11: the pill went FLAT (see --sp-pill-fill), so the gradient
-	   this rebuilt is gone and the wash is a flat colour again — the failed v3,
+	   this rebuilt is gone and the wash is a flat color again — the failed v3,
 	   made correct by the ground finally being flat too. It now reads
 	   --sp-pill-fill ITSELF rather than a parallel copy of the ramp, so the two
 	   cannot desync: change the ground and the wash follows by construction.
@@ -1039,7 +1039,7 @@
 	   the digit that overlaps the zone — the half, not the whole, which is the
 	   worst possible way for it to look. Positioned + z-index puts the digit
 	   over the wash.
-	   The shadow is the ground's own colour, so the digit reads over whatever
+	   The shadow is the ground's own color, so the digit reads over whatever
 	   part of the weapon art it lands on without needing a plate behind it. */
 	.sp-lo-ref {
 		position: absolute;

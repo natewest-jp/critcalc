@@ -107,7 +107,7 @@
 		color: var(--ui-danger);
 	}
 	/* The team's standing is a TINT of the chip's ground plus a mark at its end
-	   — the words never change colour. */
+	   — the words never change color. */
 	.ck--met {
 		background: var(--ui-positive-soft);
 	}

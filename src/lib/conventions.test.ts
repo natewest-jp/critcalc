@@ -113,6 +113,22 @@ describe('retired names stay retired (.claude/rules/ui.md)', () => {
 	});
 });
 
+describe('US English in the source (docs/text/style-guide.md)', () => {
+	/** The two files that read the stored key's old spelling. */
+	const READS_OLD_KEY = new Set(['src/lib/storage/records.ts', 'src/lib/storage/backup.ts']);
+
+	it('nothing spells it `colour`', () => {
+		const offenders = files.filter(
+			(f) =>
+				/\.(svelte|ts|css|json)$/.test(f) &&
+				!f.endsWith('.test.ts') &&
+				!READS_OLD_KEY.has(f) &&
+				/colour/i.test(read(f))
+		);
+		expect(offenders).toEqual([]);
+	});
+});
+
 /**
  * The source half of the mark sweep; `e2e/marks.spec.ts` is the rendered half,
  * on the surfaces it opens. Same code points, same exemptions: rarity stars

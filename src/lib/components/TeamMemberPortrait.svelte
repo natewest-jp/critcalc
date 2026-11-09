@@ -138,7 +138,7 @@
 		border-radius: var(--r-round);
 		object-fit: cover;
 	}
-	/* Not owned: faded, keeping some of its colour, and no ring (the Roster's
+	/* Not owned: faded, keeping some of its color, and no ring (the Roster's
 	   rule, at its softer value). */
 	.is-faded .tmp-face {
 		box-shadow: none;

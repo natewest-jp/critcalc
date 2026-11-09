@@ -591,7 +591,7 @@
 				</div>
 
 				<!-- The chart tools: one group, so they wrap together and hold the
-				     toolbar's far end. The element colours the hits and is what a
+				     toolbar's far end. The element colors the hits and is what a
 				     hand-off sends; its track matches the strings'. -->
 				<div class="icd-tools">
 					<div class="segment icd-elements" role="radiogroup" aria-label="Element">

@@ -3,7 +3,7 @@
   profile, like Settings, NEWEST FIRST (↻ Nate 2026-10-26: grouped by
   profile, a busy profile pushed another's fresh deletes out of sight), with
   one heading per stretch of one profile's things (`trashRuns`).
-  ⚓ Every row wears its profile's colour (Nate: the Trash is universal, so
+  ⚓ Every row wears its profile's color (Nate: the Trash is universal, so
   each thing in it says which profile it goes back to). Restore puts a thing
   back where it came from; a thing whose profile is in the Trash brings the
   profile back with it, and the stretch says so before you press it.
@@ -18,7 +18,7 @@
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
 	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
 	import { TRASH_MS, type TrashEntry, type TrashRun } from '$lib/storage/trash';
-	import { colourValue, pictureUrl } from '$lib/profileLook';
+	import { colorValue, pictureUrl } from '$lib/profileLook';
 
 	let runs = $state<TrashRun[]>([]);
 	let loaded = $state(false);
@@ -101,7 +101,7 @@
 	{#each runs as r (r.profile.id + r.entries[0].record.id)}
 		{@const p = r.profile}
 		{@const url = pictureOfProfile(p)}
-		<section class="group" style:--pp-color={colourValue(p.colour)} aria-label={p.name}>
+		<section class="group" style:--pp-color={colorValue(p.color)} aria-label={p.name}>
 			<header class="group-head">
 				<span class="pp">
 					{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback">{p.name[0]}</span>{/if}
@@ -179,7 +179,7 @@
 	}
 
 	/* ── A profile's group: its picture in its ring, as the switcher draws
-	      it, and every row below in the same colour ── */
+	      it, and every row below in the same color ── */
 	.group {
 		display: flex;
 		flex-direction: column;
@@ -234,7 +234,7 @@
 		color: var(--muted);
 	}
 
-	/* ── A row: the Library's row, with the profile's colour down its edge ── */
+	/* ── A row: the Library's row, with the profile's color down its edge ── */
 	.rows {
 		display: flex;
 		flex-direction: column;

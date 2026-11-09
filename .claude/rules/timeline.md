@@ -39,14 +39,14 @@ Budget: about 10,000 characters. `src/lib/timeline/` holds pure projection modul
 - It rides inside the track scroller as the first row above the tracks. Its height (`auraPlotH`) rides the PNG snapshot, so never make it viewport-derived: two readers would export different charts of one rotation.
 - A crosshair reads every aura at one instant through `gaugesAt`. A label collision is checked on both axes.
 - One faint rule per whole unit is the lane's only chart furniture. The unit labels live outside the plot, in `.rp-timeline-area`'s left padding, as a sibling of the scroller (the scroller clips).
-- `--ui-provisional` is a foot under the tick, not a replacement for its element colour, and it means "could someone measure this?": yes for a cast with no `application[]` or `units`, no for a swing or a summon tick.
+- `--ui-provisional` is a foot under the tick, not a replacement for its element color, and it means "could someone measure this?": yes for a cast with no `application[]` or `units`, no for a swing or a summon tick.
 - The lane's limits (`AURA_NOTES`) head the aura log and the Help chapter. No line goes in without a source.
 
 ## The application-marker grammar
 
 Shared with the Visualizers' Gauge Explorer:
 
-- One marker, read top to bottom: what it caused (reaction), then what landed (an element-coloured pill), then a hairline down into the gauge it changed. The Explorer's pill carries the unit number (no "U"); the lane's pill is smaller and carries no text, which is density, not drift.
+- One marker, read top to bottom: what it caused (reaction), then what landed (an element-colored pill), then a hairline down into the gauge it changed. The Explorer's pill carries the unit number (no "U"); the lane's pill is smaller and carries no text, which is density, not drift.
 - One ceiling for both charts, `auraUMax` (`$lib/utils/auraDisplay.ts`). `AURA_UMAX_FLOOR` is 1U, and `auraUnitLines` includes the ceiling. `AURA_PLOT_HEAD` reserves 6px above the ceiling so a line sitting on it isn't clipped.
 - A run of one ticking reaction is one marker carrying its count (`collapseReactionRuns`). Marker labels are dropped, never clipped, measured against their own width (`auraMarkerLabels` takes a `measure` function so the module stays pure).
 - An element names itself once; a compound state names itself every time. Bookkeeping series paint last, and a dashed path is butt-capped.
@@ -60,4 +60,4 @@ Shared with the Visualizers' Gauge Explorer:
 ## The PNG export
 
 - `timelineExport.ts` mirrors the screen, and the export's backdrop is the dimmed scene (`exportScene.ts`). The chart ground is `CHART_BG`.
-- ⚠️ `timelineExport.mirror.test.ts` checks colour only. Any other divergence between the screen and the PNG (ink choice, weight, size, position) is found by eye or not at all, so compare a live view with its PNG after timeline polish.
+- ⚠️ `timelineExport.mirror.test.ts` checks color only. Any other divergence between the screen and the PNG (ink choice, weight, size, position) is found by eye or not at all, so compare a live view with its PNG after timeline polish.

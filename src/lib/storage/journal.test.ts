@@ -39,7 +39,7 @@ const profile = (over: Partial<ProfileRecord> = {}): ProfileRecord => ({
 	updatedAt: T,
 	kind: 'real',
 	name: 'Main',
-	colour: 'anemo',
+	color: 'anemo',
 	twin: 'aether',
 	roster: { constellations: { bennett: 6 }, ownership: {}, loadout: {} },
 	current: {},

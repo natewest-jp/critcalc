@@ -15,7 +15,7 @@ function file(instruments: unknown): string {
 					updatedAt: 1,
 					kind: 'real',
 					name: 'Main',
-					colour: 'anemo',
+					color: 'anemo',
 					twin: 'aether',
 					roster: {},
 					current: {},
@@ -43,5 +43,19 @@ describe('a backup keeps the Visualizers’ saved instruments (overhaul round 4)
 		expect(profileOf(file({ wish: 7, crit: { v: 1 } }))?.instruments).toEqual({ crit: { v: 1 } });
 		expect(profileOf(file({ wish: 'x' }))).not.toHaveProperty('instruments');
 		expect(profileOf(file(null))).not.toHaveProperty('instruments');
+	});
+});
+
+describe('a backup’s profile color', () => {
+	it('reads the current spelling', () => {
+		expect(profileOf(file(undefined))?.color).toBe('anemo');
+	});
+
+	it('still reads a file saved with the old spelling, and keeps only the new key', () => {
+		const old = file(undefined).replace('"color"', '"colour"');
+		expect(old).toContain('"colour"');
+		const restored = profileOf(old);
+		expect(restored?.color).toBe('anemo');
+		expect(restored).not.toHaveProperty('colour');
 	});
 });

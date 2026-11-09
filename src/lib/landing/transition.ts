@@ -201,7 +201,7 @@ export type SceneLayerKind = 'composition' | 'dim';
  *
  *  ⚠ It arrived during the sheer-ground experiment, which is retired — sheer
  *  panels were a middle that turned out not to be a place (2–3% of scene light
- *  through a surface reads as a duller colour, not as translucency). The DIM
+ *  through a surface reads as a duller color, not as translucency). The DIM
  *  survives that retirement on its own merit, which is why it is declared here
  *  with its own rationale instead of riding along with a token that is gone.
  *
@@ -229,7 +229,7 @@ export type SceneLayerKind = 'composition' | 'dim';
  *
  *    THE BUG IN THE OLD NUMBERS: every star figure in this system modelled the
  *    worst pixel as `white × (1 − TOOL_DIM)` — which is what you get if the
- *    wash is pure BLACK. It is not: --scene-dim is a near-black COLOUR laid
+ *    wash is pure BLACK. It is not: --scene-dim is a near-black COLOR laid
  *    over the scene, so the real composite is `dim·wash + (1−dim)·white`, and
  *    at .65 that is rgb(103,104,106), not rgb(89,89,89). Every published
  *    contrast figure was therefore ~0.3–0.4 optimistic, in the one direction
@@ -267,7 +267,7 @@ export type SceneLayerKind = 'composition' | 'dim';
  *
  *  ⚓ NATE — the two knobs, and they are independent:
  *    TOOL_DIM               how much world survives.
- *    --scene-dim in app.css the wash COLOUR — how black the floor of the
+ *    --scene-dim in app.css the wash COLOR — how black the floor of the
  *                           composite is. A different axis entirely. Both moved
  *                           together on 2026-08-10 (#15161a → #101013). */
 /*
