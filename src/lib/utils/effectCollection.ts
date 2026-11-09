@@ -232,6 +232,7 @@ export function normalizeBuffLikeEffect(effect: Effect): Effect | null {
 		durationType: effect.durationType,
 		procCooldown: effect.procCooldown,
 		whileState: effect.whileState,
+		whilePolestarField: effect.whilePolestarField,
 		attribution: effect.attribution,
 		source: effect.source,
 		stat,

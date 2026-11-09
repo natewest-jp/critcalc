@@ -85,6 +85,16 @@ export function polestarFieldOpenAt(conductTimes: readonly number[], time: numbe
 	return lo > 0 && time < conductTimes[lo - 1] + PRISM_LIFETIME_F;
 }
 
+/** The spans a Polestar Field stands, for a buff bound to it (`whilePolestarField`). */
+export function polestarFieldSpans(
+	reactionEvents: readonly ReactionEvent[]
+): { start: number; end: number }[] {
+	return mergePresences(
+		reactionEvents.filter((e) => e.reaction === 'stellarConduct'),
+		PRISM_LIFETIME_F
+	).map(({ start, end }) => ({ start, end }));
+}
+
 /**
  * ⚓ THE SECOND CLOCK. "Every 4s, the count is reset, and buffs lasting 4s are
  * granted." ⚠️ It is NOT the Prism's clock — the two run together and are not

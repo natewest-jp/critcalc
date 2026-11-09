@@ -363,8 +363,16 @@
 						"ability": "burst"
 					},
 					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "inPolestarField"
+							}
+						]
 					},
 					"source": "character",
 					"stat": "em",
@@ -378,7 +386,8 @@
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] Together We Rise authored from the Fandom constellation `buff` field (buffType Revelation): +200 EM on entering Pactsworn Pathclearer, and it TRANSFERS to the incoming character on swap - hence target 'active' rather than 'self', which slices the window onto whoever is on the field, exactly matching \"the incoming active character will take on the Together We Rise effect for the remaining duration\". The base C1 ATK SPD half stays unauthored (attack speed is out of scope).",
 				"[Stellar 2026-07-29] DURATION IS AN INFERENCE, not a published number: the wiki gives no timer for Together We Rise, only \"for the remaining duration\". Authored at 11.87s to match this character's burst stance duration, since the buff is granted on entering that state. Flagged in the caveat; revise the moment a duration is published.",
-				"[Stellar 2026-07-29] NOT modeled: the skill-opened 6s Pactsworn Pathclearer (Revelation passive) also grants Together We Rise - the trigger is authored on the burst only, because an onCast skill trigger cannot distinguish the base skill from Mortuary Rite (same E token) and would re-grant the buff on every in-stance skill cast."
+				"[Stellar 2026-07-29] NOT modeled: the skill-opened 6s Pactsworn Pathclearer (Revelation passive) also grants Together We Rise - the trigger is authored on the burst only, because an onCast skill trigger cannot distinguish the base skill from Mortuary Rite (same E token) and would re-grant the buff on every in-stance skill cast.",
+				"↻ 2026-11-09 (Radiance gates, docs/rounds/radiance-gates-2026-11-09.md): gated on `inPolestarField` beside the enabler. gcsim `c1RevelationOnPactsworn` asks `isStellarRadiance()` once, on entering Pactsworn, then the buff runs its 712f wherever Cyno stands and follows the swap, so this is an entry test at the burst and is NOT clipped to the field. 712f also confirms the 11.87s the 2026-07-29 note inferred."
 			]
 		},
 		{
@@ -395,8 +404,16 @@
 						"ability": "burst"
 					},
 					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "inPolestarField"
+							}
+						]
 					},
 					"duration": 11.87,
 					"durationType": "refresh",
@@ -405,7 +422,8 @@
 					"value": 80,
 					"snapshottable": false,
 					"_curatorNotes": [
-						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader. Divergence retained here: shown at the full 80%; in game it stacks 5 × 16% on Normal and Charged hits (near-instant during the burst) and rides Together We Rise. ⏭ Move to the C2 entry-level caveat if it should warn."
+						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader. Divergence retained here: shown at the full 80%; in game it stacks 5 × 16% on Normal and Charged hits (near-instant during the burst) and rides Together We Rise. ⏭ Move to the C2 entry-level caveat if it should warn.",
+						"↻ 2026-11-09 (Radiance gates): the same entry test as C1, because gcsim asks only whether the hitter holds Together We Rise (`cons.go`, c1RevKey), which C1 grants on entering Pactsworn inside a field."
 					]
 				},
 				{
@@ -502,7 +520,8 @@
 				"[Stellar 2026-07-29] PERMANENT half: Stellar-Conduct joined the qualifying reaction list in the constellation's base text (present in the Fandom `description` field, not only the `buff` field) - description updated, no gate.",
 				"[Stellar 2026-07-29] STELLAR-GATED half authored: 20 Elemental Energy to Cyno, once every 18s, when a Together We Rise holder triggers one of the listed reactions. Trigger is onReaction source 'team' (the schema has no 'others' for onReaction) gated on teamEnablesReaction {stellarConduct}; no state condition, because the receiving teammate only carries Together We Rise AFTER swapping off Cyno, which ends his Pactsworn Pathclearer - an inStance gate would be false exactly when the effect can fire.",
 				"[Stellar 2026-07-29] The base 3-Energy half stays unauthored: its \"5 times per burst\" cap has no maxProcs primitive, and it needs Cyno himself to be the reaction trigger while in the burst-sourced stance. Caveated instead.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — `energy` effects have no planner consumer whatsoever — grep for a 'energy' branch across src/lib/timeline, buffWindows and sim returns nothing, and Durin's own curator note records the same finding. There is no energy bar, no particle marker and no meter anywhere on the timeline, so neither the unauthored 3-Energy half nor the authored 20-Energy half has a place to be missing from. Nothing on screen differs. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — `energy` effects have no planner consumer whatsoever — grep for a 'energy' branch across src/lib/timeline, buffWindows and sim returns nothing, and Durin's own curator note records the same finding. There is no energy bar, no particle marker and no meter anywhere on the timeline, so neither the unauthored 3-Energy half nor the authored 20-Energy half has a place to be missing from. Nothing on screen differs. Category: invisible-omission.",
+				"↻ 2026-11-09 (Radiance gates): deliberately NOT moved to `inPolestarField`. gcsim asks whether the reacting teammate holds Together We Rise (`c1RevKey`), not whether a field stands at the reaction, and that buff outlives the field. Energy reaches no planner surface, so the standing gate only feeds the Team Builder."
 			]
 		},
 		{

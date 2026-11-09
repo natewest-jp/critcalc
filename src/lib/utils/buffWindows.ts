@@ -52,6 +52,7 @@ import type { LoadoutEntry } from '$lib/stores';
 import { getArtifactSetById } from '$lib/data/artifactLookup';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import { framesOf } from '$lib/utils/frames';
+import { polestarFieldOpenAt, polestarFieldSpans } from '$lib/sim/fields';
 import { buildStateIndex, type StatesAt } from '$lib/utils/stateIndex';
 import {
 	getCharacterEffectsForAfterDuration,
@@ -154,8 +155,26 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// ⚠️ `field` is the holder's on/off-field fact for the scopes that know it
 	// (the self sites, the per-receiver slices) — it joins the same two sets.
 	const stateIndex = buildStateIndex(windows, getCharacter, primarySummonWindows);
+	// ⚓ THE POLESTAR FIELD IS AN EVENT FACT TOO: `inPolestarField` is answered at
+	// the same instant as the states, so it is an entry test like them (Cyno's
+	// Together We Rise asks once, at the burst). A buff that lasts only while the
+	// field stands says `whilePolestarField` instead (Diona's C6, the last pass).
+	const conductTimes = reactionEvents
+		.filter((ev) => ev.reaction === 'stellarConduct')
+		.map((ev) => ev.time)
+		.sort((a, b) => a - b);
+	type EventStates = StatesAt & { inPolestarField: boolean };
+	const statesAt = (holderId: string, t: number, castId?: number): EventStates => ({
+		...stateIndex.at(holderId, t, castId),
+		inPolestarField: polestarFieldOpenAt(conductTimes, t)
+	});
 	type Gate = { resolved: ReadonlySet<string>; ctx: ConditionContext };
-	const gateFor = (base: ConditionContext, st: StatesAt, field?: 'onField' | 'offField'): Gate => {
+	const gateFor = (
+		baseCtx: ConditionContext,
+		st: EventStates,
+		field?: 'onField' | 'offField'
+	): Gate => {
+		const base = { ...baseCtx, inPolestarField: st.inPolestarField };
 		if (field === undefined) {
 			if (st.negated.size === 0) return { resolved: st.active, ctx: base };
 			return { resolved: st.active, ctx: { ...base, negatedStates: st.negated } };
@@ -401,7 +420,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			if (effect.conditions === undefined) return true;
 			let gate = gates.get(ev);
 			if (!gate) {
-				gate = gateFor(base, stateIndex.at(holderId, ev.time));
+				gate = gateFor(base, statesAt(holderId, ev.time));
 				gates.set(ev, gate);
 			}
 			return (
@@ -556,7 +575,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		if (effects.length === 0) return [];
 		const pools: FirePool[] = [];
 		for (const fire of fires) {
-			const gate = gateFor(ctx, stateIndex.at(holderId, fire.time));
+			const gate = gateFor(ctx, statesAt(holderId, fire.time));
 			const qualified = dedupByStat(
 				effects.filter((e) => {
 					const dominant = (e.trigger as { dominant?: string }).dominant;
@@ -777,7 +796,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 					// 2026-09-16); its `onCast` effects in the same pool are untouched.
 					const castNoHit = castLandsNoHit(char, castType, cast);
-					const gate = gateFor(baseCtx, stateIndex.at(track.characterId, cast.time, cast.id));
+					const gate = gateFor(baseCtx, statesAt(track.characterId, cast.time, cast.id));
 					for (const group of poolsFor(cast.label, cast.abilityId).qualified) {
 						const qualifiedEffects = group.effects;
 						if (qualifiedEffects.length === 0) continue;
@@ -885,7 +904,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 					// 2026-09-16); its `onCast` effects in the same pool are untouched.
 					const castNoHit = castLandsNoHit(char, castType, cast);
-					const gate = gateFor(baseCtx, stateIndex.at(track.characterId, cast.time, cast.id));
+					const gate = gateFor(baseCtx, statesAt(track.characterId, cast.time, cast.id));
 					for (const group of poolsFor(cast.label, cast.abilityId).resShred) {
 						const resShredStartPool = group.effects;
 						if (resShredStartPool.length === 0) continue;
@@ -992,7 +1011,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const blockReady = new Map<Effect, number>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
-						const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
+						const gate = gateFor(baseCtx, statesAt(track.characterId, hit.time));
 						const barEffects = dedupByStat(
 							qualifiedEffects.filter((effect) => {
 								if (!cooldownOpen(blockReady, effect, hit.time)) return false;
@@ -1051,7 +1070,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const blockReady = new Map<Effect, number>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
-						const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
+						const gate = gateFor(baseCtx, statesAt(track.characterId, hit.time));
 						const barEffects = dedupResShredByElement(
 							resShredBlockPool.filter((effect) => {
 								if (!cooldownOpen(blockReady, effect, hit.time)) return false;
@@ -1171,7 +1190,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								)
 									continue;
 								const filterCtx = hitFilterCtx(hit);
-								const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
+								const gate = gateFor(baseCtx, statesAt(track.characterId, hit.time));
 								const barEffects = dedup(
 									pool.filter((effect) => {
 										if (effect.trigger.type !== 'onHit') return false;
@@ -1871,7 +1890,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 				// 2026-09-16); its `onCast` effects in the same pool are untouched.
 				const castNoHit = castLandsNoHit(char, castType, cast);
-				const castStates = stateIndex.at(sourceTrack.characterId, cast.time, cast.id);
+				const castStates = statesAt(sourceTrack.characterId, cast.time, cast.id);
 				const gate = gateFor(receivedCtxOf(char.id), castStates);
 				for (const activeGroup of activeEffectsFor(cast.label, cast.abilityId)) {
 					const activeEffects = activeGroup.effects;
@@ -2067,7 +2086,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const blockReady = new Map<Effect, number>();
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
-					const hitStates = stateIndex.at(sourceTrack.characterId, hit.time);
+					const hitStates = statesAt(sourceTrack.characterId, hit.time);
 					const gate = gateFor(receivedCtxOf(char.id), hitStates);
 					const barEffects = dedupByStat(
 						activeEffects.filter((effect) => {
@@ -2209,7 +2228,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					if (activeEffects.length === 0) continue;
 					for (const hit of classHits) {
 						const filterCtx = hitFilterCtx(hit);
-						const hitStates = stateIndex.at(sourceTrack.characterId, hit.time);
+						const hitStates = statesAt(sourceTrack.characterId, hit.time);
 						const gate = gateFor(receivedCtxOf(char.id), hitStates);
 						const barEffects = dedupByStat(
 							activeEffects.filter((effect) => {
@@ -2461,7 +2480,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const castNoHit = castLandsNoHit(char, castType, cast);
 				const gate = gateFor(
 					selfCtx,
-					stateIndex.at(sourceTrack.characterId, cast.time, cast.id),
+					statesAt(sourceTrack.characterId, cast.time, cast.id),
 					'onField'
 				);
 				for (const selfGroup of selfEffectsFor(cast.label, cast.abilityId)) {
@@ -2547,7 +2566,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const filterCtx = hitFilterCtx(hit);
 					const gate = gateFor(
 						selfCtxBlock,
-						stateIndex.at(sourceTrack.characterId, hit.time),
+						statesAt(sourceTrack.characterId, hit.time),
 						'onField'
 					);
 					const barEffects = dedupByStat(
@@ -2718,7 +2737,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							continue;
 						const gate = gateFor(
 							receivedCtxOf(char.id),
-							stateIndex.at(holderId, hit.time),
+							statesAt(holderId, hit.time),
 							onFieldAt(hit.time) === holderId ? 'onField' : 'offField'
 						);
 						const ownStacks = hit.characterId === holderId ? hit.stacks : undefined;
@@ -2924,8 +2943,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 	}
 
-	return clipToHolderStates(out, windows);
+	return clipToHolderStates(out, windows, polestarFieldSpans(reactionEvents));
 }
+
+/** The clip's key for `whilePolestarField`; no `State` member is spelled so. */
+const POLESTAR_BOUND = '#polestarField';
 
 /**
  * ⚓⚓ `whileState` — THE BUFF EXISTS ONLY WHILE ITS HOLDER IS IN A STATE
@@ -2950,12 +2972,21 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
  * emission ORDER and nothing else, so a rotation with no bound effect returns
  * the very array it was handed.
  */
-function clipToHolderStates(out: BuffWindow[], windows: readonly TimelineWindow[]): BuffWindow[] {
-	const boundStateOf = (e: Effect): string | undefined => (e as { whileState?: string }).whileState;
+function clipToHolderStates(
+	out: BuffWindow[],
+	windows: readonly TimelineWindow[],
+	fieldSpans: readonly { start: number; end: number }[]
+): BuffWindow[] {
+	const boundStateOf = (e: Effect): string | undefined => {
+		const bound = e as { whileState?: string; whilePolestarField?: boolean };
+		return bound.whilePolestarField ? POLESTAR_BOUND : bound.whileState;
+	};
 	if (!out.some((w) => w.effects.some((e) => boundStateOf(e) !== undefined))) return out;
 
 	const spanCache = new Map<string, { start: number; end: number }[]>();
-	const spansOf = (holderId: string, state: string): { start: number; end: number }[] => {
+	const spansOf = (holderId: string, state: string): readonly { start: number; end: number }[] => {
+		// ⚓ A field has no holder: everyone's bound buff meets the same spans.
+		if (state === POLESTAR_BOUND) return fieldSpans;
 		const key = `${holderId}::${state}`;
 		let spans = spanCache.get(key);
 		if (!spans) {
