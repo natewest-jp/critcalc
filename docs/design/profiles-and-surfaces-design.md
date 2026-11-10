@@ -93,7 +93,7 @@ This replaces today's two layers and the `synced` flag (lineups design §9.5, §
 - ⚓ **Several teams may hold the same four characters** (Nate 2026-11-10; ↻ it was one team per set). A rotation or a lineup's team links to one team and keeps that link through a new slot order; replacing a member ends it. With no link, the work matches by its four, and several matches wait for a pick on the Planner's bench. The member ORDER is stored for display (§12). Record: `docs/rounds/duplicate-teams-2026-11-10.md`.
 - ⚓ **Teams are curated, never filed into.** Teams is the place to build presets and **start new work from them**:
   - **Plan a rotation** → a new Planner rotation with the four names.
-  - **Add to a lineup** → onto the open Builder board's selected team (today's team picker, §10.2 of the lineups design).
+  - **New lineup** → a new lineup holding the team. ↻ Filling a row of an existing lineup lives on the Builder, in the Teams control at the row's right (Nate 2026-11-10; `docs/rounds/builder-fill-from-teams-2026-11-10.md`).
 - A team card links to its work without containing it: **"4 rotations · 2 lineups"**, each a link into Rotations or Lineups filtered to that team.
 - A team carries its members, its name, ↻ **each member's loadout** (2026-10-24, §2.4: inherited by the team's rotations) and ⏭ maybe notes. It does **not** carry constellations: those come from the roster or the document (§2.4).
 - **Creating a team from the other direction:** a rotation whose four characters are not a saved team simply has no team. The Planner's bench offers **Save as team**.
