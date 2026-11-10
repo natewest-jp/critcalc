@@ -38,7 +38,46 @@
 			"_curatorNotes": [
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A `C` token draws a bare charged-attack swing and NO summon-lane row. Fagio is a persistent mech that keeps firing — the summon lane with its tick marks is exactly where a Sandrone player looks after a Charged Attack, and it is empty. The 'Decoding Power' half is trimmed: a resource meter has no place on the timeline at all, so its absence misleads nobody. Category: expected-but-absent.",
 				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0). The 2026-08-19 note above removed it as 'no pixel' while categorising it expected-but-absent — the category the name-the-pixel rule KEEPS. The pixel is the empty summon lane after a `C`. The beam cadence is still unstated in every source (no gcsim, no wiki interval), so Fagio stays unauthored."
-			]
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 53,
+						"hit": 24,
+						"N": 30,
+						"W": 38
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 46,
+						"hit": 25,
+						"N": 31
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 87,
+						"hit": 49,
+						"N": 69,
+						"W": 79
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 64,
+				"N": 46,
+				"C": 72,
+				"E": 44,
+				"Q": 44,
+				"D": 44,
+				"J": 44,
+				"W": 60,
+				"swap": 45
+			}
 		},
 		{
 			"id": "sandrone__skill__formule_phenomenale_differential_analysis",
@@ -53,6 +92,25 @@
 			"activeDuration": 6,
 			"_curatorNotes": [
 				"activeDuration 6 (2026-09-15, essential-characters T0): the kit text states the hovermech ride lasts 6s ('boards the Tea Party Tactical Assault Hovermech and hovers forward for 6s'), and the E had drawn as a bare instant. `activeDuration`, not `behavior: stance` — a stance would open `inStance` and claim a mode her normals and conditions read, which no source describes; the window is the only thing stated. With a 4s cooldown the bars overlap, which is the kit. No gcsim source (checked 2026-09-15), so no frames, no application[] and no Prismatic Resonance Cannon cadence: the two Prism Shots are a count with no timing."
+			],
+			"frames": {
+				"anim": 46,
+				"N": 10,
+				"Q": 6,
+				"D": 26,
+				"swap": 27
+			},
+			"application": [
+				{
+					"frame": 34,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 34,
+					"element": "cryo",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -66,7 +124,36 @@
 			"effects": [],
 			"description": "In line with established ladylike behavior, Sandrone summons a large number of Prismatic Resonance Cannons for a frontal bombardment before firing on her foes with a Convective Inhibition Ray, dealing AoE Cryo DMG.\n**Radiance: Stellar Glimmer**: The Convective Inhibition Ray instead deals AoE Cryo DMG that is considered the corresponding Stellar Glimmer reaction DMG.",
 			"behavior": "instant",
-			"nothingToModel": true
+			"nothingToModel": true,
+			"frames": {
+				"anim": 128,
+				"N": 101,
+				"E": 100,
+				"D": 103,
+				"J": 103,
+				"W": 105,
+				"swap": 102
+			},
+			"application": [
+				{
+					"frame": 123,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 135,
+					"element": "cryo"
+				},
+				{
+					"frame": 147,
+					"element": "cryo"
+				},
+				{
+					"frame": 177,
+					"element": "cryo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -263,7 +350,8 @@
 		"Values re-verified against the live Fandom pages 2026-07-29: E CD 4s, Q 15s / 60 energy, A4 EM conversion (8 EM per 100 ATK, max 160), C1 +30%, C2 40%/+20% max 3, C4 125% ATK / 4s, C6 100%/80% ATK and +20% elevation — all unchanged from the pre-release authoring. No corrections were needed. Talent scaling in docs/curation/talents/sandrone.json also matches the wiki's Attribute Scaling tables (spot-checked skill and burst).",
 		"Fagio (summoned by Charged Attack) 'periodically fires condensed beams' but no official firing interval is stated (a secondary guide guessed ~1/s; unverified), so no summon/summonTick is authored — never fake cadence. Fagio is an on-field-driven carry mechanism (Decoding Power decays 300% faster while Sandrone is off-field), not an autonomous off-field summon, so it grants no off-field-DMG capability.",
 		"Still unauthored after the Stellar pass: C1's +30% Stellar-Conduct DMG (Reaction Bonus bucket — no primitive), C2/C4/C6 damage magnitudes, A1's Decoding-Power amplifiers, and the Radiance: Stellar-Conduct state itself (no field-presence primitive). Each carries a caveat on its own node. No heal, shield, cleanse, or grouping in the kit (external healers/shielders required per every source).",
-		"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family."
+		"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family.",
+		"FRAMES PASS 2026-11-10 (gcsim #3269, v2.50.0): FrameMaps and application[] written by the migration scripts from gcsim b107b5dc5. CD/energy agree with the sidecar and kit text (E 4s, Q 15s / 60). chargeFrames is the SHORTEST Charged Attack gcsim allows (anim 64 = 25 windup + 18 first tick + 20 end + 1, with no hold time): the real CA is held for as long as the player likes, and gcsim's held length is decided at runtime by its beams/frames params, so the dumper reads only that floor. Fagio's sweeping fire, beams, and Decoding Power stay unmodelled (see the normal's caveat). In Radiance the E's second Prism Shot and the Q's Ray are authored with Durability 0, so they apply nothing then; application[] lists the nominal Cryo. gcsim marks its C4 (15f) and C6 (3f) hitmarks TODO, and neither is authored here. The earlier notes saying no gcsim source exists describe the data before this pass."
 	],
 	"release": "6.7"
 }

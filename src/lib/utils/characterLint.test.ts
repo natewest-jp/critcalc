@@ -2236,7 +2236,7 @@ const FRAMELESS_EXEMPT = new Set([
 	// Illuga and Kachina left 2026-09-15: frames from UNMERGED gcsim PRs
 	// (#2677 / #2697), provenance in their notes; re-run the writers on merge.
 	'lohen',
-	'sandrone',
+	// Sandrone left 2026-11-10 — gcsim main shipped her (#3269).
 	// Zibai left 2026-10-04 — gcsim main shipped her (#3093).
 	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for Alyosha — not on
 	// origin/main, not in any open PR, and a repo-wide PR search across all

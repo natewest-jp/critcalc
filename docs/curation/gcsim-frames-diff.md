@@ -8,7 +8,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/rounds/gauge-ro
 ## Coverage
 
 - characters: **130** authored · **121** with a gcsim source
-- FrameMaps: **1237** authored · **1106** matching gcsim exactly · **45** disagreeing · **86** uncovered
+- FrameMaps: **1243** authored · **1112** matching gcsim exactly · **45** disagreeing · **86** uncovered
 - skill/burst application schedules observed: **324** · unobserved: **21**
 - summon tick streams cross-checked: **67** · drifting from gcsim's instants: **3**
 - hits carrying a measured gcsim ICD cadence: **3418** of **3421**
@@ -25,20 +25,20 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 449 / 458 | 10f |
-| E/Q → C | 350 / 359 | 8f |
-| E/Q → W | 345 / 353 | 9f |
-| E/Q → Q | 196 / 201 | 2f |
-| E/Q → E | 155 / 160 | 2f |
+| E/Q → P | 452 / 461 | 11f |
+| E/Q → C | 352 / 361 | 8f |
+| E/Q → W | 346 / 354 | 9f |
+| E/Q → Q | 197 / 202 | 2f |
+| E/Q → E | 156 / 161 | 3f |
 | E/Q → N | 153 / 154 | 3f |
-| E/Q → J | 116 / 117 | 14f |
+| E/Q → J | 117 / 118 | 14f |
 | E/Q → D | 63 / 64 | 2f |
 | normal → P | 34 / 37 | 24f |
 | normal → W | 30 / 33 | 23f |
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **454** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **457** E/Q (median 11f).
 
 ## 2. FrameMaps that disagree (45)
 
@@ -553,7 +553,11 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**320** authored casts replayed · **295** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **4** on a named counter (§4d)
+**322** authored casts replayed · **296** agree hit for hit · **1** ⛔ gate · **21** ⚠️ list · **4** on a named counter (§4d)
+
+| character | ability | planner applies | gcsim applies | disagrees at |
+| --- | --- | --- | --- | --- |
+| sandrone | `sandrone__skill__formule_phenomenale_differential_analysis` | +34 | +34 +34 | +34 missing |
 
 <details><summary>⚠️ list rows (21)</summary>
 
