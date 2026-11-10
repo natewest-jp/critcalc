@@ -63,13 +63,12 @@ Verify these kits genuinely offer nothing team-facing.
 - **chasca** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (6)
+## Uncurated stubs (5)
 
 Excluded from capability trust; shown honestly in the UI.
 
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **mitya** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **valeriy** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **vesna** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **vodyanitsa** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
