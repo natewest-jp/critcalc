@@ -1,11 +1,11 @@
 {
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
-		"audited": "5dacbb4f0",
-		"seenUpstream": "5dacbb4f0",
-		"date": "2026-11-09",
-		"tag": "v2.49.7",
-		"note": "no new upstream commits since 5dacbb4f0 (2026-11-06)"
+		"audited": "b107b5dc5",
+		"seenUpstream": "b107b5dc5",
+		"date": "2026-11-10",
+		"tag": "v2.50.0",
+		"note": "Sandrone added (#3269); frames round picked 2026-11-10"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-09T00:00:00Z"
+		"lastSeen": "2026-11-10T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -25,10 +25,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "dcd68d73"
+		"lastSwept": "fe078fc0"
 	},
 	"roles": {
-		"audited": "2026-11-09",
+		"audited": "2026-11-10",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
