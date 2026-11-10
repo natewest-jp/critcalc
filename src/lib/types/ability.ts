@@ -2624,6 +2624,8 @@ export type NormalAbility = AbilityCommon & {
 	chargeSpin?: ChargeSpin;
 	/** The CHANNELLED Charged Attack and its charge-up — see `ChargeChannel`. */
 	chargeChannel?: ChargeChannel;
+	/** The HELD Charged Attack and its heat gauge — see `ChargeHold`. */
+	chargeHold?: ChargeHold;
 	/** What this form's plunge does to a timed Blessing — see
 	 *  `TimedBlessingSpec`. */
 	plungeBlessing?: PlungeBlessing;
@@ -3181,6 +3183,43 @@ export type ElementalApplication = {
  * The beam's hits run on the standard ICD (gcsim `ICDTagExtraAttack`) — ⚠️ not
  * the catalyst Charged Attack rule, which is gcsim's short attack.
  */
+/**
+ * ⚓ A CHARGED ATTACK HELD AGAINST A HEAT GAUGE (Sandrone's Fagio, 2026-11-10;
+ * gcsim `sandrone/charge.go`; the logic is `sim/chargeHold.ts`). A bare `C`
+ * holds to the last beam before the gauge caps (⚓ Nate), and `C ~Xs` holds for
+ * that long instead, past the cap if asked, as the game allows.
+ *
+ * All frames, and `heat` values ×10 as gcsim keeps them. `beamsNeed[n]` is the
+ * room under the cap that n beams take; `boost` is the constellation that
+ * divides the gain and raises the beam count.
+ */
+export type ChargeHold = {
+	windup: number;
+	firstTick: number;
+	endLag: FrameMap;
+	maxHold: number;
+	sweepGaps: number[];
+	sweepIcd: { timer: number; hits: number };
+	beamFirst: number;
+	beamEvery: number;
+	beams: number;
+	overdrive: { firstTick: number; every: number; travel: number };
+	heat: {
+		max: number;
+		overheatDelay: number;
+		exitBelow: number;
+		perTick: number;
+		tickEvery: number;
+		perBeam: number;
+		beamsNeed: number[];
+		cool: number;
+		coolEvery: number;
+		offFieldMultiplier: number;
+		skillVent: { atCast: number; ticks: number; every: number; amount: number };
+		boost: { level: number; gainDivisor: number; beams: number };
+	};
+};
+
 export type ChargeChannel = {
 	windup: number;
 	absorbAt: number;

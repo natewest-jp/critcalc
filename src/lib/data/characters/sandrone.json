@@ -77,6 +77,61 @@
 				"J": 44,
 				"W": 60,
 				"swap": 45
+			},
+			"chargeHold": {
+				"windup": 25,
+				"firstTick": 18,
+				"endLag": {
+					"anim": 20,
+					"N": 2,
+					"C": 28,
+					"E": 0,
+					"Q": 0,
+					"D": 0,
+					"J": 0,
+					"W": 16,
+					"swap": 1
+				},
+				"maxHold": 1200,
+				"sweepGaps": [
+					24, 18, 25, 15, 18, 24, 18, 18, 22, 18, 18, 24, 18, 18, 24, 18, 18, 24, 18, 18, 24, 18,
+					18, 24
+				],
+				"sweepIcd": {
+					"timer": 84,
+					"hits": 2
+				},
+				"beamFirst": 60,
+				"beamEvery": 60,
+				"beams": 3,
+				"overdrive": {
+					"firstTick": 21,
+					"every": 24,
+					"travel": 10
+				},
+				"heat": {
+					"max": 1000,
+					"overheatDelay": 19,
+					"exitBelow": 500,
+					"perTick": 32,
+					"tickEvery": 12,
+					"perBeam": 170,
+					"beamsNeed": [0, 128, 458, 788, 1118, 1448, 1778],
+					"cool": 25,
+					"coolEvery": 30,
+					"offFieldMultiplier": 3,
+					"skillVent": {
+						"atCast": 700,
+						"ticks": 3,
+						"every": 6,
+						"amount": 100
+					},
+					"boost": {
+						"level": 1,
+						"gainDivisor": 2,
+						"beams": 6
+					}
+				}
 			}
 		},
 		{
@@ -351,7 +406,8 @@
 		"Fagio (summoned by Charged Attack) 'periodically fires condensed beams' but no official firing interval is stated (a secondary guide guessed ~1/s; unverified), so no summon/summonTick is authored — never fake cadence. Fagio is an on-field-driven carry mechanism (Decoding Power decays 300% faster while Sandrone is off-field), not an autonomous off-field summon, so it grants no off-field-DMG capability.",
 		"Still unauthored after the Stellar pass: C1's +30% Stellar-Conduct DMG (Reaction Bonus bucket — no primitive), C2/C4/C6 damage magnitudes, A1's Decoding-Power amplifiers, and the Radiance: Stellar-Conduct state itself (no field-presence primitive). Each carries a caveat on its own node. No heal, shield, cleanse, or grouping in the kit (external healers/shielders required per every source).",
 		"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family.",
-		"FRAMES PASS 2026-11-10 (gcsim #3269, v2.50.0): FrameMaps and application[] written by the migration scripts from gcsim b107b5dc5. CD/energy agree with the sidecar and kit text (E 4s, Q 15s / 60). chargeFrames is the SHORTEST Charged Attack gcsim allows (anim 64 = 25 windup + 18 first tick + 20 end + 1, with no hold time): the real CA is held for as long as the player likes, and gcsim's held length is decided at runtime by its beams/frames params, so the dumper reads only that floor. Fagio's sweeping fire, beams, and Decoding Power stay unmodelled (see the normal's caveat). In Radiance the E's second Prism Shot and the Q's Ray are authored with Durability 0, so they apply nothing then; application[] lists the nominal Cryo. gcsim marks its C4 (15f) and C6 (3f) hitmarks TODO, and neither is authored here. The earlier notes saying no gcsim source exists describe the data before this pass."
+		"FRAMES PASS 2026-11-10 (gcsim #3269, v2.50.0): FrameMaps and application[] written by the migration scripts from gcsim b107b5dc5. CD/energy agree with the sidecar and kit text (E 4s, Q 15s / 60). chargeFrames is the SHORTEST Charged Attack gcsim allows (anim 64 = 25 windup + 18 first tick + 20 end + 1, with no hold time): the real CA is held for as long as the player likes, and gcsim's held length is decided at runtime by its beams/frames params, so the dumper reads only that floor. Fagio's sweeping fire, beams, and Decoding Power stay unmodelled (see the normal's caveat). In Radiance the E's second Prism Shot and the Q's Ray are authored with Durability 0, so they apply nothing then; application[] lists the nominal Cryo. gcsim marks its C4 (15f) and C6 (3f) hitmarks TODO, and neither is authored here. The earlier notes saying no gcsim source exists describe the data before this pass.",
+		"CHARGE HOLD 2026-11-10: `chargeHold` is gcsim's charge.go, checked against its debug log at v2.50.0. A bare C runs to the last beam before the gauge caps (gcsim's default beams, except it errors when too hot and we fire what fits); `C ~Xs` is gcsim's frames param. chargeFrames stays for the shortest press the frames audit reads. In Radiance the beams carry Durability 0 in gcsim; they are drawn nominal, as the E's second shot and the Q's Ray are."
 	],
 	"release": "6.7"
 }
