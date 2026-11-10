@@ -52,12 +52,22 @@
 		</article>
 		<article class="entry">
 			<header class="entry-head">
-				<h3>Sandrone’s frames</h3>
+				<h3>Sandrone’s frames and Fagio’s heat</h3>
 				<time class="entry-date" datetime="2026-11-10">November 10</time>
 			</header>
 			<p>
-				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. Fagio’s fire and beams
-				aren’t drawn yet.
+				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. A Charged Attack holds
+				until just before Fagio overheats, and C ~Xs sets your own length.
+			</p>
+		</article>
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Fill a lineup row from Teams</h3>
+				<time class="entry-date" datetime="2026-11-10">November 10</time>
+			</header>
+			<p>
+				Any saved team can now go straight into a lineup row, from the Teams control at the row’s
+				right.
 			</p>
 		</article>
 		<article class="entry">
