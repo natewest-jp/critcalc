@@ -58,7 +58,7 @@
 			<code>[N2 D]x3</code> repeats, <code>(E)</code> marks an optional action that isn’t drawn on
 			the timeline, and <code>E/Q</code> draws the first of two alternatives.
 		</li>
-		<li>
+		<li id="time-token">
 			critcalc adds a time token of its own, written <code>~Xs</code>. <code>~1.5s</code> adds 1.5
 			seconds of waiting on the active character’s row. It can also end an action early:
 			<code>Mizuki E</code> draws her Dreamdrifter state for its full ten seconds, while
