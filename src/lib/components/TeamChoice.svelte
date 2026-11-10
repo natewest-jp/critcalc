@@ -33,7 +33,7 @@
 
 <span class="tc-faces" aria-hidden="true" style:z-index={STACK_TOP - order}>
 	{#each team.slots as id, i (i)}
-		<span class="tc-face" style:--spt-ring={ring(id)} style:height="{FACE}px"
+		<span class="tc-face" style:--tc-element={ring(id)} style:height="{FACE}px"
 			><SidePortrait {id} size={FACE} /></span
 		>
 	{/each}
@@ -50,11 +50,23 @@
 		--tc-overlap: 6px;
 	}
 	/* As tall as the disc: the portrait's box stands on its bottom, so the
-	   overhang spills upward and adds nothing to the row. */
+	   overhang spills upward and adds nothing to the row. The ring rests dim
+	   and takes its full color on the row being aimed at. */
 	.tc-face {
 		flex: none;
 		display: flex;
 		align-items: flex-end;
+		/* 🎛️ How much of the element color a ring shows at rest. */
+		--tc-rest: 45%;
+		--spt-ring: color-mix(in srgb, var(--tc-element) var(--tc-rest), transparent);
+	}
+	:global(.band-menu-item:focus-visible) .tc-face {
+		--spt-ring: var(--tc-element);
+	}
+	@media (hover: hover) {
+		:global(.band-menu-item:hover) .tc-face {
+			--spt-ring: var(--tc-element);
+		}
 	}
 	.tc-face + .tc-face {
 		margin-left: calc(-1 * var(--tc-overlap));
