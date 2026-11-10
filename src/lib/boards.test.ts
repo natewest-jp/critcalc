@@ -232,3 +232,16 @@ describe('a board team linked to a saved team (⚓ Nate 2026-11-10)', () => {
 		]);
 	});
 });
+
+describe('filling a row from a saved team (⚓ Nate 2026-11-10)', () => {
+	it('seats the team, links it, and drops the old pin', () => {
+		boards.board = makeBoard('Fill', 'custom');
+		const id = boards.board.teams[0].id;
+		boards.pin(boards.board.id, id, 'old');
+		boards.setTeam(boards.board.id, id, ['bennett', 'xiangling', 'xingqiu', 'sucrose'], 'saved');
+		const row = boards.board.teams[0];
+		expect(row.slots).toEqual(['bennett', 'xiangling', 'xingqiu', 'sucrose']);
+		expect(row.teamId).toBe('saved');
+		expect(row.pinnedRotationId).toBeUndefined();
+	});
+});

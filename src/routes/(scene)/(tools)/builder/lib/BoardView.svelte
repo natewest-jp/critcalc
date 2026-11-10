@@ -25,7 +25,9 @@
 	 * heavy right end, the key to the frames its members wear in the
 	 * Characters grid.
 	 */
+	import type { TeamRecord } from '$lib/storage/records';
 	import Mark from '$lib/components/Mark.svelte';
+	import TeamChoice from '$lib/components/TeamChoice.svelte';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
@@ -89,6 +91,7 @@
 		onRemoveTeam,
 		onOpenInPlanner,
 		onPin,
+		onFillFromTeam,
 		bank,
 		previewId = null,
 		filteredFacets,
@@ -118,6 +121,8 @@
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
+		/** A saved team was chosen for this row (Teams, at the row's right). */
+		onFillFromTeam: (teamId: string, saved: TeamRecord) => void;
 		/** The saved rotations a team can pin: the profile's documents. */
 		bank: readonly SavedNotation[];
 		/** The card the pointer rests on — the SELECTED team's fingerprint
@@ -455,6 +460,9 @@
 	{@const name = isErrand ? (errand?.label ?? '') : teamLabel(board, t)}
 	{@const swapSlot = swapping?.teamId === team.id ? swapping.slot : null}
 	{@const plate = filled && !isErrand}
+	{@const canFill = !isErrand && rotationTabs.teams.length > 0}
+	{@const showAct = plate || canFill}
+	{@const fillLabel = `Fill ${name} from Teams`}
 	{@const planTitle = pin
 		? `Open “${pin.name}” in the Rotation Planner`
 		: 'Open this team in the Rotation Planner'}
@@ -509,13 +517,37 @@
 			</button>
 		{/each}
 	{/snippet}
+	{#snippet fillItems(close: () => void)}
+		{#each rotationTabs.teams as saved (saved.id)}
+			<button
+				class="band-menu-item"
+				role="menuitemradio"
+				aria-checked={team.teamId === saved.id}
+				onclick={() => {
+					close();
+					onFillFromTeam(team.id, saved);
+				}}><TeamChoice team={saved} checked={team.teamId === saved.id} /></button
+			>
+		{/each}
+	{/snippet}
 	{#snippet act()}
 		<!-- THE TEAM'S WAY INTO THE PLANNER, at the lineup's right (⚓ Nate
 			     2026-10-20): "Planner →" over the pin, the two as tall as the
 			     lineup's frame — or the vertical plate, where the width is short
 			     (the pin then sits beside the chips). The pin appears once there
 			     is a saved rotation to pin, and is GOLD while one is pinned. -->
-		{#if phone && !phoneStack}
+		{#if !filled}
+			<span class="bv-fill" class:bv-fill--vert={phone && !phoneStack}>
+				<BandMenu
+					label="Teams"
+					mark="teams"
+					size="sm"
+					align="end"
+					ariaLabel={fillLabel}
+					items={fillItems}
+				/>
+			</span>
+		{:else if phone && !phoneStack}
 			<button
 				class="btn bv-vplanner"
 				onclick={() => onOpenInPlanner(team)}
@@ -523,26 +555,52 @@
 				aria-label={planTitle}
 				><span class="bv-vword">Planner</span><Mark name="forwardSlim" size={12} /></button
 			>
-			{#if rotations.length > 0}
-				<span class="bv-pin bv-pin--beside" class:bv-pin--on={!!pin}>
-					<BandMenu
-						compact
-						mark="pin"
-						size="sm"
-						align="end"
-						ariaLabel={pinLabel}
-						items={pinItems}
-					/>
+			{#if rotations.length > 0 || canFill}
+				<span class="bv-beside">
+					{#if canFill}
+						<BandMenu
+							compact
+							mark="teams"
+							size="sm"
+							align="end"
+							ariaLabel={fillLabel}
+							items={fillItems}
+						/>
+					{/if}
+					{#if rotations.length > 0}
+						<span class="bv-pin" class:bv-pin--on={!!pin}>
+							<BandMenu
+								compact
+								mark="pin"
+								size="sm"
+								align="end"
+								ariaLabel={pinLabel}
+								items={pinItems}
+							/>
+						</span>
+					{/if}
 				</span>
 			{/if}
 		{:else}
 			<div class="bv-act">
-				<button
-					class="btn btn--sm bv-planner"
-					onclick={() => onOpenInPlanner(team)}
-					title={planTitle}
-					aria-label={planTitle}>Planner <Mark name="forward" size={12} /></button
-				>
+				<div class="bv-act-top">
+					<button
+						class="btn btn--sm bv-planner"
+						onclick={() => onOpenInPlanner(team)}
+						title={planTitle}
+						aria-label={planTitle}>Planner <Mark name="forward" size={12} /></button
+					>
+					{#if canFill}
+						<BandMenu
+							compact
+							mark="teams"
+							size="sm"
+							align="end"
+							ariaLabel={fillLabel}
+							items={fillItems}
+						/>
+					{/if}
+				</div>
 				{#if rotations.length > 0}
 					<span class="bv-pin" class:bv-pin--on={!!pin}>
 						<BandMenu
@@ -705,13 +763,13 @@
 			<div
 				class="bv-grid"
 				class:bv-grid--top={!phone}
-				class:bv-grid--act={plate && (!phone || phoneStack)}
-				class:bv-grid--vert={plate && phone && !phoneStack}
+				class:bv-grid--act={showAct && (!phone || phoneStack)}
+				class:bv-grid--vert={showAct && phone && !phoneStack}
 				class:bv-grid--tight={tight}
 			>
 				{#if !phone && field?.checks.length}<div class="bv-top">{@render checks()}</div>{/if}
 				{@render slots()}
-				{#if plate}{@render act()}{/if}
+				{#if showAct}{@render act()}{/if}
 				{#if filled}
 					<!-- What the four unlock together: resonances and factions, one to
 						     four chips (two of each is the most a team makes). -->
@@ -1130,18 +1188,62 @@
 		gap: 4px;
 		min-width: 0;
 	}
-	.bv-act > .bv-planner,
+	/* The first line: "Planner →", and Teams' icon beside it. */
+	.bv-act-top {
+		display: flex;
+		gap: 4px;
+		min-width: 0;
+		min-height: 0;
+	}
+	.bv-act-top > .bv-planner {
+		flex: 1;
+		min-width: 0;
+		height: auto;
+		min-height: 0;
+		justify-content: center;
+		padding-block: 0;
+		font-size: var(--fs-xs);
+	}
+	.bv-act-top :global(.band-menu-trigger) {
+		flex: none;
+		height: auto;
+		min-height: 0;
+		justify-content: center;
+	}
+	/* An empty row's one way to fill it: the stack's whole height. */
+	.bv-fill {
+		grid-area: act;
+		align-self: end;
+		height: calc(var(--portrait) + 12px);
+		margin-bottom: -6px;
+		display: flex;
+		min-width: 0;
+	}
+	.bv-fill :global(.band-menu-trigger) {
+		width: 100%;
+		height: 100%;
+		justify-content: center;
+	}
+	.bv-fill--vert :global(.band-menu-word) {
+		display: none;
+	}
+	.bv-fill--vert {
+		justify-self: end;
+		width: var(--vplanner-w);
+	}
+	.bv-beside {
+		grid-area: pin;
+		align-self: center;
+		justify-self: end;
+		display: flex;
+		gap: 4px;
+	}
 	.bv-act > .bv-pin,
 	.bv-act > .bv-pin > :global(.band-menu-trigger) {
 		width: 100%;
 		height: auto;
 		min-height: 0;
 		min-width: 0;
-	}
-	.bv-act > .bv-planner {
-		justify-content: center;
-		padding-block: 0;
-		font-size: var(--fs-xs);
 	}
 	.bv-act > .bv-pin {
 		display: flex;
@@ -1173,14 +1275,6 @@
 	   is chosen) — touch has no tooltip to say so. */
 	.bv-pin--on :global(.band-menu-trigger > .mark:first-child) {
 		color: var(--accent);
-	}
-	.bv-pin--beside {
-		grid-area: pin;
-		align-self: center;
-		justify-self: end;
-		width: var(--vplanner-w);
-		display: flex;
-		justify-content: center;
 	}
 
 	/* The boss: a circle-cut avatar on the members' ring, the game's magnifier
