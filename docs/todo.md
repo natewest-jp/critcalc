@@ -8,16 +8,15 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-Nothing picked yet.
-
-## ⏭ Next
-
-- **Duplicate teams: let two teams share the same four (⚓ Nate 2026-10-27; moved up 2026-11-09).** The one-team-per-set rule (`docs/design/profiles-and-surfaces-design.md` §3; kept 10-26 in `docs/rounds/teams-surface-round.md` because a rotation finds its team by its four) is being kept alive by code that grows: every place that LOOKS UP a team by set assumes one answer. Prerequisite per that ruling: a rotation → team LINK (an optional `teamId` on the rotation record; absent = today's set match, so no migration and the flip locks nothing in). ⚠️ Do it before more set-keyed consumers pile up.
-  - **Questions for Nate:** (1) a linked rotation has a member swapped: drop the link, or keep it and stop inheriting (as the 10-24 loadouts ruling 5 does for a team whose members change)? (2) typed four match two teams and there's no link: no team until chosen, or a picker on the bench? (3) do lineup board teams link to a team too, or stay sets? (4) a team card's "N rotations": linked only, or linked + unlinked set matches?
+- **Sandrone's frames (⚓ Nate 2026-11-10).** gcsim added Sandrone (#3269, v2.50.0), the first source for the kit: FrameMaps, `application[]`, the Burst's Bombardment, and out of `FRAMELESS_EXEMPT`. gcsim's own C4 and C6 hitmarks are marked TODO there.
+- **Duplicate teams: let two teams share the same four (⚓ Nate 2026-10-27; to Now 2026-11-10).** The one-team-per-set rule (`docs/design/profiles-and-surfaces-design.md` §3; kept 10-26 in `docs/rounds/teams-surface-round.md` because a rotation finds its team by its four) is being kept alive by code that grows: every place that LOOKS UP a team by set assumes one answer. Prerequisite per that ruling: a rotation → team LINK (an optional `teamId` on the rotation record; absent = today's set match, so no migration and the flip locks nothing in). ⚠️ Do it before more set-keyed consumers pile up.
+  - **Rulings (⚓ Nate 2026-11-10):** (1) a character on a linked rotation is replaced by a different one: the rotation unlinks from the team; a different slot order keeps the link. (2) Typed four match two teams and there's no link: a picker on the bench. (3) Lineup board teams link to a team too. (4) A team card's "N rotations" counts linked rotations plus unlinked set matches. (5) Save as team (bench) and the Builder's Save team, when the four already exist as a team: offer the existing one, with an option to make a second.
   - **Set-keyed consumers to convert (new layout):** `rotationTabs.team` (`teamOfSlots` → loadout inheritance, `docs/rounds/team-loadouts-round.md`) · `TeamsPlace` work counts + `menu.teamFilter` key · `LibraryPlace` team filter and row team name · `TeamDetail` clash line ("These four are already a team").
   - **Refusals to delete when the rule goes:** `saveTeam` returning the existing team, `updateTeam` refusing an edit into another set, the migration's dedupe (`migrate.ts` ~217), and the Trash restore refusal (`#revive`/`untrash`, added 2026-10-27 on `fix/preflip-small`, `2ef62a56`, with its toast).
   - Also set-keyed, and live: `boards.svelte.ts` `rotationsForTeam`/`pinnedRotation` (a board team's rotations and its pin's validity, matched by set over `storageSession.savedRotations()`).
-  - Also decide: what Save as team (bench) and the Builder's Save team do when the four already exist as a team: a second team, or offer the existing one.
+
+## ⏭ Next
+
 - **Imaginarium Theater seasons on the site (⚓ Nate 2026-11-06: soon; moved up 2026-11-09).** Theater opens on the 1st of each month (`docs/library/game/release-calendar.md`), so the next natural target is 2026-12-01.
 - **Help additions** (three pieces):
   - **The Atlas's roles, explained (from the memory triage).** No user-facing text says the roles come from Imaginarium Theater and are a presence classification, not a ranking (only code comments: `capabilities/roles.ts`, `builder/lib/atlas.ts`). Copy is Nate's; propose it first.
