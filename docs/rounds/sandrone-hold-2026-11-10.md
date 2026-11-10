@@ -19,3 +19,4 @@ Each expected number in `chargeHold.test.ts` was read from gcsim's debug log at 
 - No heat readout, by Nate's ruling.
 - In Radiance gcsim's beams carry no gauge. They are drawn nominal here, like the E's second shot and the Q's Ray.
 - A1's Refined Tactics stay unmodelled.
+- C4's extra cannon and C6's Condensed Cluster Beam are not drawn. gcsim marks both hitmarks as TODO.
