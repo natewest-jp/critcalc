@@ -60,10 +60,28 @@
 		</li>
 		<li id="time-token">
 			critcalc adds a time token of its own, written <code>~Xs</code>. <code>~1.5s</code> adds 1.5
-			seconds of waiting on the active character’s row. It can also end an action early:
-			<code>Mizuki E</code> draws her Dreamdrifter state for its full ten seconds, while
-			<code>Mizuki E ~2s</code> ends it after two, so you can place her <code>Q</code> or a swap at that
-			moment.
+			seconds of waiting on the active character’s row. A few abilities take it as their length
+			instead:
+			<ul>
+				<li>
+					<strong>Mizuki’s Dreamdrifter and Chasca’s Spirit Reins, Shadow Hunt</strong> run their
+					full length unless <code>~Xs</code> is the last thing in that character’s turn.
+					<code>Mizuki E ~2s</code> ends Dreamdrifter after two seconds, so a swap can land at that moment.
+				</li>
+				<li>
+					<strong>Sandrone’s Charged Attack</strong> holds until just before Fagio overheats
+					(reaches maximum Decoding Power). <code>C ~1.5s</code> holds for 1.5 seconds instead, regardless
+					of the current Decoding Power level.
+				</li>
+				<li>
+					<strong>Sayu’s held Skill</strong> rolls for as long as you set with <code>hE ~2s</code>,
+					up to ten seconds.
+				</li>
+				<li>
+					<strong>Neuvillette’s Charged Attack</strong> runs the full beam. <code>C ~1s</code> ends it
+					early, at its last hit by then.
+				</li>
+			</ul>
 		</li>
 	</ul>
 	<p>
