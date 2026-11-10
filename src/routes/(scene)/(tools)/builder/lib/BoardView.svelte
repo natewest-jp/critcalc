@@ -518,7 +518,7 @@
 		{/each}
 	{/snippet}
 	{#snippet fillItems(close: () => void)}
-		{#each rotationTabs.teams as saved (saved.id)}
+		{#each rotationTabs.teams as saved, order (saved.id)}
 			<button
 				class="band-menu-item"
 				role="menuitemradio"
@@ -526,7 +526,7 @@
 				onclick={() => {
 					close();
 					onFillFromTeam(team.id, saved);
-				}}><TeamChoice team={saved} checked={team.teamId === saved.id} /></button
+				}}><TeamChoice team={saved} {order} checked={team.teamId === saved.id} /></button
 			>
 		{/each}
 	{/snippet}

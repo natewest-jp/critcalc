@@ -163,7 +163,8 @@
 		box-sizing: border-box;
 		border-radius: var(--r-round);
 		background: var(--surface-well);
-		border: 2px solid var(--line-strong);
+		/* `--spt-ring`: a host's own ring color (the team menus' element frames). */
+		border: 2px solid var(--spt-ring, var(--line-strong));
 		color: var(--muted);
 		display: grid;
 		place-items: center;
