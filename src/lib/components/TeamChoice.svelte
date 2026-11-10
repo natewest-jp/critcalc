@@ -59,6 +59,10 @@
 		/* 🎛️ How much of the element color a ring shows at rest. */
 		--tc-rest: 45%;
 		--spt-ring: color-mix(in srgb, var(--tc-element) var(--tc-rest), transparent);
+		--spt-ring-width: 1px;
+		/* 🎛️ The disc's element fill, the Roster's avatar recipe. */
+		--tc-fill: 28%;
+		--spt-fill: color-mix(in srgb, var(--tc-element) var(--tc-fill), var(--surface-well));
 	}
 	:global(.band-menu-item:focus-visible) .tc-face {
 		--spt-ring: var(--tc-element);
