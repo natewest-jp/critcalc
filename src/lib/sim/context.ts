@@ -345,6 +345,8 @@ export type SimContext = {
 	/** Every Stellar-Conduct instant so far, ascending — what
 	 *  `polestarFieldOpenAt` reads mid-parse. Appended by `emitReaction`. */
 	stellarConductTimes: number[];
+	/** Every Stellar Swirl instant so far, ascending (`stellarRadianceAt`). */
+	stellarSwirlTimes: number[];
 	/** Every Lunar-Crystallize instant so far, ascending — what
 	 *  `moondriftStandsAt` reads mid-parse for Lumi's strike sequence. Appended
 	 *  by `emitReaction`, like `stellarConductTimes`. */
@@ -574,6 +576,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		stellarConductTimes: [],
+		stellarSwirlTimes: [],
 		lunarCrystallizeTimes: [],
 		droplets: new Map(),
 		holdHeat: new Map(),

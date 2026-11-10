@@ -8,7 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Neuvillette: let `C ~Xs` shorten his Charged Attack (⚓ Nate 2026-11-10).** A bare `C` keeps running the full beam; a following `~Xs` ends it early, as Sandrone's hold and Sayu's do. gcsim's `ticks` param is the reference (`internal/characters/neuvillette/charge.go`), and `ChargeChannel` is the shape to extend.
+Nothing picked yet.
 
 ## ⏭ Next
 

@@ -134,7 +134,7 @@ import {
 	syncSourceLifetimeToStackState
 } from './stacks';
 import { dispatchOnCastExtensions } from './extensions';
-import { polestarFieldOpenAt } from './fields';
+import { polestarFieldOpenAt, stellarRadianceAt } from './fields';
 import { dispatchShieldEnds, registerShieldOnCast } from './shields';
 import { checkStackThresholds } from './thresholds';
 import { infusionAt, registerInfusionsOnCast } from './infusions';
@@ -755,6 +755,15 @@ export function runRotation(
 		// ⚓ A `~Xs` a HELD cast took as its length (`HeldCast`, Sayu): token index
 		// → the frames it spent, so the wait branch advances only the rest.
 		const heldTaken = new Map<number, number>();
+		/** A `~Xs` written right after the action at token `j`: its index and frames. */
+		const typedTimeAfter = (j: number): { index: number; frames: number } | null => {
+			let k = j + 1;
+			while (k < expandedTokens.length && isInert(expandedTokens[k])) k++;
+			const m = expandedTokens[k]?.kind === 'time' && expandedTokens[k].text.match(/^~([\d.]+)s/);
+			return m && isFinite(parseFloat(m[1]))
+				? { index: k, frames: framesOf(parseFloat(m[1])) }
+				: null;
+		};
 
 		// Unified E/Q cast pipeline. One sequence with small kind-branches; the
 		// shared step order is the Q handler's (the reference the 2026-07-05 bug
@@ -947,15 +956,12 @@ export function runRotation(
 				let padAt = j;
 				if (held) {
 					heldFor = held.max;
-					let k = j + 1;
-					while (k < expandedTokens.length && isInert(expandedTokens[k])) k++;
-					const m =
-						expandedTokens[k]?.kind === 'time' && expandedTokens[k].text.match(/^~([\d.]+)s/);
-					if (m && isFinite(parseFloat(m[1]))) {
-						heldFor = Math.min(framesOf(parseFloat(m[1])), held.max);
-						heldTaken.set(k, heldFor);
-						castNextKey = peekActionKey(lookahead, k, isBow);
-						padAt = k;
+					const typed = typedTimeAfter(j);
+					if (typed) {
+						heldFor = Math.min(typed.frames, held.max);
+						heldTaken.set(typed.index, heldFor);
+						castNextKey = peekActionKey(lookahead, typed.index, isBow);
+						padAt = typed.index;
 					}
 				}
 
@@ -2443,14 +2449,11 @@ export function runRotation(
 					const rolled = prev !== null && /^(E|Q|N\d*|s?C\d*|[hl]?P|A)$/.test(prev);
 					let hold: number | null = null;
 					let afterToken = j;
-					let k = j + 1;
-					while (k < expandedTokens.length && isInert(expandedTokens[k])) k++;
-					const typed =
-						expandedTokens[k]?.kind === 'time' && expandedTokens[k].text.match(/^~([\d.]+)s/);
-					if (typed && isFinite(parseFloat(typed[1]))) {
-						hold = Math.min(framesOf(parseFloat(typed[1])), h.maxHold);
-						heldTaken.set(k, hold);
-						afterToken = k;
+					const typed = typedTimeAfter(j);
+					if (typed) {
+						hold = Math.min(typed.frames, h.maxHold);
+						heldTaken.set(typed.index, hold);
+						afterToken = typed.index;
 					}
 					const plan = planHold(holdHeatState(), h, {
 						at: start,
@@ -2479,7 +2482,12 @@ export function runRotation(
 						abilityId: holdAbility()!.id,
 						element: char.element
 					});
-					const land = (at: number, icdKey: string, params: IcdParams): void =>
+					const land = (
+						at: number,
+						icdKey: string,
+						params: IcdParams,
+						gaugelessInRadiance = false
+					): void =>
 						clock.schedule(at, Band.LAND, () => {
 							const live = liveSegment === turn;
 							let icd = ctx.icdClocks.get(`${char.id}:${icdKey}`);
@@ -2487,7 +2495,12 @@ export function runRotation(
 								icd = createIcdClock();
 								ctx.icdClocks.set(`${char.id}:${icdKey}`, icd);
 							}
-							if (icdApplies(icd, at, params).applies)
+							// ⚓ In Radiance a beam carries no gauge (gcsim `toStellar`), so
+							// it applies nothing and takes no ICD count.
+							const noGauge =
+								gaugelessInRadiance &&
+								stellarRadianceAt(ctx.stellarConductTimes, ctx.stellarSwirlTimes, at);
+							if (!noGauge && icdApplies(icd, at, params).applies)
 								emitReactionsAtSwing(
 									ctx,
 									clock,
@@ -2516,7 +2529,7 @@ export function runRotation(
 							);
 						});
 					for (const at of [...plan.sweeps, ...plan.overdrive]) land(at, 'holdFire', h.sweepIcd);
-					for (const at of plan.beams) land(at, 'holdBeam', STANDARD_ICD_FRAMES);
+					for (const at of plan.beams) land(at, 'holdBeam', STANDARD_ICD_FRAMES, true);
 					clock.advance(plan.exit + 1 + lag);
 					humanPad('charged', afterToken);
 				} else if (/^C\d*$/.test(t) && channelAbility()) {
@@ -2528,6 +2541,16 @@ export function runRotation(
 					const ab = channelAbility()!;
 					const ch = ab.chargeChannel!;
 					const start = clock.now;
+					// ⚓ A `~Xs` right after it ends the beam early, at its last hit by
+					// then and never before the first (⚓ Nate; gcsim's `ticks` param).
+					// A bare `C` runs in full, and past the full beam the rest is a wait.
+					const typedBeam = typedTimeAfter(j);
+					const beamHits = typedBeam
+						? ch.hits.filter((h, n) => n === 0 || h <= typedBeam.frames)
+						: ch.hits;
+					const afterBeam = typedBeam?.index ?? j;
+					if (typedBeam)
+						heldTaken.set(typedBeam.index, Math.min(typedBeam.frames, ch.hits[ch.hits.length - 1]));
 					const element = resolveActionElement(
 						'charged',
 						t,
@@ -2551,13 +2574,13 @@ export function runRotation(
 						pool.filter((d) => !taken.includes(d))
 					);
 					const beamStart = absorbAt + ch.chargeUp[taken.length];
-					const beamEnd = beamStart + ch.hits[ch.hits.length - 1];
+					const beamEnd = beamStart + beamHits[beamHits.length - 1];
 					const lag = frameAt(
 						ch.endLag,
 						cancelKeyFor(
 							ctx.humanTiming,
 							'charged',
-							peekActionKey(lookahead, j, isBow),
+							peekActionKey(lookahead, afterBeam, isBow),
 							isBow,
 							chargedBuffers
 						)
@@ -2570,7 +2593,7 @@ export function runRotation(
 						abilityId: ab.id,
 						element
 					});
-					for (const h of ch.hits) {
+					for (const h of beamHits) {
 						const at = beamStart + h;
 						clock.schedule(at, Band.LAND, () => {
 							const live = liveSegment === turn;
@@ -2613,7 +2636,7 @@ export function runRotation(
 						});
 					}
 					clock.advance(beamEnd + lag);
-					humanPad('charged', j);
+					humanPad('charged', afterBeam);
 				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.

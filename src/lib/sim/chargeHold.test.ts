@@ -4,6 +4,9 @@ import type { CharacterData } from '$lib/types/character';
 import type { ChargeHold, NormalAbility } from '$lib/types/ability';
 import sandroneJson from '$lib/data/characters/sandrone.json';
 import bennettJson from '$lib/data/characters/bennett.json';
+import fischlJson from '$lib/data/characters/fischl.json';
+import kaeyaJson from '$lib/data/characters/kaeya.json';
+import sucroseJson from '$lib/data/characters/sucrose.json';
 import { advanceHeat, createHeat, planHold, ventHeat } from './chargeHold';
 
 /**
@@ -101,17 +104,42 @@ describe('Sandrone’s held Charged Attack, against gcsim', () => {
 });
 
 describe('the notation', () => {
+	const others: Record<string, unknown> = {
+		Bennett: bennettJson,
+		Fischl: fischlJson,
+		Kaeya: kaeyaJson,
+		Sucrose: sucroseJson
+	};
 	const lookup = (name: string) =>
-		name === 'Sandrone'
-			? sandrone
-			: name === 'Bennett'
-				? (bennettJson as unknown as CharacterData)
-				: null;
+		name === 'Sandrone' ? sandrone : ((others[name] as CharacterData | undefined) ?? null);
 	const charged = (notation: string) =>
 		parseNotation(notation, lookup, 8, {}, {}, undefined).events.filter(
 			(e): e is Extract<typeof e, { kind: 'action' }> =>
 				e.kind === 'action' && e.action === 'charged'
 		);
+
+	// gcsim `toStellar`: in Radiance a beam's Durability is 0.
+	describe('Fagio’s beams in Radiance', () => {
+		const beamsOf = (notation: string) => {
+			const r = parseNotation(notation, lookup, 8, {}, {}, undefined);
+			const c = r.events.find((e) => e.kind === 'action' && e.action === 'charged')!;
+			const beamAt = [c.time + 103, c.time + 163, c.time + 223];
+			const cryo = r.applications.filter((a) => a.characterId === 'sandrone').map((a) => a.time);
+			return { beamAt, cryo };
+		};
+		it('out of Radiance the first beam applies Cryo', () => {
+			const { beamAt, cryo } = beamsOf('Sandrone C');
+			expect(cryo).toContain(beamAt[0]);
+		});
+		it('inside a Polestar Field the beams apply nothing', () => {
+			const { beamAt, cryo } = beamsOf('Fischl E > Sandrone C');
+			expect(beamAt.filter((t) => cryo.includes(t))).toEqual([]);
+		});
+		it('after a Stellar Swirl the beams apply nothing', () => {
+			const { beamAt, cryo } = beamsOf('Kaeya E > Sucrose E > Sandrone C');
+			expect(beamAt.filter((t) => cryo.includes(t))).toEqual([]);
+		});
+	});
 
 	it('a bare C ends at its last beam', () => {
 		expect(charged('Sandrone C')[0].duration).toBe(224);
