@@ -58,6 +58,8 @@ type GadgetWindow = Extract<TimelineWindow, { kind: 'gadget' }>;
  * will continuously sustain a Polestar Field around it."
  */
 const PRISM_LIFETIME_F = framesOf(7);
+/** How long Radiance: Stellar Swirl lasts after the reaction. */
+const RADIANCE_SWIRL_F = framesOf(8);
 
 /**
  * ⚓ IS A POLESTAR FIELD OPEN AT `time`? — the ONE reader, for both the live
@@ -83,6 +85,20 @@ export function polestarFieldOpenAt(conductTimes: readonly number[], time: numbe
 		else hi = mid;
 	}
 	return lo > 0 && time < conductTimes[lo - 1] + PRISM_LIFETIME_F;
+}
+
+/**
+ * ⚓ Is a character in Radiance at `time`, for gcsim's `getRadiance`: standing in
+ * a Polestar Field, or within 8s of a Stellar Swirl. Strictly before, as
+ * `polestarFieldOpenAt` is.
+ */
+export function stellarRadianceAt(
+	conductTimes: readonly number[],
+	swirlTimes: readonly number[],
+	time: number
+): boolean {
+	if (polestarFieldOpenAt(conductTimes, time)) return true;
+	return swirlTimes.some((t) => t < time && time < t + RADIANCE_SWIRL_F);
 }
 
 /** The spans a Polestar Field stands, for a buff bound to it (`whilePolestarField`). */

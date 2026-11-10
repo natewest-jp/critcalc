@@ -17,6 +17,6 @@ Each expected number in `chargeHold.test.ts` was read from gcsim's debug log at 
 
 - gcsim's bare hold ends with no end lag, because it zeroes the hold length on exit. A set hold keeps its end lag. Both follow gcsim.
 - No heat readout, by Nate's ruling.
-- In Radiance gcsim's beams carry no gauge. They are drawn nominal here, like the E's second shot and the Q's Ray.
+- In Radiance gcsim's beams carry no gauge. The E's second shot and the Q's Ray are still drawn nominal; the beams are handled in `neuvillette-beam-radiance-2026-11-10.md`.
 - A1's Refined Tactics stay unmodelled.
 - C4's extra cannon and C6's Condensed Cluster Beam are not drawn. gcsim marks both hitmarks as TODO.

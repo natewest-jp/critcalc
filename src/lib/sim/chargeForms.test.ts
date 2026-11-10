@@ -97,4 +97,20 @@ describe("Neuvillette's Equitable Judgment (2026-10-17)", () => {
 	it('a C out of nothing pays the windup and the whole charge-up', () => {
 		expect(beams('Neuvillette C').blocks[0].duration).toBe(14 + 3 + 209 + 173 + 27);
 	});
+
+	// gcsim `charge[ticks=3]`: hits at beam start + 6, 28, 53, then end lag.
+	it('C ~Xs stops the beam at its last hit by then, and the wait is spent', () => {
+		const short = beams('Neuvillette C ~1s D');
+		expect(short.blocks[0].duration).toBe(14 + 3 + 209 + 53);
+		expect(beams('Neuvillette C ~1s D ~0.1s').blocks[0].duration).toBe(14 + 3 + 209 + 53);
+	});
+
+	it('a very short ~Xs still lands the first hit', () => {
+		expect(beams('Neuvillette C ~0.01s D').blocks[0].duration).toBe(14 + 3 + 209 + 6);
+	});
+
+	it('a ~Xs past the full beam leaves the excess as a wait', () => {
+		const r = beams('Neuvillette C ~4s N1');
+		expect(r.blocks[0].duration).toBe(14 + 3 + 209 + 173 + 51);
+	});
 });

@@ -387,12 +387,20 @@ function emitReaction(
 	reaction: Reaction,
 	time: number
 ): void {
-	if (reaction === 'stellarConduct' || reaction === 'lunarCrystallize') {
+	if (
+		reaction === 'stellarConduct' ||
+		reaction === 'stellarSwirl' ||
+		reaction === 'lunarCrystallize'
+	) {
 		// Ascending by construction (feed order is time order); the guard keeps
 		// `polestarFieldOpenAt`'s binary search honest if that ever slips, and
 		// `moondriftStandsAt` reads its list as ascending too.
 		const times =
-			reaction === 'stellarConduct' ? ctx.stellarConductTimes : ctx.lunarCrystallizeTimes;
+			reaction === 'stellarConduct'
+				? ctx.stellarConductTimes
+				: reaction === 'stellarSwirl'
+					? ctx.stellarSwirlTimes
+					: ctx.lunarCrystallizeTimes;
 		if (times.length === 0 || times[times.length - 1] <= time) times.push(time);
 		else
 			times.splice(

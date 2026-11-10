@@ -3180,6 +3180,9 @@ export type ElementalApplication = {
  * - `endLag` — frames from the beam's end to the next action.
  * - `dropletLife` — how long a droplet stands, frames.
  *
+ * A `~Xs` written right after the `C` ends the beam at its last hit by then,
+ * never before the first (⚓ Nate 2026-11-10; gcsim's `ticks`).
+ *
  * The beam's hits run on the standard ICD (gcsim `ICDTagExtraAttack`) — ⚠️ not
  * the catalyst Charged Attack rule, which is gcsim's short attack.
  */
