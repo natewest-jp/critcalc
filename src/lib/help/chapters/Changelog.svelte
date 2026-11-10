@@ -42,32 +42,15 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
-				<h3>Two teams can share the same four</h3>
-				<time class="entry-date" datetime="2026-11-10">November 10</time>
-			</header>
-			<p>
-				Keep one set of four as two teams, and each rotation stays with the team you made it from. A
-				new slot order keeps that link, and replacing a character ends it.
-			</p>
-		</article>
-		<article class="entry">
-			<header class="entry-head">
-				<h3>Sandrone’s frames and Fagio’s heat</h3>
+				<h3>Sandrone is ready in the Rotation Planner</h3>
 				<time class="entry-date" datetime="2026-11-10">November 10</time>
 			</header>
 			<p>
 				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. A Charged Attack holds
-				until just before Fagio overheats, and C ~Xs sets your own length.
-			</p>
-		</article>
-		<article class="entry">
-			<header class="entry-head">
-				<h3>Fill a lineup row from Teams</h3>
-				<time class="entry-date" datetime="2026-11-10">November 10</time>
-			</header>
-			<p>
-				Any saved team can now go straight into a lineup row, from the Teams control at the row’s
-				right.
+				until just before Fagio overheats, or for as long as you set with C ~Xs. Fagio’s temperature
+				carries through the rotation, so a quick Skill clears the way for the next hold. Fagio’s
+				fire and beams now reach the aura lane, and the beams stop applying Cryo during Radiance.
+				Neuvillette’s Charged Attack also takes C ~Xs now, to end Equitable Judgment early.
 			</p>
 		</article>
 		<article class="entry">
