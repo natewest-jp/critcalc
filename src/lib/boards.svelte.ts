@@ -348,13 +348,15 @@ class BoardsState {
 		return left;
 	}
 
-	/** Fill every slot at once — a team chosen from the library (§10.2). Under
-	 *  No repeats its members leave any other team. */
-	setTeam(boardId: string, teamId: string, slots: TeamSlot[]): void {
+	/** Fill every slot at once — a team chosen from the library (§10.2), linked
+	 *  to it when it is a saved team. Under No repeats its members leave any
+	 *  other team. */
+	setTeam(boardId: string, teamId: string, slots: TeamSlot[], savedTeamId?: string): void {
 		this.#updateTeam(boardId, teamId, (t) => ({
 			id: t.id,
 			slots: normalizeSlots(slots),
-			...(t.con && { con: t.con })
+			...(t.con && { con: t.con }),
+			...(savedTeamId && { teamId: savedTeamId })
 		}));
 		this.#settleRepeats(
 			boardId,

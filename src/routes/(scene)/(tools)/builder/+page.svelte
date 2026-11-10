@@ -23,6 +23,7 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
 	import { documentBar } from '$lib/documentBar.svelte';
+	import type { TeamRecord } from '$lib/storage/records';
 	import { notices, named, type NoticeAction, type NoticeText } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
 	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
@@ -486,6 +487,26 @@
 		const team = selectedTeam;
 		const i = team?.slots.indexOf(id) ?? -1;
 		if (team && i >= 0 && team.id !== ERRAND_ID) boards.setSlot(board.id, team.id, i, null);
+	}
+
+	/** A saved team into a row (Teams, at the row's right). Undo is offered
+	 *  whenever the pick moved something that was already on the board. */
+	function fillFromTeam(rowId: string, saved: TeamRecord): void {
+		const boardId = board.id;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		const row = teamById(rowId);
+		const moved =
+			!!row?.slots.some(Boolean) ||
+			(board.noRepeats &&
+				board.teams.some(
+					(t) => t.id !== rowId && saved.slots.some((id) => id && t.slots.includes(id))
+				));
+		boards.setTeam(boardId, rowId, saved.slots, saved.id);
+		chosenTeamId = rowId;
+		if (moved)
+			notices.toast('success', named`Placed ${saved.name || rotationLabel(saved.slots)}`, {
+				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+			});
 	}
 
 	/** Open a team in the Planner: its pinned rotation, else the team itself,
@@ -1476,6 +1497,7 @@
 					onRemoveTeam={removeTeam}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
+					onFillFromTeam={fillFromTeam}
 					{bank}
 					{previewId}
 					filteredFacets={activeFacets}

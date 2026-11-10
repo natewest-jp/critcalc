@@ -12,11 +12,11 @@
 <script lang="ts">
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
+	import TeamChoice from './TeamChoice.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import type { TeamRecord } from '$lib/storage/records';
 	import { menu } from '$lib/menuState.svelte';
-	import { rotationLabel } from '$lib/storage/convert';
 	import { resolveEntry, teamsOfSlots } from '$lib/storage/teamLoadout';
 
 	/** The folded phone bench's rail: the mark alone, the words in its title. */
@@ -41,7 +41,6 @@
 	});
 
 	const current = $derived(matches?.find((t) => t.id === rt.team?.id));
-	const teamLabel = (t: TeamRecord) => t.name || rotationLabel(t.slots);
 	const label = $derived(
 		current ? `In Teams${current.name ? ` · ${current.name}` : ''}` : 'Choose team'
 	);
@@ -87,8 +86,7 @@
 								onclick={() => {
 									close();
 									choose(t);
-								}}
-								>{#if t.id === current?.id}<Mark name="check" />{/if}{teamLabel(t)}</button
+								}}><TeamChoice team={t} checked={t.id === current?.id} /></button
 							>
 						{/each}
 					{/if}
