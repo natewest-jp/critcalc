@@ -1,72 +1,55 @@
 <!--
-  A saved team as a menu row's contents: its four faces, overlapping, then its
-  name (⚓ Nate 2026-11-10). The faces are what set a team apart from a menu's
-  plain verbs, on the Planner's bench and the Builder's row alike. The host
-  supplies the `.band-menu-item` this sits in.
+  A saved team as a menu row's contents: its four side portraits, overlapping,
+  then its name, and a check at the end when it is the chosen one (⚓ Nate
+  2026-11-10). The faces are what set a team apart from a menu's plain verbs,
+  on the Planner's bench and the Builder's row alike. The host supplies the
+  `.band-menu-item` this sits in.
 -->
 <script lang="ts">
-	import { storageSession } from '$lib/storage/session.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
 	import type { TeamRecord } from '$lib/storage/records';
-	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
-	import { siteSettings } from '$lib/stores';
+	import SidePortrait from './SidePortrait.svelte';
 	import Mark from './Mark.svelte';
 
-	let { team, checked = false }: { team: TeamRecord; checked?: boolean } = $props();
+	/** 🎛️ Each portrait's disc, px. The overlap is `--tc-overlap` below. */
+	const FACE = 28;
 
-	const twin = $derived(storageSession.profile?.twin ?? 'aether');
-	const src = (id: string) =>
-		hasAvatar(id) ? getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin) : null;
+	let { team, checked = false }: { team: TeamRecord; checked?: boolean } = $props();
 </script>
 
-<span class="tc-check"
-	>{#if checked}<Mark name="check" size={12} />{/if}</span
->
 <span class="tc-faces" aria-hidden="true">
 	{#each team.slots as id, i (i)}
-		{@const url = id ? src(id) : null}
-		<span class="tc-face"
-			>{#if url}<img src={url} alt="" loading="lazy" />{/if}</span
-		>
+		<span class="tc-face"><SidePortrait {id} size={FACE} /></span>
 	{/each}
 </span>
 <span class="tc-name">{team.name || rotationLabel(team.slots)}</span>
+{#if checked}<span class="tc-check"><Mark name="check" size={12} /></span>{/if}
 
 <style>
-	.tc-check {
-		flex: none;
-		width: 12px;
-		display: grid;
-		place-items: center;
-	}
 	.tc-faces {
 		flex: none;
 		display: flex;
-		/* 🎛️ The face size and how far each overlaps the one before. */
-		--tc-face: 26px;
-		--tc-overlap: 8px;
+		align-items: flex-end;
+		/* 🎛️ How far each portrait overlaps the one before. */
+		--tc-overlap: 6px;
 	}
 	.tc-face {
-		width: var(--tc-face);
-		height: var(--tc-face);
-		border: 1px solid var(--line-faint);
-		border-radius: var(--r-round);
-		background: var(--surface-well);
-		overflow: hidden;
-		box-sizing: border-box;
+		flex: none;
 	}
 	.tc-face + .tc-face {
 		margin-left: calc(-1 * var(--tc-overlap));
-	}
-	.tc-face img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
 	}
 	.tc-name {
 		min-width: 0;
 		max-width: 16rem;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.tc-check {
+		flex: none;
+		margin-left: auto;
+		padding-left: 0.5rem;
+		display: grid;
+		place-items: center;
 	}
 </style>
