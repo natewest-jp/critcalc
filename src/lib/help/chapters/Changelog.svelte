@@ -26,6 +26,16 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
+	import { chapterSection, menu } from '$lib/menuState.svelte';
+
+	/** Opens Help at the time token, over whatever is showing; a new-tab click
+	 *  keeps the link's own address. */
+	function openTimeToken(event: MouseEvent): void {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		event.preventDefault();
+		menu.show(chapterSection('help', 'planner'), 'time-token');
+	}
 </script>
 
 <h1>What’s new</h1>
@@ -47,11 +57,12 @@
 			</header>
 			<p>
 				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. A Charged Attack holds
-				until just before Fagio overheats, or for as long as you set with C ~Xs. Fagio’s temperature
-				carries through the rotation, cooling over time and faster off-field, and a quick Skill
-				clears the way for the next hold. Fagio’s fire and beams now reach the aura lane, and the
-				beams stop applying Cryo during Radiance. Neuvillette’s Charged Attack also takes C ~Xs now,
-				to end Equitable Judgment early.
+				until just before Fagio overheats (Decoding Power reaches maximum), and it cools off just
+				like in-game (faster off-field, cleared by a Skill tap). If you don’t want the full Charged
+				Attack, you can choose how long to hold it <a
+					href="{resolve('/help/planner')}#time-token"
+					onclick={openTimeToken}>with C ~Xs</a
+				>. Neuvillette’s Charged Attack also takes C ~Xs now, to end Equitable Judgment early.
 			</p>
 		</article>
 		<article class="entry">
