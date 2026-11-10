@@ -41,6 +41,7 @@ import type {
 	ActionKey,
 	Element,
 	FrameMap,
+	ChargeHold,
 	NormalAbility,
 	NormalHit,
 	SkillAbility
@@ -54,7 +55,8 @@ import {
 } from '$lib/types/ability';
 import { BAR_LENGTH_RE, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
-import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
+import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES, type IcdParams } from '$lib/utils/icd';
+import { createHeat, planHold, ventHeat, type HeatState } from './chargeHold';
 import { lockedAt, lockOf, schedulePolls } from './absorb';
 import {
 	hasFreeSkill,
@@ -337,6 +339,12 @@ export function runRotation(
 		// opens, because that is where the clock already stands: the swap advance
 		// at the bottom of the previous iteration has drained everything before
 		// this instant, so no pending task can fire under the wrong owner.
+		if (ctx.activeCharId !== char.id) {
+			const stays = ctx.activeCharId ? ctx.fieldStays.get(ctx.activeCharId) : undefined;
+			if (stays?.length) stays[stays.length - 1].end = clock.now;
+			if (!ctx.fieldStays.has(char.id)) ctx.fieldStays.set(char.id, []);
+			ctx.fieldStays.get(char.id)!.push({ start: clock.now, end: Infinity });
+		}
 		ctx.activeCharId = char.id;
 		// The stay this segment belongs to — its opener's index (see `liveSegment`).
 		const turn: number = carried?.turn ?? i;
@@ -1006,6 +1014,12 @@ export function runRotation(
 								ctx.team.skillCooldownModifiers
 							)
 						: timedCd;
+
+				// ⚓ Sandrone's Skill vents Fagio's heat (`ChargeHold`).
+				if (kind === 'skill') {
+					const hold = holdSpec();
+					if (hold) ventHeat(holdHeatState(), hold, castStart, castTime, fieldCheck);
+				}
 
 				// Apply gainStacks matching this cast BEFORE the snapshot, so the
 				// cast's stackContext reflects post-grant state (symmetric with
@@ -1981,6 +1995,17 @@ export function runRotation(
 			if (!tk) return null;
 			return tk.kind === 'Q' || tk.kind === 'E' ? tk.kind : tk.text;
 		};
+		/** This character's held Charged Attack, if it has one. */
+		const holdAbility = (): NormalAbility | undefined =>
+			char.abilities.find((a): a is NormalAbility => a.abilityType === 'normal' && !!a.chargeHold);
+		const holdSpec = (): ChargeHold | undefined => holdAbility()?.chargeHold;
+		const holdHeatState = (): HeatState => {
+			let heat = ctx.holdHeat.get(char.id);
+			if (!heat) ctx.holdHeat.set(char.id, (heat = createHeat()));
+			return heat;
+		};
+		const fieldCheck = (frame: number): boolean =>
+			(ctx.fieldStays.get(char.id) ?? []).some((s) => s.start <= frame && frame < s.end);
 		/** The active normal ability, if its Charged Attack channels. */
 		const channelAbility = (): NormalAbility | undefined => {
 			if (!char.abilities.some((a) => a.abilityType === 'normal' && a.chargeChannel))
@@ -2406,6 +2431,94 @@ export function runRotation(
 							nightsoulCharging(ctx, clock, char, clock.now, false);
 					}
 					humanPad('charged', j);
+				} else if (/^C\d*$/.test(t) && holdSpec()) {
+					// ⚓⚓ THE HOLD (`ChargeHold`, Sandrone's Fagio, 2026-11-10): a bare
+					// `C` runs to the last beam before overheating, and a `~Xs` written
+					// right after it sets the hold instead, as Sayu's does.
+					normalCounter = 0;
+					settleOwnerStates(ctx, cs, char.id, clock.now);
+					const h = holdSpec()!;
+					const start = clock.now;
+					const prev = actionTextAt(j, -1);
+					const rolled = prev !== null && /^(E|Q|N\d*|s?C\d*|[hl]?P|A)$/.test(prev);
+					let hold: number | null = null;
+					let afterToken = j;
+					let k = j + 1;
+					while (k < expandedTokens.length && isInert(expandedTokens[k])) k++;
+					const typed =
+						expandedTokens[k]?.kind === 'time' && expandedTokens[k].text.match(/^~([\d.]+)s/);
+					if (typed && isFinite(parseFloat(typed[1]))) {
+						hold = Math.min(framesOf(parseFloat(typed[1])), h.maxHold);
+						heldTaken.set(k, hold);
+						afterToken = k;
+					}
+					const plan = planHold(holdHeatState(), h, {
+						at: start,
+						rolled,
+						hold,
+						constellation: charConstellationLevel,
+						onField: fieldCheck
+					});
+					const lag = plan.bare
+						? 0
+						: frameAt(
+								h.endLag,
+								cancelKeyFor(
+									ctx.humanTiming,
+									'charged',
+									peekActionKey(lookahead, afterToken, isBow),
+									isBow,
+									chargedBuffers
+								)
+							);
+					const ev = emitAction({
+						action: 'charged',
+						label: t,
+						time: start,
+						duration: plan.exit + 1 + lag - start,
+						abilityId: holdAbility()!.id,
+						element: char.element
+					});
+					const land = (at: number, icdKey: string, params: IcdParams): void =>
+						clock.schedule(at, Band.LAND, () => {
+							const live = liveSegment === turn;
+							let icd = ctx.icdClocks.get(`${char.id}:${icdKey}`);
+							if (!icd) {
+								icd = createIcdClock();
+								ctx.icdClocks.set(`${char.id}:${icdKey}`, icd);
+							}
+							if (icdApplies(icd, at, params).applies)
+								emitReactionsAtSwing(
+									ctx,
+									clock,
+									char,
+									'charged',
+									char.element,
+									true,
+									at,
+									computeCurrentStates(at),
+									charConstellationLevel,
+									stackState
+								);
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: at,
+									abilityType: 'charged',
+									element: char.element,
+									damageTag: 'charged',
+									abilityName: holdAbility()!.name,
+									...(live ? {} : { offField: true as const }),
+									sourceEventId: ev.id
+								},
+								true,
+								live
+							);
+						});
+					for (const at of [...plan.sweeps, ...plan.overdrive]) land(at, 'holdFire', h.sweepIcd);
+					for (const at of plan.beams) land(at, 'holdBeam', STANDARD_ICD_FRAMES);
+					clock.advance(plan.exit + 1 + lag);
+					humanPad('charged', afterToken);
 				} else if (/^C\d*$/.test(t) && channelAbility()) {
 					// ⚓⚓ THE CHANNEL (`chargeChannel`, Neuvillette's Equitable Judgment,
 					// 2026-10-17; gcsim `charge.go`): windup, absorb up to three droplets,

@@ -162,8 +162,10 @@
 		height: var(--d);
 		box-sizing: border-box;
 		border-radius: var(--r-round);
-		background: var(--surface-well);
-		border: 2px solid var(--line-strong);
+		/* A host's own disc (the team menus' element frames): `--spt-fill`,
+		   `--spt-ring`, and `--spt-ring-width`. */
+		background: var(--spt-fill, var(--surface-well));
+		border: var(--spt-ring-width, 2px) solid var(--spt-ring, var(--line-strong));
 		color: var(--muted);
 		display: grid;
 		place-items: center;

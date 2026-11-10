@@ -23,6 +23,7 @@
  * migrating the same field twice.
  */
 
+import type { HeatState } from './chargeHold';
 import type { CharacterData } from '$lib/types/character';
 import type { CastAbility, Condition, Element } from '$lib/types/ability';
 import type { LoadoutEntry } from '$lib/stores';
@@ -352,6 +353,10 @@ export type SimContext = {
 	 *  expiry, frames (`ChargeChannel`). A channel takes up to three, oldest
 	 *  first, by removing them. */
 	droplets: Map<string, { spawn: number; end: number }[]>;
+	/** Each `ChargeHold` holder's heat gauge. */
+	holdHeat: Map<string, HeatState>;
+	/** Each character's stays on field, frames; the last is open-ended. */
+	fieldStays: Map<string, { start: number; end: number }[]>;
 	/**
 	 * Every landing a sequenced summon struck (`summonStrike`, Lumi round), keyed
 	 * like `stateGatedTicks` — `characterId::label::source::spawnAt` — with the
@@ -571,6 +576,8 @@ export function createSimContext(input: SimContextInput): SimContext {
 		stellarConductTimes: [],
 		lunarCrystallizeTimes: [],
 		droplets: new Map(),
+		holdHeat: new Map(),
+		fieldStays: new Map(),
 		strikeLandings: new Map(),
 		summonChainGen: new Map(),
 		summonChainSupersededAt: new Map(),

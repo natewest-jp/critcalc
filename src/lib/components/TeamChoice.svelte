@@ -1,72 +1,91 @@
 <!--
-  A saved team as a menu row's contents: its four faces, overlapping, then its
-  name (⚓ Nate 2026-11-10). The faces are what set a team apart from a menu's
-  plain verbs, on the Planner's bench and the Builder's row alike. The host
-  supplies the `.band-menu-item` this sits in.
+  A saved team as a menu row's contents: its four side portraits in element
+  rings, overlapping, then its name, and a check at the end when it is the
+  chosen one (⚓ Nate 2026-11-10). The faces are what set a team apart from a
+  menu's plain verbs, on the Planner's bench and the Builder's row alike. The
+  host supplies the `.band-menu-item` this sits in.
+
+  ⚓ A row is as tall as the discs: hair rises out of the row, and under the
+  row above, so `order` (the row's index) stacks earlier rows on top.
 -->
 <script lang="ts">
-	import { storageSession } from '$lib/storage/session.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
 	import type { TeamRecord } from '$lib/storage/records';
-	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
-	import { siteSettings } from '$lib/stores';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { elementPalette } from '$lib/utils/elementColors';
+	import SidePortrait from './SidePortrait.svelte';
 	import Mark from './Mark.svelte';
 
-	let { team, checked = false }: { team: TeamRecord; checked?: boolean } = $props();
+	/** 🎛️ Each portrait's disc, px. The overlap is `--tc-overlap` below. */
+	const FACE = 28;
+	/** Above any row count a menu will hold. */
+	const STACK_TOP = 1000;
 
-	const twin = $derived(storageSession.profile?.twin ?? 'aether');
-	const src = (id: string) =>
-		hasAvatar(id) ? getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin) : null;
+	let {
+		team,
+		order,
+		checked = false
+	}: { team: TeamRecord; order: number; checked?: boolean } = $props();
+
+	const ring = (id: string | null) =>
+		id ? elementPalette(getCharacterIndexEntry(id)?.element).main : undefined;
 </script>
 
-<span class="tc-check"
-	>{#if checked}<Mark name="check" size={12} />{/if}</span
->
-<span class="tc-faces" aria-hidden="true">
+<span class="tc-faces" aria-hidden="true" style:z-index={STACK_TOP - order}>
 	{#each team.slots as id, i (i)}
-		{@const url = id ? src(id) : null}
-		<span class="tc-face"
-			>{#if url}<img src={url} alt="" loading="lazy" />{/if}</span
+		<span class="tc-face" style:--tc-element={ring(id)} style:height="{FACE}px"
+			><SidePortrait {id} size={FACE} /></span
 		>
 	{/each}
 </span>
 <span class="tc-name">{team.name || rotationLabel(team.slots)}</span>
+{#if checked}<span class="tc-check"><Mark name="check" size={12} /></span>{/if}
 
 <style>
-	.tc-check {
-		flex: none;
-		width: 12px;
-		display: grid;
-		place-items: center;
-	}
 	.tc-faces {
+		position: relative;
 		flex: none;
 		display: flex;
-		/* 🎛️ The face size and how far each overlaps the one before. */
-		--tc-face: 26px;
-		--tc-overlap: 8px;
+		/* 🎛️ How far each portrait overlaps the one before. */
+		--tc-overlap: 6px;
 	}
+	/* As tall as the disc: the portrait's box stands on its bottom, so the
+	   overhang spills upward and adds nothing to the row. The ring rests dim
+	   and takes its full color on the row being aimed at. */
 	.tc-face {
-		width: var(--tc-face);
-		height: var(--tc-face);
-		border: 1px solid var(--line-faint);
-		border-radius: var(--r-round);
-		background: var(--surface-well);
-		overflow: hidden;
-		box-sizing: border-box;
+		flex: none;
+		display: flex;
+		align-items: flex-end;
+		/* 🎛️ How much of the element color a ring shows at rest. */
+		--tc-rest: 45%;
+		--spt-ring: color-mix(in srgb, var(--tc-element) var(--tc-rest), transparent);
+		--spt-ring-width: 1px;
+		/* 🎛️ The disc's element fill, the Roster's avatar recipe. */
+		--tc-fill: 28%;
+		--spt-fill: color-mix(in srgb, var(--tc-element) var(--tc-fill), var(--surface-well));
+	}
+	:global(.band-menu-item:focus-visible) .tc-face {
+		--spt-ring: var(--tc-element);
+	}
+	@media (hover: hover) {
+		:global(.band-menu-item:hover) .tc-face {
+			--spt-ring: var(--tc-element);
+		}
 	}
 	.tc-face + .tc-face {
 		margin-left: calc(-1 * var(--tc-overlap));
-	}
-	.tc-face img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
 	}
 	.tc-name {
 		min-width: 0;
 		max-width: 16rem;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.tc-check {
+		flex: none;
+		margin-left: auto;
+		padding-left: 0.5rem;
+		display: grid;
+		place-items: center;
 	}
 </style>

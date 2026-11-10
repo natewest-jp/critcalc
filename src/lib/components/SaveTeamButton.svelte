@@ -78,7 +78,7 @@
 				{/snippet}
 				{#snippet items(close)}
 					{#if matches && matches.length > 1}
-						{#each matches as t (t.id)}
+						{#each matches as t, i (t.id)}
 							<button
 								class="band-menu-item"
 								role="menuitemradio"
@@ -86,7 +86,7 @@
 								onclick={() => {
 									close();
 									choose(t);
-								}}><TeamChoice team={t} checked={t.id === current?.id} /></button
+								}}><TeamChoice team={t} order={i} checked={t.id === current?.id} /></button
 							>
 						{/each}
 					{/if}
