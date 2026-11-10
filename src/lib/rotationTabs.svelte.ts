@@ -77,13 +77,15 @@ import {
 	seatsOfSaved,
 	TEAM_SIZE,
 	type Seating,
-	type Seats
+	type Seats,
+	teamKey
 } from '$lib/utils/notationEdit';
 import { type LoadoutEntry } from '$lib/stores';
 import type { TeamRecord } from '$lib/storage/records';
-import { teamOfSlots } from '$lib/storage/teamLoadout';
+import { teamOfWork } from '$lib/storage/teamLoadout';
 import { pickSample } from '$lib/data/plannerSamples';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { untrack } from 'svelte';
 import { notices } from '$lib/notices.svelte';
 
 export type RotationTab = {
@@ -104,6 +106,8 @@ export type RotationTab = {
 	/** The first-visit sample this tab opened on (`plannerSamples.ts`), whose
 	 *  source the Inspector credits while the notation is still its own. */
 	sample?: string;
+	/** The team this rotation is linked to (`RotationBody.teamId`). */
+	teamId?: string;
 };
 
 /** Re-exported so a consumer reading the team from this module does not have to
@@ -141,10 +145,15 @@ export const newTabId = genId;
 /** Who the document on screen is: its id (the stored document's), label and
  *  sample. ⛔ Never its content — that is the working state, and a copy here
  *  would go stale with the first edit. */
-export type TabMeta = Pick<RotationTab, 'id' | 'label' | 'sample'>;
+export type TabMeta = Pick<RotationTab, 'id' | 'label' | 'sample' | 'teamId'>;
 
 function metaOf(tab: RotationTab): TabMeta {
-	return { id: tab.id, label: tab.label, ...(tab.sample && { sample: tab.sample }) };
+	return {
+		id: tab.id,
+		label: tab.label,
+		...(tab.sample && { sample: tab.sample }),
+		...(tab.teamId && { teamId: tab.teamId })
+	};
 }
 
 /** A tab's seating: its stored slots and flags, or — saved before slots
@@ -183,7 +192,21 @@ class RotationTabsState {
 	// RotationTimeline works cleanly without circular reactivity.
 	#notation = $state<string>('');
 	/** ⚓ The party's slots and what each remembers (§8.1): stored, not derived. */
-	seating = $state<Seating>(emptySeating());
+	#seating = $state<Seating>(emptySeating());
+	get seating(): Seating {
+		return this.#seating;
+	}
+	/** ⚠ An ACCESSOR: every seat change passes here, the editor's included, and
+	 *  ⚓ replacing a member ends the rotation's link to its team (Nate
+	 *  2026-11-10). A new slot order keeps it, since `teamKey` ignores order. */
+	set seating(next: Seating) {
+		this.#seating = next;
+		untrack(() => {
+			if (!this.tab.teamId) return;
+			const linked = this.teams.find((t) => t.id === this.tab.teamId);
+			if (linked && teamKey(linked.slots) !== teamKey(next.seats)) this.linkTeam(null);
+		});
+	}
 	/** Who sits where (`null` = empty). */
 	get seats(): Seats {
 		return this.seating.seats;
@@ -238,11 +261,22 @@ class RotationTabsState {
 	teams = $state<(TeamRecord & { label: string })[]>([]);
 
 	/**
-	 * ⚓ The saved TEAM this rotation is (its set of four): its loadout is the
+	 * ⚓ The saved TEAM this rotation is (`teamOfWork`): its loadout is the
 	 * layer this rotation inherits (storage/teamLoadout.ts). `null` with no
-	 * team, and for a guest, whose values are all its own.
+	 * team, with several to choose from and none chosen, and for a guest, whose
+	 * values are all its own.
 	 */
-	team = $derived(this.rosterless ? null : (teamOfSlots(this.teams, this.seats) ?? null));
+	team = $derived(
+		this.rosterless
+			? null
+			: (teamOfWork(this.teams, { slots: this.seats, teamId: this.tab.teamId }) ?? null)
+	);
+
+	/** Link this rotation to a team, or end its link. */
+	linkTeam(id: string | null): void {
+		const { teamId: _, ...rest } = this.tab;
+		this.tab = id ? { ...rest, teamId: id } : rest;
+	}
 
 	/**
 	 * ⚓ THE ONE RESOLVER for the layer a rotation's own loadout sits on: the

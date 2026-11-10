@@ -61,6 +61,8 @@ export type SavedNotation = {
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/** The rotation's own constellation levels (Layer 2). */
 	tabCon?: Record<string, number>;
+	/** The team this rotation is linked to (`RotationBody.teamId`). */
+	teamId?: string;
 	/** When the rotation last changed (ms). */
 	savedAt: number;
 };

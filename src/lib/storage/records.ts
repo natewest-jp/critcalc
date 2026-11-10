@@ -115,6 +115,10 @@ export type RotationBody = {
 	con?: Record<string, number>;
 	/** The first-visit sample it opened on, credited while still its own. */
 	sample?: string;
+	/** ⚓ The team this rotation belongs to (Nate 2026-11-10), for when several
+	 *  teams share its four. Counts only while its four are that team's
+	 *  (`teamLoadout.ts`); absent = matched by its four alone. */
+	teamId?: string;
 };
 
 export type LineupTeam = {
@@ -123,6 +127,8 @@ export type LineupTeam = {
 	con?: Record<string, number>;
 	/** A rotation DOCUMENT id pinned as this team's own. */
 	pinnedRotationId?: string;
+	/** The saved team this entry was made from, as on `RotationBody`. */
+	teamId?: string;
 };
 
 export type LineupBody = {

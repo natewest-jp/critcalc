@@ -31,7 +31,7 @@
 	import type { DocumentRecord, TeamRecord } from '$lib/storage/records';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
-	import { teamKey } from '$lib/utils/notationEdit';
+	import { belongsToTeam } from '$lib/storage/teamLoadout';
 	import { ownership, siteSettings } from '$lib/stores';
 
 	const twin = $derived(storageSession.profile?.twin ?? 'aether');
@@ -53,27 +53,25 @@
 		});
 	});
 
-	/** Rotations and lineups per team key. A lineup counts once, however many
-	 *  of its teams are the set. */
+	/** Rotations and lineups per team (`belongsToTeam`). A lineup counts once,
+	 *  however many of its teams are the team's. */
 	let counts = $state<Record<string, { rotations: number; lineups: number }>>({});
 	$effect(() => {
 		void storageSession.version;
 		void storageSession.profile?.id;
+		const list = teams;
 		void Promise.all([
 			storageSession.documents('rotation'),
 			storageSession.documents('lineup')
 		]).then(([rots, lineups]) => {
 			const m: Record<string, { rotations: number; lineups: number }> = {};
-			const bump = (key: string, kind: 'rotations' | 'lineups') => {
-				if (!key) return;
-				const c = (m[key] ??= { rotations: 0, lineups: 0 });
-				c[kind]++;
-			};
-			for (const d of rots as DocumentRecord[])
-				if (d.type === 'rotation') bump(teamKey(d.body.slots), 'rotations');
-			for (const d of lineups as DocumentRecord[]) {
-				if (d.type !== 'lineup') continue;
-				for (const k of new Set(d.body.teams.map((t) => teamKey(t.slots)))) bump(k, 'lineups');
+			for (const team of list) {
+				const c = (m[team.id] = { rotations: 0, lineups: 0 });
+				for (const d of rots as DocumentRecord[])
+					if (d.type === 'rotation' && belongsToTeam(team, d.body, list)) c.rotations++;
+				for (const d of lineups as DocumentRecord[])
+					if (d.type === 'lineup' && d.body.teams.some((t) => belongsToTeam(team, t, list)))
+						c.lineups++;
 			}
 			counts = m;
 		});
@@ -82,7 +80,7 @@
 	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 	function showWork(t: TeamRecord, section: 'rotations' | 'lineups'): void {
-		menu.teamFilter = { key: teamKey(t.slots), label: label(t) };
+		menu.teamFilter = { team: t, label: label(t) };
 		menu.show(section);
 	}
 
@@ -95,14 +93,14 @@
 	}
 
 	async function plan(t: TeamRecord): Promise<void> {
-		await storageSession.planTeam(t.slots);
+		await storageSession.planTeam(t.slots, undefined, t.id);
 		arrive(resolve('/planner'));
 	}
 
 	/** ⚓ A NEW lineup of the chosen shape, holding this team (Nate
 	 *  2026-10-23); placing a team into an existing lineup is a later design. */
 	async function newLineup(t: TeamRecord, preset: BoardPreset): Promise<void> {
-		await storageSession.create('builder', preset, t.slots);
+		await storageSession.create('builder', preset, t.slots, t.id);
 		arrive(resolve('/builder'));
 	}
 
@@ -148,10 +146,9 @@
 	{#key `${storageSession.profile?.id}:${detailId}`}
 		<TeamDetail
 			team={detailTeam ?? null}
-			{teams}
 			slot={menu.teamSlot}
 			{avatar}
-			work={detailTeam ? counts[teamKey(detailTeam.slots)] : undefined}
+			work={detailTeam ? counts[detailTeam.id] : undefined}
 			onPlan={plan}
 			onNewLineup={newLineup}
 			onShowWork={showWork}
@@ -173,7 +170,7 @@
 
 		<ul class="cards">
 			{#each teams as t (t.id)}
-				{@const c = counts[teamKey(t.slots)]}
+				{@const c = counts[t.id]}
 				<li class="card">
 					<div class="card-head">
 						<!-- The card's door: its name, stretched over the whole card, so

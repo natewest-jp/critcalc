@@ -2,7 +2,8 @@
   SAVE AS TEAM, on the Planner's bench (design §3, §9.5; build plan §13,
   phase 3). ⚓ Nate 2026-10-23: one click files the seated four as a team,
   named by its members until you rename it in Teams; only with all four slots
-  filled; a set that is already a team says so quietly instead, and opens Teams.
+  filled. ⚓ Nate 2026-11-10: four that are already a team offer that team, and
+  a way to make a second; four that are several teams, with no link, ask which.
 
   Loaded by the bench on demand, so the storage session stays out of the
   bench's bundle. Real profiles only (§2.2): Theorycraft has no teams.
@@ -10,11 +11,13 @@
 -->
 <script lang="ts">
 	import Mark from './Mark.svelte';
+	import BandMenu from './BandMenu.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import type { TeamRecord } from '$lib/storage/records';
 	import { menu } from '$lib/menuState.svelte';
-	import { resolveEntry } from '$lib/storage/teamLoadout';
+	import { rotationLabel } from '$lib/storage/convert';
+	import { resolveEntry, teamsOfSlots } from '$lib/storage/teamLoadout';
 
 	/** The folded phone bench's rail: the mark alone, the words in its title. */
 	let { compact = false }: { compact?: boolean } = $props();
@@ -23,18 +26,25 @@
 	const full = $derived(seats.every((id) => id !== null && id !== 'blank'));
 	const real = $derived(storageSession.profile?.kind === 'real');
 
-	let team = $state<TeamRecord | null | undefined>(undefined);
+	/** Every team holding these four; `undefined` until the store has answered. */
+	let matches = $state<TeamRecord[] | undefined>(undefined);
 	$effect(() => {
 		void storageSession.teamsVersion;
 		const s = [...seats];
 		if (!real || !full) {
-			team = undefined;
+			matches = undefined;
 			return;
 		}
-		void storageSession.teamFor(s).then((t) => {
-			if (s.every((id, i) => id === seats[i])) team = t ?? null;
+		void storageSession.teams().then((all) => {
+			if (s.every((id, i) => id === seats[i])) matches = teamsOfSlots(all, s);
 		});
 	});
+
+	const current = $derived(matches?.find((t) => t.id === rt.team?.id));
+	const teamLabel = (t: TeamRecord) => t.name || rotationLabel(t.slots);
+	const label = $derived(
+		current ? `In Teams${current.name ? ` · ${current.name}` : ''}` : 'Choose team'
+	);
 
 	/** ⚓ The new team starts with the rotation's loadout (Nate 2026-10-24),
 	 *  and the rotation then inherits it rather than holding a copy, so the
@@ -44,30 +54,63 @@
 		const lo = Object.fromEntries(
 			ids.map((id) => [id, resolveEntry(rt.inheritedLoadout()[id], rt.tabLoadout[id])])
 		);
-		const r = await storageSession.saveTeam(seats, '', lo);
-		if (!r) return;
-		team = r.team;
-		if (r.created) for (const id of ids) rt.putTabLoadout(id, null);
+		const team = await storageSession.saveTeam(seats, '', lo);
+		if (!team) return;
+		rt.linkTeam(team.id);
+		for (const id of ids) rt.putTabLoadout(id, null);
+	}
+
+	function choose(t: TeamRecord): void {
+		if (rt.canEdit()) rt.linkTeam(t.id);
 	}
 </script>
 
-{#if real && full && team !== undefined}
+{#if real && full && matches !== undefined}
 	<!-- ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): PLATES, both of them. As
 	     bare text "In Teams" did not read as pressable, and it is the door to
 	     the team. The saved state keeps its check and recedes by INK, so the
 	     request (Save as team) still outranks the fact. -->
-	{#if team}
-		{@const label = `In Teams${team.name ? ` · ${team.name}` : ''}`}
-		<button
-			class="btn btn--sm st st--in"
-			class:btn--icon={compact}
-			onclick={() => menu.show('teams')}
-			title={compact ? `${label} (open Teams)` : 'Open Teams'}
-			aria-label={compact ? label : undefined}
-		>
-			<Mark name="check" />
-			{#if !compact}<span class="st-label">{label}</span>{/if}
-		</button>
+	{#if matches.length}
+		<span class="st-menu" class:st-menu--in={!!current} class:st-menu--icon={compact}>
+			<BandMenu size="sm" align="start" {compact} ariaLabel={label}>
+				{#snippet face()}
+					{#if current}<Mark name="check" />{/if}
+					{#if !compact}<span class="st-label">{label}</span>{/if}
+				{/snippet}
+				{#snippet items(close)}
+					{#if matches && matches.length > 1}
+						{#each matches as t (t.id)}
+							<button
+								class="band-menu-item"
+								role="menuitemradio"
+								aria-checked={t.id === current?.id}
+								onclick={() => {
+									close();
+									choose(t);
+								}}
+								>{#if t.id === current?.id}<Mark name="check" />{/if}{teamLabel(t)}</button
+							>
+						{/each}
+					{/if}
+					<button
+						class="band-menu-item"
+						role="menuitem"
+						onclick={() => {
+							close();
+							menu.show('teams');
+						}}>Open Teams</button
+					>
+					<button
+						class="band-menu-item"
+						role="menuitem"
+						onclick={() => {
+							close();
+							void save();
+						}}>Save as a new team</button
+					>
+				{/snippet}
+			</BandMenu>
+		</span>
 	{:else}
 		<button
 			class="btn btn--sm st"
@@ -92,12 +135,26 @@
 		width: auto;
 		flex-shrink: 0;
 	}
+	.st-menu {
+		display: block;
+		width: 100%;
+		min-width: 0;
+	}
+	.st-menu--icon {
+		width: auto;
+		flex-shrink: 0;
+	}
+	.st-menu :global(.band-menu-trigger) {
+		width: 100%;
+		min-width: 0;
+		color: var(--text);
+	}
 	/* Already a team: quiet, a fact rather than a request. */
-	.st--in {
+	.st-menu--in :global(.band-menu-trigger) {
 		color: var(--muted);
 	}
 	@media (hover: hover) {
-		.st--in:hover {
+		.st-menu--in :global(.band-menu-trigger:hover) {
 			color: var(--text);
 		}
 	}

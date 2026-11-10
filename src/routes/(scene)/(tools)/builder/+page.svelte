@@ -498,7 +498,7 @@
 			const { storageSession } = await import('$lib/storage/session.svelte');
 			const pin = team.pinnedRotationId;
 			if (pin && (await storageSession.exists(pin))) await storageSession.open(pin);
-			else await storageSession.planTeam(team.slots, team.con);
+			else await storageSession.planTeam(team.slots, team.con, team.teamId);
 			void goto(resolve('/planner'));
 		})();
 	}

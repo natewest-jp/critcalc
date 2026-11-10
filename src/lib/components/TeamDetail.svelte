@@ -49,13 +49,12 @@
 	import { elementColors, elementPalette, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveResonances } from '$lib/utils/resonance';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
-	import { teamKey, TEAM_SIZE } from '$lib/utils/notationEdit';
+	import { TEAM_SIZE } from '$lib/utils/notationEdit';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { ownership, type LoadoutEntry } from '$lib/stores';
 
 	let {
 		team,
-		teams,
 		slot = null,
 		avatar,
 		work,
@@ -65,8 +64,6 @@
 	}: {
 		/** The team, or null for one being made. */
 		team: TeamRecord | null;
-		/** Every team in the profile, for the one-team-per-set check. */
-		teams: TeamRecord[];
 		/** The slot to open on (a portrait clicked on the card). */
 		slot?: number | null;
 		avatar: (id: string) => string | null;
@@ -110,19 +107,9 @@
 					loadout: compactLoadouts(start.loadout ?? {})
 				})
 	);
-	/** A clash Save found that the list hadn't yet (filed in another tab a
-	 *  moment before), held while these four are still the four. */
-	let lateClash = $state<TeamRecord | null>(null);
-	/** The team these four already are, if it is another one. */
-	const clash = $derived(
-		full
-			? (teams.find((t) => t.id !== start?.id && teamKey(t.slots) === teamKey(slots)) ??
-					(lateClash && teamKey(lateClash.slots) === teamKey(slots) ? lateClash : undefined))
-			: undefined
-	);
 	/** A save that didn't land, said where Save is. */
 	let saveFailed = $state(false);
-	const canSave = $derived(full && dirty && !clash);
+	const canSave = $derived(full && dirty);
 
 	/** A pick with no slot chosen is refused, and the party says so. */
 	let nudge = $state(false);
@@ -170,11 +157,6 @@
 	}
 
 	// ── Leaving ─────────────────────────────────────────────────────────────
-	/** "Open it": the question names where the discard leads. */
-	function openOther(t: TeamRecord): void {
-		const go = () => menu.openTeam(t.id);
-		if (!hold(go, `Discard your changes and open ${label(t)}?`)) go();
-	}
 	/** Back over the guard entry too, when there is one. */
 	const leave = () => history.go(page.state.teamGuard ? -2 : -1);
 
@@ -252,7 +234,7 @@
 
 	/** The draft kept: the saved team, or null if it could not be. */
 	async function commit(): Promise<TeamRecord | null> {
-		if (!full || clash) return null;
+		if (!full) return null;
 		if (!dirty && start) return start;
 		let saved: TeamRecord | null = null;
 		saveFailed = false;
@@ -261,14 +243,7 @@
 				const ok = await storageSession.updateTeam(start.id, draft);
 				saved = ok ? { ...start, ...draft } : null;
 			} else {
-				const r = await storageSession.saveTeam(draft.slots, draft.name, draft.loadout);
-				// The set was filed meanwhile: that is a clash, never this draft
-				// saved (it would leave with the other team's name and loadouts).
-				if (r && !r.created) {
-					lateClash = r.team;
-					return null;
-				}
-				saved = r?.team ?? null;
+				saved = await storageSession.saveTeam(draft.slots, draft.name, draft.loadout);
 			}
 		} catch (err) {
 			console.error('[critcalc] team save failed', err);
@@ -456,10 +431,10 @@
 			     the way out. -->
 			<span class="td-end">
 				<span class="td-go">
-					<button class="btn btn--sm" disabled={!full || !!clash} onclick={() => then(onPlan)}
+					<button class="btn btn--sm" disabled={!full} onclick={() => then(onPlan)}
 						>Plan a rotation</button
 					>
-					<BandMenu label="New lineup" align="end" size="sm" disabled={!full || !!clash}>
+					<BandMenu label="New lineup" align="end" size="sm" disabled={!full}>
 						{#snippet items(close)}
 							{#each BOARD_PRESETS as p (p.key)}
 								<button
@@ -500,17 +475,10 @@
 			</span>
 		</div>
 
-		{#if saveFailed && !clash}
-			<p class="td-clash" role="alert">
+		{#if saveFailed}
+			<p class="td-failed" role="alert">
 				<Mark name="warn" size={14} />
 				<span>Couldn’t save the team. Try again.</span>
-			</p>
-		{/if}
-		{#if clash}
-			<p class="td-clash" role="status">
-				<Mark name="warn" size={14} />
-				<span>These four are already a team: <strong>{label(clash)}</strong>.</span>
-				<button class="td-link" onclick={() => openOther(clash)}>Open it</button>
 			</p>
 		{/if}
 
@@ -827,7 +795,7 @@
 			display: none;
 		}
 	}
-	.td-clash {
+	.td-failed {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -835,10 +803,6 @@
 		margin: 0;
 		color: var(--ui-warning);
 		font-size: var(--fs-sm);
-	}
-	.td-clash strong {
-		color: var(--text);
-		font-weight: var(--fw-semibold);
 	}
 	.td-link {
 		padding: 0;

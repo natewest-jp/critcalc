@@ -26,6 +26,7 @@
 	 * Characters grid.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
+	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
 	import { sideLayout } from '$lib/sidePortrait';
@@ -445,7 +446,7 @@
 	{@const field = isErrand ? undefined : season?.battlefields[t]}
 	{@const half = !isErrand && abyss && t < 2 ? abyss.halves[t] : undefined}
 	{@const verdicts = field ? verdictsFor(field, facts.ids, facts.conOf) : undefined}
-	{@const rotations = rotationsForTeam(team, bank)}
+	{@const rotations = rotationsForTeam(team, bank, rotationTabs.teams)}
 	{@const pin = pinnedRotation(team, bank)}
 	{@const sel = team.id === selectedTeamId}
 	{@const after = previewIds(team, facts)}

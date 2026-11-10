@@ -90,13 +90,13 @@ This replaces today's two layers and the `synced` flag (lineups design §9.5, §
 
 ## 3. Teams
 
-- ⚓ **One team per set of four characters, within a profile** (Nate: players make one Neuvillette team, not duplicates of the same four). The set is the identity; ⏭ the member ORDER is stored for display (§12).
+- ⚓ **Several teams may hold the same four characters** (Nate 2026-11-10; ↻ it was one team per set). A rotation or a lineup's team links to one team and keeps that link through a new slot order; replacing a member ends it. With no link, the work matches by its four, and several matches wait for a pick on the Planner's bench. The member ORDER is stored for display (§12). Record: `docs/rounds/duplicate-teams-2026-11-10.md`.
 - ⚓ **Teams are curated, never filed into.** Teams is the place to build presets and **start new work from them**:
   - **Plan a rotation** → a new Planner rotation with the four names.
   - **Add to a lineup** → onto the open Builder board's selected team (today's team picker, §10.2 of the lineups design).
 - A team card links to its work without containing it: **"4 rotations · 2 lineups"**, each a link into Rotations or Lineups filtered to that team.
 - A team carries its members, its name, ↻ **each member's loadout** (2026-10-24, §2.4: inherited by the team's rotations) and ⏭ maybe notes. It does **not** carry constellations: those come from the roster or the document (§2.4).
-- **Creating a team from the other direction:** a rotation whose four characters are not a saved team simply has no team. The Planner's bench offers **Save as team**; a Builder board row keeps its existing **Save team** (§10.2).
+- **Creating a team from the other direction:** a rotation whose four characters are not a saved team simply has no team. The Planner's bench offers **Save as team**.
 - Teams exist only in real profiles (⚓ §2.2).
 
 ### 3.1 What retires

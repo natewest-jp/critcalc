@@ -42,6 +42,26 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
+				<h3>Two teams can share the same four</h3>
+				<time class="entry-date" datetime="2026-11-10">November 10</time>
+			</header>
+			<p>
+				Keep one set of four as two teams, and each rotation stays with the team you made it from. A
+				new slot order keeps that link, and replacing a character ends it.
+			</p>
+		</article>
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Sandrone’s frames</h3>
+				<time class="entry-date" datetime="2026-11-10">November 10</time>
+			</header>
+			<p>
+				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. Fagio’s fire and beams
+				aren’t drawn yet.
+			</p>
+		</article>
+		<article class="entry">
+			<header class="entry-head">
 				<h3>Durin’s two dragons and Lan Yan’s Feathermoon Rings</h3>
 				<time class="entry-date" datetime="2026-11-07">November 7</time>
 			</header>

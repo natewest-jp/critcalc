@@ -35,6 +35,8 @@ import { characterKey } from './data/characterLookup';
 import { TEAM_SIZE, notationHasActions, seatsOfSaved, teamKey } from './utils/notationEdit';
 import type { SharedBoard } from './utils/boardUrl';
 import { ownership, type SavedNotation } from './stores';
+import { belongsToTeam, linkedTeam } from './storage/teamLoadout';
+import type { TeamRecord } from './storage/records';
 import { get } from 'svelte/store';
 
 export type TeamSlot = string | null;
@@ -48,6 +50,8 @@ export type BoardTeam = {
 	/** A saved rotation (`SavedNotation.id`) pinned as this team's own. Counts
 	 *  only while that rotation exists and is for this team (`pinnedRotation`). */
 	pinnedRotationId?: string;
+	/** The saved team this entry was made from (`LineupTeam.teamId`). */
+	teamId?: string;
 };
 
 /** What a board was created as (§10.5). Kept so a preset's boss names and
@@ -123,16 +127,25 @@ export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board 
 	};
 }
 
-/** The saved rotations filed under this team — the library's grouping (§10.1). */
+/** The saved rotations filed under this team — the library's grouping (§10.1).
+ *  A board team linked to a saved team leaves out rotations linked to another
+ *  team of the same four. */
 export function rotationsForTeam(
-	team: Pick<BoardTeam, 'slots'>,
-	saved: readonly SavedNotation[]
+	team: Pick<BoardTeam, 'slots' | 'teamId'>,
+	saved: readonly SavedNotation[],
+	teams: readonly TeamRecord[] = []
 ): SavedNotation[] {
 	const key = teamKey(team.slots);
 	if (!key) return [];
+	const linked = linkedTeam(teams, team);
 	// A names-only entry is the TEAM itself (the library's heading), never one
 	// of its rotations.
-	return saved.filter((e) => notationHasActions(e.notation) && teamKey(seatsOfSaved(e)) === key);
+	return saved.filter((e) => {
+		if (!notationHasActions(e.notation)) return false;
+		const slots = seatsOfSaved(e);
+		if (teamKey(slots) !== key) return false;
+		return !linked || belongsToTeam(linked, { slots, teamId: e.teamId }, teams);
+	});
 }
 
 /** The pinned rotation, if it still exists AND is still this team's. */
@@ -174,10 +187,11 @@ export const strictOwnership = (): Record<string, 'owned' | 'wishlist'> => get(o
  * order) and empties every other slot they hold. Slots keep their places, as
  * a removal does in the game. Pure: the store applies it.
  */
-/** A team with new slots; its pin drops if the set of characters changed. */
+/** A team with new slots; its pin and its link drop if the set of characters
+ *  changed. */
 function withSlots(t: BoardTeam, slots: TeamSlot[]): BoardTeam {
 	const sameTeam = teamKey(slots) === teamKey(t.slots);
-	return { ...t, slots, ...(!sameTeam && { pinnedRotationId: undefined }) };
+	return { ...t, slots, ...(!sameTeam && { pinnedRotationId: undefined, teamId: undefined }) };
 }
 
 /** A board whose teams take these slots, in order (unchanged teams kept as-is). */

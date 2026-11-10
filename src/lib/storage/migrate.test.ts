@@ -262,7 +262,7 @@ describe('migrate', () => {
 		]);
 	});
 
-	it('one team per set: a second names-only entry with the same four is not a second team', () => {
+	it('two names-only entries with the same four become two teams', () => {
 		const r = run({
 			'critcalc:savedNotations': [
 				{ id: 's1', name: 'Vape', notation: 'Bennett > Xiangling > Xingqiu > Sucrose', savedAt: 5 },
@@ -274,7 +274,7 @@ describe('migrate', () => {
 				}
 			]
 		});
-		expect(r.teams.map((t) => t.name)).toEqual(['Vape']);
+		expect(r.teams.map((t) => t.name)).toEqual(['Vape', 'Vape again']);
 	});
 
 	it('lineups: saved + open merge by savedId; a pin is remapped to the document', () => {

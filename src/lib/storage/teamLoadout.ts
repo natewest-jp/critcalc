@@ -128,6 +128,53 @@ export function teamOfSlots<T extends TeamRecord>(
 	return key ? teams.find((t) => !t.deleted && teamKey(t.slots) === key) : undefined;
 }
 
+/** A piece of work that may belong to a team: a rotation, or a lineup's team. */
+type Work = { slots: readonly (string | null)[]; teamId?: string };
+
+/** Every live team holding these four, oldest first. */
+export function teamsOfSlots<T extends TeamRecord>(
+	teams: readonly T[],
+	slots: readonly (string | null)[]
+): T[] {
+	const key = teamKey(slots);
+	return key ? teams.filter((t) => !t.deleted && teamKey(t.slots) === key) : [];
+}
+
+/** The team `work` names, while it is live and its four are still the work's. */
+export function linkedTeam<T extends TeamRecord>(teams: readonly T[], work: Work): T | undefined {
+	return work.teamId
+		? teamsOfSlots(teams, work.slots).find((t) => t.id === work.teamId)
+		: undefined;
+}
+
+/**
+ * ⚓ THE ONE RESOLVER for which team a piece of work is (Nate 2026-11-10): the
+ * team it links to, else the only team holding its four. Several teams and no
+ * link is no team, until the player picks one on the bench.
+ */
+export function teamOfWork<T extends TeamRecord>(teams: readonly T[], work: Work): T | undefined {
+	const linked = linkedTeam(teams, work);
+	if (linked) return linked;
+	const matches = teamsOfSlots(teams, work.slots);
+	return matches.length === 1 ? matches[0] : undefined;
+}
+
+/**
+ * ⚓ Does this work count as `team`'s (Nate 2026-11-10: a team card's counts
+ * and its Library filter)? Its four must be the team's, and a link to a
+ * different team of the same four takes it away; an unlinked match counts for
+ * every team holding those four.
+ */
+export function belongsToTeam(
+	team: Pick<TeamRecord, 'id' | 'slots'>,
+	work: Work,
+	teams: readonly TeamRecord[]
+): boolean {
+	const key = teamKey(team.slots);
+	if (!key || teamKey(work.slots) !== key) return false;
+	return (linkedTeam(teams, work)?.id ?? team.id) === team.id;
+}
+
 /** Only the members' entries: a team whose set changed drops the loadout of
  *  whoever left, and the newcomer starts with none. */
 export function membersOnly(m: Loadouts | undefined, slots: readonly (string | null)[]): Loadouts {
