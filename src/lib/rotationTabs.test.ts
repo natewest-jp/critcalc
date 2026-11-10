@@ -88,3 +88,36 @@ describe('rotationTabs — Undo belongs to the document it was made in', () => {
 		expect(rt.notation).toBe(work(1).notation);
 	});
 });
+
+describe('a rotation’s link to its team (⚓ Nate 2026-11-10)', () => {
+	const four = ['bennett', 'xiangling', 'xingqiu', 'sucrose'];
+	const linkedTab = (id: string): RotationTab => ({
+		id,
+		label: 'Linked',
+		notation: '',
+		slots: [...four],
+		placed: [true, true, true, true],
+		teamId: 'team-a'
+	});
+	const teamA = {
+		id: 'team-a',
+		updatedAt: 0,
+		profileId: 'p',
+		name: 'A',
+		slots: [...four],
+		createdAt: 0,
+		label: 'A'
+	};
+	const seat = (seats: string[]) => (rt.seating = { ...rt.seating, seats });
+
+	it('stays through a new slot order and ends when a member is replaced', () => {
+		rt.teams = [teamA];
+		show(linkedTab('link-1'));
+		expect(rt.team?.id).toBe('team-a');
+		seat([...four].reverse());
+		expect(rt.tab.teamId).toBe('team-a');
+		seat(['bennett', 'xiangling', 'xingqiu', 'kaedehara_kazuha']);
+		expect(rt.tab.teamId).toBeUndefined();
+		rt.teams = [];
+	});
+});

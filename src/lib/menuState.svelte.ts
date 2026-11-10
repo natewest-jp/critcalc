@@ -22,6 +22,7 @@
  * place the exits meet.
  */
 
+import type { TeamRecord } from '$lib/storage/records';
 import type { Snippet } from 'svelte';
 import { goto, pushState } from '$app/navigation';
 import { page } from '$app/state';
@@ -140,7 +141,7 @@ class MenuState {
 	/** The Library narrowed to one team's work (a team card's "2 rotations"
 	 *  link, design §3): its set's key and its label. Cleared by the Library's
 	 *  chip, and on leaving. */
-	teamFilter = $state<{ key: string; label: string } | null>(null);
+	teamFilter = $state<{ team: TeamRecord; label: string } | null>(null);
 
 	/** PICK MODE (design §6.3): the Library chooses a partner for this
 	 *  rotation (Compare with…, §4.6) instead of opening a document. */

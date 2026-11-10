@@ -28,9 +28,8 @@
 		type RotationDocument,
 		type TeamRecord
 	} from '$lib/storage/records';
-	import { teamOfSlots } from '$lib/storage/teamLoadout';
+	import { belongsToTeam, teamOfWork } from '$lib/storage/teamLoadout';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { teamKey } from '$lib/utils/notationEdit';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 
 	let { place }: { place: DocTool } = $props();
@@ -61,8 +60,8 @@
 	const ofTeam = (d: DocumentRecord): boolean =>
 		!filter ||
 		(d.type === 'rotation'
-			? teamKey(d.body.slots) === filter.key
-			: d.body.teams.some((t) => teamKey(t.slots) === filter.key));
+			? belongsToTeam(filter.team, d.body, savedTeams)
+			: d.body.teams.some((t) => belongsToTeam(filter.team, t, savedTeams)));
 	const shown = $derived(docs.filter(ofTeam));
 	/** ⚓ Theorycraft's documents can move to a real profile (§4.3). */
 	const canMove = $derived(
@@ -235,8 +234,8 @@
 	/** A row's words: the saved team's NAME when its four are one (what the
 	 *  width is for, as the notation is on a rotation card). ⛔ Never the
 	 *  members' names: they repeat the portraits beside them and truncate. */
-	const teamName = (slots: readonly (string | null)[]): string | undefined =>
-		teamOfSlots(savedTeams, slots)?.name;
+	const teamName = (work: Parameters<typeof teamOfWork>[1]): string | undefined =>
+		teamOfWork(savedTeams, work)?.name;
 	/** What each team row leads with: its Stygian battlefield's boss (the
 	 *  lineup's pinned season, as the Builder reads it), its Abyss half, or
 	 *  (custom) its number, so every card's rows share one column.
@@ -571,7 +570,7 @@
 							></span>
 							{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
 								{@const lead = end.lead(i)}
-								{@const name = teamName(team.slots)}
+								{@const name = teamName(team)}
 								<span class="lu-row" style:grid-row={i + 1}>
 									{#if lead.boss}
 										<img

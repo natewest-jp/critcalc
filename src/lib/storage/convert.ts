@@ -43,6 +43,7 @@ export function rotationToTab(doc: RotationDocument): RotationTab {
 		tabCon: doc.body.con ?? {}
 	};
 	if (doc.body.sample) tab.sample = doc.body.sample;
+	if (doc.body.teamId) tab.teamId = doc.body.teamId;
 	return tab;
 }
 
@@ -55,6 +56,7 @@ export function tabToRotationBody(tab: RotationTab): RotationBody {
 	if (tab.tabLoadout && Object.keys(tab.tabLoadout).length) body.loadout = tab.tabLoadout;
 	if (tab.tabCon && Object.keys(tab.tabCon).length) body.con = tab.tabCon;
 	if (tab.sample) body.sample = tab.sample;
+	if (tab.teamId) body.teamId = tab.teamId;
 	return body;
 }
 
@@ -78,6 +80,7 @@ export function boardToLineupBody(board: Board): LineupBody {
 			const team: LineupBody['teams'][number] = { id: t.id, slots: [...t.slots] };
 			if (t.con && Object.keys(t.con).length) team.con = t.con;
 			if (t.pinnedRotationId) team.pinnedRotationId = t.pinnedRotationId;
+			if (t.teamId) team.teamId = t.teamId;
 			return team;
 		})
 	};
@@ -116,6 +119,7 @@ export function rotationAsSaved(doc: RotationDocument): SavedNotation {
 		placed: [...doc.body.placed],
 		tabLoadout: doc.body.loadout ?? {},
 		tabCon: doc.body.con ?? {},
-		savedAt: doc.updatedAt
+		savedAt: doc.updatedAt,
+		...(doc.body.teamId && { teamId: doc.body.teamId })
 	};
 }

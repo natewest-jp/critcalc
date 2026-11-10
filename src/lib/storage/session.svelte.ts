@@ -131,7 +131,7 @@ import {
 	isEmptyEntry,
 	membersOnly,
 	retireRosterLoadout,
-	teamOfSlots
+	teamOfWork
 } from './teamLoadout';
 export { rotationAsSaved } from './convert';
 
@@ -181,6 +181,12 @@ type Entry = {
 	name: string | null;
 	body: RotationDocument['body'] | LineupDocument['body'];
 };
+
+/** A rotation's body with no team: it is leaving for a profile without one. */
+function withoutTeam(body: RotationBody): RotationBody {
+	const { teamId: _, ...rest } = body;
+	return rest;
+}
 
 class StorageSession {
 	/** True once the session has loaded the profile's documents. */
@@ -617,13 +623,14 @@ class StorageSession {
 	async create(
 		tool: DocTool,
 		preset?: BoardPreset,
-		team?: readonly (string | null)[]
+		team?: readonly (string | null)[],
+		teamId?: string
 	): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		// A new lineup's shape (New lineup, in the Library or on a team in
 		// Teams) and the team it starts with, taken by the blank the Builder
 		// shows next: now, or when the tools load if they aren't yet.
-		if (preset) this.#blankSeed = { preset, team };
+		if (preset) this.#blankSeed = { preset, team, teamId };
 		if (this.active) {
 			await this.flush();
 			this.#release(tool);
@@ -857,7 +864,11 @@ class StorageSession {
 
 	/** The shape the next blank lineup takes, and its first team; once. A
 	 *  plain blank is Stygian and empty. */
-	#blankSeed: { preset: BoardPreset; team?: readonly (string | null)[] } | null = null;
+	#blankSeed: {
+		preset: BoardPreset;
+		team?: readonly (string | null)[];
+		teamId?: string;
+	} | null = null;
 
 	#showBlank(tool: DocTool): void {
 		if (tool === 'planner') {
@@ -872,7 +883,11 @@ class StorageSession {
 			const board = makeBoard('Lineup 1', seed?.preset ?? 'stygian');
 			if (seed?.team) {
 				// ⚓ A team placed from Teams arrives selected (design §3).
-				board.teams[0] = { ...board.teams[0], slots: normalizeSlots(seed.team) };
+				board.teams[0] = {
+					...board.teams[0],
+					slots: normalizeSlots(seed.team),
+					...(seed.teamId && { teamId: seed.teamId })
+				};
 				boardFocus.teamId = board.teams[0].id;
 			}
 			boards.restoreFrom(board);
@@ -1609,7 +1624,7 @@ class StorageSession {
 					createdAt: now,
 					pairId: d.id,
 					// No team in Theorycraft: what it inherited becomes its own.
-					body: { ...bakeLoadout(d.body, teamOfSlots(teams, d.body.slots)), con }
+					body: { ...withoutTeam(bakeLoadout(d.body, teamOfWork(teams, d.body))), con }
 				};
 				// Both in one transaction: a tab closed mid-pass leaves no orphan
 				// copy for the next pass to duplicate. ⚓ The rotation's own
@@ -1755,27 +1770,18 @@ class StorageSession {
 		return all.sort((a, b) => a.createdAt - b.createdAt);
 	}
 
-	/** The profile's team holding this set of characters, if any. */
-	async teamFor(slots: readonly (string | null)[]): Promise<TeamRecord | undefined> {
-		const key = teamKey(slots);
-		if (!key) return undefined;
-		return (await this.teams()).find((t) => teamKey(t.slots) === key);
-	}
-
 	/**
-	 * File a set as a team. ⚓ An existing set is not filed twice: the team
-	 * that holds it comes back instead (`created` false). ⚓ An empty name is
-	 * a derived label, as an unnamed document's is (§4.2).
+	 * File a set as a team. ⚓ Two teams may hold the same four (Nate
+	 * 2026-11-10). ⚓ An empty name is a derived label, as an unnamed
+	 * document's is (§4.2).
 	 */
 	async saveTeam(
 		slots: readonly (string | null)[],
 		name = '',
 		teamLoadout: Record<string, LoadoutEntry> = {}
-	): Promise<{ team: TeamRecord; created: boolean } | null> {
+	): Promise<TeamRecord | null> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || this.profile?.kind !== 'real' || !teamKey(slots)) return null;
-		const existing = await this.teamFor(slots);
-		if (existing) return { team: existing, created: false };
 		const now = Date.now();
 		const team: TeamRecord = {
 			id: newId(),
@@ -1794,12 +1800,11 @@ class StorageSession {
 			...rotationTabs.teams,
 			{ ...team, label: team.name || rotationLabel(team.slots) }
 		];
-		return { team, created: true };
+		return team;
 	}
 
 	/** Rename a team, change its members, or replace its loadout (Teams'
-	 *  details save all three at once). Refused (false) when the new set is
-	 *  another team's: one team per set. */
+	 *  details save all three at once). */
 	async updateTeam(
 		id: string,
 		patch: {
@@ -1811,10 +1816,6 @@ class StorageSession {
 		const db = this.#db ?? (await ensureStorage());
 		const team = db ? await get(db, 'teams', id) : undefined;
 		if (!db || !team || team.deleted) return false;
-		if (patch.slots) {
-			const other = await this.teamFor(patch.slots);
-			if (other && other.id !== id) return false;
-		}
 		const next: TeamRecord = {
 			...team,
 			...(patch.name !== undefined && { name: patch.name.trim() }),
@@ -1860,13 +1861,18 @@ class StorageSession {
 	 * order, resting, in an empty notation (§8.1). It becomes the Planner's
 	 * current document; what was there stays in the Library.
 	 */
-	async planTeam(slots: readonly (string | null)[], con?: Record<string, number>): Promise<void> {
+	async planTeam(
+		slots: readonly (string | null)[],
+		con?: Record<string, number>,
+		teamId?: string
+	): Promise<void> {
 		const seated = rotationTabs.teamDocument(slots);
 		await this.createRotation({
 			notation: '',
 			slots: seated.slots!,
 			placed: seated.placed!,
-			...(con && Object.keys(con).length ? { con: { ...con } } : {})
+			...(con && Object.keys(con).length ? { con: { ...con } } : {}),
+			...(teamId && { teamId })
 		});
 	}
 
@@ -2119,15 +2125,6 @@ class StorageSession {
 			if (!(await this.#untrashProfile(db, owner.id, now, false))) return false;
 		}
 		const back = await this.#revive(db, store, id, now);
-		if (typeof back === 'object') {
-			// Said even for an Undo: a silent one reads as a broken button.
-			const twin = back.clash.name || rotationLabel(back.clash.slots);
-			notices.toast(
-				'warning',
-				named`${twin} already has these four, so this team stayed in the Trash`
-			);
-			return false;
-		}
 		if (!back) return false;
 		if (say) {
 			const p = this.profiles.find((x) => x.id === rec.profileId);
@@ -2136,29 +2133,8 @@ class StorageSession {
 		return true;
 	}
 
-	/**
-	 * One record out of the Trash, told to every tab. ⚓ One team per set
-	 * (`saveTeam`, `updateTeam`): a team whose four are already another live
-	 * team of its profile stays in the Trash and names that team (`clash`).
-	 * Refused rather than merged, so neither team's name or loadout is lost;
-	 * deleting the live one lets it back.
-	 */
-	async #revive(
-		db: Db,
-		store: 'documents' | 'teams',
-		id: string,
-		now: number
-	): Promise<boolean | { clash: TeamRecord }> {
-		if (store === 'teams') {
-			const t = await get(db, 'teams', id);
-			const key = t && teamKey(t.slots);
-			const clash =
-				key &&
-				(await getAll(db, 'teams', t.profileId)).find(
-					(o) => o.id !== id && teamKey(o.slots) === key
-				);
-			if (clash) return { clash };
-		}
+	/** One record out of the Trash, told to every tab. */
+	async #revive(db: Db, store: 'documents' | 'teams', id: string, now: number): Promise<boolean> {
 		const next = await modify(db, store, id, (r) => {
 			if (!r || !r.deleted || r.purged) return null;
 			const { deleted: _, ...live } = r;

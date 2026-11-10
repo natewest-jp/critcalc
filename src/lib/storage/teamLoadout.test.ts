@@ -7,7 +7,11 @@ import {
 	resolveEntry,
 	pruneInherited,
 	retireRosterLoadout,
-	teamOfSlots
+	teamOfSlots,
+	teamOfWork,
+	teamsOfSlots,
+	linkedTeam,
+	belongsToTeam
 } from './teamLoadout';
 import type { RotationBody, TeamRecord } from './records';
 
@@ -109,5 +113,48 @@ describe('an explicit None under a team', () => {
 	});
 	it("choosing the team's value again follows the team", () => {
 		expect(ownChoice({ artifactSetId: NONE }, { artifactSetId: 'x' }, t)).toEqual({});
+	});
+});
+
+describe('two teams can share one four (⚓ Nate 2026-11-10)', () => {
+	const four = ['a', 'b', 'c', 'd'];
+	const reordered = ['d', 'c', 'b', 'a'];
+	const other = ['a', 'b', 'c', 'e'];
+	const named = (id: string, slots: (string | null)[], deleted?: true): TeamRecord => ({
+		...team(slots),
+		id,
+		...(deleted ? { deleted } : {})
+	});
+	const one = named('one', four);
+	const two = named('two', reordered);
+	const teams = [one, two, named('else', other)];
+
+	it('finds every live team holding the four, whatever the slot order', () => {
+		expect(teamsOfSlots(teams, four).map((t) => t.id)).toEqual(['one', 'two']);
+		expect(teamsOfSlots([one, named('gone', four, true)], four).map((t) => t.id)).toEqual(['one']);
+	});
+
+	it('a link survives a new slot order but not a different member', () => {
+		expect(linkedTeam(teams, { slots: reordered, teamId: 'one' })?.id).toBe('one');
+		expect(linkedTeam(teams, { slots: other, teamId: 'one' })).toBeUndefined();
+	});
+
+	it('resolves the link, then a sole match, and no team when several are unlinked', () => {
+		expect(teamOfWork(teams, { slots: four, teamId: 'two' })?.id).toBe('two');
+		expect(teamOfWork(teams, { slots: other })?.id).toBe('else');
+		expect(teamOfWork(teams, { slots: four })).toBeUndefined();
+	});
+
+	it('a link to a team in the Trash falls back to the four', () => {
+		const list = [named('gone', four, true), two];
+		expect(teamOfWork(list, { slots: four, teamId: 'gone' })?.id).toBe('two');
+	});
+
+	it('counts linked work and unlinked matches, and not work linked elsewhere', () => {
+		expect(belongsToTeam(one, { slots: four, teamId: 'one' }, teams)).toBe(true);
+		expect(belongsToTeam(one, { slots: four }, teams)).toBe(true);
+		expect(belongsToTeam(two, { slots: four }, teams)).toBe(true);
+		expect(belongsToTeam(two, { slots: four, teamId: 'one' }, teams)).toBe(false);
+		expect(belongsToTeam(one, { slots: other }, teams)).toBe(false);
 	});
 });

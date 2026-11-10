@@ -18,12 +18,7 @@
 
 import type { BackupData } from '$lib/utils/settingsBackup';
 import { sampleById } from '$lib/data/plannerSamples';
-import {
-	notationHasActions,
-	seatingOfSaved,
-	seatsFromLegacy,
-	teamKey
-} from '$lib/utils/notationEdit';
+import { notationHasActions, seatingOfSaved, seatsFromLegacy } from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
 import type { BoardPreset } from '$lib/boards.svelte';
 import {
@@ -218,16 +213,11 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 	// - A RECENTLY CLOSED tab linked to a saved entry was closed without
 	//   saving its changes: the saved version is the one that migrates.
 
-	/** One team per set (§3): the first entry holding a set wins. */
-	const teamKeys = new Set<string>();
 	for (const e of saved) {
 		if (!notationHasActions(e.notation)) {
 			// A names-only entry is a TEAM (library.isTeamEntry).
 			const seats = seatingOfSaved(e).seats;
 			if (seats.every((s) => !s)) continue;
-			const key = teamKey(seats);
-			if (teamKeys.has(key)) continue;
-			teamKeys.add(key);
 			teams.push({
 				id: newId(),
 				updatedAt: e.savedAt ?? now,

@@ -510,18 +510,13 @@ describe('restoring a team', () => {
 		createdAt: T
 	});
 
-	it('stays in the Trash while its four are another live team', async () => {
+	it('comes back even while another live team holds its four', async () => {
 		await put(db, 'teams', team('t1', 'Old'));
 		await tombstone(db, 'teams', 't1', T + 1);
 		await put(db, 'teams', team('t2', 'New'));
 		const A = await tab();
-		expect(await A.s.untrash('teams', 't1')).toBe(false);
-		expect((await get(db, 'teams', 't1'))?.deleted).toBeTruthy();
-		expect((await getAll(db, 'teams', 'p1')).map((t) => t.id)).toEqual(['t2']);
-		// With the live one gone, it comes back.
-		await tombstone(db, 'teams', 't2', T + 2);
 		expect(await A.s.untrash('teams', 't1')).toBe(true);
-		expect((await getAll(db, 'teams', 'p1')).map((t) => t.name)).toEqual(['Old']);
+		expect((await getAll(db, 'teams', 'p1')).map((t) => t.name).sort()).toEqual(['New', 'Old']);
 	});
 });
 

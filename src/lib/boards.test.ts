@@ -1,3 +1,4 @@
+import type { TeamRecord } from './storage/records';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
 	boards,
@@ -201,5 +202,33 @@ describe('No repeats — one team per character', () => {
 		expect(heldElsewhere(board, two.id, 'traveler_cryo')?.id).toBe(one.id);
 		expect(slotOfCharacter(one.slots, 'traveler_cryo')).toBe(0);
 		expect(slotOfCharacter(one.slots, 'bennett')).toBe(-1);
+	});
+});
+
+describe('a board team linked to a saved team (⚓ Nate 2026-11-10)', () => {
+	const four = ['xingqiu', 'sucrose', 'xiangling', 'bennett'];
+	const saved = (id: string, teamId?: string) =>
+		({
+			id,
+			notation: 'Bennett E > Xiangling Q',
+			slots: [...four],
+			...(teamId && { teamId })
+		}) as SavedNotation;
+	const record = (id: string) =>
+		({ id, updatedAt: 0, profileId: 'p', name: '', slots: [...four], createdAt: 0 }) as TeamRecord;
+	const teams = [record('a'), record('b')];
+	const bank = [saved('mine', 'a'), saved('theirs', 'b'), saved('loose')];
+
+	it('lists its own rotations and unlinked matches, not another team’s', () => {
+		const team = { ...makeTeam(four), teamId: 'a' };
+		expect(rotationsForTeam(team, bank, teams).map((e) => e.id)).toEqual(['mine', 'loose']);
+	});
+
+	it('an unlinked board team still lists everything with its four', () => {
+		expect(rotationsForTeam(makeTeam(four), bank, teams).map((e) => e.id)).toEqual([
+			'mine',
+			'theirs',
+			'loose'
+		]);
 	});
 });
