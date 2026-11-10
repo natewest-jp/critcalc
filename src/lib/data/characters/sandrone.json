@@ -15,7 +15,7 @@
 			"name": "Formule Phenomenale: Self-Evident Proposition",
 			"input": ["N"],
 			"abilityType": "normal",
-			"caveat": "A bare C holds to the last beam before Fagio overheats. Write C ~Xs to set the hold yourself. The heat itself isn't drawn.",
+			"caveat": "A bare C holds to the last beam before Fagio overheats. Write C ~Xs to set the hold yourself. Fagio's temperature itself isn't drawn.",
 			"tags": [],
 			"sections": [
 				{

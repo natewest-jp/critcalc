@@ -48,9 +48,10 @@
 			<p>
 				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. A Charged Attack holds
 				until just before Fagio overheats, or for as long as you set with C ~Xs. Fagio’s temperature
-				carries through the rotation, so a quick Skill clears the way for the next hold. Fagio’s
-				fire and beams now reach the aura lane, and the beams stop applying Cryo during Radiance.
-				Neuvillette’s Charged Attack also takes C ~Xs now, to end Equitable Judgment early.
+				carries through the rotation, cooling over time and faster off-field, and a quick Skill
+				clears the way for the next hold. Fagio’s fire and beams now reach the aura lane, and the
+				beams stop applying Cryo during Radiance. Neuvillette’s Charged Attack also takes C ~Xs now,
+				to end Equitable Judgment early.
 			</p>
 		</article>
 		<article class="entry">
