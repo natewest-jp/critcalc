@@ -1209,18 +1209,19 @@
 	/* One row: the stack is taller than one disc. ⚠ Left to size the row,
 	   it made the row taller and dropped the portraits (rows sit on their
 	   cell's foot) below an Abyss card's first row. So the stack is held to
-	   the disc's height and overhangs it evenly, the rule stretches to
-	   match, and this padding keeps the lower overhang off the card's foot. */
+	   the disc's height and hangs down from the disc's top, where every
+	   card's rule starts; the rule runs down to the stack's foot, and this
+	   padding keeps that overhang off the card's foot. */
 	.lu-teams--one {
-		--lu-el-over: max(0px, (3 * var(--lu-el) + 2 * var(--lu-el-gap) - var(--lu-face)) / 2);
+		--lu-el-over: max(0px, 3 * var(--lu-el) + 2 * var(--lu-el-gap) - var(--lu-face));
 		padding-bottom: var(--lu-el-over);
 	}
 	.lu-teams--one > .lu-els {
 		align-self: end;
 		height: var(--lu-face);
+		justify-content: flex-start;
 	}
 	.lu-teams--one > .lu-rule {
-		margin-top: calc(var(--lu-hair) - var(--lu-el-over));
 		margin-bottom: calc(-1 * var(--lu-el-over));
 	}
 	.lu-lead {
