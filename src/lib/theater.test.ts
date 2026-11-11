@@ -10,6 +10,12 @@ import {
 	highestOpen,
 	modeVerdicts,
 	theaterElement,
+	fitsSeason,
+	toggleCast,
+	autoCast,
+	castRoom,
+	canInvite,
+	defaultMode,
 	type TheaterSeason
 } from './theater';
 import { monsterImage } from './endgame';
@@ -128,6 +134,18 @@ describe('the eligible cast', () => {
 		expect(cast).toEqual(['furina', 'neuvillette']);
 	});
 
+	it("lists newest first, the grid's order", () => {
+		const cast = eligibleCast(november, owns(['xingqiu', 'furina', 'neuvillette']));
+		expect(cast).toEqual(['furina', 'neuvillette', 'xingqiu']);
+	});
+
+	it('fits the season: its elements and guests, never an Opening Character', () => {
+		expect(fitsSeason(november, 'furina')).toBe(true);
+		expect(fitsSeason(november, 'qiqi')).toBe(true);
+		expect(fitsSeason(november, 'bennett')).toBe(false);
+		expect(fitsSeason(november, november.opening[0])).toBe(false);
+	});
+
 	it('counts one Traveler, however many elements the roster records', () => {
 		const cast = eligibleCast(
 			november,
@@ -195,5 +213,51 @@ describe('the Stats row', () => {
 		expect(s.onField).toBe(count((id) => characterRoles[id].position.includes('onField')));
 		expect(s.offField).toBe(count((id) => characterRoles[id].position.includes('offField')));
 		expect(s.support).toBe(count((id) => characterRoles[id].function.includes('support')));
+	});
+});
+
+describe("a lineup's cast", () => {
+	it('adds a pick at the end and takes it out again', () => {
+		expect(toggleCast(['furina'], 'xingqiu', 3)).toEqual(['furina', 'xingqiu']);
+		expect(toggleCast(['furina', 'xingqiu'], 'furina', 3)).toEqual(['xingqiu']);
+	});
+
+	it('refuses a pick past the room', () => {
+		expect(toggleCast(['a', 'b'], 'c', 2)).toBe('full');
+	});
+
+	it("lets a second Traveler take the first one's place", () => {
+		expect(toggleCast(['furina', 'traveler_hydro', 'fischl'], 'traveler_geo', 3)).toEqual([
+			'furina',
+			'traveler_geo',
+			'fischl'
+		]);
+	});
+
+	// Nate 2026-11-11: with one place left (Hard, 13 of 14 picked) the invite
+	// was refused; it took two.
+	it("takes a friend into the cast's last free place, and not past it", () => {
+		const hard = november.modes.find((m) => m.mode === 'hard')!;
+		expect(canInvite(hard, 13)).toBe(true);
+		expect(canInvite(hard, 14)).toBe(false);
+		expect(canInvite(hard, 0)).toBe(true);
+	});
+
+	it('leaves room for a friend', () => {
+		const lunar = november.modes.find((m) => m.mode === 'lunar')!;
+		expect(castRoom(lunar)).toBe(26);
+		expect(castRoom(lunar, true)).toBe(25);
+	});
+
+	it('auto-selects the guests first, then the rest in order, up to the room', () => {
+		const eligible = ['furina', 'qiqi', 'neuvillette', 'fischl'];
+		expect(autoCast(november, eligible, 3)).toEqual(['qiqi', 'furina', 'neuvillette']);
+		expect(autoCast(november, eligible, 9)).toEqual(['qiqi', 'furina', 'neuvillette', 'fischl']);
+	});
+
+	it('starts at the highest mode the roster opens, else the lowest', () => {
+		expect(defaultMode(november, 16)).toBe('visionary');
+		expect(defaultMode(november, 21, true)).toBe('lunar');
+		expect(defaultMode(november, 0)).toBe('easy');
 	});
 });

@@ -30,6 +30,11 @@
 	   widest are the elemental Travelers (89px at 12px), which at a 390
 	   phone's ~109px card land at ~10px. */
 	export const CC_NAME_FS = 12;
+
+	/* 🎛️ The ⊘ over a card you can't take is a sign over art, not a control
+	   glyph, so it breaks the held MARK_STROKE on purpose (⚓ Nate 2026-11-11:
+	   "a stroke of 3 looked good"). */
+	const OFF_STROKE = 3;
 	/** Write-once per name, never read reactively — a plain record. */
 	const nameWidths: Record<string, number> = {};
 	let measureCtx: CanvasRenderingContext2D | null = null;
@@ -102,6 +107,7 @@
 		ownedCon,
 		frame,
 		nudged = false,
+		unavailable = false,
 		pickLabel,
 		onPick,
 		onDetails,
@@ -117,6 +123,11 @@
 		frame?: { hue: string; slot: number };
 		/** A pick that found the team full: the card shakes once. */
 		nudged?: boolean;
+		/** ⚓ The game's ⊘ (Nate 2026-11-11, Imaginarium Theater): this
+		 *  character can't be picked here (not owned, or marked "can't enter
+		 *  Theater"). The card fades under a scrim and its pick is disabled;
+		 *  its details still open. */
+		unavailable?: boolean;
 		/** The pick's screen-reader name (it names the team). */
 		pickLabel: string;
 		onPick: (id: string) => void;
@@ -159,6 +170,7 @@
 <div
 	class="cc ctx-dark"
 	class:cc--nudged={nudged}
+	class:cc--off={unavailable}
 	style:--el-color={color}
 	style:--rows={rows}
 	style:--cc-glyph="{CC_GLYPH}px"
@@ -175,7 +187,12 @@
 		if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) onPreview?.(null);
 	}}
 >
-	<button class="cc-main" onclick={() => onPick(entry.id)} aria-label={pickLabel}>
+	<button
+		class="cc-main"
+		onclick={() => onPick(entry.id)}
+		aria-label={pickLabel}
+		disabled={unavailable}
+	>
 		<span class="cc-pt">
 			<!-- The plate's parchment, run up behind the rounded corner. -->
 			<span class="cc-notch ctx-light" aria-hidden="true"></span>
@@ -201,6 +218,11 @@
 					/>
 				{/if}
 			</span>
+			{#if unavailable}
+				<span class="cc-off" aria-hidden="true"
+					><Mark name="ban" size={56} strokeWidth={OFF_STROKE} /></span
+				>
+			{/if}
 			{#if chip !== null}
 				<span class="cc-chip" title={`You own C${chip}`}><ConMark level={chip} height={8} /></span>
 			{/if}
@@ -274,6 +296,28 @@
 	.cc:hover {
 		background: var(--glass-panel);
 		transform: translateY(-1px);
+	}
+	/* ⊘ UNAVAILABLE: a scrim over the art, never element opacity — the card
+	   rises on hover, and an opacity subtree on a transform dances in WebKit
+	   (.claude/rules/ui.md, sub-pixel laws). 🎛️ --cc-off-scrim. */
+	.cc--off {
+		--cc-off-scrim: color-mix(in srgb, var(--surface-well) 68%, transparent);
+	}
+	.cc--off:hover {
+		background: var(--glass-sheer);
+		transform: none;
+	}
+	.cc--off .cc-main {
+		cursor: default;
+	}
+	.cc-off {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		border-radius: 6px 6px var(--cc-corner) 0;
+		background: var(--cc-off-scrim);
+		color: var(--text);
 	}
 	/* The shared nudge (app.css) — it guards reduced motion itself. */
 	.cc--nudged {

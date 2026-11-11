@@ -8,10 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Imaginarium Theater seasons on the site (⚓ Nate 2026-11-06: soon; moved up 2026-11-09; to Now 2026-11-11).** Theater opens on the 1st of each month (`docs/library/game/release-calendar.md`), so the next natural target is 2026-12-01. Reference: `docs/library/game/imaginarium-theater.md` (the rules, and how to read lunaris's live-build Theater data).
-  - **The concept (⚓ Nate 2026-11-11).** Not lining characters up with fights. The tool answers "which difficulty can I enter this season": the season's details, how many of the roster's characters are eligible, which difficulties that opens, and the Blessing Levels past each minimum. Past the maximum, the player picks the cast, with a Stats strip counting element and role the way the game's Party Setup does (Support and Survivability optional).
-  - **The roster flag (⚓ Nate 2026-11-11):** one "can't enter Theater" toggle per character, marking the ones not leveled, in place of the deferred level 70+ flag. The mark is Lucide Lab's butterfly (the Theater's symbol) with a strike, drawn by Nate as a bespoke mark like `handOff`.
-  - **Signaling a new endgame (⚓ Nate 2026-11-11):** a lineup pinned to an older season or cycle gets a "New" tag in the game's style (the corner tag on new items). A standing "This cycle" section leading the lineup list (Abyss, Stygian, Theater) is to be demoed during or after the Theater round.
+- **Signaling a new endgame (⚓ Nate 2026-11-11).** A lineup pinned to an older season or cycle gets a "New" tag in the game's style (the corner tag on new items). A standing "This cycle" section leading the lineup list (Abyss, Stygian, Theater) is to be demoed. The Theater lineup's design is `docs/design/team-builder-lineups-design.md` §12.
 
 ## ⏭ Next
 
@@ -23,7 +20,6 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 ## Queue
 
 - **One-time dismissible hints** (agreed 2026-10-21 over a guided walkthrough). A single hint at the spot where a hidden action lives ("drag a pill to move it", "click the portrait to swap"), shown once, dismissal remembered in `siteSettings`. Un-held 2026-11-07 (⚓ Nate) once the streamlining landed; first check which hidden actions the redesigns already made visible, since a fixed control needs no hint. Hazards for later: band controls fold by breakpoint (a hint must anchor to what exists at that width), anything over a band must portal (`backdrop-filter`), a left tool page is paused not destroyed (no `onMount` state), copy goes through the style guide.
-- **A Builder `?team=` link into a full lineup (⚓ Nate 2026-11-11: queued).** The team goes into Theorycraft's current lineup and is dropped when that lineup is full; a warning toast says so (`boardBar.svelte.ts`). The recommendation: open a new Custom lineup in Theorycraft holding the team, the way `?b=` arrives. It creates a document and needs a line of copy. Nothing on the site makes these links yet. Record: `docs/rounds/closeout-2026-11-11.md` §3.
 - **Library search (⚓ Nate 2026-11-11: queued).** A search over the Library's rows, carried over from the old layout and not rebuilt (`LibraryPlace.svelte`).
 - **Arlecchino C2: one ICD across two surfaces (⚓ Nate 2026-10-30: deferred).** Her C2 RES buff is two effects, one on the Q (cast pool) and one on Charged Attacks (swing surface), sharing gcsim's one 10s ICD. The two passes in `buffWindows.ts` don't run in time order, so a shared clock needs both triggers' instants merged per holder first, plus a data field naming two effects as one ICD. On screen: a second 15s RES bar when a Q and a Charged Attack fall within 10s. Record: `docs/rounds/alhaitham-mirrors-round.md` §7.
 - **Small UI bugs, chased together.**

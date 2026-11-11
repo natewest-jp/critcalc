@@ -26,10 +26,20 @@ export function rotationLabel(slots: readonly (string | null)[]): string {
 }
 
 /** A lineup's derived label: its mode and season (§4.2). */
-export function lineupLabel(body: Pick<LineupBody, 'preset' | 'season'>): string {
+export function lineupLabel(body: Pick<LineupBody, 'preset' | 'season' | 'theater'>): string {
 	if (body.preset === 'stygian') return body.season ? `Stygian ${body.season}` : 'Stygian';
 	if (body.preset === 'abyss') return 'Abyss';
+	if (body.preset === 'theater') {
+		const month = body.theater?.season ? monthName(body.theater.season) : '';
+		return month ? `Theater ${month}` : 'Theater';
+	}
 	return 'Custom lineup';
+}
+
+/** "November" from an ISO day, read as a LOCAL date (never through UTC). */
+function monthName(iso: string): string {
+	const [y, m] = iso.split('-').map(Number);
+	return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long' });
 }
 
 export function rotationToTab(doc: RotationDocument): RotationTab {
@@ -69,6 +79,8 @@ export function lineupToBoard(doc: LineupDocument): Board {
 		teams: doc.body.teams.map((t) => ({ ...t, slots: [...t.slots] }))
 	};
 	if (doc.body.season) board.season = doc.body.season;
+	if (doc.body.preset === 'theater')
+		board.theater = { ...doc.body.theater, cast: [...(doc.body.theater?.cast ?? [])] };
 	return board;
 }
 
@@ -85,6 +97,8 @@ export function boardToLineupBody(board: Board): LineupBody {
 		})
 	};
 	if (board.season) body.season = board.season;
+	if (board.preset === 'theater')
+		body.theater = { ...board.theater, cast: [...(board.theater?.cast ?? [])] };
 	return body;
 }
 

@@ -59,3 +59,48 @@ describe('a backup’s profile color', () => {
 		expect(restored).not.toHaveProperty('colour');
 	});
 });
+
+describe('a backup keeps the Theater (2026-11-11)', () => {
+	const withRoster = (roster: unknown, documents: unknown[] = []) => {
+		const f = JSON.parse(file(undefined));
+		f.store.profiles[0].roster = roster;
+		f.store.documents = documents;
+		return JSON.stringify(f);
+	};
+
+	it('keeps the roster\'s "can\'t enter Theater" marks, and only true ones', () => {
+		const text = withRoster({ theaterOff: { furina: true, qiqi: 'yes', fischl: false } });
+		expect(profileOf(text)?.roster.theaterOff).toEqual({ furina: true });
+	});
+
+	it("keeps a Theater lineup's plan, dropping what doesn't fit it", () => {
+		const r = parseAnyBackup(
+			withRoster({}, [
+				{
+					id: 'd1',
+					profileId: 'p1',
+					type: 'lineup',
+					createdAt: 1,
+					body: {
+						preset: 'theater',
+						noRepeats: false,
+						teams: [],
+						theater: {
+							season: '2026-11-15',
+							mode: 'impossible',
+							cast: ['furina', 7, 'furina', 'qiqi'],
+							invite: true
+						}
+					}
+				}
+			]),
+			{ now: 1, newId: () => 'x' }
+		);
+		if (!r.ok) throw new Error(r.error);
+		const doc = r.store.documents.find((d) => d.id === 'd1');
+		expect(doc?.type === 'lineup' && doc.body.theater).toEqual({
+			cast: ['furina', 'qiqi'],
+			invite: true
+		});
+	});
+});

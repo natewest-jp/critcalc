@@ -11,7 +11,7 @@
  */
 
 import type { LoadoutEntry } from '$lib/stores';
-import type { BoardPreset } from '$lib/boards.svelte';
+import type { BoardPreset, TheaterPlan } from '$lib/boards.svelte';
 import { THEORYCRAFT_PICTURE } from '$lib/profilePictures.generated';
 
 export type SyncFields = {
@@ -50,6 +50,10 @@ export type Roster = {
 	/** ↻ RETIRED into teams (2026-10-24, `teamLoadout.ts`): kept as a field so
 	 *  older records and backups still read, and emptied at the next start. */
 	loadout: Record<string, LoadoutEntry>;
+	/** ⚓ "Can't enter Theater" (Nate 2026-11-11): the characters the player
+	 *  marked as not leveled for Imaginarium Theater (in practice, below 70).
+	 *  Optional, so records made before it read as none marked. */
+	theaterOff?: Record<string, true>;
 };
 
 /** ⚓ A profile is shown as a picture (draft 5): one of the art set by its id
@@ -136,6 +140,8 @@ export type LineupBody = {
 	season?: string;
 	noRepeats: boolean;
 	teams: LineupTeam[];
+	/** A Theater lineup's plan (`Board.theater`). */
+	theater?: TheaterPlan;
 };
 
 type DocumentCommon = SyncFields & {
@@ -188,7 +194,12 @@ export type TeamRecord = SyncFields & {
  *  routed to it on any device lands in the same profile. */
 export const THEORYCRAFT_ID = 'theorycraft';
 
-export const emptyRoster = (): Roster => ({ constellations: {}, ownership: {}, loadout: {} });
+export const emptyRoster = (): Roster => ({
+	constellations: {},
+	ownership: {},
+	loadout: {},
+	theaterOff: {}
+});
 
 /** A profile's picture. ⚓ Theorycraft's is RESERVED and cannot be changed
  *  (Nate 2026-10-22), so it is answered here whatever a record holds; a real

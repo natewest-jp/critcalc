@@ -32,6 +32,7 @@ import {
 	sanitizeVizWorkspace,
 	type BackupData
 } from '$lib/utils/settingsBackup';
+import type { TheaterPlan } from '$lib/boards.svelte';
 import { migrate, type MigrationResult } from './migrate';
 import {
 	THEORYCRAFT_ID,
@@ -155,7 +156,8 @@ function profile(v: unknown, now: number): ProfileRecord | null {
 		roster: {
 			constellations: sanitizeConstellations(roster.constellations) ?? {},
 			ownership: sanitizeOwnership(roster.ownership) ?? {},
-			loadout: sanitizeLoadout(roster.loadout) ?? {}
+			loadout: sanitizeLoadout(roster.loadout) ?? {},
+			theaterOff: sanitizeTheaterOff(roster.theaterOff)
 		},
 		current,
 		createdAt: num(v.createdAt, now)
@@ -193,15 +195,45 @@ function rotationBody(v: unknown): RotationBody | null {
 	return body;
 }
 
+/** A Theater lineup's plan: a season date, a known mode, a cast of ids. */
+function sanitizeTheaterPlan(v: unknown): TheaterPlan {
+	const plan: TheaterPlan = { cast: [] };
+	if (!isObj(v)) return plan;
+	if (typeof v.season === 'string' && /^\d{4}-\d{2}-01$/.test(v.season)) plan.season = v.season;
+	if (
+		typeof v.mode === 'string' &&
+		['easy', 'normal', 'hard', 'visionary', 'lunar'].includes(v.mode)
+	)
+		plan.mode = v.mode;
+	if (Array.isArray(v.cast))
+		plan.cast = [...new Set(v.cast.filter((id): id is string => str(id)))].slice(0, 40);
+	if (v.invite === true) plan.invite = true;
+	return plan;
+}
+
+/** The roster's "can't enter Theater" marks: ids marked `true`, nothing else. */
+function sanitizeTheaterOff(v: unknown): Record<string, true> {
+	const out: Record<string, true> = {};
+	if (isObj(v)) for (const [id, off] of Object.entries(v)) if (off === true && id) out[id] = true;
+	return out;
+}
+
 function lineupBody(v: unknown): LineupBody | null {
 	if (!isObj(v)) return null;
-	if (v.preset !== 'stygian' && v.preset !== 'abyss' && v.preset !== 'custom') return null;
+	if (
+		v.preset !== 'stygian' &&
+		v.preset !== 'abyss' &&
+		v.preset !== 'theater' &&
+		v.preset !== 'custom'
+	)
+		return null;
 	const body: LineupBody = {
 		preset: v.preset,
 		noRepeats: v.noRepeats === true,
 		teams: sanitizeTeams(v.teams) as LineupBody['teams']
 	};
 	if (typeof v.season === 'string' && /^\d+\.\d+$/.test(v.season)) body.season = v.season;
+	if (v.preset === 'theater') body.theater = sanitizeTheaterPlan(v.theater);
 	return body;
 }
 

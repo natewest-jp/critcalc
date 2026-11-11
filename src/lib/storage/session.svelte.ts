@@ -1088,7 +1088,7 @@ class StorageSession {
 		if (builder) {
 			const body = boardToLineupBody(builder);
 			const fresh = !this.#records.has(builder.id);
-			if (!fresh || body.teams.some((t) => t.slots.some((s) => s))) {
+			if (!fresh || body.teams.some((t) => t.slots.some((s) => s)) || body.theater?.cast.length) {
 				const name = nameOf(builder.id, builder.label);
 				out.push({ id: builder.id, type: 'lineup', name, body, fresh });
 			}
@@ -2284,7 +2284,8 @@ class StorageSession {
 				ownership: p.roster.ownership,
 				// ⚓ RETIRED (teamLoadout.ts): a rotation inherits its TEAM's
 				// loadout (`rotationTabs.inheritedLoadout`), never the roster's.
-				loadout: {}
+				loadout: {},
+				theaterOff: p.roster.theaterOff ?? {}
 			},
 			(part, value) => this.#queueRoster(part, value)
 		);
@@ -2313,7 +2314,7 @@ class StorageSession {
 		const out: RosterChanges = {};
 		for (const part of Object.keys(pending) as (keyof Roster)[]) {
 			const change = rosterChange(
-				this.#rosterBase[part] as Record<string, unknown>,
+				(this.#rosterBase[part] ?? {}) as Record<string, unknown>,
 				pending[part] as Record<string, unknown>
 			);
 			if (change) out[part] = change;

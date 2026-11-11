@@ -24,7 +24,7 @@
 	import BandMenu from './BandMenu.svelte';
 	import TeamMemberPortrait from './TeamMemberPortrait.svelte';
 	import TeamDetail from './TeamDetail.svelte';
-	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
+	import { TEAM_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
@@ -222,7 +222,7 @@
 						<button class="btn btn--primary" onclick={() => plan(t)}>Plan a rotation</button>
 						<BandMenu label="New lineup" align="start">
 							{#snippet items(close)}
-								{#each BOARD_PRESETS as p (p.key)}
+								{#each TEAM_PRESETS as p (p.key)}
 									<button
 										class="band-menu-item"
 										role="menuitem"

@@ -68,10 +68,30 @@ beforeEach(() => {
 const team = (i: number) => boards.board.teams[i];
 
 describe('presets (§10.5)', () => {
-	it('Stygian ×3, Abyss ×2, Custom ×1', () => {
-		expect(PRESET_TEAMS).toEqual({ stygian: 3, abyss: 2, custom: 1 });
+	it('Stygian ×3, Abyss ×2, Custom ×1, and the Theater none', () => {
+		expect(PRESET_TEAMS).toEqual({ stygian: 3, abyss: 2, theater: 0, custom: 1 });
 		expect(makeBoard('S', 'stygian').teams).toHaveLength(3);
 		expect(makeBoard('C').teams).toHaveLength(1);
+	});
+
+	// ⚓ Nate 2026-11-11: a Theater lineup is a cast, not teams.
+	it('a Theater lineup starts as an empty cast, with no teams and no season yet', () => {
+		const t = makeBoard('T', 'theater');
+		expect(t.teams).toEqual([]);
+		expect(t.theater).toEqual({ cast: [] });
+		expect(t.noRepeats).toBe(false);
+		expect(makeBoard('S', 'stygian')).not.toHaveProperty('theater');
+	});
+
+	it('changes only the plan fields it is given, and only on a Theater lineup', () => {
+		const t = makeBoard('T', 'theater');
+		boards.board = t;
+		boards.setTheater(t.id, { season: '2026-11-01', mode: 'visionary', cast: ['furina'] });
+		boards.setTheater(t.id, { mode: 'hard' });
+		expect(boards.board.theater).toEqual({ season: '2026-11-01', mode: 'hard', cast: ['furina'] });
+		boards.board = board;
+		boards.setTheater(board.id, { cast: ['furina'] });
+		expect(boards.board).not.toHaveProperty('theater');
 	});
 });
 
