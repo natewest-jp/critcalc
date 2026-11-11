@@ -588,13 +588,9 @@
 	{@const more = body.teams.length - LINEUP_ROWS}
 	{@const th = body.preset === 'theater' ? theaterCard(body) : undefined}
 	{#if th}
-		<span class="lu-teams">
+		<span class="lu-teams" class:lu-teams--one={th.rows.length === 1}>
 			<span class="lu-rule" style:grid-row="1 / span {th.rows.length}"></span>
-			<span
-				class="lu-els"
-				class:lu-els--one={th.rows.length === 1}
-				style:grid-row="1 / span {th.rows.length}"
-			>
+			<span class="lu-els" style:grid-row="1 / span {th.rows.length}">
 				{#each th.elements as el (el)}
 					<img src={elementIcon(el)} alt="" title={el} />
 				{/each}
@@ -1189,8 +1185,12 @@
 	}
 	/* A Theater card's lead: the season's three elements, stacked and
 	   centred on the rule, which runs from the first disc's top to the last
-	   disc's foot. 🎛️ 18px, or 12 when the cast is one row (three must fit
-	   one disc's height). */
+	   disc's foot. 🎛️ --lu-el is one size whatever the cast's rows (Nate
+	   2026-11-11: shrinking them to fit one row read as a different card). */
+	.lu-teams {
+		--lu-el: 18px;
+		--lu-el-gap: 2px;
+	}
 	.lu-els {
 		grid-column: 1;
 		margin-top: var(--lu-hair);
@@ -1198,16 +1198,19 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 2px;
-		--lu-el: 18px;
-	}
-	.lu-els--one {
-		--lu-el: 12px;
+		gap: var(--lu-el-gap);
 	}
 	.lu-els img {
+		flex: none;
 		width: var(--lu-el);
 		height: var(--lu-el);
 		object-fit: contain;
+	}
+	/* One row: the stack is taller than one disc, so it overhangs the disc
+	   evenly, above into the hair and below into this padding, which keeps
+	   the overhang clear of the card's foot. */
+	.lu-teams--one {
+		padding-bottom: max(0px, (3 * var(--lu-el) + 2 * var(--lu-el-gap) - var(--lu-face)) / 2);
 	}
 	.lu-lead {
 		width: var(--lu-face);
