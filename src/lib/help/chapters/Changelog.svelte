@@ -50,6 +50,21 @@
 	<h2 id="2026-11">November 2026</h2>
 
 	<div class="timeline">
+		<!-- Nate's wording, 2026-11-11 ("exlude" corrected to "exclude"). -->
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Imaginarium Theater added to the Team Builder</h3>
+				<time class="entry-date" datetime="2026-11-11">November 11</time>
+			</header>
+			<p>
+				You can now plan lineups for Imaginarium Theater to figure out which difficulty you will be
+				able to enter based on your current Roster. All of your owned characters are assumed to be
+				at level 70 or above, so to exclude characters from showing up in Theater lineups (if they
+				are level 70 or below), a new setting has been added to the Roster: While editing your
+				roster, hover over any owned character to see a button appear in the top right corner (the
+				butterfly with a strike through it). This will exclude them from Theater.
+			</p>
+		</article>
 		<article class="entry">
 			<header class="entry-head">
 				<h3>Sandrone is ready in the Rotation Planner</h3>
