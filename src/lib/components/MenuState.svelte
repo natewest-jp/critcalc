@@ -521,6 +521,11 @@
 					<ProfileForm mode="edit" />
 				{:else if section === 'profile/new'}
 					<ProfileForm mode="new" />
+				{:else if (section === 'roster' || section === 'teams') && !storageSession.profile}
+					<!-- Nothing until the session knows the profile: `isTheorycraft` is
+					     true while it is null, so a cold load of a real profile's Roster
+					     or Teams flashed the invitation (the top bar's own invitation
+					     waits the same way). -->
 				{:else if (section === 'roster' || section === 'teams') && isTheorycraft}
 					<!-- §9.1: Theorycraft has no roster and no teams; the invitation
 					     stands in them. -->

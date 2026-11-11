@@ -126,6 +126,16 @@
 		menu = menu === m ? null : m;
 	}
 
+	/** Beta opens its chapter OVER the surface, as About does from the Help
+	 *  menu, rather than navigating off the tool; a new-tab click keeps the
+	 *  link's own address (the `openCoverage` rule). */
+	function onBeta(e: MouseEvent): void {
+		if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+		e.preventDefault();
+		menu = null;
+		menuState.show(chapterSection('about', 'beta'));
+	}
+
 	/** A report carries the document's share link. */
 	function reportShareUrl(): Promise<string | null> {
 		if (docTool === 'planner') return documentBar.shareUrl();
@@ -164,7 +174,8 @@
 			>
 			<span class="tb-wordmark">critcalc.app</span>
 		</a>
-		<a class="tb-beta" href={resolve('/beta')} title="What beta means here">Beta</a>
+		<a class="tb-beta" href={resolve('/beta')} title="What beta means here" onclick={onBeta}>Beta</a
+		>
 	</div>
 
 	<!-- ── Three equal tool buttons, centred (form 5) ─────────────────── -->
