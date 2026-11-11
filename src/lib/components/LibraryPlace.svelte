@@ -298,15 +298,25 @@
 	);
 	const ofThisCycle = $derived(lineups.filter((d) => inThisCycle(d.body, d.updatedAt)));
 	const others = $derived(lineups.filter((d) => !ofThisCycle.includes(d)));
-	/** The running endgames, each with its lineups, and a blank card where
-	 *  there are none. Narrowed to a team, only that team's lineups show. */
-	const cycleGroups = $derived(
-		ENDGAMES.filter((k) => cycleNow[k]).map((kind) => {
-			const docs = ofThisCycle.filter((d) => d.body.preset === kind);
-			return { kind, docs, blank: !filter && docs.length === 0 };
-		})
+	/** ⚓ THIS CYCLE'S ORDER (Nate 2026-11-11): first a blank card for each
+	 *  running endgame with no lineup yet, by release date, newest first (the
+	 *  latest drop leftmost); then the lineups of this cycle, the one open
+	 *  now first, then by when each was last opened. ↻ Not by endgame: the
+	 *  fixed Abyss, Stygian, Theater order read as alphabetical. Narrowed to
+	 *  a team, only that team's lineups show, and no blanks. */
+	const blanks = $derived(
+		filter
+			? []
+			: ENDGAMES.filter((k) => cycleNow[k] && !ofThisCycle.some((d) => d.body.preset === k)).sort(
+					(a, b) => (runningCycle(b)?.start ?? '').localeCompare(runningCycle(a)?.start ?? '')
+				)
 	);
-	const showCycle = $derived(cycleGroups.some((g) => g.docs.length || g.blank));
+	const cycleLineups = $derived(
+		[...ofThisCycle].sort(
+			(a, b) => Number(b.id === currentId) - Number(a.id === currentId) || recency(b) - recency(a)
+		)
+	);
+	const showCycle = $derived(blanks.length > 0 || cycleLineups.length > 0);
 
 	/** An empty lineup of `kind` on its running cycle: what a blank card
 	 *  draws, with the same rows a new lineup starts with. */
@@ -329,15 +339,16 @@
 			day: 'numeric',
 			timeZone: 'UTC'
 		});
+	/** The running cycle of `kind`, with its dates. */
+	function runningCycle(kind: Endgame): { start: string; end: string } | undefined {
+		const id = cycleNow[kind];
+		if (kind === 'stygian') return SEASONS.find((x) => x.version === id);
+		if (kind === 'abyss') return ABYSS_CYCLES.find((x) => x.start === id);
+		return THEATER_SEASONS.find((x) => x.start === id);
+	}
 	/** A running cycle's dates, "Nov 11 – Dec 23". */
 	function cycleDates(kind: Endgame): string {
-		const id = cycleNow[kind];
-		const c =
-			kind === 'stygian'
-				? SEASONS.find((x) => x.version === id)
-				: kind === 'abyss'
-					? ABYSS_CYCLES.find((x) => x.start === id)
-					: THEATER_SEASONS.find((x) => x.start === id);
+		const c = runningCycle(kind);
 		return c ? `${fmtDay(c.start)} – ${fmtDay(c.end)}` : '';
 	}
 
@@ -745,10 +756,8 @@
 			<!-- ⚓ The blank cards lead (Nate 2026-11-11): what's newly
 			     offered comes first, then the lineups already made. -->
 			<ul class="cards">
-				{#each cycleGroups.filter((g) => g.blank) as g (g.kind)}{@render blankCard(g.kind)}{/each}
-				{#each cycleGroups as g (g.kind)}
-					{#each g.docs as d (d.id)}{@render lineupCard(d)}{/each}
-				{/each}
+				{#each blanks as kind (kind)}{@render blankCard(kind)}{/each}
+				{#each cycleLineups as d (d.id)}{@render lineupCard(d)}{/each}
 			</ul>
 			{#if others.length}<p class="sec sec--cycle sec--after">Other lineups</p>{/if}
 		{/if}

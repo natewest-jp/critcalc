@@ -50,6 +50,10 @@ Announcing a new endgame cycle, from the to-do's "Signaling a new endgame". Bran
 - Nate: switching an open lineup back to an older cycle, to look at what earlier endgames were, must not raise the tag; the reader isn't asking to be told about the newer one then. Generalized: the tag announces a cycle to someone who hasn't seen it, never to someone exploring. A cycle is seen once the reader opens any season picker (its menu lists the running cycle), tag or not, or has a lineup of the running cycle open in the Builder, however it got there (the blank card, New lineup, a team's New lineup, the cold start once restored).
 - Kept as they were: a lineup arriving by a link pinned to an old cycle shows the tag if the running one is unseen (that is the announcement's job); a deleted lineup of this cycle brings back its blank card without a tag; `seenCycles` is per browser, not per profile, since one person reads the tags.
 
+## 3e. This cycle's order (Nate, 2026-11-11)
+
+- It read as alphabetical: blanks and lineups both followed the fixed Abyss, Stygian, Theater order. Now the blank cards come first, by release date, newest first; then this cycle's lineups, the open one first, then by when each was last opened (`recency`).
+
 ## 4. Copy (approved by Nate, 2026-11-11)
 
 1. "Other lineups", the heading below This cycle.
