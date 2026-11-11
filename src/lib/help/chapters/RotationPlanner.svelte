@@ -55,8 +55,9 @@
 			attack like Mavuika’s.
 		</li>
 		<li>
-			<code>[N2 D]x3</code> repeats, <code>(E)</code> marks an optional action that isn’t drawn on
-			the timeline, and <code>E/Q</code> draws the first of two alternatives.
+			<code>3[N2 D]</code> or <code>[N2 D]x3</code> repeat the actions in the brackets,
+			<code>(E)</code> marks an optional action that isn’t drawn on the timeline, and
+			<code>E/Q</code> draws the first of two alternatives.
 		</li>
 		<li id="time-token">
 			critcalc adds a time token of its own, written <code>~Xs</code>. <code>~1.5s</code> adds 1.5
