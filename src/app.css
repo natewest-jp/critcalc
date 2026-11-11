@@ -128,6 +128,16 @@
 	--blue-400: #79b6e9; /* --ui-info on night, slate and glass — oklch .754 .097 244 */
 	--blue-700: #3682bb; /* --ui-info on paper — oklch .585 .115 244 */
 
+	/* LEMON and AMBER: the game's New tag (⚓ Nate 2026-11-11), the corner tag
+	   on a new item, and nothing else. Measured off his inventory screenshot:
+	   the six tags agree to within 2 in every channel, these are the means.
+	   The text and border are the lemon, the fill the amber. The palette had
+	   neither (the nearest, --ui-provisional, is paler and redder than the
+	   lemon), so they are borrowed, as --ui-danger stands in for the game's
+	   notification red. */
+	--lemon-200: #fffb5c;
+	--amber-500: #d38d26;
+
 	/* ══ L1 · COMPOSITING ══════════════════════════════════════════════════════
 	   The alphas Fable recovered. Two different fates, and the split is a law:
 
@@ -921,6 +931,16 @@
 	   hue: --blue-400 is C .080, about half of hydro's (.153), so it reads as a
 	   quiet blue beside the elements rather than as one. 5.67 to 1 on slate. */
 	--ui-info: var(--blue-400);
+	/* The New tag (`NewTag.svelte`): its text and border, and its fill. The
+	   same on every ground, as the game's is. */
+	--new-ink: var(--lemon-200);
+	--new-fill: var(--amber-500);
+	/* 🎛️ The tag's knobs (Nate tunes by eye): its text size, which sizes the
+	   rest in em; how far it rises above its host's top edge; how far in from
+	   the host's right edge it stands. */
+	--new-tag-size: 0.75rem;
+	--new-tag-lift: 0.6em;
+	--new-tag-inset: 0.5em;
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
 	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);

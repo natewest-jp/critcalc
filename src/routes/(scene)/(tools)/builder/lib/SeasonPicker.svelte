@@ -10,6 +10,7 @@
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
+	import NewTag from '$lib/components/NewTag.svelte';
 	import {
 		ABYSS_CYCLES,
 		SEASONS,
@@ -22,12 +23,18 @@
 	let {
 		kind,
 		value,
-		onPick
+		onPick,
+		fresh = false,
+		onOpen
 	}: {
 		kind: 'stygian' | 'abyss';
 		/** The board's stored cycle; unset follows the current one (§11.6). */
 		value: string | undefined;
 		onPick: (id: string) => void;
+		/** A newer cycle is running than the lineup's: the New tag stands on
+		 *  the plate's corner until the plate is clicked (`onOpen`). */
+		fresh?: boolean;
+		onOpen?: () => void;
 	} = $props();
 
 	type Option = { id: string; name: string; start: string; end: string };
@@ -66,41 +73,51 @@
 	{@const c = chosen}
 	<!-- Below `compact` the dates fold and the name stands alone (one Stygian
 	     per patch, one Moon per Abyss cycle); the menu keeps them. -->
-	<BandMenu
-		glass
-		ariaLabel="{kind === 'stygian' ? 'Season' : 'Cycle'}: {c.name}, {fmtDay(c.start)} – {fmtDay(
-			c.end
-		)}"
-		align="start"
-	>
-		{#snippet face()}<span class="sp-face"
-				>{c.name}<span class="sp-face-dates">&nbsp;· {fmtDay(c.start)} – {fmtDay(c.end)}</span
-				></span
-			>{/snippet}
-		{#snippet items(close)}
-			{#each options as o (o.id)}
-				{@const current = o.id === c.id}
-				<button
-					class="band-menu-item"
-					role="menuitemradio"
-					aria-checked={current}
-					onclick={() => {
-						close();
-						onPick(o.id);
-					}}
-				>
-					<span class="sp-check"
-						>{#if current}<Mark name="check" size={12} />{/if}</span
+	<!-- The host the New tag stands on: a click anywhere on the plate reaches
+	     it and acknowledges the new cycle. -->
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<span class="sp-host" onclick={fresh ? onOpen : undefined}>
+		<BandMenu
+			glass
+			ariaLabel="{kind === 'stygian' ? 'Season' : 'Cycle'}: {c.name}, {fmtDay(c.start)} – {fmtDay(
+				c.end
+			)}"
+			align="start"
+		>
+			{#snippet face()}<span class="sp-face"
+					>{c.name}<span class="sp-face-dates">&nbsp;· {fmtDay(c.start)} – {fmtDay(c.end)}</span
+					></span
+				>{/snippet}
+			{#snippet items(close)}
+				{#each options as o (o.id)}
+					{@const current = o.id === c.id}
+					<button
+						class="band-menu-item"
+						role="menuitemradio"
+						aria-checked={current}
+						onclick={() => {
+							close();
+							onPick(o.id);
+						}}
 					>
-					<span class="sp-name" class:sp-name--version={kind === 'stygian'}>{o.name}</span>
-					<span class="sp-dates">{fmtDay(o.start)} – {fmtDay(o.end)}</span>
-				</button>
-			{/each}
-		{/snippet}
-	</BandMenu>
+						<span class="sp-check"
+							>{#if current}<Mark name="check" size={12} />{/if}</span
+						>
+						<span class="sp-name" class:sp-name--version={kind === 'stygian'}>{o.name}</span>
+						<span class="sp-dates">{fmtDay(o.start)} – {fmtDay(o.end)}</span>
+					</button>
+				{/each}
+			{/snippet}
+		</BandMenu>
+		{#if fresh}<NewTag />{/if}
+	</span>
 {/if}
 
 <style>
+	.sp-host {
+		position: relative;
+		display: inline-flex;
+	}
 	.sp-face {
 		white-space: nowrap;
 	}

@@ -8,6 +8,7 @@
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
+	import NewTag from '$lib/components/NewTag.svelte';
 	import {
 		MODE_NAME,
 		OPENING_CAST,
@@ -22,7 +23,9 @@
 		mode,
 		verdicts,
 		onSeason,
-		onMode
+		onMode,
+		fresh = false,
+		onOpen
 	}: {
 		season: TheaterSeason;
 		/** Every season that has opened, newest first. */
@@ -32,6 +35,10 @@
 		verdicts: readonly ModeVerdict[];
 		onSeason: (start: string) => void;
 		onMode: (mode: TheaterMode) => void;
+		/** A newer season is running than the lineup's: the New tag stands on
+		 *  the season plate's corner until it is clicked (`onOpen`). */
+		fresh?: boolean;
+		onOpen?: () => void;
 	} = $props();
 
 	const fmtMonth = (iso: string, month: 'long' | 'short' = 'long') =>
@@ -42,28 +49,33 @@
 		});
 </script>
 
-<BandMenu glass ariaLabel="Season: {fmtMonth(season.start)}" align="start">
-	{#snippet face()}<span class="tp-face">{fmtMonth(season.start, 'short')}</span>{/snippet}
-	{#snippet items(close)}
-		{#each seasons as s (s.start)}
-			{@const current = s.start === season.start}
-			<button
-				class="band-menu-item"
-				role="menuitemradio"
-				aria-checked={current}
-				onclick={() => {
-					close();
-					onSeason(s.start);
-				}}
-			>
-				<span class="tp-check"
-					>{#if current}<Mark name="check" size={12} />{/if}</span
+<!-- The host the New tag stands on (SeasonPicker's). -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<span class="tp-host" onclick={fresh ? onOpen : undefined}>
+	<BandMenu glass ariaLabel="Season: {fmtMonth(season.start)}" align="start">
+		{#snippet face()}<span class="tp-face">{fmtMonth(season.start, 'short')}</span>{/snippet}
+		{#snippet items(close)}
+			{#each seasons as s (s.start)}
+				{@const current = s.start === season.start}
+				<button
+					class="band-menu-item"
+					role="menuitemradio"
+					aria-checked={current}
+					onclick={() => {
+						close();
+						onSeason(s.start);
+					}}
 				>
-				<span class="tp-name">{fmtMonth(s.start)}</span>
-			</button>
-		{/each}
-	{/snippet}
-</BandMenu>
+					<span class="tp-check"
+						>{#if current}<Mark name="check" size={12} />{/if}</span
+					>
+					<span class="tp-name">{fmtMonth(s.start)}</span>
+				</button>
+			{/each}
+		{/snippet}
+	</BandMenu>
+	{#if fresh}<NewTag />{/if}
+</span>
 
 <BandMenu glass ariaLabel="Mode: {MODE_NAME[mode]}" align="start">
 	{#snippet face()}<span class="tp-face">{MODE_NAME[mode]}</span>{/snippet}
@@ -94,6 +106,10 @@
 </BandMenu>
 
 <style>
+	.tp-host {
+		position: relative;
+		display: inline-flex;
+	}
 	.tp-face {
 		white-space: nowrap;
 	}
