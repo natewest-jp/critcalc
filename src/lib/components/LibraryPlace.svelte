@@ -935,6 +935,18 @@
 	.card.card--blank:hover {
 		background: var(--surface-invite-hover);
 	}
+	/* On the brighter fill the grey words fall under 4.5 to 1 (4.32 at
+	   rest, 3.40 on hover), so they take the full ink (7.13 and 5.62), and
+	   the rule a step up, which --line-soft would sit darker than the
+	   hover fill (⚓ Nate 2026-11-11). */
+	.card.card--blank .row-label.is-derived,
+	.card.card--blank .lu-tag,
+	.card.card--blank .row-meta {
+		color: var(--text);
+	}
+	.card.card--blank .lu-rule {
+		background: var(--line-strong);
+	}
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));

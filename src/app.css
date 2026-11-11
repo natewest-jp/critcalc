@@ -1722,7 +1722,7 @@
 	   a lineup offered rather than made. It rests on the hover rung, so it
 	   stands brighter than every card you made, and its hover is the rung
 	   above (the float rung's slate). ⚠ --muted reaches only 4.32 to 1 at
-	   rest and 3.40 on hover here. */
+	   rest and 3.40 on hover here, so the card's words take --text. */
 	--surface-invite: var(--slate-600);
 	--surface-invite-hover: var(--slate-500);
 	--surface-float-key: color-mix(in srgb, var(--parchment-100) 16%, var(--slate-500));

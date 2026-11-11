@@ -37,7 +37,13 @@ Announcing a new endgame cycle, from the to-do's "Signaling a new endgame". Bran
 ## 3b. After Nate's second look
 
 - The tag takes a size per surface: 12px on a Library card, 10px on a Builder plate (`--new-tag-size-library`, `--new-tag-size-builder`, `NewTag`'s `on`).
-- The well didn't read for the blank card. It rests on the hover rung (slate-600) and hovers to the float rung (slate-500), as the new roles `--surface-invite` and `--surface-invite-hover`. ⚠ The card's grey words (`--muted`) measure 4.32 to 1 at rest and 3.40 on hover there, under the 4.5 guideline.
+- The well didn't read for the blank card. It rests on the hover rung (slate-600) and hovers to the float rung (slate-500), as the new roles `--surface-invite` and `--surface-invite-hover`. Its grey words (`--muted`) measured 4.32 to 1 at rest and 3.40 on hover there, under the 4.5 guideline (fixed in §3c).
+
+## 3c. After Nate's third look
+
+- The tag is settled (Nate: no more changes).
+- The blank card's grey words take the full ink, and its rule steps up to `--line-strong`: `--line-soft` sat darker than the hover fill.
+- The season menus' rows had grown to 48px against the Theater's 29: renaming the picker's `sp-version` to `sp-name` collided with the global `.sp-name` (a side portrait's name, `app.css`), which made the name a 14px flex box. It is `sp-cycle` now, and both menus match the Theater's again.
 
 ## 4. Copy proposed, not yet approved
 
