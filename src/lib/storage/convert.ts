@@ -12,6 +12,7 @@ import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { isMintedLabel } from './migrate';
 import type { SavedNotation } from '$lib/stores';
 import type { LineupBody, LineupDocument, RotationBody, RotationDocument } from './records';
+import seasonDates from '$lib/data/endgame/season-dates.json';
 
 /**
  * ⚓ An unnamed document shows a label derived from its contents (§4.2): the
@@ -28,12 +29,24 @@ export function rotationLabel(slots: readonly (string | null)[]): string {
 /** A lineup's derived label: its mode and season (§4.2). */
 export function lineupLabel(body: Pick<LineupBody, 'preset' | 'season' | 'theater'>): string {
 	if (body.preset === 'stygian') return body.season ? `Stygian ${body.season}` : 'Stygian';
-	if (body.preset === 'abyss') return 'Abyss';
+	if (body.preset === 'abyss') {
+		const moon = body.season ? abyssMoon(body.season) : undefined;
+		return moon ? `Abyss ${moon}` : 'Abyss';
+	}
 	if (body.preset === 'theater') {
 		const month = body.theater?.season ? monthName(body.theater.season) : '';
 		return month ? `Theater ${month}` : 'Theater';
 	}
 	return 'Custom lineup';
+}
+
+/** An Abyss cycle's Moon ("Stardread Moon"), by its start, from the
+ *  hand-kept date table that names each cycle (⚓ Nate 2026-11-11). It, not
+ *  `abyss.json`, because this module rides in the storage core and the
+ *  blessings' data is ~19 KB. */
+function abyssMoon(start: string): string | undefined {
+	const name = (seasonDates.abyss as Record<string, string | { en: string }>)[start];
+	return typeof name === 'string' ? name : name?.en;
 }
 
 /** "November" from an ISO day, read as a LOCAL date (never through UTC). */
