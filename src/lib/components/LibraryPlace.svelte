@@ -663,7 +663,7 @@
 			{@render teamsOf(body)}
 			<span class="row-meta lu-meta"><span>{cycleDates(kind)}</span></span>
 		</button>
-		{#if isNew(kind)}<NewTag />{/if}
+		{#if isNew(kind)}<NewTag on="library" />{/if}
 	</li>
 {/snippet}
 
@@ -923,16 +923,17 @@
 	.sec.sec--after {
 		margin-top: 2.2rem;
 	}
-	/* A blank card is an invitation, not a lineup you made: it sits IN the
-	   ground, on the well (a slot to fill), where a made lineup stands
-	   raised. ⛔ Not a border: a 1px ring on a card already means "Open
-	   now", and a border around a quiet fill is the hollow shape the site
-	   avoids. Hover lifts it as it does every card. */
+	/* A blank card is an invitation, not a lineup you made: it stands a
+	   rung brighter than the cards you made, and its hover a rung brighter
+	   again (--surface-invite, ⚓ Nate 2026-11-11). ↻ It sat on the well
+	   first, which didn't read. ⛔ Not a border: a 1px ring on a card already
+	   means "Open now", and a border around a quiet fill is the hollow shape
+	   the site avoids. */
 	.card.card--blank {
-		background: var(--surface-well);
+		background: var(--surface-invite);
 	}
 	.card.card--blank:hover {
-		background: var(--surface-hover);
+		background: var(--surface-invite-hover);
 	}
 	.cards {
 		display: grid;

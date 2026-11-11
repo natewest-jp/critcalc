@@ -11,10 +11,17 @@
   It takes no clicks, so a click lands on the host, which clears the tag
   (`$lib/stores` `seenCycles`).
 
-  🎛️ The knobs are in `app.css` beside the colors: `--new-tag-size` (the
-  text, and the padding in em) and `--new-tag-overhang`.
+  🎛️ The knobs are in `app.css` beside the colors: the text size per
+  surface (`--new-tag-size-library`, `--new-tag-size-builder`; the padding
+  follows in em) and `--new-tag-overhang`.
 -->
-<span class="new-tag">New</span>
+<script lang="ts">
+	/** Which surface it stands on: a Library card, or a plate on the
+	 *  Builder (⚓ Nate 2026-11-11: each its own size). */
+	let { on }: { on: 'library' | 'builder' } = $props();
+</script>
+
+<span class="new-tag new-tag--{on}">New</span>
 
 <style>
 	.new-tag {
@@ -28,11 +35,16 @@
 		background: var(--new-fill);
 		color: var(--new-ink);
 		font-family: var(--font-display);
-		font-size: var(--new-tag-size);
 		font-weight: var(--fw-bold);
 		line-height: 1.15;
 		letter-spacing: 0.01em;
 		white-space: nowrap;
 		pointer-events: none;
+	}
+	.new-tag.new-tag--library {
+		font-size: var(--new-tag-size-library);
+	}
+	.new-tag.new-tag--builder {
+		font-size: var(--new-tag-size-builder);
 	}
 </style>

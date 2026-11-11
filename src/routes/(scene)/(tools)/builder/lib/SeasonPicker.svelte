@@ -109,7 +109,7 @@
 				{/each}
 			{/snippet}
 		</BandMenu>
-		{#if fresh}<NewTag />{/if}
+		{#if fresh}<NewTag on="builder" />{/if}
 	</span>
 {/if}
 

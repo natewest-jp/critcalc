@@ -74,7 +74,7 @@
 			{/each}
 		{/snippet}
 	</BandMenu>
-	{#if fresh}<NewTag />{/if}
+	{#if fresh}<NewTag on="builder" />{/if}
 </span>
 
 <BandMenu glass ariaLabel="Mode: {MODE_NAME[mode]}" align="start">

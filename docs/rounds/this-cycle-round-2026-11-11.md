@@ -34,6 +34,11 @@ Announcing a new endgame cycle, from the to-do's "Signaling a new endgame". Bran
 - A blank card read as a lineup Nate didn't remember making. It sits on the well now (`--surface-well`, a slot to fill), where a made lineup stands raised. A border was rejected: a 1px ring on a card already means Open now, and a border around a quiet fill is the hollow shape the site avoids.
 - The blank cards lead This cycle, before the lineups already made (Nate).
 
+## 3b. After Nate's second look
+
+- The tag takes a size per surface: 12px on a Library card, 10px on a Builder plate (`--new-tag-size-library`, `--new-tag-size-builder`, `NewTag`'s `on`).
+- The well didn't read for the blank card. It rests on the hover rung (slate-600) and hovers to the float rung (slate-500), as the new roles `--surface-invite` and `--surface-invite-hover`. ⚠ The card's grey words (`--muted`) measure 4.32 to 1 at rest and 3.40 on hover there, under the 4.5 guideline.
+
 ## 4. Copy proposed, not yet approved
 
 1. Now: (no heading over the lineups below This cycle)
