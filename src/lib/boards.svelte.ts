@@ -503,8 +503,8 @@ export function toSharedBoard(
 	return {
 		label: board.label,
 		noRepeats: board.noRepeats,
-		// TODO: data gap — the `?b=` link has no Theater shape yet; the Builder
-		// offers no Share on a Theater lineup, and a call here sends no cast.
+		// ⚓ A Theater lineup is not shared (Nate 2026-11-11: it is one player's
+		// roster), so the Builder offers no Share there; a call sends no cast.
 		preset: board.preset === 'theater' ? 'custom' : board.preset,
 		...(board.season && { season: board.season }),
 		teams: board.teams.map((t) => ({ slots: t.slots, constellations: denseCon(t, saved, roster) }))

@@ -732,7 +732,7 @@
 									aria-label="Can’t enter Theater"
 									title={editing
 										? offs[c.id]
-											? 'Can enter Theater again (T)'
+											? 'Can enter Theater (T)'
 											: 'Mark can’t enter Theater (T)'
 										: offs[c.id]
 											? 'Can’t enter Theater'

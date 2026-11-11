@@ -62,6 +62,7 @@
 		currentTheater,
 		defaultMode,
 		eligibleCast,
+		fitsSeason,
 		liveTheaterSeasons,
 		modeVerdicts,
 		toggleCast,
@@ -603,32 +604,35 @@
 	const theaterOn = $derived(!!thSeason && !!thMode && !errandOpen);
 
 	/** ⚓ A new Theater lineup, or one given a new season, starts at the
-	 *  HIGHEST mode the roster opens, with everyone eligible picked up to its
-	 *  room (the game's Auto-select). Waits for the profile, so the roster it
-	 *  reads is the player's, not the empty default. */
+	 *  HIGHEST mode the roster opens, with nothing picked (Nate 2026-11-11:
+	 *  Auto-select is the button's, never the lineup's own). Waits for the
+	 *  profile, so the roster it reads is the player's, not the empty
+	 *  default. */
 	const rosterReady = $derived(mounted && !!sessionMod?.storageSession.profile);
 	$effect(() => {
 		if (board.preset !== 'theater' || !thSeason || !rosterReady || !boards.restored) return;
 		if (plan.season && plan.mode) return;
 		const season = thSeason;
-		untrack(() => settleTheater(season, plan.cast.length ? plan.cast : null));
+		untrack(() => settleTheater(season));
 	});
 
-	function settleTheater(season: TheaterSeason, keep: string[] | null): void {
+	/** Settle a lineup onto `season`: its highest open mode, and the picks
+	 *  that still fit it (a new season changes the elements, so most go). */
+	function settleTheater(season: TheaterSeason): void {
 		const eligible = eligibleCast(season, { owned: thOwned, excluded: thOff });
 		const mode = defaultMode(season, eligible.length, plan.invite);
 		const rules = season.modes.find((m) => m.mode === mode)!;
-		const room = castRoom(rules, plan.invite);
+		const kept = plan.cast.filter((id) => fitsSeason(season, id));
 		boards.setTheater(board.id, {
 			season: season.start,
 			mode,
-			cast: keep ? keep.slice(0, room) : autoCast(season, eligible, room)
+			cast: kept.slice(0, castRoom(rules, plan.invite))
 		});
 	}
 
 	function onTheaterSeason(start: string): void {
 		const season = THEATER_SEASONS.find((s) => s.start === start);
-		if (season && start !== thSeason?.start) settleTheater(season, null);
+		if (season && start !== thSeason?.start) settleTheater(season);
 	}
 
 	/** ⚓ A mode the player chooses stays; a lower one trims the cast to its
@@ -642,13 +646,15 @@
 		});
 	}
 
-	function toggleInvite(): void {
-		if (!thMode) return;
+	/** ⚓ A friend's character takes a place of the player's own, so a FULL
+	 *  cast refuses it (Nate 2026-11-11) rather than dropping the last pick;
+	 *  the view nudges the button. Returns whether it changed. */
+	function toggleInvite(): boolean {
+		if (!thMode) return false;
 		const invite = !plan.invite;
-		boards.setTheater(board.id, {
-			invite,
-			cast: plan.cast.filter(thAvailable).slice(0, castRoom(thMode, invite))
-		});
+		if (invite && thCast.length >= castRoom(thMode, true)) return false;
+		boards.setTheater(board.id, { invite });
+		return true;
 	}
 
 	/** A pick on the Theater grid: the game's toggle, one Traveler at most. */
@@ -1642,7 +1648,8 @@
 					{/if}
 					{#if theaterOn}
 						<!-- The game's Auto-select: everyone eligible, up to the mode's
-						     room. No Share yet: the `?b=` link has no Theater shape. -->
+						     room. ⚓ No Share (Nate 2026-11-11): a Theater cast is one
+						     player's roster, nothing to hand to another. -->
 						<button
 							class="btn btn--glass"
 							aria-label="Auto-select the cast"
@@ -1727,7 +1734,6 @@
 						cast={thCast}
 						invite={!!plan.invite}
 						onInvite={toggleInvite}
-						onRemove={toggleTheater}
 					/>
 				{:else}
 					<BoardView
@@ -1968,8 +1974,9 @@
 		   — so the old fixed steps (720 at `broad`, 800 at `vast`), which
 		   dropped the column ~140px, are gone. */
 		--tb-board-w: calc(clamp(460px, 100% - 630px, 580px) + clamp(0px, 100% - 1439px, 220px));
-		/* 🎛️ A Theater pick's frame and number tab (the game's are green). */
-		--tb-theater-pick: var(--accent);
+		/* 🎛️ A Theater pick's frame and number tab (⚓ Nate 2026-11-11: one of
+		   ours, the blue; the game's are green). The first team's hue. */
+		--tb-theater-pick: var(--team-hue-first);
 		--tb-dock-gap: 16px;
 	}
 	.tb-dock {

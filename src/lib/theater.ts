@@ -23,6 +23,7 @@ import { characterIndex } from './data/characterIndex.generated';
 import { characterRoles } from './data/characterRoles.generated';
 import type { Element } from './types/ability';
 import type { Localized } from './endgame';
+import { newestFirst } from './utils/release';
 
 export type TheaterMode = 'easy' | 'normal' | 'hard' | 'visionary' | 'lunar';
 
@@ -137,8 +138,9 @@ export type TheaterRoster = {
 /**
  * The characters this roster can bring as Alternate Cast: owned, not marked,
  * of the season's elements or one of its Special Guest Stars, and not an
- * Opening Character (they start in the Principal Cast already). In the
- * corpus's order.
+ * Opening Character (they start in the Principal Cast already). Newest
+ * first, the grid's own order (⚓ Nate 2026-11-11), so Auto-select numbers
+ * its picks in the order the grid shows them.
  *
  * ⚠️ One Traveler at most: the roster keeps one entry per element, but the
  * game has one Traveler. An owned Traveler of a season's element counts once.
@@ -146,10 +148,8 @@ export type TheaterRoster = {
 export function eligibleCast(season: TheaterSeason, roster: TheaterRoster): string[] {
 	const out: string[] = [];
 	let traveler = false;
-	for (const id of Object.keys(ELEMENTS).sort(byCorpus)) {
-		if (!roster.owned(id) || roster.excluded(id) || season.opening.includes(id)) continue;
-		const fits = season.elements.includes(ELEMENTS[id]) || season.guests.includes(id);
-		if (!fits) continue;
+	for (const id of Object.keys(ELEMENTS).sort(byNewest)) {
+		if (!roster.owned(id) || roster.excluded(id) || !fitsSeason(season, id)) continue;
 		if (id.startsWith('traveler_')) {
 			if (traveler) continue;
 			traveler = true;
@@ -159,11 +159,20 @@ export function eligibleCast(season: TheaterSeason, roster: TheaterRoster): stri
 	return out;
 }
 
-const CORPUS_ORDER = new Map(characterIndex.map((c, i) => [c.id, i]));
-function byCorpus(a: string, b: string) {
-	return (
-		(CORPUS_ORDER.get(a) ?? Infinity) - (CORPUS_ORDER.get(b) ?? Infinity) || a.localeCompare(b)
-	);
+/** Whether a character can be in this season's Alternate Cast at all: of
+ *  its elements or a Special Guest Star, and not an Opening Character. */
+export function fitsSeason(season: TheaterSeason, id: string): boolean {
+	if (season.opening.includes(id)) return false;
+	return season.elements.includes(ELEMENTS[id]) || season.guests.includes(id);
+}
+
+const ENTRIES = new Map(characterIndex.map((c) => [c.id, c]));
+/** Newest patch first, then by name; a character the corpus lacks goes last. */
+function byNewest(a: string, b: string): number {
+	const ea = ENTRIES.get(a);
+	const eb = ENTRIES.get(b);
+	if (!ea || !eb) return Number(!ea) - Number(!eb) || a.localeCompare(b);
+	return newestFirst(ea, eb);
 }
 
 export type ModeVerdict = {
@@ -288,15 +297,18 @@ export function toggleCast(cast: readonly string[], id: string, room: number): s
 	return cast.length >= room ? 'full' : [...cast, id];
 }
 
-/** The game's Auto-select: the eligible cast, the season's elements first
- *  and the Special Guest Stars after them, up to `room`. */
+/** Auto-select (⚓ Nate 2026-11-11: only on its button, never on its own):
+ *  the Special Guest Stars first, then the eligible cast in its order
+ *  (newest first), up to `room`. ⚓ Guests first (Nate): they are the most
+ *  valuable additions, since their Blessing Level buffs are doubled and they
+ *  bring reactions from outside the season's three elements. */
 export function autoCast(
 	season: TheaterSeason,
 	eligible: readonly string[],
 	room: number
 ): string[] {
 	const guest = (id: string) => season.guests.includes(id);
-	return [...eligible.filter((id) => !guest(id)), ...eligible.filter(guest)].slice(0, room);
+	return [...eligible.filter(guest), ...eligible.filter((id) => !guest(id))].slice(0, room);
 }
 
 /** The mode a lineup starts at: the highest the roster opens, else the

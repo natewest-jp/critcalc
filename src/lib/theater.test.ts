@@ -10,6 +10,7 @@ import {
 	highestOpen,
 	modeVerdicts,
 	theaterElement,
+	fitsSeason,
 	toggleCast,
 	autoCast,
 	castRoom,
@@ -132,6 +133,18 @@ describe('the eligible cast', () => {
 		expect(cast).toEqual(['furina', 'neuvillette']);
 	});
 
+	it("lists newest first, the grid's order", () => {
+		const cast = eligibleCast(november, owns(['xingqiu', 'furina', 'neuvillette']));
+		expect(cast).toEqual(['furina', 'neuvillette', 'xingqiu']);
+	});
+
+	it('fits the season: its elements and guests, never an Opening Character', () => {
+		expect(fitsSeason(november, 'furina')).toBe(true);
+		expect(fitsSeason(november, 'qiqi')).toBe(true);
+		expect(fitsSeason(november, 'bennett')).toBe(false);
+		expect(fitsSeason(november, november.opening[0])).toBe(false);
+	});
+
 	it('counts one Traveler, however many elements the roster records', () => {
 		const cast = eligibleCast(
 			november,
@@ -226,10 +239,10 @@ describe("a lineup's cast", () => {
 		expect(castRoom(lunar, true)).toBe(25);
 	});
 
-	it('auto-selects the elements before the guests, up to the room', () => {
-		const eligible = ['qiqi', 'furina', 'neuvillette', 'fischl'];
-		expect(autoCast(november, eligible, 3)).toEqual(['furina', 'neuvillette', 'fischl']);
-		expect(autoCast(november, eligible, 9)).toEqual(['furina', 'neuvillette', 'fischl', 'qiqi']);
+	it('auto-selects the guests first, then the rest in order, up to the room', () => {
+		const eligible = ['furina', 'qiqi', 'neuvillette', 'fischl'];
+		expect(autoCast(november, eligible, 3)).toEqual(['qiqi', 'furina', 'neuvillette']);
+		expect(autoCast(november, eligible, 9)).toEqual(['qiqi', 'furina', 'neuvillette', 'fischl']);
 	});
 
 	it('starts at the highest mode the roster opens, else the lowest', () => {

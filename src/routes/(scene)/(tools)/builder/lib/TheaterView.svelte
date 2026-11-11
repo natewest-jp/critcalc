@@ -1,13 +1,16 @@
 <script lang="ts">
 	/**
 	 * AN IMAGINARIUM THEATER LINEUP — the right pane (⚓ Nate 2026-11-11): the
-	 * game's Party Setup screen, as closely as our materials allow. The grid on
-	 * the left is the Alternate Cast; this is everything to its right:
+	 * game's Party Setup screen, in the board's own grammar. ↻ The game's is
+	 * parchment; ours stands on the NIGHT, as the Stygian and Abyss boards do
+	 * (Nate): each section's HEADER is glass, and what it heads stands on the
+	 * night under it (BoardView's `.bv-team-head`).
 	 *
 	 *   · Primary Antagonists — the mode's boss acts, and Lunar's two Arcanum
 	 *     Challenges after a divider;
-	 *   · the cast so far — the six Opening Characters, then the picks in
-	 *     order, then a friend's character when one is counted;
+	 *   · the cast — the six Opening Characters, then the picks in order, then
+	 *     a friend's character when one is counted. ⚓ Not interactive (Nate):
+	 *     picks are made on the grid and with Auto-select and Clear;
 	 *   · Stats — the cast by element and by role, the Opening Characters
 	 *     included, as the game counts them;
 	 *   · the extra members' line and what they bring (Fantasia Flowers and
@@ -22,6 +25,7 @@
 	import { functionIcon, positionIcon } from '$lib/utils/roleIcons';
 	import { inLang, monsterImage } from '$lib/endgame';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { sideLayout } from '$lib/sidePortrait';
 	import {
 		FLOWERS_PER_EXTRA,
 		OPENING_CAST,
@@ -38,17 +42,21 @@
 		rules,
 		cast,
 		invite,
-		onInvite,
-		onRemove
+		onInvite
 	}: {
 		season: TheaterSeason;
 		rules: TheaterModeRules;
 		/** The picks that count (owned, not marked), in order. */
 		cast: readonly string[];
 		invite: boolean;
-		onInvite: () => void;
-		onRemove: (id: string) => void;
+		/** Count or drop a friend's character; false when refused (a full cast). */
+		onInvite: () => boolean;
 	} = $props();
+
+	/** 🎛️ The cast's side portraits: the DISC's diameter. The art rises over
+	 *  it (hair, ears), so the row aligns on the disc, never the box. */
+	const DISC = 40;
+	const overhang = sideLayout(DISC).overhang;
 
 	const verdict = $derived(
 		modeVerdicts(season, cast.length, { invite }).find((v) => v.mode === rules.mode)!
@@ -60,12 +68,20 @@
 	const fmt = (n: number) => n.toLocaleString('en-US');
 	const ROMAN = ['I', 'II', 'III'];
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+
+	/** A refused invite nudges its button, as a full team's card does. */
+	let nudged = $state(false);
+	function invitePress(): void {
+		if (onInvite()) return;
+		nudged = false;
+		requestAnimationFrame(() => (nudged = true));
+	}
 </script>
 
-<div class="th panel panel--paper">
+<div class="th" style:--th-disc="{DISC}px" style:--th-overhang="{overhang}px">
 	<section class="th-sec">
-		<h3 class="kicker">Primary Antagonists</h3>
-		<div class="th-foes">
+		<header class="th-head ctx-glass"><h3 class="th-title">Primary Antagonists</h3></header>
+		<div class="th-body th-foes">
 			{#each rules.bosses as b (b.act)}
 				<figure class="th-foe" title={inLang(b.name)}>
 					<img class="th-foe-disc" src={monsterImage(b.icons[0])} alt={inLang(b.name)} />
@@ -85,70 +101,68 @@
 	</section>
 
 	<section class="th-sec">
-		<header class="th-head">
-			<h3 class="kicker">Opening and Alternate Cast members selected</h3>
+		<header class="th-head ctx-glass">
+			<h3 class="th-title">Opening and Alternate Cast members selected</h3>
 			<button
-				class="btn th-invite"
+				class="btn btn--sm th-invite"
 				class:is-on={invite}
+				class:is-nudged={nudged}
 				aria-pressed={invite}
 				title={invite
 					? 'Counting one Supporting Cast character from a friend'
 					: 'Count one Supporting Cast character from a friend'}
-				onclick={onInvite}><Mark name="plus" size={12} /> Invite Supporting Cast</button
+				onanimationend={() => (nudged = false)}
+				onclick={invitePress}><Mark name="plus" size={12} /> Invite Supporting Cast</button
 			>
 		</header>
-		<div class="th-cast">
+		<div class="th-body th-cast">
 			{#each season.opening as id (id)}
 				<span class="th-member" title="{nameOf(id)} · Opening Character"
-					><SidePortrait {id} size={40} /></span
+					><SidePortrait {id} size={DISC} /></span
 				>
 			{/each}
 			<span class="th-plus" aria-hidden="true"><Mark name="plus" size={12} /></span>
-			{#each cast as id, i (id)}
-				<button
-					class="th-member th-pick"
-					title="{nameOf(id)} · remove from the cast"
-					aria-label="Remove {nameOf(id)} from the cast"
-					onclick={() => onRemove(id)}
-				>
-					<SidePortrait {id} size={40} />
-					<span class="th-num">{i + 1}</span>
-				</button>
+			{#each cast as id (id)}
+				<span class="th-member" title={nameOf(id)}><SidePortrait {id} size={DISC} /></span>
 			{/each}
 			{#if invite}
+				<!-- The game's blank side portrait, tagged as the game tags it. -->
 				<span class="th-member th-guest" title="Supporting Cast">
-					<span class="th-unknown"><Mark name="help" size={18} /></span>
+					<SidePortrait id={null} size={DISC} />
 					<span class="th-tag">Supporting Cast</span>
 				</span>
 			{/if}
 		</div>
 	</section>
 
-	<section class="th-sec th-stats" aria-label="Stats">
-		<span class="th-stats-label">Stats</span>
-		{#each elements as e (e)}
-			<span class="th-chip"
-				><img src={elementIcon(e)} alt={e} /> ×{stats.elements[e as Element]}</span
+	<section class="th-sec">
+		<header class="th-head ctx-glass"><h3 class="th-title">Stats</h3></header>
+		<div class="th-body th-stats">
+			{#each elements as e (e)}
+				<span class="th-chip ctx-glass"
+					><img src={elementIcon(e)} alt={e} /> ×{stats.elements[e as Element]}</span
+				>
+			{/each}
+			<span class="th-rule th-rule--short" aria-hidden="true"></span>
+			<span class="th-chip ctx-glass" title="On-Field"
+				><img src={positionIcon('onField')} alt="On-Field" /> ×{stats.onField}</span
 			>
-		{/each}
-		<span class="th-rule th-rule--short" aria-hidden="true"></span>
-		<span class="th-chip" title="On-Field"
-			><img src={positionIcon('onField')} alt="On-Field" /> ×{stats.onField}</span
-		>
-		<span class="th-chip" title="Off-Field"
-			><img src={positionIcon('offField')} alt="Off-Field" /> ×{stats.offField}</span
-		>
-		<span class="th-rule th-rule--short" aria-hidden="true"></span>
-		<span class="th-chip" title="Support"
-			><img src={functionIcon('support')} alt="Support" /> ×{stats.support}</span
-		>
-		<span class="th-chip" title="Survivability"
-			><img src={functionIcon('survivability')} alt="Survivability" /> ×{stats.survivability}</span
-		>
+			<span class="th-chip ctx-glass" title="Off-Field"
+				><img src={positionIcon('offField')} alt="Off-Field" /> ×{stats.offField}</span
+			>
+			<span class="th-rule th-rule--short" aria-hidden="true"></span>
+			<span class="th-chip ctx-glass" title="Support"
+				><img src={functionIcon('support')} alt="Support" /> ×{stats.support}</span
+			>
+			<span class="th-chip ctx-glass" title="Survivability"
+				><img src={functionIcon('survivability')} alt="Survivability" />
+				×{stats.survivability}</span
+			>
+		</div>
 	</section>
 
-	<section class="th-sec">
-		<p class="th-line" class:is-short={!verdict.open}>
+	<section class="th-sec th-body">
+		<p class="th-line ctx-glass" class:is-short={!verdict.open}>
 			<span>
 				{#if verdict.open}
 					{verdict.extras}/{rules.extra} extra Alternate Cast members have been added. Buffs based on
@@ -175,26 +189,43 @@
 </div>
 
 <style>
-	/* 🎛️ The Theater panel's knobs: the boss disc, the cast's side portraits
-	   (set on the SidePortrait call, 40), and the gap between sections. */
+	/* 🎛️ The Theater pane's knobs: the boss disc and the gaps (the cast's
+	   disc is DISC, above). The board's own rhythm (BoardView's .bv,
+	   .bv-team, .bv-body). */
 	.th {
 		--th-foe: 52px;
-		--th-gap: 1.1rem;
-		gap: var(--th-gap);
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		padding: 0 0 1.5rem;
 	}
 	.th-sec {
-		display: grid;
-		gap: 0.55rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
 	}
+	/* The glass strip — BoardView's .bv-team-head, in its voice. */
 	.th-head {
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
+		gap: 0.75rem;
+		padding: 0.65rem 0.75rem 0.65rem 1rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
 	}
-	.kicker {
-		font-size: var(--fs-md);
+	.th-title {
+		flex: 1;
+		min-width: 0;
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-bold);
+		line-height: 1.4;
+		color: var(--text);
+	}
+	/* What a strip heads stands on the night, inset as the board's rows are. */
+	.th-body {
+		padding: 0 0.6rem 0 1rem;
 	}
 
 	/* ── Primary Antagonists ── */
@@ -211,12 +242,12 @@
 		gap: 0.2rem;
 		font-size: var(--fs-sm);
 		font-variant-numeric: tabular-nums;
+		color: var(--text);
 	}
 	.th-foe-disc {
 		width: var(--th-foe);
 		height: var(--th-foe);
 		border-radius: var(--r-round);
-		background: var(--surface-well);
 		object-fit: cover;
 	}
 	.th-rule {
@@ -230,76 +261,50 @@
 	}
 
 	/* ── The cast ── */
+	/* ⚓ Aligned on the DISC (Nate 2026-11-11): every portrait's box is its
+	   disc plus the hair's room above, so the row sits on its bottoms and
+	   the + takes the disc's height. */
 	.th-cast {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
+		align-items: flex-end;
 		gap: 0.3rem;
 	}
 	.th-member {
 		position: relative;
-		display: grid;
-		place-items: center;
-	}
-	.th-pick {
-		padding: 0;
-		border: none;
-		background: none;
-		cursor: pointer;
-		border-radius: var(--r-round);
-	}
-	.th-pick:hover {
-		background: var(--fill-rest);
-	}
-	.th-num {
-		position: absolute;
-		top: -2px;
-		right: -2px;
-		min-width: 16px;
-		padding: 0 3px;
-		border-radius: var(--r-round);
-		background: var(--accent);
-		color: var(--surface);
-		font-size: 10px;
-		font-weight: var(--fw-bold);
-		line-height: 16px;
-		text-align: center;
-		font-variant-numeric: tabular-nums;
+		display: block;
 	}
 	.th-plus {
 		display: grid;
 		place-items: center;
 		width: 18px;
-		color: var(--muted);
-	}
-	.th-guest {
-		gap: 2px;
-	}
-	.th-unknown {
-		display: grid;
-		place-items: center;
-		width: 40px;
-		height: 40px;
-		border-radius: var(--r-round);
-		background: var(--surface-well);
+		height: var(--th-disc);
 		color: var(--text);
 	}
+	/* The game's tag over the friend's portrait, centred on the disc's top. */
 	.th-tag {
 		position: absolute;
-		top: -8px;
+		top: calc(var(--th-overhang) - 8px);
+		left: 50%;
+		transform: translateX(-50%);
 		padding: 0 4px;
 		border-radius: 3px;
-		background: var(--accent);
-		color: var(--surface);
+		background: var(--team-hue-first);
+		color: var(--surface-well);
 		font-size: 9px;
 		font-weight: var(--fw-bold);
+		line-height: 14px;
 		white-space: nowrap;
 	}
 	.th-invite {
-		font-size: var(--fs-sm);
+		flex: none;
 	}
 	.th-invite.is-on {
 		box-shadow: inset 0 0 0 1px var(--accent);
+	}
+	/* The shared nudge (app.css) — it guards reduced motion itself. */
+	.th-invite.is-nudged {
+		animation: nudge 120ms 2;
 	}
 
 	/* ── Stats ── */
@@ -309,17 +314,14 @@
 		align-items: center;
 		gap: 0.35rem;
 	}
-	.th-stats-label {
-		margin-right: 0.3rem;
-		font-weight: var(--fw-semibold);
-	}
 	.th-chip {
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
 		padding: 2px 9px 2px 4px;
 		border-radius: var(--r-round);
-		background: var(--fill-rest);
+		background: var(--surface);
+		color: var(--text);
 		font-variant-numeric: tabular-nums;
 		font-size: var(--fs-sm);
 	}
@@ -329,8 +331,8 @@
 	}
 
 	/* ── The extra members ── */
-	/* ⚠ The game paints this line on a yellow band; paper takes no gold fill
-	   (.claude/rules/ui.md), so it is the paper's darker card here. */
+	/* The game's line is a gold band; here a glass card with a gold edge
+	   (gold names a block), or the warning edge while the mode is short. */
 	.th-line {
 		display: flex;
 		align-items: flex-start;
@@ -338,9 +340,10 @@
 		gap: 0.75rem;
 		margin: 0;
 		padding: 0.6rem 0.75rem;
-		border-radius: 3px;
-		background: var(--surface-broad);
+		border-radius: var(--r-sm);
+		background: var(--surface);
 		box-shadow: inset 3px 0 0 var(--accent);
+		color: var(--text);
 		font-weight: var(--fw-semibold);
 	}
 	.th-line.is-short {
@@ -358,9 +361,9 @@
 		padding-left: 1.1rem;
 		display: grid;
 		gap: 0.3rem;
+		color: var(--text);
 	}
 	.th-gains b {
-		color: var(--accent);
 		font-weight: var(--fw-bold);
 	}
 </style>
