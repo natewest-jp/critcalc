@@ -1243,4 +1243,4 @@ bosses. The mode name stands in the card's foot.
 - A Theater lineup pinned to an older season gets a "New" tag in the game's
   style, and a "This cycle" section may lead the lineup list (`docs/todo.md`).
 - Stats count roles only for characters with role data; a character without it
-  shows under its element alone.
+  shows under its element alone (⚓ Nate: an acceptable gap).

@@ -23,13 +23,15 @@ Branches, stacked: `docs/theater-reference` → `feat/theater-data` → `feat/th
 - **The Library card** shows a Theater lineup's cast in rows of four, the season's elements in the lead column, and the mode in the foot. It had shown nothing.
 - **`?team=` with no room** (`boardBar.svelte.ts`): a full lineup, or a Theater cast, now opens the team as a new Custom lineup in Theorycraft, the way `?b=` arrives, instead of dropping it with a warning. ⚓ Nate had queued this for full lineups (`closeout-2026-11-11.md` §3); the Theater case is the same path.
 
-## 4. Copy proposed with this round
+## 4. Copy (approved by Nate, 2026-11-11)
 
 - "Team added to a new Custom lineup" (the `?team=` notice).
 - "+{n} more" under a Theater card's third row (a team card says "+{n} more teams").
 
 ## 5. Left open
 
-- Stats count roles only for characters with role data.
+Nate checked the round in real Safari and approved it.
+
+- Stats count roles only for characters with role data (⚓ Nate: an acceptable gap).
 - December's Theater date goes into `season-dates.json` on or after 2026-12-01 (the daily check-in covers it).
 - The "New" tag and the "This cycle" demo (`docs/todo.md`).
