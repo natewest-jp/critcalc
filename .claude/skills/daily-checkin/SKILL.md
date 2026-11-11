@@ -121,6 +121,12 @@ Then compare what lunaris has against `src/lib/data/endgame/season-dates.json`:
   once `season-dates.json` names its version — ⚓ no leaks: lunaris tracks
   BETA builds. Add the line from stygian.moe's live date, then run the fetcher
   and `node scripts/build-endgame-art.mjs`.
+- **Theater** seasons start on the 1st of each month. On or after the 1st, add
+  the date to `theater` in `season-dates.json`, then run the fetcher and
+  `node scripts/build-endgame-art.mjs`. The fetcher reads lunaris's live build
+  (`x.y.0`) only, since a beta folder rewrites upcoming months as one-day test
+  records, and it throws if the Opening Characters don't match the season's
+  elements (the element codes moved; `docs/library/game/imaginarium-theater.md` §6).
 
 The fetcher refuses to write if a run would LOSE a committed season or cycle
 (that is the source failing, not the game). If it throws, report it — ⛔ never

@@ -20,5 +20,7 @@
 		"2026-09-16": "Cascading Moon",
 		"2026-10-16": { "en": "Stardread Moon", "zh": "骇星之月" },
 		"2026-11-16": "Resounding Moon"
-	}
+	},
+	"_note_theater": "HAND-MAINTAINED (2026-11-11): the start date of each Imaginarium Theater season, one line per month, added on or after the 1st (the Theater opens on the 1st). fetch-endgame.mjs writes a season only when its date is here; lunaris's live build can already hold the next month.",
+	"theater": ["2026-09-01", "2026-10-01", "2026-11-01"]
 }

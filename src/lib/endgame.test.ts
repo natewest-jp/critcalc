@@ -150,4 +150,8 @@ describe('the hand-kept dates follow the release calendar', () => {
 	it('every Abyss cycle starts on the 16th', () => {
 		for (const date of Object.keys(seasonDates.abyss)) expect(date.slice(8), date).toBe('16');
 	});
+
+	it('every Theater season starts on the 1st', () => {
+		for (const date of seasonDates.theater) expect(date.slice(8), date).toBe('01');
+	});
 });
