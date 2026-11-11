@@ -266,6 +266,168 @@ async function keepsEveryEntry(path, field, key, fresh) {
 		);
 }
 
+/**
+ * ⚓ IMAGINARIUM THEATER (Nate 2026-11-11): the season's rules a roster is
+ * measured against — its three elements, the six Opening Characters, the four
+ * Special Guest Stars, and each mode's cast size, level and boss acts. The
+ * rules themselves: `docs/library/game/imaginarium-theater.md`.
+ *
+ * ⚠️ LIVE BUILD ONLY. A beta folder (`7.2.51`) rewrites the upcoming seasons
+ * as one-day test records, so the live month goes missing; the live build's
+ * folder (`x.y.0`) lists every month. And ⚓ NO LEAKS, as for Stygian: a
+ * season is written only when `season-dates.json` names its start.
+ *
+ * ⚠️ lunaris's names are not the game's: `bonusAvatars` are the Opening
+ * Characters and `featuredAvatars` the Special Guest Stars (library §6).
+ */
+const ROLEPLAY_LIST_URL = (v) => `https://api.lunaris.moe/data/${v}/roleplaylist.json`;
+const ROLEPLAY_URL = (v, lang, id) =>
+	`https://api.lunaris.moe/data/${v}/${lang}/roleplay/${id}.json`;
+const CHAR_LIST_URL = (v) => `https://api.lunaris.moe/data/${v}/charlist.json`;
+const THEATER_OUT = join(ROOT, 'src/lib/data/endgame/theater.json');
+/** lunaris's element codes, confirmed against twelve seasons' Opening Characters. */
+const THEATER_ELEMENTS = {
+	2: 'pyro',
+	3: 'hydro',
+	4: 'dendro',
+	5: 'electro',
+	6: 'cryo',
+	7: 'anemo',
+	8: 'geo'
+};
+/** lunaris's difficulty keys, in the game's order. */
+const THEATER_MODES = { 1: 'easy', 2: 'normal', 3: 'hard', 4: 'visionary', 5: 'lunar' };
+
+/** Our character id from an English name: "Kamisato Ayaka" → "kamisato_ayaka". */
+export const characterId = (name) =>
+	name
+		.toLowerCase()
+		.normalize('NFKD')
+		.replace(/[^a-z0-9]+/g, '_')
+		.replace(/^_|_$/g, '');
+
+async function theater(starts) {
+	const { characterIndex } = await import('../src/lib/data/characterIndex.generated.ts');
+	const known = new Set(characterIndex.map((c) => c.id));
+	const versions = ((await get(API_VERSION_URL))?.versions ?? []).filter((v) =>
+		/^\d+\.\d+\.0$/.test(v)
+	);
+	let version, list;
+	for (const v of versions) {
+		list = await get(ROLEPLAY_LIST_URL(v));
+		if (list && Object.keys(list).length) {
+			version = v;
+			break;
+		}
+		console.warn(`  ! no Theater season list at lunaris v${v}`);
+	}
+	if (!version) throw new Error('no live lunaris build serves a Theater season list');
+	const chars = await get(CHAR_LIST_URL(version));
+	if (!chars) throw new Error(`no character list at lunaris v${version}`);
+
+	/** Characters a season names that the corpus doesn't have yet: the view
+	 *  still needs a name and an element to count and show them. */
+	const extra = {};
+	const who = (avatarId) => {
+		const c = chars[String(avatarId)];
+		if (!c) throw new Error(`lunaris v${version}: no character ${avatarId}`);
+		const id = characterId(c.enName);
+		if (!known.has(id)) extra[id] = { name: c.enName, element: c.element.toLowerCase() };
+		return { id, element: c.element.toLowerCase() };
+	};
+
+	const seasons = [];
+	await mkdir(MONSTER_ICON_DIR, { recursive: true });
+	const icons = new Set();
+	for (const [i, start] of [...starts].sort().entries()) {
+		const id = Object.entries(list).find(([, s]) => s.beginTime.slice(0, 10) === start)?.[0];
+		if (!id) {
+			console.warn(`  ! no Theater season starting ${start} at lunaris v${version}`);
+			continue;
+		}
+		const modes = {};
+		let elements, opening, guests;
+		for (const [ours, theirs] of Object.entries(LOCALES)) {
+			const s = await get(ROLEPLAY_URL(version, theirs, id));
+			if (!s) continue;
+			if (!elements) {
+				const a = s.avatarConfig;
+				elements = a.elementRestrictions.filter(Boolean).map((code) => {
+					const e = THEATER_ELEMENTS[code];
+					if (!e) throw new Error(`Theater ${start}: unknown element code ${code}`);
+					return e;
+				});
+				opening = a.bonusAvatars.map((b) => who(b.avatarId));
+				guests = a.featuredAvatars.map((g) => who(g).id);
+				// The element map's self-check: the six Opening Characters are two of
+				// each of the season's elements. A miss means the codes moved.
+				const seen = [...new Set(opening.map((o) => o.element))].sort();
+				if (opening.length !== 6 || seen.join() !== [...elements].sort().join())
+					throw new Error(
+						`Theater ${start}: Opening Characters (${seen}) don't match the elements (${elements})`
+					);
+				opening = opening.map((o) => o.id);
+			}
+			for (const [key, cfg] of Object.entries(s.difficultyConfig)) {
+				const mode = THEATER_MODES[key];
+				if (!mode) throw new Error(`Theater ${start}: unknown difficulty ${key}`);
+				const m = (modes[mode] ??= {
+					mode,
+					acts: cfg.roomCount,
+					alternate: cfg.invitePoolSize,
+					extra: cfg.invitePoolBonus,
+					level: cfg.minAvatarLevel,
+					bosses: [],
+					arcana: []
+				});
+				const fights = (rooms, into, withAct) =>
+					Object.entries(rooms ?? {})
+						.filter(([, r]) => r.bossName?.trim())
+						.sort(([a], [b]) => Number(a) - Number(b))
+						.forEach(([act, r], j) => {
+							const row = (into[j] ??= {
+								...(withAct ? { act: Number(act) } : {}),
+								level: r.monsterLevel,
+								name: {},
+								icons: (r.monsters ?? []).map((x) => x.icon)
+							});
+							row.name[ours] = clean(r.bossName);
+						});
+				fights(cfg.rooms, m.bosses, true);
+				fights(cfg.hardRooms, m.arcana, false);
+			}
+		}
+		if (!elements) {
+			console.warn(`  ! Theater ${start}: lunaris served no season detail`);
+			continue;
+		}
+		const ordered = Object.values(THEATER_MODES)
+			.filter((k) => modes[k])
+			.map((k) => modes[k]);
+		for (const m of ordered)
+			for (const b of [...m.bosses, ...m.arcana]) b.icons.forEach((x) => icons.add(x));
+		const end = [...starts].sort()[i + 1] ?? addMonths(start, 1);
+		seasons.push({ start, end, elements, opening, guests, modes: ordered });
+		console.log(`  theater ${start}: ${elements.join(' · ')} — ${ordered.length} modes`);
+	}
+	for (const icon of [...icons].sort()) {
+		const to = join(MONSTER_ICON_DIR, `${icon}.png`);
+		if (await exists(to)) continue;
+		const buf = await get(MONSTER_ICON_URL(icon), 'buffer');
+		if (buf) await writeFile(to, buf);
+		else console.warn(`  ! no icon ${icon}`);
+	}
+	const out = {
+		_generated: 'scripts/fetch-endgame.mjs — do not edit; edit season-dates.json and re-run',
+		_sources: `lunaris.moe (live build ${version})`,
+		characters: Object.fromEntries(Object.entries(extra).sort(([a], [b]) => a.localeCompare(b))),
+		seasons
+	};
+	await keepsEveryEntry(THEATER_OUT, 'seasons', 'start', seasons);
+	await writeFile(THEATER_OUT, JSON.stringify(out, null, '\t') + '\n');
+	console.log(`wrote ${THEATER_OUT}: ${seasons.length} season(s)`);
+}
+
 const addMonths = (iso, n) => {
 	const d = new Date(`${iso}T00:00:00Z`);
 	d.setUTCMonth(d.getUTCMonth() + n);
@@ -386,6 +548,7 @@ async function main() {
 		`icons: ${Object.keys(icons).length} · sprites: ${sprites.size} (in assets-src/endgame/)`
 	);
 	await abyss(table.abyss ?? {});
+	await theater(table.theater ?? []);
 }
 
 // Run only when invoked directly — build-endgame-art imports `bossSlug`.

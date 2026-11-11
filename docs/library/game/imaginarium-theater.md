@@ -99,8 +99,6 @@ None of this is modeled; it's here so the words have a home.
 
 ## → Schema mapping
 
-Nothing models the Theater yet; support is planned (`docs/todo.md`). The facts a roster-based reader needs from this page:
-
-- **A character counts toward a season's Alternate Cast** when the player owns it, it meets the difficulty's level, it is one of the three elements or one of the four Special Guest Stars, and it isn't one of the six Opening Characters (they're the Principal Cast already).
-- **Whole cast = 6 + Alternate Cast**, and one Supporting Cast invite can add one more.
-- **A difficulty is open** when the Alternate Cast (plus the invite, if the player counts on one) reaches lunaris's `invitePoolSize`. Each member past it, up to `invitePoolBonus`, gives 2 Blessing Levels.
+- **Data:** `src/lib/data/endgame/theater.json`, written by `scripts/fetch-endgame.mjs` from the live build, for each season named under `theater` in `season-dates.json`. Per season: `elements`, `opening` and `guests` (our character ids), and `modes`, Easy to Lunar, each with `alternate` (the Alternate Cast minimum), `extra`, `level`, `acts`, its boss acts, and Lunar's `arcana`. A character the corpus doesn't have yet is listed under `characters` with its name and element.
+- **Model:** `src/lib/theater.ts`. `eligibleCast` is the roster's Alternate Cast: owned, not marked "can't enter Theater", of the season's elements or a Special Guest Star, and not an Opening Character. `modeVerdicts` turns that count (plus one Supporting Cast invite, if asked) into each mode's open/short, extra members, Blessing Levels, and whole cast. `blessingStats` and `castStats` are §4 and the Party Setup screen's Stats row.
+- **One Traveler:** the roster keeps one Traveler per element, but the game has one, so at most one counts.

@@ -1,0 +1,771 @@
+{
+	"_generated": "scripts/fetch-endgame.mjs — do not edit; edit season-dates.json and re-run",
+	"_sources": "lunaris.moe (live build 7.2.0)",
+	"characters": {},
+	"seasons": [
+		{
+			"start": "2026-09-01",
+			"end": "2026-10-01",
+			"elements": ["hydro", "electro", "dendro"],
+			"opening": ["columbina", "xingqiu", "cyno", "kuki_shinobu", "lauma", "kaveh"],
+			"guests": ["odette", "sandrone", "sucrose", "nicole"],
+			"modes": [
+				{
+					"mode": "easy",
+					"acts": 3,
+					"alternate": 2,
+					"extra": 2,
+					"level": 60,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 79,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "normal",
+					"acts": 6,
+					"alternate": 6,
+					"extra": 2,
+					"level": 60,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 84,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 89,
+							"name": {
+								"en": "Emperor of Fire and Iron",
+								"zh": "铁甲熔火帝皇",
+								"pt": "Imperador do Fogo e Ferro",
+								"ru": "Император огня и железа",
+								"fr": "Empereur du feu ferreux"
+							},
+							"icons": ["UI_MonsterIcon_HermitCrab_Primo"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "hard",
+					"acts": 8,
+					"alternate": 10,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Emperor of Fire and Iron",
+								"zh": "铁甲熔火帝皇",
+								"pt": "Imperador do Fogo e Ferro",
+								"ru": "Император огня и железа",
+								"fr": "Empereur du feu ferreux"
+							},
+							"icons": ["UI_MonsterIcon_HermitCrab_Primo"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Battle-Hardened Pipilpan Idol",
+								"zh": "历经百战的皮皮潘偶像",
+								"pt": "Ídolo Pippipan Veterano de Cem Batalhas",
+								"ru": "Бывалый айдол Пипильпан",
+								"fr": "Idole vétérane de Pipilpan"
+							},
+							"icons": ["UI_MonsterIcon_Tenoyollotzin"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "visionary",
+					"acts": 10,
+					"alternate": 16,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Emperor of Fire and Iron",
+								"zh": "铁甲熔火帝皇",
+								"pt": "Imperador do Fogo e Ferro",
+								"ru": "Император огня и железа",
+								"fr": "Empereur du feu ferreux"
+							},
+							"icons": ["UI_MonsterIcon_HermitCrab_Primo"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Battle-Hardened Pipilpan Idol",
+								"zh": "历经百战的皮皮潘偶像",
+								"pt": "Ídolo Pippipan Veterano de Cem Batalhas",
+								"ru": "Бывалый айдол Пипильпан",
+								"fr": "Idole vétérane de Pipilpan"
+							},
+							"icons": ["UI_MonsterIcon_Tenoyollotzin"]
+						},
+						{
+							"act": 10,
+							"level": 99,
+							"name": {
+								"en": "Radiant Moonfly",
+								"zh": "蕴光月幻蝶",
+								"pt": "Borboleta Fantasmagórica do Véu Lunar",
+								"ru": "Лучезарный мотылёк-призрак",
+								"fr": "Lunillon radieux"
+							},
+							"icons": ["UI_MonsterIcon_Magbeast_Pergesa"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "lunar",
+					"acts": 10,
+					"alternate": 22,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Emperor of Fire and Iron",
+								"zh": "铁甲熔火帝皇",
+								"pt": "Imperador do Fogo e Ferro",
+								"ru": "Император огня и железа",
+								"fr": "Empereur du feu ferreux"
+							},
+							"icons": ["UI_MonsterIcon_HermitCrab_Primo"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Battle-Hardened Pipilpan Idol",
+								"zh": "历经百战的皮皮潘偶像",
+								"pt": "Ídolo Pippipan Veterano de Cem Batalhas",
+								"ru": "Бывалый айдол Пипильпан",
+								"fr": "Idole vétérane de Pipilpan"
+							},
+							"icons": ["UI_MonsterIcon_Tenoyollotzin"]
+						},
+						{
+							"act": 10,
+							"level": 99,
+							"name": {
+								"en": "Radiant Moonfly",
+								"zh": "蕴光月幻蝶",
+								"pt": "Borboleta Fantasmagórica do Véu Lunar",
+								"ru": "Лучезарный мотылёк-призрак",
+								"fr": "Lunillon radieux"
+							},
+							"icons": ["UI_MonsterIcon_Magbeast_Pergesa"]
+						}
+					],
+					"arcana": [
+						{
+							"level": 99,
+							"name": {
+								"en": "Keep Fighting",
+								"zh": "坚持战斗",
+								"pt": "Batalha Persistente",
+								"ru": "Бой на истощение",
+								"fr": "Combattre jusqu'au bout"
+							},
+							"icons": [
+								"UI_MonsterIcon_ForlornVessel_Strong_Warbanner_Fire",
+								"UI_MonsterIcon_ForlornVessel_Strong_Lance_Water",
+								"UI_MonsterIcon_ForlornVessel_Strong_Chargebow_Ice"
+							]
+						},
+						{
+							"level": 99,
+							"name": {
+								"en": "Battle-Hardened Primordial Bathysmal Vishap",
+								"zh": "历经百战的深海龙蜥·原种",
+								"pt": "Dragarto das Profundezas Primordial Veterano",
+								"ru": "Бывалый вишап глубин: Исток",
+								"fr": "Élémentosaure abyssal primordial vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Drake_Deepsea_Water"]
+						}
+					]
+				}
+			]
+		},
+		{
+			"start": "2026-10-01",
+			"end": "2026-11-01",
+			"elements": ["hydro", "cryo", "anemo"],
+			"opening": ["neuvillette", "barbara", "citlali", "kaeya", "wanderer", "prune"],
+			"guests": ["ineffa", "yae_miko", "thoma", "chiori"],
+			"modes": [
+				{
+					"mode": "easy",
+					"acts": 3,
+					"alternate": 2,
+					"extra": 2,
+					"level": 60,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 79,
+							"name": {
+								"en": "Perpetual Mechanical Array",
+								"zh": "恒常机关阵列",
+								"pt": "Formação Mecânica Perpétua",
+								"ru": "Бесконечный механический массив",
+								"fr": "Matrice mécanique perpétuelle"
+							},
+							"icons": ["UI_MonsterIcon_Apparatus_Perpetual"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "normal",
+					"acts": 6,
+					"alternate": 6,
+					"extra": 2,
+					"level": 60,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 84,
+							"name": {
+								"en": "Perpetual Mechanical Array",
+								"zh": "恒常机关阵列",
+								"pt": "Formação Mecânica Perpétua",
+								"ru": "Бесконечный механический массив",
+								"fr": "Matrice mécanique perpétuelle"
+							},
+							"icons": ["UI_MonsterIcon_Apparatus_Perpetual"]
+						},
+						{
+							"act": 6,
+							"level": 89,
+							"name": {
+								"en": "Battle-Hardened Chimeric Volkodlak Archer",
+								"zh": "历经百战的嵌合兽怪箭士",
+								"pt": "Arqueiro Volkodlak Quimérico Veterano",
+								"ru": "Бывалый волкодлак-химера лучник",
+								"fr": "Archer volkodlak chimérique vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Volkodlak_Greyhound_Furiosa"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "hard",
+					"acts": 8,
+					"alternate": 10,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Perpetual Mechanical Array",
+								"zh": "恒常机关阵列",
+								"pt": "Formação Mecânica Perpétua",
+								"ru": "Бесконечный механический массив",
+								"fr": "Matrice mécanique perpétuelle"
+							},
+							"icons": ["UI_MonsterIcon_Apparatus_Perpetual"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Battle-Hardened Chimeric Volkodlak Archer",
+								"zh": "历经百战的嵌合兽怪箭士",
+								"pt": "Arqueiro Volkodlak Quimérico Veterano",
+								"ru": "Бывалый волкодлак-химера лучник",
+								"fr": "Archer volkodlak chimérique vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Volkodlak_Greyhound_Furiosa"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Secret Source Automaton: Overseer Device",
+								"zh": "秘源机兵·统御械",
+								"pt": "Autômato da Fonte Secreta: Dispositivo Supervisor",
+								"ru": "Автоматон таинственного источника: Надсмотрщик",
+								"fr": "Automate de source secrète : Surveillant"
+							},
+							"icons": ["UI_MonsterIcon_DragonCollar"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "visionary",
+					"acts": 10,
+					"alternate": 16,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Perpetual Mechanical Array",
+								"zh": "恒常机关阵列",
+								"pt": "Formação Mecânica Perpétua",
+								"ru": "Бесконечный механический массив",
+								"fr": "Matrice mécanique perpétuelle"
+							},
+							"icons": ["UI_MonsterIcon_Apparatus_Perpetual"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Battle-Hardened Chimeric Volkodlak Archer",
+								"zh": "历经百战的嵌合兽怪箭士",
+								"pt": "Arqueiro Volkodlak Quimérico Veterano",
+								"ru": "Бывалый волкодлак-химера лучник",
+								"fr": "Archer volkodlak chimérique vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Volkodlak_Greyhound_Furiosa"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Chimeric Winged Lion",
+								"zh": "嵌合翼骏狮",
+								"pt": "Leão Alado Quimérico",
+								"ru": "Крылатая химера-лев",
+								"fr": "Lion ailé chimérique"
+							},
+							"icons": ["UI_MonsterIcon_Chimera_Manticore"]
+						},
+						{
+							"act": 10,
+							"level": 99,
+							"name": {
+								"en": "Secret Source Automaton: Overseer Device",
+								"zh": "秘源机兵·统御械",
+								"pt": "Autômato da Fonte Secreta: Dispositivo Supervisor",
+								"ru": "Автоматон таинственного источника: Надсмотрщик",
+								"fr": "Automate de source secrète : Surveillant"
+							},
+							"icons": ["UI_MonsterIcon_DragonCollar"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "lunar",
+					"acts": 10,
+					"alternate": 22,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Perpetual Mechanical Array",
+								"zh": "恒常机关阵列",
+								"pt": "Formação Mecânica Perpétua",
+								"ru": "Бесконечный механический массив",
+								"fr": "Matrice mécanique perpétuelle"
+							},
+							"icons": ["UI_MonsterIcon_Apparatus_Perpetual"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Battle-Hardened Chimeric Volkodlak Archer",
+								"zh": "历经百战的嵌合兽怪箭士",
+								"pt": "Arqueiro Volkodlak Quimérico Veterano",
+								"ru": "Бывалый волкодлак-химера лучник",
+								"fr": "Archer volkodlak chimérique vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Volkodlak_Greyhound_Furiosa"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Chimeric Winged Lion",
+								"zh": "嵌合翼骏狮",
+								"pt": "Leão Alado Quimérico",
+								"ru": "Крылатая химера-лев",
+								"fr": "Lion ailé chimérique"
+							},
+							"icons": ["UI_MonsterIcon_Chimera_Manticore"]
+						},
+						{
+							"act": 10,
+							"level": 99,
+							"name": {
+								"en": "Secret Source Automaton: Overseer Device",
+								"zh": "秘源机兵·统御械",
+								"pt": "Autômato da Fonte Secreta: Dispositivo Supervisor",
+								"ru": "Автоматон таинственного источника: Надсмотрщик",
+								"fr": "Automate de source secrète : Surveillant"
+							},
+							"icons": ["UI_MonsterIcon_DragonCollar"]
+						}
+					],
+					"arcana": [
+						{
+							"level": 99,
+							"name": {
+								"en": "Keep Fighting",
+								"zh": "坚持战斗",
+								"pt": "Batalha Persistente",
+								"ru": "Бой на истощение",
+								"fr": "Combattre jusqu'au bout"
+							},
+							"icons": ["UI_MonsterIcon_Hound_Riftstalker_Rock"]
+						},
+						{
+							"level": 99,
+							"name": {
+								"en": "Keep Fighting",
+								"zh": "坚持战斗",
+								"pt": "Batalha Persistente",
+								"ru": "Бой на истощение",
+								"fr": "Combattre jusqu'au bout"
+							},
+							"icons": [
+								"UI_MonsterIcon_Konungmathr",
+								"UI_MonsterIcon_Defender_Noner_01",
+								"UI_MonsterIcon_Gargoyle",
+								"UI_MonsterIcon_Gargoyle"
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"start": "2026-11-01",
+			"end": "2026-12-01",
+			"elements": ["hydro", "electro", "geo"],
+			"opening": ["yelan", "aino", "flins", "fischl", "zhongli", "kachina"],
+			"guests": ["qiqi", "odette", "vesna", "jahoda"],
+			"modes": [
+				{
+					"mode": "easy",
+					"acts": 3,
+					"alternate": 2,
+					"extra": 2,
+					"level": 60,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 79,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "normal",
+					"acts": 6,
+					"alternate": 6,
+					"extra": 2,
+					"level": 60,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 84,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 89,
+							"name": {
+								"en": "Lord of the Hidden Depths: Whisperer of Nightmares",
+								"zh": "深黯魇语之主",
+								"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos",
+								"ru": "Повелитель скрытых глубин: Шёпот кошмаров",
+								"fr": "Seigneur chuchoteur de cauchemars des fonds cachés"
+							},
+							"icons": ["UI_MonsterIcon_Lloigor_Primo"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "hard",
+					"acts": 8,
+					"alternate": 10,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Lord of the Hidden Depths: Whisperer of Nightmares",
+								"zh": "深黯魇语之主",
+								"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos",
+								"ru": "Повелитель скрытых глубин: Шёпот кошмаров",
+								"fr": "Seigneur chuchoteur de cauchemars des fonds cachés"
+							},
+							"icons": ["UI_MonsterIcon_Lloigor_Primo"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Battle-Hardened Samachurl",
+								"zh": "历经百战的丘丘萨满",
+								"pt": "Samachurl Veterano",
+								"ru": "Бывалый шамачурл",
+								"fr": "Brutoshaman vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Shaman_None_01"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "visionary",
+					"acts": 10,
+					"alternate": 16,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Lord of the Hidden Depths: Whisperer of Nightmares",
+								"zh": "深黯魇语之主",
+								"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos",
+								"ru": "Повелитель скрытых глубин: Шёпот кошмаров",
+								"fr": "Seigneur chuchoteur de cauchemars des fonds cachés"
+							},
+							"icons": ["UI_MonsterIcon_Lloigor_Primo"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Battle-Hardened Samachurl",
+								"zh": "历经百战的丘丘萨满",
+								"pt": "Samachurl Veterano",
+								"ru": "Бывалый шамачурл",
+								"fr": "Brutoshaman vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Shaman_None_01"]
+						},
+						{
+							"act": 10,
+							"level": 99,
+							"name": {
+								"en": "Radiant Moonfly",
+								"zh": "蕴光月幻蝶",
+								"pt": "Borboleta Fantasmagórica do Véu Lunar",
+								"ru": "Лучезарный мотылёк-призрак",
+								"fr": "Lunillon radieux"
+							},
+							"icons": ["UI_MonsterIcon_Magbeast_Pergesa"]
+						}
+					],
+					"arcana": []
+				},
+				{
+					"mode": "lunar",
+					"acts": 10,
+					"alternate": 22,
+					"extra": 4,
+					"level": 70,
+					"bosses": [
+						{
+							"act": 3,
+							"level": 89,
+							"name": {
+								"en": "Jadeplume Terrorshroom",
+								"zh": "翠翎恐蕈",
+								"pt": "Terrorgumelo Emplumado",
+								"ru": "Пернатый плесенник",
+								"fr": "Champieffroi panaché"
+							},
+							"icons": ["UI_MonsterIcon_Fungus_Raptor"]
+						},
+						{
+							"act": 6,
+							"level": 91,
+							"name": {
+								"en": "Lord of the Hidden Depths: Whisperer of Nightmares",
+								"zh": "深黯魇语之主",
+								"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos",
+								"ru": "Повелитель скрытых глубин: Шёпот кошмаров",
+								"fr": "Seigneur chuchoteur de cauchemars des fonds cachés"
+							},
+							"icons": ["UI_MonsterIcon_Lloigor_Primo"]
+						},
+						{
+							"act": 8,
+							"level": 94,
+							"name": {
+								"en": "Battle-Hardened Samachurl",
+								"zh": "历经百战的丘丘萨满",
+								"pt": "Samachurl Veterano",
+								"ru": "Бывалый шамачурл",
+								"fr": "Brutoshaman vétéran"
+							},
+							"icons": ["UI_MonsterIcon_Shaman_None_01"]
+						},
+						{
+							"act": 10,
+							"level": 99,
+							"name": {
+								"en": "Radiant Moonfly",
+								"zh": "蕴光月幻蝶",
+								"pt": "Borboleta Fantasmagórica do Véu Lunar",
+								"ru": "Лучезарный мотылёк-призрак",
+								"fr": "Lunillon radieux"
+							},
+							"icons": ["UI_MonsterIcon_Magbeast_Pergesa"]
+						}
+					],
+					"arcana": [
+						{
+							"level": 99,
+							"name": {
+								"en": "Keep Fighting",
+								"zh": "坚持战斗",
+								"pt": "Batalha Persistente",
+								"ru": "Бой на истощение",
+								"fr": "Combattre jusqu'au bout"
+							},
+							"icons": [
+								"UI_MonsterIcon_Panther_Sacred_Grass",
+								"UI_MonsterIcon_Scorpion_Sacred_Electric",
+								"UI_MonsterIcon_Gator_Sacred_Water",
+								"UI_MonsterIcon_Vulture_Sacred_Fire"
+							]
+						},
+						{
+							"level": 99,
+							"name": {
+								"en": "Potapo's Solidarity: Secret Shadow's Re-Emergence",
+								"zh": "波塔波的声援·秘影重现",
+								"pt": "Solidariedade de Potapo: Segredo do Ressurgimento da Sombra",
+								"ru": "Солидарность Потапо: Возвращение тайной тени",
+								"fr": "Solidarité de Potapo : Réémergence de l'ombre secrète"
+							},
+							"icons": ["UI_MonsterIcon_Wayob_Shamansaurus"]
+						}
+					]
+				}
+			]
+		}
+	]
+}

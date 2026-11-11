@@ -18,7 +18,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - `audit-character-roles.mjs` diffs the roles CSV against Fandom's Character Role table (one MediaWiki request). The daily check-in runs it.
 - `audit-data-outliers.mjs` is a self-consistency sweep (decimal-form leaks, RES shred sign stored negative, placeholder zeros, magnitude outliers).
 - `normalize-talent-levels.mjs` enforces the talent-level-10 convention.
-- The network scripts are `fetch-wiki-capabilities.mjs` (MediaWiki API; WebFetch is blocked there) and `fetch-endgame.mjs` (lunaris.moe → `src/lib/data/endgame/stygian.json`, then `build-endgame-art.mjs`). No leaks: a season ships only once `season-dates.json` names it, one hand-added line per patch.
+- The network scripts are `fetch-wiki-capabilities.mjs` (MediaWiki API; WebFetch is blocked there) and `fetch-endgame.mjs` (lunaris.moe → `src/lib/data/endgame/` Stygian, Abyss and Theater files, then `build-endgame-art.mjs`). No leaks: a season ships only once `season-dates.json` names it, one hand-added line per season.
 - ⚠️ `scripts/probe-*.mjs` is a retired pattern. `probe-ink-centering.mjs` is the one survivor. Never add another; scratch work goes in `scratch/`.
 
 ## The oracle
