@@ -23,6 +23,7 @@
  */
 
 import { deflateToBase64Url, inflateFromBase64Url } from './urlCodec';
+import { isCycleId } from '$lib/storage/records';
 
 const TEAM_SIZE = 4;
 /** Safety bounds for a decoded link — a hostile `?b=` must not build a board
@@ -43,7 +44,8 @@ export type SharedTeam = {
 export type SharedBoard = {
 	label: string;
 	noRepeats: boolean;
-	/** What the board was made as, and a Stygian lineup's season (§2.6). Both
+	/** What the board was made as, and a Stygian lineup's season or an Abyss
+	 *  lineup's cycle (§2.6, `isCycleId`). Both
 	 *  OPTIONAL and additive — a link made before them decodes as Custom. */
 	preset?: 'stygian' | 'abyss' | 'custom';
 	season?: string;
@@ -87,8 +89,7 @@ export async function decodeBoard(param: string | null | undefined): Promise<Sha
 			...(PRESETS.includes(data.preset as string) && {
 				preset: data.preset as SharedBoard['preset']
 			}),
-			...(typeof data.season === 'string' &&
-				/^\d+\.\d+$/.test(data.season) && { season: data.season }),
+			...(isCycleId(data.season) && { season: data.season }),
 			teams: data.teams.map((t: unknown) => sanitizeTeam(t))
 		};
 	} catch {
