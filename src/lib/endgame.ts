@@ -187,4 +187,14 @@ export function currentAbyss(
 	return cycles.find((c) => c.start <= day && day < c.end);
 }
 
+/** The Abyss cycles that have opened by `today`, newest first: an Abyss
+ *  lineup's cycle picker. */
+export function liveAbyssCycles(
+	today: Date = new Date(),
+	cycles: readonly AbyssCycle[] = ABYSS_CYCLES
+): AbyssCycle[] {
+	const day = isoDay(today);
+	return cycles.filter((c) => c.start <= day).sort((a, b) => b.start.localeCompare(a.start));
+}
+
 export const blessingImage = (icon: string) => `/assets/endgame/abyss/${icon}-v2.webp`;

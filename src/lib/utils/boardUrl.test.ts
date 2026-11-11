@@ -18,6 +18,15 @@ const lineup: SharedBoard = {
 };
 
 describe('boardUrl', () => {
+	it('carries a Stygian season and an Abyss cycle, and refuses anything else', async () => {
+		for (const season of ['7.2', '2026-10-16']) {
+			const shared = { ...lineup, preset: 'abyss' as const, season };
+			expect((await decodeBoard(await encodeBoard(shared)))?.season).toBe(season);
+		}
+		const odd = { ...lineup, season: 'next week' };
+		expect((await decodeBoard(await encodeBoard(odd)))?.season).toBeUndefined();
+	});
+
 	it('round-trips a lineup, C0s included', async () => {
 		expect(await decodeBoard(await encodeBoard(lineup))).toEqual(lineup);
 	});

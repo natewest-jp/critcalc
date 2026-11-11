@@ -95,7 +95,9 @@ export type Board = {
 	 *  marked on both, never refused. ON for the endgame presets, where the game
 	 *  forbids it; OFF for Custom (Nate 2026-10-09). */
 	noRepeats: boolean;
-	/** A Stygian lineup's season — its game VERSION ("7.1"), changeable from the
+	/** An Abyss lineup's cycle, by its START ("2026-10-16"), pinned the same
+	 *  way (⚓ Nate 2026-11-11; `$lib/endgameCycle`).
+	 *  A Stygian lineup's season — its game VERSION ("7.1"), changeable from the
 	 *  board (§2.6). Team i stands on battlefield i. ↻ §11.6: UNSET means "the
 	 *  current season" — an untouched board follows the game, and the Team
 	 *  Builder pins it here on the board's first edit. ⚠ A string only: the season DATA is the Team

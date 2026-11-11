@@ -241,8 +241,7 @@
 	/** What each team row leads with: its Stygian battlefield's boss (the
 	 *  lineup's pinned season, as the Builder reads it), its Abyss half, or
 	 *  (custom) its number, so every card's rows share one column.
-	 *  ⛔ No Abyss art: a lineup does not record its cycle, and the current
-	 *  blessing on an old lineup would pass a stale cycle off as live. */
+	 *  No Abyss art yet: the card has no room for the blessing's banner. */
 	function lineupLead(body: LineupDocument['body']) {
 		const season =
 			body.preset === 'stygian'

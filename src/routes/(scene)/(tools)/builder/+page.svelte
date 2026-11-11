@@ -46,7 +46,8 @@
 	} from '$lib/boards.svelte';
 	import { boardBar } from '$lib/boardBar.svelte';
 	import { library } from '$lib/library.svelte';
-	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
+	import { SEASONS, liveSeasons } from '$lib/endgame';
+	import { cycleAt, lineupCycle } from '$lib/endgameCycle';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
@@ -547,13 +548,22 @@
 		})();
 	}
 
-	/** ⚓ An UNTOUCHED Stygian board follows the game's season; an edited one
-	 *  never changes under you (§11.6 item 4). The first character placed pins
-	 *  the season the reader was looking at. */
+	/** ⚓ An UNTOUCHED Stygian or Abyss board follows the game's cycle; an
+	 *  edited one never changes under you (§11.6 item 4; the Abyss since Nate
+	 *  2026-11-11). The first character placed pins the cycle the reader was
+	 *  looking at. An Abyss lineup saved with characters before Abyss lineups
+	 *  were pinned takes the cycle of its last edit, as the Library reads it
+	 *  (`lineupCycle`). */
 	$effect(() => {
-		if (board.preset !== 'stygian' || board.season || !boardHasAnyone) return;
-		const v = currentSeason()?.version;
-		if (v) boards.setSeason(board.id, v);
+		if ((board.preset !== 'stygian' && board.preset !== 'abyss') || board.season) return;
+		if (!boardHasAnyone) return;
+		const { id, preset } = board;
+		const session = sessionMod?.storageSession;
+		void (async () => {
+			const doc = session ? (await session.documents('lineup')).find((d) => d.id === id) : null;
+			const pin = doc?.type === 'lineup' ? lineupCycle(doc.body, doc.updatedAt) : cycleAt(preset);
+			if (pin && boards.board.id === id && !boards.board.season) boards.setSeason(id, pin);
+		})();
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1642,11 +1652,13 @@
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- ↻ L1 (⚓ Nate 2026-10-20): a Stygian lineup's season leads the
 					     rail, a plate of its own beside it (glass never on glass); the
-					     Lineup's own title row is gone — the tab names the mode. -->
-					{#if board.preset === 'stygian' && !errandOpen}
+					     Lineup's own title row is gone — the tab names the mode. An
+					     Abyss lineup's cycle stands there the same way (2026-11-11). -->
+					{#if (board.preset === 'stygian' || board.preset === 'abyss') && !errandOpen}
 						<SeasonPicker
-							version={board.season}
-							onSeason={(version) => boards.setSeason(board.id, version)}
+							kind={board.preset}
+							value={board.season}
+							onPick={(id) => boards.setSeason(board.id, id)}
 						/>
 					{:else if theaterOn && thSeason && thMode}
 						<TheaterPickers

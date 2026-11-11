@@ -104,3 +104,22 @@ describe('a backup keeps the Theater (2026-11-11)', () => {
 		});
 	});
 });
+
+describe("a backup keeps an Abyss lineup's cycle (2026-11-11)", () => {
+	it('keeps the cycle by its start date, as a Stygian season by its version', () => {
+		const f = JSON.parse(file(undefined));
+		f.store.documents = [
+			{
+				id: 'd1',
+				profileId: 'p1',
+				type: 'lineup',
+				createdAt: 1,
+				body: { preset: 'abyss', season: '2026-10-16', noRepeats: true, teams: [] }
+			}
+		];
+		const r = parseAnyBackup(JSON.stringify(f), { now: 1, newId: () => 'x' });
+		if (!r.ok) throw new Error(r.error);
+		const doc = r.store.documents.find((d) => d.id === 'd1');
+		expect(doc?.type === 'lineup' && doc.body.season).toBe('2026-10-16');
+	});
+});

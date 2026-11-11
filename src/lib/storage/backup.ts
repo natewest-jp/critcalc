@@ -36,6 +36,7 @@ import type { TheaterPlan } from '$lib/boards.svelte';
 import { migrate, type MigrationResult } from './migrate';
 import {
 	THEORYCRAFT_ID,
+	isCycleId,
 	makeTheorycraft,
 	type DocumentRecord,
 	type LineupBody,
@@ -232,7 +233,7 @@ function lineupBody(v: unknown): LineupBody | null {
 		noRepeats: v.noRepeats === true,
 		teams: sanitizeTeams(v.teams) as LineupBody['teams']
 	};
-	if (typeof v.season === 'string' && /^\d+\.\d+$/.test(v.season)) body.season = v.season;
+	if (isCycleId(v.season)) body.season = v.season;
 	if (v.preset === 'theater') body.theater = sanitizeTheaterPlan(v.theater);
 	return body;
 }

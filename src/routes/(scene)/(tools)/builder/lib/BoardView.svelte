@@ -8,8 +8,8 @@
 	 *     earlier ones from the picker), and team i stands on battlefield i —
 	 *     the boss's circle avatar (its magnifier opens `BossDetail`), the
 	 *     battlefield's name, and its checks with the team's standing (✓ / ⚠;
-	 *     ⛔ never guessed — `$lib/endgameChecks`). An Abyss lineup shows the
-	 *     current blessing.
+	 *     ⛔ never guessed — `$lib/endgameChecks`). An Abyss lineup shows its
+	 *     cycle's blessing.
 	 *   · Every team: the portraits (`SidePortrait`), resonance + factions
 	 *     (`CompositionChips` without reactions — a battlefield's checks are
 	 *     the reactions that matter here), the FINGERPRINT (the fifteen
@@ -49,6 +49,7 @@
 		BOSSES,
 		SEASONS,
 		blessingImage,
+		ABYSS_CYCLES,
 		bossImage,
 		currentAbyss,
 		inLang,
@@ -391,7 +392,14 @@
 			? (SEASONS.find((s) => s.version === board.season) ?? seasons[0])
 			: undefined
 	);
-	const abyss = $derived(board.preset === 'abyss' ? currentAbyss() : undefined);
+	/** The Abyss cycle the lineup is pinned to (⚓ Nate 2026-11-11: an edited
+	 *  lineup keeps its cycle, as a Stygian one keeps its season), else the
+	 *  running one, which an untouched lineup follows. */
+	const abyss = $derived(
+		board.preset === 'abyss'
+			? (ABYSS_CYCLES.find((c) => c.start === board.season) ?? currentAbyss())
+			: undefined
+	);
 	/** Everything a team row shows, from the team and the bank. */
 	function teamFacts(team: BoardTeam) {
 		const ids = team.slots.filter((s): s is string => !!s);
