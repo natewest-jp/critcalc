@@ -8,7 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Signaling a new endgame (⚓ Nate 2026-11-11).** A lineup pinned to an older season or cycle gets a "New" tag in the game's style (the corner tag on new items). A standing "This cycle" section leading the lineup list (Abyss, Stygian, Theater) is to be demoed. The Theater lineup's design is `docs/design/team-builder-lineups-design.md` §12.
+- **Help: the Imaginarium Theater lineup (⚓ Nate 2026-11-11: next session).** The Team Builder's Theater lineup has no section in its Help chapter (`src/lib/help/chapters/TeamBuilder.svelte`) yet. The design is `docs/design/team-builder-lineups-design.md` §12, the game's rules `docs/library/game/imaginarium-theater.md`, and the round `docs/rounds/theater-round-2026-11-11.md`. Copy is Nate's; propose it first.
 
 ## ⏭ Next
 
