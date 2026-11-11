@@ -8,7 +8,10 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Imaginarium Theater seasons on the site (⚓ Nate 2026-11-06: soon; moved up 2026-11-09; to Now 2026-11-11).** Theater opens on the 1st of each month (`docs/library/game/release-calendar.md`), so the next natural target is 2026-12-01. Nate is drafting the concept; the first step after it is checking what lunaris serves for Theater (season dates, elements, opening and guest characters).
+- **Imaginarium Theater seasons on the site (⚓ Nate 2026-11-06: soon; moved up 2026-11-09; to Now 2026-11-11).** Theater opens on the 1st of each month (`docs/library/game/release-calendar.md`), so the next natural target is 2026-12-01. Reference: `docs/library/game/imaginarium-theater.md` (the rules, and how to read lunaris's live-build Theater data).
+  - **The concept (⚓ Nate 2026-11-11).** Not lining characters up with fights. The tool answers "which difficulty can I enter this season": the season's details, how many of the roster's characters are eligible, which difficulties that opens, and the Blessing Levels past each minimum. Past the maximum, the player picks the cast, with a Stats strip counting element and role the way the game's Party Setup does (Support and Survivability optional).
+  - **The roster flag (⚓ Nate 2026-11-11):** one "can't enter Theater" toggle per character, marking the ones not leveled, in place of the deferred level 70+ flag. The mark is Lucide Lab's butterfly (the Theater's symbol) with a strike, drawn by Nate as a bespoke mark like `handOff`.
+  - **Signaling a new endgame (⚓ Nate 2026-11-11):** a lineup pinned to an older season or cycle gets a "New" tag in the game's style (the corner tag on new items). A standing "This cycle" section leading the lineup list (Abyss, Stygian, Theater) is to be demoed during or after the Theater round.
 
 ## ⏭ Next
 
