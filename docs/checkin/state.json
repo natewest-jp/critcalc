@@ -5,7 +5,7 @@
 		"seenUpstream": "b107b5dc5",
 		"date": "2026-11-10",
 		"tag": "v2.50.0",
-		"note": "Sandrone added (#3269); frames round picked 2026-11-10"
+		"note": "No new upstream commits on 2026-11-11 (still b107b5dc5, Sandrone #3269)"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,22 +13,22 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-10T00:00:00Z"
+		"lastSeen": "2026-11-11T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
-		"stygian": "7.1",
+		"stygian": "7.2",
 		"abyss": "2026-11-16 Resounding Moon",
 		"pending": [
-			"Stygian 7.2: due 2026-11-11, add once stygian.moe has the live date",
-			"Abyss: the cycle after Resounding Moon (lunaris beta 甲霰之月) — beta only, no English name yet; due 2026-12-16"
+			"Abyss: the cycle after Resounding Moon (lunaris beta 甲霰之月) — beta only, no English name yet; due 2026-12-16",
+			"Stygian 7.3: due 2026-12-23"
 		]
 	},
 	"todo": {
-		"lastSwept": "fe078fc0"
+		"lastSwept": "619855dd"
 	},
 	"roles": {
-		"audited": "2026-11-10",
+		"audited": "2026-11-11",
 		"unrated": ["mitya", "valeriy"]
 	}
 }

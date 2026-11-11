@@ -1244,6 +1244,49 @@
 					}
 				}
 			]
+		},
+		"wavebinder-stormfang": {
+			"description": {
+				"en": "A Volkodlak of unparalleled power, created to fulfill the grand dream an ancient civilization had of free underwater exploration.\nUnder the frenzied influence of the distorted Ley Lines, the peerless bloodline slumbering within it has spiraled completely out of control. Its physical form not only defies the crushing limits of deep-sea pressure, but now surges with a savage, overwhelming power capable of contending head-on with invisible, dark currents. Now, with its reason utterly consumed, it is hell-bent on shredding everything within its sight to dust.",
+				"zh": "为实现远古文明在水中自由探索的伟愿，因而诞生的力大无匹的兽怪。\n在畸变地脉的癫狂演绎下，其体内沉眠的无匹血脉彻底暴走——肉体不仅无视了深海重压的极限，更充盈着足以硬撼无形暗流的暴虐伟力。如今它理智燃尽，誓要将目之所及的一切，尽数撕碎为尘埃。",
+				"pt": "Um Volkodlak de poder incomparável, criado para realizar o grande sonho de uma antiga civilização de exploração subaquática.\nSob a influência enlouquecida da perturbação das Linhas Ley, a linhagem inigualável adormecida nela saiu completamente de controle. Sua forma física não só desafia os limites esmagadores da pressão nas profundezas do oceano, como agora surge um poder selvagem e gigantesco capaz de enfrentar diretamente Correntes Escuras invisíveis. Agora, com sua razão completamente consumida, está empenhada em destruir tudo em sua visão até sobrar somente pó.",
+				"ru": "Могучий волкодлак, рождённый ради великой мечты древней цивилизации - свободно исследовать подводный мир.\nПод безумным воздействием искажённых артерий земли дремавшая в его теле могучая кровь предков окончательно вышла из-под контроля. Его тело не только способно выдерживать чудовищное давление морских глубин, но и переполнено свирепой силой, способной противостоять незримым подводным течениям. Теперь, лишившись рассудка, он стремится разорвать всё, что попадётся ему на глаза.",
+				"fr": "Ce volkodlak d'une puissance inégalée est né de la grande ambition d'une civilisation ancienne d'explorer librement les profondeurs aquatiques.\nSous l'influence débridée des lignes énergétiques distordues, la lignée ancestrale qui sommeillait en elle est devenue totalement incontrôlable. Sa forme physique défie non seulement les limites écrasantes de la pression des abysses, mais elle déchaîne désormais une puissance sauvage et dévastatrice, capable de rivaliser de front avec des courants obscurs et invisibles. Désormais privée de toute raison, elle est déterminée à réduire en poussière tout ce qui se trouve à sa portée."
+			},
+			"mechanics": [
+				{
+					"name": {
+						"en": "Courage Against the Cold: Hearty Draught",
+						"zh": "克寒豪胆·盛饮",
+						"pt": "Coragem Contra o Frio: Embriaguez Revigorante",
+						"ru": "Морозная храбрость: Лихой глоток",
+						"fr": "Courage contre le froid : Potée copieuse"
+					},
+					"text": {
+						"en": "Due to the effects of the Ley Line disturbance, this Nemesis will periodically take out a flask and drink deeply, gaining a large amount of Courage in the process. If it is affected by **Radiance: Stellar Glimmer** while drinking, it will gain Courage at a reduced rate. Dealing **Electro DMG** to it will also reduce its Courage. **Electro DMG considered to be DMG from the corresponding Stellar Glimmer Reaction** will reduce Courage by a significantly greater amount.",
+						"zh": "受到地脉紊乱的影响，每隔一段时间，强敌会掏出暖壶进行豪饮，从而累积大量「豪胆值」。强敌在豪饮时，如果处于**辉映·星烁**效果的影响之下，其「豪胆值」的累积效率将降低。此外，强敌在受到**雷元素伤害**时将扣减其「豪胆值」；如果受到的是**视为对应星烁反应伤害的雷元素伤害**，则会大幅扣减其「豪胆值」。",
+						"pt": "Devido aos efeitos da perturbação da Linha Ley, de tempos em tempos, o Vilão pegará um cantil térmico para beber avidamente, acumulando assim muito Valor de Bravura. Enquanto bebe, se o Vilão estiver sob a influência do efeito **Brilho Reluzente: Brilho Estelar**, a eficiência de acúmulo do Valor de Bravura irá diminuir. Além disso, o Valor de Bravura do Vilão será reduzido ao receber **Dano Electro**; se for **Dano Electro considerado Dano de Reação correspondente à Reação de Brilho Estelar**, seu Valor de Bravura será reduzido em uma quantidade ainda maior.",
+						"ru": "Под влиянием флуктуации артерий земли сильный противник через определённые промежутки времени достаёт термос и пьёт большими глотками, накапливая большое количество Храбрости. Если во время питья он находится под действием эффекта **Сияние: Звёздный блеск**, скорость накопления Храбрости снижается. Кроме того, при получении **урона Электро** его Храбрость уменьшается; если же полученный **урон Электро считается уроном соответствующей реакции Звёздный блеск**, Храбрость уменьшается значительно сильнее.",
+						"fr": "Sous l'effet des lignes énergétiques, l'Ancravague sort une fiole et boit à grandes gorgées à intervalles réguliers pour accumuler beaucoup de courage. Si l'Ancravague est en **radiance astrale** pendant qu'elle boit, son courage augmente plus lentement. Vous pouvez lui infliger des **DGT Électro** pour diminuer son courage, les **DGT Électro considérés comme des DGT de réaction astrale correspondante** diminuant davantage son courage."
+					}
+				},
+				{
+					"name": {
+						"en": "Valiant Assault",
+						"zh": "奋勇状态·急袭",
+						"pt": "Ataque Valente",
+						"ru": "Состояние Отваги: Налёт",
+						"fr": "Assaut vaillant"
+					},
+					"text": {
+						"en": "Due to the effects of the Ley Line disturbance, once the Nemeses' Courage is full, they will enter the Valiant Assault state. While in this state, their attacks will become more ferocious. They will also **generate a shield and greatly increase all Elemental and Physical RES other than Electro RES, which will receive a small increase.**. While Valiant Assault is active, the Nemeses' Courage will be continuously consumed. **Electro DMG will also drain more Courage than usual**. It will exit this state and suffer massive backlash DMG once its Courage is depleted. The more DMG its shield absorbs during Valiant Assault, the greater the backlash DMG it will suffer when the state ends. **Stellar Glimmer reaction DMG** will increase the backlash DMG taken when the Shield is broken.",
+						"zh": "受地脉紊乱影响，强敌的「豪胆值」积满后，将进入「奋勇状态·急袭」：不仅攻击将更为狂暴，还将**展开护盾保护自身，并大幅提升除雷元素以外的所有元素抗性与物理抗性，同时小幅提升雷元素抗性**。处于此状态下，强敌的「豪胆值」将持续消耗，且其**因受到雷元素伤害而扣减「豪胆值」的扣减量将提升**，并会在「豪胆值」耗尽后退出该状态。强敌退出该状态时，将受到大量反噬伤害。「奋勇状态·急袭」期间，护盾抵挡的伤害量越高，其受到的反噬伤害也越高。**雷元素星烁反应伤害**会提高护盾被破除时强敌受到的反噬伤害。",
+						"pt": "Devido aos efeitos da perturbação da Linha Ley, quando o Valor de Bravura do Vilão atingir o máximo, ele entrará no estado Ataque Valente. Enquanto estiver neste estado, seus ataques serão mais ferozes. Ele também **gerará um escudo e aumentará imensamente todas as RES, exceto a RES Electro, que receberá um aumento pequeno**. Enquanto estiver no estado de Ataque Valente, o Valor de Bravura do Vilão será consumido continuamente. **Dano Electro também drenará mais Valor de Bravura do que o normal**. Ele sairá deste estado e sofrerá um grande Dano de retaliação quando o Valor de Bravura for esgotado. Quanto mais Dano o escudo absorver durante o estado Intrepidez: Investida Furacão, maior será o Dano de retaliação sofrido quando o estado acabar.**Dano da Reação de Brilho Estelar** aumentará o Dano de retaliação sofrido quando o escudo é quebrado.",
+						"ru": "Под влиянием флуктуации артерий земли, когда Храбрость сильного противника накапливается до максимума, он переходит в Состояние Отваги: Налёт. Его атаки становятся более яростными, а **сам он создаёт щит, значительно повышает сопротивление всем элементам, кроме Электро, и физ. сопротивление, а также немного повышает сопротивление Электро**. В этом состоянии Храбрость непрерывно расходуется, причём **при получении Электро урона противник теряет больше Храбрости**. Когда Храбрость заканчивается, противник выходит из этого состояния и получает большой урон от отдачи. Чем больше урона поглотил щит в этом состоянии, тем выше урон от отдачи. **Электро урон реакции Звёздный блеск** дополнительно повышает урон от отдачи при разрушении щита.",
+						"fr": "Sous l'effet des lignes énergétiques, l'Ancravague entre en assaut vaillant une fois son courage au maximum. Pendant l'assaut vaillant, elle consomme de façon continue son courage pour que ses attaques deviennent plus féroces et **génère un bouclier, tout en augmentant légèrement sa RÉS Électro et considérablement toutes ses autres RÉS élémentaires et physique**. Pendant l'assaut vaillant, le courage de l'Ancravague diminue de façon continue, **les DGT Électro drainent plus de courage que d'habitude** et elle sort de l'assaut vaillant et subit d'importants DGT de renvoi lorsque son courage est épuisé. Plus son bouclier absorbe de DGT pendant l'assaut vaillant, plus les DGT de renvoi subis à la fin sont importants. Les **DGT de réaction de astrale** augmentent les DGT de renvoi subis lorsque le bouclier est brisé."
+					}
+				}
+			]
 		}
 	}
 }
