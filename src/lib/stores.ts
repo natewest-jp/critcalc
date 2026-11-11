@@ -297,6 +297,14 @@ type SiteSettings = {
 	/** The one-time "links open in Theorycraft" dialog has been dismissed
 	 *  (shown the first time a link moves someone out of a real profile). */
 	seenLinksNotice: boolean;
+	/**
+	 * The New tag (⚓ Nate 2026-11-11): for each endgame, the cycle whose New
+	 * tag was last clicked (a Stygian version, an Abyss or Theater start;
+	 * `$lib/endgameCycle`). A cycle other than the running one shows the tag,
+	 * on the Builder's season picker over an older lineup and on the
+	 * Library's This cycle card, until either is clicked. Absent shows it.
+	 */
+	seenCycles: Partial<Record<'abyss' | 'stygian' | 'theater', string>>;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
 	/**
@@ -497,6 +505,7 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	showCoverageStrips: false,
 	seenGuestNotice: false,
 	seenLinksNotice: false,
+	seenCycles: {},
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: SWAP_PING_DEFAULT,
@@ -526,6 +535,12 @@ function loadSiteSettings(): SiteSettings {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
 		delete (merged as Record<string, unknown>).swapFrames;
+		const seen = parsed.seenCycles;
+		merged.seenCycles = Object.fromEntries(
+			Object.entries(seen && typeof seen === 'object' ? seen : {}).filter(
+				([k, v]) => ['abyss', 'stygian', 'theater'].includes(k) && typeof v === 'string'
+			)
+		);
 		// The playback sound settings were reshaped several times on 2026-09-29
 		// (sets → a mode plus a voice; assignments → an order plus a note set;
 		// the swap's slide → hums). A stored voice id becomes the voice; the
@@ -623,6 +638,14 @@ function createSiteSettingsStore() {
 		/** A one-time notice has done its job: it is not shown again. */
 		markSeen(key: 'seenGuestNotice' | 'seenLinksNotice') {
 			store.update((prev) => persist({ ...prev, [key]: true }));
+		},
+		/** A New tag was clicked: its cycle is announced, and stays so. */
+		markCycleSeen(kind: 'abyss' | 'stygian' | 'theater', cycle: string) {
+			store.update((prev) =>
+				prev.seenCycles[kind] === cycle
+					? prev
+					: persist({ ...prev, seenCycles: { ...prev.seenCycles, [kind]: cycle } })
+			);
 		},
 		/** Settings' Show again: every one-time notice may show once more. */
 		resetSeen() {

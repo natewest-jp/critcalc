@@ -566,6 +566,21 @@
 		})();
 	});
 
+	/** ⚓ THE NEW TAG on the season picker (Nate 2026-11-11): the open lineup
+	 *  was planned for an older cycle and a newer one is running, which the
+	 *  reader hasn't yet acknowledged (here or on the Library's This cycle
+	 *  card). Opening the picker acknowledges it. An untouched lineup follows
+	 *  the game, so it is never out of date. */
+	const cycleNow = $derived(board.preset === 'custom' ? undefined : cycleAt(board.preset));
+	const newCycle = $derived.by(() => {
+		if (!mounted || !cycleNow || board.preset === 'custom') return false;
+		const own = board.preset === 'theater' ? board.theater?.season : board.season;
+		return !!own && own !== cycleNow && $siteSettings.seenCycles[board.preset] !== cycleNow;
+	});
+	function seeCycle(): void {
+		if (board.preset !== 'custom' && cycleNow) siteSettings.markCycleSeen(board.preset, cycleNow);
+	}
+
 	// ---------------------------------------------------------------------------
 	// IMAGINARIUM THEATER (⚓ Nate 2026-11-11)
 	//
@@ -1659,6 +1674,8 @@
 							kind={board.preset}
 							value={board.season}
 							onPick={(id) => boards.setSeason(board.id, id)}
+							fresh={newCycle}
+							onOpen={seeCycle}
 						/>
 					{:else if theaterOn && thSeason && thMode}
 						<TheaterPickers
@@ -1668,6 +1685,8 @@
 							verdicts={thVerdicts}
 							onSeason={onTheaterSeason}
 							onMode={onTheaterMode}
+							fresh={newCycle}
+							onOpen={seeCycle}
 						/>
 					{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the

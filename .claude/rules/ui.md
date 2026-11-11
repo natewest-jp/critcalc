@@ -16,7 +16,7 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 ## Tokens: four layers and one law
 
 - **A number means a primitive, and no component may name one. No number means a role, and a role is the only thing a component may name.** Enforced by `timelineExport.mirror.test.ts` (exempt: `app.css`, `/styleguide`, `/lab`, tests).
-- L0 is the ramps: `--slate-*`, `--parchment-*`, `--gold-*`, `--ink-*`, `--night-*`, `--red-*`, `--blue-*`. They were reverse-engineered from Genshin screenshots, whose shades are a small palette layered with transparency. The source is the gitignored `assets-src/genshin-night.css`.
+- L0 is the ramps: `--slate-*`, `--parchment-*`, `--gold-*`, `--ink-*`, `--night-*`, `--red-*`, `--blue-*`, and the New tag's `--lemon-*` and `--amber-*`. They were reverse-engineered from Genshin screenshots, whose shades are a small palette layered with transparency. The source is the gitignored `assets-src/genshin-night.css`.
 - L1 is compositing (`--glass-*` and the line stops). L2 is roles.
 - L3 is three grounds and one material:
   - **Night** is the world itself: the unclassed `:root`, with no paint. Lines carry alpha. `--muted` is not allowed on night.
