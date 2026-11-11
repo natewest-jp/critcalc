@@ -13,6 +13,7 @@
 
 import { characterIndex, inTheWorks } from '$lib/data/characterIndex.generated';
 import { currentAbyss, currentSeason } from '$lib/endgame';
+import { currentTheater } from '$lib/theater';
 
 /** One quieter line under the headline — its fine print, optionally a link.
  *  `parts` are joined by " · " on a wide screen; on a phone each takes its own
@@ -48,26 +49,33 @@ export interface Announcement {
 function announcementsAt(now: Date): Announcement[] {
 	return [
 		{
-			id: 'current-7-1',
-			text: 'Data current to Genshin Impact 7.1',
+			id: 'current-7-2',
+			text: 'Data current to Genshin Impact 7.2',
 			lines: [endgameLine(now), countLine()].filter((l): l is AnnouncementLine => !!l),
-			// 7.1 went live 2026-09-23; the next patch is ~six weeks out.
-			expires: '2026-11-04'
+			// 7.2 went live 2026-11-04 and 7.3 is due 2026-12-16, six weeks on
+			// (`docs/library/game/release-calendar.md`). ⚠ The 7.1 entry expired
+			// on 7.2's patch day and nothing replaced it for a week: the daily
+			// check-in now reads this date.
+			expires: '2026-12-16'
 		}
 	];
 }
 
-/** "Spiral Abyss (Oct 16) · Stygian Onslaught 7.1" — whichever of the two is
- *  live at `now` (both, normally). ⚓ Nate 2026-10-18: each named by its OWN
- *  cadence — the Abyss resets on the 16th, twice a version, so it carries its
- *  reset date; Stygian runs a whole version, so it carries the version. (The
- *  blessing's name went: it is flavour, and the line now fits one row at 320.) */
+/** "Spiral Abyss (Oct 16) · Stygian Onslaught 7.2 · Imaginarium Theater
+ *  (November)" — whichever are live at `now` (all three, normally). ⚓ Nate
+ *  2026-10-18: each named by its OWN cadence — the Abyss resets on the 16th,
+ *  twice a version, so it carries its reset date; Stygian runs a whole
+ *  version, so it carries the version; the Theater runs a calendar month, so
+ *  it carries the month (2026-11-11). (The blessing's name went: it is
+ *  flavour, and each part keeps to one row at 320.) */
 function endgameLine(now: Date): AnnouncementLine | undefined {
 	const abyss = currentAbyss(now);
 	const season = currentSeason(now);
+	const theater = currentTheater(now);
 	const parts = [
 		abyss && `Spiral Abyss (${shortDate(abyss.start)})`,
-		season && `Stygian Onslaught ${season.version}`
+		season && `Stygian Onslaught ${season.version}`,
+		theater && `Imaginarium Theater (${monthName(theater.start)})`
 	].filter(Boolean);
 	return parts.length ? { parts: parts as string[], href: '/builder' } : undefined;
 }
@@ -77,6 +85,12 @@ function endgameLine(now: Date): AnnouncementLine | undefined {
 function shortDate(iso: string): string {
 	const [y, m, d] = iso.split('-').map(Number);
 	return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/** "November" from an ISO day, read as a LOCAL date, as `shortDate`. */
+function monthName(iso: string): string {
+	const [y, m] = iso.split('-').map(Number);
+	return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long' });
 }
 
 /** "117 characters modeled · 4 in progress". ⚠ The Traveler counts ONCE, as
