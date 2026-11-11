@@ -214,7 +214,7 @@
 				{/if}
 			</span>
 			{#if unavailable}
-				<span class="cc-off" aria-hidden="true"><Mark name="ban" size={28} /></span>
+				<span class="cc-off" aria-hidden="true"><Mark name="ban" size={56} /></span>
 			{/if}
 			{#if chip !== null}
 				<span class="cc-chip" title={`You own C${chip}`}><ConMark level={chip} height={8} /></span>

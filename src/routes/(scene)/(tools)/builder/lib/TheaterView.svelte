@@ -105,14 +105,14 @@
 			<h3 class="th-title">Opening and Alternate Cast members selected</h3>
 			<button
 				class="btn btn--sm th-invite"
-				class:is-on={invite}
+				class:is-active={invite}
 				class:is-nudged={nudged}
 				aria-pressed={invite}
 				title={invite
 					? 'Counting one Supporting Cast character from a friend'
 					: 'Count one Supporting Cast character from a friend'}
 				onanimationend={() => (nudged = false)}
-				onclick={invitePress}><Mark name="plus" size={12} /> Invite Supporting Cast</button
+				onclick={invitePress}>+1 Supporting Cast</button
 			>
 		</header>
 		<div class="th-body th-cast">
@@ -144,22 +144,22 @@
 		<header class="th-head ctx-glass"><h3 class="th-title">Stats</h3></header>
 		<div class="th-body th-stats">
 			{#each elements as e (e)}
-				<span class="th-chip ctx-glass"
+				<span class="th-chip"
 					><img src={elementIcon(e)} alt={e} /> ×{stats.elements[e as Element]}</span
 				>
 			{/each}
 			<span class="th-rule th-rule--short" aria-hidden="true"></span>
-			<span class="th-chip ctx-glass" title="On-Field"
+			<span class="th-chip" title="On-Field"
 				><img src={positionIcon('onField')} alt="On-Field" /> ×{stats.onField}</span
 			>
-			<span class="th-chip ctx-glass" title="Off-Field"
+			<span class="th-chip" title="Off-Field"
 				><img src={positionIcon('offField')} alt="Off-Field" /> ×{stats.offField}</span
 			>
 			<span class="th-rule th-rule--short" aria-hidden="true"></span>
-			<span class="th-chip ctx-glass" title="Support"
+			<span class="th-chip" title="Support"
 				><img src={functionIcon('support')} alt="Support" /> ×{stats.support}</span
 			>
-			<span class="th-chip ctx-glass" title="Survivability"
+			<span class="th-chip" title="Survivability"
 				><img src={functionIcon('survivability')} alt="Survivability" />
 				×{stats.survivability}</span
 			>
@@ -290,7 +290,7 @@
 	   frames its rings. --th-pill-pad, --th-pill-fill. */
 	.th-opening {
 		--th-pill-pad: 3px;
-		--th-pill-fill: var(--glass-sheer);
+		--th-pill-fill: var(--glass-panel);
 		position: relative;
 		display: flex;
 		align-items: flex-end;
@@ -321,16 +321,13 @@
 		border-radius: 3px;
 		background: var(--team-hue-first);
 		color: var(--surface-well);
-		font-size: 9px;
+		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
 		line-height: 14px;
 		white-space: nowrap;
 	}
 	.th-invite {
 		flex: none;
-	}
-	.th-invite.is-on {
-		box-shadow: inset 0 0 0 1px var(--accent);
 	}
 	/* The shared nudge (app.css) — it guards reduced motion itself. */
 	.th-invite.is-nudged {
@@ -344,13 +341,16 @@
 		align-items: center;
 		gap: 0.35rem;
 	}
+	/* The Stygian check chip's recipe (CheckChip's .ck): its height, its
+	   ground, its type. */
 	.th-chip {
 		display: inline-flex;
 		align-items: center;
-		gap: 3px;
-		padding: 2px 9px 2px 4px;
+		gap: 4px;
+		min-height: 24px;
+		padding: 2px 10px 2px 4px;
 		border-radius: var(--r-round);
-		background: var(--surface);
+		background: var(--surface-raised);
 		color: var(--text);
 		font-variant-numeric: tabular-nums;
 		font-size: var(--fs-sm);
@@ -374,7 +374,11 @@
 		background: var(--surface);
 		box-shadow: inset 3px 0 0 var(--accent);
 		color: var(--text);
+		/* The game's rule text at the board's size for it (the Abyss blessing's,
+		   .bv-abyss-blessing); the line is the section's headline, so semibold. */
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
+		line-height: 1.45;
 	}
 	.th-line.is-short {
 		box-shadow: inset 3px 0 0 var(--ui-warning);
@@ -392,6 +396,8 @@
 		display: grid;
 		gap: 0.3rem;
 		color: var(--text);
+		font-size: var(--fs-lg);
+		line-height: 1.45;
 	}
 	.th-gains b {
 		font-weight: var(--fw-bold);

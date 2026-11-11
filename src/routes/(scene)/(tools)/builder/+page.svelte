@@ -1924,10 +1924,11 @@
 	/* The details' "Adds to" line (inspector round): the selected team's own
 	   hue names it, as the destination strip over the grid does; the delta is
 	   swap mode's header, verbatim. */
-	/* The Theater grid's guest note, beside the section's name. */
+	/* The Theater grid's guest note, beside the section's name: the count's
+	   ink and size (.tb-slotrow-count), in sentence case. */
 	.tb-th-note {
 		color: var(--muted);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 	.tb-detail-delta {
 		display: flex;
