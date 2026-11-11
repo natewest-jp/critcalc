@@ -741,14 +741,16 @@
 		{/if}
 	{:else}
 		{#if showCycle}
-			<p class="sec">This cycle</p>
+			<p class="sec sec--cycle">This cycle</p>
+			<!-- ⚓ The blank cards lead (Nate 2026-11-11): what's newly
+			     offered comes first, then the lineups already made. -->
 			<ul class="cards">
+				{#each cycleGroups.filter((g) => g.blank) as g (g.kind)}{@render blankCard(g.kind)}{/each}
 				{#each cycleGroups as g (g.kind)}
 					{#each g.docs as d (d.id)}{@render lineupCard(d)}{/each}
-					{#if g.blank}{@render blankCard(g.kind)}{/if}
 				{/each}
 			</ul>
-			{#if others.length}<p class="sec">Other lineups</p>{/if}
+			{#if others.length}<p class="sec sec--cycle sec--after">Other lineups</p>{/if}
 		{/if}
 		{#if others.length}
 			<ul class="cards">
@@ -911,6 +913,27 @@
 	   Rotations and lineups are both cards in one grid that fills the width:
 	   reopening one means recognising it, and its portraits and name already
 	   say who it is (⚓ Nate: no preview pane). */
+	/* ── THIS CYCLE (⚓ Nate 2026-11-11) ──
+	   🎛️ Its two headings stand a size over the Planner's Pinned and Recent,
+	   and the second sits further from the cards above it, so the two
+	   sections part clearly. */
+	.sec.sec--cycle {
+		font-size: var(--fs-lg);
+	}
+	.sec.sec--after {
+		margin-top: 2.2rem;
+	}
+	/* A blank card is an invitation, not a lineup you made: it sits IN the
+	   ground, on the well (a slot to fill), where a made lineup stands
+	   raised. ⛔ Not a border: a 1px ring on a card already means "Open
+	   now", and a border around a quiet fill is the hollow shape the site
+	   avoids. Hover lifts it as it does every card. */
+	.card.card--blank {
+		background: var(--surface-well);
+	}
+	.card.card--blank:hover {
+		background: var(--surface-hover);
+	}
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));

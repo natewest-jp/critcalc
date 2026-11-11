@@ -27,6 +27,13 @@ Announcing a new endgame cycle, from the to-do's "Signaling a new endgame". Bran
 - `LibraryPlace.svelte` splits the Builder's lineups by `inThisCycle`: the running Abyss, Stygian and Theater, in that order, each with its lineups or a blank card; then the rest, pinned first as before. The blank card draws the empty rows a new lineup starts with and the cycle's dates, and a click acknowledges the cycle and opens the new lineup. Under a team filter, no blanks.
 - An Abyss between cycles (data not yet extended) has no This cycle place, by `currentAbyss`'s end guard.
 
+## 3a. After Nate's first look (2026-11-11)
+
+- The tag: the glow and the sparkles came off (the site's UI has neither, so they read out of place), it sized down to 11px, and it sits in its host's corner, 2px past the top and right edges. 🎛️ `--new-tag-size` and `--new-tag-overhang` in `app.css` (the lift and inset knobs went).
+- The two headings stand a size larger (14px), with more room above Other lineups (`.sec.sec--cycle`, `.sec.sec--after`).
+- A blank card read as a lineup Nate didn't remember making. It sits on the well now (`--surface-well`, a slot to fill), where a made lineup stands raised. A border was rejected: a 1px ring on a card already means Open now, and a border around a quiet fill is the hollow shape the site avoids.
+- The blank cards lead This cycle, before the lineups already made (Nate).
+
 ## 4. Copy proposed, not yet approved
 
 1. Now: (no heading over the lineups below This cycle)
