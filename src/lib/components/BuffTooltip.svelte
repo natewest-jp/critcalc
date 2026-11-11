@@ -22,14 +22,18 @@
 		isMutuallyExclusive?: boolean;
 		duration?: number;
 		procCooldown?: number;
+		/** Horizontal centre, in viewport px. */
 		x: number;
-		y: number;
-		above: boolean;
+		/** The hovered element's top and bottom edges, in viewport px. The
+		 *  tooltip picks the side itself, from its own measured height. */
+		anchorTop: number;
+		anchorBottom: number;
 	};
 </script>
 
 <script lang="ts">
 	import BuffDetailRows from '$lib/components/BuffDetailRows.svelte';
+	import { portal } from '$lib/actions/portal';
 
 	let { tip }: { tip: BuffTooltipData } = $props();
 
@@ -49,6 +53,19 @@
 			? Math.min(Math.max(tip.x, EDGE_GUTTER + boxW / 2), viewW - EDGE_GUTTER - boxW / 2)
 			: tip.x
 	);
+
+	/**
+	 * Above the anchor when the whole box fits there, else below. ⚓ Nate
+	 * 2026-11-11: a tall reaction readout on the aura lane opened upward on a
+	 * fixed "more than 80px from the top" guess and ran under the Planner's
+	 * title card. The box is portalled to <body> so it paints over the tool
+	 * chrome (whose layer outranks the page's), and measured so it never
+	 * leaves the viewport's top. Hidden until measured, so it never paints
+	 * on the wrong side first.
+	 */
+	const ANCHOR_GAP = 6;
+	let boxH = $state(0);
+	let above = $derived(!boxH || tip.anchorTop - ANCHOR_GAP - boxH >= EDGE_GUTTER);
 	// ↻ 2026-10-23: the rows (and their frames → seconds seam) live in
 	// BuffDetailRows, shared with the inspector's bar page.
 </script>
@@ -57,10 +74,13 @@
 
 <div
 	class="bt-tooltip"
-	class:bt-tooltip--above={tip.above}
+	use:portal
+	class:bt-tooltip--above={above}
 	bind:offsetWidth={boxW}
+	bind:offsetHeight={boxH}
+	style:visibility={boxH ? null : 'hidden'}
 	style:left="{centre}px"
-	style:top="{tip.y}px"
+	style:top="{above ? tip.anchorTop - ANCHOR_GAP : tip.anchorBottom + ANCHOR_GAP}px"
 >
 	<div class="bt-source">{tip.sourceLabel}</div>
 	<BuffDetailRows
