@@ -1206,11 +1206,22 @@
 		height: var(--lu-el);
 		object-fit: contain;
 	}
-	/* One row: the stack is taller than one disc, so it overhangs the disc
-	   evenly, above into the hair and below into this padding, which keeps
-	   the overhang clear of the card's foot. */
+	/* One row: the stack is taller than one disc. ⚠ Left to size the row,
+	   it made the row taller and dropped the portraits (rows sit on their
+	   cell's foot) below an Abyss card's first row. So the stack is held to
+	   the disc's height and overhangs it evenly, the rule stretches to
+	   match, and this padding keeps the lower overhang off the card's foot. */
 	.lu-teams--one {
-		padding-bottom: max(0px, (3 * var(--lu-el) + 2 * var(--lu-el-gap) - var(--lu-face)) / 2);
+		--lu-el-over: max(0px, (3 * var(--lu-el) + 2 * var(--lu-el-gap) - var(--lu-face)) / 2);
+		padding-bottom: var(--lu-el-over);
+	}
+	.lu-teams--one > .lu-els {
+		align-self: end;
+		height: var(--lu-face);
+	}
+	.lu-teams--one > .lu-rule {
+		margin-top: calc(var(--lu-hair) - var(--lu-el-over));
+		margin-bottom: calc(-1 * var(--lu-el-over));
 	}
 	.lu-lead {
 		width: var(--lu-face);
