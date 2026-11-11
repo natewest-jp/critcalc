@@ -935,12 +935,11 @@
 	   same on every ground, as the game's is. */
 	--new-ink: var(--lemon-200);
 	--new-fill: var(--amber-500);
-	/* 🎛️ The tag's knobs (Nate tunes by eye): its text size, which sizes the
-	   rest in em; how far it rises above its host's top edge; how far in from
-	   the host's right edge it stands. */
-	--new-tag-size: 0.75rem;
-	--new-tag-lift: 0.6em;
-	--new-tag-inset: 0.5em;
+	/* 🎛️ The tag's knobs (Nate tunes by eye): its text size, which sizes its
+	   padding in em; and how far it reaches past its host's top and right
+	   edges (⚓ Nate: in the corner, a hair past both, 1–2px). */
+	--new-tag-size: 0.6875rem;
+	--new-tag-overhang: 2px;
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
 	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
