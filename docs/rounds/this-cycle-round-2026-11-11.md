@@ -45,14 +45,16 @@ Announcing a new endgame cycle, from the to-do's "Signaling a new endgame". Bran
 - The blank card's grey words take the full ink, and its rule steps up to `--line-strong`: `--line-soft` sat darker than the hover fill.
 - The season menus' rows had grown to 48px against the Theater's 29: renaming the picker's `sp-version` to `sp-name` collided with the global `.sp-name` (a side portrait's name, `app.css`), which made the name a 14px flex box. It is `sp-cycle` now, and both menus match the Theater's again.
 
-## 4. Copy proposed, not yet approved
+## 3d. Seen once, anywhere (Nate, 2026-11-11)
 
-1. Now: (no heading over the lineups below This cycle)
-   → "Other lineups" (in the demo as working copy)
-2. Now: "Abyss" (an Abyss lineup's derived label, in the Library and the Builder's tab)
-   → "Abyss Stardread Moon" (its cycle, as "Stygian 7.2" and "Theater November" carry theirs)
-3. Now: (none; the Abyss picker's screen-reader name)
-   → "Cycle: Stardread Moon, Oct 16 – Nov 16" (in the demo as working copy)
+- Nate: switching an open lineup back to an older cycle, to look at what earlier endgames were, must not raise the tag; the reader isn't asking to be told about the newer one then. Generalized: the tag announces a cycle to someone who hasn't seen it, never to someone exploring. A cycle is seen once the reader opens any season picker (its menu lists the running cycle), tag or not, or has a lineup of the running cycle open in the Builder, however it got there (the blank card, New lineup, a team's New lineup, the cold start once restored).
+- Kept as they were: a lineup arriving by a link pinned to an old cycle shows the tag if the running one is unseen (that is the announcement's job); a deleted lineup of this cycle brings back its blank card without a tag; `seenCycles` is per browser, not per profile, since one person reads the tags.
+
+## 4. Copy (approved by Nate, 2026-11-11)
+
+1. "Other lineups", the heading below This cycle.
+2. An Abyss lineup's derived label names its cycle: "Abyss Stardread Moon" (`lineupLabel`, from `season-dates.json`, which names each cycle; tested in `convert.test.ts`, written failing first).
+3. The Abyss picker's screen-reader name: "Cycle: Stardread Moon, Oct 16 – Nov 16".
 
 ## 5. Verification
 
