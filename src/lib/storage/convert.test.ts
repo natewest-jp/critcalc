@@ -56,6 +56,9 @@ describe('convert', () => {
 		expect(boardToLineupBody(board)).toEqual(lineup.body);
 		expect(lineupLabel({ preset: 'stygian' })).toBe('Stygian');
 		expect(lineupLabel({ preset: 'abyss' })).toBe('Abyss');
+		// ⚓ Nate 2026-11-11: an Abyss lineup names its cycle by its Moon.
+		expect(lineupLabel({ preset: 'abyss', season: '2026-10-16' })).toBe('Abyss Stardread Moon');
+		expect(lineupLabel({ preset: 'abyss', season: '2026-09-16' })).toBe('Abyss Cascading Moon');
 	});
 
 	it('a Theater lineup keeps its plan through the round trip, and is labelled by its month', () => {

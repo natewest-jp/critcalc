@@ -1240,7 +1240,9 @@ bosses. The mode name stands in the card's foot.
 
 ### 12.6 Still open
 
-- A Theater lineup pinned to an older season gets a "New" tag in the game's
-  style, and a "This cycle" section may lead the lineup list (`docs/todo.md`).
+- ✅ Built 2026-11-11: the New tag and This cycle (`docs/rounds/this-cycle-round-2026-11-11.md`).
+  A past lineup is an archive and never wears the tag; it stands on the season
+  picker of an out-of-date lineup and on This cycle's blank cards, until the
+  running cycle is seen.
 - Stats count roles only for characters with role data; a character without it
   shows under its element alone (⚓ Nate: an acceptable gap).

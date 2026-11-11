@@ -16,9 +16,12 @@
 	import Mark from './Mark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
 	import BandMenu from './BandMenu.svelte';
-	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
+	import NewTag from './NewTag.svelte';
+	import { BOARD_PRESETS, PRESET_TEAMS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
-	import { BOSSES, SEASONS, bossImage, currentSeason, inLang } from '$lib/endgame';
+	import { ABYSS_CYCLES, BOSSES, SEASONS, bossImage, currentSeason, inLang } from '$lib/endgame';
+	import { ENDGAMES, cycleAt, inThisCycle, type Endgame } from '$lib/endgameCycle';
+	import { siteSettings } from '$lib/stores';
 	import { recency, storageSession, type DocTool } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
 	import {
@@ -274,6 +277,91 @@
 			mode: (MODE_NAME as Record<string, string>)[plan?.mode ?? ''] ?? ''
 		};
 	}
+
+	// ── THIS CYCLE (⚓ Nate 2026-11-11) ──────────────────────────────────────
+	// The lineups planned for the running Abyss, Stygian and Theater cycles
+	// lead the Library, in a section of their own, and only there. When a
+	// cycle ends its lineups move down among the rest on their own: a past
+	// lineup is an archive of what was planned for it (`$lib/endgameCycle`).
+	// An endgame with no lineup this cycle shows a blank card that starts
+	// one, wearing the New tag until it, or the Builder's season picker, is
+	// clicked (`seenCycles`).
+
+	/** Each endgame's running cycle, read once: the Library is short-lived. */
+	const cycleNow = Object.fromEntries(ENDGAMES.map((k) => [k, cycleAt(k)])) as Record<
+		Endgame,
+		string | undefined
+	>;
+	/** The lineups, pinned first and then by recency, as the grid lists them. */
+	const lineups = $derived(
+		place === 'builder' ? [...pinned, ...recent].map((e) => e.d as LineupDocument) : []
+	);
+	const ofThisCycle = $derived(lineups.filter((d) => inThisCycle(d.body, d.updatedAt)));
+	const others = $derived(lineups.filter((d) => !ofThisCycle.includes(d)));
+	/** ⚓ THIS CYCLE'S ORDER (Nate 2026-11-11): first a blank card for each
+	 *  running endgame with no lineup yet, by release date, newest first (the
+	 *  latest drop leftmost); then the lineups of this cycle, the one open
+	 *  now first, then by when each was last opened. ↻ Not by endgame: the
+	 *  fixed Abyss, Stygian, Theater order read as alphabetical. Narrowed to
+	 *  a team, only that team's lineups show, and no blanks. */
+	const blanks = $derived(
+		filter
+			? []
+			: ENDGAMES.filter((k) => cycleNow[k] && !ofThisCycle.some((d) => d.body.preset === k)).sort(
+					(a, b) => (runningCycle(b)?.start ?? '').localeCompare(runningCycle(a)?.start ?? '')
+				)
+	);
+	const cycleLineups = $derived(
+		[...ofThisCycle].sort(
+			(a, b) => Number(b.id === currentId) - Number(a.id === currentId) || recency(b) - recency(a)
+		)
+	);
+	const showCycle = $derived(blanks.length > 0 || cycleLineups.length > 0);
+
+	/** An empty lineup of `kind` on its running cycle: what a blank card
+	 *  draws, with the same rows a new lineup starts with. */
+	function blankBody(kind: Endgame): LineupDocument['body'] {
+		const cycle = cycleNow[kind];
+		return {
+			preset: kind,
+			noRepeats: true,
+			teams: Array.from({ length: PRESET_TEAMS[kind] }, (_, i) => ({
+				id: `blank-${i}`,
+				slots: [null, null, null, null]
+			})),
+			...(kind === 'theater' ? { theater: { season: cycle, cast: [] } } : { season: cycle })
+		};
+	}
+
+	const fmtDay = (iso: string) =>
+		new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			timeZone: 'UTC'
+		});
+	/** The running cycle of `kind`, with its dates. */
+	function runningCycle(kind: Endgame): { start: string; end: string } | undefined {
+		const id = cycleNow[kind];
+		if (kind === 'stygian') return SEASONS.find((x) => x.version === id);
+		if (kind === 'abyss') return ABYSS_CYCLES.find((x) => x.start === id);
+		return THEATER_SEASONS.find((x) => x.start === id);
+	}
+	/** A running cycle's dates, "Nov 11 – Dec 23". */
+	function cycleDates(kind: Endgame): string {
+		const c = runningCycle(kind);
+		return c ? `${fmtDay(c.start)} – ${fmtDay(c.end)}` : '';
+	}
+
+	/** A new cycle the reader hasn't acknowledged yet. */
+	const isNew = (kind: Endgame): boolean =>
+		!!cycleNow[kind] && $siteSettings.seenCycles[kind] !== cycleNow[kind];
+
+	/** The blank card: acknowledge the cycle, and start its lineup. */
+	function startCycle(kind: Endgame): void {
+		const cycle = cycleNow[kind];
+		if (cycle) siteSettings.markCycleSeen(kind, cycle);
+		void create(kind);
+	}
 </script>
 
 <!-- The SIDE portraits, as the bench and the Builder wear them (Nate
@@ -493,6 +581,103 @@
 	</li>
 {/snippet}
 
+<!-- A lineup card's rows: what each team faces (a boss, an Abyss half, a
+     number) and its four, or a Theater cast in rows of four. -->
+{#snippet teamsOf(body: LineupDocument['body'])}
+	{@const end = lineupLead(body)}
+	{@const more = body.teams.length - LINEUP_ROWS}
+	{@const th = body.preset === 'theater' ? theaterCard(body) : undefined}
+	{#if th}
+		<span class="lu-teams">
+			<span class="lu-rule" style:grid-row="1 / span {th.rows.length}"></span>
+			<span
+				class="lu-els"
+				class:lu-els--one={th.rows.length === 1}
+				style:grid-row="1 / span {th.rows.length}"
+			>
+				{#each th.elements as el (el)}
+					<img src={elementIcon(el)} alt="" title={el} />
+				{/each}
+			</span>
+			{#each th.rows as ids, i (i)}
+				<span class="lu-row" style:grid-row={i + 1}>
+					{@render portraits(ids, LU_FACE)}
+				</span>
+			{/each}
+			{#if th.more > 0}<span class="lu-more">+{th.more} more</span>{/if}
+		</span>
+	{:else}
+		<span class="lu-teams">
+			<!-- The rule between what the teams face and the teams, from
+			     the first disc to the last. -->
+			<span class="lu-rule" style:grid-row="1 / span {Math.min(body.teams.length, LINEUP_ROWS)}"
+			></span>
+			{#each body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
+				{@const lead = end.lead(i)}
+				{@const name = teamName(team)}
+				<span class="lu-row" style:grid-row={i + 1}>
+					{#if lead.boss}
+						<img
+							class="lu-lead lu-boss"
+							src={bossImage(lead.boss, 'icon')}
+							alt=""
+							title={lead.name}
+						/>
+					{:else}
+						<span class="lu-lead lu-tag">{lead.tag}</span>
+					{/if}
+					{@render portraits(team.slots, LU_FACE)}
+					{#if name}<span class="lu-name">{name}</span>{/if}
+				</span>
+			{/each}
+			{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span>{/if}
+		</span>
+	{/if}
+{/snippet}
+
+{#snippet lineupCard(d: LineupDocument)}
+	{@const isCurrent = d.id === currentId}
+	{@const lineup = d as LineupDocument}
+	{@const end = lineupLead(lineup.body)}
+	{@const th = lineup.body.preset === 'theater' ? theaterCard(lineup.body) : undefined}
+	<li class="card" class:is-current={isCurrent}>
+		<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
+			<span class="card-head">
+				{@render labelOrEdit(d)}
+				{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
+			</span>
+			{@render teamsOf(lineup.body)}
+			<span class="row-meta lu-meta">
+				<!-- The mode only under a name of your own: an unnamed lineup's
+					     label already IS its mode. -->
+				{#if d.name && end.mode}<span>{end.mode}</span>{/if}
+				{#if th?.mode}<span>{th.mode}</span>{/if}
+				{#if isCurrent}<span class="row-now">Open now</span>{/if}
+				{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+					>{/if}
+				<span>{ago(recency(d))}</span>
+			</span>
+		</button>
+		{@render actions(d)}
+	</li>
+{/snippet}
+
+<!-- A running endgame with no lineup yet: its empty rows, the cycle's dates,
+     and the New tag while the cycle is unacknowledged. A click starts it. -->
+{#snippet blankCard(kind: Endgame)}
+	{@const body = blankBody(kind)}
+	<li class="card card--blank">
+		<button class="card-main" onclick={() => startCycle(kind)}>
+			<span class="card-head">
+				<span class="row-label is-derived">{lineupLabel(body)}</span>
+			</span>
+			{@render teamsOf(body)}
+			<span class="row-meta lu-meta"><span>{cycleDates(kind)}</span></span>
+		</button>
+		{#if isNew(kind)}<NewTag on="library" />{/if}
+	</li>
+{/snippet}
+
 <div class="place">
 	<div class="place-acts">
 		{#if pickFor}
@@ -533,12 +718,10 @@
 		{/if}
 	</div>
 
-	{#if loaded && docs.length === 0}
-		<p class="empty">
-			Nothing saved yet. {place === 'planner' ? 'A rotation' : 'A lineup'} is saved here as soon as you
-			start one.
-		</p>
-	{:else if loaded && listed.length === 0}
+	{#if loaded && docs.length === 0 && place === 'planner'}
+		<!-- The Builder's says so under This cycle, below. -->
+		<p class="empty">Nothing saved yet. A rotation is saved here as soon as you start one.</p>
+	{:else if loaded && listed.length === 0 && (place === 'planner' || filter)}
 		<!-- The reason it is empty, not a guess: pick mode hides the rotation
 		     being compared, so a lone rotation has no partner. -->
 		<p class="empty">
@@ -568,85 +751,23 @@
 			</section>
 		{/if}
 	{:else}
-		<ul class="cards">
-			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
-				{@const isCurrent = d.id === currentId}
-				{@const lineup = d as LineupDocument}
-				{@const end = lineupLead(lineup.body)}
-				{@const more = lineup.body.teams.length - LINEUP_ROWS}
-				{@const th = lineup.body.preset === 'theater' ? theaterCard(lineup.body) : undefined}
-				<li class="card" class:is-current={isCurrent}>
-					<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
-						<span class="card-head">
-							{@render labelOrEdit(d)}
-							{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
-						</span>
-						{#if th}
-							<span class="lu-teams">
-								<span class="lu-rule" style:grid-row="1 / span {th.rows.length}"></span>
-								<span
-									class="lu-els"
-									class:lu-els--one={th.rows.length === 1}
-									style:grid-row="1 / span {th.rows.length}"
-								>
-									{#each th.elements as el (el)}
-										<img src={elementIcon(el)} alt="" title={el} />
-									{/each}
-								</span>
-								{#each th.rows as ids, i (i)}
-									<span class="lu-row" style:grid-row={i + 1}>
-										{@render portraits(ids, LU_FACE)}
-									</span>
-								{/each}
-								{#if th.more > 0}<span class="lu-more">+{th.more} more</span>{/if}
-							</span>
-						{:else}
-							<span class="lu-teams">
-								<!-- The rule between what the teams face and the teams, from
-							     the first disc to the last. -->
-								<span
-									class="lu-rule"
-									style:grid-row="1 / span {Math.min(lineup.body.teams.length, LINEUP_ROWS)}"
-								></span>
-								{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
-									{@const lead = end.lead(i)}
-									{@const name = teamName(team)}
-									<span class="lu-row" style:grid-row={i + 1}>
-										{#if lead.boss}
-											<img
-												class="lu-lead lu-boss"
-												src={bossImage(lead.boss, 'icon')}
-												alt=""
-												title={lead.name}
-											/>
-										{:else}
-											<span class="lu-lead lu-tag">{lead.tag}</span>
-										{/if}
-										{@render portraits(team.slots, LU_FACE)}
-										{#if name}<span class="lu-name">{name}</span>{/if}
-									</span>
-								{/each}
-								{#if more > 0}<span class="lu-more"
-										>+{more} more {more === 1 ? 'team' : 'teams'}</span
-									>{/if}
-							</span>
-						{/if}
-						<span class="row-meta lu-meta">
-							<!-- The mode only under a name of your own: an unnamed lineup's
-							     label already IS its mode. -->
-							{#if d.name && end.mode}<span>{end.mode}</span>{/if}
-							{#if th?.mode}<span>{th.mode}</span>{/if}
-							{#if isCurrent}<span class="row-now">Open now</span>{/if}
-							{#if d.fromLink}<span class="row-flag"
-									><Mark name="link" size={11} /> From a link</span
-								>{/if}
-							<span>{ago(recency(d))}</span>
-						</span>
-					</button>
-					{@render actions(d)}
-				</li>
-			{/each}
-		</ul>
+		{#if showCycle}
+			<p class="sec sec--cycle">This cycle</p>
+			<!-- ⚓ The blank cards lead (Nate 2026-11-11): what's newly
+			     offered comes first, then the lineups already made. -->
+			<ul class="cards">
+				{#each blanks as kind (kind)}{@render blankCard(kind)}{/each}
+				{#each cycleLineups as d (d.id)}{@render lineupCard(d)}{/each}
+			</ul>
+			{#if others.length}<p class="sec sec--cycle sec--after">Other lineups</p>{/if}
+		{/if}
+		{#if others.length}
+			<ul class="cards">
+				{#each others as d (d.id)}{@render lineupCard(d)}{/each}
+			</ul>
+		{:else if loaded && docs.length === 0}
+			<p class="empty">Nothing saved yet. A lineup is saved here as soon as you start one.</p>
+		{/if}
 	{/if}
 </div>
 
@@ -801,6 +922,40 @@
 	   Rotations and lineups are both cards in one grid that fills the width:
 	   reopening one means recognising it, and its portraits and name already
 	   say who it is (⚓ Nate: no preview pane). */
+	/* ── THIS CYCLE (⚓ Nate 2026-11-11) ──
+	   🎛️ Its two headings stand a size over the Planner's Pinned and Recent,
+	   and the second sits further from the cards above it, so the two
+	   sections part clearly. */
+	.sec.sec--cycle {
+		font-size: var(--fs-lg);
+	}
+	.sec.sec--after {
+		margin-top: 2.2rem;
+	}
+	/* A blank card is an invitation, not a lineup you made: it stands a
+	   rung brighter than the cards you made, and its hover a rung brighter
+	   again (--surface-invite, ⚓ Nate 2026-11-11). ↻ It sat on the well
+	   first, which didn't read. ⛔ Not a border: a 1px ring on a card already
+	   means "Open now", and a border around a quiet fill is the hollow shape
+	   the site avoids. */
+	.card.card--blank {
+		background: var(--surface-invite);
+	}
+	.card.card--blank:hover {
+		background: var(--surface-invite-hover);
+	}
+	/* On the brighter fill the grey words fall under 4.5 to 1 (4.32 at
+	   rest, 3.40 on hover), so they take the full ink (7.13 and 5.62), and
+	   the rule a step up, which --line-soft would sit darker than the
+	   hover fill (⚓ Nate 2026-11-11). */
+	.card.card--blank .row-label.is-derived,
+	.card.card--blank .lu-tag,
+	.card.card--blank .row-meta {
+		color: var(--text);
+	}
+	.card.card--blank .lu-rule {
+		background: var(--line-strong);
+	}
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));

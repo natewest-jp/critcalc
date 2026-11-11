@@ -40,6 +40,12 @@
 		`--horizon-cross-tall: ${HORIZON_CROSS_TALL.toFixed(4)}`
 	].join('; ');
 	import { currentAnnouncements } from '$lib/landing/announcements';
+	/** Between a line's parts: a no-break space before the dot and a plain
+	 *  one after, so a line wraps after a dot, never before it. ⚠ An
+	 *  expression, because Svelte trims the spaces of a literal " · " in the
+	 *  span, which left no break between the nowrap parts and ran a
+	 *  three-part line off a 320 phone. */
+	const SEP = '\u00a0· ';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { onMount } from 'svelte';
 	import HRule from '$lib/components/HRule.svelte';
@@ -164,7 +170,7 @@
 						{#each a.lines as line (line.parts.join())}
 							{#snippet parts()}
 								{#each line.parts as part, i (part)}
-									{#if i > 0}<span class="notice__sep" aria-hidden="true"> · </span>{/if}<span
+									{#if i > 0}<span class="notice__sep" aria-hidden="true">{SEP}</span>{/if}<span
 										class="notice__part">{part}</span
 									>
 								{/each}
@@ -703,8 +709,8 @@
 		}
 		/* 🎛️ Headline 14 over fine print 12 — the desktop's one-rung step (⚓
 		   Nate 2026-10-18: the band's text outweighed the card names, ~13px on
-		   a phone). Each line now fits ONE row at 320 (measured 240 and 211
-		   of 256px), so the parts no longer stack. */
+		   a phone). ↻ With the Theater (2026-11-11) the endgame line no longer
+		   fits one row at 320 and wraps after a dot (`SEP`), balanced. */
 		.notice__text {
 			font-size: var(--fs-lg);
 		}

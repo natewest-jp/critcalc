@@ -129,7 +129,7 @@
 	--blue-700: #3682bb; /* --ui-info on paper — oklch .585 .115 244 */
 
 	/* LEMON and AMBER: the game's New tag (⚓ Nate 2026-11-11), the corner tag
-	   on a new item, and nothing else. Measured off his inventory screenshot:
+	   on a new item, and nothing else. Measured off Nate's inventory screenshot:
 	   the six tags agree to within 2 in every channel, these are the means.
 	   The text and border are the lemon, the fill the amber. The palette had
 	   neither (the nearest, --ui-provisional, is paler and redder than the
@@ -935,12 +935,14 @@
 	   same on every ground, as the game's is. */
 	--new-ink: var(--lemon-200);
 	--new-fill: var(--amber-500);
-	/* 🎛️ The tag's knobs (Nate tunes by eye): its text size, which sizes the
-	   rest in em; how far it rises above its host's top edge; how far in from
-	   the host's right edge it stands. */
-	--new-tag-size: 0.75rem;
-	--new-tag-lift: 0.6em;
-	--new-tag-inset: 0.5em;
+	/* 🎛️ The tag's knobs (Nate tunes by eye): its text size, which sizes its
+	   padding in em, one per surface (⚓ Nate 2026-11-11: larger on a Library
+	   card, smaller on a Builder plate); and how far it reaches past its
+	   host's top and right edges (⚓ Nate: in the corner, a hair past both,
+	   1–2px). */
+	--new-tag-size-library: 0.75rem;
+	--new-tag-size-builder: 0.625rem;
+	--new-tag-overhang: 2px;
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
 	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
@@ -1716,6 +1718,13 @@
 	   --surface-float-key is its keycap, one step lighter again. ⚠ Ink on it is
 	   --text, since --muted reaches only 3.4 to 1 here. Toasts went to paper instead. */
 	--surface-float: var(--slate-500);
+	/* ⚓ AN INVITATION (Nate 2026-11-11): the Library's This cycle blank card,
+	   a lineup offered rather than made. It rests on the hover rung, so it
+	   stands brighter than every card you made, and its hover is the rung
+	   above (the float rung's slate). ⚠ --muted reaches only 4.32 to 1 at
+	   rest and 3.40 on hover here, so the card's words take --text. */
+	--surface-invite: var(--slate-600);
+	--surface-invite-hover: var(--slate-500);
 	--surface-float-key: color-mix(in srgb, var(--parchment-100) 16%, var(--slate-500));
 	/* ⚠ NO SIZE AXIS ON DARK. --surface-broad is a PAPER distinction (see
 	   .ctx-light): Genshin splits its parchment grounds by extent, and does not

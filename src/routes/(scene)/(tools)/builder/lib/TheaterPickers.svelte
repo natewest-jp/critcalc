@@ -36,8 +36,10 @@
 		onSeason: (start: string) => void;
 		onMode: (mode: TheaterMode) => void;
 		/** A newer season is running than the lineup's: the New tag stands on
-		 *  the season plate's corner until it is clicked (`onOpen`). */
+		 *  the season plate's corner. */
 		fresh?: boolean;
+		/** The plate was clicked, tag or not: its menu shows the running
+		 *  cycle, which is then announced (⚓ Nate 2026-11-11). */
 		onOpen?: () => void;
 	} = $props();
 
@@ -51,7 +53,7 @@
 
 <!-- The host the New tag stands on (SeasonPicker's). -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<span class="tp-host" onclick={fresh ? onOpen : undefined}>
+<span class="tp-host" onclick={onOpen}>
 	<BandMenu glass ariaLabel="Season: {fmtMonth(season.start)}" align="start">
 		{#snippet face()}<span class="tp-face">{fmtMonth(season.start, 'short')}</span>{/snippet}
 		{#snippet items(close)}
@@ -74,7 +76,7 @@
 			{/each}
 		{/snippet}
 	</BandMenu>
-	{#if fresh}<NewTag />{/if}
+	{#if fresh}<NewTag on="builder" />{/if}
 </span>
 
 <BandMenu glass ariaLabel="Mode: {MODE_NAME[mode]}" align="start">

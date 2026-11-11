@@ -32,8 +32,10 @@
 		value: string | undefined;
 		onPick: (id: string) => void;
 		/** A newer cycle is running than the lineup's: the New tag stands on
-		 *  the plate's corner until the plate is clicked (`onOpen`). */
+		 *  the plate's corner. */
 		fresh?: boolean;
+		/** The plate was clicked, tag or not: its menu shows the running
+		 *  cycle, which is then announced (⚓ Nate 2026-11-11). */
 		onOpen?: () => void;
 	} = $props();
 
@@ -76,7 +78,7 @@
 	<!-- The host the New tag stands on: a click anywhere on the plate reaches
 	     it and acknowledges the new cycle. -->
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<span class="sp-host" onclick={fresh ? onOpen : undefined}>
+	<span class="sp-host" onclick={onOpen}>
 		<BandMenu
 			glass
 			ariaLabel="{kind === 'stygian' ? 'Season' : 'Cycle'}: {c.name}, {fmtDay(c.start)} – {fmtDay(
@@ -103,13 +105,13 @@
 						<span class="sp-check"
 							>{#if current}<Mark name="check" size={12} />{/if}</span
 						>
-						<span class="sp-name" class:sp-name--version={kind === 'stygian'}>{o.name}</span>
+						<span class="sp-cycle" class:sp-cycle--version={kind === 'stygian'}>{o.name}</span>
 						<span class="sp-dates">{fmtDay(o.start)} – {fmtDay(o.end)}</span>
 					</button>
 				{/each}
 			{/snippet}
 		</BandMenu>
-		{#if fresh}<NewTag />{/if}
+		{#if fresh}<NewTag on="builder" />{/if}
 	</span>
 {/if}
 
@@ -128,11 +130,11 @@
 		place-items: center;
 	}
 	/* A Moon's name, wide enough that the dates line up down the menu. */
-	.sp-name {
+	.sp-cycle {
 		min-width: 8.5em;
 		font-weight: var(--fw-semibold);
 	}
-	.sp-name.sp-name--version {
+	.sp-cycle.sp-cycle--version {
 		min-width: 2.2em;
 		font-variant-numeric: tabular-nums;
 	}

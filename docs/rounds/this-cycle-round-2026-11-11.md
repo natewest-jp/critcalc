@@ -1,0 +1,66 @@
+# 2026-11-11: the New tag and This cycle
+
+Announcing a new endgame cycle, from the to-do's "Signaling a new endgame". Branches, stacked: `feat/abyss-cycles` → `feat/new-tag` → `feat/this-cycle`. The shape is in `docs/design/team-builder-lineups-design.md` §12.6 and below; it is a demo for Nate's look, built in place.
+
+## Rulings (Nate, 2026-11-11)
+
+- A past lineup is an archive of what was planned for its cycle. It never wears the New tag; nothing nudges a player to bring it up to date.
+- The New tag stands in two places: on the Builder's season picker while the open lineup is pinned to an older cycle, and on the Library's This cycle blank card for a cycle just dropped. Both clear on the first click and never return.
+- Abyss lineups keep their cycle, as Stygian and Theater lineups do. The Abyss data already keeps every cycle since 2026-09-16 (`keepsEveryEntry` in `fetch-endgame.mjs`).
+- This cycle leads the Builder's Library only. A running endgame with no lineup shows a blank card that opens a new lineup of it. A lineup of a running cycle stands in This cycle only, and moves down on its own when the cycle ends.
+- The tag matches the game's as closely as our visuals allow, in Bitter, with two new colors for it.
+
+## 1. Abyss lineups keep their cycle (`feat/abyss-cycles`)
+
+- `Board.season` holds an Abyss cycle's start ("2026-10-16") beside a Stygian version. The first character placed pins it, the Stygian rule generalized; the board shows that cycle's blessing and opponents, and band B gets the season picker, listing each opened cycle by its Moon and dates.
+- An Abyss lineup saved with characters before this has no stored cycle: it takes the cycle of its last edit (`lineupCycle`, `$lib/endgameCycle`), in the Library and in the Builder's pin. Pinning it to the running cycle was rejected: it would file an October lineup under November.
+- The share link and the backup accepted a version only, and would have dropped an Abyss cycle. Both take either now (`isCycleId`). Tests, written failing first: `boardUrl.test.ts`, `backup.test.ts`; and `endgameCycle.test.ts` (new).
+
+## 2. The New tag (`feat/new-tag`)
+
+- `NewTag.svelte`: lemon text and a 1px lemon border on an amber fill, a soft glow, and four-point sparkles on the top-right and bottom-left corners. Measured off Nate's inventory screenshot, where all six tags agree to within 2 per channel: text and border `#FFFB5C`, fill `#D38D26`. New primitives `--lemon-200` and `--amber-500` behind the roles `--new-ink` and `--new-fill`; the L0-law test polices both ramps.
+- 🎛️ Knobs in `app.css` beside the roles: `--new-tag-size` (0.75rem; the rest is in em), `--new-tag-lift` (0.6em above the host's top edge), `--new-tag-inset` (0.5em in from its right edge).
+- Acknowledgement is `seenCycles` in site settings: per endgame, the cycle last acknowledged. One record serves both places, so a click on either announces the cycle once. An absent record shows the tag, so a first visit sees it on every blank card.
+
+## 3. This cycle (`feat/this-cycle`)
+
+- `LibraryPlace.svelte` splits the Builder's lineups by `inThisCycle`: the running Abyss, Stygian and Theater, in that order, each with its lineups or a blank card; then the rest, pinned first as before. The blank card draws the empty rows a new lineup starts with and the cycle's dates, and a click acknowledges the cycle and opens the new lineup. Under a team filter, no blanks.
+- An Abyss between cycles (data not yet extended) has no This cycle place, by `currentAbyss`'s end guard.
+
+## 3a. After Nate's first look (2026-11-11)
+
+- The tag: the glow and the sparkles came off (the site's UI has neither, so they read out of place), it sized down to 11px, and it sits in its host's corner, 2px past the top and right edges. 🎛️ `--new-tag-size` and `--new-tag-overhang` in `app.css` (the lift and inset knobs went).
+- The two headings stand a size larger (14px), with more room above Other lineups (`.sec.sec--cycle`, `.sec.sec--after`).
+- A blank card read as a lineup Nate didn't remember making. It sits on the well now (`--surface-well`, a slot to fill), where a made lineup stands raised. A border was rejected: a 1px ring on a card already means Open now, and a border around a quiet fill is the hollow shape the site avoids.
+- The blank cards lead This cycle, before the lineups already made (Nate).
+
+## 3b. After Nate's second look
+
+- The tag takes a size per surface: 12px on a Library card, 10px on a Builder plate (`--new-tag-size-library`, `--new-tag-size-builder`, `NewTag`'s `on`).
+- The well didn't read for the blank card. It rests on the hover rung (slate-600) and hovers to the float rung (slate-500), as the new roles `--surface-invite` and `--surface-invite-hover`. Its grey words (`--muted`) measured 4.32 to 1 at rest and 3.40 on hover there, under the 4.5 guideline (fixed in §3c).
+
+## 3c. After Nate's third look
+
+- The tag is settled (Nate: no more changes).
+- The blank card's grey words take the full ink, and its rule steps up to `--line-strong`: `--line-soft` sat darker than the hover fill.
+- The season menus' rows had grown to 48px against the Theater's 29: renaming the picker's `sp-version` to `sp-name` collided with the global `.sp-name` (a side portrait's name, `app.css`), which made the name a 14px flex box. It is `sp-cycle` now, and both menus match the Theater's again.
+
+## 3d. Seen once, anywhere (Nate, 2026-11-11)
+
+- Nate: switching an open lineup back to an older cycle, to look at what earlier endgames were, must not raise the tag; the reader isn't asking to be told about the newer one then. Generalized: the tag announces a cycle to someone who hasn't seen it, never to someone exploring. A cycle is seen once the reader opens any season picker (its menu lists the running cycle), tag or not, or has a lineup of the running cycle open in the Builder, however it got there (the blank card, New lineup, a team's New lineup, the cold start once restored).
+- Kept as they were: a lineup arriving by a link pinned to an old cycle shows the tag if the running one is unseen (that is the announcement's job); a deleted lineup of this cycle brings back its blank card without a tag; `seenCycles` is per browser, not per profile, since one person reads the tags.
+
+## 3e. This cycle's order (Nate, 2026-11-11)
+
+- It read as alphabetical: blanks and lineups both followed the fixed Abyss, Stygian, Theater order. Now the blank cards come first, by release date, newest first; then this cycle's lineups, the open one first, then by when each was last opened (`recency`).
+
+## 4. Copy (approved by Nate, 2026-11-11)
+
+1. "Other lineups", the heading below This cycle.
+2. An Abyss lineup's derived label names its cycle: "Abyss Stardread Moon" (`lineupLabel`, from `season-dates.json`, which names each cycle; tested in `convert.test.ts`, written failing first).
+3. The Abyss picker's screen-reader name: "Cycle: Stardread Moon, Oct 16 – Nov 16".
+
+## 5. Verification
+
+- Gates green on each branch; `npm run test:e2e:chrome` green on `feat/this-cycle` (73 passed, 1 skipped).
+- Seen in headless Chrome at 1440 and 390: the tag on all three pickers, cleared by a click; This cycle with three blank cards; a 7.1 lineup among the rest; an Abyss lineup kept on Cascading Moon. Nate's look, and real Safari, are still owed.

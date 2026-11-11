@@ -568,9 +568,15 @@
 
 	/** ⚓ THE NEW TAG on the season picker (Nate 2026-11-11): the open lineup
 	 *  was planned for an older cycle and a newer one is running, which the
-	 *  reader hasn't yet acknowledged (here or on the Library's This cycle
-	 *  card). Opening the picker acknowledges it. An untouched lineup follows
-	 *  the game, so it is never out of date. */
+	 *  reader hasn't yet seen. An untouched lineup follows the game, so it is
+	 *  never out of date.
+	 *  ⚓ SEEN ONCE, ANYWHERE (Nate 2026-11-11): the tag announces a cycle to
+	 *  someone who hasn't seen it, never to someone exploring. So opening the
+	 *  picker (whose menu lists the running cycle) acknowledges it, tag or
+	 *  not, and switching a lineup back to look at an older cycle raises no
+	 *  tag; and so does having a lineup of the running cycle open, however
+	 *  it got here (the Library's blank card or its New lineup menu, a team's
+	 *  New lineup, the cold start). */
 	const cycleNow = $derived(board.preset === 'custom' ? undefined : cycleAt(board.preset));
 	const newCycle = $derived.by(() => {
 		if (!mounted || !cycleNow || board.preset === 'custom') return false;
@@ -580,6 +586,14 @@
 	function seeCycle(): void {
 		if (board.preset !== 'custom' && cycleNow) siteSettings.markCycleSeen(board.preset, cycleNow);
 	}
+	/** A lineup of the running cycle is on screen: the cycle is seen. Waits
+	 *  for the restore, or the cold start's Stygian board would count before
+	 *  the reader's own lineup arrives. */
+	$effect(() => {
+		if (!mounted || !boards.restored || board.preset === 'custom' || !cycleNow) return;
+		const own = board.preset === 'theater' ? board.theater?.season : board.season;
+		if (!own || own === cycleNow) untrack(seeCycle);
+	});
 
 	// ---------------------------------------------------------------------------
 	// IMAGINARIUM THEATER (⚓ Nate 2026-11-11)
