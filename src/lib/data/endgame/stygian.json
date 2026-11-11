@@ -227,6 +227,15 @@
 				"ru": "Бывалый оперативник ветра: Коварное лезвие",
 				"fr": "1"
 			}
+		},
+		"wavebinder-stormfang": {
+			"name": {
+				"en": "Wavebinder: Stormfang",
+				"zh": "浪涛锚定者·狂飙突噬",
+				"pt": "Controlador das Ondas: Presa da Tempestade",
+				"ru": "Удерживающий волны: Яростный бросок",
+				"fr": "Ancravague : Déluge de tempête"
+			}
 		}
 	},
 	"seasons": [
@@ -1048,6 +1057,80 @@
 				}
 			],
 			"end": "2026-11-11"
+		},
+		{
+			"version": "7.2",
+			"start": "2026-11-11",
+			"battlefields": [
+				{
+					"boss": "wavebinder-stormfang",
+					"hp": {
+						"fearless": 15310194,
+						"dire": 33517378
+					},
+					"checks": [
+						{
+							"tag": "favoured",
+							"text": {
+								"en": "Stellar Glimmer characters | {sprite:11004} characters",
+								"zh": "星烁反应角色 | {sprite:11004}元素角色",
+								"pt": "Personagens de Brilho Estelar | {sprite:11004} personagens",
+								"ru": "Персонажи реакции Звёздный блеск | Персонажи {sprite:11004}",
+								"fr": "Personnage avec réactions astrales | Personnages {sprite:11004}"
+							}
+						}
+					]
+				},
+				{
+					"boss": "emperor-of-fire-and-iron-ordained-conquest",
+					"hp": {
+						"fearless": 8552749,
+						"dire": 14042886
+					},
+					"checks": [
+						{
+							"tag": "favoured",
+							"text": {
+								"en": "{sprite:11002} characters",
+								"zh": "{sprite:11002}元素角色",
+								"pt": "Personagens {sprite:11002}",
+								"ru": "{sprite:11002}",
+								"fr": "Personnages {sprite:11002}"
+							}
+						},
+						{
+							"tag": "disfavoured",
+							"text": {
+								"en": "{sprite:11003} characters",
+								"zh": "{sprite:11003}元素角色",
+								"pt": "Personagens {sprite:11003}",
+								"ru": "{sprite:11003}",
+								"fr": "Personnages {sprite:11003}"
+							}
+						}
+					]
+				},
+				{
+					"boss": "radiant-moongecko-entangled-fangs",
+					"hp": {
+						"fearless": 10253198,
+						"dire": 20950072
+					},
+					"checks": [
+						{
+							"tag": "favoured",
+							"text": {
+								"en": "{sprite:11006} Characters | Healing Characters",
+								"zh": "{sprite:11006}元素角色 | 治疗角色",
+								"pt": "{sprite:11006} Personagens | Personagens de Cura",
+								"ru": "Персонажи {sprite:11006} | Лечащие персонажи",
+								"fr": "Personnages {sprite:11006} | Personnages de soin"
+							}
+						}
+					]
+				}
+			],
+			"end": "2026-12-23"
 		}
 	]
 }
