@@ -170,6 +170,13 @@ The `Cloudflare Pages` check run is the deploy of `main`. The site has
 launched, so an `x-robots-tag: noindex` header is a bug. ⏭ Add Search Console
 coverage errors here.
 
+The landing banner (`src/lib/landing/announcements.ts`): its entry's `expires`
+must be after today, and its headline's version must be the live one by the
+release calendar (1d). An entry that expired leaves the landing with no banner
+at all, which nothing else reports. Within a week of `expires`, or once a new
+patch is live, report it: the refresh (version, id, expiry) is a one-line
+proposal, its headline copy Nate's.
+
 ### 1h. The to-do sweep: finished items still listed
 
 Read-only, like the rest of DETECT. List what has landed on `main` since the
