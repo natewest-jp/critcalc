@@ -81,7 +81,7 @@ export type SavedNotation = {
 // ⚓ never to localStorage, which stays as the migration found it (copy-only,
 // §13.1).
 
-export type RosterPart = 'constellations' | 'ownership' | 'loadout';
+export type RosterPart = 'constellations' | 'ownership' | 'loadout' | 'theaterOff';
 let rosterSink: ((part: RosterPart, value: object) => void) | null = null;
 /** Write a roster part to the active profile, if one is bound. */
 function persistRoster(part: RosterPart, value: object): void {
@@ -216,6 +216,46 @@ function createLoadoutStore() {
 
 export const loadout = createLoadoutStore();
 
+// ---------------------------------------------------------------------------
+// "Can't enter Theater": characters not leveled for Imaginarium Theater
+// ---------------------------------------------------------------------------
+//
+// ⚓ Nate 2026-11-11: one mark per character in place of recording levels.
+// A marked character is left out of every Theater mode's count
+// (`$lib/theater`). Keyed by characterId; absence = not marked.
+
+function createTheaterOffStore() {
+	const store = writable<Record<string, true>>({});
+
+	return {
+		subscribe: store.subscribe,
+		/** Mark or clear one character. */
+		set(characterId: string, off: boolean) {
+			store.update((prev) => {
+				const next = { ...prev };
+				if (off) next[characterId] = true;
+				else delete next[characterId];
+				persistRoster('theaterOff', next);
+				return next;
+			});
+		},
+		/** Replace the whole map in ONE write (the Roster's undo). */
+		replaceAll(next: Record<string, true>) {
+			store.set({ ...next });
+			persistRoster('theaterOff', { ...next });
+		},
+		clear() {
+			store.set({});
+			persistRoster('theaterOff', {});
+		},
+		load(next: Record<string, true>) {
+			store.set({ ...next });
+		}
+	};
+}
+
+export const theaterOff = createTheaterOffStore();
+
 /**
  * Show a profile's roster in the three stores and route their writes to
  * `sink` (the storage session's). `null` unbinds.
@@ -225,6 +265,7 @@ export function bindRoster(
 		constellations: Record<string, number>;
 		ownership: Record<string, OwnershipMark>;
 		loadout: Record<string, LoadoutEntry>;
+		theaterOff?: Record<string, true>;
 	},
 	sink: ((part: RosterPart, value: object) => void) | null
 ): void {
@@ -232,6 +273,7 @@ export function bindRoster(
 	constellations.load(roster.constellations);
 	ownership.load(roster.ownership);
 	loadout.load(roster.loadout);
+	theaterOff.load(roster.theaterOff ?? {});
 	rosterSink = sink;
 }
 

@@ -73,6 +73,9 @@ export const BLESSING_LEVELS_PER_EXTRA = 2;
  *  Guest Stars get double (`GUEST_BLESSING_MULTIPLIER`). */
 export const BLESSING_LEVEL_STATS = { hp: 800, atk: 50, def: 50, em: 20 } as const;
 export const GUEST_BLESSING_MULTIPLIER = 2;
+/** Fantasia Flowers per extra member (Nate's two screenshots, 2026-11-11:
+ *  one extra gave 30, two gave 60). */
+export const FLOWERS_PER_EXTRA = 30;
 /** Friends' characters a run may invite (one, at every mode). */
 export const SUPPORTING_CAST = 1;
 
@@ -103,6 +106,24 @@ export function currentTheater(
 	const day = isoDay(today);
 	return seasons.find((s) => s.start <= day && day < s.end);
 }
+
+/** The seasons that have opened by `today`, newest first. */
+export function liveTheaterSeasons(
+	today: Date = new Date(),
+	seasons: readonly TheaterSeason[] = THEATER_SEASONS
+): TheaterSeason[] {
+	const day = isoDay(today);
+	return seasons.filter((s) => s.start <= day).sort((a, b) => b.start.localeCompare(a.start));
+}
+
+/** The game's names for the modes. */
+export const MODE_NAME: Record<TheaterMode, string> = {
+	easy: 'Easy',
+	normal: 'Normal',
+	hard: 'Hard',
+	visionary: 'Visionary',
+	lunar: 'Lunar'
+};
 
 /** What the roster says about a character. */
 export type TheaterRoster = {
@@ -239,4 +260,47 @@ export function castStats(ids: readonly string[]): CastStats {
 		for (const f of r.function) out[f]++;
 	}
 	return out;
+}
+
+// ---------------------------------------------------------------------------
+// A lineup's cast (⚓ Nate 2026-11-11)
+// ---------------------------------------------------------------------------
+
+export const isTraveler = (id: string) => id.startsWith('traveler_');
+
+/** How many of their own characters the player may pick at `mode`: the
+ *  mode's most, less the friend's character when one is counted. */
+export function castRoom(rules: TheaterModeRules, invite = false): number {
+	return rules.alternate + rules.extra - (invite ? SUPPORTING_CAST : 0);
+}
+
+/**
+ * A pick on the grid: in the cast it leaves; out, it joins at the end. One
+ * Traveler at most (⚓ Nate): a second Traveler takes the first one's place
+ * and number. `'full'` when there is no room, so the card can nudge.
+ */
+export function toggleCast(cast: readonly string[], id: string, room: number): string[] | 'full' {
+	if (cast.includes(id)) return cast.filter((c) => c !== id);
+	if (isTraveler(id)) {
+		const at = cast.findIndex(isTraveler);
+		if (at >= 0) return cast.map((c, i) => (i === at ? id : c));
+	}
+	return cast.length >= room ? 'full' : [...cast, id];
+}
+
+/** The game's Auto-select: the eligible cast, the season's elements first
+ *  and the Special Guest Stars after them, up to `room`. */
+export function autoCast(
+	season: TheaterSeason,
+	eligible: readonly string[],
+	room: number
+): string[] {
+	const guest = (id: string) => season.guests.includes(id);
+	return [...eligible.filter((id) => !guest(id)), ...eligible.filter(guest)].slice(0, room);
+}
+
+/** The mode a lineup starts at: the highest the roster opens, else the
+ *  lowest (so a new player still sees what each mode asks). */
+export function defaultMode(season: TheaterSeason, eligible: number, invite = false): TheaterMode {
+	return (highestOpen(modeVerdicts(season, eligible, { invite })) ?? season.modes[0]).mode;
 }

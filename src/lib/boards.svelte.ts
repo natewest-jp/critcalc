@@ -56,9 +56,35 @@ export type BoardTeam = {
 
 /** What a board was created as (§10.5). Kept so a preset's boss names and
  *  goals can attach later; a Custom board starts with one team. */
-export type BoardPreset = 'stygian' | 'abyss' | 'custom';
+export type BoardPreset = 'stygian' | 'abyss' | 'theater' | 'custom';
 
-export const PRESET_TEAMS: Record<BoardPreset, number> = { stygian: 3, abyss: 2, custom: 1 };
+/** ⚓ A Theater lineup has no teams (Nate 2026-11-11): the Theater deals its
+ *  characters in by events and chance, so its plan is a CAST (`theater`). */
+export const PRESET_TEAMS: Record<BoardPreset, number> = {
+	stygian: 3,
+	abyss: 2,
+	theater: 0,
+	custom: 1
+};
+
+/**
+ * An Imaginarium Theater lineup's plan (⚓ Nate 2026-11-11): the season, the
+ * mode, and the Alternate Cast the player brings. Strings only, as `season`
+ * is: the season DATA and the rules are `$lib/theater`'s, and this module is
+ * reached from the Planner too.
+ */
+export type TheaterPlan = {
+	/** The season's start, ISO ("2026-11-01"). Unset until the Builder first
+	 *  shows the lineup, which settles it to the running season. */
+	season?: string;
+	/** The mode (`TheaterMode`). Unset until settled, then the highest the
+	 *  roster opens; the player may choose a lower one, and it stays. */
+	mode?: string;
+	/** The Alternate Cast, in the order it was picked (the game numbers it). */
+	cast: string[];
+	/** One friend's character counted toward the cast (Supporting Cast). */
+	invite?: boolean;
+};
 
 export type Board = {
 	id: string;
@@ -76,6 +102,8 @@ export type Board = {
 	 *  Builder's (`$lib/endgame`), and this module is reached from the Planner
 	 *  too, so it must not import 187 KB of bosses. */
 	season?: string;
+	/** A Theater lineup's plan; present exactly when `preset` is 'theater'. */
+	theater?: TheaterPlan;
 };
 
 /** Teams per board. A SAFETY guard for a decoded link as much as a product
@@ -114,8 +142,13 @@ export function makeTeam(slots: TeamSlot[] = emptySlots()): BoardTeam {
 export const BOARD_PRESETS: readonly { key: BoardPreset; label: string; hint: string }[] = [
 	{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
 	{ key: 'abyss', label: 'Spiral Abyss', hint: 'Two teams' },
+	{ key: 'theater', label: 'Imaginarium Theater', hint: 'A cast for this month' },
 	{ key: 'custom', label: 'Custom', hint: 'One team, add more as you go' }
 ];
+
+/** The shapes a TEAM can start: every preset but the Theater, which holds a
+ *  cast, not teams (a team's New lineup menu, in Teams). */
+export const TEAM_PRESETS = BOARD_PRESETS.filter((p) => PRESET_TEAMS[p.key] > 0);
 
 export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board {
 	return {
@@ -123,7 +156,10 @@ export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board 
 		label,
 		preset,
 		teams: Array.from({ length: PRESET_TEAMS[preset] }, () => makeTeam()),
-		noRepeats: preset !== 'custom'
+		// The game forbids a repeat across a battlefield's teams; a Theater cast
+		// has no teams to repeat across.
+		noRepeats: preset === 'stygian' || preset === 'abyss',
+		...(preset === 'theater' && { theater: { cast: [] } })
 	};
 }
 
@@ -263,6 +299,9 @@ class BoardsState {
 			this.board = {
 				...stored,
 				preset: stored.preset ?? 'custom',
+				...(stored.preset === 'theater' && {
+					theater: { ...stored.theater, cast: [...(stored.theater?.cast ?? [])] }
+				}),
 				teams: stored.teams.map((t) => ({ ...t, slots: normalizeSlots(t.slots ?? []) }))
 			};
 		}
@@ -284,6 +323,13 @@ class BoardsState {
 
 	setSeason(id: string, season: string): void {
 		this.#updateBoard(id, (b) => ({ ...b, season }));
+	}
+
+	/** Change a Theater lineup's plan: the fields given, the rest kept. */
+	setTheater(id: string, plan: Partial<TheaterPlan>): void {
+		this.#updateBoard(id, (b) =>
+			b.preset === 'theater' ? { ...b, theater: { cast: [], ...b.theater, ...plan } } : b
+		);
 	}
 
 	/** Turning it ON settles any repeats at once, keeping each character on
@@ -457,7 +503,9 @@ export function toSharedBoard(
 	return {
 		label: board.label,
 		noRepeats: board.noRepeats,
-		preset: board.preset,
+		// TODO: data gap — the `?b=` link has no Theater shape yet; the Builder
+		// offers no Share on a Theater lineup, and a call here sends no cast.
+		preset: board.preset === 'theater' ? 'custom' : board.preset,
 		...(board.season && { season: board.season }),
 		teams: board.teams.map((t) => ({ slots: t.slots, constellations: denseCon(t, saved, roster) }))
 	};

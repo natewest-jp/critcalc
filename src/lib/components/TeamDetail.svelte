@@ -29,7 +29,7 @@
 	import TeamLoadoutPlates from './TeamLoadoutPlates.svelte';
 	import CharacterFilterStrip from './CharacterFilterStrip.svelte';
 	import MoreFilters from './MoreFilters.svelte';
-	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
+	import { TEAM_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
@@ -436,7 +436,7 @@
 					>
 					<BandMenu label="New lineup" align="end" size="sm" disabled={!full}>
 						{#snippet items(close)}
-							{#each BOARD_PRESETS as p (p.key)}
+							{#each TEAM_PRESETS as p (p.key)}
 								<button
 									class="band-menu-item"
 									role="menuitem"

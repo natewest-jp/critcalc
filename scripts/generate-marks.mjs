@@ -326,7 +326,13 @@ const MARKS = {
 	lineups: 'LayoutGridCircles',
 	settings: 'Settings',
 	/** The account switcher's affordance (it opens a list, not a section). */
-	switcher: 'ChevronsUpDown'
+	switcher: 'ChevronsUpDown',
+	/** A character a Theater lineup can't take (unowned, or marked "can't enter
+	 *  Theater"): the game's own sign on such a portrait is a ⊘. */
+	ban: 'Ban',
+	/** A Theater cast's person count, beside the extra-members line, as the
+	 *  game's Party Setup shows it. */
+	person: 'User'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

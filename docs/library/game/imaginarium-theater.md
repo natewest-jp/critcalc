@@ -68,7 +68,7 @@ The buff on Special Guest Stars is doubled.
 
 **Checked against Nate's screenshot.** A Lunar Mode setup with 23 Alternate Cast members (one past the 22) shows "1/4 extra Alternate Cast members" and "Gain 2 Blessing Level(s): Increases Max HP by 1600, ATK by 100, DEF by 100, and Elemental Mastery by 40", which is 2 × the table above. Its Stats row counts 29 characters (23 + 6 Opening), and its element counts total 28, consistent with one Special Guest Star in the cast.
 
-⚠️ NEEDS-CONFIRM: the same screen gives **30 Fantasia Flowers** for the one extra member. The wiki doesn't say how Flowers scale per extra member, so whether it's 30 each is unconfirmed.
+**Fantasia Flowers:** each extra member also gives **30 Fantasia Flowers** at the start. Nate's two screenshots agree: one extra member gave 30, and two (a Hard Mode setup with 12 Alternate Cast) gave 60 alongside 4 Blessing Levels (+3200 HP, +200 ATK, +200 DEF, +80 EM).
 
 ## 5. During the run (reference only)
 

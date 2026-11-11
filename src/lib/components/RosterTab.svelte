@@ -48,7 +48,13 @@
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { matchesIdentity, type GridFilters } from '$lib/characterFilters';
-	import { constellations, ownership, siteSettings, type OwnershipMark } from '$lib/stores';
+	import {
+		constellations,
+		ownership,
+		siteSettings,
+		theaterOff,
+		type OwnershipMark
+	} from '$lib/stores';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { scrollFade } from '$lib/actions/scrollFade';
@@ -76,6 +82,7 @@
 
 	const marks = $derived($ownership);
 	const cons = $derived($constellations);
+	const offs = $derived($theaterOff);
 	const ownedCount = $derived(Object.values(marks).filter((m) => m === 'owned').length);
 	const wishCount = $derived(Object.values(marks).filter((m) => m === 'wishlist').length);
 
@@ -98,14 +105,23 @@
 
 	// ── Undo ─────────────────────────────────────────────────────────────────
 	// Every edit records the roster BEFORE it; a restore is one write per store.
-	type Snapshot = { marks: Record<string, OwnershipMark>; cons: Record<string, number> };
+	type Snapshot = {
+		marks: Record<string, OwnershipMark>;
+		cons: Record<string, number>;
+		offs: Record<string, true>;
+	};
 	const HISTORY_CAP = 100;
 	let past = $state<Snapshot[]>([]);
 	let future = $state<Snapshot[]>([]);
-	const snap = (): Snapshot => ({ marks: { ...get(ownership) }, cons: { ...get(constellations) } });
+	const snap = (): Snapshot => ({
+		marks: { ...get(ownership) },
+		cons: { ...get(constellations) },
+		offs: { ...get(theaterOff) }
+	});
 	function restore(s: Snapshot): void {
 		ownership.replaceAll(s.marks);
 		constellations.replaceAll(s.cons);
+		theaterOff.replaceAll(s.offs);
 	}
 	function record(): void {
 		past = [...past.slice(-(HISTORY_CAP - 1)), snap()];
@@ -151,6 +167,14 @@
 		if (marks[id] === 'owned') return;
 		record();
 		ownership.setMark(id, marks[id] === 'wishlist' ? null : 'wishlist');
+	}
+	/** ⚓ "Can't enter Theater" (Nate 2026-11-11): a mark on an OWNED
+	 *  character not leveled for Imaginarium Theater (in practice, below 70).
+	 *  It survives un-owning, so owning again brings it back. */
+	function toggleTheaterOff(id: string): void {
+		if (marks[id] !== 'owned') return;
+		record();
+		theaterOff.set(id, !offs[id]);
 	}
 	/** A constellation is something you own (DetailCard's old rule, kept). */
 	function setCon(id: string, n: number): void {
@@ -327,6 +351,7 @@
 		{ keys: ['X'], does: 'not owned' },
 		{ keys: ['Space'], does: 'owned or not' },
 		{ keys: ['W'], does: 'wishlist' },
+		{ keys: ['T'], does: 'can’t enter Theater' },
 		{ keys: ['0', '–', '6'], does: 'constellation' },
 		{ keys: [MOD, 'Z'], does: 'undo' }
 	];
@@ -360,7 +385,7 @@
 		}
 		const k = e.key.toLowerCase();
 		const edits =
-			['o', 'x', 'w', 'enter', ' ', 'backspace', 'delete'].includes(k) || /^[0-6]$/.test(k);
+			['o', 'x', 'w', 't', 'enter', ' ', 'backspace', 'delete'].includes(k) || /^[0-6]$/.test(k);
 		if (!editing) {
 			if (edits) {
 				e.preventDefault();
@@ -381,6 +406,10 @@
 			e.preventDefault();
 			if (marks[c.id] === 'owned') nudgeTile(c.id);
 			else toggleWish(c.id);
+		} else if (k === 't') {
+			e.preventDefault();
+			if (marks[c.id] === 'owned') toggleTheaterOff(c.id);
+			else nudgeTile(c.id);
 		} else if (/^[0-6]$/.test(k) && !c.noConstellations) {
 			e.preventDefault();
 			setCon(c.id, Number(k));
@@ -696,6 +725,21 @@
 									tabindex="-1"
 									onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
 									><Mark name="wish" size={12} filled={m === 'wishlist' && 'solid'} /></button
+								>{:else}<button
+									class="til-corner til-corner--end til-wish til-theater"
+									class:is-active={!!offs[c.id]}
+									aria-pressed={!!offs[c.id]}
+									aria-label="Can’t enter Theater"
+									title={editing
+										? offs[c.id]
+											? 'Can enter Theater again (T)'
+											: 'Mark can’t enter Theater (T)'
+										: offs[c.id]
+											? 'Can’t enter Theater'
+											: undefined}
+									tabindex="-1"
+									onclick={() => (editing ? toggleTheaterOff(c.id) : nudgeLock())}
+									><Mark name="theaterOff" size={12} /></button
 								>{/if}
 							{#if !editing && m === 'owned' && con > 0 && !c.noConstellations}
 								<span class="til-con">C{con}</span>
@@ -1019,6 +1063,12 @@
 	}
 	.is-locked .til-wish {
 		cursor: default;
+	}
+	/* The Theater mark shares the star's corner and its rule (shown on hover
+	   while editing, always once set); set, it is the warning ink, not gold:
+	   it takes a character OUT. */
+	.til-theater.is-active {
+		color: var(--ui-warning);
 	}
 	.til-name {
 		max-width: 100%;

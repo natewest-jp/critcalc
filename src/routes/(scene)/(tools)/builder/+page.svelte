@@ -6,7 +6,13 @@
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { newestFirst } from '$lib/utils/release';
-	import { constellations, siteSettings, ownership, type SavedNotation } from '$lib/stores';
+	import {
+		constellations,
+		siteSettings,
+		ownership,
+		theaterOff,
+		type SavedNotation
+	} from '$lib/stores';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
 		FACETS,
@@ -47,6 +53,21 @@
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import SeasonPicker from './lib/SeasonPicker.svelte';
+	import TheaterPickers from './lib/TheaterPickers.svelte';
+	import TheaterView from './lib/TheaterView.svelte';
+	import {
+		THEATER_SEASONS,
+		autoCast,
+		castRoom,
+		currentTheater,
+		defaultMode,
+		eligibleCast,
+		liveTheaterSeasons,
+		modeVerdicts,
+		toggleCast,
+		type TheaterMode,
+		type TheaterSeason
+	} from '$lib/theater';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -534,6 +555,127 @@
 	});
 
 	// ---------------------------------------------------------------------------
+	// IMAGINARIUM THEATER (⚓ Nate 2026-11-11)
+	//
+	// A Theater lineup is a CAST, not teams: the grid is the Alternate Cast,
+	// sectioned as the game's Party Setup (Special Guest Stars, then Available
+	// Characters), and the board pane is `TheaterView`. The rules and the
+	// arithmetic are `$lib/theater`'s.
+	// ---------------------------------------------------------------------------
+
+	const theaterSeasons = liveTheaterSeasons();
+	const plan = $derived(board.theater ?? { cast: [] });
+	/** The lineup's season: its own, else the running one, else the newest. */
+	const thSeason = $derived<TheaterSeason | undefined>(
+		board.preset === 'theater'
+			? (THEATER_SEASONS.find((s) => s.start === plan.season) ??
+					currentTheater() ??
+					theaterSeasons[0])
+			: undefined
+	);
+	/** Theorycraft imagines owning everyone, so every character counts there. */
+	const thOwned = (id: string) => theorycraft || (mounted && $ownership[id] === 'owned');
+	const thOff = (id: string) => mounted && !!$theaterOff[id];
+	/** A character this lineup can take: owned, and not marked "can't enter Theater". */
+	const thAvailable = (id: string) => thOwned(id) && !thOff(id);
+	const thEligible = $derived(
+		thSeason ? eligibleCast(thSeason, { owned: thOwned, excluded: thOff }) : []
+	);
+	const thMode = $derived(
+		thSeason
+			? (thSeason.modes.find((m) => m.mode === plan.mode) ??
+					thSeason.modes.find(
+						(m) => m.mode === defaultMode(thSeason, thEligible.length, plan.invite)
+					))
+			: undefined
+	);
+	const thRoom = $derived(thMode ? castRoom(thMode, plan.invite) : 0);
+	/** The picks that count, in order: a pick since marked or let go stays
+	 *  stored, out of the count, until the cast is next edited. */
+	const thCast = $derived(plan.cast.filter(thAvailable).slice(0, thRoom));
+	/** Each mode's answer for EVERYONE the roster could bring — the mode
+	 *  menu's, and the default mode's. */
+	const thVerdicts = $derived(
+		thSeason ? modeVerdicts(thSeason, thEligible.length, { invite: plan.invite }) : []
+	);
+	/** The Theater's own view is up: a Theater lineup, with season data, and
+	 *  not the Planner's errand (which shows its team on the board). */
+	const theaterOn = $derived(!!thSeason && !!thMode && !errandOpen);
+
+	/** ⚓ A new Theater lineup, or one given a new season, starts at the
+	 *  HIGHEST mode the roster opens, with everyone eligible picked up to its
+	 *  room (the game's Auto-select). Waits for the profile, so the roster it
+	 *  reads is the player's, not the empty default. */
+	const rosterReady = $derived(mounted && !!sessionMod?.storageSession.profile);
+	$effect(() => {
+		if (board.preset !== 'theater' || !thSeason || !rosterReady || !boards.restored) return;
+		if (plan.season && plan.mode) return;
+		const season = thSeason;
+		untrack(() => settleTheater(season, plan.cast.length ? plan.cast : null));
+	});
+
+	function settleTheater(season: TheaterSeason, keep: string[] | null): void {
+		const eligible = eligibleCast(season, { owned: thOwned, excluded: thOff });
+		const mode = defaultMode(season, eligible.length, plan.invite);
+		const rules = season.modes.find((m) => m.mode === mode)!;
+		const room = castRoom(rules, plan.invite);
+		boards.setTheater(board.id, {
+			season: season.start,
+			mode,
+			cast: keep ? keep.slice(0, room) : autoCast(season, eligible, room)
+		});
+	}
+
+	function onTheaterSeason(start: string): void {
+		const season = THEATER_SEASONS.find((s) => s.start === start);
+		if (season && start !== thSeason?.start) settleTheater(season, null);
+	}
+
+	/** ⚓ A mode the player chooses stays; a lower one trims the cast to its
+	 *  room, from the end. */
+	function onTheaterMode(mode: TheaterMode): void {
+		const rules = thSeason?.modes.find((m) => m.mode === mode);
+		if (!rules) return;
+		boards.setTheater(board.id, {
+			mode,
+			cast: plan.cast.filter(thAvailable).slice(0, castRoom(rules, plan.invite))
+		});
+	}
+
+	function toggleInvite(): void {
+		if (!thMode) return;
+		const invite = !plan.invite;
+		boards.setTheater(board.id, {
+			invite,
+			cast: plan.cast.filter(thAvailable).slice(0, castRoom(thMode, invite))
+		});
+	}
+
+	/** A pick on the Theater grid: the game's toggle, one Traveler at most. */
+	function toggleTheater(id: string): void {
+		if (!thAvailable(id)) return;
+		const next = toggleCast(plan.cast.filter(thAvailable), id, thRoom);
+		if (next === 'full') {
+			nudge = { id, at: Date.now() };
+			return;
+		}
+		boards.setTheater(board.id, { cast: next });
+	}
+
+	function autoSelectTheater(): void {
+		if (thSeason) boards.setTheater(board.id, { cast: autoCast(thSeason, thEligible, thRoom) });
+	}
+
+	function clearTheater(): void {
+		const boardId = board.id;
+		const before = [...plan.cast];
+		boards.setTheater(boardId, { cast: [] });
+		notices.toast('success', 'Cast cleared', {
+			actions: [{ label: 'Undo', run: () => boards.setTheater(boardId, { cast: before }) }]
+		});
+	}
+
+	// ---------------------------------------------------------------------------
 	// SWAP MODE (lineups design §11.6 item 20)
 	//
 	// A FILLED portrait in the SELECTED row puts its slot in swap mode: the
@@ -787,6 +929,38 @@
 			conCapFor(conMode, cons[id])
 		);
 	});
+
+	/** The Theater grid: the season's Special Guest Stars, then everyone of its
+	 *  three elements but the Opening Characters (they start in the cast).
+	 *  Every Traveler of those elements shows; the cast takes one. Those this
+	 *  lineup can take lead each section, the rest follow under the game's ⊘. */
+	const theaterPool = $derived([...split.matches, ...split.uncurated]);
+	const theaterSections = $derived.by((): GridSection[] => {
+		const season = thSeason;
+		if (!season) return [];
+		const byId = new Map(theaterPool.map((e) => [e.id, e]));
+		const takeable = (list: CharacterIndexEntry[]) => [
+			...list.filter((e) => thAvailable(e.id)),
+			...list.filter((e) => !thAvailable(e.id))
+		];
+		const guests = season.guests.flatMap((id) => byId.get(id) ?? []);
+		const available = theaterPool.filter(
+			(e) => !!e.element && season.elements.includes(e.element) && !season.opening.includes(e.id)
+		);
+		return [
+			{ key: 'th-guests', label: 'Special Guest Stars', entries: takeable(guests) },
+			{ key: 'th-available', label: 'Available Characters', entries: takeable(available) }
+		].filter((sec) => sec.entries.length > 0);
+	});
+
+	function theaterPickLabel(entry: CharacterIndexEntry): string {
+		if (!thOwned(entry.id)) return `${entry.displayName}: not owned`;
+		if (thOff(entry.id)) return `${entry.displayName}: marked can’t enter Theater`;
+		const at = thCast.indexOf(entry.id);
+		return at >= 0
+			? `Remove ${entry.displayName} from the cast (${at + 1})`
+			: `Add ${entry.displayName} to the cast`;
+	}
 
 	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
 
@@ -1158,6 +1332,41 @@
 	/>
 {/snippet}
 
+<!-- A Theater lineup's tile: numbered by its place in the cast, as the game
+     numbers its picks; the game's ⊘ on anyone this lineup can't take. -->
+{#snippet theaterTile(entry: CharacterIndexEntry)}
+	{@const at = thCast.indexOf(entry.id)}
+	<CharacterCard
+		{entry}
+		{preferNewfit}
+		{traveler}
+		glyphs={glyphsFor(entry)}
+		ownedCon={mounted && $ownership[entry.id] === 'owned'
+			? ($constellations[entry.id] ?? 0)
+			: undefined}
+		frame={at >= 0 ? { hue: 'var(--tb-theater-pick)', slot: at + 1 } : undefined}
+		nudged={nudge?.id === entry.id}
+		unavailable={!thAvailable(entry.id)}
+		pickLabel={theaterPickLabel(entry)}
+		onPick={toggleTheater}
+		onDetails={openDetail}
+	/>
+{/snippet}
+
+<!-- The Theater grid's section heads: the game's two, the guests' with the
+     game's own note on their doubled buff. -->
+{#snippet theaterSectionHead(section: GridSection)}
+	<header class="tb-slotrow-head ctx-glass">
+		<span class="tb-slotrow-name">{section.label}</span>
+		{#if section.key === 'th-guests'}
+			<span class="tb-th-note">Blessing Level buff effects increased by 100%</span>
+		{/if}
+		<span class="tb-slotrow-count"
+			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
+		>
+	</header>
+{/snippet}
+
 <!-- ── Roster-view slots handed to the shared CharacterGrid ───────────────── -->
 
 <!-- One grid tile (the grid's own snippet takes just the entry). -->
@@ -1404,6 +1613,15 @@
 							version={board.season}
 							onSeason={(version) => boards.setSeason(board.id, version)}
 						/>
+					{:else if theaterOn && thSeason && thMode}
+						<TheaterPickers
+							season={thSeason}
+							seasons={theaterSeasons}
+							mode={thMode.mode}
+							verdicts={thVerdicts}
+							onSeason={onTheaterSeason}
+							onMode={onTheaterMode}
+						/>
 					{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
@@ -1422,7 +1640,26 @@
 							><Mark name="plus" /> <span class="tb-band-label">Add team</span></button
 						>
 					{/if}
-					{#if !errandOpen}
+					{#if theaterOn}
+						<!-- The game's Auto-select: everyone eligible, up to the mode's
+						     room. No Share yet: the `?b=` link has no Theater shape. -->
+						<button
+							class="btn btn--glass"
+							aria-label="Auto-select the cast"
+							title="Pick everyone eligible, up to this mode’s room"
+							disabled={thEligible.length === 0}
+							onclick={autoSelectTheater}
+							><Mark name="theater" /> <span class="tb-band-label">Auto-select</span></button
+						>
+						<button
+							class="btn btn--glass tb-clear"
+							aria-label="Clear the cast"
+							title="Clear the cast"
+							disabled={plan.cast.length === 0}
+							onclick={clearTheater}
+							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+						>
+					{:else if !errandOpen}
 						<!-- ⚓ Nate 2026-10-20: Clear empties the whole lineup, the teams
 						     kept; its Undo lands on this rail, beside it. -->
 						<button
@@ -1483,35 +1720,46 @@
 				bind:clientHeight={boardPaneH}
 				bind:this={boardPaneEl}
 			>
-				<BoardView
-					{board}
-					roomy={!below('broad')}
-					narrow={below('compact')}
-					availH={Math.max(0, boardPaneH - boardPadY)}
-					selectedTeamId={selectedTeam?.id ?? null}
-					onSelectTeam={(id) => (chosenTeamId = id)}
-					nudgeAt={nudge?.at ?? null}
-					onEmptySlot={() => {
-						if (tabbed) tab = 'characters';
-					}}
-					onRemoveTeam={removeTeam}
-					onOpenInPlanner={openInPlanner}
-					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
-					onFillFromTeam={fillFromTeam}
-					{bank}
-					{previewId}
-					filteredFacets={activeFacets}
-					onFind={findFor}
-					swapping={swapping ? { teamId: swapping.teamId, slot: swapping.slot } : null}
-					onSwap={toggleSwap}
-					errand={errandTeam
-						? {
-								team: errandTeam,
-								label: `From the Planner: ${plannerDocName}`,
-								onCancel: cancelErrand
-							}
-						: null}
-				/>
+				{#if theaterOn && thSeason && thMode}
+					<TheaterView
+						season={thSeason}
+						rules={thMode}
+						cast={thCast}
+						invite={!!plan.invite}
+						onInvite={toggleInvite}
+						onRemove={toggleTheater}
+					/>
+				{:else}
+					<BoardView
+						{board}
+						roomy={!below('broad')}
+						narrow={below('compact')}
+						availH={Math.max(0, boardPaneH - boardPadY)}
+						selectedTeamId={selectedTeam?.id ?? null}
+						onSelectTeam={(id) => (chosenTeamId = id)}
+						nudgeAt={nudge?.at ?? null}
+						onEmptySlot={() => {
+							if (tabbed) tab = 'characters';
+						}}
+						onRemoveTeam={removeTeam}
+						onOpenInPlanner={openInPlanner}
+						onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
+						onFillFromTeam={fillFromTeam}
+						{bank}
+						{previewId}
+						filteredFacets={activeFacets}
+						onFind={findFor}
+						swapping={swapping ? { teamId: swapping.teamId, slot: swapping.slot } : null}
+						onSwap={toggleSwap}
+						errand={errandTeam
+							? {
+									team: errandTeam,
+									label: `From the Planner: ${plannerDocName}`,
+									onCancel: cancelErrand
+								}
+							: null}
+					/>
+				{/if}
 			</div>
 		</div>
 	{/snippet}
@@ -1529,7 +1777,7 @@
 		{activeFacets}
 		activeRole={activeCategory?.key ?? null}
 		onRole={openCategory}
-		count={swapping || selectedTeam ? undefined : split.matches.length}
+		count={swapping || selectedTeam || theaterOn ? undefined : split.matches.length}
 		{countNote}
 		anyActive={anyFilterActive}
 	/>
@@ -1598,16 +1846,28 @@
 				     the grid proper. In swap mode it is sectioned by what each swap
 				     does, the uncurated kits a tier of their own. -->
 				<div class="tb-roster" bind:this={rosterHost}>
-					<CharacterGrid
-						roster={split.matches}
-						{filters}
-						tile={rosterTile}
-						sections={swapGrid?.sections ?? rosterSections}
-						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
-						aboveGrid={headScrolls ? rosterHead : undefined}
-						belowGrid={swapGrid ? swapFoot : rosterStubs}
-						emptyMessage={rosterEmptyMessage}
-					/>
+					{#if theaterOn}
+						<CharacterGrid
+							roster={theaterPool}
+							{filters}
+							tile={theaterTile}
+							sections={theaterSections}
+							sectionHead={theaterSectionHead}
+							aboveGrid={headScrolls ? rosterHead : undefined}
+							emptyMessage="No character of this season matches."
+						/>
+					{:else}
+						<CharacterGrid
+							roster={split.matches}
+							{filters}
+							tile={rosterTile}
+							sections={swapGrid?.sections ?? rosterSections}
+							sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
+							aboveGrid={headScrolls ? rosterHead : undefined}
+							belowGrid={swapGrid ? swapFoot : rosterStubs}
+							emptyMessage={rosterEmptyMessage}
+						/>
+					{/if}
 				</div>
 			</section>
 		</div>
@@ -1620,7 +1880,7 @@
 		id={selectedId}
 		{conMode}
 		onClose={() => (selectedId = null)}
-		teamState={swapping ? undefined : teamStateOf(selectedId)}
+		teamState={swapping || theaterOn ? undefined : teamStateOf(selectedId)}
 		elsewhereLabel={leavingLabel(selectedId)}
 		onToggleTeam={toggleTeam}
 		lead={detailDelta ? detailLead : undefined}
@@ -1651,6 +1911,11 @@
 	/* The details' "Adds to" line (inspector round): the selected team's own
 	   hue names it, as the destination strip over the grid does; the delta is
 	   swap mode's header, verbatim. */
+	/* The Theater grid's guest note, beside the section's name. */
+	.tb-th-note {
+		color: var(--muted);
+		font-size: var(--fs-sm);
+	}
 	.tb-detail-delta {
 		display: flex;
 		flex-wrap: wrap;
@@ -1703,6 +1968,8 @@
 		   — so the old fixed steps (720 at `broad`, 800 at `vast`), which
 		   dropped the column ~140px, are gone. */
 		--tb-board-w: calc(clamp(460px, 100% - 630px, 580px) + clamp(0px, 100% - 1439px, 220px));
+		/* 🎛️ A Theater pick's frame and number tab (the game's are green). */
+		--tb-theater-pick: var(--accent);
 		--tb-dock-gap: 16px;
 	}
 	.tb-dock {

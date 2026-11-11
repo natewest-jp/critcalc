@@ -3,7 +3,7 @@
 // Toolbar mark geometry, extracted from lucide@1.61.0 (ISC).
 // Copyright (c) 2026 Lucide Icons and Contributors
 // https://lucide.dev — the upstream project; icons are used unmodified.
-// Bespoke marks drawn in Lucide's idiom: handOff
+// Bespoke marks drawn in Lucide's idiom: handOff, theater, theaterOff
 // (scripts/lib/bespoke-marks.mjs).
 //
 // Rendered by $lib/components/Mark.svelte, which owns the one <svg> wrapper
@@ -15,7 +15,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'wish' | 'uncurated' | 'warn' | 'forward' | 'back' | 'forwardSlim' | 'backSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'profile' | 'teams' | 'rotations' | 'lineups' | 'settings' | 'switcher' | 'handOff';
+export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'wish' | 'uncurated' | 'warn' | 'forward' | 'back' | 'forwardSlim' | 'backSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'profile' | 'teams' | 'rotations' | 'lineups' | 'settings' | 'switcher' | 'ban' | 'person' | 'handOff' | 'theater' | 'theaterOff';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -86,5 +86,9 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	lineups: [["circle",{"cx":"17.5","cy":"17.5","r":"3.5"}],["circle",{"cx":"17.5","cy":"6.5","r":"3.5"}],["circle",{"cx":"6.5","cy":"17.5","r":"3.5"}],["circle",{"cx":"6.5","cy":"6.5","r":"3.5"}]],
 	settings: [["path",{"d":"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"}],["circle",{"cx":"12","cy":"12","r":"3"}]],
 	switcher: [["path",{"d":"m7 15 5 5 5-5"}],["path",{"d":"m7 9 5-5 5 5"}]],
-	handOff: [["path",{"d":"M1.947,2L21.947,22"}],["path",{"d":"M18,11L18,6C18,4.903 17.097,4 16,4C14.902,4 14,4.903 14,6"}],["path",{"d":"M14,8.398L14,4C14,2.903 13.097,2 12,2C10.902,2 10,2.903 10,4L10,4.398"}],["path",{"d":"M6,6.053L6,14"}],["path",{"d":"M18,8C18,6.903 18.902,6 20,6C21.097,6 22,6.903 22,8L22,14C22,14.73 21.9,15.438 21.713,16.112"}],["path",{"d":"M19.619,19.672C18.17,21.108 16.181,22 14,22L12,22C9.2,22 7.5,21.14 6.01,19.66L2.41,16.06C2.078,15.693 1.894,15.215 1.894,14.72C1.894,13.623 2.797,12.72 3.894,12.72C4.391,12.72 4.872,12.905 5.24,13.24L7,15"}]]
+	ban: [["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M4.929 4.929 19.07 19.071"}]],
+	person: [["path",{"d":"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"}],["circle",{"cx":"12","cy":"7","r":"4"}]],
+	handOff: [["path",{"d":"M1.947,2L21.947,22"}],["path",{"d":"M18,11L18,6C18,4.903 17.097,4 16,4C14.902,4 14,4.903 14,6"}],["path",{"d":"M14,8.398L14,4C14,2.903 13.097,2 12,2C10.902,2 10,2.903 10,4L10,4.398"}],["path",{"d":"M6,6.053L6,14"}],["path",{"d":"M18,8C18,6.903 18.902,6 20,6C21.097,6 22,6.903 22,8L22,14C22,14.73 21.9,15.438 21.713,16.112"}],["path",{"d":"M19.619,19.672C18.17,21.108 16.181,22 14,22L12,22C9.2,22 7.5,21.14 6.01,19.66L2.41,16.06C2.078,15.693 1.894,15.215 1.894,14.72C1.894,13.623 2.797,12.72 3.894,12.72C4.391,12.72 4.872,12.905 5.24,13.24L7,15"}]],
+	theater: [["path",{"d":"M15.8 2C12 3.8 12 9 12 9s0-5.2-3.8-7"}],["path",{"d":"M12 9v11"}],["path",{"d":"M20 5c-3.5 0-6.5 3.9-8 6.3C10.5 8.9 7.5 5 4 5a2 2 0 0 0-2 2c0 2.3.6 4.4 1.5 5.6C4 13.5 4.9 14 6 14h2c-.9.4-2.1.9-2.6 1.5-1.6 1.6-.9 3.4.7 4.9 1.6 1.6 3.4 2.3 4.9.7.3-.3 1-1.1 1-1.1s.6.8 1 1.1c1.6 1.6 3.4.9 4.9-.7 1.6-1.6 2.3-3.4.7-4.9-.5-.5-1.7-1.1-2.6-1.5h2c1.1 0 2-.5 2.5-1.4.9-1.2 1.5-3.3 1.5-5.6a2 2 0 0 0-2-2"}]],
+	theaterOff: [["path",{"d":"M15.8,2C13.678,3.005 12.741,5.07 12.327,6.698L11.383,5.753C10.869,4.338 9.927,2.818 8.2,2"}],["path",{"d":"M12,12.003L12,20"}],["path",{"d":"M5.13,5.133C4.76,5.047 4.383,5 4,5C2.903,5 2,5.903 2,7C2,9.3 2.6,11.4 3.5,12.6C4,13.5 4.9,14 6,14L8,14C7.1,14.4 5.9,14.9 5.4,15.5C3.8,17.1 4.5,18.9 6.1,20.4C7.7,22 9.5,22.7 11,21.1C11.3,20.8 12,20 12,20C12,20 12.6,20.8 13,21.1C14.6,22.7 16.4,22 17.9,20.4C18.351,19.949 18.731,19.482 19.007,19.01"}],["path",{"d":"M19.338,13.709C19.825,13.473 20.224,13.097 20.5,12.6C21.4,11.4 22,9.3 22,7C22,5.903 21.097,5 20,5C17.726,5 15.664,6.646 14.086,8.457"}],["path",{"d":"M22,22.003L2,2.003"}]]
 };

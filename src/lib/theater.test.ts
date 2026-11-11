@@ -10,6 +10,10 @@ import {
 	highestOpen,
 	modeVerdicts,
 	theaterElement,
+	toggleCast,
+	autoCast,
+	castRoom,
+	defaultMode,
 	type TheaterSeason
 } from './theater';
 import { monsterImage } from './endgame';
@@ -195,5 +199,42 @@ describe('the Stats row', () => {
 		expect(s.onField).toBe(count((id) => characterRoles[id].position.includes('onField')));
 		expect(s.offField).toBe(count((id) => characterRoles[id].position.includes('offField')));
 		expect(s.support).toBe(count((id) => characterRoles[id].function.includes('support')));
+	});
+});
+
+describe("a lineup's cast", () => {
+	it('adds a pick at the end and takes it out again', () => {
+		expect(toggleCast(['furina'], 'xingqiu', 3)).toEqual(['furina', 'xingqiu']);
+		expect(toggleCast(['furina', 'xingqiu'], 'furina', 3)).toEqual(['xingqiu']);
+	});
+
+	it('refuses a pick past the room', () => {
+		expect(toggleCast(['a', 'b'], 'c', 2)).toBe('full');
+	});
+
+	it("lets a second Traveler take the first one's place", () => {
+		expect(toggleCast(['furina', 'traveler_hydro', 'fischl'], 'traveler_geo', 3)).toEqual([
+			'furina',
+			'traveler_geo',
+			'fischl'
+		]);
+	});
+
+	it('leaves room for a friend', () => {
+		const lunar = november.modes.find((m) => m.mode === 'lunar')!;
+		expect(castRoom(lunar)).toBe(26);
+		expect(castRoom(lunar, true)).toBe(25);
+	});
+
+	it('auto-selects the elements before the guests, up to the room', () => {
+		const eligible = ['qiqi', 'furina', 'neuvillette', 'fischl'];
+		expect(autoCast(november, eligible, 3)).toEqual(['furina', 'neuvillette', 'fischl']);
+		expect(autoCast(november, eligible, 9)).toEqual(['furina', 'neuvillette', 'fischl', 'qiqi']);
+	});
+
+	it('starts at the highest mode the roster opens, else the lowest', () => {
+		expect(defaultMode(november, 16)).toBe('visionary');
+		expect(defaultMode(november, 21, true)).toBe('lunar');
+		expect(defaultMode(november, 0)).toBe('easy');
 	});
 });

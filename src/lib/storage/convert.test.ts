@@ -58,6 +58,27 @@ describe('convert', () => {
 		expect(lineupLabel({ preset: 'abyss' })).toBe('Abyss');
 	});
 
+	it('a Theater lineup keeps its plan through the round trip, and is labelled by its month', () => {
+		const lineup: LineupDocument = {
+			id: 'l2',
+			updatedAt: 1,
+			profileId: 'p',
+			type: 'lineup',
+			name: null,
+			createdAt: 1,
+			body: {
+				preset: 'theater',
+				noRepeats: false,
+				teams: [],
+				theater: { season: '2026-11-01', mode: 'lunar', cast: ['furina', 'qiqi'], invite: true }
+			}
+		};
+		const board = lineupToBoard(lineup);
+		expect(board.label).toBe('Theater November');
+		expect(boardToLineupBody(board)).toEqual(lineup.body);
+		expect(lineupLabel({ preset: 'theater' })).toBe('Theater');
+	});
+
 	it('stores no name for a derived or minted label, the label once renamed', () => {
 		expect(nameToStore('Bennett · Xiangling', 'Bennett · Xiangling')).toBeNull();
 		expect(nameToStore('Tab 3', undefined)).toBeNull();
