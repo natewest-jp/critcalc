@@ -103,7 +103,7 @@
 						<span class="sp-check"
 							>{#if current}<Mark name="check" size={12} />{/if}</span
 						>
-						<span class="sp-name" class:sp-name--version={kind === 'stygian'}>{o.name}</span>
+						<span class="sp-cycle" class:sp-cycle--version={kind === 'stygian'}>{o.name}</span>
 						<span class="sp-dates">{fmtDay(o.start)} – {fmtDay(o.end)}</span>
 					</button>
 				{/each}
@@ -128,11 +128,11 @@
 		place-items: center;
 	}
 	/* A Moon's name, wide enough that the dates line up down the menu. */
-	.sp-name {
+	.sp-cycle {
 		min-width: 8.5em;
 		font-weight: var(--fw-semibold);
 	}
-	.sp-name.sp-name--version {
+	.sp-cycle.sp-cycle--version {
 		min-width: 2.2em;
 		font-variant-numeric: tabular-nums;
 	}
