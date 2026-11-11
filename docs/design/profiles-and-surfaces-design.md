@@ -188,7 +188,7 @@ Same shape on every surface and in both states:
   - ⛔ **The Library glyph retires**: it would do the same thing as the button that names your rotation.
   - The Visualizers have no document: their button, current, does nothing.
   - **A guest** (§4.6) rings the button in Theorycraft's white, and the faint line reads _Planner · Theorycraft_.
-- **The save status is brief** (⚓ 2026-10-21): _Saving…_ → _✓ Saved_, then it clears. "Not backed up" is the browser's storage, not the document's, so it is a badge on the profile picture.
+- **The save status is brief** (⚓ 2026-10-21): _Saving…_ → _✓ Saved_, then it clears. "Not backed up" is the browser's storage, not the document's; the backup reminder toast (`session.svelte.ts` `#remindBackup`) carries it, and the badge on the profile picture was dropped (⚓ Nate 2026-11-11).
 - **Document verbs** leave the bar: Rename and Delete on the Library row, New at the top of the Library (and Teams' Plan a rotation), Clear on the tool's own controls. ⏭ Whether a small ⋯ verbs menu survives beside the name.
 - **Share** stays visible (never behind an interaction); the Planner's menu keeps its link / KQM / image entries.
 - **`?`** merges About and Help, and carries **Report a problem** — the visible feedback door the beta lacks.
