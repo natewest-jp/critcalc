@@ -36,6 +36,7 @@
 		formatResShredDisplayValue,
 		resShredDisplayStat
 	} from '$lib/timeline/buffDisplay';
+	import { beforeNavigate } from '$app/navigation';
 	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
 	import { plannerView as pv, type InspectedBonus } from '$lib/plannerView.svelte';
 	import { computeTeamFactionCounts, computeHolderElementCounts } from '$lib/utils/teamComposition';
@@ -152,6 +153,8 @@
 	}
 
 	let tooltip = $state<BuffTooltipData | null>(null);
+	// Portalled to <body> (BuffTooltip), so a paused page no longer hides it.
+	beforeNavigate(() => (tooltip = null));
 
 	// ══ CLICK INSPECTS (inspector round, 2026-10-23) ═══════════════════════════
 	// A chip opens in the Planner's inspector, printing what its
@@ -196,13 +199,12 @@
 		const effects = chipEffects(holder, bonus);
 		if (effects.length === 0) return;
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const above = rect.top > 80;
 		tooltip = {
 			sourceLabel: ownerName ? `${ownerName} · ${bonus.name}` : bonus.name,
 			effects,
 			x: rect.left + rect.width / 2,
-			y: above ? rect.top - 6 : rect.bottom + 6,
-			above
+			anchorTop: rect.top,
+			anchorBottom: rect.bottom
 		};
 	}
 
@@ -212,13 +214,12 @@
 
 	function showResonanceTooltip(e: MouseEvent, res: Resonance) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const above = rect.top > 80;
 		tooltip = {
 			sourceLabel: `${res.label} — Resonance`,
 			effects: res.rows,
 			x: rect.left + rect.width / 2,
-			y: above ? rect.top - 6 : rect.bottom + 6,
-			above
+			anchorTop: rect.top,
+			anchorBottom: rect.bottom
 		};
 	}
 

@@ -2020,6 +2020,9 @@
 	// re-docks it — on a revival the action's `update` would not run, because
 	// `dockOn` is the same value it was before the pause.
 	beforeNavigate((nav) => {
+		// The tooltip is portalled to <body>, so a paused page no longer hides
+		// it: an open one would float over the next tool.
+		tooltip = null;
 		if (!nav.to?.url.pathname.startsWith(resolve('/planner'))) {
 			dockOpen = false;
 			dockPlace?.(false);
@@ -2429,7 +2432,7 @@
 		duration?: number;
 		procCooldown?: number;
 	};
-	type TooltipState = TooltipPayload & { x: number; y: number; above: boolean };
+	type TooltipState = TooltipPayload & { x: number; anchorTop: number; anchorBottom: number };
 
 	let tooltip = $state<TooltipState | null>(null);
 
@@ -2444,7 +2447,6 @@
 	 */
 	function showTooltip(e: MouseEvent, data: TooltipPayload, anchorToCursor = false) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const above = rect.top > 80;
 		// The centre of the bar's VISIBLE part — a long bar running off either
 		// edge anchors on what is on screen (⚓ Nate 2026-10-14). BuffTooltip
 		// then keeps the whole box inside the viewport.
@@ -2457,8 +2459,8 @@
 				: right > left
 					? (left + right) / 2
 					: rect.left + rect.width / 2,
-			y: above ? rect.top - 6 : rect.bottom + 6,
-			above
+			anchorTop: rect.top,
+			anchorBottom: rect.bottom
 		};
 	}
 
