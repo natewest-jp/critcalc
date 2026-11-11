@@ -61,6 +61,11 @@ export type PageMeta = {
 	/** Bare page name. The site name is appended by `titleFor`, never here. */
 	title: string;
 	description: string;
+	/** Kept out of search: `SeoHead` emits `robots: noindex` and no canonical,
+	 *  and the page stays out of static/sitemap.xml (conventions.test.ts). For a
+	 *  page that shows only this browser's data: it prerenders empty, and Google
+	 *  reports a set of identical empty pages as not indexed. */
+	noindex?: true;
 };
 
 /**
@@ -144,35 +149,44 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/library': {
 		title: 'Library',
 		description:
-			'Your saved teams, rotations, and lineups, and the roster of characters you own. All of it is kept in this browser.'
+			'Your saved teams, rotations, and lineups, and the roster of characters you own. All of it is kept in this browser.',
+		noindex: true
 	},
-	// The menu state's addresses (build plan §13.4). In the sitemap since the
-	// flip (⚓ Nate 2026-10-27): each prerenders an empty, generic page — a
-	// profile's data lives in this browser and never reaches a crawler.
+	// The menu state's addresses (build plan §13.4). Each prerenders an empty,
+	// generic page (a profile's data lives in this browser and never reaches a
+	// crawler), so each is noindex (⚓ Nate 2026-11-11, after Search Console
+	// reported them as not indexed). Settings and Privacy have text of their own
+	// and stay indexable.
 	'/library/rotations': {
 		title: 'Rotations',
-		description: 'Your saved rotations. All of them are kept in this browser.'
+		description: 'Your saved rotations. All of them are kept in this browser.',
+		noindex: true
 	},
 	'/library/lineups': {
 		title: 'Lineups',
-		description: 'Your saved lineups. All of them are kept in this browser.'
+		description: 'Your saved lineups. All of them are kept in this browser.',
+		noindex: true
 	},
 	'/profile': {
 		title: 'Profile',
-		description: 'Your profile in this browser: its name, picture, and color.'
+		description: 'Your profile in this browser: its name, picture, and color.',
+		noindex: true
 	},
 	'/profile/new': {
 		title: 'Add a profile',
-		description: 'Add a profile for your Genshin account, kept in this browser.'
+		description: 'Add a profile for your Genshin account, kept in this browser.',
+		noindex: true
 	},
 	'/roster': {
 		title: 'Roster',
-		description: 'The characters you own and their constellations, kept in this browser.'
+		description: 'The characters you own and their constellations, kept in this browser.',
+		noindex: true
 	},
 	'/teams': {
 		title: 'Teams',
 		description:
-			'Your named teams, ready to plan a rotation or add to a lineup. Kept in this browser.'
+			'Your named teams, ready to plan a rotation or add to a lineup. Kept in this browser.',
+		noindex: true
 	},
 	'/privacy': {
 		title: 'Privacy',
@@ -182,7 +196,8 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/trash': {
 		title: 'Trash',
 		description:
-			'Deleted rotations, lineups, teams, and profiles, kept for 30 days in this browser.'
+			'Deleted rotations, lineups, teams, and profiles, kept for 30 days in this browser.',
+		noindex: true
 	},
 	'/settings': {
 		title: 'Settings',

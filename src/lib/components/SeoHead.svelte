@@ -35,7 +35,8 @@
 	<title>{title}</title>
 	<meta name="description" content={meta.description} />
 
-	{#if isError}
+	<!-- A noindex page carries no canonical: the two together are mixed signals. -->
+	{#if isError || meta.noindex}
 		<meta name="robots" content="noindex" />
 	{:else}
 		<link rel="canonical" href={canonicalFor(pathname)} />

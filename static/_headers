@@ -7,6 +7,14 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
+# The not-found shell (adapter-static's fallback) is a real file, so a direct
+# visit to /404 answers 200, and the shell has no head of its own to say
+# noindex in. Unknown paths get a real 404 status and need no rule.
+/404
+  X-Robots-Tag: noindex
+/404.html
+  X-Robots-Tag: noindex
+
 # The HTML shell must NOT be held. Cloudflare Pages' default for non-hashed
 # assets is 4h must-revalidate, which would pin a user to a stale shell for
 # hours after a fix ships — exactly wrong in the weeks after launch, when

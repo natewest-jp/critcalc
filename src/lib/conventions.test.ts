@@ -62,6 +62,17 @@ describe('page meta (CLAUDE.md: standing rules)', () => {
 		expect(stray).toEqual([]);
 	});
 
+	it('the sitemap lists every indexable route, and no noindex one', () => {
+		const indexable = Object.entries(PAGE_META)
+			.filter(([, m]) => !m.noindex)
+			.map(([path]) => path);
+		const hidden = Object.entries(PAGE_META)
+			.filter(([, m]) => m.noindex)
+			.map(([path]) => path);
+		expect(indexable.filter((r) => !sitemap.includes(r))).toEqual([]);
+		expect(hidden.filter((r) => sitemap.includes(r))).toEqual([]);
+	});
+
 	it('no page sets its own <title> (svelte:head does not dedupe)', () => {
 		const allowed = new Set([
 			'src/lib/components/SeoHead.svelte',

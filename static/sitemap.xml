@@ -6,7 +6,9 @@
 
   Deliberately absent: /styleguide and /lab. Both are internal instruments —
   the exhaustive design reference and the specimen board — and neither is a
-  page a reader arrives at on purpose.
+  page a reader arrives at on purpose. Nor the pages that show only this
+  browser's data (Library, Teams, Roster, Profile, Trash): they are noindex,
+  flagged in src/lib/seo.ts, and conventions.test.ts keeps the two in step.
 
   ✅ Live since launch (2026-10-19), when `static/_headers` dropped its
   X-Robots-Tag: noindex rule.
@@ -29,14 +31,6 @@
   <url><loc>https://critcalc.app/changelog</loc><priority>0.5</priority></url>
   <url><loc>https://critcalc.app/contribute</loc><priority>0.5</priority></url>
   <url><loc>https://critcalc.app/beta</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/library</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/library/rotations</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/library/lineups</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/teams</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/roster</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/profile</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/profile/new</loc><priority>0.3</priority></url>
-  <url><loc>https://critcalc.app/trash</loc><priority>0.3</priority></url>
   <url><loc>https://critcalc.app/privacy</loc><priority>0.3</priority></url>
   <url><loc>https://critcalc.app/settings</loc><priority>0.3</priority></url>
 </urlset>
