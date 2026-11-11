@@ -62,7 +62,7 @@
 				at level 70 or above, so to exclude characters from showing up in Theater lineups (if they
 				are level 70 or below), a new setting has been added to the Roster: While editing your
 				roster, hover over any owned character to see a button appear in the top right corner (the
-				butterfly with a strike through it). This will exclude them from Theater.
+				butterfly with a strike through it). This will exclude them from Theater lineups.
 			</p>
 		</article>
 		<article class="entry">
