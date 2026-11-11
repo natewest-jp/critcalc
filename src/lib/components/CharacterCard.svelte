@@ -30,6 +30,11 @@
 	   widest are the elemental Travelers (89px at 12px), which at a 390
 	   phone's ~109px card land at ~10px. */
 	export const CC_NAME_FS = 12;
+
+	/* 🎛️ The ⊘ over a card you can't take is a sign over art, not a control
+	   glyph, so it breaks the held MARK_STROKE on purpose (⚓ Nate 2026-11-11:
+	   "a stroke of 3 looked good"). */
+	const OFF_STROKE = 3;
 	/** Write-once per name, never read reactively — a plain record. */
 	const nameWidths: Record<string, number> = {};
 	let measureCtx: CanvasRenderingContext2D | null = null;
@@ -214,7 +219,9 @@
 				{/if}
 			</span>
 			{#if unavailable}
-				<span class="cc-off" aria-hidden="true"><Mark name="ban" size={56} /></span>
+				<span class="cc-off" aria-hidden="true"
+					><Mark name="ban" size={56} strokeWidth={OFF_STROKE} /></span
+				>
 			{/if}
 			{#if chip !== null}
 				<span class="cc-chip" title={`You own C${chip}`}><ConMark level={chip} height={8} /></span>

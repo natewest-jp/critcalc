@@ -1368,6 +1368,28 @@
 
 <!-- The Theater grid's section heads: the game's two, the guests' with the
      game's own note on their doubled buff. -->
+{#snippet theaterTools(glass: boolean)}
+	<button
+		class="btn"
+		class:btn--glass={glass}
+		class:btn--sm={!glass}
+		aria-label="Auto-select the cast"
+		title="Pick everyone eligible, up to this mode’s room"
+		disabled={thEligible.length === 0}
+		onclick={autoSelectTheater}
+		><Mark name="theater" /> <span class="tb-band-label">Auto-select</span></button
+	>
+	<button
+		class="btn tb-clear"
+		class:btn--glass={glass}
+		class:btn--sm={!glass}
+		aria-label="Clear the cast"
+		title="Clear the cast"
+		disabled={plan.cast.length === 0}
+		onclick={clearTheater}><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+	>
+{/snippet}
+
 {#snippet theaterSectionHead(section: GridSection)}
 	<header class="tb-slotrow-head ctx-glass">
 		<span class="tb-slotrow-name">{section.label}</span>
@@ -1657,22 +1679,9 @@
 						<!-- The game's Auto-select: everyone eligible, up to the mode's
 						     room. ⚓ No Share (Nate 2026-11-11): a Theater cast is one
 						     player's roster, nothing to hand to another. -->
-						<button
-							class="btn btn--glass"
-							aria-label="Auto-select the cast"
-							title="Pick everyone eligible, up to this mode’s room"
-							disabled={thEligible.length === 0}
-							onclick={autoSelectTheater}
-							><Mark name="theater" /> <span class="tb-band-label">Auto-select</span></button
-						>
-						<button
-							class="btn btn--glass tb-clear"
-							aria-label="Clear the cast"
-							title="Clear the cast"
-							disabled={plan.cast.length === 0}
-							onclick={clearTheater}
-							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
-						>
+						<!-- ↻ Below BP.compact they move into the pane's cast header:
+						     the band can't hold them beside the two pickers at 320. -->
+						<span class="tb-th-tools">{@render theaterTools(true)}</span>
 					{:else if !errandOpen}
 						<!-- ⚓ Nate 2026-10-20: Clear empties the whole lineup, the teams
 						     kept; its Undo lands on this rail, beside it. -->
@@ -1741,6 +1750,7 @@
 						cast={thCast}
 						invite={!!plan.invite}
 						onInvite={toggleInvite}
+						tools={theaterTools}
 					/>
 				{:else}
 					<BoardView
@@ -1929,6 +1939,20 @@
 	.tb-th-note {
 		color: var(--muted);
 		font-size: var(--fs-md);
+	}
+	.tb-th-tools {
+		display: contents;
+	}
+	/* BP.compact: the note takes its own line under the name and count, and
+	   the cast's Auto-select and Clear leave the band for the pane. */
+	@media (max-width: 40rem) {
+		.tb-th-note {
+			order: 1;
+			flex-basis: 100%;
+		}
+		.tb-th-tools {
+			display: none;
+		}
 	}
 	.tb-detail-delta {
 		display: flex;
@@ -2356,10 +2380,13 @@
 	   by size alone. Glass is a MATERIAL WITH A LADDER — --muted clears its floor
 	   on the panel stop (4.74:1 against a star, measured in app.css) — so the
 	   second voice comes back, and by the right mechanism. */
+	/* Wraps on a phone: the name holds its line, and the count (and the
+	   Theater's guest note) take the next one rather than squeezing it. */
 	.tb-slotrow-head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.2rem 0.55rem;
 		padding: 0.45rem 0.8rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
@@ -2377,6 +2404,7 @@
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
+		white-space: nowrap;
 	}
 	/* ↻ 2026-08-11: --fs-xs → --fs-md with the header. The ink stays --muted, and
 	   the reason is worth a line because it briefly wasn't: while the header was

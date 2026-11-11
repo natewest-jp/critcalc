@@ -19,6 +19,7 @@
 	 * The season and the mode are chosen in band B, over this pane. The rules:
 	 * `docs/library/game/imaginarium-theater.md`; the arithmetic: `$lib/theater`.
 	 */
+	import type { Snippet } from 'svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
@@ -42,7 +43,8 @@
 		rules,
 		cast,
 		invite,
-		onInvite
+		onInvite,
+		tools
 	}: {
 		season: TheaterSeason;
 		rules: TheaterModeRules;
@@ -51,6 +53,9 @@
 		invite: boolean;
 		/** Count or drop a friend's character; false when refused (a full cast). */
 		onInvite: () => boolean;
+		/** Auto-select and Clear, which stand here below BP.compact (band B
+		 *  has no room for them there); `false` = not on glass. */
+		tools?: Snippet<[boolean]>;
 	} = $props();
 
 	/** 🎛️ The cast's side portraits: the DISC's diameter. The art rises over
@@ -89,13 +94,17 @@
 				</figure>
 			{/each}
 			{#if rules.arcana.length}
-				<span class="th-rule" aria-hidden="true"></span>
-				{#each rules.arcana as a, i (i)}
-					<figure class="th-foe" title={inLang(a.name)}>
-						<img class="th-foe-disc" src={monsterImage(a.icons[0])} alt={inLang(a.name)} />
-						<figcaption>{ROMAN[i]}</figcaption>
-					</figure>
-				{/each}
+				<!-- One group, so on a narrow pane the rule wraps WITH the
+				     challenges rather than ending the line above them. -->
+				<span class="th-arcana">
+					<span class="th-rule" aria-hidden="true"></span>
+					{#each rules.arcana as a, i (i)}
+						<figure class="th-foe" title={inLang(a.name)}>
+							<img class="th-foe-disc" src={monsterImage(a.icons[0])} alt={inLang(a.name)} />
+							<figcaption>{ROMAN[i]}</figcaption>
+						</figure>
+					{/each}
+				</span>
 			{/if}
 		</div>
 	</section>
@@ -114,6 +123,7 @@
 				onanimationend={() => (nudged = false)}
 				onclick={invitePress}>+1 Supporting Cast</button
 			>
+			{#if tools}<span class="th-tools">{@render tools(false)}</span>{/if}
 		</header>
 		<div class="th-body th-cast">
 			<!-- The Opening Characters in one pill hugging their rings (the hair
@@ -260,6 +270,12 @@
 		background: var(--surface-well);
 		object-fit: cover;
 	}
+	.th-arcana {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		align-self: stretch;
+	}
 	.th-rule {
 		align-self: stretch;
 		width: 1px;
@@ -328,6 +344,25 @@
 	}
 	.th-invite {
 		flex: none;
+	}
+	.th-tools {
+		display: none;
+		gap: 4px;
+		margin-left: auto;
+	}
+	/* BP.compact: the title takes the strip's first line, and the buttons
+	   share the second, Auto-select and Clear at its end. */
+	@media (max-width: 40rem) {
+		.th-head {
+			flex-wrap: wrap;
+			row-gap: 0.5rem;
+		}
+		.th-title {
+			flex-basis: 100%;
+		}
+		.th-tools {
+			display: flex;
+		}
 	}
 	/* The shared nudge (app.css) — it guards reduced motion itself. */
 	.th-invite.is-nudged {
