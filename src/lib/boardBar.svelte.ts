@@ -22,9 +22,9 @@ import {
 import { encodeBoard, type SharedBoard } from './utils/boardUrl';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 
-/** A team that found no room: what to do about it, too. */
-export const LINEUP_FULL =
-	'The lineup is full, so the team wasn’t added. Choose a team to replace, or use a Custom lineup.';
+/** A team that found no room on the open lineup (a full one, or a Theater
+ *  cast, which has no teams) opens in a lineup of its own. */
+export const TEAM_IN_NEW_LINEUP = 'Team added to a new Custom lineup';
 /** Any of the board's teams holds anyone: a board worth sharing. */
 export function boardHasMembers(board: Board): boolean {
 	return board.teams.some((t) => t.slots.some((s) => s !== null));
@@ -49,9 +49,11 @@ class BoardBarState {
 	}
 
 	/**
-	 * An arriving team (`?team=`): onto the board on screen — the first team with
-	 * nobody in it, else a new team. (Lineups design §9.7's "probably a team on
-	 * the active board", taken.)
+	 * An arriving team (`?team=`): onto the board on screen, the first team
+	 * with nobody in it, else a new team on a Custom board. (Lineups design
+	 * §9.7's "probably a team on the active board", taken.) ⚓ With no room
+	 * (Nate 2026-11-11), it opens as a new Custom lineup, the way `?b=`
+	 * arrives, rather than being dropped.
 	 */
 	receiveTeam(ids: string[]) {
 		// ⚓ Onto THEORYCRAFT's lineup (§9.3).
@@ -61,28 +63,36 @@ class BoardBarState {
 				const { storageSession } = await import('./storage/session.svelte');
 				switched = await storageSession.toTheorycraft();
 			}
-			// One slot: the arrival's notice would replace a refusal said a
-			// moment before, so a team that didn't fit is said LAST.
-			const added = this.#placeTeam(ids, switched);
-			if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
-			if (!added && switched) notices.toast('warning', LINEUP_FULL);
+			if (this.#placeTeam(ids)) {
+				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
+				else notices.toast('success', 'Team added to the lineup');
+				return;
+			}
+			const board = makeBoard('');
+			board.teams[0].slots = Array.from({ length: 4 }, (_, i) => ids[i] ?? null);
+			if (!viaStore) {
+				boards.restoreFrom(board);
+				notices.toast('success', TEAM_IN_NEW_LINEUP);
+				return;
+			}
+			const { storageSession } = await import('./storage/session.svelte');
+			const got = await storageSession.receiveLineup(board);
+			documentBar.arrived(switched || got.switched, TEAM_IN_NEW_LINEUP, got.id, got.movable);
 		});
 	}
 
-	/** False when the lineup had no room. `quiet` leaves the notices to the
-	 *  caller, which has an arrival to say as well. */
-	#placeTeam(ids: string[], quiet = false): boolean {
+	/** Onto the open board; false when it has no room (a full battlefield
+	 *  board, a Custom board at its limit, or a Theater cast). */
+	#placeTeam(ids: string[]): boolean {
 		const board = boards.board;
 		const slots: TeamSlot[] = ids.slice(0, 4);
 		const empty = board.teams.find((t) => t.slots.every((s) => s === null));
-		if (empty) boards.setTeam(board.id, empty.id, slots);
-		// A battlefield board's teams are the game's — only Custom grows.
-		else if (board.preset !== 'custom' || !boards.addTeam(board.id, slots)) {
-			if (!quiet) notices.toast('warning', LINEUP_FULL);
-			return false;
+		if (empty) {
+			boards.setTeam(board.id, empty.id, slots);
+			return true;
 		}
-		if (!quiet) notices.toast('success', 'Team added to the lineup');
-		return true;
+		// A battlefield board's teams are the game's: only Custom grows.
+		return board.preset === 'custom' && !!boards.addTeam(board.id, slots);
 	}
 
 	/** Copy a `?b=` link to the board. Teams and levels travel, pins

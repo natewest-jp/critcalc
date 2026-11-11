@@ -819,6 +819,7 @@ only; Noelle/Thoma absent too).
    edited moves to the newest live season. ⛔ An edited board never changes.
 5. **The level 70+ flag is DEFERRED** and ships with the Imaginarium Theater feature
    (post-launch). ⛔ No field without a reader.
+   ↻ 2026-11-11: it shipped as the roster's "can't enter Theater" mark (§12.2).
 6. **Wishlist stays.**
 7. **The Roster tab is designed together** before step 2 is built.
 8. **Frame colors are PER TEAM** (re-reading the reference: Battlefield 1 green,
@@ -1161,3 +1162,85 @@ only; Noelle/Thoma absent too).
       nothing", "Replacing X · Battlefield 2", the notice sentences) and the Help
       chapter, which still describes Compare/Audition, go to the static-pages
       rewrite (⚓ Nate 2026-10-13: the next major work).
+
+## 12. ⚓ The Imaginarium Theater lineup (2026-11-11)
+
+The fourth preset, beside Stygian, Abyss, and Custom. Its question is not which
+character fights which act; it is **which difficulty the player's roster can
+enter this month, and with whom**. The game's rules and the data's shape are in
+`docs/library/game/imaginarium-theater.md`; the arithmetic is `$lib/theater.ts`
+(tested in `theater.test.ts`, with Nate's screenshots as fixtures).
+
+### 12.1 The document
+
+- A Theater lineup is a **cast, not teams**: `Board.theater = { season, mode,
+cast, invite }` and no teams (`PRESET_TEAMS.theater` is 0). No repeats is off;
+  there is nothing to repeat across.
+- **Season** is the season's start day. A new lineup settles to the running
+  season the first time the Builder shows it. Its label is "Theater {Month}".
+- **Mode** defaults to the highest the roster opens. A mode the player chooses
+  stays, and a lower one trims the cast to its room.
+- **The cast** is the Alternate Cast in pick order. The six Opening Characters
+  are the season's, never stored.
+- **⛔ No Share** (Nate): a cast is one player's roster, nothing to hand to
+  another. A share of a Theater board falls back to Custom (`toSharedBoard`).
+- **A `?team=` arrival** while a Theater lineup is open opens a new Custom
+  lineup with the team, since a cast has no team to fill.
+
+### 12.2 The roster's mark
+
+- One toggle per owned character, **"can't enter Theater"** (in practice: below
+  level 70), stored as `Roster.theaterOff`. It replaces the deferred level-70
+  flag (§11.6 item 5).
+- The mark is Lucide Lab's butterfly, struck through (Nate drew `theaterOff`);
+  the `T` key toggles it in the Roster's edit mode.
+
+### 12.3 The Characters pane
+
+- The grid is pre-filtered to the season: its three elements, plus the four
+  **Special Guest Stars** in a section of their own on top (their Blessing Level
+  buffs are doubled).
+- **Available Characters** lists only the characters the player can take
+  (owned and not marked). A guest the player can't take keeps a card with a
+  scrim and a ⊘ (stroke 3, Nate), so the season's guests always read as four.
+- **One Traveler**: every elemental Traveler of the season is offered, and a
+  second pick replaces the first.
+- A pick past the mode's room is refused with the shared nudge.
+- **Auto-select** (on its button only, never on opening): guests first, then
+  newest to oldest. ⚓ Nate: guests are the most valuable additions (doubled
+  buffs, and reactions from outside the season's elements); the wiki's advice to
+  spend characters early applies to the Opening Characters, not to guests.
+
+### 12.4 The Lineup pane: the game's Party Setup, on night
+
+Each section is a glass header strip with what it heads standing on the night,
+as the Stygian and Abyss boards do.
+
+- **Primary Antagonists:** the mode's acts as boss discs (the Stygian ring, no
+  hover), and Lunar's two Arcanum Challenges after a divider.
+- **The cast:** the six Opening Characters in a light glass pill, a +, the picks,
+  and, when counted, a + and the game's blank side portrait tagged "Supporting
+  Cast". Not interactive: picks are made on the grid.
+- **"+1 Supporting Cast"** counts a friend's character (optional). It is refused
+  with a nudge when the cast is already full.
+- **Stats:** the cast by element and by On-/Off-Field role, the Opening
+  Characters included, as the game counts them.
+- **The extra members' line** and what they bring: 30 Fantasia Flowers and 2
+  Blessing Levels each, or how many the mode still needs.
+- **Band B** holds the season and mode menus (the mode menu reads name, acts,
+  and the cast range), then Auto-select and Clear. Below `compact`, Auto-select
+  and Clear move into the cast's header, since the band has no room for them
+  beside the menus at 320.
+
+### 12.5 The Library card
+
+The cast in rows of four (the team rows' grid, three rows and "+N more"), and
+the season's three elements in the lead column, where a Stygian card shows its
+bosses. The mode name stands in the card's foot.
+
+### 12.6 Still open
+
+- A Theater lineup pinned to an older season gets a "New" tag in the game's
+  style, and a "This cycle" section may lead the lineup list (`docs/todo.md`).
+- Stats count roles only for characters with role data; a character without it
+  shows under its element alone.

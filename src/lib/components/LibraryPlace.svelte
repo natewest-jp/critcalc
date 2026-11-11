@@ -30,6 +30,8 @@
 	} from '$lib/storage/records';
 	import { belongsToTeam, teamOfWork } from '$lib/storage/teamLoadout';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import { MODE_NAME, THEATER_SEASONS } from '$lib/theater';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 
 	let { place }: { place: DocTool } = $props();
@@ -254,6 +256,24 @@
 		};
 		const mode = BOARD_PRESETS.find((p) => p.key === body.preset)?.label ?? '';
 		return { lead, mode: season ? `${mode} ${season.version}` : mode };
+	}
+
+	/** A Theater lineup's card: its cast in rows of four (the team rows'
+	 *  grid), and what the cast faces in the lead column, the season's three
+	 *  elements. An empty cast is one row of seats, as an empty team is. */
+	function theaterCard(body: LineupDocument['body']) {
+		const plan = body.theater;
+		const season = THEATER_SEASONS.find((s) => s.start === plan?.season);
+		const cast = plan?.cast ?? [];
+		const rows: string[][] = [];
+		for (let i = 0; i < Math.max(cast.length, 1) && rows.length < LINEUP_ROWS; i += 4)
+			rows.push(cast.slice(i, i + 4));
+		return {
+			rows,
+			more: Math.max(0, cast.length - LINEUP_ROWS * 4),
+			elements: season?.elements ?? [],
+			mode: (MODE_NAME as Record<string, string>)[plan?.mode ?? ''] ?? ''
+		};
 	}
 </script>
 
@@ -555,44 +575,68 @@
 				{@const lineup = d as LineupDocument}
 				{@const end = lineupLead(lineup.body)}
 				{@const more = lineup.body.teams.length - LINEUP_ROWS}
+				{@const th = lineup.body.preset === 'theater' ? theaterCard(lineup.body) : undefined}
 				<li class="card" class:is-current={isCurrent}>
 					<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
 						<span class="card-head">
 							{@render labelOrEdit(d)}
 							{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
 						</span>
-						<span class="lu-teams">
-							<!-- The rule between what the teams face and the teams, from
-							     the first disc to the last. -->
-							<span
-								class="lu-rule"
-								style:grid-row="1 / span {Math.min(lineup.body.teams.length, LINEUP_ROWS)}"
-							></span>
-							{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
-								{@const lead = end.lead(i)}
-								{@const name = teamName(team)}
-								<span class="lu-row" style:grid-row={i + 1}>
-									{#if lead.boss}
-										<img
-											class="lu-lead lu-boss"
-											src={bossImage(lead.boss, 'icon')}
-											alt=""
-											title={lead.name}
-										/>
-									{:else}
-										<span class="lu-lead lu-tag">{lead.tag}</span>
-									{/if}
-									{@render portraits(team.slots, LU_FACE)}
-									{#if name}<span class="lu-name">{name}</span>{/if}
+						{#if th}
+							<span class="lu-teams">
+								<span class="lu-rule" style:grid-row="1 / span {th.rows.length}"></span>
+								<span
+									class="lu-els"
+									class:lu-els--one={th.rows.length === 1}
+									style:grid-row="1 / span {th.rows.length}"
+								>
+									{#each th.elements as el (el)}
+										<img src={elementIcon(el)} alt="" title={el} />
+									{/each}
 								</span>
-							{/each}
-							{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span
-								>{/if}
-						</span>
+								{#each th.rows as ids, i (i)}
+									<span class="lu-row" style:grid-row={i + 1}>
+										{@render portraits(ids, LU_FACE)}
+									</span>
+								{/each}
+								{#if th.more > 0}<span class="lu-more">+{th.more} more</span>{/if}
+							</span>
+						{:else}
+							<span class="lu-teams">
+								<!-- The rule between what the teams face and the teams, from
+							     the first disc to the last. -->
+								<span
+									class="lu-rule"
+									style:grid-row="1 / span {Math.min(lineup.body.teams.length, LINEUP_ROWS)}"
+								></span>
+								{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
+									{@const lead = end.lead(i)}
+									{@const name = teamName(team)}
+									<span class="lu-row" style:grid-row={i + 1}>
+										{#if lead.boss}
+											<img
+												class="lu-lead lu-boss"
+												src={bossImage(lead.boss, 'icon')}
+												alt=""
+												title={lead.name}
+											/>
+										{:else}
+											<span class="lu-lead lu-tag">{lead.tag}</span>
+										{/if}
+										{@render portraits(team.slots, LU_FACE)}
+										{#if name}<span class="lu-name">{name}</span>{/if}
+									</span>
+								{/each}
+								{#if more > 0}<span class="lu-more"
+										>+{more} more {more === 1 ? 'team' : 'teams'}</span
+									>{/if}
+							</span>
+						{/if}
 						<span class="row-meta lu-meta">
 							<!-- The mode only under a name of your own: an unnamed lineup's
 							     label already IS its mode. -->
 							{#if d.name && end.mode}<span>{end.mode}</span>{/if}
+							{#if th?.mode}<span>{th.mode}</span>{/if}
 							{#if isCurrent}<span class="row-now">Open now</span>{/if}
 							{#if d.fromLink}<span class="row-flag"
 									><Mark name="link" size={11} /> From a link</span
@@ -988,6 +1032,28 @@
 		grid-column: 2;
 		margin-top: var(--lu-hair);
 		background: var(--line-soft);
+	}
+	/* A Theater card's lead: the season's three elements, stacked and
+	   centred on the rule, which runs from the first disc's top to the last
+	   disc's foot. 🎛️ 18px, or 12 when the cast is one row (three must fit
+	   one disc's height). */
+	.lu-els {
+		grid-column: 1;
+		margin-top: var(--lu-hair);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2px;
+		--lu-el: 18px;
+	}
+	.lu-els--one {
+		--lu-el: 12px;
+	}
+	.lu-els img {
+		width: var(--lu-el);
+		height: var(--lu-el);
+		object-fit: contain;
 	}
 	.lu-lead {
 		width: var(--lu-face);
