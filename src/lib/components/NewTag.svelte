@@ -6,7 +6,7 @@
 
 <!--
   THE NEW TAG (⚓ Nate 2026-11-11): the game's corner tag on a new item, here
-  announcing a new endgame cycle. Drawn after his inventory screenshot: lemon
+  announcing a new endgame cycle. Drawn after Nate's inventory screenshot: lemon
   text and border on an amber fill, a soft lemon glow, and a four-point
   sparkle on the top-right and bottom-left corners. Bitter, as the game's
   tag is a heavy display face.

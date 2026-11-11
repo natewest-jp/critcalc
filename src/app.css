@@ -129,7 +129,7 @@
 	--blue-700: #3682bb; /* --ui-info on paper — oklch .585 .115 244 */
 
 	/* LEMON and AMBER: the game's New tag (⚓ Nate 2026-11-11), the corner tag
-	   on a new item, and nothing else. Measured off his inventory screenshot:
+	   on a new item, and nothing else. Measured off Nate's inventory screenshot:
 	   the six tags agree to within 2 in every channel, these are the means.
 	   The text and border are the lemon, the fill the amber. The palette had
 	   neither (the nearest, --ui-provisional, is paler and redder than the
