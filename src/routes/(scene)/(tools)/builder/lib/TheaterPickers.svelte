@@ -70,6 +70,7 @@
 	{#snippet items(close)}
 		{#each verdicts as v (v.mode)}
 			{@const current = v.mode === mode}
+			{@const rules = season.modes.find((m) => m.mode === v.mode)}
 			<button
 				class="band-menu-item"
 				role="menuitemradio"
@@ -83,14 +84,10 @@
 					>{#if current}<Mark name="check" size={12} />{/if}</span
 				>
 				<span class="tp-name">{MODE_NAME[v.mode]}</span>
+				<span class="tp-acts"
+					>{rules?.acts}{rules?.arcana.length ? ` + ${rules.arcana.length}` : ''} acts</span
+				>
 				<span class="tp-need">{OPENING_CAST + v.need}–{OPENING_CAST + v.most}</span>
-				<span class="tp-state" class:is-short={!v.open}>
-					{#if v.open}
-						Open{v.extras ? ` · ${v.extras} extra` : ''}
-					{:else}
-						{v.short} short
-					{/if}
-				</span>
 			</button>
 		{/each}
 	{/snippet}
@@ -109,16 +106,13 @@
 		min-width: 5.5em;
 		font-weight: var(--fw-semibold);
 	}
-	.tp-need {
-		min-width: 3.6em;
+	.tp-acts {
+		min-width: 5.2em;
 		color: var(--muted);
 		font-variant-numeric: tabular-nums;
 	}
-	.tp-state {
+	.tp-need {
 		margin-left: auto;
 		font-variant-numeric: tabular-nums;
-	}
-	.tp-state.is-short {
-		color: var(--muted);
 	}
 </style>

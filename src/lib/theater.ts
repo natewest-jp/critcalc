@@ -283,6 +283,13 @@ export function castRoom(rules: TheaterModeRules, invite = false): number {
 	return rules.alternate + rules.extra - (invite ? SUPPORTING_CAST : 0);
 }
 
+/** Whether a friend's character fits beside `picked` of the player's own: the
+ *  two together within the mode's most. (⚠ Not `picked < castRoom(rules,
+ *  true)`: that refused the LAST free place.) */
+export function canInvite(rules: TheaterModeRules, picked: number): boolean {
+	return picked + SUPPORTING_CAST <= rules.alternate + rules.extra;
+}
+
 /**
  * A pick on the grid: in the cast it leaves; out, it joins at the end. One
  * Traveler at most (⚓ Nate): a second Traveler takes the first one's place

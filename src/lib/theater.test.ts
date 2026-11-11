@@ -14,6 +14,7 @@ import {
 	toggleCast,
 	autoCast,
 	castRoom,
+	canInvite,
 	defaultMode,
 	type TheaterSeason
 } from './theater';
@@ -231,6 +232,15 @@ describe("a lineup's cast", () => {
 			'traveler_geo',
 			'fischl'
 		]);
+	});
+
+	// Nate 2026-11-11: with one place left (Hard, 13 of 14 picked) the invite
+	// was refused; it took two.
+	it("takes a friend into the cast's last free place, and not past it", () => {
+		const hard = november.modes.find((m) => m.mode === 'hard')!;
+		expect(canInvite(hard, 13)).toBe(true);
+		expect(canInvite(hard, 14)).toBe(false);
+		expect(canInvite(hard, 0)).toBe(true);
 	});
 
 	it('leaves room for a friend', () => {

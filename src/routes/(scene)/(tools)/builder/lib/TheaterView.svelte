@@ -116,16 +116,21 @@
 			>
 		</header>
 		<div class="th-body th-cast">
-			{#each season.opening as id (id)}
-				<span class="th-member" title="{nameOf(id)} · Opening Character"
-					><SidePortrait {id} size={DISC} /></span
-				>
-			{/each}
+			<!-- The Opening Characters in one pill hugging their rings (the hair
+			     rises over it), so the six read as the game's own. -->
+			<span class="th-opening">
+				{#each season.opening as id (id)}
+					<span class="th-member" title="{nameOf(id)} · Opening Character"
+						><SidePortrait {id} size={DISC} /></span
+					>
+				{/each}
+			</span>
 			<span class="th-plus" aria-hidden="true"><Mark name="plus" size={12} /></span>
 			{#each cast as id (id)}
 				<span class="th-member" title={nameOf(id)}><SidePortrait {id} size={DISC} /></span>
 			{/each}
 			{#if invite}
+				<span class="th-plus" aria-hidden="true"><Mark name="plus" size={12} /></span>
 				<!-- The game's blank side portrait, tagged as the game tags it. -->
 				<span class="th-member th-guest" title="Supporting Cast">
 					<SidePortrait id={null} size={DISC} />
@@ -244,10 +249,15 @@
 		font-variant-numeric: tabular-nums;
 		color: var(--text);
 	}
+	/* The Stygian boss disc's frame (BoardView's .bv-boss), with no hover:
+	   these open nothing. */
 	.th-foe-disc {
+		box-sizing: border-box;
 		width: var(--th-foe);
 		height: var(--th-foe);
+		border: 2px solid var(--line-faint);
 		border-radius: var(--r-round);
+		background: var(--surface-well);
 		object-fit: cover;
 	}
 	.th-rule {
@@ -273,6 +283,26 @@
 	.th-member {
 		position: relative;
 		display: block;
+	}
+	/* 🎛️ The Opening Characters' pill (⚓ Nate 2026-11-11: light glass, round
+	   ends hugging the outer avatars). Its ground starts at the rings' top
+	   less its padding, so the hair rises over it, as the board's team row
+	   frames its rings. --th-pill-pad, --th-pill-fill. */
+	.th-opening {
+		--th-pill-pad: 3px;
+		--th-pill-fill: var(--glass-sheer);
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		gap: 0.3rem;
+		padding: var(--th-pill-pad);
+	}
+	.th-opening::before {
+		content: '';
+		position: absolute;
+		inset: var(--th-overhang) 0 0;
+		border-radius: var(--r-round);
+		background: var(--th-pill-fill);
 	}
 	.th-plus {
 		display: grid;

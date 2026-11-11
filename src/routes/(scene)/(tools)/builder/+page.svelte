@@ -58,6 +58,7 @@
 	import {
 		THEATER_SEASONS,
 		autoCast,
+		canInvite,
 		castRoom,
 		currentTheater,
 		defaultMode,
@@ -652,7 +653,7 @@
 	function toggleInvite(): boolean {
 		if (!thMode) return false;
 		const invite = !plan.invite;
-		if (invite && thCast.length >= castRoom(thMode, true)) return false;
+		if (invite && !canInvite(thMode, thCast.length)) return false;
 		boards.setTheater(board.id, { invite });
 		return true;
 	}
@@ -936,10 +937,10 @@
 		);
 	});
 
-	/** The Theater grid: the season's Special Guest Stars, then everyone of its
-	 *  three elements but the Opening Characters (they start in the cast).
-	 *  Every Traveler of those elements shows; the cast takes one. Those this
-	 *  lineup can take lead each section, the rest follow under the game's ⊘. */
+	/** The Theater grid: the season's Special Guest Stars (those this lineup
+	 *  can't take follow under the game's ⊘), then everyone of its three
+	 *  elements it can take, but the Opening Characters (they start in the
+	 *  cast). Every Traveler of those elements shows; the cast takes one. */
 	const theaterPool = $derived([...split.matches, ...split.uncurated]);
 	const theaterSections = $derived.by((): GridSection[] => {
 		const season = thSeason;
@@ -950,12 +951,18 @@
 			...list.filter((e) => !thAvailable(e.id))
 		];
 		const guests = season.guests.flatMap((id) => byId.get(id) ?? []);
+		// ⚓ Only those this lineup can take (Nate 2026-11-11, as the game
+		// lists them); the guests keep the ⊘, so the player sees who they are.
 		const available = theaterPool.filter(
-			(e) => !!e.element && season.elements.includes(e.element) && !season.opening.includes(e.id)
+			(e) =>
+				!!e.element &&
+				season.elements.includes(e.element) &&
+				!season.opening.includes(e.id) &&
+				thAvailable(e.id)
 		);
 		return [
 			{ key: 'th-guests', label: 'Special Guest Stars', entries: takeable(guests) },
-			{ key: 'th-available', label: 'Available Characters', entries: takeable(available) }
+			{ key: 'th-available', label: 'Available Characters', entries: available }
 		].filter((sec) => sec.entries.length > 0);
 	});
 
