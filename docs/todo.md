@@ -8,12 +8,11 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Help: the Imaginarium Theater lineup (⚓ Nate 2026-11-11: next session).** The Team Builder's Theater lineup has no section in its Help chapter (`src/lib/help/chapters/TeamBuilder.svelte`) yet. The design is `docs/design/team-builder-lineups-design.md` §12, the game's rules `docs/library/game/imaginarium-theater.md`, and the round `docs/rounds/theater-round-2026-11-11.md`. Copy is Nate's; propose it first.
+- Nothing picked yet.
 
 ## ⏭ Next
 
-- **Help additions** (three pieces):
-  - **The Atlas's roles, explained (from the memory triage).** No user-facing text says the roles come from Imaginarium Theater and are a presence classification, not a ranking (only code comments: `capabilities/roles.ts`, `builder/lib/atlas.ts`). Copy is Nate's; propose it first.
+- **Help additions** (two pieces):
   - **Help screenshots, as a pipeline** (agreed 2026-10-21). A shot list in the repo (help section · route · viewport · state seed, usually a `?r=` link · crop selector); a Playwright script renders and crops at 2×, optionally drawing numbered callouts in-page before capture; WebP, imported through Vite so names hash (⛔ not `/assets/`, which is immutable add-only); lazy-loaded in the overlay. ⚠️ Freeze the scene to a fixed pose, or the glass shows a different sky every run. Start with a one-line-per-section checklist Nate rules (shot / no shot / callout). Desktop-only vs desktop + phone is his call. English text in images won't localize, but the script reruns per locale.
   - **Keyboard + gesture cheat sheet** (agreed 2026-10-21), opened by `?` and from Help: Space/Home playback, ←/→ (Shift) nudges, Delete, ⌘Z, drag-to-move pills, click bare band to add, tap vs drag on the phone dock.
 

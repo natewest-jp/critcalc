@@ -6,7 +6,7 @@
 	 Glossary names: Lineup (never "board"), Characters (the grid), Roster (the
 	 Library tab ONLY), "the team's capabilities" (never "fingerprint"). ⚠ The
 	 Abyss banner + Opponents need a CURRENT cycle in season-dates.json, so the
-	 copy says "when a cycle is listed". -->
+	 copy says "when a cycle is listed". The Theater section is design doc §12. -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
@@ -21,14 +21,15 @@
 
 <p class="lede">
 	A party setup screen. Build a lineup of teams for Stygian Onslaught, the Spiral Abyss, or anything
-	else, and each team shows what it can provide at the constellations it uses.
+	else, and each team shows what it can provide at the constellations it uses. For Imaginarium
+	Theater, build a cast and see which difficulty your roster can enter.
 </p>
 
 <section>
 	<h2 id="lineups">Lineups</h2>
 	<p>
 		<strong>New lineup</strong>, in the Library under <strong>Lineups</strong>, starts a lineup in
-		one of three shapes:
+		one of four shapes:
 	</p>
 	<ul>
 		<li>
@@ -38,6 +39,10 @@
 		<li>
 			<strong>Spiral Abyss</strong>: two teams for Floor 12’s first and second half. While a current
 			cycle is live, each half shows its blessing and <strong>Opponents</strong> list.
+		</li>
+		<li>
+			<strong>Imaginarium Theater</strong>: a cast instead of teams, for the month’s season (see
+			<a href="#theater">Imaginarium Theater</a> below).
 		</li>
 		<li>
 			<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the toolbar for more,
@@ -51,8 +56,16 @@
 		renamed, or deleted.
 	</p>
 	<p>
-		A new Stygian lineup follows the current season until you place someone in it; from then on it
-		stays on that season. The season menu in its header has every earlier season.
+		Once you’ve added characters to a lineup, it’s pinned to the endgame cycle you were planning for
+		at that time. Once a new cycle is released, you can open your existing lineup and use the
+		dropdown at the top to select the most recent cycle, or you can simply create a new lineup to
+		keep your previous endgame lineups archived. Empty Stygian and Abyss lineups that you haven’t
+		touched automatically update to the latest cycle.
+	</p>
+	<p>
+		In the Library, the top section (<strong>This cycle</strong>) keeps all your lineups for endgame
+		content that is still live. It also shows a blank card for any live endgame you haven’t made a
+		lineup for yet.
 	</p>
 	<p>
 		<strong>No repeats</strong> keeps each character on one team, the way the game does. It is on for
@@ -87,6 +100,12 @@
 		<strong>Can provide</strong> match only characters who provide all of them. Choosing a role also sorts
 		the grid into sections: Damage roles are sorted by element, while Support and Survivability roles
 		are sorted by capability.
+	</p>
+	<p>
+		Character roles come from Genshin’s own classifications, used in the Imaginarium Theater. Every
+		character is categorized as On-Field or Off-Field, and DPS, Support, or Survivability. We’ve
+		only made two modifications to the in-game assignment: Fischl and Rosaria are additionally
+		tagged as Support for the team buffs they provide.
 	</p>
 	<p>
 		The toolbar narrows further: a name search, <strong>Owned</strong> and
@@ -175,6 +194,32 @@
 		The rotation planner sends you here too: <strong>⇄</strong> on one of its bench cards opens swap mode
 		for that slot. Picking someone renames them in the notation and takes you back; Cancel returns without
 		changing anything. Clicking an empty slot’s portrait works the same way and adds someone instead.
+	</p>
+</section>
+
+<section>
+	<h2 id="theater">Imaginarium Theater</h2>
+	<p>
+		A Theater lineup is a cast, not teams. This will help you decide which difficulty level you can
+		enter based on your roster, or think about which of your characters you want to enter into the
+		Alternate Cast. Theater lineups open on the highest difficulty your roster can enter this month,
+		but you can always choose a lower difficulty level using the dropdown menu.
+	</p>
+	<p>
+		With a Theater lineup open, the character grid switches to only displaying characters eligible
+		to enter the Theater that month, including Special Guest Stars. The six Opening Characters are
+		already entered into your lineup, so you won’t find them in the grid. The
+		<strong>Auto-select</strong> button fills all of your available slots, starting with any Special Guest
+		Stars you can enter and then choosing from your roster from most recent characters to oldest.
+	</p>
+	<p><strong>+1 Supporting Cast</strong> counts a friend’s character you plan to invite.</p>
+	<p>
+		The roster doesn’t track levels. Mark anyone who can’t enter (in practice, below level 70) with
+		<strong>Can’t enter Theater</strong> in the Roster’s edit mode, or press T, and they stay out of every
+		Theater lineup.
+	</p>
+	<p>
+		A Theater lineup has no <strong>Share</strong> button, since it is individual to each profile’s roster.
 	</p>
 </section>
 
