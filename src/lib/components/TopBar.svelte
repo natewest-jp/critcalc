@@ -11,6 +11,7 @@
   Sizes come from the interface size (app.css § THE INTERFACE SIZE).
 -->
 <script lang="ts">
+	import { keysSheet } from '$lib/keysSheet.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -392,6 +393,14 @@
 								menu = null;
 								menuState.show(chapterSection('help', helpChapterForPath(page.url.pathname)));
 							}}><Mark name="help" /> Help</button
+						>
+						<button
+							class="mi"
+							role="menuitem"
+							onclick={() => {
+								menu = null;
+								keysSheet.open = true;
+							}}><Mark name="keyboard" /> Keyboard shortcuts</button
 						>
 						<button
 							class="mi"

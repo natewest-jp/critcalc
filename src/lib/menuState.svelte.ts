@@ -56,8 +56,9 @@ const chapterItems = (area: typeof HELP_AREA): SectionItem[] =>
 /**
  * The sidebar (§6.1's table). The profile's group is titled with the profile's
  * own name by the shell, which also shows `profile` to a real profile and
- * `profile/new` to Theorycraft (`profileItems`). Getting started and
- * Keyboard shortcuts join Help when written.
+ * `profile/new` to Theorycraft (`profileItems`). Getting started joins Help
+ * when written; Keyboard shortcuts is a dialog (`$lib/keysSheet.svelte.ts`),
+ * so `MenuState.svelte` draws it as a button, not a section.
  */
 export const SECTION_GROUPS: SectionGroup[] = [
 	{

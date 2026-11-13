@@ -12,6 +12,8 @@
 	import type MoveDialogT from '$lib/components/MoveDialog.svelte';
 	import type LinksDialogT from '$lib/components/LinksDialog.svelte';
 	import type FlipNoticeDialogT from '$lib/components/FlipNoticeDialog.svelte';
+	import type KeysSheetT from '$lib/components/KeysSheet.svelte';
+	import { keysSheet } from '$lib/keysSheet.svelte';
 	import { flipNotice, raiseFlipNotice } from '$lib/flipNotice.svelte';
 	import { browser, dev } from '$app/environment';
 	import { menu, rememberSurface } from '$lib/menuState.svelte';
@@ -114,6 +116,23 @@
 		if (linksIntro.open && !LinksDialogC)
 			void import('$lib/components/LinksDialog.svelte').then((m) => (LinksDialogC = m.default));
 	});
+
+	/** The keyboard shortcuts sheet, loaded on first use. `?` opens it from
+	 *  anywhere a key isn't text: a field, the notation editor or another
+	 *  dialog keeps the key (the sheet closes itself on its own `?`). */
+	let KeysSheetC = $state<typeof KeysSheetT | null>(null);
+	$effect(() => {
+		if (keysSheet.open && !KeysSheetC)
+			void import('$lib/components/KeysSheet.svelte').then((m) => (KeysSheetC = m.default));
+	});
+	function onSheetKey(e: KeyboardEvent): void {
+		if (e.key !== '?' || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+		const t = e.target as HTMLElement | null;
+		if (t?.closest('input, textarea, select, [contenteditable], [role="textbox"]')) return;
+		if (document.querySelector('[aria-modal="true"]')) return;
+		e.preventDefault();
+		keysSheet.open = true;
+	}
 
 	/** The once-only returning-visitor dialog (flip-readiness §1 item 4),
 	 *  loaded on first use. While it is open it holds the links dialog below
@@ -322,6 +341,8 @@
 	}
 </script>
 
+<svelte:window onkeydown={onSheetKey} />
+
 <!-- The scene is composed from two layers stacked back-to-front:
 	  scene-canvas →  the GL world (sky-bg gradient + sky/floor plates + grain
 	                  + the twinkle starfield, camera as a uniform — sceneGL.ts;
@@ -405,6 +426,7 @@
 		{#if FlipNoticeDialogC && flipNotice.open}<FlipNoticeDialogC />{/if}
 		<!-- Held behind the returning-visitor dialog: one notice at a time. -->
 		{#if LinksDialogC && linksIntro.open && !flipNotice.open}<LinksDialogC />{/if}
+		{#if KeysSheetC && keysSheet.open}<KeysSheetC />{/if}
 		<!-- Toasts and dialogs (notices §3.2, §3.4): one home on every surface. -->
 		<NoticeRegion />
 	</div>
