@@ -19,8 +19,8 @@ The list is `src/lib/keysSheet.svelte.ts`, each row naming its handler; a new sh
 
 - The panel's `max-height: min(40rem, 100%)` never bit: the backdrop's grid row sizes to the content, so on a 390×844 phone the panel hung off the bottom (top at 314). It caps against `100dvh` now.
 
+Shipped and pushed as `85dd4ba8`; Nate checked it in real Safari. No What's new entry (Nate).
+
 ## Left open
 
-- Nate's real-Safari and iPhone look.
-- Phone gestures in the Help chapters (to-do).
-- A What's new entry, proposed in the report.
+- Phone gestures in the Help chapters (to-do, Queue).
