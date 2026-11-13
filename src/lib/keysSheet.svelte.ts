@@ -28,7 +28,7 @@ export type Shortcut = { keys: Key[][]; does: string };
 export type KeyAreaId = 'everywhere' | 'planner' | 'builder' | 'roster' | 'teams' | 'visualizers';
 export type KeyArea = { id: KeyAreaId; title: string; note?: string; rows: Shortcut[] };
 
-// ⚠️ DRAFT WORDING for Nate's ruling: every `title`, `note` and `does` below.
+// Wording approved by Nate 2026-11-13; changes are proposed first.
 export const KEY_AREAS: KeyArea[] = [
 	{
 		id: 'everywhere',

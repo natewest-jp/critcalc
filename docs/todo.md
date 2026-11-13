@@ -8,7 +8,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Keyboard + gesture cheat sheet** (agreed 2026-10-21; ⚓ Nate 2026-11-13: to Now), opened by `?` and from Help: Space/Home playback, ←/→ (Shift) nudges, Delete, ⌘Z, drag-to-move pills, click bare band to add, tap vs drag on the phone dock. ⚠️ That key list predates the redesigns (pill drags and ←/→ nudges now live in the Gauge Explorer, not the Planner); the round takes its inventory from the code.
+- Nothing picked yet.
 
 ## ⏭ Next
 
@@ -16,6 +16,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## Queue
 
+- **Phone gestures in Help (agreed 2026-11-13).** The keyboard shortcuts sheet shipped (`docs/rounds/keys-cheat-sheet-2026-11-13.md`); its touch half goes in each tool's Help chapter as prose: tap vs drag on the phone dock, the Gauge Explorer's pill drag and bare-band tap, Teams' drag to reorder. Copy proposed first.
 - **One-time dismissible hints** (agreed 2026-10-21 over a guided walkthrough). A single hint at the spot where a hidden action lives ("drag a pill to move it", "click the portrait to swap"), shown once, dismissal remembered in `siteSettings`. Un-held 2026-11-07 (⚓ Nate) once the streamlining landed; first check which hidden actions the redesigns already made visible, since a fixed control needs no hint. Hazards for later: band controls fold by breakpoint (a hint must anchor to what exists at that width), anything over a band must portal (`backdrop-filter`), a left tool page is paused not destroyed (no `onMount` state), copy goes through the style guide.
 - **Library search (⚓ Nate 2026-11-11: queued).** A search over the Library's rows, carried over from the old layout and not rebuilt (`LibraryPlace.svelte`).
 - **Arlecchino C2: one ICD across two surfaces (⚓ Nate 2026-10-30: deferred).** Her C2 RES buff is two effects, one on the Q (cast pool) and one on Charged Attacks (swing surface), sharing gcsim's one 10s ICD. The two passes in `buffWindows.ts` don't run in time order, so a shared clock needs both triggers' instants merged per holder first, plus a data field naming two effects as one ICD. On screen: a second 15s RES bar when a Q and a Charged Attack fall within 10s. Record: `docs/rounds/alhaitham-mirrors-round.md` §7.
