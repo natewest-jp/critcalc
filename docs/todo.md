@@ -8,13 +8,11 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- Nothing picked yet.
+- **Keyboard + gesture cheat sheet** (agreed 2026-10-21; ⚓ Nate 2026-11-13: to Now), opened by `?` and from Help: Space/Home playback, ←/→ (Shift) nudges, Delete, ⌘Z, drag-to-move pills, click bare band to add, tap vs drag on the phone dock. ⚠️ That key list predates the redesigns (pill drags and ←/→ nudges now live in the Gauge Explorer, not the Planner); the round takes its inventory from the code.
 
 ## ⏭ Next
 
-- **Help additions** (two pieces):
-  - **Help screenshots, as a pipeline** (agreed 2026-10-21). A shot list in the repo (help section · route · viewport · state seed, usually a `?r=` link · crop selector); a Playwright script renders and crops at 2×, optionally drawing numbered callouts in-page before capture; WebP, imported through Vite so names hash (⛔ not `/assets/`, which is immutable add-only); lazy-loaded in the overlay. ⚠️ Freeze the scene to a fixed pose, or the glass shows a different sky every run. Start with a one-line-per-section checklist Nate rules (shot / no shot / callout). Desktop-only vs desktop + phone is his call. English text in images won't localize, but the script reruns per locale.
-  - **Keyboard + gesture cheat sheet** (agreed 2026-10-21), opened by `?` and from Help: Space/Home playback, ←/→ (Shift) nudges, Delete, ⌘Z, drag-to-move pills, click bare band to add, tap vs drag on the phone dock.
+- **Help screenshots, as a pipeline** (agreed 2026-10-21). A shot list in the repo (help section · route · viewport · state seed, usually a `?r=` link · crop selector); a Playwright script renders and crops at 2×, optionally drawing numbered callouts in-page before capture; WebP, imported through Vite so names hash (⛔ not `/assets/`, which is immutable add-only); lazy-loaded in the overlay. ⚠️ Freeze the scene to a fixed pose, or the glass shows a different sky every run. Start with a one-line-per-section checklist Nate rules (shot / no shot / callout). Desktop-only vs desktop + phone is his call. English text in images won't localize, but the script reruns per locale.
 
 ## Queue
 

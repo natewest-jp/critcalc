@@ -5,7 +5,7 @@
 		"seenUpstream": "b107b5dc5",
 		"date": "2026-11-10",
 		"tag": "v2.50.0",
-		"note": "No new upstream commits on 2026-11-12 (still b107b5dc5, Sandrone #3269)"
+		"note": "No new upstream commits on 2026-11-13 (still b107b5dc5, Sandrone #3269)"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-12T00:00:00Z"
+		"lastSeen": "2026-11-13T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -25,10 +25,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "8fea8028"
+		"lastSwept": "ff566a11"
 	},
 	"roles": {
-		"audited": "2026-11-12",
+		"audited": "2026-11-13",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
