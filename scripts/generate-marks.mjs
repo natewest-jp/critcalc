@@ -104,6 +104,8 @@ const MARKS = {
 	/** The top bar's `?` menu gives each of its three items a mark (Nate
 	 *  2026-10-23, to judge): Help and About beside Report a problem. */
 	help: 'CircleQuestionMark',
+	/** The keyboard shortcuts sheet, from Help's sidebar (2026-11-13). */
+	keyboard: 'Keyboard',
 	about: 'Info',
 
 	// ── Deleting an entry ───────────────────────────────────────────────────
@@ -262,6 +264,10 @@ const MARKS = {
 	 *  card onward, "← All roles" comes back. Both are navigation. */
 	forward: 'ArrowRight',
 	back: 'ArrowLeft',
+	/** The shortcuts sheet's arrow keycaps (2026-11-13); `forward` and `back`
+	 *  are the other two. */
+	arrowUp: 'ArrowUp',
+	arrowDown: 'ArrowDown',
 	/** `forward` slimmed, for the Builder's vertical Planner plate on a phone
 	 *  (2026-10-20, ⚓ Nate): the arrow's shaft cost width the lineup wanted. */
 	forwardSlim: 'ChevronRight',

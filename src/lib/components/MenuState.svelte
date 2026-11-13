@@ -33,6 +33,7 @@
 		type SectionItem
 	} from '$lib/menuState.svelte';
 	import { findChapter, type ChromeAreaId } from '$lib/help/areas';
+	import { keysSheet } from '$lib/keysSheet.svelte';
 	import { feedbackUrl } from '$lib/feedback';
 	import { TOOLS } from '$lib/tools';
 	import { storageSession } from '$lib/storage/session.svelte';
@@ -415,6 +416,11 @@
 					</div>
 				{/if}
 				{#if g.id === 'help'}
+					<!-- The shortcuts sheet is a dialog over this, not a section (⚓ Nate
+					     2026-11-13), so it is a button beside the chapters. -->
+					<button class="side-item side-keys" onclick={() => (keysSheet.open = true)}>
+						<span class="side-label"><Mark name="keyboard" size={18} /> Keyboard shortcuts</span>
+					</button>
 					<a
 						class="side-item side-report"
 						href={reportHref}
@@ -678,6 +684,12 @@
 	}
 	.side-report {
 		display: none;
+	}
+	/* A keyboard sheet has nothing to offer a touch screen (⚓ Nate 2026-11-13). */
+	@media (hover: none) and (pointer: coarse) {
+		.side-keys {
+			display: none;
+		}
 	}
 	.side-item:hover:not(:disabled) {
 		background: var(--surface-hover);
