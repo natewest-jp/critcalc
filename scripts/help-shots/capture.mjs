@@ -165,7 +165,8 @@ async function capture(browser, shot) {
 		callouts.push({
 			n: i + 1,
 			x: +((p.x - clip.x) / clip.width).toFixed(4),
-			y: +((p.y - clip.y) / clip.height).toFixed(4)
+			y: +((p.y - clip.y) / clip.height).toFixed(4),
+			side: c.side ?? 'center'
 		});
 	}
 
@@ -214,6 +215,8 @@ await writeFormatted(
 import data from './shots.generated.json';
 ${ids.map((id) => `import ${ident(id)} from './${id}.webp';`).join('\n')}
 
+export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
+
 export type HelpShot = {
 	src: string;
 	/** The capture's size in CSS pixels (the image itself is 2×). */
@@ -221,13 +224,13 @@ export type HelpShot = {
 	height: number;
 	/** Display size against the capture's CSS size. */
 	scale: number;
-	/** Numbered markers, as fractions of the image's width and height (a
-	 *  marker beside the image is below 0 or above 1). */
-	callouts: { n: number; x: number; y: number }[];
+	/** The points a figure names, as fractions of the image's width and
+	 *  height, and the side of the image each one's label stands on. */
+	callouts: { n: number; x: number; y: number; side: HelpCalloutSide }[];
 };
 
 export const HELP_SHOTS = {
-${ids.map((id) => `'${id}': { ...data['${id}'], src: ${ident(id)} },`).join('\n')}
+${ids.map((id) => `'${id}': { ...data['${id}'], src: ${ident(id)} } as HelpShot,`).join('\n')}
 } satisfies Record<string, HelpShot>;
 
 export type HelpShotId = keyof typeof HELP_SHOTS;

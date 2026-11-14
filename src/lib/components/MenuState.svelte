@@ -963,11 +963,13 @@
 	   CONTENT width. Narrower, the figures fall in under their paragraphs
 	   (HelpFigure's own query, the same 56rem). A container query, because
 	   the question is the content area's width, which the sidebar and its
-	   padding take from the window's. */
+	   padding take from the window's. Named, because each figure is a
+	   container of its own (for its labels), and an unnamed query inside one
+	   would ask the figure. */
 	.reading-host {
-		container-type: inline-size;
+		container: help-reading / inline-size;
 	}
-	@container (min-width: 56rem) {
+	@container help-reading (min-width: 56rem) {
 		.chapter:has(:global(.hf)) {
 			max-width: calc(var(--hf-measure) + var(--hf-gutter) + var(--hf-margin));
 		}

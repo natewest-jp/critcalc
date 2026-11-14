@@ -6,6 +6,8 @@ import plannerComposer from './planner-composer.webp';
 import plannerBenchCard from './planner-bench-card.webp';
 import plannerPhoneDock from './planner-phone-dock.webp';
 
+export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
+
 export type HelpShot = {
 	src: string;
 	/** The capture's size in CSS pixels (the image itself is 2×). */
@@ -13,15 +15,15 @@ export type HelpShot = {
 	height: number;
 	/** Display size against the capture's CSS size. */
 	scale: number;
-	/** Numbered markers, as fractions of the image's width and height (a
-	 *  marker beside the image is below 0 or above 1). */
-	callouts: { n: number; x: number; y: number }[];
+	/** The points a figure names, as fractions of the image's width and
+	 *  height, and the side of the image each one's label stands on. */
+	callouts: { n: number; x: number; y: number; side: HelpCalloutSide }[];
 };
 
 export const HELP_SHOTS = {
-	'planner-composer': { ...data['planner-composer'], src: plannerComposer },
-	'planner-bench-card': { ...data['planner-bench-card'], src: plannerBenchCard },
-	'planner-phone-dock': { ...data['planner-phone-dock'], src: plannerPhoneDock }
+	'planner-composer': { ...data['planner-composer'], src: plannerComposer } as HelpShot,
+	'planner-bench-card': { ...data['planner-bench-card'], src: plannerBenchCard } as HelpShot,
+	'planner-phone-dock': { ...data['planner-phone-dock'], src: plannerPhoneDock } as HelpShot
 } satisfies Record<string, HelpShot>;
 
 export type HelpShotId = keyof typeof HELP_SHOTS;

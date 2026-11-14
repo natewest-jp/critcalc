@@ -12,6 +12,7 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 	import HelpFigure from '$lib/components/HelpFigure.svelte';
+	import HelpRef from '$lib/components/HelpRef.svelte';
 </script>
 
 <h1>Rotation planner</h1>
@@ -134,8 +135,8 @@
 	</p>
 	<HelpFigure
 		shot="planner-bench-card"
-		alt="Xingqiu’s bench card, its five controls numbered."
-		legend={[
+		alt="Xingqiu’s bench card, its five controls labeled."
+		labels={[
 			'Portrait: opens the inspector',
 			'Swap',
 			'Remove from team',
@@ -383,14 +384,15 @@
 		alt="The rotation planner on a phone: the bench as a row above the timeline, and the composer open at the foot of the screen with its row of keys."
 	>
 		<p>
-			On a phone the composer docks to the bottom of the screen. Collapsed it shows the last line of
-			the rotation. Tap it to open it with the keyboard, and tap anywhere else to close it. A row of
-			keys above the keyboard offers the inputs that fit where the cursor is.
+			On a phone the composer <HelpRef n={1} /> docks to the bottom of the screen. Collapsed it shows
+			the last line of the rotation. Tap it to open it with the keyboard, and tap anywhere else to close
+			it. A row of keys <HelpRef n={2} /> above the keyboard offers the inputs that fit where the cursor
+			is.
 		</p>
 		<p>
-			The bench becomes a row above the timeline, which the <strong>Bench</strong> button in the toolbar
-			hides. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers are
-			turned off by default and the zoom starts wider than on desktop.
+			The bench becomes a row <HelpRef n={3} /> above the timeline, which the <strong>Bench</strong> button
+			in the toolbar hides. Tapping a portrait on a phone opens the character’s details. The Buffs and
+			Auras layers are turned off by default and the zoom starts wider than on desktop.
 		</p>
 	</HelpFigure>
 </section>

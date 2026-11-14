@@ -12,11 +12,14 @@
  *   a profile (the same path the e2e fixture takes).
  * - `prepare(page)`: anything to do before the capture (open, tap, hover).
  * - `clip(page)`: the crop, a rect in CSS pixels.
- * - `callouts`: numbered markers, in prose order. Each is a selector, where
- *   on its box the marker sits (`at`), and an optional nudge in CSS pixels
- *   (`dx`, `dy`); a marker may sit outside the image, in the space beside it. The markers are NOT
- *   drawn into the image: their positions go into the manifest and
- *   `HelpFigure.svelte` lays them over it, so their look is a CSS setting.
+ * - `callouts`: the points a figure names, in prose order. Each is a
+ *   selector, the point on its box (`at`, on the edge that faces its label),
+ *   an optional nudge in CSS pixels (`dx`, `dy`), and the `side` of the image
+ *   its label stands on. Nothing is drawn into the image: the points go into
+ *   the manifest, and `HelpFigure.svelte` draws a label with a line to each
+ *   (or, too narrow for labels, a numbered marker just off the point on that
+ *   side), so their look is a CSS setting. The label TEXT is copy, so it
+ *   lives in the chapter, not here.
  * - `scale`: the display size against the capture's CSS size (default 1).
  *
  * ⚠ Stage content that doesn't date. A shot showing this month's Theater or
@@ -29,6 +32,9 @@ const NATIONAL = ['raiden', 'bennett', 'xiangling', 'xingqiu'];
 /** The third bench card (Xingqiu's in the planner shots). */
 const CARD = '.bench-band-mount .sp-card >> nth=2';
 const owned = (ids) => Object.fromEntries(ids.map((id) => [id, 'owned']));
+/** Every shot shows the newer outfits where a character has one: their
+ *  portraits are the sharper art (⚓ Nate 2026-11-14). */
+const SETTINGS = { useNewOutfits: true };
 
 /** The union of the boxes of everything a selector matches, padded. */
 export async function boxOf(page, selector, { pad = 0, nth } = {}) {
@@ -62,7 +68,8 @@ export const SHOTS = [
 			// (Xiangling has no held skill, so `hE` is timed as a tap).
 			notation: 'Bennett Q E > Xiangling Q hE > Kazuah E > Raiden E N3',
 			label: 'Raiden National',
-			ownership: owned(NATIONAL)
+			ownership: owned(NATIONAL),
+			settings: SETTINGS
 		},
 		// The composer's left end, out to just past the last token: the full
 		// box is ~1100px wide and would shrink the text to nothing in the margin.
@@ -88,23 +95,23 @@ export const SHOTS = [
 		seed: {
 			notation: 'Bennett Q E > Xiangling Q E > Xingqiu E Q > Raiden E N3',
 			label: 'Raiden National',
-			ownership: owned(NATIONAL)
+			ownership: owned(NATIONAL),
+			settings: SETTINGS
 		},
 		// The card's contents, not the card: a bench card is as tall as its
 		// character's rows on the timeline, mostly empty. Sideways it stops
-		// inside the bench's own edges, so the swap and remove markers sit
-		// outside the image, beside their buttons.
+		// inside the bench's own edges, so the image is all card.
 		clip: async (page) => {
 			const c = await boxOf(page, `${CARD} >> :is(.sp-rail, .sp-avatar-chip, .sp-col)`);
-			return { x: c.x - 4, y: c.y - 22, width: c.width + 10, height: c.height + 34 };
+			return { x: c.x - 4, y: c.y - 10, width: c.width + 10, height: c.height + 18 };
 		},
-		scale: 1.5,
+		scale: 1.25,
 		callouts: [
-			{ selector: `${CARD} >> .sp-avatar-chip`, at: 'top', dy: -11 },
-			{ selector: `${CARD} >> .sp-rail button >> nth=0`, at: 'left', dx: -14 },
-			{ selector: `${CARD} >> .sp-rail button >> nth=1`, at: 'left', dx: -14 },
-			{ selector: `${CARD} >> .sp-disc-con`, at: 'bottom', dy: 9 },
-			{ selector: `${CARD} >> .sp-loadout`, at: 'right', dx: 12 }
+			{ selector: `${CARD} >> .sp-avatar-chip`, at: 'top', side: 'top' },
+			{ selector: `${CARD} >> .sp-rail button >> nth=0`, at: 'left', side: 'left' },
+			{ selector: `${CARD} >> .sp-rail button >> nth=1`, at: 'left', side: 'left' },
+			{ selector: `${CARD} >> .sp-disc-con`, at: 'bottom', side: 'bottom' },
+			{ selector: `${CARD} >> .sp-loadout`, at: 'right', side: 'right' }
 		]
 	},
 	{
@@ -115,7 +122,8 @@ export const SHOTS = [
 		seed: {
 			notation: 'Bennett Q E > Xiangling Q E > Xingqiu E Q > Raiden E N3',
 			label: 'Raiden National',
-			ownership: owned(NATIONAL)
+			ownership: owned(NATIONAL),
+			settings: SETTINGS
 		},
 		// Open the dock, as a tap does. The phone's own keyboard can't be
 		// captured, so the key row sits at the foot of the screen.
@@ -134,6 +142,13 @@ export const SHOTS = [
 			const v = page.viewportSize();
 			return { x: 0, y: 0, width: v.width, height: v.height };
 		},
-		scale: 0.7
+		scale: 0.7,
+		// Numbered in the prose, not labelled: a whole screen has no room
+		// beside it for labels. Each marker stands in the gutter at the left.
+		callouts: [
+			{ selector: '.rp-composer .cm-editor', at: 'left', dy: -14, side: 'left' },
+			{ selector: '.rp-dock-keys', at: 'left', dx: 3, side: 'left' },
+			{ selector: '.bench-band-mount', at: 'left', side: 'left' }
+		]
 	}
 ];
