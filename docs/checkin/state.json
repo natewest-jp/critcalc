@@ -5,7 +5,7 @@
 		"seenUpstream": "b107b5dc5",
 		"date": "2026-11-10",
 		"tag": "v2.50.0",
-		"note": "No new upstream commits on 2026-11-13 (still b107b5dc5, Sandrone #3269)"
+		"note": "No new upstream commits on 2026-11-14 (still b107b5dc5, Sandrone #3269)"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-13T00:00:00Z"
+		"lastSeen": "2026-11-14T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -21,14 +21,15 @@
 		"abyss": "2026-11-16 Resounding Moon",
 		"pending": [
 			"Abyss: the cycle after Resounding Moon (lunaris beta 甲霰之月) — beta only, no English name yet; due 2026-12-16",
+			"Theater: the December season, due 2026-12-01",
 			"Stygian 7.3: due 2026-12-23"
 		]
 	},
 	"todo": {
-		"lastSwept": "ff566a11"
+		"lastSwept": "e9ab4103"
 	},
 	"roles": {
-		"audited": "2026-11-13",
+		"audited": "2026-11-14",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
