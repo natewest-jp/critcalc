@@ -11,16 +11,13 @@
 	- Narrow, or on the server-drawn chapter page (no container, so no query
 	  matches): every shot falls in under its paragraphs.
 
-	What it names: with `labels`, a label beside the image for each callout,
-	with a line to its point, on the side the shot list gives it. Where the
-	figure is too narrow for that (its own container, `hf`), the labels give
-	way to numbered markers just off each point and a key under the image.
-	Without `labels`, the markers alone, which the prose refers to with
-	`HelpRef`.
+	What it names: a numbered pin beside each point, its tip on the point,
+	and the prose says what each number is with `HelpRef`. The pins are one
+	design at every width: they scale with the image and nothing switches.
 
 	The image and the points come from the generated manifest
-	(`scripts/help-shots/`); everything drawn over it is here, so its look is
-	the custom properties below, not pixels in the image.
+	(`scripts/help-shots/`); the pins are drawn here, over it, so their look
+	is the custom properties below, not pixels in the image.
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
@@ -30,105 +27,67 @@
 		shot,
 		alt,
 		caption,
-		labels,
 		children
 	}: {
 		shot: HelpShotId;
 		/** What the image shows, for a reader who can't see it. */
 		alt: string;
 		caption?: string;
-		/** One label per callout, in the callouts' order. */
-		labels?: string[];
 		children: Snippet;
 	} = $props();
 
 	const s = $derived(HELP_SHOTS[shot]);
-	/** 🎛️ Narrower than it is tall-ish: wraps its text at the middle widths. */
+	/** 🎛️ Narrower than this (width ÷ height), a shot counts as tall and
+	 *  wraps its text at the middle widths. */
 	const TALL_RATIO = 1.2;
 	const tall = $derived(s.width / s.height < TALL_RATIO);
-	/** A marker set off its point toward an edge needs room past that edge. */
+	/** A pin set off its point toward an edge needs room past that edge. */
 	const near = (side: string, test: (c: { x: number; y: number }) => boolean) =>
 		s.callouts.some((c) => c.side === side && test(c));
 	const room = $derived({
-		left: near('left', (c) => c.x < 0.1),
-		right: near('right', (c) => c.x > 0.9),
-		top: near('top', (c) => c.y < 0.15),
-		bottom: near('bottom', (c) => c.y > 0.85)
+		left: near('left', (c) => c.x < 0.15),
+		right: near('right', (c) => c.x > 0.85),
+		top: near('top', (c) => c.y < 0.3) || near('center', (c) => c.y < 0.3),
+		bottom: near('bottom', (c) => c.y > 0.7)
 	});
 </script>
 
 <div class="hf" class:hf--tall={tall}>
-	<figure class="hf-fig" class:hf-fig--labeled={!!labels} style:--hf-img-w="{s.width * s.scale}px">
-		<div class="hf-plate">
-			{#if labels}
-				{#each s.callouts as c, i (c.n)}
-					<span class="hf-label hf-label--{c.side}" style:--x={c.x} style:--y={c.y}
-						>{labels[i]}</span
-					>
-				{/each}
-			{/if}
-			<div
-				class="hf-frame"
-				class:hf-room-left={room.left}
-				class:hf-room-right={room.right}
-				class:hf-room-top={room.top}
-				class:hf-room-bottom={room.bottom}
-			>
-				<img src={s.src} {alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
-				{#each s.callouts as c (c.n)}
-					{#if labels}
-						<span
-							class="hf-lead hf-lead--{c.side}"
-							style:--x={c.x}
-							style:--y={c.y}
-							aria-hidden="true"
-						></span>
-					{/if}
-					<span
-						class="hf-mark hf-mark--{c.side}"
-						style:left="{c.x * 100}%"
-						style:top="{c.y * 100}%"
-						aria-hidden="true">{c.n}</span
-					>
-				{/each}
-			</div>
+	<figure class="hf-fig" style:--hf-img-w="{s.width * s.scale}px">
+		<div
+			class="hf-frame"
+			class:hf-room-left={room.left}
+			class:hf-room-right={room.right}
+			class:hf-room-top={room.top}
+			class:hf-room-bottom={room.bottom}
+		>
+			<img src={s.src} {alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
+			{#each s.callouts as c (c.n)}
+				<span
+					class="hf-pin hf-pin--{c.side}"
+					style:left="{c.x * 100}%"
+					style:top="{c.y * 100}%"
+					aria-hidden="true"><span class="hf-pin-n">{c.n}</span></span
+				>
+			{/each}
 		</div>
-		{#if caption || labels}
-			<figcaption>
-				{#if caption}<span class="hf-caption">{caption}</span>{/if}
-				{#if labels}
-					<ol class="hf-key">
-						{#each labels as label, i (i)}
-							<li><span class="hf-mark hf-mark--key" aria-hidden="true">{i + 1}</span>{label}</li>
-						{/each}
-					</ol>
-				{/if}
-			</figcaption>
-		{/if}
+		{#if caption}<figcaption>{caption}</figcaption>{/if}
 	</figure>
 	<div class="hf-text">{@render children()}</div>
 </div>
 
 <style>
 	.hf {
-		/* 🎛️ The numbered marker: size, fill, ink, the ring that parts it from
-		   the screenshot under it, and how far it stands off its point. */
-		--hf-mark-size: 1.25rem;
-		--hf-mark-fill: var(--accent);
-		--hf-mark-ink: var(--sel-ink);
-		--hf-mark-ring: var(--bg);
-		--hf-mark-off: 3px;
-		/* 🎛️ The labels: their type, the widest a side label runs before it
-		   wraps, its distance from the image, the line's weight and color,
-		   the gap between a label and its line, and the dot at the line's end. */
-		--hf-label-size: var(--fs-lg);
-		--hf-label-ink: var(--text);
-		--hf-label-w: 8rem;
-		--hf-label-gap: 1.25rem;
-		--hf-lead-w: 1px;
-		--hf-lead-color: var(--accent);
-		--hf-lead-inset: 0.3rem;
-		--hf-dot: 5px;
+		/* 🎛️ The pin: its head's size, its body, rim and number (roles in
+		   app.css), the rim's weight, and the gap between its tip and the
+		   point it names. HelpRef.svelte, the number in the prose, reads the
+		   same knobs. */
+		--hf-pin-size: 1.4rem;
+		--hf-pin-fill: var(--marker-fill);
+		--hf-pin-rim: var(--marker-rim);
+		--hf-pin-ink: var(--marker-ink);
+		--hf-pin-rim-w: 1.5px;
+		--hf-pin-gap: 1px;
 		/* 🎛️ The gap between a figure and the text beside or under it. */
 		--hf-gap: 1rem;
 		/* 🎛️ How much of the column a wrapped tall shot may take. */
@@ -140,17 +99,11 @@
 
 	/* ── Where it stands ─────────────────────────────────────────────────── */
 
-	/* Narrow: under the paragraphs, at its own size or the column's. A
-	   labelled figure takes the column, so its own query below can tell
-	   whether the labels fit. */
+	/* Narrow: under the paragraphs, at its own size or the column's. */
 	.hf-fig {
-		container: hf / inline-size;
 		order: 1;
 		margin: 0 0 var(--hf-gap);
 		width: min(var(--hf-img-w), 100%);
-	}
-	.hf-fig--labeled {
-		width: 100%;
 	}
 
 	/* Middle: a tall shot floats right in the column; its text wraps it. */
@@ -200,16 +153,64 @@
 		outline-offset: -1px;
 	}
 
-	/* ── Numbered markers (no labels, or no room for them) ───────────────── */
+	/* ── The pins ────────────────────────────────────────────────────────── */
 
-	.hf-mark {
-		display: inline-grid;
+	/* A pin is a round head with one sharp corner, turned so the corner
+	   points at the control, and set off the point on the side the shot list
+	   gives it, so it never covers what it names. The head is the
+	   `::before`, which turns; the number stays upright on top of it.
+
+	   A square's corner sits 0.707 of its side from its center, so the
+	   head's center stands that far (plus the gap) from the point. */
+	.hf-pin {
+		--reach: calc(var(--hf-pin-size) * 0.7071 + var(--hf-pin-gap));
+		/* Tip down, above the point: a map pin. */
+		--turn: -45deg;
+		--dx: 0px;
+		--dy: calc(-1 * var(--reach));
+		position: absolute;
+		width: var(--hf-pin-size);
+		height: var(--hf-pin-size);
+		margin: calc(var(--hf-pin-size) / -2) 0 0 calc(var(--hf-pin-size) / -2);
+		transform: translate(var(--dx), var(--dy));
+		filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.5));
+	}
+	.hf-pin::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		box-sizing: border-box;
+		border: var(--hf-pin-rim-w) solid var(--hf-pin-rim);
+		/* The bottom-left corner stays sharp: that is the tip. */
+		border-radius: var(--r-round) var(--r-round) var(--r-round) 0;
+		background: var(--hf-pin-fill);
+		transform: rotate(var(--turn));
+	}
+	/* Left of the point, tip to the right. */
+	.hf-pin--left {
+		--turn: -135deg;
+		--dx: calc(-1 * var(--reach));
+		--dy: 0px;
+	}
+	/* Right of the point, tip to the left. */
+	.hf-pin--right {
+		--turn: 45deg;
+		--dx: var(--reach);
+		--dy: 0px;
+	}
+	/* Below the point, tip up. */
+	.hf-pin--bottom {
+		--turn: 135deg;
+		--dx: 0px;
+		--dy: var(--reach);
+	}
+
+	.hf-pin-n {
+		position: relative;
+		display: grid;
 		place-items: center;
-		width: var(--hf-mark-size);
-		height: var(--hf-mark-size);
-		border-radius: var(--r-round);
-		background: var(--hf-mark-fill);
-		color: var(--hf-mark-ink);
+		height: 100%;
+		color: var(--hf-pin-ink);
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
@@ -217,208 +218,24 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.hf-frame .hf-mark {
-		position: absolute;
-		box-shadow: 0 0 0 2px var(--hf-mark-ring);
-		transform: translate(-50%, -50%);
-	}
-	/* Off the point, toward the label's side, so it never covers the
-	   control it names. */
-	.hf-frame .hf-mark--left {
-		transform: translate(calc(-100% - var(--hf-mark-off)), -50%);
-	}
-	.hf-frame .hf-mark--right {
-		transform: translate(var(--hf-mark-off), -50%);
-	}
-	.hf-frame .hf-mark--top {
-		transform: translate(-50%, calc(-100% - var(--hf-mark-off)));
-	}
-	.hf-frame .hf-mark--bottom {
-		transform: translate(-50%, var(--hf-mark-off));
-	}
+	/* A pin past the image's edge: room for its head (its reach plus half
+	   its size). */
 	.hf-room-left {
-		margin-left: var(--hf-mark-size);
+		margin-left: calc(var(--hf-pin-size) * 1.25);
 	}
 	.hf-room-right {
-		margin-right: var(--hf-mark-size);
+		margin-right: calc(var(--hf-pin-size) * 1.25);
 	}
 	.hf-room-top {
-		margin-top: var(--hf-mark-size);
+		margin-top: calc(var(--hf-pin-size) * 1.25);
 	}
 	.hf-room-bottom {
-		margin-bottom: var(--hf-mark-size);
+		margin-bottom: calc(var(--hf-pin-size) * 1.25);
 	}
 
 	figcaption {
 		margin-top: 0.5rem;
 		font-size: var(--fs-md);
 		color: var(--muted);
-	}
-
-	.hf-key {
-		display: grid;
-		gap: 0.3rem;
-		margin: 0.4rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.hf-key li {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		max-width: none;
-	}
-
-	.hf-mark--key {
-		flex: none;
-	}
-
-	/* ── Labels with lines (a labelled figure with room for them) ────────── */
-
-	.hf-label,
-	.hf-lead {
-		display: none;
-	}
-
-	/* 🎛️ The narrowest figure that takes its labels; narrower, the markers
-	   and the key. */
-	@container hf (min-width: 24rem) {
-		.hf-fig--labeled .hf-mark,
-		.hf-fig--labeled .hf-key {
-			display: none;
-		}
-		.hf-fig--labeled .hf-frame {
-			margin: 0;
-		}
-
-		/* The image in the middle cell; each label in the cell on its side,
-		   all of a side's labels in the one cell, each set along it at its
-		   point's fraction (a grid item's % offsets resolve against its own
-		   cell, which is the image's height or width). An empty side's track
-		   is zero wide. */
-		.hf-plate {
-			display: grid;
-			grid-template-columns: auto minmax(0, var(--hf-img-w)) auto;
-			grid-template-rows: auto auto auto;
-			justify-content: start;
-		}
-		.hf-frame {
-			grid-area: 2 / 2;
-		}
-
-		.hf-label {
-			display: block;
-			position: relative;
-			max-width: var(--hf-label-w);
-			font-size: var(--hf-label-size);
-			line-height: 1.25;
-			color: var(--hf-label-ink);
-			text-wrap: balance;
-		}
-		.hf-label--left,
-		.hf-label--right {
-			grid-row: 2;
-			align-self: start;
-			top: calc(var(--y) * 100%);
-			transform: translateY(-50%);
-		}
-		.hf-label--left {
-			grid-column: 1;
-			justify-self: end;
-			margin-right: var(--hf-label-gap);
-			text-align: right;
-		}
-		.hf-label--right {
-			grid-column: 3;
-			justify-self: start;
-			margin-left: var(--hf-label-gap);
-		}
-		.hf-label--top,
-		.hf-label--bottom {
-			grid-column: 2;
-			justify-self: start;
-			left: calc(var(--x) * 100%);
-			max-width: none;
-			white-space: nowrap;
-			transform: translateX(-50%);
-		}
-		.hf-label--top {
-			grid-row: 1;
-			align-self: end;
-			margin-bottom: var(--hf-label-gap);
-		}
-		.hf-label--bottom {
-			grid-row: 3;
-			align-self: start;
-			margin-top: var(--hf-label-gap);
-		}
-
-		/* The line: from just off the label, across the gap and the image,
-		   to the point, with a dot there. */
-		.hf-lead {
-			--reach: calc(var(--hf-label-gap) - var(--hf-lead-inset));
-			display: block;
-			position: absolute;
-			background: var(--hf-lead-color);
-			pointer-events: none;
-		}
-		.hf-lead::after {
-			content: '';
-			position: absolute;
-			width: var(--hf-dot);
-			height: var(--hf-dot);
-			border-radius: var(--r-round);
-			background: var(--hf-lead-color);
-			box-shadow: 0 0 0 1px var(--hf-mark-ring);
-		}
-		.hf-lead--left,
-		.hf-lead--right {
-			top: calc(var(--y) * 100%);
-			height: var(--hf-lead-w);
-			transform: translateY(-50%);
-		}
-		.hf-lead--left {
-			left: calc(-1 * var(--reach));
-			width: calc(var(--x) * 100% + var(--reach));
-		}
-		.hf-lead--left::after {
-			right: 0;
-			top: 50%;
-			transform: translate(50%, -50%);
-		}
-		.hf-lead--right {
-			left: calc(var(--x) * 100%);
-			right: calc(-1 * var(--reach));
-		}
-		.hf-lead--right::after {
-			left: 0;
-			top: 50%;
-			transform: translate(-50%, -50%);
-		}
-		.hf-lead--top,
-		.hf-lead--bottom {
-			left: calc(var(--x) * 100%);
-			width: var(--hf-lead-w);
-			transform: translateX(-50%);
-		}
-		.hf-lead--top {
-			top: calc(-1 * var(--reach));
-			height: calc(var(--y) * 100% + var(--reach));
-		}
-		.hf-lead--top::after {
-			bottom: 0;
-			left: 50%;
-			transform: translate(-50%, 50%);
-		}
-		.hf-lead--bottom {
-			top: calc(var(--y) * 100%);
-			bottom: calc(-1 * var(--reach));
-		}
-		.hf-lead--bottom::after {
-			top: 0;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
 	}
 </style>

@@ -133,33 +133,25 @@
 		(dimmed). When no slot is empty, any other name you type takes the first resting character’s
 		slot.
 	</p>
-	<HelpFigure
-		shot="planner-bench-card"
-		alt="Xingqiu’s bench card, its five controls labeled."
-		labels={[
-			'Portrait: opens the inspector',
-			'Swap',
-			'Remove from team',
-			'Constellation',
-			'Weapon and artifact set'
-		]}
-	>
+	<HelpFigure shot="planner-bench-card" alt="Xingqiu’s bench card, its five controls numbered.">
 		<p>
-			Each slot on the bench beside the timeline has a bench card. Clicking the portrait opens the
-			character’s page in the inspector. On a wide screen, the two buttons at the card’s left change
-			the slot: The top one opens the team builder’s swap mode for that slot, and picking someone
-			there takes you back to the planner with the notation renamed throughout. The bottom one
-			removes the character from the team and deletes their notation. Clicking an empty slot’s
-			portrait adds someone instead. On a phone, <strong>Remove from team</strong> is on the character’s
-			page in the inspector.
+			Each slot on the bench beside the timeline has a bench card. Clicking the portrait <HelpRef
+				n={1}
+			/> opens the character’s page in the inspector. On a wide screen, the two buttons at the card’s
+			left change the slot: The top one <HelpRef n={2} /> opens the team builder’s swap mode for that
+			slot, and picking someone there takes you back to the planner with the notation renamed throughout.
+			The bottom one <HelpRef n={3} />
+			removes the character from the team and deletes their notation. Clicking an empty slot’s portrait
+			adds someone instead. On a phone, <strong>Remove from team</strong> is on the character’s page in
+			the inspector.
 		</p>
 		<p>
-			The chip on the portrait is the character’s constellation, and the pill beside it sets their
-			weapon and artifact set for this rotation. A character you own is at your roster’s level.
-			Choosing another level for them makes a what-if: a copy of the rotation in Theorycraft at that
-			level, paired with this one so you can switch between the two. A character you don’t own keeps
-			the level this rotation gives them, and their chip is drawn hollow. In Theorycraft every level
-			belongs to the rotation.
+			The chip on the portrait <HelpRef n={4} /> is the character’s constellation, and the pill beside
+			it <HelpRef n={5} /> sets their weapon and artifact set for this rotation. A character you own is
+			at your roster’s level. Choosing another level for them makes a what-if: a copy of the rotation
+			in Theorycraft at that level, paired with this one so you can switch between the two. A character
+			you don’t own keeps the level this rotation gives them, and their chip is drawn hollow. In Theorycraft
+			every level belongs to the rotation.
 		</p>
 	</HelpFigure>
 	<p>

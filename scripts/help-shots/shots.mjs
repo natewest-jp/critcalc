@@ -13,13 +13,12 @@
  * - `prepare(page)`: anything to do before the capture (open, tap, hover).
  * - `clip(page)`: the crop, a rect in CSS pixels.
  * - `callouts`: the points a figure names, in prose order. Each is a
- *   selector, the point on its box (`at`, on the edge that faces its label),
- *   an optional nudge in CSS pixels (`dx`, `dy`), and the `side` of the image
- *   its label stands on. Nothing is drawn into the image: the points go into
- *   the manifest, and `HelpFigure.svelte` draws a label with a line to each
- *   (or, too narrow for labels, a numbered marker just off the point on that
- *   side), so their look is a CSS setting. The label TEXT is copy, so it
- *   lives in the chapter, not here.
+ *   selector, the point on its box (`at`, on the edge that faces its pin),
+ *   an optional nudge in CSS pixels (`dx`, `dy`), and the `side` of the
+ *   point its pin stands on (default: above it, like a map pin). Nothing is
+ *   drawn into the image: the points go into the manifest and
+ *   `HelpFigure.svelte` draws a numbered pin at each, its tip on the point,
+ *   so their look is a CSS setting. The prose says what each number is.
  * - `scale`: the display size against the capture's CSS size (default 1).
  *
  * ⚠ Stage content that doesn't date. A shot showing this month's Theater or
@@ -100,12 +99,13 @@ export const SHOTS = [
 		},
 		// The card's contents, not the card: a bench card is as tall as its
 		// character's rows on the timeline, mostly empty. Sideways it stops
-		// inside the bench's own edges, so the image is all card.
+		// inside the bench's own edges, so the image is all card and the pins
+		// at the buttons stand beside it.
 		clip: async (page) => {
 			const c = await boxOf(page, `${CARD} >> :is(.sp-rail, .sp-avatar-chip, .sp-col)`);
 			return { x: c.x - 4, y: c.y - 10, width: c.width + 10, height: c.height + 18 };
 		},
-		scale: 1.25,
+		scale: 1.5,
 		callouts: [
 			{ selector: `${CARD} >> .sp-avatar-chip`, at: 'top', side: 'top' },
 			{ selector: `${CARD} >> .sp-rail button >> nth=0`, at: 'left', side: 'left' },
@@ -143,8 +143,7 @@ export const SHOTS = [
 			return { x: 0, y: 0, width: v.width, height: v.height };
 		},
 		scale: 0.7,
-		// Numbered in the prose, not labelled: a whole screen has no room
-		// beside it for labels. Each marker stands in the gutter at the left.
+		// Each pin stands in the gutter at the left, pointing in.
 		callouts: [
 			{ selector: '.rp-composer .cm-editor', at: 'left', dy: -14, side: 'left' },
 			{ selector: '.rp-dock-keys', at: 'left', dx: 3, side: 'left' },

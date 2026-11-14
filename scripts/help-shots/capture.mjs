@@ -225,7 +225,7 @@ export type HelpShot = {
 	/** Display size against the capture's CSS size. */
 	scale: number;
 	/** The points a figure names, as fractions of the image's width and
-	 *  height, and the side of the image each one's label stands on. */
+	 *  height, and the side of the point its pin stands on. */
 	callouts: { n: number; x: number; y: number; side: HelpCalloutSide }[];
 };
 

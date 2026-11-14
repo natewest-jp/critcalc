@@ -3,7 +3,7 @@
 	"planner-bench-card": {
 		"width": 190,
 		"height": 81,
-		"scale": 1.25,
+		"scale": 1.5,
 		"callouts": [
 			{ "n": 1, "x": 0.2632, "y": 0.1235, "side": "top" },
 			{ "n": 2, "x": 0.0211, "y": 0.3025, "side": "left" },
