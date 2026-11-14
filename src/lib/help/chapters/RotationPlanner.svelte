@@ -382,9 +382,9 @@
 			is.
 		</p>
 		<p>
-			The bench becomes a row <HelpRef n={3} /> above the timeline, which the <strong>Bench</strong> button
-			in the toolbar hides. Tapping a portrait on a phone opens the character’s details. The Buffs and
-			Auras layers are turned off by default and the zoom starts wider than on desktop.
+			The bench becomes a row <HelpRef n={3} /> above the timeline. The arrow at the left end of the strip
+			above it folds the row away. Tapping a portrait on a phone opens the character’s details. The Buffs
+			and Auras layers are turned off by default and the zoom starts wider than on desktop.
 		</p>
 	</HelpFigure>
 </section>
