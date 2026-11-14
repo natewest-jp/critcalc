@@ -1,0 +1,16 @@
+{
+	"planner-composer": { "width": 496, "height": 66, "scale": 1, "callouts": [] },
+	"planner-bench-card": {
+		"width": 190,
+		"height": 97,
+		"scale": 1.5,
+		"callouts": [
+			{ "n": 1, "x": 0.2632, "y": 0.1134 },
+			{ "n": 2, "x": -0.0526, "y": 0.3763 },
+			{ "n": 3, "x": -0.0526, "y": 0.6959 },
+			{ "n": 4, "x": 0.3701, "y": 0.9381 },
+			{ "n": 5, "x": 0.8053, "y": 0.6587 }
+		]
+	},
+	"planner-phone-dock": { "width": 390, "height": 664, "scale": 0.7, "callouts": [] }
+}

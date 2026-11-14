@@ -34,7 +34,8 @@
 		"test:e2e:report": "playwright show-report",
 		"generate-marks": "node scripts/generate-marks.mjs",
 		"generate-con-marks": "node scripts/generate-constellation-marks.mjs",
-		"generate-fingerprint": "node scripts/generate-fingerprint-glyphs.mjs"
+		"generate-fingerprint": "node scripts/generate-fingerprint-glyphs.mjs",
+		"help-shots": "npm run build && node scripts/help-shots/capture.mjs"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",

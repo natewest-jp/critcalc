@@ -11,6 +11,7 @@
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
+	import HelpFigure from '$lib/components/HelpFigure.svelte';
 </script>
 
 <h1>Rotation planner</h1>
@@ -99,15 +100,20 @@
 		A skill or burst written before it’s ready waits for its cooldown, and everything after it waits
 		too. Charges come back one at a time, as in the game.
 	</p>
-	<p>
-		The composer underlines what it can’t draw exactly as written, in two colors. An
-		<strong>orange</strong> underline means it couldn’t take the text: a name that matches no
-		character, like <code class="flag-warning">Kazuah</code> (that segment is skipped), an aimed
-		shot on a character without a bow, or a token it doesn’t know. A <strong>yellow</strong> one
-		means it took the text and drew a stand-in: a hold version the kit doesn’t have, like
-		<code class="flag-approx">hE</code>, timed as a tap instead; a plunge with no measured frames; a
-		fifth character, who has no slot. Hover the token for the reason.
-	</p>
+	<HelpFigure
+		shot="planner-composer"
+		alt="The composer holding a rotation: Xiangling’s hE underlined in yellow, and Kazuah, a misspelled name, underlined in orange."
+	>
+		<p>
+			The composer underlines what it can’t draw exactly as written, in two colors. An
+			<strong>orange</strong> underline means it couldn’t take the text: a name that matches no
+			character, like <code class="flag-warning">Kazuah</code> (that segment is skipped), an aimed
+			shot on a character without a bow, or a token it doesn’t know. A <strong>yellow</strong> one
+			means it took the text and drew a stand-in: a hold version the kit doesn’t have, like
+			<code class="flag-approx">hE</code>, timed as a tap instead; a plunge with no measured frames;
+			a fifth character, who has no slot. Hover the token for the reason.
+		</p>
+	</HelpFigure>
 	<p>
 		<strong>Walk-cancels.</strong> <code>W</code> ends the attack string the way walking does in
 		game: <code>N1 W N1</code> is two first hits. For most attacks a walk can start only once the animation
@@ -126,22 +132,35 @@
 		(dimmed). When no slot is empty, any other name you type takes the first resting character’s
 		slot.
 	</p>
-	<p>
-		Each slot on the bench beside the timeline has a bench card. Clicking the portrait opens the
-		character’s page in the inspector. On a wide screen, the two buttons at the card’s left change
-		the slot: The top one opens the team builder’s swap mode for that slot, and picking someone
-		there takes you back to the planner with the notation renamed throughout. The bottom one removes
-		the character from the team and deletes their notation. Clicking an empty slot’s portrait adds
-		someone instead. On a phone, <strong>Remove from team</strong> is on the character’s page in the inspector.
-	</p>
-	<p>
-		The chip on the portrait is the character’s constellation, and the pill beside it sets their
-		weapon and artifact set for this rotation. A character you own is at your roster’s level.
-		Choosing another level for them makes a what-if: a copy of the rotation in Theorycraft at that
-		level, paired with this one so you can switch between the two. A character you don’t own keeps
-		the level this rotation gives them, and their chip is drawn hollow. In Theorycraft every level
-		belongs to the rotation.
-	</p>
+	<HelpFigure
+		shot="planner-bench-card"
+		alt="Xingqiu’s bench card, its five controls numbered."
+		legend={[
+			'Portrait: opens the inspector',
+			'Swap',
+			'Remove from team',
+			'Constellation',
+			'Weapon and artifact set'
+		]}
+	>
+		<p>
+			Each slot on the bench beside the timeline has a bench card. Clicking the portrait opens the
+			character’s page in the inspector. On a wide screen, the two buttons at the card’s left change
+			the slot: The top one opens the team builder’s swap mode for that slot, and picking someone
+			there takes you back to the planner with the notation renamed throughout. The bottom one
+			removes the character from the team and deletes their notation. Clicking an empty slot’s
+			portrait adds someone instead. On a phone, <strong>Remove from team</strong> is on the character’s
+			page in the inspector.
+		</p>
+		<p>
+			The chip on the portrait is the character’s constellation, and the pill beside it sets their
+			weapon and artifact set for this rotation. A character you own is at your roster’s level.
+			Choosing another level for them makes a what-if: a copy of the rotation in Theorycraft at that
+			level, paired with this one so you can switch between the two. A character you don’t own keeps
+			the level this rotation gives them, and their chip is drawn hollow. In Theorycraft every level
+			belongs to the rotation.
+		</p>
+	</HelpFigure>
 	<p>
 		A character without curated frame data carries a mark beside their name, and their actions are
 		drawn with generic timing. The
@@ -359,14 +378,19 @@
 
 <section>
 	<h2 id="phone">On a phone</h2>
-	<p>
-		On a phone the composer docks to the bottom of the screen. Collapsed it shows the last line of
-		the rotation. Tap it to open it with the keyboard, and tap anywhere else to close it. A row of
-		keys above the keyboard offers the inputs that fit where the cursor is.
-	</p>
-	<p>
-		The bench becomes a row above the timeline, which the <strong>Bench</strong> button in the toolbar
-		hides. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers are
-		turned off by default and the zoom starts wider than on desktop.
-	</p>
+	<HelpFigure
+		shot="planner-phone-dock"
+		alt="The rotation planner on a phone: the bench as a row above the timeline, and the composer open at the foot of the screen with its row of keys."
+	>
+		<p>
+			On a phone the composer docks to the bottom of the screen. Collapsed it shows the last line of
+			the rotation. Tap it to open it with the keyboard, and tap anywhere else to close it. A row of
+			keys above the keyboard offers the inputs that fit where the cursor is.
+		</p>
+		<p>
+			The bench becomes a row above the timeline, which the <strong>Bench</strong> button in the toolbar
+			hides. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers are
+			turned off by default and the zoom starts wider than on desktop.
+		</p>
+	</HelpFigure>
 </section>
