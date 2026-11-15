@@ -103,12 +103,12 @@
 	</p>
 	<HelpFigure
 		shot="planner-composer"
-		alt="The composer holding a rotation: Xiangling’s hE underlined in yellow, and Kazuah, a misspelled name, underlined in orange."
+		alt="The composer holding a rotation: Sucrose’s hE underlined in yellow, and Flinz, a misspelled name, underlined in orange."
 	>
 		<p>
 			The composer underlines what it can’t draw exactly as written, in two colors. An
 			<strong>orange</strong> underline means it couldn’t take the text: a name that matches no
-			character, like <code class="flag-warning">Kazuah</code> (that segment is skipped), an aimed
+			character, like <code class="flag-warning">Flinz</code> (that segment is skipped), an aimed
 			shot on a character without a bow, or a token it doesn’t know. A <strong>yellow</strong> one
 			means it took the text and drew a stand-in: a hold version the kit doesn’t have, like
 			<code class="flag-approx">hE</code>, timed as a tap instead; a plunge with no measured frames;
@@ -133,7 +133,7 @@
 		(dimmed). When no slot is empty, any other name you type takes the first resting character’s
 		slot.
 	</p>
-	<HelpFigure shot="planner-bench-card" alt="Xingqiu’s bench card, its five controls numbered.">
+	<HelpFigure shot="planner-bench-card" alt="Flins’s bench card, its five controls numbered.">
 		<p>
 			Each slot on the bench beside the timeline has a bench card. Clicking the portrait <HelpRef
 				n={1}
@@ -192,16 +192,23 @@
 
 <section>
 	<h2 id="timeline">Reading the timeline</h2>
-	<p>
-		Each character gets a group of rows: their skill, then any summons and shields, then their
-		burst, then the active row, which shows when they’re on field and what they’re doing. Received
-		buffs and weapon procs follow underneath, and connectors mark each swap.
-	</p>
-	<p>
-		A skill or burst bar is followed by a faded tail labeled with the cooldown, ending where the
-		ability can be used again. A stance that lasts longer than its own cooldown is drawn dimmer past
-		the point where the cooldown ran out.
-	</p>
+	<HelpFigure
+		shot="planner-timeline"
+		alt="Columbina’s rows over the first five seconds: her skill and its cooldown, two summons, her burst, her active row, and the swap connector down to Ineffa, numbered."
+	>
+		<p>
+			Each character gets a group of rows: their skill <HelpRef n={1} />, then any summons and
+			shields <HelpRef n={2} />, then their burst <HelpRef n={3} />, then the active row <HelpRef
+				n={4}
+			/>, which shows when they’re on field and what they’re doing. Received buffs and weapon procs
+			follow underneath, and connectors mark each swap <HelpRef n={5} />.
+		</p>
+		<p>
+			A skill or burst bar is followed by a faded tail <HelpRef n={6} /> labeled with the cooldown, ending
+			where the ability can be used again. A stance that lasts longer than its own cooldown is drawn dimmer
+			past the point where the cooldown ran out.
+		</p>
+	</HelpFigure>
 	<p>
 		Below the characters are the team-wide lanes — team buffs, Nightsoul bursts, and Moonsign’s
 		Ascendant Gleam bonuses when the team has them — and above the composer a strip lists the
@@ -230,16 +237,21 @@
 		into normal and normal into charged are exempt, because the game allows queuing of those inputs. A
 		bow’s charged shot is the exception: It always takes the reaction time.
 	</p>
-	<p>
-		Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
-		This is 10 frames to start with (the KQM starting point), and you can adjust it there.
-		<strong>Animations</strong> lets each action play out in full instead of canceling.
-		<strong>Both</strong> enables both. The padding shows as hatched slivers on the active row,
-		which
-		<strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the
-		frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside
-		<strong>Total</strong> says so and opens Settings.
-	</p>
+	<HelpFigure
+		shot="planner-padding"
+		alt="Flins’s active row, with a hatched sliver of reaction time before each input after his swap in, one of them numbered."
+	>
+		<p>
+			Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
+			This is 10 frames to start with (the KQM starting point), and you can adjust it there.
+			<strong>Animations</strong> lets each action play out in full instead of canceling.
+			<strong>Both</strong> enables both. The padding shows as hatched slivers <HelpRef n={1} /> on the
+			active row, which
+			<strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the
+			frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside
+			<strong>Total</strong> says so and opens Settings.
+		</p>
+	</HelpFigure>
 	<p>
 		Swaps take time either way: your ping plus about 90 ms, set under <strong>Swap ping</strong> in
 		Settings. If you write the same character on both sides of a <code>&gt;</code> it costs no swap time,
@@ -260,52 +272,67 @@
 
 <section>
 	<h2 id="playback">Playing it back</h2>
-	<p>
-		<strong>Play</strong> (or Space) runs a cursor along the timeline at game speed, and the plate
-		beside it slows it to 0.75× or 0.5×. With sound on, you’ll hear four beats to count you in, then
-		a note for every input. Settings has the sounds and the volume.
-		<strong>Back to the start</strong> (Home) rewinds.
-	</p>
-	<p>
-		Bluetooth headphones and speakers delay sound by a tenth of a second or more, so the cursor
-		waits for your device’s delay and stays in step with what you hear.
-	</p>
-	<p>
-		<strong>Laps</strong> simulates the rotation five times in a row, as one run. A skill still on cooldown
-		waits and pushes the rest back, and buffs, stacks, and auras carry from one lap into the next, so
-		a rotation that doesn’t loop cleanly shows it. Gold marks on the ruler show where each lap begins.
-		Laps isn’t saved, shared, or exported.
-	</p>
+	<HelpFigure
+		shot="planner-playback"
+		alt="The playback controls with Laps on, and the timeline zoomed out: the cursor partway through the first lap and the gold mark where the second begins, numbered."
+	>
+		<p>
+			<strong>Play</strong>
+			<HelpRef n={1} /> (or Space) runs a cursor <HelpRef n={2} /> along the timeline at game speed, and
+			the plate <HelpRef n={3} />
+			beside it slows it to 0.75× or 0.5×. With sound on, you’ll hear four beats to count you in, then
+			a note for every input. Settings has the sounds and the volume.
+			<strong>Back to the start</strong> (Home) rewinds.
+		</p>
+		<p>
+			Bluetooth headphones and speakers delay sound by a tenth of a second or more, so the cursor
+			waits for your device’s delay and stays in step with what you hear.
+		</p>
+		<p>
+			<strong>Laps</strong>
+			<HelpRef n={4} /> simulates the rotation five times in a row, as one run. A skill still on cooldown
+			waits and pushes the rest back, and buffs, stacks, and auras carry from one lap into the next, so
+			a rotation that doesn’t loop cleanly shows it. Gold marks <HelpRef n={5} /> on the ruler show where
+			each lap begins. Laps isn’t saved, shared, or exported.
+		</p>
+	</HelpFigure>
 </section>
 
 <section>
 	<h2 id="aura">The enemy’s aura</h2>
-	<p>
-		The aura lane above the ruler represents the elemental aura on the enemy. The gauge lines draw
-		each element attached to them, and a line’s height is how much gauge is left, so you can see an
-		aura land, decay, get topped up, and get eaten by a reaction. The gaps are where the next
-		trigger has nothing to react with. Hover anywhere on it to read all the auras present at that
-		moment.
-	</p>
-	<p>
-		Above the lines, a pill in the element’s color marks each hit that applied an element, and a
-		labeled marker above that names each reaction it caused. A run of a ticking reaction such as
-		Electro-Charged is one marker with a count. Frozen, Quicken, Burning, and Burning’s Dendro fuel
-		are separate objects from the auras that made them, with their own decay, so they get their own
-		lines. A yellow ring on a pill means the hit has no measured gauge strength, and 1U is assumed.
-	</p>
-	<p>
-		<strong>The reaction spawns</strong>, below the baseline, are what some reactions leave behind:
-		a Dendro Core from Bloom, a Starlight Prism from Stellar-Conduct, a Thundercloud from
-		Lunar-Charged, and Moondrifts from Lunar-Crystallize. A dot marks each one appearing, and a
-		stepped shape shows how many there are, so a step down is one expiring or being spent. A Dendro
-		Core arrives half a second after its Bloom, lasts 6s, and there can be five on the field at
-		once. Hyperbloom or Burgeon takes the oldest Dendro Core. A Starlight Prism lasts 7s and a
-		further Stellar-Conduct refreshes it. There is only ever one Thundercloud, lasting 5.5s, and
-		another Lunar-Charged restarts its clock. Lunar-Crystallize keeps three Moondrifts topped up, 9s
-		each, drawn as one row. The damage these deal isn’t modeled; their presence is, along with any
-		character effect that depends on it.
-	</p>
+	<HelpFigure
+		shot="planner-aura"
+		alt="The aura lane over the first seven seconds: Hydro and then Electro gauge lines, their element pills, the Lunar-Charged marker, and a Thundercloud below the baseline, numbered."
+	>
+		<p>
+			The aura lane above the ruler represents the elemental aura on the enemy. The gauge lines <HelpRef
+				n={1}
+			/> draw each element attached to them, and a line’s height is how much gauge is left, so you can
+			see an aura land, decay, get topped up, and get eaten by a reaction. The gaps are where the next
+			trigger has nothing to react with. Hover anywhere on it to read all the auras present at that moment.
+		</p>
+		<p>
+			Above the lines, a pill <HelpRef n={2} /> in the element’s color marks each hit that applied an
+			element, and a labeled marker <HelpRef n={3} /> above that names each reaction it caused. A run
+			of a ticking reaction such as Electro-Charged is one marker with a count. Frozen, Quicken, Burning,
+			and Burning’s Dendro fuel are separate objects from the auras that made them, with their own decay,
+			so they get their own lines. A yellow ring on a pill means the hit has no measured gauge strength,
+			and 1U is assumed.
+		</p>
+		<p>
+			<strong>The reaction spawns</strong>
+			<HelpRef n={4} />, below the baseline, are what some reactions leave behind: a Dendro Core
+			from Bloom, a Starlight Prism from Stellar-Conduct, a Thundercloud from Lunar-Charged, and
+			Moondrifts from Lunar-Crystallize. A dot marks each one appearing, and a stepped shape shows
+			how many there are, so a step down is one expiring or being spent. A Dendro Core arrives half
+			a second after its Bloom, lasts 6s, and there can be five on the field at once. Hyperbloom or
+			Burgeon takes the oldest Dendro Core. A Starlight Prism lasts 7s and a further Stellar-Conduct
+			refreshes it. There is only ever one Thundercloud, lasting 5.5s, and another Lunar-Charged
+			restarts its clock. Lunar-Crystallize keeps three Moondrifts topped up, 9s each, drawn as one
+			row. The damage these deal isn’t modeled; their presence is, along with any character effect
+			that depends on it.
+		</p>
+	</HelpFigure>
 	<p>
 		<strong>The Polestar Field.</strong> A Starlight Prism holds a Polestar Field around it, and the field’s
 		buffs sit in the team buffs, because any party member’s Stellar-Conduct raises the same field. Its
@@ -329,13 +356,18 @@
 
 <section>
 	<h2 id="inspector">The inspector</h2>
-	<p>
-		<strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character
-		with the caveats on their kit, where the timeline knowingly differs from the game, with constellation
-		notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon or
-		shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing again
-		closes it. A character’s page links to their coverage.
-	</p>
+	<HelpFigure
+		shot="planner-inspector"
+		alt="The inspector open on the team: Columbina’s caveats for her normal attack, skill, and burst, then Ineffa, then Sucrose’s."
+	>
+		<p>
+			<strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character
+			with the caveats on their kit, where the timeline knowingly differs from the game, with constellation
+			notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon
+			or shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing
+			again closes it. A character’s page links to their coverage.
+		</p>
+	</HelpFigure>
 	<p>
 		Turn on <strong>Coverage strips</strong> in Settings to draw each character’s coverage under the composer
 		and dim the parts of the kit this rotation doesn’t use.

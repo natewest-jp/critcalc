@@ -4,6 +4,11 @@
 import data from './shots.generated.json';
 import plannerComposer from './planner-composer.webp';
 import plannerBenchCard from './planner-bench-card.webp';
+import plannerTimeline from './planner-timeline.webp';
+import plannerPadding from './planner-padding.webp';
+import plannerPlayback from './planner-playback.webp';
+import plannerAura from './planner-aura.webp';
+import plannerInspector from './planner-inspector.webp';
 import plannerPhoneDock from './planner-phone-dock.webp';
 
 export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
@@ -23,6 +28,11 @@ export type HelpShot = {
 export const HELP_SHOTS = {
 	'planner-composer': { ...data['planner-composer'], src: plannerComposer } as HelpShot,
 	'planner-bench-card': { ...data['planner-bench-card'], src: plannerBenchCard } as HelpShot,
+	'planner-timeline': { ...data['planner-timeline'], src: plannerTimeline } as HelpShot,
+	'planner-padding': { ...data['planner-padding'], src: plannerPadding } as HelpShot,
+	'planner-playback': { ...data['planner-playback'], src: plannerPlayback } as HelpShot,
+	'planner-aura': { ...data['planner-aura'], src: plannerAura } as HelpShot,
+	'planner-inspector': { ...data['planner-inspector'], src: plannerInspector } as HelpShot,
 	'planner-phone-dock': { ...data['planner-phone-dock'], src: plannerPhoneDock } as HelpShot
 } satisfies Record<string, HelpShot>;
 

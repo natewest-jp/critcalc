@@ -106,7 +106,7 @@ async function capture(browser, shot) {
 							id: 'shot',
 							label: s.label ?? 'Rotation',
 							notation: s.notation,
-							tabLoadout: {},
+							tabLoadout: s.tabLoadout ?? {},
 							tabCon: {},
 							savedId: null
 						}

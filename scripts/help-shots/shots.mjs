@@ -26,14 +26,34 @@
  * fixed rotation.
  */
 
-/** The team most players know, for the planner's shots. */
-const NATIONAL = ['raiden', 'bennett', 'xiangling', 'xingqiu'];
-/** The third bench card (Xingqiu's in the planner shots). */
-const CARD = '.bench-band-mount .sp-card >> nth=2';
+import { PLANNER_SAMPLES } from '../../src/lib/data/plannerSamples.ts';
+
+/**
+ * THE PLANNER'S CAST (⚓ Nate 2026-11-15): Flins Lunar-Charged, one of the
+ * planner's first-visit samples, with its own constellations (Flins C1, which
+ * the rotation needs, and Sucrose C6) and loadouts. Every planner shot stages
+ * it, so a reader meets the same team from section to section.
+ */
+const FLINS = PLANNER_SAMPLES.find((s) => s.id === 'flins-lunar-charged');
 const owned = (ids) => Object.fromEntries(ids.map((id) => [id, 'owned']));
 /** Every shot shows the newer outfits where a character has one: their
  *  portraits are the sharper art (⚓ Nate 2026-11-14). */
 const SETTINGS = { useNewOutfits: true };
+/** The planner seeded with the cast, all four owned, at the sample's
+ *  constellations and loadouts; `notation` replaces the rotation. */
+const flinsSeed = (notation = FLINS.notation) => ({
+	notation,
+	label: FLINS.name,
+	ownership: owned(['columbina', 'ineffa', 'sucrose', 'flins']),
+	constellations: FLINS.cons,
+	tabLoadout: FLINS.loadout,
+	settings: SETTINGS
+});
+
+/** Flins's bench card: the fourth. */
+const CARD = '.bench-band-mount .sp-card >> nth=3';
+/** A character's group of rows on the timeline, in team order. */
+const BLOCK = (i) => `.rp-char-block >> nth=${i}`;
 
 /** The union of the boxes of everything a selector matches, padded. */
 export async function boxOf(page, selector, { pad = 0, nth } = {}) {
@@ -62,14 +82,9 @@ export const SHOTS = [
 		help: 'planner#notation',
 		device: 'desk',
 		route: '/planner',
-		seed: {
-			// One orange flag (a name that matches no one) and one yellow one
-			// (Xiangling has no held skill, so `hE` is timed as a tap).
-			notation: 'Bennett Q E > Xiangling Q hE > Kazuah E > Raiden E N3',
-			label: 'Raiden National',
-			ownership: owned(NATIONAL),
-			settings: SETTINGS
-		},
+		// One orange flag (a name that matches no one) and one yellow one
+		// (Sucrose has no held skill, so `hE` is timed as a tap).
+		seed: flinsSeed('Columbina E Q > Ineffa E > Sucrose hE > Flinz E E sQ N4D'),
 		// The composer's left end, out to just past the last token: the full
 		// box is ~1100px wide and would shrink the text to nothing in the margin.
 		clip: async (page) => {
@@ -91,12 +106,7 @@ export const SHOTS = [
 		help: 'planner#team',
 		device: 'desk',
 		route: '/planner',
-		seed: {
-			notation: 'Bennett Q E > Xiangling Q E > Xingqiu E Q > Raiden E N3',
-			label: 'Raiden National',
-			ownership: owned(NATIONAL),
-			settings: SETTINGS
-		},
+		seed: flinsSeed(),
 		// The card's contents, not the card: a bench card is as tall as its
 		// character's rows on the timeline, mostly empty. Sideways it stops
 		// inside the bench's own edges, so the image is all card and the pins
@@ -115,16 +125,133 @@ export const SHOTS = [
 		]
 	},
 	{
+		id: 'planner-timeline',
+		help: 'planner#timeline',
+		device: 'desk',
+		route: '/planner',
+		seed: flinsSeed(),
+		// Columbina's rows over the rotation's first five seconds: skill,
+		// summons, burst, the active row, and the connector down to Ineffa.
+		// Her received buff arrives later than this, so the prose names it
+		// without a pin.
+		clip: async (page) => {
+			const b = await boxOf(page, BLOCK(0));
+			return { x: b.x - 4, y: b.y + 2, width: 292, height: 122 };
+		},
+		scale: 1.5,
+		callouts: [
+			{ selector: `${BLOCK(0)} >> .rp-bar-uptime >> nth=0`, at: 'left', side: 'left' },
+			{ selector: `${BLOCK(0)} >> .rp-summon-bar >> nth=0`, at: 'left', side: 'left' },
+			{ selector: `${BLOCK(0)} >> .rp-bar-uptime >> nth=1`, at: 'left', side: 'left' },
+			{ selector: `${BLOCK(0)} >> .rp-active-bg >> nth=0`, at: 'left', side: 'left' },
+			{ selector: '.rp-connector >> nth=0', at: 'top-right', dy: 24, side: 'right' },
+			{ selector: `${BLOCK(0)} >> .rp-bar-cd >> nth=0`, at: 'left', dx: 160, side: 'top' }
+		]
+	},
+	{
+		id: 'planner-padding',
+		help: 'planner#human-timing',
+		device: 'desk',
+		route: '/planner',
+		seed: flinsSeed(),
+		// Flins's active row from his swap in: the hatched slivers are the
+		// reaction time Human timing adds.
+		clip: async (page) => {
+			const row = await boxOf(page, `${BLOCK(3)} >> .rp-active-bg >> nth=0`);
+			return { x: row.x - 14, y: row.y - 3, width: 290, height: row.height + 6 };
+		},
+		scale: 1.5,
+		callouts: [
+			{ selector: `${BLOCK(3)} >> .rp-input-block--pad >> nth=2`, at: 'bottom', side: 'bottom' }
+		]
+	},
+	{
+		id: 'planner-playback',
+		help: 'planner#playback',
+		device: 'desk',
+		route: '/planner',
+		seed: flinsSeed(),
+		// Laps on, zoomed all the way out so the first lap mark is in view,
+		// and the cursor set partway through the first lap.
+		prepare: async (page) => {
+			await page.locator('.rp-laps').click();
+			await page.locator('.rp-zoom-menu button').click();
+			await page.locator('input[type=range]').first().fill('20');
+			await page.keyboard.press('Escape');
+			await page.mouse.move(1, 999);
+			const ruler = await page.locator('.rp-ruler').boundingBox();
+			await page.mouse.click(ruler.x + 13 * 20, ruler.y + ruler.height / 2);
+			await page.mouse.move(1, 999);
+		},
+		clip: async (page) => {
+			const bar = await boxOf(page, '.rp-transport');
+			const ruler = await boxOf(page, '.rp-ruler');
+			return {
+				x: bar.x - 6,
+				y: bar.y - 6,
+				width: 440,
+				height: ruler.y + ruler.height - bar.y + 12
+			};
+		},
+		callouts: [
+			{ selector: '.rp-play', at: 'top', side: 'top' },
+			{ selector: '.rp-playhead >> nth=0', at: 'top', side: 'top' },
+			{ selector: '.rp-speed', at: 'top', side: 'top' },
+			{ selector: '.rp-laps', at: 'top', side: 'top' },
+			{ selector: '.rp-lap-mark >> nth=0', at: 'top', side: 'top' }
+		]
+	},
+	{
+		id: 'planner-aura',
+		help: 'planner#aura',
+		device: 'desk',
+		route: '/planner',
+		seed: flinsSeed(),
+		// The lane over the first seven seconds: Hydro, then Electro under
+		// it, their pills, the Lunar-Charged marker, and the Thundercloud
+		// in the reaction spawns.
+		clip: async (page) => {
+			const lane = await boxOf(page, '.rp-aura-lane');
+			return { x: lane.x - 2, y: lane.y - 2, width: 440, height: lane.height + 6 };
+		},
+		callouts: [
+			{ selector: '.rp-aura-series-name >> nth=0', at: 'bottom', side: 'bottom' },
+			{ selector: '.rp-aura-tick >> nth=1', at: 'top', side: 'top' },
+			{ selector: '.rp-aura-marker-label', at: 'right', side: 'right' },
+			{ selector: '.rp-gadget-row circle >> nth=0', at: 'bottom', side: 'bottom' }
+		]
+	},
+	{
+		id: 'planner-inspector',
+		help: 'planner#inspector',
+		device: 'desk',
+		route: '/planner',
+		seed: flinsSeed(),
+		// The panel as it opens: the team, each character with the caveats
+		// on their kit.
+		prepare: async (page) => {
+			await page.getByRole('button', { name: 'Inspector' }).click();
+			await page.mouse.move(1, 999);
+		},
+		clip: async (page) => {
+			// Down to the end of the last caveat that fits in 560px, so the
+			// crop never cuts a paragraph.
+			const panel = await boxOf(page, '.tc-aside-box');
+			const bottom = await page.evaluate((limit) => {
+				const ends = [...document.querySelectorAll('.tc-aside-box .pi-note-text')]
+					.map((e) => e.getBoundingClientRect().bottom)
+					.filter((b) => b <= limit);
+				return Math.max(...ends);
+			}, panel.y + 560);
+			return { x: panel.x, y: panel.y, width: panel.width, height: bottom - panel.y + 4 };
+		}
+	},
+	{
 		id: 'planner-phone-dock',
 		help: 'planner#phone',
 		device: 'phone',
 		route: '/planner',
-		seed: {
-			notation: 'Bennett Q E > Xiangling Q E > Xingqiu E Q > Raiden E N3',
-			label: 'Raiden National',
-			ownership: owned(NATIONAL),
-			settings: SETTINGS
-		},
+		seed: flinsSeed(),
 		// Open the dock, as a tap does. The phone's own keyboard can't be
 		// captured, so the key row sits at the foot of the screen.
 		prepare: async (page) => {
