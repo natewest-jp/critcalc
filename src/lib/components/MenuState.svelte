@@ -64,7 +64,6 @@
 		mq.addEventListener('change', on);
 		return () => mq.removeEventListener('change', on);
 	});
-	const dev = import.meta.env.DEV;
 	const section = $derived.by((): Section | null => {
 		const s = menu.section;
 		if (s !== 'index' || narrow) return s;
@@ -574,19 +573,6 @@
 						<div class="reading-host">
 							<div class="reading">
 								<article class="prose chapter"><ChapterC /></article>
-								{#if dev}
-									<!-- ⏳ DEV-ONLY MOCK: slate blocks standing in for the margin's
-									     figures so the proportions can be judged before any exist.
-									     Stripped from a build by `import.meta.env.DEV`. -->
-									<aside class="margin" aria-hidden="true">
-										{#each [{ top: 9, h: 11, cap: 'The composer, mid-edit' }, { top: 16, h: 8, cap: 'A buff row, hovered' }, { top: 20, h: 14, cap: 'The aura lane' }] as m (m.cap)}
-											<figure class="margin-fig" style:margin-top="{m.top}rem">
-												<div class="margin-shot" style:height="{m.h}rem"></div>
-												<figcaption>{m.cap}</figcaption>
-											</figure>
-										{/each}
-									</aside>
-								{/if}
 							</div>
 						</div>
 					{/if}
@@ -949,61 +935,43 @@
 		flex-direction: column;
 	}
 	/* 🎛️ The measure: 68ch of the prose face, about 75 characters a line,
-	   inside the usual 45–75 (it was 56ch, ~62). The site-wide cap on
-	   `.prose p, li` (app.css) is lifted here so the column sets it once.
-	   The MARGIN takes what is left up to 28rem: a screenshot of the UI has
-	   to be big enough to read, so it gets the room, not the text.
-	   ⚠️ Only when the chapter HAS a margin: a column reserved for nothing
-	   left every Help and About chapter in a build (where the mock below is
-	   stripped) beside an empty 16–28rem. Asked of the DOM rather than of
-	   `dev`, so the first real figure opens the margin by itself. */
-	.reading {
-		display: grid;
-		grid-template-columns: minmax(0, 68ch);
-		column-gap: 3rem;
-		align-items: start;
-	}
-	.reading:has(> .margin) {
-		grid-template-columns: minmax(0, 68ch) minmax(16rem, 28rem);
-	}
+	   inside the usual 45–75. The site-wide cap on `.prose p, li` (app.css)
+	   is replaced here so the column sets it once.
+	   🎛️ The MARGIN, for Help's screenshots (HelpFigure.svelte): whatever is
+	   left beside the text, 16–28rem, after a 3rem gap. A screenshot of the UI
+	   has to be big enough to read, so it gets the room, not the text. A
+	   chapter with a figure widens by the margin and the figures float into
+	   it; the text blocks keep 68ch, so a float never narrows a line. A
+	   chapter without one keeps one column, so no empty margin is reserved.
+	   Everything is measured in the article's own font, so 68ch is the same
+	   68ch on both sides of the sum. */
 	.chapter {
+		--hf-measure: 68ch;
+		--hf-gutter: 3rem;
+		--hf-margin: clamp(16rem, 100cqw - var(--hf-measure) - var(--hf-gutter), 28rem);
+		display: flow-root;
 		min-width: 0;
+		max-width: var(--hf-measure);
 	}
-	.chapter :global(p),
+	.chapter :global(:is(p, ul, ol, h1, h2, h3, pre, blockquote):not(figure *)) {
+		max-width: var(--hf-measure);
+	}
 	.chapter :global(li) {
 		max-width: none;
 	}
-	.margin {
-		display: flex;
-		flex-direction: column;
-	}
-	.margin-fig {
-		margin: 0;
-	}
-	.margin-shot {
-		border-radius: var(--r-sm);
-		background: var(--surface-raised);
-		box-shadow: inset 0 0 0 1px var(--line-faint);
-	}
-	.margin-fig figcaption {
-		margin-top: 0.4rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-	/* Too narrow for both — the text's 68ch, the gap and the margin's 16rem
-	   floor, ~56rem of CONTENT width — and the text takes the width, the
-	   margin's figures folding in under their paragraphs (the mock just goes).
-	   A container query, because the question is the content area's width,
-	   which the sidebar and its padding take from the window's. */
+	/* The text's 68ch, the gap and the margin's 16rem floor: ~56rem of
+	   CONTENT width. Narrower, the figures fall in under their paragraphs
+	   (HelpFigure's own query, the same 56rem). A container query, because
+	   the question is the content area's width, which the sidebar and its
+	   padding take from the window's. Named, because each figure is a
+	   container of its own (for its labels), and an unnamed query inside one
+	   would ask the figure. */
 	.reading-host {
-		container-type: inline-size;
+		container: help-reading / inline-size;
 	}
-	@container (max-width: 56rem) {
-		.reading:has(> .margin) {
-			grid-template-columns: minmax(0, 68ch);
-		}
-		.margin {
-			display: none;
+	@container help-reading (min-width: 56rem) {
+		.chapter:has(:global(.hf)) {
+			max-width: calc(var(--hf-measure) + var(--hf-gutter) + var(--hf-margin));
 		}
 	}
 	/* Paper as a patch (§6.4): the invitation is the one card on this page. */

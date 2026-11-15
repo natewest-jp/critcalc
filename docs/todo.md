@@ -8,11 +8,11 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- Nothing picked yet.
+- **Help screenshots, as a pipeline** (agreed 2026-10-21). A shot list in the repo (help section · route · viewport · state seed, usually a `?r=` link · crop selector); a Playwright script renders and crops at 2×, optionally drawing numbered callouts in-page before capture; WebP, imported through Vite so names hash (⛔ not `/assets/`, which is immutable add-only); lazy-loaded in the overlay. ⚠️ Freeze the scene to a fixed pose, or the glass shows a different sky every run. Start with a one-line-per-section checklist Nate rules (shot / no shot / callout). ⚓ Nate 2026-11-14: desktop shots throughout, phone shots only in the two "On a phone" sections; a three-shot demo first (the composer, a bench card with callouts, the phone dock), then the full list of 26. English text in images won't localize, but the script reruns per locale. ⚓ Nate 2026-11-15: numbered pins on the image, named by numbers in the prose (no labels, no legend, one design at every width); newer outfits; a recurring cast per chapter, staged with Nate before each chapter's capture; nothing that dates (a Custom lineup, released characters only); the Builder's lineups are teams people would actually play, and not too dated. One chapter per round. The pipeline and the Rotation planner chapter are done (`docs/rounds/help-screenshots-planner-2026-11-15.md`); the Team builder is next, then the Visualizers.
 
 ## ⏭ Next
 
-- **Help screenshots, as a pipeline** (agreed 2026-10-21). A shot list in the repo (help section · route · viewport · state seed, usually a `?r=` link · crop selector); a Playwright script renders and crops at 2×, optionally drawing numbered callouts in-page before capture; WebP, imported through Vite so names hash (⛔ not `/assets/`, which is immutable add-only); lazy-loaded in the overlay. ⚠️ Freeze the scene to a fixed pose, or the glass shows a different sky every run. Start with a one-line-per-section checklist Nate rules (shot / no shot / callout). Desktop-only vs desktop + phone is his call. English text in images won't localize, but the script reruns per locale.
+- Nothing yet.
 
 ## Queue
 

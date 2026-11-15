@@ -1225,6 +1225,13 @@
 	   (MenuState.svelte), so they take the dark context's accent. */
 	--accent: var(--gold-400);
 
+	/* Help's screenshot markers (HelpFigure.svelte, HelpRef.svelte): a dark
+	   gold body under a bright gold rim, with a light number. Help is slate
+	   in every context, so one rung each serves. */
+	--marker-fill: var(--gold-700);
+	--marker-rim: var(--gold-400);
+	--marker-ink: var(--text);
+
 	/* ══ ELEMENT PALETTE — GENSHIN'S OWN, TRANSCRIBED ═══════════════════════════
 	   ⚓ NATE 2026-08-11, ending three rounds of drift: "Looking at it straight,
 	   Genshin's palette is superior to ours. We don't need to keep our values for
