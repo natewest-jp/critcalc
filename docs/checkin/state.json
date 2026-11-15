@@ -1,11 +1,11 @@
 {
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
-		"audited": "b107b5dc5",
-		"seenUpstream": "b107b5dc5",
-		"date": "2026-11-10",
+		"audited": "a72469a18",
+		"seenUpstream": "a72469a18",
+		"date": "2026-11-14",
 		"tag": "v2.50.0",
-		"note": "No new upstream commits on 2026-11-14 (still b107b5dc5, Sandrone #3269)"
+		"note": "2 commits seen 2026-11-15:Mavuika bike frames (#3253; spin hitmark 35 → 34, `data/mavuika-spin-hitmark`) and a Nocturne's Curtain Call fix (#3272, damage maths only)"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-14T00:00:00Z"
+		"lastSeen": "2026-11-15T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -26,10 +26,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "e9ab4103"
+		"lastSwept": "26ff8eaa"
 	},
 	"roles": {
-		"audited": "2026-11-14",
+		"audited": "2026-11-15",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
