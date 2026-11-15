@@ -510,7 +510,7 @@ From the old working memories (`docs/rounds/instructions-overhaul-round.md` §14
 - **Kit gaps:**
   - Prune's recast, "Clang Clang! Witch-tribution Comes!" (`prune.json` notes).
   - Traveler (Hydro) C4 needs a channel window (the skill is `instant`; the shield is deliberately inert, `docs/rounds/constellation-shield-gap.md`).
-  - Mavuika: the in-Nightsoul E re-press is unauthored, and gcsim's dumper panicked on it (`docs/rounds/frames-queue-round-2026-10-04.md`; rerun the dump to see if it still does); her form switch mid-Blessing (`docs/rounds/defres-pass-2026-10-06.md`); Fighting Spirit.
+  - Mavuika: the in-Nightsoul E re-press is unauthored, and gcsim's dumper panicked on it (`docs/rounds/frames-queue-round-2026-10-04.md`; rerun the dump to see if it still does); her form switch mid-Blessing (`docs/rounds/defres-pass-2026-10-06.md`); Fighting Spirit; a bike Charged Attack straight after a Hold E skips its windup in gcsim (+19, not a fresh +34), which `startSpin` doesn't (`docs/rounds/mavuika-spin-hitmark-2026-11-15.md` §4).
   - Nilou: which Sword Dance swing a press draws; A1 Bountiful Cores (gadget strip only, item 3 of the aura audit above).
   - Zibai's Ascendant Gleam N4 extra hit.
   - From the Mizuki round's F4–F7: Dehya's Sanctum return, a `drivers.json` row for Mizuki's exit press, Chasca's Hold Multitarget Fire, and `holdsField` for Wanderer and Jahoda.

@@ -2,7 +2,9 @@
 
 > Moved from Claude's working memory on 2026-10-29. A dated record: it describes things as they were when written, so check the code and `.claude/rules/` before relying on it.
 
-**↻ State on 2026-10-04:** `main` at `703ac69ba` (Zibai #3093 merged — ✅ her Stage 4 landed the same day, frames-queue round; she left FRAMELESS_EXEMPT). The gcsim CLI binary at `scratch/gcsim-bin/gcsim` was built from this commit. ⚠️ A SECOND offline-build trap: a new upstream module dependency fails the `GOPROXY=off` shim build with "module lookup disabled" — run `go mod download` in the clone. The ICD sections of the frames audit were byte-identical across the 63-commit sync.
+**↻ State on 2026-11-15:** `main` at `a72469a18` (Mavuika bike frames #3253, Nocturne's Curtain Call #3272), fast-forwarded from `b107b5dc5`; no `go.mod` change. The CLI for the Mavuika re-measure was built into the session scratchpad, not `scratch/`.
+
+**State on 2026-10-04:** `main` at `703ac69ba` (Zibai #3093 merged — ✅ her Stage 4 landed the same day, frames-queue round; she left FRAMELESS_EXEMPT). The gcsim CLI binary at `scratch/gcsim-bin/gcsim` was built from this commit. ⚠️ A SECOND offline-build trap: a new upstream module dependency fails the `GOPROXY=off` shim build with "module lookup disabled" — run `go mod download` in the clone. The ICD sections of the frames audit were byte-identical across the 63-commit sync.
 
 **State on 2026-09-15:** `~/Code/gcsim` is on `main` at `ac2d76dde` (2026-09-13), fast-forwarded from `d146b6d06`. Two local branches were left behind because deleting them was declined: `pr-2677` (Illuga) and `pr-2697` (Kachina) — harmless refs, delete when convenient. gcsim's `go.mod` is at **Go 1.27**; `scripts/lib/gcsim-dump.mjs` builds the shim with `GOPROXY=off`, so after any bump the first build fails "toolchain not available" even with `GOTOOLCHAIN=auto` — run `go version` once inside the clone (default proxy) and it downloads.
 
