@@ -117,14 +117,14 @@ describe('Mavuika — the bike Charged Attack (gcsim, measured with its CLI)', (
 				: []
 		);
 
-	it('after her burst a spin hit lands +20 (windup skipped), then every 42f; F lands its finisher 45f later and N follows at 74', () => {
+	it('after her burst a spin hit lands +19 (windup skipped), then every 42f; F lands its finisher 45f later and N follows at 74', () => {
 		const a = acts('Mavuika Q C3F N1');
 		const c = a.filter((x) => x.label === 'C3');
-		expect(c.map((x) => x.time)).toEqual([116, 136, 178]);
-		expect(c.map((x) => x.duration)).toEqual([20, 42, 42]);
+		expect(c.map((x) => x.time)).toEqual([116, 135, 177]);
+		expect(c.map((x) => x.duration)).toEqual([19, 42, 42]);
 		const f = a.find((x) => x.label === 'F')!;
-		expect(f.time).toBe(220);
-		expect(a.find((x) => x.label === 'N1')!.time).toBe(220 + 74);
+		expect(f.time).toBe(219);
+		expect(a.find((x) => x.label === 'N1')!.time).toBe(219 + 74);
 	});
 
 	it('a Normal Attack after the spin forces the finisher; a dash after it cancels the finisher', () => {
@@ -137,16 +137,16 @@ describe('Mavuika — the bike Charged Attack (gcsim, measured with its CLI)', (
 	it('CDC: the dash lands at the spin hit, is cut at 6f, and the next spin skips its windup', () => {
 		const a = acts('Mavuika E Q CDC');
 		const [c1, d, c2] = a.filter((x) => x.label === 'C' || x.label === 'D');
-		expect(d.time).toBe(c1.time + 20);
+		expect(d.time).toBe(c1.time + 19);
 		expect(d.duration).toBe(6);
 		expect(c2.time).toBe(d.time + 6);
-		expect(c2.duration).toBe(20);
+		expect(c2.duration).toBe(19);
 	});
 
 	it('Prydwen’s CDCDCCF DCDCCF DCDCC FDC reproduces gcsim’s trace (less its finisher hitlag)', () => {
 		const a = acts('Mavuika E Q CDCDCCF DCDCCF DCDCC FDC');
-		// gcsim (frame 1 = our 0): C 135, D 155, C 161, D 181, C 187, C 207, F 249.
-		expect(a.slice(2, 9).map((x) => x.time)).toEqual([134, 154, 160, 180, 186, 206, 248]);
+		// gcsim a72469a18 (frame 1 = our 0): C 135, D 154, C 160, D 179, C 185, C 204, F 246.
+		expect(a.slice(2, 9).map((x) => x.time)).toEqual([134, 153, 159, 178, 184, 203, 245]);
 	});
 });
 
@@ -184,7 +184,7 @@ describe('Human timing and the cancel dash (Nate, in game, 2026-10-16)', () => {
 		const human = run(10);
 		const [c1, d, c2] = human.filter((x) => x.label === 'C' || x.label === 'D');
 		expect(c2.time - d.time).toBe(6); // no pad between the dash and the held C
-		expect(d.time - c1.time).toBe(20 + 10); // the tap is a timed press
+		expect(d.time - c1.time).toBe(19 + 10); // the tap is a timed press
 	});
 });
 

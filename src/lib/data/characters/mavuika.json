@@ -111,7 +111,7 @@
 			},
 			"icdCounter": "flamestrider",
 			"chargeSpin": {
-				"firstHit": 35,
+				"firstHit": 34,
 				"bufferedSkip": 15,
 				"hitInterval": 42,
 				"spinFrames": 45,
@@ -161,7 +161,7 @@
 				"swap": 78
 			},
 			"_curatorNotes": [
-				"Bike Charged Attack round, 2026-10-16 (`docs/rounds/mavuika-nightsoul-round-2026-10-16.md` §5–§7). `chargeSpin` is gcsim `charge.go`, its timings MEASURED with gcsim's CLI against one target: a spin hit at +35 fresh / +20 after a dash, Normal Attack or burst (`bufferedSkip` 15, `GetSkippedWindupFrames`), then +42 (`bikeChargeAttackICD`); one revolution 45f; a release outside spin frames 10–35 waits for them (`GetCAFDelay`); the finisher hits +45 (`bikeChargeFinalHitmark`) with `bikeChargeFinalFrames` to the next action (74 to N/walk, 45 to E/Q/D/J/swap); a bare `F` spins 50f first (`bikeChargeAttackMinimumDuration`); the spin's maximum is 375f. ⚠️ gcsim's log shows +3f after a finisher — that is HITLAG (`HitlagHaltFrames` 0.04s), which the planner does not model. Notation (⚓ Nate, after Prydwen/KQM): each `C` is one spin hit, `F` the finisher, `D` between two `C`s (or after `F`) the dash cancel (`cancelDashTravel` 6, gcsim `charge_cancel`). ⚓ The finisher is automatic only before a Normal Attack or at the maximum; elsewhere a missing `F` means none (gcsim-faithful). `icdCounter: 'flamestrider'` puts the bike's Normal Attacks, spin, finisher and Sprint on one counter — gcsim's shared `ICDTagMavuikaFlamestrider`. `dashHit` is the Sprint's collision (Pyro 1U at its 6f travel).",
+				"Bike Charged Attack round, 2026-10-16 (`docs/rounds/mavuika-nightsoul-round-2026-10-16.md` §5–§7). `chargeSpin` is gcsim `charge.go`, its timings MEASURED with gcsim's CLI against one target: a spin hit at +34 fresh / +19 after a dash, Normal Attack or burst (`bufferedSkip` 15, `GetSkippedWindupFrames`), then +42 (`bikeChargeAttackICD`); one revolution 45f; a release outside spin frames 10–35 waits for them (`GetCAFDelay`); the finisher hits +45 (`bikeChargeFinalHitmark`) with `bikeChargeFinalFrames` to the next action (74 to N/walk, 45 to E/Q/D/J/swap); a bare `F` spins 50f first (`bikeChargeAttackMinimumDuration`); the spin's maximum is 375f. ⚠️ gcsim's log shows +3f after a finisher — that is HITLAG (`HitlagHaltFrames` 0.04s), which the planner does not model. Notation (⚓ Nate, after Prydwen/KQM): each `C` is one spin hit, `F` the finisher, `D` between two `C`s (or after `F`) the dash cancel (`cancelDashTravel` 6, gcsim `charge_cancel`). ⚓ The finisher is automatic only before a Normal Attack or at the maximum; elsewhere a missing `F` means none (gcsim-faithful). `icdCounter: 'flamestrider'` puts the bike's Normal Attacks, spin, finisher and Sprint on one counter — gcsim's shared `ICDTagMavuikaFlamestrider`. `dashHit` is the Sprint's collision (Pyro 1U at its 6f travel). ↻ 2026-11-15 (gcsim #3253, `a72469a18`): `bikeChargeAttackStartupHitmark` 35 → 34, so the first spin hit lands one frame sooner, fresh and buffered alike; re-measured with gcsim's CLI (`docs/rounds/mavuika-spin-hitmark-2026-11-15.md`).",
 				"⚠️ Not modelled: the dash-cancel lockout (79–87f into each revolution, `cdcLockoutStatus` — a cancel at a spin hit never falls in it against one target), the spin hits a player keeps landing while a dash waits out its cooldown (the double-tap tech is written as extra `C`s), multi-target spin geometry, and the forced finisher when her Nightsoul runs out mid-spin."
 			],
 			"lowPlungeFrames": {
