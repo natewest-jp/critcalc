@@ -230,7 +230,8 @@ picks nothing, the list stays as it is.
 When a removed item is something a player would notice, propose a **What's
 new** entry for it (`src/lib/help/chapters/Changelog.svelte`, `/changelog`):
 a title and one or two sentences, drafted for Nate to rule on like any copy
-(style guide first). Character-kit changes belong on the coverage page; an
+(style guide first). A new Abyss cycle, Stygian season, or Theater season gets no entry
+(Nate). Character-kit changes belong on the coverage page; an
 entry names a character only when the change is worth announcing. Keep its
 Known gaps section in step too: a shipped gap comes off it.
 

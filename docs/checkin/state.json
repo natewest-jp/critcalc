@@ -3,7 +3,7 @@
 	"gcsim": {
 		"audited": "a72469a18",
 		"seenUpstream": "a72469a18",
-		"date": "2026-11-14",
+		"date": "2026-11-16",
 		"tag": "v2.50.0",
 		"note": "2 commits seen 2026-11-15:Mavuika bike frames (#3253; spin hitmark 35 → 34, `data/mavuika-spin-hitmark`) and a Nocturne's Curtain Call fix (#3272, damage maths only)"
 	},
@@ -13,23 +13,23 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-15T00:00:00Z"
+		"lastSeen": "2026-11-16T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
 		"stygian": "7.2",
 		"abyss": "2026-11-16 Resounding Moon",
 		"pending": [
-			"Abyss: the cycle after Resounding Moon (lunaris beta 甲霰之月) — beta only, no English name yet; due 2026-12-16",
+			"Abyss: the cycle after Resounding Moon (lunaris 7.2.51 id 20100, 甲霰之月) — beta only, no English name yet; due 2026-12-16",
 			"Theater: the December season, due 2026-12-01",
 			"Stygian 7.3: due 2026-12-23"
 		]
 	},
 	"todo": {
-		"lastSwept": "26ff8eaa"
+		"lastSwept": "c79742a0"
 	},
 	"roles": {
-		"audited": "2026-11-15",
+		"audited": "2026-11-16",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
