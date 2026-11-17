@@ -193,11 +193,11 @@
 	<h2 id="swapping">Swapping a character</h2>
 	<HelpFigure
 		shot="builder-swap"
-		alt="Swap mode replacing Mona: Columbina under Trades, losing Taunt, and Linnea under Changes the reactions, with a green Shield icon."
+		alt="Swap mode replacing Columbina: five characters under Keeps everything and six under Trades, which lose DMG% buff, with a green Shield icon on Candace’s card."
 	>
 		<p>
 			Click a portrait in the selected team to replace that character. The banner <HelpRef n={1} /> reads
-			“Replacing Furina”, and the Characters grid regroups by what the swap would do to the team:
+			“Replacing Columbina”, and the Characters grid regroups by what the swap would do to the team:
 		</p>
 		<ul>
 			<li><strong>Keeps everything</strong>: Nothing the team provides is lost.</li>
