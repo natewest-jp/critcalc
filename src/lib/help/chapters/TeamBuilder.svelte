@@ -91,9 +91,9 @@
 	>
 		<p>
 			Click a team to select it. A banner in the team’s color <HelpRef n={1} /> says where your picks
-			will go — “Adding to Battlefield 2 · 3/4”. Clicking a character card puts them in the first empty
-			slot; clicking them again takes them out and leaves the others where they are. With no team chosen,
-			picks fill the first team that has room and move on once it’s full.
+			will go — “Adding to Team 2 · 3/4”. Clicking a character card puts them in the first empty slot;
+			clicking them again takes them out and leaves the others where they are. With no team chosen, picks
+			fill the first team that has room and move on once it’s full.
 		</p>
 		<p>
 			The magnifier on a card <HelpRef n={2} /> opens the character’s details: every capability with the
