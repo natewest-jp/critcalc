@@ -441,27 +441,31 @@ export const SHOTS = [
 		width: PANE_DESK,
 		route: '/builder',
 		seed: builderSeed(),
-		// Replacing Mona, with Owned on: Columbina trades away Taunt, and
-		// Linnea changes the reactions and adds a Shield (green).
+		// Replacing Columbina in Zibai's team, over the whole roster (⚓ Nate:
+		// with Owned on, only two candidates showed). The crop runs through
+		// Keeps everything and Trades, which loses DMG% buff; Candace, the
+		// first row's last card, adds a Shield (green). Unlike the other grid
+		// shots this one follows the roster, so a release can change it.
 		prepare: async (page) => {
-			await ownedOnly(page);
-			await page.getByRole('button', { name: 'Replace Mona, Team 1 slot 2' }).click();
+			// The first click selects Zibai's team; the second opens the swap.
+			await page.locator(`${TEAM(1)} >> .bv-slot >> nth=1`).click();
+			await page.getByRole('button', { name: 'Replace Columbina, Team 2 slot 2' }).click();
 			await page.mouse.move(1, 999);
 		},
 		clip: async (page) => {
 			const banner = await boxOf(page, '.tb-dest');
-			const sections = await boxOf(page, '.cg-section');
+			const trades = await boxOf(page, '.cg-section >> nth=1');
 			return {
 				x: banner.x - 8,
 				y: banner.y - 8,
 				width: banner.width + 16,
-				height: sections.y + sections.height - banner.y + 16
+				height: trades.y + trades.height - banner.y + 12
 			};
 		},
 		callouts: [
 			{ selector: '.tb-dest', at: 'top-left', dx: 70, side: 'top' },
-			{ selector: '.tb-swap-head >> nth=0', at: 'left', dx: 90, side: 'right' },
-			{ selector: '.cc-g--gain >> nth=0', at: 'right', side: 'right' }
+			{ selector: '.cg-section >> nth=1 >> .tb-swap-head', at: 'left', dx: 110, side: 'right' },
+			{ selector: `${CARD_OF('Candace')} >> .cc-g--gain >> nth=0`, at: 'right', side: 'right' }
 		]
 	},
 	{
@@ -472,10 +476,20 @@ export const SHOTS = [
 		seed: builderSeed(),
 		// Zibai Lunar-Crystallize's portraits: Illuga, not owned, at the
 		// team's C6 on a hollow chip.
+		prepare: async (page) => {
+			await page
+				.locator(`${TEAM(1)} >> :is(.bv-chips, .bv-fp)`)
+				.evaluateAll((els) => els.forEach((e) => (e.style.visibility = 'hidden')));
+		},
 		clip: async (page) => {
-			// Not above the row: the team header ends just over it.
-			const b = await boxOf(page, `${TEAM(1)} >> .bv-slots`);
-			return { x: b.x - 6, y: b.y, width: b.width + 12, height: b.height + 6 };
+			// Centered on the portrait circles, not the slot row (⚓ Nate): the row
+			// keeps headroom over the circles for overhanging hair, so the same
+			// space goes below them too. That space is where the team's chips
+			// and capabilities sit, so prepare hides them.
+			const row = await boxOf(page, `${TEAM(1)} >> .bv-slots`);
+			const discs = await boxOf(page, `${TEAM(1)} >> .spt-disc`);
+			const m = discs.y - row.y;
+			return { x: row.x - 6, y: row.y, width: row.width + 12, height: discs.height + 2 * m };
 		},
 		scale: 1.5,
 		callouts: [{ selector: `${TEAM(1)} >> .spt-chip--short`, at: 'right', side: 'right' }]

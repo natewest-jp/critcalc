@@ -99,19 +99,19 @@
 	},
 	"builder-swap": {
 		"width": 596,
-		"height": 480,
+		"height": 550,
 		"scale": 1,
 		"callouts": [
-			{ "n": 1, "x": 0.1309, "y": 0.0167, "side": "top" },
-			{ "n": 2, "x": 0.1644, "y": 0.2016, "side": "right" },
-			{ "n": 3, "x": 0.1817, "y": 0.9136, "side": "right" }
+			{ "n": 1, "x": 0.1309, "y": 0.0145, "side": "top" },
+			{ "n": 2, "x": 0.198, "y": 0.5379, "side": "right" },
+			{ "n": 3, "x": 0.9731, "y": 0.2804, "side": "right" }
 		]
 	},
 	"builder-team-chips": {
 		"width": 362,
-		"height": 110,
+		"height": 132,
 		"scale": 1.5,
-		"callouts": [{ "n": 1, "x": 0.9282, "y": 0.8271, "side": "right" }]
+		"callouts": [{ "n": 1, "x": 0.9282, "y": 0.6892, "side": "right" }]
 	},
 	"builder-phone": {
 		"width": 390,
