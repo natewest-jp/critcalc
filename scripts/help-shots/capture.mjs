@@ -90,6 +90,7 @@ function anchor(b, at = 'center') {
 async function capture(browser, shot) {
 	const context = await browser.newContext({
 		...DEVICES[shot.device],
+		...(shot.width && { viewport: { ...DEVICES[shot.device].viewport, width: shot.width } }),
 		reducedMotion: 'reduce',
 		locale: 'en-US',
 		timezoneId: 'UTC'
@@ -114,6 +115,7 @@ async function capture(browser, shot) {
 					activeTabId: 'shot'
 				})
 			);
+		if (s.boards) localStorage.setItem('critcalc:boards', JSON.stringify(s.boards));
 		if (s.ownership) localStorage.setItem('critcalc:ownership', JSON.stringify(s.ownership));
 		if (s.constellations)
 			localStorage.setItem('critcalc:constellations', JSON.stringify(s.constellations));

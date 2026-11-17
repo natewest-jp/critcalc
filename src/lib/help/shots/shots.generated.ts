@@ -10,6 +10,13 @@ import plannerPlayback from './planner-playback.webp';
 import plannerAura from './planner-aura.webp';
 import plannerInspector from './planner-inspector.webp';
 import plannerPhoneDock from './planner-phone-dock.webp';
+import builderNewLineup from './builder-new-lineup.webp';
+import builderAdding from './builder-adding.webp';
+import builderCharacters from './builder-characters.webp';
+import builderCapabilities from './builder-capabilities.webp';
+import builderSwap from './builder-swap.webp';
+import builderTeamChips from './builder-team-chips.webp';
+import builderPhone from './builder-phone.webp';
 
 export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
 
@@ -33,7 +40,14 @@ export const HELP_SHOTS = {
 	'planner-playback': { ...data['planner-playback'], src: plannerPlayback } as HelpShot,
 	'planner-aura': { ...data['planner-aura'], src: plannerAura } as HelpShot,
 	'planner-inspector': { ...data['planner-inspector'], src: plannerInspector } as HelpShot,
-	'planner-phone-dock': { ...data['planner-phone-dock'], src: plannerPhoneDock } as HelpShot
+	'planner-phone-dock': { ...data['planner-phone-dock'], src: plannerPhoneDock } as HelpShot,
+	'builder-new-lineup': { ...data['builder-new-lineup'], src: builderNewLineup } as HelpShot,
+	'builder-adding': { ...data['builder-adding'], src: builderAdding } as HelpShot,
+	'builder-characters': { ...data['builder-characters'], src: builderCharacters } as HelpShot,
+	'builder-capabilities': { ...data['builder-capabilities'], src: builderCapabilities } as HelpShot,
+	'builder-swap': { ...data['builder-swap'], src: builderSwap } as HelpShot,
+	'builder-team-chips': { ...data['builder-team-chips'], src: builderTeamChips } as HelpShot,
+	'builder-phone': { ...data['builder-phone'], src: builderPhone } as HelpShot
 } satisfies Record<string, HelpShot>;
 
 export type HelpShotId = keyof typeof HELP_SHOTS;

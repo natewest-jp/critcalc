@@ -7,6 +7,8 @@
  * - `id`: the image's name, and what a chapter passes to `<HelpFigure shot>`.
  * - `help`: the chapter and section it illustrates (`planner#notation`).
  * - `device`: 'desk' (1600×1000, the e2e desk) or 'phone' (an iPhone 13).
+ * - `width`: an optional narrower desk, in CSS pixels. A wide pane shot shrinks
+ *   to unreadable text in the margin, so a pane is shot where it is narrow.
  * - `route` and `seed`: where to go and what to put in storage first. The seed
  *   uses the old-layout localStorage keys, which the first load migrates into
  *   a profile (the same path the e2e fixture takes).
@@ -54,6 +56,49 @@ const flinsSeed = (notation = FLINS.notation) => ({
 const CARD = '.bench-band-mount .sp-card >> nth=3';
 /** A character's group of rows on the timeline, in team order. */
 const BLOCK = (i) => `.rp-char-block >> nth=${i}`;
+
+/**
+ * THE TEAM BUILDER'S CAST (⚓ Nate 2026-11-17): a Custom lineup of two teams
+ * people play, Mavuika Vaporize (Mavuika, Mona C2, Iansan C6, Sucrose C6) and
+ * Zibai Lunar-Crystallize (Zibai, Columbina, Linnea, Illuga C6). Everyone is
+ * owned but Illuga, whose chip on the team portrait is then the hollow one the
+ * roster section names. The lineup carries the app's own minted label, which
+ * it shows as "Custom lineup", so the shots introduce no name of their own.
+ */
+const BUILDER_OWNED = ['mavuika', 'mona', 'iansan', 'sucrose', 'zibai', 'columbina', 'linnea'];
+const builderSeed = () => ({
+	boards: {
+		boards: [
+			{
+				id: 'shot',
+				label: 'Lineup 1',
+				preset: 'custom',
+				noRepeats: false,
+				teams: [
+					{ id: 'vaporize', slots: ['mavuika', 'mona', 'iansan', 'sucrose'] },
+					{
+						id: 'crystallize',
+						slots: ['zibai', 'columbina', 'linnea', 'illuga'],
+						con: { illuga: 6 }
+					}
+				]
+			}
+		],
+		activeBoardId: 'shot'
+	},
+	ownership: owned(BUILDER_OWNED),
+	constellations: { mona: 2, iansan: 6, sucrose: 6 },
+	settings: SETTINGS
+});
+/** 🎛️ The desk width the grid shots use: the roster pane is ~580px there,
+ *  with the whole toolbar, so the shot reads at margin size. */
+const PANE_DESK = 1100;
+/** Owned on: the grid shows only the cast, so a new release can't reorder it. */
+const ownedOnly = (page) => page.locator('.tb-band button[aria-label="Owned"]').click();
+/** A team on the lineup, in order. */
+const TEAM = (i) => `.bv-team >> nth=${i}`;
+/** A character's card in the grid. */
+const CARD_OF = (name) => `.cg-grid .cc:has(.cc-name:text-is("${name}"))`;
 
 /** The union of the boxes of everything a selector matches, padded. */
 export async function boxOf(page, selector, { pad = 0, nth } = {}) {
@@ -276,5 +321,177 @@ export const SHOTS = [
 			{ selector: '.rp-dock-keys', at: 'left', dx: 3, side: 'left' },
 			{ selector: '.bench-band-mount', at: 'left', side: 'left' }
 		]
+	},
+	{
+		id: 'builder-new-lineup',
+		help: 'builder#lineups',
+		device: 'desk',
+		route: '/builder',
+		seed: builderSeed(),
+		// The menu alone: the Library's This cycle cards behind it name the
+		// live seasons, which date.
+		prepare: async (page) => {
+			// The Builder's door in the top bar opens the Library's Lineups.
+			await page.locator('.nav-btn:has-text("Builder")').click();
+			await page.getByRole('button', { name: /New lineup/ }).click();
+			await page.locator('[role=menu][aria-label="New lineup"]').waitFor();
+			await page.mouse.move(1, 999);
+		},
+		// Tight on the menu's right and bottom: past them is the first card.
+		clip: async (page) => {
+			const b = await boxOf(
+				page,
+				':is(button:has-text("New lineup"), [role=menu][aria-label="New lineup"])'
+			);
+			return { x: b.x - 8, y: b.y - 8, width: b.width + 8, height: b.height + 9 };
+		}
+	},
+	{
+		id: 'builder-adding',
+		help: 'builder#building',
+		device: 'desk',
+		width: PANE_DESK,
+		route: '/builder',
+		seed: builderSeed(),
+		// Team 2 selected with Linnea taken out, so the banner reads "Adding to
+		// Team 2 · 3/4"; the pointer rests on Zibai's card, which shows its
+		// magnifier under the banner's empty middle (the pin stands there).
+		prepare: async (page) => {
+			await ownedOnly(page);
+			await page.locator(`${TEAM(1)} >> .bv-slot >> nth=0`).click();
+			await page.locator(`${CARD_OF('Linnea')} >> .cc-main`).click();
+			// Linnea's card keeps focus after the click, and a focused card
+			// shows its magnifier too.
+			await page.evaluate(() => document.activeElement?.blur());
+			await page.locator(CARD_OF('Zibai')).hover();
+		},
+		clip: async (page) => {
+			const banner = await boxOf(page, '.tb-dest');
+			const cards = await boxOf(page, '.cg-grid .cc');
+			return {
+				x: banner.x - 8,
+				y: banner.y - 8,
+				width: banner.width + 16,
+				height: cards.y + cards.height - banner.y + 16
+			};
+		},
+		callouts: [
+			{ selector: '.tb-dest', at: 'top-left', dx: 70, side: 'top' },
+			{ selector: `${CARD_OF('Zibai')} >> .cc-mag`, at: 'top', side: 'top' }
+		]
+	},
+	{
+		id: 'builder-characters',
+		help: 'builder#characters',
+		device: 'desk',
+		width: PANE_DESK,
+		route: '/builder',
+		seed: builderSeed(),
+		prepare: ownedOnly,
+		// The roster pane's toolbar, the filter strip, and the first row of
+		// cards.
+		clip: async (page) => {
+			const bar = await boxOf(page, '.tb-band-cell >> nth=0');
+			const row = await boxOf(page, '.cg-grid .cc >> nth=0');
+			const strip = await boxOf(page, '.rfs');
+			return {
+				x: strip.x - 8,
+				// Not higher: the top bar's Builder door ends just above.
+				y: bar.y - 4,
+				width: strip.width + 16,
+				height: row.y + row.height - bar.y + 6
+			};
+		},
+		callouts: [
+			// The strip's pins stand in the gutter at the left, and the card's at
+			// the right (Mavuika's, the last card), so none covers the grid.
+			{ selector: '.rfs-bar[aria-label="Role"]', at: 'left', side: 'left' },
+			{ selector: '.rfs-glyphs .rfs-bar >> nth=0', at: 'left', side: 'left' },
+			// Her last lit icon, pinned from below, so its pin clears the dim one's.
+			{
+				selector: `${CARD_OF('Mavuika')} >> .cc-g:not(.cc-g--dim) >> nth=-1`,
+				at: 'bottom',
+				side: 'bottom'
+			},
+			{ selector: `${CARD_OF('Mavuika')} >> .cc-g--dim >> nth=0`, at: 'right', side: 'right' },
+			{ selector: 'button[aria-label="Read capabilities at"]', at: 'top', side: 'top' }
+		]
+	},
+	{
+		id: 'builder-capabilities',
+		help: 'builder#capabilities',
+		device: 'desk',
+		route: '/builder',
+		seed: builderSeed(),
+		// Mavuika Vaporize's fifteen capabilities: EM buff lit by two
+		// providers, Shield faint with none, CRIT buff faint with Mona's dot (a
+		// higher constellation).
+		clip: async (page) => boxOf(page, `${TEAM(0)} >> .fp`, { pad: 10 }),
+		scale: 1.5,
+		callouts: [
+			{ selector: `${TEAM(0)} >> .fp-slot[aria-label^="EM buff"]`, at: 'top', side: 'top' },
+			{ selector: `${TEAM(0)} >> .fp-slot[aria-label^="Shield"]`, at: 'top', side: 'top' },
+			{ selector: `${TEAM(0)} >> .fp-slot[aria-label^="CRIT buff"]`, at: 'bottom', side: 'bottom' }
+		]
+	},
+	{
+		id: 'builder-swap',
+		help: 'builder#swapping',
+		device: 'desk',
+		width: PANE_DESK,
+		route: '/builder',
+		seed: builderSeed(),
+		// Replacing Mona, with Owned on: Columbina trades away Taunt, and
+		// Linnea changes the reactions and adds a Shield (green).
+		prepare: async (page) => {
+			await ownedOnly(page);
+			await page.getByRole('button', { name: 'Replace Mona, Team 1 slot 2' }).click();
+			await page.mouse.move(1, 999);
+		},
+		clip: async (page) => {
+			const banner = await boxOf(page, '.tb-dest');
+			const sections = await boxOf(page, '.cg-section');
+			return {
+				x: banner.x - 8,
+				y: banner.y - 8,
+				width: banner.width + 16,
+				height: sections.y + sections.height - banner.y + 16
+			};
+		},
+		callouts: [
+			{ selector: '.tb-dest', at: 'top-left', dx: 70, side: 'top' },
+			{ selector: '.tb-swap-head >> nth=0', at: 'left', dx: 90, side: 'right' },
+			{ selector: '.cc-g--gain >> nth=0', at: 'right', side: 'right' }
+		]
+	},
+	{
+		id: 'builder-team-chips',
+		help: 'builder#roster',
+		device: 'desk',
+		route: '/builder',
+		seed: builderSeed(),
+		// Zibai Lunar-Crystallize's portraits: Illuga, not owned, at the
+		// team's C6 on a hollow chip.
+		clip: async (page) => {
+			// Not above the row: the team header ends just over it.
+			const b = await boxOf(page, `${TEAM(1)} >> .bv-slots`);
+			return { x: b.x - 6, y: b.y, width: b.width + 12, height: b.height + 6 };
+		},
+		scale: 1.5,
+		callouts: [{ selector: `${TEAM(1)} >> .spt-chip--short`, at: 'right', side: 'right' }]
+	},
+	{
+		id: 'builder-phone',
+		help: 'builder#phone',
+		device: 'phone',
+		route: '/builder',
+		seed: builderSeed(),
+		// The Lineup pane, which a filled lineup opens on.
+		clip: async (page) => {
+			const v = page.viewportSize();
+			return { x: 0, y: 0, width: v.width, height: v.height };
+		},
+		scale: 0.7,
+		callouts: [{ selector: '.tb-pane-switch', at: 'right', side: 'right' }]
 	}
 ];
