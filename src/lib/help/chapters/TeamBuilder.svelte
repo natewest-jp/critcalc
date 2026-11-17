@@ -10,6 +10,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
+	import HelpFigure from '$lib/components/HelpFigure.svelte';
+	import HelpRef from '$lib/components/HelpRef.svelte';
 </script>
 
 <h1>Team builder</h1>
@@ -27,28 +29,33 @@
 
 <section>
 	<h2 id="lineups">Lineups</h2>
-	<p>
-		<strong>New lineup</strong>, in the Library under <strong>Lineups</strong>, starts a lineup in
-		one of four shapes:
-	</p>
-	<ul>
-		<li>
-			<strong>Stygian Onslaught</strong>: three teams, one per battlefield, each with its boss and
-			the season’s checks.
-		</li>
-		<li>
-			<strong>Spiral Abyss</strong>: two teams for Floor 12’s first and second half. While a current
-			cycle is live, each half shows its blessing and <strong>Opponents</strong> list.
-		</li>
-		<li>
-			<strong>Imaginarium Theater</strong>: a cast instead of teams, for the month’s season (see
-			<a href="#theater">Imaginarium Theater</a> below).
-		</li>
-		<li>
-			<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the toolbar for more,
-			up to twelve.
-		</li>
-	</ul>
+	<HelpFigure
+		shot="builder-new-lineup"
+		alt="The New lineup menu open, offering Stygian Onslaught, Spiral Abyss, Imaginarium Theater, and Custom."
+	>
+		<p>
+			<strong>New lineup</strong>, in the Library under <strong>Lineups</strong>, starts a lineup in
+			one of four shapes:
+		</p>
+		<ul>
+			<li>
+				<strong>Stygian Onslaught</strong>: three teams, one per battlefield, each with its boss and
+				the season’s checks.
+			</li>
+			<li>
+				<strong>Spiral Abyss</strong>: two teams for Floor 12’s first and second half. While a
+				current cycle is live, each half shows its blessing and <strong>Opponents</strong> list.
+			</li>
+			<li>
+				<strong>Imaginarium Theater</strong>: a cast instead of teams, for the month’s season (see
+				<a href="#theater">Imaginarium Theater</a> below).
+			</li>
+			<li>
+				<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the toolbar for more,
+				up to twelve.
+			</li>
+		</ul>
+	</HelpFigure>
 	<p>
 		<strong>New lineup</strong> on a team in <strong>Teams</strong> does the same, and the lineup
 		starts with that team. The builder shows one lineup at a time and saves it as you work. The
@@ -78,48 +85,60 @@
 
 <section>
 	<h2 id="building">Building a team</h2>
-	<p>
-		Click a team to select it. A banner in the team’s color says where your picks will go — “Adding
-		to Battlefield 2 · 3/4”. Clicking a character card puts them in the first empty slot; clicking
-		them again takes them out and leaves the others where they are. With no team chosen, picks fill
-		the first team that has room and move on once it’s full.
-	</p>
-	<p>
-		The magnifier on a card opens the character’s details: every capability with the ability that
-		grants it, its constellation and any condition it needs, plus their cooldowns and Energy cost.
-		Ownership is shown there but is edited in the Roster (see <a href="#roster">below</a>).
-	</p>
+	<HelpFigure
+		shot="builder-adding"
+		alt="The Characters grid under a banner reading Adding to Team 2 · 3/4, with the magnifier showing on Zibai’s card."
+	>
+		<p>
+			Click a team to select it. A banner in the team’s color <HelpRef n={1} /> says where your picks
+			will go — “Adding to Team 2 · 3/4”. Clicking a character card puts them in the first empty slot;
+			clicking them again takes them out and leaves the others where they are. With no team chosen, picks
+			fill the first team that has room and move on once it’s full.
+		</p>
+		<p>
+			The magnifier on a card <HelpRef n={2} /> opens the character’s details: every capability with the
+			ability that grants it, its constellation and any condition it needs, plus their cooldowns and Energy
+			cost. Ownership is shown there but is edited in the Roster (see <a href="#roster">below</a>).
+		</p>
+	</HelpFigure>
 </section>
 
 <section>
 	<h2 id="characters">Finding characters</h2>
-	<p>
-		The strip over <strong>Characters</strong> filters by role, by element and by what a character
-		can provide. Roles are filtered one at a time; elements match any of those you pick;
-		capabilities under
-		<strong>Can provide</strong> match only characters who provide all of them. Choosing a role also sorts
-		the grid into sections: Damage roles are sorted by element, while Support and Survivability roles
-		are sorted by capability.
-	</p>
-	<p>
-		Character roles come from Genshin’s own classifications, used in the Imaginarium Theater. Every
-		character is categorized as On-Field or Off-Field, and DPS, Support, or Survivability. We’ve
-		only made two modifications to the in-game assignment: Fischl and Rosaria are additionally
-		tagged as Support for the team buffs they provide.
-	</p>
-	<p>
-		The toolbar narrows further: a name search, <strong>Owned</strong> and
-		<strong>Wishlist</strong>, and <strong>More</strong> for weapon, rarity, region, and factions like
-		Hexerei or Moonsign.
-	</p>
-	<p>
-		The column of icons on a card is that character’s own capabilities. Each is lit if it’s
-		available at the constellations you’ve specified and dimmed if it needs a higher one (hover over
-		it to find out what would unlock it). The constellation lens in the toolbar sets that level: C0
-		through C6, or <strong>My constellations</strong>, the default, which reads your roster. It
-		changes the Characters grid only. A team reads your roster for characters you own and its own
-		level for anyone else.
-	</p>
+	<HelpFigure
+		shot="builder-characters"
+		alt="The toolbar and filter strip over the Characters grid, with Owned on, and the first row of cards."
+	>
+		<p>
+			The strip over <strong>Characters</strong> filters by role <HelpRef n={1} />, by element and
+			by what a character can provide. Roles are filtered one at a time; elements match any of those
+			you pick; capabilities under
+			<strong>Can provide</strong>
+			<HelpRef n={2} /> match only characters who provide all of them. Choosing a role also sorts the
+			grid into sections: Damage roles are sorted by element, while Support and Survivability roles are
+			sorted by capability.
+		</p>
+		<p>
+			Character roles come from Genshin’s own classifications, used in the Imaginarium Theater.
+			Every character is categorized as On-Field or Off-Field, and DPS, Support, or Survivability.
+			We’ve only made two modifications to the in-game assignment: Fischl and Rosaria are
+			additionally tagged as Support for the team buffs they provide.
+		</p>
+		<p>
+			The toolbar narrows further: a name search, <strong>Owned</strong> and
+			<strong>Wishlist</strong>, and <strong>More</strong> for weapon, rarity, region, and factions like
+			Hexerei or Moonsign.
+		</p>
+		<p>
+			The column of icons on a card is that character’s own capabilities. Each is lit <HelpRef
+				n={3}
+			/> if it’s available at the constellations you’ve specified and dimmed <HelpRef n={4} /> if it needs
+			a higher one (hover over it to find out what would unlock it). The constellation lens in the toolbar
+			<HelpRef n={5} /> sets that level: C0 through C6, or <strong>My constellations</strong>, the
+			default, which reads your roster. It changes the Characters grid only. A team reads your
+			roster for characters you own and its own level for anyone else.
+		</p>
+	</HelpFigure>
 	<p>
 		Some kits have no capability data yet. While you filter by capability they are listed separately
 		under “Not yet curated”, because a missing icon there means unknown rather than no. The
@@ -130,13 +149,19 @@
 
 <section>
 	<h2 id="capabilities">What a team can provide</h2>
-	<p>
-		Each team shows fifteen capabilities in three groups: survival (healing, shields, cleanse,
-		taunt), support (buffs, energy, RES shred, grouping, infusion, interruption RES) and off-field
-		damage. A lit icon means someone on the team provides it, with a dot for each provider. A faint
-		icon means nobody does. Dots on a faint icon are characters who would provide that at a higher
-		constellation or on a different team.
-	</p>
+	<HelpFigure
+		shot="builder-capabilities"
+		alt="A team’s fifteen capability icons, some lit with dots beneath them and some faint."
+	>
+		<p>
+			Each team shows fifteen capabilities in three groups: survival (healing, shields, cleanse,
+			taunt), support (buffs, energy, RES shred, grouping, infusion, interruption RES) and off-field
+			damage. A lit icon means someone on the team provides it, with a dot for each provider <HelpRef
+				n={1}
+			/>. A faint icon means nobody does <HelpRef n={2} />. Dots on a faint icon are characters who
+			would provide that at a higher constellation or on a different team <HelpRef n={3} />.
+		</p>
+	</HelpFigure>
 	<p>
 		Conditions are read against the team. A buff that needs a Pyro-affected enemy lights only if
 		someone applies Pyro, and a buff that is conditional on team composition only lights up when the
@@ -166,24 +191,31 @@
 
 <section>
 	<h2 id="swapping">Swapping a character</h2>
-	<p>
-		Click a portrait in the selected team to replace that character. The banner reads “Replacing
-		Furina”, and the Characters grid regroups by what the swap would do to the team:
-	</p>
-	<ul>
-		<li><strong>Keeps everything</strong>: Nothing the team provides is lost.</li>
-		<li><strong>Trades</strong>: Something is lost, listed in the section header.</li>
-		<li>
-			<strong>Changes the reactions</strong>: The team’s reactions or resonance change, whether or
-			not it also loses something.
-		</li>
-		<li><strong>Not yet curated</strong>: no capability data, so the swap can’t be read.</li>
-	</ul>
-	<p>
-		What a candidate would add shows as green icons on their card. Only characters who play the same
-		position (on field or off) are offered at first; a button at the foot of the grid shows the
-		rest. Escape or the banner’s ✕ leaves without swapping.
-	</p>
+	<HelpFigure
+		shot="builder-swap"
+		alt="Swap mode replacing Columbina: five characters under Keeps everything and six under Trades, which lose DMG% buff, with a green Shield icon on Candace’s card."
+	>
+		<p>
+			Click a portrait in the selected team to replace that character. The banner <HelpRef n={1} /> reads
+			“Replacing Columbina”, and the Characters grid regroups by what the swap would do to the team:
+		</p>
+		<ul>
+			<li><strong>Keeps everything</strong>: Nothing the team provides is lost.</li>
+			<li>
+				<strong>Trades</strong>: Something is lost, listed in the section header <HelpRef n={2} />.
+			</li>
+			<li>
+				<strong>Changes the reactions</strong>: The team’s reactions or resonance change, whether or
+				not it also loses something.
+			</li>
+			<li><strong>Not yet curated</strong>: no capability data, so the swap can’t be read.</li>
+		</ul>
+		<p>
+			What a candidate would add shows as green icons on their card <HelpRef n={3} />. Only
+			characters who play the same position (on field or off) are offered at first; a button at the
+			foot of the grid shows the rest. Escape or the banner’s ✕ leaves without swapping.
+		</p>
+	</HelpFigure>
 	<p>
 		Picking someone makes the swap, and the notice above the lineup offers to <strong>Undo</strong>
 		it. If the team had a pinned rotation, the pin drops, because the rotation was written for the old
@@ -245,10 +277,15 @@
 		<strong>Wishlist</strong>, <strong>My constellations</strong>, and the constellation chips all
 		read it. In Theorycraft there is no roster: every character is there at every level.
 	</p>
-	<p>
-		The chip on a team portrait is the constellation that team uses. A character you own is at your
-		roster’s level; the chip is hollow for a character you don’t own.
-	</p>
+	<HelpFigure
+		shot="builder-team-chips"
+		alt="A team’s four portraits; Illuga, who isn’t owned, wears a hollow C6 chip."
+	>
+		<p>
+			The chip on a team portrait is the constellation that team uses. A character you own is at
+			your roster’s level; the chip is hollow for a character you don’t own <HelpRef n={1} />.
+		</p>
+	</HelpFigure>
 	<p>
 		<strong>Share</strong> in the toolbar copies a link with the lineup’s teams, preset, season, No repeats
 		setting, and constellations. (Pinned rotations are not included.) It opens in Theorycraft for the
@@ -258,9 +295,14 @@
 
 <section>
 	<h2 id="phone">On a phone</h2>
-	<p>
-		On narrower screens Characters and the Lineup are two panes with a button to switch between
-		them. Filling a team takes you to the Lineup, and choosing a slot to fill takes you to
-		Characters. There is no hover preview on touch.
-	</p>
+	<HelpFigure
+		shot="builder-phone"
+		alt="The builder on a phone showing the Lineup pane, with the Characters button above the first team."
+	>
+		<p>
+			On narrower screens Characters and the Lineup are two panes with a button to switch between
+			them <HelpRef n={1} />. Filling a team takes you to the Lineup, and choosing a slot to fill
+			takes you to Characters. There is no hover preview on touch.
+		</p>
+	</HelpFigure>
 </section>
