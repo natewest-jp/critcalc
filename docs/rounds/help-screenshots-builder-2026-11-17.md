@@ -1,6 +1,6 @@
 # 2026-11-17: Help screenshots, the Team builder chapter
 
-The to-do's Help screenshots item, second chapter (the pipeline and the planner chapter: `help-screenshots-planner-2026-11-15.md`). Branch `feat/help-shots-builder`. Nate looked in real Safari and called it done.
+The to-do's Help screenshots item, second chapter (the pipeline and the planner chapter: `help-screenshots-planner-2026-11-15.md`). Branch `feat/help-shots-builder`. Nate looked at the shots and called the chapter done.
 
 ## What was decided
 
