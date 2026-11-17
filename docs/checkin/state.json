@@ -1,11 +1,11 @@
 {
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
-		"audited": "a72469a18",
-		"seenUpstream": "a72469a18",
-		"date": "2026-11-16",
+		"audited": "a284a499b",
+		"seenUpstream": "a284a499b",
+		"date": "2026-11-17",
 		"tag": "v2.50.0",
-		"note": "2 commits seen 2026-11-15:Mavuika bike frames (#3253; spin hitmark 35 → 34, `data/mavuika-spin-hitmark`) and a Nocturne's Curtain Call fix (#3272, damage maths only)"
+		"note": "1 commit seen 2026-11-17: Mizuki C2 shred task now starts after Dreamdrifter applies, and her Revelation EM share recomputes (#3275); our C2 already spans the stance, and the EM share is damage maths only"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-16T00:00:00Z"
+		"lastSeen": "2026-11-17T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -26,10 +26,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "c79742a0"
+		"lastSwept": "ae67cae3"
 	},
 	"roles": {
-		"audited": "2026-11-16",
+		"audited": "2026-11-17",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
