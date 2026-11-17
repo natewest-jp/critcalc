@@ -1528,8 +1528,8 @@
 		<p class="tb-swap-foot">
 			<button class="btn btn--glass" onclick={() => (swapOtherShown = !swapOtherShown)}>
 				{swapOtherShown
-					? `Hide the ${swapGrid.otherLabel.toLowerCase()} characters`
-					: `Show ${swapGrid.otherCount} ${swapGrid.otherLabel.toLowerCase()} characters too`}
+					? `Hide the ${swapGrid.otherLabel.toLowerCase()} character${swapGrid.otherCount === 1 ? '' : 's'}`
+					: `Show ${swapGrid.otherCount} ${swapGrid.otherLabel.toLowerCase()} character${swapGrid.otherCount === 1 ? '' : 's'} too`}
 			</button>
 		</p>
 	{/if}
