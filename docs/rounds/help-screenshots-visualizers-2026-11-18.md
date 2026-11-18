@@ -25,7 +25,7 @@ The to-do's Help screenshots item, third and last chapter (the pipeline: `help-s
 
 ## Copy
 
-The ten alt texts landed as drafts with the merge (Nate: merge now) and are proposed to him for a ruling; any change follows as its own commit.
+Nate approved the ten alt texts as drafted.
 
 ## Found on the way
 
