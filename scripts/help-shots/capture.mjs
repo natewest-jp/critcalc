@@ -160,9 +160,13 @@ async function capture(browser, shot) {
 
 	const callouts = [];
 	for (const [i, c] of (shot.callouts ?? []).entries()) {
-		const b = await page.locator(c.selector).boundingBox();
-		if (!b) throw new Error(`help-shots: ${shot.id} callout ${i + 1} (${c.selector}) not found`);
-		const a = anchor(b, c.at);
+		let a;
+		if (c.point) a = await c.point(page);
+		else {
+			const b = await page.locator(c.selector).boundingBox();
+			if (!b) throw new Error(`help-shots: ${shot.id} callout ${i + 1} (${c.selector}) not found`);
+			a = anchor(b, c.at);
+		}
 		const p = { x: a.x + (c.dx ?? 0), y: a.y + (c.dy ?? 0) };
 		callouts.push({
 			n: i + 1,

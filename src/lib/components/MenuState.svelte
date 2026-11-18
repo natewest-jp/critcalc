@@ -959,6 +959,11 @@
 	.chapter :global(li) {
 		max-width: none;
 	}
+	/* A section holds its own figures: one taller than its text pushes the
+	   next heading down rather than standing beside the next section. */
+	.chapter :global(section) {
+		display: flow-root;
+	}
 	/* The text's 68ch, the gap and the margin's 16rem floor: ~56rem of
 	   CONTENT width. Narrower, the figures fall in under their paragraphs
 	   (HelpFigure's own query, the same 56rem). A container query, because

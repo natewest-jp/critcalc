@@ -17,6 +17,16 @@ import builderCapabilities from './builder-capabilities.webp';
 import builderSwap from './builder-swap.webp';
 import builderTeamChips from './builder-team-chips.webp';
 import builderPhone from './builder-phone.webp';
+import vzWorkspace from './vz-workspace.webp';
+import vzCrit from './vz-crit.webp';
+import vzGauge from './vz-gauge.webp';
+import vzIcd from './vz-icd.webp';
+import vzCurves from './vz-curves.webp';
+import vzBreakdown from './vz-breakdown.webp';
+import vzDefres from './vz-defres.webp';
+import vzArtifactPiece from './vz-artifact-piece.webp';
+import vzArtifactReshape from './vz-artifact-reshape.webp';
+import vzWish from './vz-wish.webp';
 
 export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
 
@@ -47,7 +57,17 @@ export const HELP_SHOTS = {
 	'builder-capabilities': { ...data['builder-capabilities'], src: builderCapabilities } as HelpShot,
 	'builder-swap': { ...data['builder-swap'], src: builderSwap } as HelpShot,
 	'builder-team-chips': { ...data['builder-team-chips'], src: builderTeamChips } as HelpShot,
-	'builder-phone': { ...data['builder-phone'], src: builderPhone } as HelpShot
+	'builder-phone': { ...data['builder-phone'], src: builderPhone } as HelpShot,
+	'vz-workspace': { ...data['vz-workspace'], src: vzWorkspace } as HelpShot,
+	'vz-crit': { ...data['vz-crit'], src: vzCrit } as HelpShot,
+	'vz-gauge': { ...data['vz-gauge'], src: vzGauge } as HelpShot,
+	'vz-icd': { ...data['vz-icd'], src: vzIcd } as HelpShot,
+	'vz-curves': { ...data['vz-curves'], src: vzCurves } as HelpShot,
+	'vz-breakdown': { ...data['vz-breakdown'], src: vzBreakdown } as HelpShot,
+	'vz-defres': { ...data['vz-defres'], src: vzDefres } as HelpShot,
+	'vz-artifact-piece': { ...data['vz-artifact-piece'], src: vzArtifactPiece } as HelpShot,
+	'vz-artifact-reshape': { ...data['vz-artifact-reshape'], src: vzArtifactReshape } as HelpShot,
+	'vz-wish': { ...data['vz-wish'], src: vzWish } as HelpShot
 } satisfies Record<string, HelpShot>;
 
 export type HelpShotId = keyof typeof HELP_SHOTS;
