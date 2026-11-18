@@ -28,6 +28,7 @@
  * fixed rotation.
  */
 
+import { deflateRawSync } from 'node:zlib';
 import { PLANNER_SAMPLES } from '../../src/lib/data/plannerSamples.ts';
 
 /**
@@ -99,6 +100,52 @@ const ownedOnly = (page) => page.locator('.tb-band button[aria-label="Owned"]').
 const TEAM = (i) => `.bv-team >> nth=${i}`;
 /** A character's card in the grid. */
 const CARD_OF = (name) => `.cg-grid .cc:has(.cc-name:text-is("${name}"))`;
+
+/**
+ * THE VISUALIZERS' STAGING (Claude proposed, ⚓ Nate 2026-11-18): each shot
+ * opens its instrument from a `?i=` link carrying the state to show, the way a
+ * reader's Copy link would. The thread is one build, 70% CRIT Rate and 140%
+ * CRIT DMG (Damage breakdown's defaults), and the Builder's Mavuika Vaporize
+ * where a team is needed (Sucrose's Viridescent Venerer and Mavuika's DEF
+ * shred). Nothing names a banner or a season.
+ *
+ * `vz` writes the link as `$lib/utils/instrumentUrl.ts` does (deflate-raw,
+ * base64url), since that module's extensionless imports don't load in Node.
+ */
+const vz = (id, state) =>
+	`/visualizers?i=${id}.1~${deflateRawSync(JSON.stringify(state)).toString('base64url')}`;
+/** 🎛️ The desk width the instrument shots use: a 1600 desk spreads one
+ *  instrument so wide it shrinks to unreadable text in the margin. */
+const VZ_DESK = 720;
+/** A visible instrument's tile. */
+const TILE = (id) => `#ws-tile-${id}`;
+/** A crop from an instrument's headline down to the bottom of `to`. */
+const headTo = async (page, id, to, { pad = 8, extra = 0 } = {}) => {
+	const head = await boxOf(page, `${TILE(id)} .readout-head`);
+	const end = await boxOf(page, `${TILE(id)} ${to}`);
+	const x0 = Math.min(head.x, end.x) - pad;
+	const x1 = Math.max(head.x + head.width, end.x + end.width) + pad;
+	return {
+		x: x0,
+		y: head.y - pad,
+		width: x1 - x0,
+		height: end.y + end.height - head.y + 2 * pad + extra
+	};
+};
+/** One crit piece, used by both Artifact odds shots: a +20 flower with nine
+ *  rolls, three each into CRIT Rate and CRIT DMG. */
+const PIECE = {
+	v: 1,
+	slot: 'flower',
+	mains: ['hp'],
+	level: 20,
+	lines: [
+		['cr', '10.5'],
+		['cd', '21.0'],
+		['atkPct', '9.9'],
+		['er', '6.5']
+	]
+};
 
 /** The union of the boxes of everything a selector matches, padded. */
 export async function boxOf(page, selector, { pad = 0, nth } = {}) {
@@ -507,5 +554,218 @@ export const SHOTS = [
 		},
 		scale: 0.7,
 		callouts: [{ selector: '.tb-pane-switch', at: 'right', side: 'right' }]
+	},
+	{
+		id: 'vz-workspace',
+		help: 'visualizers#workspace',
+		device: 'desk',
+		// The narrowest desk that holds two tiles.
+		width: 1360,
+		route: vz('crit', { v: 1 }),
+		// Two instruments side by side, through the Layout plate.
+		prepare: async (page) => {
+			await page.locator('role=button[name="Layout"]').click();
+			await page.locator('role=radio[name="2"]').click();
+			await page.keyboard.press('Escape');
+			await page.mouse.move(1, 999);
+		},
+		// The second tile's bar over its headline: every control the prose
+		// names is on it, Layout included, and the first tile's edge shows
+		// there are two. The whole band is too wide to read in the margin.
+		clip: async (page) => {
+			const cell = await boxOf(page, '.ws-band-cell >> nth=1');
+			const head = await boxOf(page, '#ws-tile-gauge .readout-head');
+			const x = cell.x - 40;
+			return {
+				x,
+				// Not higher: the top bar's Visualizers door ends just above.
+				y: cell.y - 4,
+				width: cell.x + cell.width + 8 - x,
+				height: head.y + head.height - cell.y + 12
+			};
+		},
+		callouts: [
+			{ selector: '.ws-band-cell >> nth=1 >> .ws-picker', at: 'bottom', side: 'bottom' },
+			{ selector: 'role=button[name="Layout"]', at: 'bottom', side: 'bottom' },
+			{
+				selector: '.ws-band-cell >> nth=1 >> button:has-text("Defaults")',
+				at: 'bottom',
+				side: 'bottom'
+			},
+			{
+				selector: '.ws-band-cell >> nth=1 >> button:has-text("Copy link")',
+				at: 'bottom',
+				side: 'bottom'
+			},
+			{
+				selector: '.ws-band-cell >> nth=1 >> role=button[name="More instrument actions"]',
+				at: 'bottom',
+				side: 'bottom'
+			}
+		]
+	},
+	{
+		id: 'vz-crit',
+		help: 'visualizers#crit-heatmap',
+		device: 'desk',
+		// At this width the bars sit under the map, which keeps the shot
+		// compact enough to read in the margin.
+		width: 1000,
+		// A 300 CV build off the 1:2 ratio, with the shared 70/140 pinned.
+		route: vz('crit', { v: 1, cr: 0.5, cd: 2.0, variance: true, hits: 8, pin: [0.7, 1.4] }),
+		clip: (page) => boxOf(page, `${TILE('crit')} .cv-chart-col`, { pad: 8 }),
+		callouts: [
+			{ selector: `${TILE('crit')} circle[r="8"]`, at: 'right', dx: 4, side: 'right' },
+			{ selector: `${TILE('crit')} .cv-ring-hit`, at: 'top', side: 'top' },
+			{ selector: `${TILE('crit')} circle[r="5.5"]`, at: 'left', side: 'left' },
+			{ selector: `${TILE('crit')} .cv-strip-below`, at: 'left', side: 'left' }
+		]
+	},
+	{
+		id: 'vz-gauge',
+		help: 'visualizers#gauge-explorer',
+		device: 'desk',
+		width: VZ_DESK,
+		// Overvape: Hydro, then Electro (Electro-Charged), then Pyro, which
+		// reacts with both.
+		route: vz('gauge', {
+			v: 1,
+			preset: 'pyroec',
+			apps: [
+				[0, 'hydro', 1],
+				[1, 'electro', 1],
+				[2, 'pyro', 1]
+			]
+		}),
+		clip: (page) => headTo(page, 'gauge', '.stage-graph'),
+		callouts: [
+			{ selector: `${TILE('gauge')} .gx-adds`, at: 'bottom', side: 'bottom' },
+			{ selector: `${TILE('gauge')} .gx-marker >> nth=2`, at: 'right', side: 'right' },
+			{ selector: `${TILE('gauge')} .stage-graph >> text=Electro-Charged`, at: 'top', side: 'top' },
+			{ selector: `${TILE('gauge')} .gx-drop >> nth=0`, at: 'right', side: 'right' }
+		]
+	},
+	{
+		id: 'vz-icd',
+		help: 'visualizers#icd-timeline',
+		device: 'desk',
+		width: VZ_DESK,
+		route: vz('icd', { v: 1, source: 'oz' }),
+		clip: (page) => headTo(page, 'icd', '.stage-graph svg >> nth=0')
+	},
+	{
+		id: 'vz-curves',
+		help: 'visualizers#reaction-curves',
+		device: 'desk',
+		width: VZ_DESK,
+		route: vz('curves', { v: 1, family: 'all', em: 600, level: 90, rb: 0, pick: 0 }),
+		clip: (page) => headTo(page, 'curves', '.stage-handle'),
+		callouts: [
+			{
+				selector: `${TILE('curves')} text:has-text("next 100 EM") >> nth=0`,
+				at: 'right',
+				side: 'right'
+			},
+			{
+				selector: `${TILE('curves')} text:has-text("what the next 100 EM adds")`,
+				at: 'right',
+				side: 'right'
+			}
+		]
+	},
+	{
+		id: 'vz-breakdown',
+		help: 'visualizers#damage-breakdown',
+		device: 'desk',
+		// The narrowest desk that keeps the columns (UPRIGHT_MIN, 900px of
+		// stage): narrower, they become rows, which have no grips.
+		width: 940,
+		// The defaults are the shared build: a direct hit at 70/140.
+		route: vz('breakdown', { v: 2 }),
+		clip: (page) => headTo(page, 'breakdown', '.bd-foot'),
+		callouts: [
+			{ selector: `${TILE('breakdown')} .readout-sentence`, at: 'bottom', side: 'bottom' },
+			{
+				selector: `${TILE('breakdown')} g[stroke-opacity="0.7"] >> nth=1`,
+				at: 'right',
+				side: 'right'
+			},
+			{
+				selector: `${TILE('breakdown')} .stage-graph text:has-text("CD") >> nth=0`,
+				at: 'top',
+				side: 'top'
+			}
+		]
+	},
+	{
+		id: 'vz-defres',
+		help: 'visualizers#enemy-res-def',
+		device: 'desk',
+		width: VZ_DESK,
+		// Pyro, with Viridescent Venerer (on Sucrose) and Mavuika's DEF shred.
+		route: vz('defres', {
+			v: 1,
+			element: 'pyro',
+			charLevel: 90,
+			ignoresDef: false,
+			enemyLevel: 100,
+			baseRes: 10,
+			picks: {
+				'viridescent_venerer|res||viridescent_venerer': 40,
+				'mavuika|def||searingRadiance': 20
+			},
+			other: [0, 0, 0]
+		}),
+		clip: (page) => headTo(page, 'defres', '.dr-handle'),
+		callouts: [
+			{
+				selector: `${TILE('defres')} text:has-text("Viridescent Venerer 40%")`,
+				at: 'bottom',
+				side: 'bottom'
+			},
+			{ selector: `${TILE('defres')} text:has-text("×1.150")`, at: 'top', side: 'top' }
+		]
+	},
+	{
+		id: 'vz-artifact-piece',
+		help: 'visualizers#artifact-odds',
+		device: 'desk',
+		width: VZ_DESK,
+		route: vz('artifact', { ...PIECE, view: 'piece' }),
+		clip: (page) => headTo(page, 'artifact', '.stage-handle'),
+		callouts: [
+			{ selector: `${TILE('artifact')} .ao-glance`, at: 'bottom', side: 'bottom' },
+			{ selector: `${TILE('artifact')} text:has-text("yours") >> nth=0`, at: 'top', side: 'top' }
+		]
+	},
+	{
+		id: 'vz-artifact-reshape',
+		help: 'visualizers#artifact-odds',
+		device: 'desk',
+		width: VZ_DESK,
+		route: vz('artifact', { ...PIECE, view: 'reshape', selected: ['cr', 'cd'] }),
+		clip: (page) => headTo(page, 'artifact', '.stage-handle')
+	},
+	{
+		id: 'vz-wish',
+		help: 'visualizers#wish-odds',
+		device: 'desk',
+		width: VZ_DESK,
+		// C1 of a featured 5★ from 30 pity, no guarantee, the counter at 2.
+		route: vz('wish', {
+			v: 3,
+			target: 'character',
+			pulls: 120,
+			banners: { character: { pity: 30, guaranteed: false, have: 0, goal: 2, counter: 2 } }
+		}),
+		clip: (page) => headTo(page, 'wish', '.stage-handle'),
+		callouts: [
+			{ selector: `${TILE('wish')} .stage-handle`, at: 'left', side: 'left' },
+			{
+				selector: `${TILE('wish')} button:has-text("Radiance counter")`,
+				at: 'bottom',
+				side: 'bottom'
+			}
+		]
 	}
 ];

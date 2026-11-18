@@ -118,5 +118,87 @@
 		"height": 664,
 		"scale": 0.7,
 		"callouts": [{ "n": 1, "x": 0.2914, "y": 0.0934, "side": "right" }]
+	},
+	"vz-workspace": {
+		"width": 685,
+		"height": 98,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.2453, "y": 0.3673, "side": "bottom" },
+			{ "n": 2, "x": 0.9229, "y": 0.3673, "side": "bottom" },
+			{ "n": 3, "x": 0.6089, "y": 0.3673, "side": "bottom" },
+			{ "n": 4, "x": 0.7366, "y": 0.3673, "side": "bottom" },
+			{ "n": 5, "x": 0.8284, "y": 0.3673, "side": "bottom" }
+		]
+	},
+	"vz-crit": {
+		"width": 313,
+		"height": 485,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.6246, "y": 0.4269, "side": "right" },
+			{ "n": 2, "x": 0.4553, "y": 0.2784, "side": "top" },
+			{ "n": 3, "x": 0.4097, "y": 0.3279, "side": "left" },
+			{ "n": 4, "x": 0.024, "y": 0.9141, "side": "left" }
+		]
+	},
+	"vz-gauge": {
+		"width": 976,
+		"height": 438,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.1532, "y": 0.2735, "side": "bottom" },
+			{ "n": 2, "x": 0.3105, "y": 0.3968, "side": "right" },
+			{ "n": 3, "x": 0.1814, "y": 0.3398, "side": "top" },
+			{ "n": 4, "x": 0.3335, "y": 0.7708, "side": "right" }
+		]
+	},
+	"vz-icd": { "width": 976, "height": 315, "scale": 1, "callouts": [] },
+	"vz-curves": {
+		"width": 976,
+		"height": 515,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.5782, "y": 0.4544, "side": "right" },
+			{ "n": 2, "x": 0.1722, "y": 0.7055, "side": "right" }
+		]
+	},
+	"vz-breakdown": {
+		"width": 918,
+		"height": 492,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.3321, "y": 0.0902, "side": "bottom" },
+			{ "n": 2, "x": 0.2955, "y": 0.5342, "side": "right" },
+			{ "n": 3, "x": 0.466, "y": 0.3464, "side": "top" }
+		]
+	},
+	"vz-defres": {
+		"width": 704,
+		"height": 466,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.2233, "y": 0.7335, "side": "bottom" },
+			{ "n": 2, "x": 0.2235, "y": 0.4058, "side": "top" }
+		]
+	},
+	"vz-artifact-piece": {
+		"width": 704,
+		"height": 530,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.2484, "y": 0.2448, "side": "bottom" },
+			{ "n": 2, "x": 0.219, "y": 0.6884, "side": "top" }
+		]
+	},
+	"vz-artifact-reshape": { "width": 704, "height": 591, "scale": 1, "callouts": [] },
+	"vz-wish": {
+		"width": 704,
+		"height": 561,
+		"scale": 1,
+		"callouts": [
+			{ "n": 1, "x": 0.0114, "y": 0.9521, "side": "left" },
+			{ "n": 2, "x": 0.6562, "y": 0.2403, "side": "bottom" }
+		]
 	}
 }
