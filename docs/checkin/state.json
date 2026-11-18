@@ -2,10 +2,10 @@
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
 		"audited": "a284a499b",
-		"seenUpstream": "a284a499b",
+		"seenUpstream": "3501915ab",
 		"date": "2026-11-17",
 		"tag": "v2.50.0",
-		"note": "1 commit seen 2026-11-17: Mizuki C2 shred task now starts after Dreamdrifter applies, and her Revelation EM share recomputes (#3275); our C2 already spans the stance, and the EM share is damage maths only"
+		"note": "1 commit seen 2026-11-18 (3501915ab): Key of Khaj-Nisut with multiple wielders (#3277), a weapon fix, nothing under internal/characters; clone not advanced, audit still a284a499b"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-17T00:00:00Z"
+		"lastSeen": "2026-11-18T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -26,10 +26,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "ae67cae3"
+		"lastSwept": "5093a3e1"
 	},
 	"roles": {
-		"audited": "2026-11-17",
+		"audited": "2026-11-18",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
