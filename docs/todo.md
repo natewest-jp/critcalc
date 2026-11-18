@@ -8,14 +8,12 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Help screenshots, as a pipeline** (agreed 2026-10-21). A shot list in the repo (help section · route · viewport · state seed, usually a `?r=` link · crop selector); a Playwright script renders and crops at 2×, optionally drawing numbered callouts in-page before capture; WebP, imported through Vite so names hash (⛔ not `/assets/`, which is immutable add-only); lazy-loaded in the overlay. ⚠️ Freeze the scene to a fixed pose, or the glass shows a different sky every run. Start with a one-line-per-section checklist Nate rules (shot / no shot / callout). ⚓ Nate 2026-11-14: desktop shots throughout, phone shots only in the two "On a phone" sections; a three-shot demo first (the composer, a bench card with callouts, the phone dock), then the full list of 26. English text in images won't localize, but the script reruns per locale. ⚓ Nate 2026-11-15: numbered pins on the image, named by numbers in the prose (no labels, no legend, one design at every width); newer outfits; a recurring cast per chapter, staged with Nate before each chapter's capture; nothing that dates (a Custom lineup, released characters only); the Builder's lineups are teams people would actually play, and not too dated. One chapter per round. The pipeline and the Rotation planner and Team builder chapters are done (`docs/rounds/help-screenshots-planner-2026-11-15.md`, `docs/rounds/help-screenshots-builder-2026-11-17.md`); the Visualizers chapter is next.
-
-## ⏭ Next
-
 - **Translation: Simplified Chinese and Japanese (⚓ Nate 2026-11-18: after the Help screenshots, so Help is translated once).** Run alone; it is token-heavy. Plan: `docs/design/i18n-plan.md`, locale priority in `docs/rounds/launch-roadmap.md` § The wording pass, then i18n. Claude's recommendation, two rounds:
   1. **Refresh the ledger** (`docs/text/ledger-plan.md`). On 2026-11-18 `extract-strings.mjs` found 2,628 messages, 465 of them unassigned across the profiles layout's 39 files (top bar, menu state, Library, Teams, Trash, profile form, Changelog…), and 35 notes orphaned by the Visualizer rewrites. Assign the files to surfaces, move any ruling worth keeping out of the orphaned notes, then `--write`.
   2. **A pilot on the frame only:** top bar, menus, landing, Settings, and error pages; tool interiors (mostly Tier C jargon) and Help wait. Paraglide wired in, locale in the path (`/ja/`, `/zh/`), never in `?r=`; game terms from genshin-db, never translated by us; system CJK fonts; a pseudo-locale pass for layout breaks before any real translation; shipped unlinked and `noindex` until Nate opens it.
      Open questions for Nate: who reviews each language (unreviewed machine translation is a public call); hidden pilot or a labeled beta; whether Cloudflare analytics show zh/ja visitors yet.
+
+## ⏭ Next
 
 ## Queue
 
