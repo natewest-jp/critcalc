@@ -12,7 +12,10 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ⏭ Next
 
-- Nothing yet.
+- **Translation: Simplified Chinese and Japanese (⚓ Nate 2026-11-18: after the Help screenshots, so Help is translated once).** Run alone; it is token-heavy. Plan: `docs/design/i18n-plan.md`, locale priority in `docs/rounds/launch-roadmap.md` § The wording pass, then i18n. Claude's recommendation, two rounds:
+  1. **Refresh the ledger** (`docs/text/ledger-plan.md`). On 2026-11-18 `extract-strings.mjs` found 2,628 messages, 465 of them unassigned across the profiles layout's 39 files (top bar, menu state, Library, Teams, Trash, profile form, Changelog…), and 35 notes orphaned by the Visualizer rewrites. Assign the files to surfaces, move any ruling worth keeping out of the orphaned notes, then `--write`.
+  2. **A pilot on the frame only:** top bar, menus, landing, Settings, and error pages; tool interiors (mostly Tier C jargon) and Help wait. Paraglide wired in, locale in the path (`/ja/`, `/zh/`), never in `?r=`; game terms from genshin-db, never translated by us; system CJK fonts; a pseudo-locale pass for layout breaks before any real translation; shipped unlinked and `noindex` until Nate opens it.
+     Open questions for Nate: who reviews each language (unreviewed machine translation is a public call); hidden pilot or a labeled beta; whether Cloudflare analytics show zh/ja visitors yet.
 
 ## Queue
 
@@ -50,8 +53,8 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 - **Wish Odds: read UIGF exports** (the shared wish-history format, uigf.org v4.2, exported by tools such as Snap Hutao and Starward). Records carry item IDs, so the standard 5★s are found whatever the export's language (`STANDARD_FIVE_STARS`' IDs are in genshin-db). ⏸ Waiting for a real export to test against: the spec doesn't say what order the records come in, and a wrong order would quietly give the wrong counter.
 - **Visualizers:** Gauge Explorer's Lunar-Charged + Lunar-Crystallize options (help already says it doesn't model them) · a whole-workspace share (each tile has only its own Copy link).
 - Transitions: Back→Forward revive at full opacity · same-path nav blink · resize mid-transition stale pose · a same-tab external link would descend (latent). Bug 2 detail: `docs/rounds/transition-hardening-queue.md`.
-- **Housekeeping:** rewrite `docs/rounds/tool-constitutions.md` (partly false) · the string inventory, unblocked now the old layout is gone: `extract-strings.mjs` finds 388 unassigned strings in the profiles layout's files, so surfaces need assigning before `--write`; it also reports notes orphaned by the stage rounds (Wish odds, Artifact odds, Crit, ICD, Gauge).
-- Bigger: i18n zh-Hans + ja (run alone, token-heavy) · the static pages' own visual style (Nate debating).
+- **Housekeeping:** rewrite `docs/rounds/tool-constitutions.md` (partly false).
+- Bigger: the static pages' own visual style (Nate debating).
 - **Re-examine the typed-count shortcuts (⚓ Nate 2026-10-30).** A few characters' stacks are only reachable by typing `{key:N}` into the notation, which no player has been taught: Escoffier `coldDish`, Kinich `huntersExperience`, Heizou `declension`. Each was judged unmodellable against an older stack system; check each against today's, model what now fits, and decide what to teach for the rest.
 - **BETA tag: comes off when Nate says so** (ruling 2026-09-22; ⛔ don't propose an end condition).
 
