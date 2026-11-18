@@ -149,27 +149,30 @@
 	<h2 id="icd-timeline">ICD timeline</h2>
 	<HelpFigure
 		shot="vz-icd"
-		alt="The ICD timeline on Fischl’s Oz: ten hits over ten seconds, three of them applying Electro, with the Hits, Counter, and Timer lanes."
+		alt="The ICD timeline with hits every 0.5s under Standard ICD: 2 of every 5 hits apply Electro, bracketed over the first five, with the Hits, Counter, and Timer lanes, and the chart of how often the element lands at each interval beneath."
 	>
 		<p>
 			Which hits in a string actually apply their element. The headline is the share that do: for
 			evenly spaced hits, the pattern that repeats in every timer window (“2 of every 5”, bracketed
-			over its hits on the chart), and for an example, its whole list. The chart has three lanes on
-			one time axis. In <strong>Hits</strong>, a tall stem in the element’s color applies and a
-			short, faint tick is blocked. <strong>Counter</strong> is the hit counter, ringed where the
-			counter let a hit through. <strong>Timer</strong> shows the timer windows, each with how many hits
-			it applied. Point at a hit to read why it did or didn’t apply.
+			over its hits on the chart <HelpRef n={1} />), and for an example, its whole list. The chart
+			has three lanes on one time axis. In <strong>Hits</strong>, a tall stem in the element’s color
+			applies and a short, faint tick is blocked. <strong>Counter</strong> is the hit counter,
+			ringed where the counter let a hit through <HelpRef n={2} />. <strong>Timer</strong> shows the timer
+			windows, each with how many hits it applied. Point at a hit to read why it did or didn’t apply.
+		</p>
+
+		<p>
+			The row over the chart picks the string: evenly spaced hits, or one of four real examples from
+			gcsim (Fischl’s Oz, Hu Tao’s charged attacks, Chevreuse’s burst, and Layla’s Shooting Stars).
+			For evenly spaced hits, the handle under the chart sets the interval, and the strip along it <HelpRef
+				n={3}
+			/>
+			shows how often the element lands at every interval: sometimes a slower string lands it more often.
+			Under the chart, <strong>ICD</strong> sets the rule: <strong>Standard</strong>,
+			<strong>No ICD</strong>, or the example’s own fill in its timer, hit counter, and limit per
+			window, and moving any of them makes it <strong>Custom</strong>.
 		</p>
 	</HelpFigure>
-	<p>
-		The row over the chart picks the string: evenly spaced hits, or one of four real examples from
-		gcsim (Fischl’s Oz, Hu Tao’s charged attacks, Chevreuse’s burst, and Layla’s Shooting Stars).
-		For evenly spaced hits, the handle under the chart sets the interval, and the strip along it
-		shows how often the element lands at every interval: sometimes a slower string lands it more
-		often. Under the chart, <strong>ICD</strong> sets the rule: <strong>Standard</strong>,
-		<strong>No ICD</strong>, or the example’s own fill in its timer, hit counter, and limit per
-		window, and moving any of them makes it <strong>Custom</strong>.
-	</p>
 	<p>
 		Standard ICD is a 2.5s timer and every third hit, and it stops after eight applications in one
 		window, though no real string gets that far. A hit let through by the timer restarts the timer
@@ -279,27 +282,27 @@
 
 <section>
 	<h2 id="artifact-odds">Artifact odds</h2>
-	<p>
-		A 5★ artifact’s odds over its life, in four views. Throughout, <strong>Valued stats</strong> are the
-		substats you’d count as good. With only CRIT Rate and CRIT DMG valued, results are in crit value;
-		otherwise in useful rolls, where a top roll counts 1 and the smallest 0.7.
-	</p>
-	<p>
-		<strong>Drop</strong> answers how long a piece takes to farm. Pick the piece type, every main stat
-		you’d accept, and how many of your valued stats it needs, and the chart shows the chance you’d have
-		it after each day of resin, from the domain alone and during a Stygian Onslaught Outbreak. A day is
-		180 resin, and a run averages a little over one 5★.
-	</p>
-	<p>
-		<strong>Level up</strong> shows the chance a fresh piece ends above each value at +20, with 100 dots
-		under the curve, one for each hundredth of the pieces. Drag the chart, or type a value under it, to
-		set the value to beat. It covers pieces that drop with three substats or four, and pieces made with
-		Sanctifying Elixir, which guarantees two of your chosen substats at least two upgrades.
-	</p>
 	<HelpFigure
 		shot="vz-artifact-piece"
 		alt="Artifact odds’ Your piece view for a +20 flower with CRIT Rate 10.5, CRIT DMG 21.0, ATK% 9.9, and ER 6.5: better than 95% of +20 flowers with these four substats, its 42 CV marked among 100 dots."
 	>
+		<p>
+			A 5★ artifact’s odds over its life, in four views. Throughout, <strong>Valued stats</strong> are
+			the substats you’d count as good. With only CRIT Rate and CRIT DMG valued, results are in crit value;
+			otherwise in useful rolls, where a top roll counts 1 and the smallest 0.7.
+		</p>
+		<p>
+			<strong>Drop</strong> answers how long a piece takes to farm. Pick the piece type, every main stat
+			you’d accept, and how many of your valued stats it needs, and the chart shows the chance you’d have
+			it after each day of resin, from the domain alone and during a Stygian Onslaught Outbreak. A day
+			is 180 resin, and a run averages a little over one 5★.
+		</p>
+		<p>
+			<strong>Level up</strong> shows the chance a fresh piece ends above each value at +20, with 100
+			dots under the curve, one for each hundredth of the pieces. Drag the chart, or type a value under
+			it, to set the value to beat. It covers pieces that drop with three substats or four, and pieces
+			made with Sanctifying Elixir, which guarantees two of your chosen substats at least two upgrades.
+		</p>
 		<p>
 			<strong>Your piece</strong> is where you enter a real artifact and see how it measures up.
 			Open it from the toolbar <HelpRef n={1} /> and type each substat and its value, or pick them from

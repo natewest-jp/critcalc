@@ -17,7 +17,9 @@
  * - `callouts`: the points a figure names, in prose order. Each is a
  *   selector, the point on its box (`at`, on the edge that faces its pin),
  *   an optional nudge in CSS pixels (`dx`, `dy`), and the `side` of the
- *   point its pin stands on (default: above it, like a map pin). Nothing is
+ *   point its pin stands on (default: above it, like a map pin). Where no
+ *   element marks the point (a mark drawn inside a larger SVG), `point(page)`
+ *   returns it in page CSS pixels instead of `selector` and `at`. Nothing is
  *   drawn into the image: the points go into the manifest and
  *   `HelpFigure.svelte` draws a numbered pin at each, its tip on the point,
  *   so their look is a CSS setting. The prose says what each number is.
@@ -131,6 +133,33 @@ const headTo = async (page, id, to, { pad = 8, extra = 0 } = {}) => {
 		width: x1 - x0,
 		height: end.y + end.height - head.y + 2 * pad + extra
 	};
+};
+/** The crit heatmap's bars beside the map have no element of their own:
+ *  the top of the highest bar at least a third as long as the longest, so
+ *  its pin stands in the gap above it, clear of the count labels. */
+const critBar = (page) =>
+	page.locator(`${TILE('crit')} .cv-chart rect`).evaluateAll((els) => {
+		const bars = els
+			.map((e) => e.getBoundingClientRect())
+			.filter((r) => r.height > 10 && r.height < 40 && r.width > 0 && r.width < 120);
+		const longest = Math.max(...bars.map((r) => r.width));
+		const bar = bars.filter((r) => r.width >= longest / 3).sort((a, b) => a.y - b.y)[0];
+		return { x: bar.x + bar.width / 2, y: bar.y };
+	});
+/** Artifact odds' dots: the top of the tallest column clear of the dots'
+ *  caption, so the pin standing over it covers no words. */
+const topDot = async (page) => {
+	const caption = await boxOf(page, `${TILE('artifact')} text:has-text("one dot each")`);
+	return page.locator(`${TILE('artifact')} .stage-graph circle[r="3.9"]`).evaluateAll(
+		(els, clear) => {
+			const r = els
+				.map((e) => e.getBoundingClientRect())
+				.filter((b) => b.x > clear)
+				.sort((a, b) => a.y - b.y)[0];
+			return { x: r.x + r.width / 2, y: r.y };
+		},
+		caption.x + caption.width + 16
+	);
 };
 /** One crit piece, used by both Artifact odds shots: a +20 flower with nine
  *  rolls, three each into CRIT Rate and CRIT DMG. */
@@ -608,17 +637,19 @@ export const SHOTS = [
 		id: 'vz-crit',
 		help: 'visualizers#crit-heatmap',
 		device: 'desk',
-		// At this width the bars sit under the map, which keeps the shot
-		// compact enough to read in the margin.
-		width: 1000,
+		// 🎛️ The roomier layout, with the bars beside the map as the prose
+		// says: below 1040 the heatmap condenses to ~300px with the bars under
+		// it, and above it the chart is ~690px and shrinks in the margin.
+		width: 680,
 		// A 300 CV build off the 1:2 ratio, with the shared 70/140 pinned.
 		route: vz('crit', { v: 1, cr: 0.5, cd: 2.0, variance: true, hits: 8, pin: [0.7, 1.4] }),
 		clip: (page) => boxOf(page, `${TILE('crit')} .cv-chart-col`, { pad: 8 }),
 		callouts: [
-			{ selector: `${TILE('crit')} circle[r="8"]`, at: 'right', dx: 4, side: 'right' },
-			{ selector: `${TILE('crit')} .cv-ring-hit`, at: 'top', side: 'top' },
+			{ selector: `${TILE('crit')} circle[r="8"]`, at: 'right', dx: 1, side: 'right' },
+			// The ring's hit circle is larger than the ring it draws.
+			{ selector: `${TILE('crit')} .cv-ring-hit`, at: 'center', dy: -8, side: 'top' },
 			{ selector: `${TILE('crit')} circle[r="5.5"]`, at: 'left', side: 'left' },
-			{ selector: `${TILE('crit')} .cv-strip-below`, at: 'left', side: 'left' }
+			{ point: (page) => critBar(page), side: 'top' }
 		]
 	},
 	{
@@ -637,12 +668,26 @@ export const SHOTS = [
 				[2, 'pyro', 1]
 			]
 		}),
-		clip: (page) => headTo(page, 'gauge', '.stage-graph'),
+		// Tall (⚓ Nate): from the headline to the element lanes, and across to
+		// just past the element buttons, which is past every mark. The rest of
+		// the axis is empty, and Clear is the only control it cuts.
+		clip: async (page) => {
+			const box = await headTo(page, 'gauge', '.stage-graph');
+			const adds = await boxOf(page, `${TILE('gauge')} .gx-adds`);
+			return { ...box, width: adds.x + adds.width + 44 - box.x };
+		},
+		scale: 1.3,
 		callouts: [
-			{ selector: `${TILE('gauge')} .gx-adds`, at: 'bottom', side: 'bottom' },
-			{ selector: `${TILE('gauge')} .gx-marker >> nth=2`, at: 'right', side: 'right' },
-			{ selector: `${TILE('gauge')} .stage-graph >> text=Electro-Charged`, at: 'top', side: 'top' },
-			{ selector: `${TILE('gauge')} .gx-drop >> nth=0`, at: 'right', side: 'right' }
+			{ selector: `${TILE('gauge')} .gx-adds`, at: 'right', side: 'right' },
+			// The pill's disc, not its hit box.
+			{
+				selector: `${TILE('gauge')} .gx-marker >> nth=0 >> circle[r="9"]`,
+				at: 'left',
+				side: 'left'
+			},
+			{ selector: `${TILE('gauge')} text:has-text("Vaporize")`, at: 'right', dx: 1, side: 'right' },
+			// Two drop labels, Electro's and Hydro's, stacked at the drop.
+			{ selector: `${TILE('gauge')} .gx-drop >> nth=0`, at: 'right', dx: 1, dy: 4, side: 'right' }
 		]
 	},
 	{
@@ -650,8 +695,15 @@ export const SHOTS = [
 		help: 'visualizers#icd-timeline',
 		device: 'desk',
 		width: VZ_DESK,
-		route: vz('icd', { v: 1, source: 'oz' }),
-		clip: (page) => headTo(page, 'icd', '.stage-graph svg >> nth=0')
+		// Evenly spaced hits under Standard ICD (⚓ Nate): the pattern, the
+		// counter's rings, and the interval chart under it.
+		route: vz('icd', { v: 1, source: 'even', interval: 0.5, rule: 'standard' }),
+		clip: (page) => headTo(page, 'icd', '.icd-anchors'),
+		callouts: [
+			{ selector: `${TILE('icd')} text:has-text("of these")`, at: 'left', dx: -1, side: 'left' },
+			{ selector: `${TILE('icd')} circle[fill="none"] >> nth=0`, at: 'bottom', side: 'bottom' },
+			{ selector: `${TILE('icd')} circle[style*="frame-bg"]`, at: 'left', side: 'left' }
+		]
 	},
 	{
 		id: 'vz-curves',
@@ -666,10 +718,13 @@ export const SHOTS = [
 				at: 'right',
 				side: 'right'
 			},
+			// The strip's fill, near its foot at the left end: the shape's box
+			// starts above the fill, level with the strip's label.
 			{
-				selector: `${TILE('curves')} text:has-text("what the next 100 EM adds")`,
-				at: 'right',
-				side: 'right'
+				selector: `${TILE('curves')} path[fill-opacity="0.45"]`,
+				at: 'bottom-left',
+				dy: -18,
+				side: 'left'
 			}
 		]
 	},
@@ -735,7 +790,7 @@ export const SHOTS = [
 		clip: (page) => headTo(page, 'artifact', '.stage-handle'),
 		callouts: [
 			{ selector: `${TILE('artifact')} .ao-glance`, at: 'bottom', side: 'bottom' },
-			{ selector: `${TILE('artifact')} text:has-text("yours") >> nth=0`, at: 'top', side: 'top' }
+			{ point: (page) => topDot(page), side: 'top' }
 		]
 	},
 	{
@@ -744,7 +799,24 @@ export const SHOTS = [
 		device: 'desk',
 		width: VZ_DESK,
 		route: vz('artifact', { ...PIECE, view: 'reshape', selected: ['cr', 'cd'] }),
-		clip: (page) => headTo(page, 'artifact', '.stage-handle')
+		// The slider under the dots is cut by the crop; hidden, so no sliver of
+		// its thumb shows under the axis caption.
+		prepare: (page) =>
+			page
+				.locator(`${TILE('artifact')} .stage-handle`)
+				.evaluateAll((els) => els.forEach((e) => (e.style.visibility = 'hidden'))),
+		// From the view's own toolbar down to the dots: the headline's view
+		// tabs repeat the shot above, and the shorter shot stays in its section.
+		clip: async (page) => {
+			const bar = await boxOf(page, `${TILE('artifact')} .setup-bar`);
+			const graph = await boxOf(page, `${TILE('artifact')} .stage-graph`);
+			return {
+				x: bar.x - 8,
+				y: bar.y - 8,
+				width: bar.width + 16,
+				height: graph.y + graph.height - bar.y + 10
+			};
+		}
 	},
 	{
 		id: 'vz-wish',
@@ -760,7 +832,7 @@ export const SHOTS = [
 		}),
 		clip: (page) => headTo(page, 'wish', '.stage-handle'),
 		callouts: [
-			{ selector: `${TILE('wish')} .stage-handle`, at: 'left', side: 'left' },
+			{ selector: `${TILE('wish')} input[type=range]`, at: 'left', side: 'left' },
 			{
 				selector: `${TILE('wish')} button:has-text("Radiance counter")`,
 				at: 'bottom',
