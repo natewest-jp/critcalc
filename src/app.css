@@ -4450,4 +4450,8 @@ img {
 	--font-mono: 'IBM Plex Mono', var(--font-cjk), monospace;
 	--font-condensed:
 		'IBM Plex Sans Condensed', 'IBM Plex Sans Variable', var(--font-cjk), sans-serif;
+	/* Kinsoku at its strict level: a line never starts with the long-vowel
+	   mark ー or a small kana, so "ローテーションプランナー" can't leave its
+	   ー alone on the next line (the browser's default, `auto`, allows it). */
+	line-break: strict;
 }
