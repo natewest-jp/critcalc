@@ -56,5 +56,6 @@ describe('locale facts', () => {
 		expect(isIndexed('en')).toBe(true);
 		expect(isIndexed('ja')).toBe(false);
 		expect(isIndexed('zh')).toBe(false);
+		expect(isIndexed('en-XA')).toBe(false);
 	});
 });
