@@ -56,40 +56,40 @@
   - terms: 📖 rotation
 - `faq_something_looks_wrong` — Faq.svelte:93 <h3>
   > Something looks wrong.
-- `faq_please_report_it_through_the_feedback` — Faq.svelte:95 <p>
+- `faq_please_report_it_through_the_feedback` — Faq.svelte:94 <p>
   > Please report it through the <a>feedback form</a>. <strong>Report a problem</strong> in the top bar’s <strong>?</strong> menu opens the same form with a link to what you’re looking at already filled in. A character’s details card has its own link: <strong>Something not right with this character?</strong>
-- `faq_timing` — Faq.svelte:107 <h2>
+- `faq_timing` — Faq.svelte:105 <h2>
   > Timing
-- `faq_why_is_the_timeline_faster_or_slower` — Faq.svelte:109 <h3>
+- `faq_why_is_the_timeline_faster_or_slower` — Faq.svelte:107 <h3>
   > Why is the timeline faster or slower than the timing I know?
   - terms: 📖 timeline
-- `faq_check_human_timing_it_s_on_by_default` — Faq.svelte:110 <p>
+- `faq_check_human_timing_it_s_on_by_default` — Faq.svelte:108 <p>
   > Check <strong>Human timing</strong> (it’s on by default). This pads every input the game doesn’t buffer with a few frames of reaction time — 10 to start with, which is the KQM starting point. Normal attack into normal attack is queued up by the game, so no padding is added there. Turn it off in <a>Settings</a> to see the frame-perfect rotation, or tune it there.
   - terms: 🎮 Normal Attack · 📖 Human timing · 📖 rotation · 🔒 KQM
-- `faq_swapping_characters_costs_time_either` — Faq.svelte:116 <p>
+- `faq_swapping_characters_costs_time_either` — Faq.svelte:114 <p>
   > Swapping characters costs time either way. Swaps are calculated as your ping plus about 90 ms. At critcalc’s default ping setting (60 ms), that results in nine frames for every swap. Set your own ping under <strong>Swap ping</strong> in Settings.
   - terms: 🔒 critcalc
-- `faq_why_does_a_skill_come_back_later_than` — Faq.svelte:122 <h3>
+- `faq_why_does_a_skill_come_back_later_than` — Faq.svelte:120 <h3>
   > Why does a skill come back later than its cooldown says?
   - terms: 🎮 cooldown · 🎮 Elemental Skill
-- `faq_because_for_most_skills_the_cooldown` — Faq.svelte:123 <p>
+- `faq_because_for_most_skills_the_cooldown` — Faq.svelte:121 <p>
   > Because for most skills the cooldown doesn’t start on the button press. It starts a few frames into the cast (eleven frames for Nahida’s skill, for example), and the timeline draws it from there. A few skills start even later: Xilonen’s cooldown timer only begins once her Nightsoul state ends, so it runs after the stance rather than from the cast.
   - terms: 🎮 Nightsoul · 🎮 cooldown · 📖 timeline · 🎮 Elemental Skill
-- `faq_odds_and_ends` — Faq.svelte:132 <h2>
+- `faq_odds_and_ends` — Faq.svelte:130 <h2>
   > Odds and ends
-- `faq_which_terminology_does_critcalc_follow` — Faq.svelte:134 <h3>
+- `faq_which_terminology_does_critcalc_follow` — Faq.svelte:132 <h3>
   > Which terminology does critcalc follow?
   - terms: 🔒 critcalc
-- `faq_keqing_mains_its_notation_for_rotations` — Faq.svelte:136 <p>
+- `faq_keqing_mains_its_notation_for_rotations` — Faq.svelte:134 <p>
   > <a>Keqing Mains</a>: its notation for rotations, its names for mechanics, and the game’s own names for reactions — Frozen and Overloaded, for instance.
   - terms: 🔒 Keqing Mains · 🎮 Overloaded · 📖 rotation · 📖 notation · 🎮 Frozen
-- `faq_does_it_work_on_a_phone` — Faq.svelte:141 <h3>
+- `faq_does_it_work_on_a_phone` — Faq.svelte:139 <h3>
   > Does it work on a phone?
-- `faq_yes_down_to_320px_wide_though_the` — Faq.svelte:142 <p>
+- `faq_yes_down_to_320px_wide_though_the` — Faq.svelte:140 <p>
   > Yes, down to 320px wide, though the rotation planner and team builder are easier with more room. On a phone the rotation planner starts with the Buffs and Auras layers off, and you can hide the bench.
   - terms: 📖 rotation · 📖 bench
-- `faq_if_you_use_critcalc_on_your_phone_often` — Faq.svelte:147 <p>
+- `faq_if_you_use_critcalc_on_your_phone_often` — Faq.svelte:145 <p>
   > If you use critcalc on your phone often, I’d suggest adding it to your home screen, which opens the site without your browser’s bars. On an iPhone, it also stops Safari from clearing your data when you haven’t visited in a while. It still needs a connection: Character data loads as you use it, so going offline partway through can leave a character half-loaded.
   - terms: 🔒 critcalc
-- `faq_here_s_how_to_add_it_to_your_home_screen` — Faq.svelte:153 <p>
+- `faq_here_s_how_to_add_it_to_your_home_screen` — Faq.svelte:151 <p>
   > Here’s how to add it to your home screen on an <a>Android phone (Chrome)</a> and on an <a>iPhone (Safari)</a>.

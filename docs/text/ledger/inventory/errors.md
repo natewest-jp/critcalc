@@ -7,46 +7,46 @@
 
 - `errors_try_again` — RenderCrash.svelte:46 <button>
   > Try again
-- `errors_report_this` — RenderCrash.svelte:49 <div> · +error.svelte:85 <div>
+- `errors_report_this` — RenderCrash.svelte:49 <div> · +error.svelte:77 m()
   > Report this
 - `errors_close` — ToolColumns.svelte:140 aria-label=
   > Close
-- `errors_open_in_another_tab` — +layout.svelte:69 lead:
+- `errors_open_in_another_tab` — +layout.svelte:70 lead:
   > Open in another tab.
-- `errors_this_tab_can_view_but_not_change` — +layout.svelte:70 body:
+- `errors_this_tab_can_view_but_not_change` — +layout.svelte:71 body:
   > This tab can view but not change anything.
-- `errors_edit_here` — +layout.svelte:71 label:
+- `errors_edit_here` — +layout.svelte:72 label:
   > Edit here
-- `errors_page_at_opacity_x_current_route_path` — +layout.svelte:745 last:
+- `errors_page_at_opacity_x_current_route_path` — +layout.svelte:746 last:
   > {p.dataset.page} at opacity {o.toFixed(3)} (current route {path})
   - vars: `p.dataset.page` `o.toFixed(3)` `path`
-- `errors_transform_opacity` — +layout.svelte:849 willChange: · +layout.svelte:879 willChange:
+- `errors_transform_opacity` — +layout.svelte:850 willChange: · +layout.svelte:880 willChange:
   > transform, opacity
-- `errors_this_tool_ran_into_a_problem` — +layout.svelte:1004 title=
+- `errors_this_tool_ran_into_a_problem` — +layout.svelte:1005 title=
   > This tool ran into a problem.
-- `errors_the_rest_of_the_site_is_fine_and_your` — +layout.svelte:1005 body=
+- `errors_the_rest_of_the_site_is_fine_and_your` — +layout.svelte:1006 body=
   > The rest of the site is fine, and your saved rotations and lineups are untouched.
   - terms: 📖 rotation
-- `errors_critcalc_app_home` — +error.svelte:51 aria-label=
+- `errors_critcalc_app_home` — +error.svelte:52 m()
   > critcalc.app home
   - terms: 🔒 critcalc.app
-- `errors_critcalc_app` — +error.svelte:53 <span>
+- `errors_critcalc_app` — +error.svelte:54 <span>
   > critcalc.app
   - terms: 🔒 critcalc.app
-- `errors_that_page_couldn_t_be_found` — +error.svelte:57 <h1>
+- `errors_that_page_couldn_t_be_found` — +error.svelte:58 m()
   > That page couldn’t be found.
-- `errors_it_might_very_well_belong_to_the_abyss` — +error.svelte:58 <p>
+- `errors_it_might_very_well_belong_to_the_abyss` — +error.svelte:59 m()
   > It might very well belong to the Abyss.
-- `errors_the_address_may_be_mistyped_or_if_you` — +error.svelte:59 <p>
+- `errors_the_address_may_be_mistyped_or_if_you` — +error.svelte:60 m()
   > The address may be mistyped, or if you followed a shared link, it may have been cut short on its way here. Share links are long, and chat apps sometimes trim them.
-- `errors_something_went_wrong` — +error.svelte:64 <h1>
+- `errors_something_went_wrong` — +error.svelte:62 m()
   > Something went wrong.
-- `errors_a_star_slipped_its_course_tonight_sumeru` — +error.svelte:65 <p>
+- `errors_a_star_slipped_its_course_tonight_sumeru` — +error.svelte:63 m()
   > A star slipped its course tonight. Sumeru’s star-readers logged the deviation, reset their instruments, and looked again.
   - terms: 🎮 Sumeru
-- `errors_this_was_a_site_error_not_something_you` — +error.svelte:69 <p>
+- `errors_this_was_a_site_error_not_something_you` — +error.svelte:64 m()
   > This was a site error, not something you did wrong. Reloading often clears it. If it keeps happening, please report it and say what you were doing when it broke.
-- `errors_report_a_problem` — +error.svelte:88 <a>
+- `errors_report_a_problem` — +error.svelte:81 m()
   > Report a problem
-- `errors_tools` — +error.svelte:96 aria-label=
+- `errors_tools` — +error.svelte:90 m()
   > Tools

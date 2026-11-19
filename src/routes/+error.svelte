@@ -7,6 +7,7 @@
 	import { TOOLS } from '$lib/tools';
 	import ReportLink from '$lib/components/ReportLink.svelte';
 	import { feedbackToolForPath } from '$lib/feedback';
+	import { m } from '$lib/paraglide/messages';
 
 	// ⚠️ THIS PAGE RENDERS OUTSIDE THE SCENE, AND THAT IS DELIBERATE.
 	//
@@ -48,28 +49,19 @@
 		<!-- The chrome's lockup heads the block and IS the home link (same
 		     proportions as TopBar's .tb-logo — the mark 1.5714× the
 		     wordmark, lifted −0.18em). -->
-		<a class="brand" href={hrefTo('/')} aria-label="critcalc.app home">
+		<a class="brand" href={hrefTo('/')} aria-label={m.errors_critcalc_app_home()}>
 			<img src="/critcalc-logo-white.svg" alt="" />
 			<span class="wordmark">critcalc.app</span>
 		</a>
 
 		{#if isNotFound}
-			<h1>That page couldn’t be found.</h1>
-			<p class="flavor">It might very well belong to the Abyss.</p>
-			<p class="lede">
-				The address may be mistyped, or if you followed a shared link, it may have been cut short on
-				its way here. Share links are long, and chat apps sometimes trim them.
-			</p>
+			<h1>{m.errors_that_page_couldn_t_be_found()}</h1>
+			<p class="flavor">{m.errors_it_might_very_well_belong_to_the_abyss()}</p>
+			<p class="lede">{m.errors_the_address_may_be_mistyped_or_if_you()}</p>
 		{:else}
-			<h1>Something went wrong.</h1>
-			<p class="flavor">
-				A star slipped its course tonight. Sumeru’s star-readers logged the deviation, reset their
-				instruments, and looked again.
-			</p>
-			<p class="lede">
-				This was a site error, not something you did wrong. Reloading often clears it. If it keeps
-				happening, please report it and say what you were doing when it broke.
-			</p>
+			<h1>{m.errors_something_went_wrong()}</h1>
+			<p class="flavor">{m.errors_a_star_slipped_its_course_tonight_sumeru()}</p>
+			<p class="lede">{m.errors_this_was_a_site_error_not_something_you()}</p>
 			<!-- The one action that is not a way OUT, so it keeps its button. -->
 			<!-- ↻ 2026-10-15: a server-side failure (≥ 500) reports straight to
 			     the feedback form, carrying the status and the build; any other
@@ -82,10 +74,12 @@
 							category: 'broken',
 							tool: feedbackToolForPath(routeOf(page.url)),
 							error: `${page.status} ${page.error?.message ?? ''}`
-						}}>Report this</ReportLink
+						}}>{m.errors_report_this()}</ReportLink
 					>
 				{:else}
-					<a class="btn btn--glass ctx-glass" href={hrefTo('/contribute')}>Report a problem</a>
+					<a class="btn btn--glass ctx-glass" href={hrefTo('/contribute')}
+						>{m.errors_report_a_problem()}</a
+					>
 				{/if}
 			</div>
 		{/if}
@@ -93,7 +87,7 @@
 		<!-- The three tools, read from the one tool registry — someone who
 		     mistyped a URL or followed a broken link is usually trying to reach
 		     one of them. With the lockup above, four ways out. -->
-		<nav class="tools-nav" aria-label="Tools">
+		<nav class="tools-nav" aria-label={m.errors_tools()}>
 			<ul class="tools">
 				{#each TOOLS as tool (tool.path)}
 					<li><a class="link" href={hrefTo(tool.path)}>{tool.title}</a></li>

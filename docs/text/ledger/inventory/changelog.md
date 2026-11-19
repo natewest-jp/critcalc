@@ -133,29 +133,29 @@
 - `changelog_critcalc_app_goes_live_with_a_team` — Changelog.svelte:248 <p>
   > critcalc.app goes live with a team builder, rotation planner, and eight visualizers. Source code is on <a>GitHub</a>.
   - terms: 🔒 critcalc.app · 📖 rotation
-- `changelog_known_gaps` — Changelog.svelte:261 <h2>
+- `changelog_known_gaps` — Changelog.svelte:260 <h2>
   > Known gaps
-- `changelog_longer_term_limits_that_are_not_yet` — Changelog.svelte:262 <p>
+- `changelog_longer_term_limits_that_are_not_yet` — Changelog.svelte:261 <p>
   > Longer-term limits that are not yet modeled. Gaps in a single character’s kit are on the <a>coverage page</a>.
-- `changelog_energy_the_rotation_planner_treats_a` — Changelog.svelte:268 <li>
+- `changelog_energy_the_rotation_planner_treats_a` — Changelog.svelte:267 <li>
   > <strong>Energy.</strong> The rotation planner treats a burst as ready whenever its cooldown is.
   - terms: 🎮 cooldown · 📖 rotation · 🎮 Energy · 🎮 Elemental Burst
-- `changelog_more_than_one_enemy_the_rotation_planner` — Changelog.svelte:271 <li>
+- `changelog_more_than_one_enemy_the_rotation_planner` — Changelog.svelte:270 <li>
   > <strong>More than one enemy.</strong> The rotation planner and the gauge explorer assume a single target, so Swirl’s spread to other enemies isn’t drawn.
   - terms: 📖 rotation · 🎮 Swirl · 🏷 gauge
-- `changelog_enemies_with_their_own_element_the_enemy` — Changelog.svelte:275 <li>
+- `changelog_enemies_with_their_own_element_the_enemy` — Changelog.svelte:274 <li>
   > <strong>Enemies with their own element.</strong> The enemy is assumed to have no permanent aura and to apply nothing back to you.
   - terms: 🏷 aura
-- `changelog_shatter` — Changelog.svelte:278 <strong>
+- `changelog_shatter` — Changelog.svelte:277 <strong>
   > Shatter.
   - terms: 🎮 Shatter
-- `changelog_damage_from_reaction_objects_dendro` — Changelog.svelte:280 <li>
+- `changelog_damage_from_reaction_objects_dendro` — Changelog.svelte:279 <li>
   > <strong>Damage from reaction objects.</strong> Dendro Cores, Starlight Prisms, the Thundercloud, and Moondrifts are drawn while they exist, but the damage they deal isn’t.
   - terms: 🎮 Thundercloud · 🎮 Dendro
-- `changelog_lunar_charged_and_lunar_crystallize_in` — Changelog.svelte:284 <li>
+- `changelog_lunar_charged_and_lunar_crystallize_in` — Changelog.svelte:283 <li>
   > <strong>Lunar-Charged and Lunar-Crystallize in the gauge explorer.</strong> The rotation planner models both; the gauge explorer doesn’t yet.
   - terms: 🎮 Lunar-Crystallize · 🎮 Lunar-Charged · 📖 rotation · 🏷 gauge
-- `changelog_co_op_shields_shields_that_only_reach` — Changelog.svelte:288 <li>
+- `changelog_co_op_shields_shields_that_only_reach` — Changelog.svelte:287 <li>
   > <strong>Co-op shields.</strong> Shields that only reach other players’ characters in co-op, such as Nicole’s C2 and the splash from Diona’s C2.
-- `changelog_languages_the_site_is_in_english_only` — Changelog.svelte:291 <li>
+- `changelog_languages_the_site_is_in_english_only` — Changelog.svelte:290 <li>
   > <strong>Languages.</strong> The site is in English only for now.

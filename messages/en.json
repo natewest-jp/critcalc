@@ -1,3 +1,13 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"errors_critcalc_app_home": "critcalc.app home",
+	"errors_that_page_couldn_t_be_found": "That page couldn’t be found.",
+	"errors_it_might_very_well_belong_to_the_abyss": "It might very well belong to the Abyss.",
+	"errors_the_address_may_be_mistyped_or_if_you": "The address may be mistyped, or if you followed a shared link, it may have been cut short on its way here. Share links are long, and chat apps sometimes trim them.",
+	"errors_something_went_wrong": "Something went wrong.",
+	"errors_a_star_slipped_its_course_tonight_sumeru": "A star slipped its course tonight. Sumeru’s star-readers logged the deviation, reset their instruments, and looked again.",
+	"errors_this_was_a_site_error_not_something_you": "This was a site error, not something you did wrong. Reloading often clears it. If it keeps happening, please report it and say what you were doing when it broke.",
+	"errors_report_this": "Report this",
+	"errors_report_a_problem": "Report a problem",
+	"errors_tools": "Tools"
 }

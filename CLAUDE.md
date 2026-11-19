@@ -28,6 +28,7 @@ The site runs the profiles layout: each profile holds its own documents in Index
 
 - No speculative abstractions. Flag a data gap as `// TODO: data gap — [field]`.
 - SSR and hydration: paint a deterministic default first, then restore client state in `onMount`.
+- The locale lives in the path (`/ja/planner`), so every internal URL goes through `$lib/i18n/paths`: `hrefTo` for a link or navigation, `routeOf` to ask which route a URL shows. `page.url.pathname` keeps the prefix. `src/lib/conventions.test.ts` checks.
 - Page meta comes from one map, `src/lib/seo.ts`, rendered once by `SeoHead.svelte` in the root layout. Never give a page its own `<svelte:head>` title: `<svelte:head>` does not dedupe, so the page would ship two of every tag. A new route needs an entry in `seo.ts` and, unless that entry is `noindex` (a page showing only this browser's data), in `static/sitemap.xml`. `src/lib/conventions.test.ts` checks all of it.
 - Errors have two surfaces that catch different things: `src/routes/+error.svelte` handles routing and load failures (chiefly 404, rendered outside the scene), and a `<svelte:boundary>` catches a throw during render. There are two boundaries, around the tool page (`(tools)/+layout.svelte`) and around the menu state's sections (`MenuState.svelte`), and both show `RenderCrash.svelte`. ⚠️ A throw anywhere else (the landing, the top bar, a dialog) still blanks the whole document.
 - `/assets/*` is immutable and add-only. A redrawn asset ships under a new name (`-v2`), never as an overwrite.
@@ -64,6 +65,7 @@ The guard hook (`.claude/hooks/guard.mjs`, registered in `.claude/settings.json`
 - **Area rules**, each loading on its own when you read or edit a file its `paths:` match: `.claude/rules/` (`data` · `schema` · `sim` · `gauge` · `timeline` · `planner` · `builder` · `visualizers` · `ui` · `svelte` · `tool-chrome` · `scene` · `scripts` · `e2e`).
 - **Character data and types:** `src/lib/data/characters/`, `src/lib/types/`. **Derived capabilities:** `src/lib/capabilities/deriveCapabilities.ts`.
 - **Parser and sim:** `src/lib/utils/notationParser.ts` (the façade) and `src/lib/sim/`. **Timeline projections:** `src/lib/timeline/`, drawn by `src/lib/components/RotationTimeline.svelte`. **Rotation links (`?r=`):** `src/lib/utils/rotationUrl.ts`.
+- **Translation:** `messages/*.json` (the text), `project.inlang/` (the project and compiler options), `src/lib/i18n/` (locales and paths). Plan: `docs/design/i18n-plan.md`; the ledger: `docs/text/ledger-plan.md`.
 - **Profiles and documents (IndexedDB):** `src/lib/storage/`. **Settings and small local stores (localStorage):** `src/lib/stores.ts` (`siteSettings`; the roster stores there are the active profile's, held in IndexedDB).
 - **Breakpoints:** `src/lib/breakpoints.ts` (the table) and `src/lib/media.svelte.ts`. **Design tokens and global styles:** `src/app.css`; judge on `/lab`, look things up on `/styleguide`. **The scene (WebGL night sky):** `src/lib/landing/`.
 - **Audits, generators, writers:** `scripts/`. **Skills (step-by-step recipes):** `.claude/skills/` (`ingest-character`, `gcsim-frames`, `verify`, `daily-checkin`).

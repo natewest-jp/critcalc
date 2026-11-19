@@ -38,6 +38,14 @@
  *   - `throw new Error(...)` text is kept and flagged `thrown`: most never reach
  *     a screen, but the code cannot tell which do.
  *
+ * EXTRACTED messages: once a string moves into `messages/en.json` and the code
+ * calls `m.<key>()`, there is no literal left to find. Each key in en.json is
+ * read back as a message on the surface its key names, with its text from the
+ * file and its locations from the `m.<key>(` call sites, so the ledger counts
+ * the same messages before and after extraction. A literal that is not yet
+ * extracted and mints the same key joins that message; one that mints the key
+ * with a different text is reported as a CONFLICT.
+ *
  * Read-only by default (prints a summary). `--write` regenerates
  * docs/text/ledger/inventory/. `--surface=<id>` prints one surface's entries.
  *
@@ -58,6 +66,7 @@ const LEDGER = join(ROOT, 'docs/text/ledger');
 const OUT = join(LEDGER, 'inventory');
 const NOTES = join(LEDGER, 'notes');
 const TERMS = join(LEDGER, 'terms.json');
+const EN_MESSAGES = join(ROOT, 'messages/en.json');
 
 const args = process.argv.slice(2);
 const WRITE = args.includes('--write');
@@ -1082,6 +1091,47 @@ for (const [surface, bucket] of inventory) {
 	}
 }
 
+// Extracted messages: read back from messages/en.json (see the header).
+const messageConflicts = [];
+const unusedMessages = [];
+{
+	const en = existsSync(EN_MESSAGES) ? JSON.parse(readFileSync(EN_MESSAGES, 'utf8')) : {};
+	const calls = new Map();
+	for (const f of walkFiles(SRC)) {
+		const rel = relative(SRC, f);
+		if (rel.startsWith('lib/paraglide/')) continue;
+		const at = lineIndex(readFileSync(f, 'utf8'));
+		const src = readFileSync(f, 'utf8');
+		for (const m of src.matchAll(/\bm\.([a-z0-9_]+)\(/g)) {
+			if (!calls.has(m[1])) calls.set(m[1], []);
+			calls.get(m[1]).push({ file: rel, line: at(m.index), kind: 'm()' });
+		}
+	}
+	const byKey = new Map(entries.map((e) => [e.key, e]));
+	const surfaceIds = new Set(SURFACES.map(([id]) => id).filter(Boolean));
+	for (const [key, value] of Object.entries(en)) {
+		if (key.startsWith('$') || typeof value !== 'string') continue;
+		const where = calls.get(key) ?? [];
+		if (!where.length) unusedMessages.push(key);
+		const literal = byKey.get(key);
+		if (literal) {
+			if (literal.text !== value) messageConflicts.push(key);
+			literal.where.push(...where);
+			continue;
+		}
+		const surface =
+			[...surfaceIds]
+				.filter((id) => key.startsWith(id + '_'))
+				.sort((a, b) => b.length - a.length)[0] ?? 'unassigned';
+		const vars = new Set([...value.matchAll(/\{([A-Za-z_$][\w$]*)\}/g)].map((v) => v[1]));
+		const { found, avoided } = termsIn(value, base);
+		const e = { text: value, key, surface, where, vars, flags: new Set(), terms: found, avoided };
+		if (avoided.length) e.flags.add('off-glossary');
+		entries.push(e);
+		byKey.set(key, e);
+	}
+}
+
 // Notes keyed to keys that no longer exist: the drift alarm for the hand half.
 const keys = new Set(entries.map((e) => e.key));
 const orphanNotes = [];
@@ -1100,7 +1150,9 @@ const bySurface = (s) =>
 	entries
 		.filter((e) => e.surface === s)
 		.sort(
-			(a, b) => a.where[0].file.localeCompare(b.where[0].file) || a.where[0].line - b.where[0].line
+			(a, b) =>
+				(a.where[0]?.file ?? '').localeCompare(b.where[0]?.file ?? '') ||
+				(a.where[0]?.line ?? 0) - (b.where[0]?.line ?? 0)
 		);
 const FLAG_ORDER = ['off-glossary', 'assembled', 'plural?', 'x-for-×', 'entity', 'nbsp', 'thrown'];
 const TERM_MARK = { frozen: '🔒', game: '🎮', label: '🏷', house: '📖' };
@@ -1146,7 +1198,16 @@ const summary = [
 		: 'unassigned: none',
 	orphanNotes.length
 		? `⚠️ ORPHANED notes (their key no longer exists): ${orphanNotes.join(', ')}`
-		: 'orphaned notes: none'
+		: 'orphaned notes: none',
+	`extracted to messages/en.json: ${entries.filter((e) => e.where.some((w) => w.kind === 'm()')).length}`,
+	...(messageConflicts.length
+		? [
+				`⚠️ CONFLICTS (a literal mints an en.json key with other text): ${messageConflicts.join(', ')}`
+			]
+		: []),
+	...(unusedMessages.length
+		? [`⚠️ UNUSED messages (in en.json, never called): ${unusedMessages.join(', ')}`]
+		: [])
 ];
 
 if (ONLY) {

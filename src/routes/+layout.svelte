@@ -47,11 +47,16 @@
 	import '../app.css';
 	import { dev } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { htmlLang } from '$lib/i18n/locale';
 
 	let { children } = $props();
 
 	// The storage opens and migrates (copy-only, build plan §13.1).
 	onMount(() => {
+		// Every prerendered page has its <html lang> already. The 404 fallback is
+		// one shell for every unknown path, built in English, so a /ja/ typo
+		// would keep lang="en" and the CJK type rules (app.css) would not apply.
+		document.documentElement.lang = htmlLang();
 		void import('$lib/storage/boot').then((m) => m.ensureStorage());
 	});
 

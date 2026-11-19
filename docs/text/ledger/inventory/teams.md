@@ -25,87 +25,87 @@
   > Discard
 - `teams_keep_editing` — TeamDetail.svelte:185 cancel:
   > Keep editing
-- `teams_owned` — TeamDetail.svelte:360 label:
+- `teams_owned` — TeamDetail.svelte:359 label:
   > Owned
-- `teams_wishlist` — TeamDetail.svelte:361 label:
+- `teams_wishlist` — TeamDetail.svelte:360 label:
   > Wishlist
-- `teams_new_team` — TeamDetail.svelte:404 placeholder= · TeamDetail.svelte:406 size: · TeamsPlace.svelte:161 <button>
+- `teams_new_team` — TeamDetail.svelte:403 placeholder= · TeamDetail.svelte:405 size: · TeamsPlace.svelte:161 <button>
   > New team
-- `teams_team_name` — TeamDetail.svelte:405 aria-label=
+- `teams_team_name` — TeamDetail.svelte:404 aria-label=
   > Team name
-- `teams_no_rotations_or_lineups_yet` — TeamDetail.svelte:425 <span> · TeamsPlace.svelte:219 <span>
+- `teams_no_rotations_or_lineups_yet` — TeamDetail.svelte:424 <span> · TeamsPlace.svelte:219 <span>
   > No rotations or lineups yet
   - terms: 📖 rotation
-- `teams_plan_a_rotation` — TeamDetail.svelte:435 <button> · TeamsPlace.svelte:222 <button>
+- `teams_plan_a_rotation` — TeamDetail.svelte:434 <button> · TeamsPlace.svelte:222 <button>
   > Plan a rotation
   - terms: 📖 rotation
-- `teams_new_lineup` — TeamDetail.svelte:437 label= · TeamsPlace.svelte:223 label=
+- `teams_new_lineup` — TeamDetail.svelte:436 label= · TeamsPlace.svelte:223 label=
   > New lineup
-- `teams_click_again_to_delete` — TeamDetail.svelte:459 title= · TeamsPlace.svelte:186 title=
+- `teams_click_again_to_delete` — TeamDetail.svelte:458 title= · TeamsPlace.svelte:186 title=
   > Click again to delete
-- `teams_delete_team` — TeamDetail.svelte:459 title= · TeamDetail.svelte:461 span:
+- `teams_delete_team` — TeamDetail.svelte:458 title= · TeamDetail.svelte:460 span:
   > Delete team
-- `teams_delete_042d` — TeamDetail.svelte:461 span: · TeamsPlace.svelte:189 <span>
+- `teams_delete_042d` — TeamDetail.svelte:460 span: · TeamsPlace.svelte:189 <span>
   > Delete?
-- `teams_cancel` — TeamDetail.svelte:467 <button>
+- `teams_cancel` — TeamDetail.svelte:466 <button>
   > Cancel
-- `teams_add_team` — TeamDetail.svelte:469 button:
+- `teams_add_team` — TeamDetail.svelte:468 button:
   > Add team
-- `teams_done` — TeamDetail.svelte:472 <button>
+- `teams_done` — TeamDetail.svelte:471 <button>
   > Done
-- `teams_couldn_t_save_the_team_try_again` — TeamDetail.svelte:481 <span>
+- `teams_couldn_t_save_the_team_try_again` — TeamDetail.svelte:480 <span>
   > Couldn’t save the team. Try again.
-- `teams_slot_x_id` — TeamDetail.svelte:523 aria-label=
+- `teams_slot_x_id` — TeamDetail.svelte:522 aria-label=
   > Slot {i + 1}: {nameOf(id)}
   - vars: `i + 1` `nameOf(id)`
-- `teams_slot_x_empty` — TeamDetail.svelte:523 aria-label=
+- `teams_slot_x_empty` — TeamDetail.svelte:522 aria-label=
   > Slot {i + 1}: empty
   - vars: `i + 1`
-- `teams_id_drag_to_reorder` — TeamDetail.svelte:524 title=
+- `teams_id_drag_to_reorder` — TeamDetail.svelte:523 title=
   > {nameOf(id)} (drag to reorder)
   - vars: `nameOf(id)`
-- `teams_choose_a_character` — TeamDetail.svelte:524 title= · TeamDetail.svelte:553 span:
+- `teams_choose_a_character` — TeamDetail.svelte:523 title= · TeamDetail.svelte:552 span:
   > Choose a character
-- `teams_take_id_off_the_team` — TeamDetail.svelte:543 aria-label=
+- `teams_take_id_off_the_team` — TeamDetail.svelte:542 aria-label=
   > Take {nameOf(id)} off the team
   - vars: `nameOf(id)`
-- `teams_take_off_the_team` — TeamDetail.svelte:544 title= · TeamDetail.svelte:664 title=
+- `teams_take_off_the_team` — TeamDetail.svelte:543 title= · TeamDetail.svelte:663 title=
   > Take off the team
-- `teams_slot_x` — TeamDetail.svelte:553 span: · TeamsPlace.svelte:199 aria-label=
+- `teams_slot_x` — TeamDetail.svelte:552 span: · TeamsPlace.svelte:199 aria-label=
   > Slot {i + 1}
   - vars: `i + 1`
-- `teams_team_bonuses` — TeamDetail.svelte:569 aria-label=
+- `teams_team_bonuses` — TeamDetail.svelte:568 aria-label=
   > Team bonuses
-- `teams_moonsign_ascendant_gleam` — TeamDetail.svelte:577 <span>
+- `teams_moonsign_ascendant_gleam` — TeamDetail.svelte:576 <span>
   > Moonsign: Ascendant Gleam
   - terms: 🎮 Ascendant Gleam · 🎮 Moonsign
-- `teams_hexerei_secret_rite` — TeamDetail.svelte:580 <span>
+- `teams_hexerei_secret_rite` — TeamDetail.svelte:579 <span>
   > Hexerei: Secret Rite
   - terms: 🎮 Secret Rite · 🎮 Hexerei
-- `teams_search` — TeamDetail.svelte:602 placeholder=
+- `teams_search` — TeamDetail.svelte:601 placeholder=
   > Search…
-- `teams_search_characters` — TeamDetail.svelte:603 aria-label=
+- `teams_search_characters` — TeamDetail.svelte:602 aria-label=
   > Search characters
-- `teams_your_roster` — TeamDetail.svelte:613 aria-label=
+- `teams_your_roster` — TeamDetail.svelte:612 aria-label=
   > Your roster
-- `teams_show_everyone` — TeamDetail.svelte:621 title=
+- `teams_show_everyone` — TeamDetail.svelte:620 title=
   > Show everyone
-- `teams_more` — TeamDetail.svelte:632 label=
+- `teams_more` — TeamDetail.svelte:631 label=
   > More
-- `teams_more_filters_morecount_set` — TeamDetail.svelte:634 ariaLabel=
+- `teams_more_filters_morecount_set` — TeamDetail.svelte:633 ariaLabel=
   > More filters, {moreCount} set
   - vars: `moreCount`
-- `teams_more_filters` — TeamDetail.svelte:634 ariaLabel=
+- `teams_more_filters` — TeamDetail.svelte:633 ariaLabel=
   > More filters
-- `teams_choose_a_slot_first` — TeamDetail.svelte:666 title=
+- `teams_choose_a_slot_first` — TeamDetail.svelte:665 title=
   > Choose a slot first
-- `teams_put_in_slot_x_in_x_s_place` — TeamDetail.svelte:668 title=
+- `teams_put_in_slot_x_in_x_s_place` — TeamDetail.svelte:667 title=
   > Put in slot {at + 1}, in {nameOf(slots[at]!)}’s place
   - vars: `at + 1` `nameOf(slots[at]!)`
-- `teams_put_in_slot_x` — TeamDetail.svelte:669 title=
+- `teams_put_in_slot_x` — TeamDetail.svelte:668 title=
   > Put in slot {at + 1}
   - vars: `at + 1`
-- `teams_no_character_matches` — TeamDetail.svelte:685 <p>
+- `teams_no_character_matches` — TeamDetail.svelte:684 <p>
   > No character matches.
 - `teams_artifact_set` — TeamLoadoutPlates.svelte:98 title= · TeamLoadoutPlates.svelte:109 span:
   > Artifact set

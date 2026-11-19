@@ -21,56 +21,56 @@
   > What beta means here
 - `chrome_beta` — TopBar.svelte:178 <a>
   > Beta
-- `chrome_tools` — TopBar.svelte:185 aria-label=
+- `chrome_tools` — TopBar.svelte:184 aria-label=
   > Tools
-- `chrome_rotations` — TopBar.svelte:196 title=
+- `chrome_rotations` — TopBar.svelte:195 title=
   > rotations
   - terms: 📖 rotation
-- `chrome_lineups` — TopBar.svelte:196 title=
+- `chrome_lineups` — TopBar.svelte:195 title=
   > lineups
-- `chrome_your_x` — TopBar.svelte:196 title= — ⚑ assembled
+- `chrome_your_x` — TopBar.svelte:195 title= — ⚑ assembled
   > Your {docTool === 'planner' ? 'rotations' : 'lineups'}
   - vars: `docTool === 'planner' ? 'rotations' : 'lineups'`
-- `chrome_theorycraft` — TopBar.svelte:201 span: · TopBar.svelte:210 span:
+- `chrome_theorycraft` — TopBar.svelte:200 span: · TopBar.svelte:209 span:
   > · Theorycraft
-- `chrome_not_saved` — TopBar.svelte:204 <span> · TopBar.svelte:237 aria-label= · TopBar.svelte:238 title=
+- `chrome_not_saved` — TopBar.svelte:203 <span> · TopBar.svelte:236 aria-label= · TopBar.svelte:237 title=
   > Not saved
-- `chrome_saving` — TopBar.svelte:207 <span> · TopBar.svelte:241 aria-label= · TopBar.svelte:241 title=
+- `chrome_saving` — TopBar.svelte:206 <span> · TopBar.svelte:240 aria-label= · TopBar.svelte:240 title=
   > Saving…
-- `chrome_saved_x` — TopBar.svelte:210 <span> — ⚑ assembled
+- `chrome_saved_x` — TopBar.svelte:209 <span> — ⚑ assembled
   > Saved{guest ? ' · Theorycraft' : ''}
   - vars: `guest ? ' · Theorycraft' : ''`
-- `chrome_saved` — TopBar.svelte:245 aria-label= · TopBar.svelte:245 title=
+- `chrome_saved` — TopBar.svelte:244 aria-label= · TopBar.svelte:244 title=
   > Saved
-- `chrome_add_a_profile` — TopBar.svelte:257 <button> · TopBar.svelte:316 <button>
+- `chrome_add_a_profile` — TopBar.svelte:256 <button> · TopBar.svelte:315 <button>
   > Add a profile
-- `chrome_profile_name` — TopBar.svelte:266 aria-label=
+- `chrome_profile_name` — TopBar.svelte:265 aria-label=
   > Profile: {profile.name}
   - vars: `profile.name`
-- `chrome_shared_links_open_here` — TopBar.svelte:290 span:
+- `chrome_shared_links_open_here` — TopBar.svelte:289 span:
   > Shared links open here
-- `chrome_your_profile_in_this_browser` — TopBar.svelte:291 span:
+- `chrome_your_profile_in_this_browser` — TopBar.svelte:290 span:
   > Your profile, in this browser
-- `chrome_profile` — TopBar.svelte:326 <button>
+- `chrome_profile` — TopBar.svelte:325 <button>
   > Profile
-- `chrome_roster` — TopBar.svelte:335 <button>
+- `chrome_roster` — TopBar.svelte:334 <button>
   > Roster
   - terms: 📖 Roster
-- `chrome_teams` — TopBar.svelte:351 aria-label= · TopBar.svelte:352 title=
+- `chrome_teams` — TopBar.svelte:350 aria-label= · TopBar.svelte:351 title=
   > Teams
-- `chrome_help_and_about` — TopBar.svelte:376 aria-label= · TopBar.svelte:377 title=
+- `chrome_help_and_about` — TopBar.svelte:375 aria-label= · TopBar.svelte:376 title=
   > Help and About
-- `chrome_help` — TopBar.svelte:395 <button>
+- `chrome_help` — TopBar.svelte:394 <button>
   > Help
-- `chrome_keyboard_shortcuts` — TopBar.svelte:403 <button>
+- `chrome_keyboard_shortcuts` — TopBar.svelte:402 <button>
   > Keyboard shortcuts
-- `chrome_about` — TopBar.svelte:411 <button>
+- `chrome_about` — TopBar.svelte:410 <button>
   > About
-- `chrome_report_a_problem` — TopBar.svelte:424 <div>
+- `chrome_report_a_problem` — TopBar.svelte:423 <div>
   > Report a problem
-- `chrome_menu` — TopBar.svelte:438 aria-label= · TopBar.svelte:439 title=
+- `chrome_menu` — TopBar.svelte:437 aria-label= · TopBar.svelte:438 title=
   > Menu
-- `chrome_settings` — TopBar.svelte:460 aria-label= · TopBar.svelte:461 title=
+- `chrome_settings` — TopBar.svelte:459 aria-label= · TopBar.svelte:460 title=
   > Settings
 - `chrome_team_builder` — tools.ts:31 title:
   > Team builder
