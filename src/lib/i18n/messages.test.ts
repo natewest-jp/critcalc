@@ -1,6 +1,11 @@
 /**
  * The message files and what Paraglide compiled from them.
  *
+ * A message is a string, or a list holding one variant set (inlang message
+ * format) when it chooses by a plural or another selector:
+ * `[{ declarations: ['input count', 'local n = count: plural'], selectors: ['n'],
+ * match: { 'n=one': '…', 'n=other': '…' } }]`.
+ *
  * ⚠️ `paraglide-js compile` reports success even when the message-format
  * plugin fails to load, and then compiles no messages at all. The first test
  * here is what notices.
@@ -11,21 +16,49 @@ import { describe, expect, it } from 'vitest';
 import { m } from '$lib/paraglide/messages';
 import { baseLocale, locales } from '$lib/paraglide/runtime';
 
+type Variants = { declarations?: string[]; selectors?: string[]; match: Record<string, string> };
+type Message = string | Variants[];
+
 const DIR = join(__dirname, '..', '..', '..', 'messages');
-const load = (locale: string): Record<string, string> => {
+const load = (locale: string): Record<string, Message> => {
 	const { $schema: _, ...messages } = JSON.parse(readFileSync(join(DIR, `${locale}.json`), 'utf8'));
 	return messages;
 };
 const en = load(baseLocale);
-const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((p) => p[1]).sort();
+
+/** Every text a message can render. */
+const texts = (msg: Message): string[] =>
+	typeof msg === 'string' ? [msg] : msg.flatMap((v) => Object.values(v.match));
+/** The inputs a caller passes: placeholders in the text, and declared inputs. */
+const inputs = (msg: Message): string => {
+	const names = new Set(texts(msg).flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((p) => p[1])));
+	if (typeof msg !== 'string') {
+		const locals = new Set<string>();
+		for (const v of msg)
+			for (const d of v.declarations ?? []) {
+				const [kind, name] = d.split(/\s+/);
+				if (kind === 'input') names.add(name);
+				if (kind === 'local') locals.add(name);
+			}
+		for (const l of locals) names.delete(l);
+	}
+	return [...names].sort().join();
+};
+/** The markup a message opens (`{#value}…{/value}`, rendered by `Msg.svelte`):
+ *  a translation moves the tags, and keeps every one. */
+const markup = (msg: Message): string =>
+	[...new Set(texts(msg).flatMap((t) => [...t.matchAll(/\{#(\w+)\}/g)].map((p) => p[1])))]
+		.sort()
+		.join();
 
 describe('messages', () => {
 	it('compiles every English message', () => {
 		const call = m as unknown as Record<string, (p?: object) => string>;
 		const missing = Object.keys(en).filter((k) => typeof call[k] !== 'function');
 		expect(missing).toEqual([]);
-		for (const [k, text] of Object.entries(en))
-			if (!placeholders(text).length) expect(call[k](), k).toBe(text);
+		for (const [k, msg] of Object.entries(en))
+			if (typeof msg === 'string' && !inputs(msg))
+				expect(call[k](), k).toBe(msg.replace(/\{[#/]\w+\}/g, ''));
 	});
 
 	it('has a file for every locale and no file for any other', () => {
@@ -37,13 +70,13 @@ describe('messages', () => {
 	});
 
 	for (const locale of locales.filter((l) => l !== baseLocale)) {
-		it(`${locale}: translates only English keys, with the same placeholders`, () => {
+		it(`${locale}: translates only English keys, with the same inputs and markup`, () => {
 			const messages = load(locale);
 			expect(Object.keys(messages).filter((k) => !(k in en))).toEqual([]);
-			const drift = Object.entries(messages).filter(
-				([k, text]) => placeholders(text).join() !== placeholders(en[k]).join()
-			);
+			const drift = Object.entries(messages).filter(([k, msg]) => inputs(msg) !== inputs(en[k]));
 			expect(drift.map(([k]) => k)).toEqual([]);
+			const tags = Object.entries(messages).filter(([k, msg]) => markup(msg) !== markup(en[k]));
+			expect(tags.map(([k]) => k)).toEqual([]);
 		});
 	}
 });

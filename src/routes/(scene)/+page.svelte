@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { fade } from 'svelte/transition';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { goto, preloadData } from '$app/navigation';
@@ -88,21 +89,21 @@
 		{
 			id: 'builder',
 			title: 'Astrolabe',
-			tool: 'Team builder',
+			tool: m.chrome_team_builder(),
 			path: '/builder',
 			art: 'astrolabe'
 		},
 		{
 			id: 'planner',
 			title: 'Ephemeris',
-			tool: 'Rotation planner',
+			tool: m.chrome_rotation_planner(),
 			path: '/planner',
 			art: 'ephemeris'
 		},
 		{
 			id: 'visualizers',
 			title: 'Observatory',
-			tool: 'Visualizers',
+			tool: m.chrome_visualizers(),
 			path: '/visualizers',
 			art: 'observatory'
 		}
@@ -163,7 +164,7 @@
 			 ($lib/landing/announcements.ts carries the rule and the expiry); an
 			 empty slot is worse than none, a stale one is worse than empty. -->
 		{#if announcements.length}
-			<ul class="notices" aria-label="Announcements">
+			<ul class="notices" aria-label={m.landing_announcements()}>
 				{#each announcements as a (a.id)}
 					<li class="notice">
 						<span class="notice__text">{a.text}</span>
@@ -196,7 +197,7 @@
 			</ul>
 		{/if}
 
-		<nav class="heroes" aria-label="critcalc tools">
+		<nav class="heroes" aria-label={m.landing_critcalc_tools()}>
 			{#each tools as tool (tool.id)}
 				{@const art = HERO_ART[tool.art]}
 				<a

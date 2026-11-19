@@ -10,6 +10,7 @@
   document down to a blank page.
 -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { dev } from '$app/environment';
 	import ReportLink from '$lib/components/ReportLink.svelte';
 	import type { FeedbackTool } from '$lib/feedback';
@@ -43,10 +44,10 @@
 	<h2>{title}</h2>
 	<p>{body}</p>
 	<div class="render-crash__actions">
-		<button class="btn btn--primary" onclick={reset}>Try again</button>
+		<button class="btn btn--primary" onclick={reset}>{m.errors_try_again()}</button>
 		<!-- The feedback form, with the error and the share link where there is one. -->
 		<ReportLink class="btn" prefill={{ category: 'broken', tool, error }} {shareUrl}
-			>Report this</ReportLink
+			>{m.errors_report_this()}</ReportLink
 		>
 	</div>
 	{#if dev}

@@ -12,6 +12,7 @@
  * NaN or bad shape would otherwise poison the parser.
  */
 
+import { m } from '$lib/paraglide/messages';
 import { browser } from '$app/environment';
 import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 import { NOTE_SET_IDS, ORDER_IDS, SOUND_MODES, SWAP_STYLES, VOICE_IDS } from '$lib/playback/tones';
@@ -410,11 +411,11 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 	try {
 		parsed = JSON.parse(text);
 	} catch {
-		return { ok: false, error: 'That file isn’t valid JSON.' };
+		return { ok: false, error: m.settings_that_file_isn_t_valid_json() };
 	}
 
 	if (!isObject(parsed) || parsed.app !== 'critcalc' || !isObject(parsed.data)) {
-		return { ok: false, error: 'That doesn’t look like a critcalc backup file.' };
+		return { ok: false, error: m.settings_that_doesn_t_look_like_a_critcalc_backup() };
 	}
 
 	const src = parsed.data as Record<string, unknown>;
@@ -462,7 +463,7 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 	if (viz) data['critcalc:vizWorkspace'] = viz;
 
 	if (Object.keys(data).length === 0) {
-		return { ok: false, error: 'The backup had no recognizable critcalc data.' };
+		return { ok: false, error: m.settings_the_backup_had_no_recognizable_critcalc() };
 	}
 
 	const counts: BackupCounts = {

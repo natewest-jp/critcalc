@@ -1,11 +1,34 @@
 <script module lang="ts">
+	import { m } from '$lib/paraglide/messages';
+
 	/** The page's groups, in order: the menu state's sidebar lists them under
-	 *  Settings and scrolls to `#settings-<id>`. */
+	 *  Settings and scrolls to `#settings-<id>`. A label is a getter, so it
+	 *  follows the locale (`$lib/i18n/labels.ts` says why). */
 	export const SETTINGS_GROUPS = [
-		{ id: 'appearance', label: 'Appearance' },
-		{ id: 'planner', label: 'Planner' },
-		{ id: 'sound', label: 'Playback sound' },
-		{ id: 'data', label: 'Your data' }
+		{
+			id: 'appearance',
+			get label() {
+				return m.settings_appearance();
+			}
+		},
+		{
+			id: 'planner',
+			get label() {
+				return m.settings_planner();
+			}
+		},
+		{
+			id: 'sound',
+			get label() {
+				return m.settings_playback_sound();
+			}
+		},
+		{
+			id: 'data',
+			get label() {
+				return m.settings_your_data();
+			}
+		}
 	] as const;
 </script>
 
@@ -15,6 +38,8 @@
 	import { hrefTo } from '$lib/i18n/paths';
 	import { HUMAN_TIMING_DEFAULTS, siteSettings, SWAP_PING_DEFAULT } from '$lib/stores';
 	import Mark from './Mark.svelte';
+	import Msg from './Msg.svelte';
+	import { htmlLang } from '$lib/i18n/locale';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import { playback } from '$lib/playback/playback.svelte';
@@ -75,7 +100,7 @@
 
 	function showNoticesAgain() {
 		siteSettings.resetSeen();
-		notices.toast('success', 'Tips and notices will show again');
+		notices.toast('success', m.settings_tips_and_notices_will_show_again());
 	}
 
 	/** ⚓ The opposite of Restore (2026-10-26): it empties the browser, as a
@@ -85,24 +110,23 @@
 	async function deleteEverything() {
 		const s = await session();
 		const ok = await notices.ask({
-			title: 'Delete everything in this browser?',
-			body: `Every profile, with its roster, teams, rotations, and lineups, the Trash, and your settings are deleted, and the page reloads. This can’t be undone. ${
+			title: m.settings_delete_everything_in_this_browser(),
+			body:
 				lastBackup === null
-					? 'You haven’t downloaded a backup yet.'
-					: `Your last backup was ${daysAgo(lastBackup)}.`
-			}`,
-			confirm: 'Delete everything',
-			cancel: 'Keep it',
+					? m.settings_delete_everything_body_no_backup()
+					: m.settings_delete_everything_body_last_backup({ when: daysAgo(lastBackup) }),
+			confirm: m.settings_delete_everything(),
+			cancel: m.settings_keep_it(),
 			danger: true
 		});
 		if (!ok) return;
 		try {
 			await s.wipe();
 		} catch {
-			notices.toast('error', 'This browser isn’t letting critcalc change its data.');
+			notices.toast('error', m.settings_this_browser_isn_t_letting_critcalc());
 			return;
 		}
-		announceAfterReload('Everything in this browser was deleted');
+		announceAfterReload(m.settings_everything_in_this_browser_was_deleted());
 		location.reload();
 	}
 
@@ -110,7 +134,7 @@
 		const at = Date.now();
 		const file = await (await session()).backup(at);
 		if (!file) {
-			importError = 'This browser isn’t letting critcalc read its data.';
+			importError = m.settings_this_browser_isn_t_letting_critcalc_read();
 			return;
 		}
 		downloadEnvelope(file, at);
@@ -131,11 +155,10 @@
 	 *  meaning something: never, or older than the window, with work since. */
 	const stale = $derived(backupIsStale(lastBackup, savedSince));
 
+	/** "today", "yesterday", "3 days ago", in the page's language. */
 	function daysAgo(at: number): string {
-		const days = Math.floor((Date.now() - at) / 86_400_000);
-		if (days <= 0) return 'today';
-		if (days === 1) return 'yesterday';
-		return `${days} days ago`;
+		const days = Math.max(0, Math.floor((Date.now() - at) / 86_400_000));
+		return new Intl.RelativeTimeFormat(htmlLang(), { numeric: 'auto' }).format(-days || 0, 'day');
 	}
 
 	// Import flow: pick file → parse → confirm → restore + reload (the page
@@ -163,9 +186,9 @@
 		}
 		// ↻ A DIALOG (notices §3.4): it replaces everything in the browser.
 		const ok = await notices.ask({
-			title: 'Replace everything with this backup?',
-			body: `It holds ${storeSummary(res.counts)}. Everything in this browser is replaced with it, and the page reloads.`,
-			confirm: 'Replace and reload',
+			title: m.settings_replace_everything_with_this_backup(),
+			body: m.settings_it_holds_summary({ summary: storeSummary(res.counts) }),
+			confirm: m.settings_replace_and_reload(),
 			danger: true
 		});
 		if (!ok) return;
@@ -179,26 +202,29 @@
 			await (await session()).restore(pendingStore);
 		} catch {
 			pendingStore = null;
-			importError = 'This browser isn’t letting critcalc save data.';
+			importError = m.settings_this_browser_isn_t_letting_critcalc_save();
 			return;
 		}
 		// Said after the reload (`announceAfterReload`): nothing else would.
-		announceAfterReload('Restored from your backup');
+		announceAfterReload(m.settings_restored_from_your_backup());
 		location.reload();
 	}
 
-	/** "Main and Alt", "Main, Alt, and Spare". */
-	function listOf(names: string[]): string {
-		if (names.length <= 2) return names.join(' and ');
-		return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-	}
+	/** "Main and Alt", "Main, Alt, and Spare", in the page's language. */
+	const listOf = (items: string[]) =>
+		new Intl.ListFormat(htmlLang(), { type: 'conjunction' }).format(items);
+	/** "2 profiles (Main and Alt), 3 rotations, 1 lineup, and 4 teams". */
 	const storeSummary = (c: StoreCounts): string => {
 		const n = c.profiles.length;
 		const who = n
-			? `${n} ${n === 1 ? 'profile' : 'profiles'} (${listOf(c.profiles)})`
-			: 'no profiles of your own';
-		const plural = (k: number, one: string) => `${k} ${one}${k === 1 ? '' : 's'}`;
-		return `${who}, ${plural(c.rotations, 'rotation')}, ${plural(c.lineups, 'lineup')}, and ${plural(c.teams, 'team')}`;
+			? m.settings_count_profiles({ count: n, names: listOf(c.profiles) })
+			: m.settings_no_profiles_of_your_own();
+		return listOf([
+			who,
+			m.settings_count_rotations({ count: c.rotations }),
+			m.settings_count_lineups({ count: c.lineups }),
+			m.settings_count_teams({ count: c.teams })
+		]);
 	};
 
 	// ── Human timing: ONE control (2026-10-26) ──────────────────────────────
@@ -207,10 +233,10 @@
 	// (`humanTiming` + `humanTimingMode`), so a mode chosen before survives an
 	// Off and comes back with On.
 	const HUMAN_CHOICES = [
-		['off', 'Off'],
-		['padding', 'Padding'],
-		['animations', 'Animations'],
-		['both', 'Both']
+		['off', m.settings_off()],
+		['padding', m.settings_padding()],
+		['animations', m.settings_animations()],
+		['both', m.settings_both()]
 	] as const;
 	const humanChoice = $derived($siteSettings.humanTiming ? $siteSettings.humanTimingMode : 'off');
 	const padding = $derived(humanChoice === 'padding' || humanChoice === 'both');
@@ -253,11 +279,17 @@
 	function resetPlanner() {
 		const before = plannerValues;
 		setPlanner(PLANNER_DEFAULTS);
-		notices.toast('success', 'Planner settings reset', {
-			actions: [{ label: 'Undo', run: () => setPlanner(before) }]
+		notices.toast('success', m.settings_planner_settings_reset(), {
+			actions: [{ label: m.settings_undo(), run: () => setPlanner(before) }]
 		});
 	}
 </script>
+
+<!-- The markup in the notes' messages (`Msg.svelte`). -->
+{#snippet strong(text: string)}<strong>{text}</strong>{/snippet}
+{#snippet value(text: string)}<strong class="sp-value">{text}</strong>{/snippet}
+{#snippet staleValue(text: string)}<strong class="sp-value" class:is-stale={stale}>{text}</strong
+	>{/snippet}
 
 <!-- ⚓ THE ROW (settings surface round, 2026-10-26): a NAME, its CONTROL, and
      a NOTE — three columns, so the names make one column to scan and the
@@ -269,10 +301,10 @@
      control. -->
 <div class="sp">
 	<section class="sp-section" id="settings-appearance">
-		<h2 class="kicker sp-section-title">Appearance</h2>
+		<h2 class="kicker sp-section-title">{m.settings_appearance()}</h2>
 
 		<label class="sp-row">
-			<span class="sp-name">Updated outfits</span>
+			<span class="sp-name">{m.settings_updated_outfits()}</span>
 			<span class="sp-ctl">
 				<span class="toggle">
 					<input
@@ -281,10 +313,12 @@
 						onchange={() => siteSettings.setUseNewOutfits(!$siteSettings.useNewOutfits)}
 					/>
 					<span class="toggle-track"><span class="toggle-thumb"></span></span>
-					<span class="toggle-label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
+					<span class="toggle-label"
+						>{$siteSettings.useNewOutfits ? m.settings_on() : m.settings_off()}</span
+					>
 				</span>
 			</span>
-			<span class="sp-note">Show characters in their newest outfit if they have one.</span>
+			<span class="sp-note">{m.settings_show_characters_in_their_newest_outfit()}</span>
 		</label>
 
 		<!-- ⚓ The Traveler twin is an ACCOUNT fact (2026-10-26): it lives on
@@ -292,12 +326,12 @@
 	</section>
 
 	<section class="sp-section" id="settings-planner">
-		<h2 class="kicker sp-section-title">Planner</h2>
+		<h2 class="kicker sp-section-title">{m.settings_planner()}</h2>
 
 		<div class="sp-row">
-			<span class="sp-name">Human timing</span>
+			<span class="sp-name">{m.settings_human_timing()}</span>
 			<span class="sp-ctl">
-				<span class="segment sp-segment" role="radiogroup" aria-label="Human timing">
+				<span class="segment sp-segment" role="radiogroup" aria-label={m.settings_human_timing()}>
 					{#each HUMAN_CHOICES as [value, label] (value)}
 						<button
 							class="btn"
@@ -309,18 +343,14 @@
 					{/each}
 				</span>
 			</span>
-			<span class="sp-note">
-				<strong>Off</strong> times a rotation frame-perfectly, the way a macro plays it.
-				<strong>Padding</strong>
-				adds a short pause before each input the game doesn't buffer, like a skill after a normal attack
-				or the first press after a swap. <strong>Animations</strong> lets every action play out instead
-				of canceling it.
-			</span>
+			<span class="sp-note"
+				><Msg parts={m.settings_human_timing_note.parts()} tags={{ strong }} /></span
+			>
 		</div>
 
 		{#if padding}
 			<div class="sp-row">
-				<span class="sp-name">Input padding</span>
+				<span class="sp-name">{m.settings_input_padding()}</span>
 				<span class="sp-ctl sp-slider-ctl">
 					<input
 						class="slider sp-slider"
@@ -331,7 +361,7 @@
 						value={$siteSettings.humanTimingPadFrames}
 						oninput={(e) =>
 							siteSettings.setHumanTiming({ humanTimingPadFrames: Number(e.currentTarget.value) })}
-						aria-label="Input padding in frames"
+						aria-label={m.settings_input_padding_in_frames()}
 					/>
 					<span class="sp-slider-value"
 						>{$siteSettings.humanTimingPadFrames}f · {(
@@ -339,14 +369,11 @@
 						).toFixed(2)}s</span
 					>
 				</span>
-				<span class="sp-note">
-					How long that pause is. KQM suggests 10 frames for most players; go lower if you play
-					tight.
-				</span>
+				<span class="sp-note">{m.settings_how_long_that_pause_is_kqm_suggests_10()}</span>
 			</div>
 
 			<label class="sp-row">
-				<span class="sp-name">Mark padding</span>
+				<span class="sp-name">{m.settings_mark_padding()}</span>
 				<span class="sp-ctl">
 					<span class="toggle">
 						<input
@@ -356,17 +383,17 @@
 								siteSettings.setHumanTiming({ showHumanPadding: !$siteSettings.showHumanPadding })}
 						/>
 						<span class="toggle-track"><span class="toggle-thumb"></span></span>
-						<span class="toggle-label">{$siteSettings.showHumanPadding ? 'On' : 'Off'}</span>
+						<span class="toggle-label"
+							>{$siteSettings.showHumanPadding ? m.settings_on() : m.settings_off()}</span
+						>
 					</span>
 				</span>
-				<span class="sp-note">
-					Draws each pause as a hatched sliver on the timeline, so you can see where the time went.
-				</span>
+				<span class="sp-note">{m.settings_draws_each_pause_as_a_hatched_sliver_on()}</span>
 			</label>
 		{/if}
 
 		<div class="sp-row">
-			<span class="sp-name">Swap ping</span>
+			<span class="sp-name">{m.settings_swap_ping()}</span>
 			<span class="sp-ctl sp-slider-ctl">
 				<input
 					class="slider sp-slider"
@@ -376,20 +403,17 @@
 					step="5"
 					value={$siteSettings.swapPing}
 					oninput={(e) => siteSettings.setSwapPing(Number(e.currentTarget.value))}
-					aria-label="Swap ping in milliseconds"
+					aria-label={m.settings_swap_ping_in_milliseconds()}
 				/>
 				<span class="sp-slider-value"
 					>{$siteSettings.swapPing}ms · {swapFramesForPing($siteSettings.swapPing)}f</span
 				>
 			</span>
-			<span class="sp-note">
-				The ping Genshin shows in the top right. Each swap in the Planner takes your ping plus about
-				90 ms.
-			</span>
+			<span class="sp-note">{m.settings_the_ping_genshin_shows_in_the_top_right()}</span>
 		</div>
 
 		<label class="sp-row">
-			<span class="sp-name">Coverage strips</span>
+			<span class="sp-name">{m.settings_coverage_strips()}</span>
 			<span class="sp-ctl">
 				<span class="toggle">
 					<input
@@ -398,19 +422,19 @@
 						onchange={() => siteSettings.setShowCoverageStrips(!$siteSettings.showCoverageStrips)}
 					/>
 					<span class="toggle-track"><span class="toggle-thumb"></span></span>
-					<span class="toggle-label">{$siteSettings.showCoverageStrips ? 'On' : 'Off'}</span>
+					<span class="toggle-label"
+						>{$siteSettings.showCoverageStrips ? m.settings_on() : m.settings_off()}</span
+					>
 				</span>
 			</span>
-			<span class="sp-note">
-				Shows each character's coverage strip under the rotation planner's notation, with the parts
-				your rotation doesn't use yet dimmed.
-			</span>
+			<span class="sp-note">{m.settings_shows_each_character_s_coverage_strip()}</span>
 		</label>
 
 		<div class="sp-row sp-row--action">
 			<span class="sp-ctl">
 				<button class="btn btn--sm" disabled={plannerAtDefaults} onclick={resetPlanner}>
-					<Mark name="reset" size={12} /> Reset to defaults
+					<Mark name="reset" size={12} />
+					{m.settings_reset_to_defaults()}
 				</button>
 			</span>
 		</div>
@@ -427,18 +451,22 @@
 	     the metronome (one pitch) — and Order + Notes are ONE row, "which note
 	     each input gets", with the long per-option prose moved to `title`s. -->
 	<section class="sp-section" id="settings-sound">
-		<h2 class="kicker sp-section-title">Playback sound</h2>
+		<h2 class="kicker sp-section-title">{m.settings_playback_sound()}</h2>
 
 		<div class="sp-row">
-			<span class="sp-name">Sound</span>
+			<span class="sp-name">{m.settings_sound()}</span>
 			<span class="sp-ctl sp-sound-ctl">
-				<span class="segment sp-segment sp-segment--mode" role="radiogroup" aria-label="Sound">
+				<span
+					class="segment sp-segment sp-segment--mode"
+					role="radiogroup"
+					aria-label={m.settings_sound()}
+				>
 					<button
 						class="btn"
 						class:is-active={!$siteSettings.playbackSound}
 						role="radio"
 						aria-checked={!$siteSettings.playbackSound}
-						onclick={() => playback.setSound(false)}>Off</button
+						onclick={() => playback.setSound(false)}>{m.settings_off()}</button
 					>
 					{#each SOUND_MODES as value (value)}
 						{@const on = $siteSettings.playbackSound && $siteSettings.playbackSoundMode === value}
@@ -458,27 +486,27 @@
 				<button
 					class="btn btn--sm"
 					type="button"
-					aria-label="Preview the sound"
+					aria-label={m.settings_preview_the_sound()}
 					disabled={!$siteSettings.playbackSound}
 					onclick={() => playback.preview()}
 				>
 					<Mark name="play" size={12} filled />
-					Preview
+					{m.settings_preview()}
 				</button>
 			</span>
-			<span class="sp-note">
-				<strong>Play</strong> in the Planner’s toolbar counts you in and plays a note at each press, so
-				you can follow along with your eyes on the game. Metronome uses one pitch; Melodic gives attacks,
-				skills, and bursts their own notes.
-			</span>
+			<span class="sp-note"><Msg parts={m.settings_play_note.parts()} tags={{ strong }} /></span>
 		</div>
 
 		{#if $siteSettings.playbackSound}
 			{#if $siteSettings.playbackSoundMode === 'melodic'}
 				<div class="sp-row">
-					<span class="sp-name">Voice</span>
+					<span class="sp-name">{m.settings_voice()}</span>
 					<span class="sp-ctl">
-						<span class="segment sp-segment sp-segment--grid3" role="radiogroup" aria-label="Voice">
+						<span
+							class="segment sp-segment sp-segment--grid3"
+							role="radiogroup"
+							aria-label={m.settings_voice()}
+						>
 							{#each VOICE_IDS as value (value)}
 								<button
 									class="btn"
@@ -496,12 +524,12 @@
 				</div>
 
 				<div class="sp-row">
-					<span class="sp-name">Notes</span>
+					<span class="sp-name">{m.settings_notes()}</span>
 					<span class="sp-ctl sp-ctl--stack">
 						<span
 							class="segment sp-segment sp-segment--grid3"
 							role="radiogroup"
-							aria-label="Note order"
+							aria-label={m.settings_note_order()}
 						>
 							{#each ORDER_IDS as value (value)}
 								<button
@@ -520,7 +548,7 @@
 						<span
 							class="segment sp-segment sp-segment--grid4"
 							role="radiogroup"
-							aria-label="Note set"
+							aria-label={m.settings_note_set()}
 						>
 							{#each NOTE_SET_IDS as value (value)}
 								<button
@@ -538,7 +566,7 @@
 						</span>
 					</span>
 					<span class="sp-note">
-						The top row picks which input gets which note, the bottom row which three notes.
+						{m.settings_the_top_row_picks_which_input_gets_which()}
 						<!-- ⚓ The chosen order spelled out, VISIBLE (Nate 2026-10-26): its
 						     title is hover-only, and a touch screen never sees one. -->
 						<span class="sp-reading">{orderHint($siteSettings.playbackOrder)}</span>
@@ -547,12 +575,12 @@
 			{/if}
 
 			<div class="sp-row">
-				<span class="sp-name">Swap</span>
+				<span class="sp-name">{m.settings_swap()}</span>
 				<span class="sp-ctl">
 					<span
 						class="segment sp-segment sp-segment--grid4"
 						role="radiogroup"
-						aria-label="Swap sound"
+						aria-label={m.settings_swap_sound()}
 					>
 						{#each SWAP_STYLES as value (value)}
 							<button
@@ -568,11 +596,11 @@
 						{/each}
 					</span>
 				</span>
-				<span class="sp-note">A soft hum while the next character comes in.</span>
+				<span class="sp-note">{m.settings_a_soft_hum_while_the_next_character()}</span>
 			</div>
 
 			<div class="sp-row">
-				<span class="sp-name">Volume</span>
+				<span class="sp-name">{m.settings_volume()}</span>
 				<span class="sp-ctl sp-slider-ctl">
 					<input
 						class="slider sp-slider"
@@ -586,7 +614,7 @@
 								playbackVolume: Number(e.currentTarget.value) / 100
 							})}
 						onchange={() => playback.preview()}
-						aria-label="Playback volume"
+						aria-label={m.settings_playback_volume()}
 					/>
 					<span class="sp-slider-value">{Math.round($siteSettings.playbackVolume * 100)}%</span>
 				</span>
@@ -595,32 +623,31 @@
 	</section>
 
 	<section class="sp-section" id="settings-data">
-		<h2 class="kicker sp-section-title">Your data</h2>
+		<h2 class="kicker sp-section-title">{m.settings_your_data()}</h2>
 
 		<!-- ⚓ The VALUE is bold, never the sentence or its label (Nate
 		     2026-10-26): "never" / "3 days ago" and the count are the reading. -->
 		<div class="sp-row">
-			<span class="sp-name">Backup</span>
+			<span class="sp-name">{m.settings_backup()}</span>
 			<span class="sp-ctl">
 				<button class="btn btn--primary" onclick={exportBackup}>
-					<Mark name="download" /> Export…
+					<Mark name="download" />
+					{m.settings_export()}
 				</button>
 			</span>
 			<span class="sp-note">
-				critcalc has no server, so everything you set up lives in this browser. Export a file to
-				keep a copy or move to another device.
+				{m.settings_critcalc_has_no_server_so_everything_you()}
 				{#if lastBackup === null}
-					Last backup: <strong class="sp-value" class:is-stale={stale}>never</strong>.
+					<Msg parts={m.settings_last_backup_never.parts()} tags={{ value: staleValue }} />
 				{:else}
-					Last backup: <strong class="sp-value" class:is-stale={stale}>{daysAgo(lastBackup)}</strong
-					>.
+					<Msg
+						parts={m.settings_last_backup_when.parts({ when: daysAgo(lastBackup) })}
+						tags={{ value: staleValue }}
+					/>
 					<!-- The space before the block is OUTSIDE it: Svelte trims a
 					     block's own edges (it once rendered "ago.1 saved item"). -->
 					{#if savedSince > 0}
-						<strong class="sp-value"
-							>{savedSince} saved {savedSince === 1 ? 'item' : 'items'}</strong
-						>
-						{savedSince === 1 ? 'has' : 'have'} changed since.
+						<Msg parts={m.settings_saved_since.parts({ count: savedSince })} tags={{ value }} />
 					{/if}
 				{/if}
 			</span>
@@ -632,45 +659,45 @@
 		     browser that said no silently and may say yes later. -->
 		{#if persisted !== undefined}
 			<div class="sp-row">
-				<span class="sp-name">Storage</span>
+				<span class="sp-name">{m.settings_storage()}</span>
 				<span class="sp-ctl">
 					{#if persisted}
-						<span class="sp-status"><Mark name="check" size={14} /> Kept</span>
+						<span class="sp-status"
+							><Mark name="check" size={14} />
+							{m.settings_kept()}</span
+						>
 					{:else if persisted === null}
-						<span class="sp-status">Unknown</span>
+						<span class="sp-status">{m.settings_unknown()}</span>
 					{:else if safari}
-						<span class="sp-status">Not kept</span>
+						<span class="sp-status">{m.settings_not_kept()}</span>
 					{:else if persistDeclined}
-						<span class="sp-status">Declined</span>
+						<span class="sp-status">{m.settings_declined()}</span>
 					{:else}
-						<button class="btn" onclick={askToKeep}>Keep my data</button>
+						<button class="btn" onclick={askToKeep}>{m.settings_keep_my_data()}</button>
 					{/if}
 				</span>
 				<span class="sp-note">
 					{#if persisted}
-						This browser will keep your data until you clear this site’s data yourself.
+						{m.settings_this_browser_will_keep_your_data_until()}
 					{:else if persisted === null}
-						This browser doesn’t say whether it will keep your data. A backup keeps a copy either
-						way.
+						{m.settings_this_browser_doesn_t_say_whether_it_will()}
 					{:else if persisted === false && safari}
-						Safari may clear your data after a while without a visit. Add critcalc to your Home
-						Screen to keep it, or download a backup.
+						{m.settings_safari_may_clear_your_data_after_a_while()}
 					{:else if persisted === false && persistDeclined}
-						This browser declined, so it may still clear your data on its own. A backup keeps a
-						copy.
+						{m.settings_this_browser_declined_so_it_may_still()}
 					{:else if persisted === false}
-						This browser may clear your data on its own, for example after a while without a visit.
-						Ask it to keep your data, or download a backup.
+						{m.settings_this_browser_may_clear_your_data_on_its()}
 					{/if}
 				</span>
 			</div>
 		{/if}
 
 		<div class="sp-row">
-			<span class="sp-name">Restore</span>
+			<span class="sp-name">{m.settings_restore()}</span>
 			<span class="sp-ctl">
 				<button class="btn btn--primary" onclick={() => fileInput?.click()}>
-					<Mark name="upload" /> Import…
+					<Mark name="upload" />
+					{m.settings_import()}
 				</button>
 				<input
 					bind:this={fileInput}
@@ -680,10 +707,7 @@
 					onchange={onFileChosen}
 				/>
 			</span>
-			<span class="sp-note">
-				Replaces every profile in this browser, and your settings, with the ones in a backup file.
-				Older backups work too.
-			</span>
+			<span class="sp-note">{m.settings_replaces_every_profile_in_this_browser()}</span>
 		</div>
 
 		{#if importError}
@@ -697,35 +721,33 @@
 			     profile, so its control lives on that profile's page; Settings
 			     is where people look for it, so this row points there. -->
 			<div class="sp-row">
-				<span class="sp-name">Clear profile data</span>
+				<span class="sp-name">{m.settings_clear_profile_data()}</span>
 				<span class="sp-ctl">
-					<a class="btn" href={hrefTo('/profile')}>Open Profile</a>
+					<a class="btn" href={hrefTo('/profile')}>{m.settings_open_profile()}</a>
 				</span>
-				<span class="sp-note">
-					Clear a profile’s roster, rotations, lineups, or teams from its own page.
-				</span>
+				<span class="sp-note">{m.settings_clear_a_profile_s_roster_rotations()}</span>
 			</div>
 		{/if}
 
 		<div class="sp-row">
-			<span class="sp-name">Tips and notices</span>
+			<span class="sp-name">{m.settings_tips_and_notices()}</span>
 			<span class="sp-ctl">
-				<button class="btn" disabled={!anySeen} onclick={showNoticesAgain}>Show again</button>
+				<button class="btn" disabled={!anySeen} onclick={showNoticesAgain}
+					>{m.settings_show_again()}</button
+				>
 			</span>
-			<span class="sp-note">Brings back the one-time notices you’ve dismissed.</span>
+			<span class="sp-note">{m.settings_brings_back_the_one_time_notices_you_ve()}</span>
 		</div>
 
 		<div class="sp-row">
-			<span class="sp-name">Delete everything</span>
+			<span class="sp-name">{m.settings_delete_everything()}</span>
 			<span class="sp-ctl">
 				<button class="btn btn--danger" onclick={() => void deleteEverything()}>
-					<Mark name="delete" /> Delete everything…
+					<Mark name="delete" />
+					{m.settings_delete_everything_ellipsis()}
 				</button>
 			</span>
-			<span class="sp-note">
-				Removes every profile, the Trash, and your settings, as if you were visiting for the first
-				time.
-			</span>
+			<span class="sp-note">{m.settings_removes_every_profile_the_trash_and_your()}</span>
 		</div>
 	</section>
 </div>

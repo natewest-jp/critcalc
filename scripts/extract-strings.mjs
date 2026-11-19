@@ -41,7 +41,7 @@
  * EXTRACTED messages: once a string moves into `messages/en.json` and the code
  * calls `m.<key>()`, there is no literal left to find. Each key in en.json is
  * read back as a message on the surface its key names, with its text from the
- * file and its locations from the `m.<key>(` call sites, so the ledger counts
+ * file and its locations from the `m.<key>` references, so the ledger counts
  * the same messages before and after extraction. A literal that is not yet
  * extracted and mints the same key joins that message; one that mints the key
  * with a different text is reported as a CONFLICT.
@@ -1102,15 +1102,26 @@ const unusedMessages = [];
 		if (rel.startsWith('lib/paraglide/')) continue;
 		const at = lineIndex(readFileSync(f, 'utf8'));
 		const src = readFileSync(f, 'utf8');
-		for (const m of src.matchAll(/\bm\.([a-z0-9_]+)\(/g)) {
+		// A call `m.key(`, its markup `m.key.parts(`, or the function itself handed
+		// to a label table (`labels({ id: m.key })`).
+		for (const m of src.matchAll(/\bm\.([a-z0-9_]+)(?![\w$])/g)) {
 			if (!calls.has(m[1])) calls.set(m[1], []);
 			calls.get(m[1]).push({ file: rel, line: at(m.index), kind: 'm()' });
 		}
 	}
 	const byKey = new Map(entries.map((e) => [e.key, e]));
 	const surfaceIds = new Set(SURFACES.map(([id]) => id).filter(Boolean));
-	for (const [key, value] of Object.entries(en)) {
-		if (key.startsWith('$') || typeof value !== 'string') continue;
+	for (const [key, raw] of Object.entries(en)) {
+		if (key.startsWith('$')) continue;
+		// A variant message (a plural, a select) is read as its variants joined,
+		// so terms and placeholders in every variant are seen.
+		const value =
+			typeof raw === 'string'
+				? raw
+				: Array.isArray(raw)
+					? raw.flatMap((v) => Object.values(v.match ?? {})).join(' | ')
+					: null;
+		if (value === null) continue;
 		const where = calls.get(key) ?? [];
 		if (!where.length) unusedMessages.push(key);
 		const literal = byKey.get(key);
@@ -1124,6 +1135,13 @@ const unusedMessages = [];
 				.filter((id) => key.startsWith(id + '_'))
 				.sort((a, b) => b.length - a.length)[0] ?? 'unassigned';
 		const vars = new Set([...value.matchAll(/\{([A-Za-z_$][\w$]*)\}/g)].map((v) => v[1]));
+		if (Array.isArray(raw))
+			for (const v of raw)
+				for (const d of v.declarations ?? []) {
+					const [kind, name] = d.split(/\s+/);
+					if (kind === 'input') vars.add(name);
+					if (kind === 'local') vars.delete(name);
+				}
 		const { found, avoided } = termsIn(value, base);
 		const e = { text: value, key, surface, where, vars, flags: new Set(), terms: found, avoided };
 		if (avoided.length) e.flags.add('off-glossary');

@@ -11,6 +11,7 @@
   Sizes come from the interface size (app.css § THE INTERFACE SIZE).
 -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { keysSheet } from '$lib/keysSheet.svelte';
 	import { onMount } from 'svelte';
 	import { hrefTo, routeOf } from '$lib/i18n/paths';
@@ -157,7 +158,7 @@
 <header class="tb">
 	<!-- ── Brand ───────────────────────────────────────────────────────── -->
 	<div class="tb-brand">
-		<a class="tb-home" href={hrefTo('/')} aria-label="critcalc.app home">
+		<a class="tb-home" href={hrefTo('/')} aria-label={m.chrome_critcalc_app_home()}>
 			<!-- The logo INLINE, not an <img>, so it can dim in the paint
 			     (fill-opacity) — the chrome state contract on a bar that rides
 			     the parallax at fractional x. ⚠ The path is a copy of
@@ -175,13 +176,18 @@
 			>
 			<span class="tb-wordmark">critcalc.app</span>
 		</a>
-		<a class="tb-beta" href={hrefTo('/beta')} title="What beta means here" onclick={onBeta}>Beta</a>
+		<a
+			class="tb-beta"
+			href={hrefTo('/beta')}
+			title={m.chrome_what_beta_means_here()}
+			onclick={onBeta}>{m.chrome_beta()}</a
+		>
 	</div>
 
 	<!-- ── Three equal tool buttons, centred (form 5) ─────────────────── -->
 	<!-- ↻ 2026-10-25 (⚓ Nate): not on the landing — its cards ARE the tool
 	     nav (the old bar's rule: only a tool passed the switcher). -->
-	<nav class="tb-nav" class:is-landing={landing} aria-label="Tools">
+	<nav class="tb-nav" class:is-landing={landing} aria-label={m.chrome_tools()}>
 		{#each TOOLS as t (t.path)}
 			{@const current = tool?.path === t.path}
 			{@const withDoc = current && !!docName}
@@ -192,21 +198,32 @@
 				class:is-guest={current && guest}
 				href={hrefTo(t.path)}
 				aria-current={current ? 'page' : undefined}
-				title={withDoc ? `Your ${docTool === 'planner' ? 'rotations' : 'lineups'}` : undefined}
+				title={withDoc
+					? docTool === 'planner'
+						? m.chrome_your_rotations()
+						: m.chrome_your_lineups()
+					: undefined}
 				onclick={(e) => onTool(e, t.path)}
 			>
 				{#if withDoc && docName}
 					<span class="nav-kicker">
-						<span class="nav-tool">{t.short}{guest ? ' · Theorycraft' : ''}</span>
+						<span class="nav-tool"
+							>{guest ? m.chrome_tool_theorycraft({ tool: t.short }) : t.short}</span
+						>
 						{#if storageSession.saveFailed}
 							<!-- Failure stays in the status, and the banner says why (notices §3.5). -->
-							<span class="nav-status nav-status--bad"><Mark name="warn" size={11} />Not saved</span
+							<span class="nav-status nav-status--bad"
+								><Mark name="warn" size={11} />{m.chrome_not_saved()}</span
 							>
 						{:else if storageSession.saving}
-							<span class="nav-status"><span class="st-dot" aria-hidden="true"></span>Saving…</span>
+							<span class="nav-status"
+								><span class="st-dot" aria-hidden="true"></span>{m.chrome_saving()}</span
+							>
 						{:else if justSaved}
 							<span class="nav-status"
-								><Mark name="check" size={11} />Saved{guest ? ' · Theorycraft' : ''}</span
+								><Mark name="check" size={11} />{guest
+									? m.chrome_saved_theorycraft()
+									: m.chrome_saved()}</span
 							>
 						{/if}
 					</span>
@@ -233,16 +250,22 @@
 					<span
 						class="tb-phonedoc-status is-bad"
 						role="img"
-						aria-label="Not saved"
-						title="Not saved"><Mark name="warn" size={12} /></span
+						aria-label={m.chrome_not_saved()}
+						title={m.chrome_not_saved()}><Mark name="warn" size={12} /></span
 					>
 				{:else if storageSession.saving}
-					<span class="tb-phonedoc-status" role="img" aria-label="Saving…" title="Saving…"
-						><span class="st-dot" aria-hidden="true"></span></span
+					<span
+						class="tb-phonedoc-status"
+						role="img"
+						aria-label={m.chrome_saving()}
+						title={m.chrome_saving()}><span class="st-dot" aria-hidden="true"></span></span
 					>
 				{:else if justSaved}
-					<span class="tb-phonedoc-status" role="img" aria-label="Saved" title="Saved"
-						><Mark name="check" size={12} /></span
+					<span
+						class="tb-phonedoc-status"
+						role="img"
+						aria-label={m.chrome_saved()}
+						title={m.chrome_saved()}><Mark name="check" size={12} /></span
 					>
 				{/if}
 				<span class="tb-phonedoc-door"><Mark name="library" size={13} /></span>
@@ -253,7 +276,9 @@
 		     stands LEFT of the picture, so on a wide bar it grows toward the
 		     centre and pushes none of the doors (hidden on a phone). -->
 		{#if profile?.kind === 'theorycraft'}
-			<button class="tb-invite" onclick={() => menuState.show('profile/new')}>Add a profile</button>
+			<button class="tb-invite" onclick={() => menuState.show('profile/new')}
+				>{m.chrome_add_a_profile()}</button
+			>
 		{/if}
 		<div class="tb-actions">
 			{#if profile}
@@ -262,7 +287,7 @@
 					<button
 						class="tb-profile"
 						class:is-open={menu === 'profile'}
-						aria-label="Profile: {profile.name}"
+						aria-label={m.chrome_profile_name({ name: profile.name })}
 						aria-haspopup="menu"
 						title={profile.name}
 						onclick={(e) => toggle('profile', e)}
@@ -286,8 +311,8 @@
 								<span class="pm-name">{profile.name}</span>
 								<span class="pm-sub"
 									>{profile.kind === 'theorycraft'
-										? 'Shared links open here'
-										: 'Your profile, in this browser'}</span
+										? m.chrome_shared_links_open_here()
+										: m.chrome_your_profile_in_this_browser()}</span
 								>
 							</div>
 							{#each storageSession.profiles.filter((p) => p.id !== profile.id) as p (p.id)}
@@ -312,7 +337,7 @@
 								onclick={() => {
 									menu = null;
 									menuState.show('profile/new');
-								}}><Mark name="plus" /> Add a profile</button
+								}}><Mark name="plus" /> {m.chrome_add_a_profile()}</button
 							>
 							<span class="pm-rule" aria-hidden="true"></span>
 							{#if profile.kind === 'real'}
@@ -322,7 +347,7 @@
 									onclick={() => {
 										menu = null;
 										menuState.show('profile');
-									}}><Mark name="edit" /> Profile</button
+									}}><Mark name="edit" /> {m.chrome_profile()}</button
 								>
 							{/if}
 							<button
@@ -331,7 +356,7 @@
 								onclick={() => {
 									menu = null;
 									menuState.show('roster');
-								}}><Mark name="constellation" /> Roster</button
+								}}><Mark name="constellation" /> {m.chrome_roster()}</button
 							>
 						</div>
 					{/if}
@@ -347,8 +372,8 @@
 			<button
 				class="tb-glyph tb-glyph--teams"
 				class:is-open={showing === 'teams'}
-				aria-label="Teams"
-				title="Teams"
+				aria-label={m.chrome_teams()}
+				title={m.chrome_teams()}
 				onclick={() => {
 					menu = null;
 					menuState.toggle('teams');
@@ -372,8 +397,8 @@
 				<button
 					class="tb-glyph"
 					class:is-open={menu === 'help'}
-					aria-label="Help and About"
-					title="Help and About"
+					aria-label={m.chrome_help_and_about()}
+					title={m.chrome_help_and_about()}
 					onclick={(e) => toggle('help', e)}
 				>
 					<!-- Nate's disc (assets-src/tools/help.svg). -->
@@ -391,7 +416,7 @@
 							onclick={() => {
 								menu = null;
 								menuState.show(chapterSection('help', helpChapterForPath(routeOf(page.url))));
-							}}><Mark name="help" /> Help</button
+							}}><Mark name="help" /> {m.chrome_help()}</button
 						>
 						<button
 							class="mi"
@@ -399,7 +424,7 @@
 							onclick={() => {
 								menu = null;
 								keysSheet.open = true;
-							}}><Mark name="keyboard" /> Keyboard shortcuts</button
+							}}><Mark name="keyboard" /> {m.chrome_keyboard_shortcuts()}</button
 						>
 						<button
 							class="mi"
@@ -407,7 +432,7 @@
 							onclick={() => {
 								menu = null;
 								menuState.show('about/about');
-							}}><Mark name="about" /> About</button
+							}}><Mark name="about" /> {m.chrome_about()}</button
 						>
 						<ReportLink
 							class="mi"
@@ -420,7 +445,8 @@
 							shareUrl={reportShareUrl}
 							onclick={() => (menu = null)}
 						>
-							<Mark name="report" /> Report a problem
+							<Mark name="report" />
+							{m.chrome_report_a_problem()}
 						</ReportLink>
 					</div>
 				{/if}
@@ -434,8 +460,8 @@
 			<button
 				class="tb-glyph tb-glyph--menu"
 				class:is-open={showing === 'index'}
-				aria-label="Menu"
-				title="Menu"
+				aria-label={m.chrome_menu()}
+				title={m.chrome_menu()}
 				onclick={() => menuState.toggle('index')}
 			>
 				<svg viewBox="0 0 53 62" fill-rule="evenodd" aria-hidden="true"
@@ -456,8 +482,8 @@
 			<button
 				class="tb-glyph"
 				class:is-open={showing === 'settings'}
-				aria-label="Settings"
-				title="Settings"
+				aria-label={m.chrome_settings()}
+				title={m.chrome_settings()}
 				onclick={() => menuState.toggle('settings')}
 			>
 				<svg viewBox="0 0 59 56" fill-rule="evenodd" aria-hidden="true"

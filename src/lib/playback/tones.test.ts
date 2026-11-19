@@ -8,6 +8,7 @@ import {
 	NOTE_SET_LABELS,
 	ORDER_IDS,
 	ORDER_LABELS,
+	ORDERS,
 	orderHint,
 	PREVIEW_PHRASE,
 	RELEASE_S,
@@ -242,6 +243,22 @@ describe('the sound palettes', () => {
 		expect(orderHint('weighty')).toBe('Burst low · skill middle · attacks high');
 		expect(orderHint('skillUp')).toBe('Burst low · attacks middle · skill high');
 		expect(orderHint('rising')).toBe('Attacks low · skill middle · burst high');
+	});
+
+	it('each order’s hint names the roles in the order ORDERS places them', () => {
+		const rank = { low: 0, mid: 1, high: 2 } as const;
+		const slotOf = { attacks: 'attack', skill: 'skill', burst: 'burst' } as const;
+		for (const id of ORDER_IDS) {
+			const o = ORDERS[id];
+			const expected = (['attacks', 'skill', 'burst'] as const)
+				.slice()
+				.sort((a, b) => rank[o[slotOf[a]]] - rank[o[slotOf[b]]]);
+			const spoken = orderHint(id)
+				.toLowerCase()
+				.split(' · ')
+				.map((w) => w.split(' ')[0]);
+			expect(spoken, id).toEqual(expected);
+		}
 	});
 
 	it('the vocabulary: five voices, three orders, four note sets, three hums and Off, all named', () => {

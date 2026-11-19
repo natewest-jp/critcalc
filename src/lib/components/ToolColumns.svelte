@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { closeOnLeave } from '$lib/closeOnLeave';
@@ -137,7 +138,7 @@
 			<header class="tc-sheet-head">
 				<h2 class="tc-sheet-title">{asideTitle}</h2>
 				<!-- The inspector modal's ✕ (Nate 2026-10-23). -->
-				<button class="btn btn--icon" onclick={() => onCloseAside?.()} aria-label="Close"
+				<button class="btn btn--icon" onclick={() => onCloseAside?.()} aria-label={m.errors_close()}
 					><Mark name="close" size={16} /></button
 				>
 			</header>

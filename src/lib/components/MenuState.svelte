@@ -12,6 +12,7 @@
   working copy.
 -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { onDestroy, onMount, tick, type Component } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { hrefTo, routeOf } from '$lib/i18n/paths';
@@ -70,7 +71,7 @@
 		return tool?.path === '/builder' ? 'lineups' : 'rotations';
 	});
 	const item = $derived(section ? itemOf(section) : undefined);
-	const profileName = $derived(storageSession.profile?.name ?? 'You');
+	const profileName = $derived(storageSession.profile?.name ?? m.menu_you());
 	const groupTitle = (g: (typeof SECTION_GROUPS)[number]) => g.title ?? profileName;
 	const isTheorycraft = $derived(storageSession.profile?.kind !== 'real');
 
@@ -193,9 +194,7 @@
 				.load()
 				.then((m) => chapter === c && (ChapterC = m.default))
 				// A chunk that won't load left a blank page under the title.
-				.catch(() =>
-					notices.toast('error', 'This page couldn’t load. Check your connection and try again.')
-				);
+				.catch(() => notices.toast('error', m.menu_this_page_couldn_t_load_check_your()));
 	});
 
 	let mainEl = $state<HTMLElement>();
@@ -287,7 +286,7 @@
 	class:is-index={section === 'index'}
 	data-menu-state
 	role="dialog"
-	aria-label={item?.label ?? 'Menu'}
+	aria-label={item?.label ?? m.menu_menu()}
 	transition:fade={{ duration: motion(T_QUICK) }}
 	onintrostart={introLive}
 	onintroend={covered}
@@ -298,7 +297,7 @@
 >
 	<nav
 		class="side"
-		aria-label="Sections"
+		aria-label={m.menu_sections()}
 		style:--side-mine={storageSession.profile ? colorValue(storageSession.profile.color) : null}
 	>
 		<!-- Phone: the tools head the index (§5.2) as three large tiles wearing
@@ -369,7 +368,11 @@
 						onclick={() => {
 							switching = false;
 							menu.show('profile/new');
-						}}><span class="side-label"><Mark name="plus" size={18} /> Add a profile</span></button
+						}}
+						><span class="side-label"
+							><Mark name="plus" size={18} />
+							{m.menu_add_a_profile()}</span
+						></button
 					>
 				</div>
 			{/if}
@@ -416,7 +419,10 @@
 					<!-- The shortcuts sheet is a dialog over this, not a section (⚓ Nate
 					     2026-11-13), so it is a button beside the chapters. -->
 					<button class="side-item side-keys" onclick={() => (keysSheet.open = true)}>
-						<span class="side-label"><Mark name="keyboard" size={18} /> Keyboard shortcuts</span>
+						<span class="side-label"
+							><Mark name="keyboard" size={18} />
+							{m.menu_keyboard_shortcuts()}</span
+						>
 					</button>
 					<a
 						class="side-item side-report"
@@ -424,7 +430,10 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						<span class="side-label"><Mark name="report" size={18} /> Report a problem</span>
+						<span class="side-label"
+							><Mark name="report" size={18} />
+							{m.menu_report_a_problem()}</span
+						>
 					</a>
 				{/if}
 			{:else}
@@ -491,7 +500,7 @@
 			<header class="head">
 				<div class="head-text">
 					<button class="head-back" onclick={() => menu.show('index')}
-						><Mark name="backSlim" size={12} /> Menu</button
+						><Mark name="backSlim" size={12} /> {m.menu_menu()}</button
 					>
 					<!-- ⛔ No group kicker over the title (↻ Nate 2026-10-26): it said
 					     the profile's name, "Library" or "Settings" again, and over
@@ -504,8 +513,8 @@
 				     surface (Nate 2026-10-23). -->
 				<button
 					class="btn btn--icon head-close"
-					aria-label={tool ? `Back to the ${tool.short}` : 'Close'}
-					title={tool ? `Back to the ${tool.short} (Esc)` : 'Close (Esc)'}
+					aria-label={tool ? m.menu_back_to_the_tool({ tool: tool.short }) : m.menu_close()}
+					title={tool ? m.menu_back_to_the_tool_esc({ tool: tool.short }) : m.menu_close_esc()}
 					onclick={() => menu.close()}><Mark name="close" size={16} /></button
 				>
 			</header>
@@ -533,20 +542,14 @@
 					<!-- §9.1: Theorycraft has no roster and no teams; the invitation
 					     stands in them. -->
 					<div class="invite ctx-light">
-						<h3>Add a profile</h3>
+						<h3>{m.menu_add_a_profile()}</h3>
 						{#if section === 'roster'}
-							<p>
-								Theorycraft has every character at every level, so it has no roster. Add a profile
-								to mark what you own and set your constellations.
-							</p>
+							<p>{m.menu_theorycraft_has_every_character_at_every()}</p>
 						{:else}
-							<p>
-								Teams belong to a profile. Add one to name the teams you play and start rotations
-								and lineups from them.
-							</p>
+							<p>{m.menu_teams_belong_to_a_profile_add_one_to()}</p>
 						{/if}
 						<button class="btn btn--primary" onclick={() => menu.show('profile/new')}
-							>Add a profile</button
+							>{m.menu_add_a_profile()}</button
 						>
 					</div>
 				{:else if section === 'teams'}
@@ -578,8 +581,8 @@
 
 				{#snippet failed(error, reset)}
 					<RenderCrash
-						title="This section ran into a problem."
-						body="The rest of the site is fine, and your saved work is untouched."
+						title={m.menu_this_section_ran_into_a_problem()}
+						body={m.menu_the_rest_of_the_site_is_fine_and_your()}
 						tool="site"
 						{error}
 						reset={() => {

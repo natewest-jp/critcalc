@@ -19,6 +19,7 @@
  * browser's own localStorage does (§10).
  */
 
+import { m } from '$lib/paraglide/messages';
 import {
 	isNotation,
 	parseBackup,
@@ -349,14 +350,14 @@ export function parseAnyBackup(
 	try {
 		raw = JSON.parse(text);
 	} catch {
-		return { ok: false, error: 'That file isn’t valid JSON.' };
+		return { ok: false, error: m.settings_that_file_isn_t_valid_json() };
 	}
 	if (!isObj(raw) || raw.app !== 'critcalc') {
-		return { ok: false, error: 'That doesn’t look like a critcalc backup file.' };
+		return { ok: false, error: m.settings_that_doesn_t_look_like_a_critcalc_backup() };
 	}
 	if (raw.version === STORE_BACKUP_VERSION) {
 		const store = sanitizeStore(raw.store, now);
-		if (!store) return { ok: false, error: 'That backup’s profiles couldn’t be read.' };
+		if (!store) return { ok: false, error: m.settings_that_backup_s_profiles_couldn_t_be_read() };
 		const src = isObj(raw.data) ? raw.data : {};
 		const data: BackupData = {};
 		const settings = sanitizeSiteSettings(src['critcalc:siteSettings']);
