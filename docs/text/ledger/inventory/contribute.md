@@ -13,15 +13,15 @@
   > Report a problem
 - `contribute_reports_go_through_the_feedback_form` — Contribute.svelte:24 <p>
   > Reports go through the <a>feedback form</a>, which takes bugs, characters that behave differently from the game, ideas, and anything else.
-- `contribute_the_quickest_route_is_from_inside_a_tool` — Contribute.svelte:30 <p>
-  > The quickest route is from inside a tool. <strong>Report a problem</strong> in a tool’s <strong>⋯</strong> menu opens the form with a link to what you’re looking at, so I see the same rotation, lineup, or instrument you did. A character’s details card has its own link, <strong>Something not right with this character?</strong> It fills in the character and their constellation.
+- `contribute_the_quickest_route_is_report_a_problem` — Contribute.svelte:30 <p>
+  > The quickest route is <strong>Report a problem</strong> in the top bar’s <strong>?</strong> menu, which opens the form with a link to what you’re looking at, so I see the same rotation, lineup, or instrument you did. A character’s details card has its own link, <strong>Something not right with this character?</strong> It fills in the character and their constellation.
   - terms: 🎮 Constellation · 📖 instrument · 📖 rotation
 - `contribute_what_helps_most_is_what_you_expected_and` — Contribute.svelte:36 <p>
   > What helps most is what you expected and what you got instead. For a character, the source helps too: the kit text, a gcsim config, or a combat log from the training dummy.
   - terms: 🔒 gcsim
 - `contribute_before_reporting_a_missing_mechanic` — Contribute.svelte:40 <p>
-  > Before reporting a missing mechanic, check the <a>coverage page</a>. A part of a kit the Rotation Planner leaves out on purpose is listed there with the reason.
-  - terms: 📖 Rotation Planner
+  > Before reporting a missing mechanic, check the <a>coverage page</a>. A part of a kit the rotation planner leaves out on purpose is listed there with the reason.
+  - terms: 📖 rotation
 - `contribute_help_the_projects_critcalc_is_built_on` — Contribute.svelte:48 <h2>
   > Help the projects critcalc is built on
   - terms: 🔒 critcalc
@@ -29,8 +29,8 @@
   > Most of what the tools show was measured by someone else and given to the community. A correction made in one of these projects reaches every tool built on it, critcalc included:
   - terms: 🔒 critcalc
 - `contribute_gcsim_whose_frame_data_and_tick_cadences` — Contribute.svelte:55 <li>
-  > <a>gcsim</a>, whose frame data and tick cadences the Rotation Planner is timed from. A character implementation or a bug report there helps directly.
-  - terms: 📖 Rotation Planner · 🔒 gcsim
+  > <a>gcsim</a>, whose frame data and tick cadences the rotation planner is timed from. A character implementation or a bug report there helps directly.
+  - terms: 📖 rotation · 🔒 gcsim
 - `contribute_keqing_mains_which_keeps_the_notation` — Contribute.svelte:60 <li>
   > <a>Keqing Mains</a>, which keeps the notation, the theorycrafting conventions, and the testing behind them.
   - terms: 🔒 Keqing Mains · 📖 notation

@@ -42,39 +42,37 @@ game's reshape screen, plus a histogram) — ONE controls panel and a Readout ca
   flower". ⛔ That cannot survive translation (German nouns keep their capital) — a locale
   needs the slot names as their own messages in sentence position.
 
-### `vz_artifact_drag_the_chart_or_use_the_slider_to_pick`
+### `vz_artifact_days_of_resin_f956` · `vz_artifact_in_an_outbreak_outbreak`
 
-The Drop note. "180 a day" is Original Resin's natural regeneration (one per 8 minutes). The
-Outbreak clause is the in-game Dire Prestige rule (20 per 20 resin; a bonus 5★ per 120).
-
-### `vz_artifact_domain_in_100_players_would_have_this`
-
-The Drop headline, "46 in 100 / players would have this piece after 7 days of farming the
-domain". ⚓ A FREQUENCY, not a percentage — "N in 100" is the format readers parse best.
+The farm is measured in days of resin: 180 a day, Original Resin's natural regeneration
+(one per 8 minutes). The Outbreak line follows the in-game Dire Prestige rule (20 per 20
+resin; a bonus 5★ per 120). ⚓ Days, never runs (Nate): players spend 40, or 60 Condensed,
+per claim, so "N runs" would have to say which.
 
 ### `vz_artifact_about_1_in_every_perpiece_five_star`
 
 ⚠️ "five-star" spelled out on purpose (see the surface note). "the piece you want" includes
 set, slot and main stat — ⛔ not just "the stats you want".
 
-### `vz_artifact_x_day_x_is_x_resin_unlucky_tenth_1_in_10`
+### `vz_artifact_half_by_median` · `vz_artifact_unlucky_tenth_p90` · `vz_artifact_unlucky_tenth_p10`
 
-⚓ No run count (Nate): players spend 40 or Condensed (60) per claim, so "N runs" would have
-to say which.
-
-### `vz_artifact_half_by` · `vz_artifact_unlucky_tenth`
-
-Shared with Wish Odds' level table — ⚓ keep the two instruments' translations identical.
+Shared with Wish Odds' level table: ⚓ keep the two instruments' translations identical.
+Their tooltips (`vz_artifact_half_of_players_have_it_within_this_many`,
+`vz_artifact_the_unluckiest_10_of_players_need_this`,
+`vz_artifact_the_unluckiest_10_end_at_or_below_this`) gloss them, so they reuse the heads'
+translated words.
 
 ### `vz_artifact_the_number_beside_each_substat_is_how`
 
 The upgrade badge mirrors the number the game prints beside each line on its reshape
 screen. Use the game's own term for that number in the locale if it has one.
 
-### `vz_artifact_these_values_fit_two_possible_upgrade`
+### `vz_artifact_these_values_fit_more_than_one_upgrade` · `vz_artifact_these_values_fit_length_different`
 
-Tooltip on an AMBIGUOUS pip (a red-disc "!" on its corner): the displayed values fit two
-upgrade counts, and tapping cycles them. "Tap" — it is a touch target too.
+On an ambiguous piece the values on screen fit more than one upgrade count, and the
+reader picks the one the game shows. ⚠️ The second is ASSEMBLED: "two" is spelled out only
+for two, and the second sentence swaps on whether the piece is finished. A locale needs each
+whole form, with an ICU plural on the count.
 
 ### `vz_artifact_these_values_add_up_to_x_upgrade_x_but_a`
 
@@ -82,16 +80,17 @@ upgrade counts, and tapping cycles them. "Tap" — it is a touch target too.
 ranges (+0–3 … +20) are chip labels; the second sentence drops to "Recheck your values." when
 no level fits.
 
-### `vz_artifact_your_two_selected_substats_are`
+### `vz_artifact_every_advanced_exegesis_dust_of`
 
-Dust costs are the game's: 1 for a flower or plume, 2 otherwise; 6 Dust = 1 Advanced; the
-third Advanced in a row is Decreed.
+Dust costs are the game's: 1 for a flower or plume, 2 otherwise; `{ADVANCED_EXEGESIS}`
+(6) Dust makes one reshape Advanced; the third Advanced in a row is Decreed. 🎮 Dust of
+Enlightenment, Advanced and Decreed are the game's words.
 
-### `vz_artifact_gold_shows_your_piece_after_a_label` · `vz_artifact_grey_shows_every_20_slotword_with_these`
+### `vz_artifact_better_than_x_of_20_slotplural_with`
 
-⚓ The two colours explained (Nate asked what "every piece like it" meant): grey = every +20
-piece of this slot with these four substats, levelled with fresh luck — the crowd the "Better
-than N%" headline ranks against; gold = YOUR piece reshaped. Keep both halves.
+⚓ Nate asked what "every piece like it" meant: the crowd is every +20 piece of this slot
+with these four substats, levelled with fresh luck. Keep that scope whole in translation.
+`{slotPlural}` is a slot name in the plural (see the surface note on slot names).
 
 ### `vz_artifact_useful_rolls_count_every_roll_in_your`
 

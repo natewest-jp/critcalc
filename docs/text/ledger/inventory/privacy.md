@@ -5,66 +5,64 @@
 
 **25 messages** · `Privacy.svelte`
 
-- `privacy_privacy` — Privacy.svelte:16 <h1>
+- `privacy_privacy` — Privacy.svelte:17 <h1>
   > Privacy
-- `privacy_critcalc_has_no_accounts_and_no_server` — Privacy.svelte:18 <p>
+- `privacy_critcalc_has_no_accounts_and_no_server` — Privacy.svelte:19 <p>
   > critcalc has no accounts and no server of its own. What you set up stays in your browser. What leaves your browser is listed below.
   - terms: 🔒 critcalc
-- `privacy_what_stays_in_your_browser` — Privacy.svelte:24 <h2>
+- `privacy_what_stays_in_your_browser` — Privacy.svelte:25 <h2>
   > What stays in your browser
-- `privacy_everything_you_create_is_kept_in_this` — Privacy.svelte:25 <p>
-  > Everything you create is kept in this browser’s local storage, on this device only:
-- `privacy_your_settings_display_human_timing` — Privacy.svelte:27 <li>
+- `privacy_everything_you_create_is_kept_in_this` — Privacy.svelte:26 <p>
+  > Everything you create is kept in this browser, on this device only:
+- `privacy_your_settings_display_human_timing` — Privacy.svelte:28 <li>
   > Your settings: display, Human timing, playback sound, and swap ping.
   - terms: 📖 Human timing
-- `privacy_your_roster_which_characters_you_own_or` — Privacy.svelte:28 <li>
-  > Your roster: which characters you own or have wishlisted, and at what constellation.
-  - terms: 🎮 Constellation
-- `privacy_weapon_and_artifact_loadouts` — Privacy.svelte:29 <li>
-  > Weapon and artifact loadouts.
-  - terms: 📖 loadout
-- `privacy_saved_rotations_and_teams_and_saved` — Privacy.svelte:30 <li>
-  > Saved rotations and teams, and saved lineups.
-  - terms: 📖 Saved rotations
-- `privacy_open_tabs_in_the_rotation_planner_and` — Privacy.svelte:31 <li>
-  > Open tabs in the Rotation Planner and the Team Builder, and their recently closed tabs.
-  - terms: 📖 Rotation Planner · 📖 Team Builder
-- `privacy_the_visualizers_layout` — Privacy.svelte:32 <li>
-  > The Visualizers’ layout.
-  - terms: 📖 Visualizers
-- `privacy_critcalc_sets_no_cookies_a_backup_file` — Privacy.svelte:34 <p>
-  > critcalc sets no cookies. A backup file from <a>Settings</a> carries everything except the open tabs and the Visualizers’ layout. <strong>Reset saved data</strong> in the same place clears your roster, loadouts, saved rotations, and saved lineups but keeps your settings. To remove everything, clear this site’s data in your browser.
-  - terms: 📖 Visualizers · 📖 rotation · 🔒 critcalc · 📖 loadout
-- `privacy_what_leaves_it` — Privacy.svelte:43 <h2>
+- `privacy_your_profiles_each_with_its_name_picture` — Privacy.svelte:29 <li>
+  > Your profiles, each with its name, picture, and color, its roster (which characters you own or have wishlisted, and at what constellation), its teams and their loadouts, its rotations and lineups, and which of them is open.
+  - terms: 🎮 Constellation · 📖 rotation · 📖 loadout
+- `privacy_the_visualizers_layout` — Privacy.svelte:34 <li>
+  > The visualizers’ layout.
+- `privacy_when_you_last_downloaded_a_backup_so` — Privacy.svelte:35 <li>
+  > When you last downloaded a backup, so Settings can tell you.
+- `privacy_whether_critcalc_has_already_asked_your` — Privacy.svelte:36 <li>
+  > Whether critcalc has already asked your browser to keep its data.
+  - terms: 🔒 critcalc
+- `privacy_critcalc_sets_no_cookies_a_backup_file` — Privacy.svelte:38 <p>
+  > critcalc sets no cookies. A backup file from <a>Settings</a> carries all of it. <strong>Clear data</strong> on a profile’s own page clears what it holds: its roster, teams, rotations, and lineups. <strong>Delete everything</strong> in Settings removes every profile, the Trash, and your settings from this browser.
+  - terms: 📖 rotation · 🔒 critcalc
+- `privacy_browsers_can_clear_a_site_s_storage_on` — Privacy.svelte:44 <p>
+  > Browsers can clear a site’s storage on their own, for example after a while without a visit. The first time you change a rotation or lineup, critcalc asks your browser to keep this site’s data instead. Firefox shows you a prompt for this; other browsers decide by themselves. Settings shows what your browser answered.
+  - terms: 🔒 critcalc · 📖 rotation
+- `privacy_what_leaves_it` — Privacy.svelte:53 <h2>
   > What leaves it
-- `privacy_share_links_when_you_send_one` — Privacy.svelte:45 <h3>
+- `privacy_share_links_when_you_send_one` — Privacy.svelte:55 <h3>
   > Share links, when you send one
-- `privacy_a_share_link_carries_what_you_re_sharing` — Privacy.svelte:46 <p>
+- `privacy_a_share_link_carries_what_you_re_sharing` — Privacy.svelte:56 <p>
   > A share link carries what you’re sharing inside the link itself: a rotation’s notation with its constellations and loadouts, a lineup’s teams, or one instrument’s settings. Nothing about you is added, and nothing is sent anywhere until you paste the link somewhere.
   - terms: 🎮 Constellation · 📖 instrument · 📖 notation · 📖 rotation · 📖 loadout
-- `privacy_reports_when_you_send_one` — Privacy.svelte:52 <h3>
+- `privacy_reports_when_you_send_one` — Privacy.svelte:62 <h3>
   > Reports, when you send one
-- `privacy_the_feedback_form_is_a_google_form` — Privacy.svelte:54 <p>
+- `privacy_the_feedback_form_is_a_google_form` — Privacy.svelte:64 <p>
   > The feedback form is a Google Form. <strong>Report a problem</strong> opens it with some answers already filled in: which tool you were in, a share link to what you were looking at, critcalc’s build, and your browser’s user-agent string, plus the error message if something crashed. Those reach Google when the form opens, and become a report only if you submit it. <a>Google’s privacy policy</a> covers the form.
   - terms: 🔒 critcalc
-- `privacy_visit_counts` — Privacy.svelte:65 <h3>
+- `privacy_visit_counts` — Privacy.svelte:75 <h3>
   > Visit counts
-- `privacy_critcalc_uses_cloudflare_web_analytics` — Privacy.svelte:67 <p>
+- `privacy_critcalc_uses_cloudflare_web_analytics` — Privacy.svelte:77 <p>
   > critcalc uses Cloudflare Web Analytics to count visits: which pages are viewed, the referring site, the browser and device type, and the country. Cloudflare says it uses no cookies or local storage for this and doesn’t record the query string, so the rotation inside a share link isn’t part of it. Its <a>Web Analytics FAQ</a> has the details.
   - terms: 🔒 critcalc · 📖 rotation
-- `privacy_the_host` — Privacy.svelte:80 <h3>
+- `privacy_the_host` — Privacy.svelte:90 <h3>
   > The host
-- `privacy_critcalc_is_served_by_cloudflare_pages` — Privacy.svelte:81 <p>
+- `privacy_critcalc_is_served_by_cloudflare_pages` — Privacy.svelte:91 <p>
   > critcalc is served by Cloudflare Pages. Like any web host, Cloudflare handles each request, your IP address included, to deliver the page.
   - terms: 🔒 critcalc
-- `privacy_what_critcalc_doesn_t_have` — Privacy.svelte:88 <h2>
+- `privacy_what_critcalc_doesn_t_have` — Privacy.svelte:98 <h2>
   > What critcalc doesn’t have
   - terms: 🔒 critcalc
-- `privacy_no_accounts_no_ads_no_third_party` — Privacy.svelte:89 <p>
+- `privacy_no_accounts_no_ads_no_third_party` — Privacy.svelte:99 <p>
   > No accounts, no ads, no third-party scripts beyond the analytics above, and no fonts or images loaded from anywhere else. Links to other sites open in a new tab, and those sites’ own policies apply there.
-- `privacy_changes` — Privacy.svelte:97 <h2>
+- `privacy_changes` — Privacy.svelte:107 <h2>
   > Changes
-- `privacy_if_any_of_this_changes_this_page_changes` — Privacy.svelte:98 <p>
+- `privacy_if_any_of_this_changes_this_page_changes` — Privacy.svelte:108 <p>
   > If any of this changes, this page changes first.
-- `privacy_last_updated_october_18_2026` — Privacy.svelte:99 <p>
-  > Last updated October 18, 2026.
+- `privacy_last_updated_october_26_2026` — Privacy.svelte:109 <p>
+  > Last updated October 26, 2026.

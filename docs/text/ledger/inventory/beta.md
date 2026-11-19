@@ -18,13 +18,13 @@
   > The character data is where I could use the most help. Every kit is curated by hand from the kit text and timed against gcsim’s measured frames wherever gcsim has the character, and where a kit isn’t finished the tools say so instead of guessing. The <a>coverage page</a> shows how far each character has gotten.
   - terms: 🔒 gcsim
 - `beta_that_said_i_don_t_have_all_characters_or` — Beta.svelte:34 <p>
-  > That said, I don’t have all characters or constellations. Calling all mains! If you see something wrong with a character you know, <a>Contribute</a> says how to report it. The <strong>Report a problem</strong> item in a tool’s <strong>⋯</strong> menu is the fastest way, because it sends a link to exactly what you were looking at.
+  > That said, I don’t have all characters or constellations. Calling all mains! If you see something wrong with a character you know, <a>Contribute</a> says how to report it. <strong>Report a problem</strong> in the top bar’s <strong>?</strong> menu is the fastest way, because it sends a link to exactly what you were looking at.
   - terms: 🎮 Constellation
-- `beta_any_and_all_help_is_appreciated` — Beta.svelte:41 <p>
+- `beta_any_and_all_help_is_appreciated` — Beta.svelte:42 <p>
   > Any and all help is appreciated!
-- `beta_what_changes_and_what_stays_the_same` — Beta.svelte:45 <h2>
+- `beta_what_changes_and_what_stays_the_same` — Beta.svelte:46 <h2>
   > What changes and what stays the same
-- `beta_the_interface_will_keep_changing_for_a` — Beta.svelte:46 <p>
+- `beta_the_interface_will_keep_changing_for_a` — Beta.svelte:47 <p>
   > The interface will keep changing for a while, and more features are on the way. Coverage of kits will improve as reports get filed and data gaps are uncovered.
-- `beta_while_that_happens_your_saved_data_won_t` — Beta.svelte:50 <p>
-  > While that happens, your saved data won’t be lost. Everything in your Library stays in your browser through every update. It’s still worth downloading a backup now and then (<strong>Export…</strong> in Settings), because clearing your browser’s site data erases it.
+- `beta_while_that_happens_your_saved_data_won_t` — Beta.svelte:51 <p>
+  > While that happens, your saved data won’t be lost. Everything in your Library stays in your browser through every update. It’s still worth downloading a backup now and then (<strong>Export…</strong> in Settings), because clearing your browser’s site data erases it. Settings shows when you last did.

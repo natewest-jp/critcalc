@@ -61,11 +61,6 @@ one of the three featured characters.
 
 Checkbox, Weapon Event. Epitomized Path; one point since 5.0.
 
-### `vz_wish_or_drag_across_the_chart`
-
-Under the **Pulls saved** slider: the chart's marker sets the same value. "Or" continues
-the slider above it — instruction, welcome (§1.3c).
-
 ### `vz_wish_aiming_for`
 
 The goal level: C0–C6 or R1–R5. Chips at or below **You have** are disabled.
@@ -95,26 +90,20 @@ not the banner's name.
 Readout headline: the big percentage, then the phrase on its own line. ⚠️ ASSEMBLED
 (`pullsPhrase`), see `vz_wish_1_pull`; `{label}` is a level name (🔒).
 
-### `vz_wish_half_by`
+### `vz_wish_half_by_median`
 
-Column head: the median, in pulls. Explained by
-`vz_wish_half_by_half_of_players_get_there_within`. ⚠️ Short — a table head in a ~15rem
-column.
+The median, in pulls. Explained by its tooltip,
+`vz_wish_half_of_players_get_there_within_this`. ⚠️ Short: a stat line in a narrow column.
 
-### `vz_wish_unlucky_tenth`
+### `vz_wish_unlucky_tenth_p90`
 
 Column head: the 90th percentile, in pulls. ⚓ Worksheet 06: "a lovely way to say the
 90th percentile" — keep the image; a translator needs this note to recover it.
 
-### `vz_wish_on_average_label_would_take_mean_pulls`
+### `vz_wish_half_of_players_get_there_within_this`
 
-§1.8: a reading of the reader's own settings says "would". `{label}` is a level name.
-⚠️ "pulls" is plural-blind (the mean is never near 1, but use ICU anyway).
-
-### `vz_wish_half_by_half_of_players_get_there_within`
-
-⚓ Nate's wording. Glosses the two column heads, so it must repeat their translated text
-exactly (§3.3 — a reference, not a copy).
+⚓ Nate's wording. Glosses "Half by", so it reuses that head's translated words (§3.3: a
+reference, not a copy).
 
 ### `vz_wish_your_character_and_weapon_banners_keep`
 

@@ -5,44 +5,44 @@
 
 **79 messages** · `CoverageList.svelte` · `coverageText.ts`
 
-- `coverage_coverage` — CoverageList.svelte:203 <h1>
+- `coverage_coverage` — CoverageList.svelte:236 <h1>
   > Coverage
-- `coverage_how_much_of_each_character_s_kit_the` — CoverageList.svelte:204 <p>
-  > How much of each character’s kit the Rotation Planner draws, ability by ability. Hover a segment for its details, or select a character to see all of them.
-  - terms: 📖 Rotation Planner
-- `coverage_search_characters` — CoverageList.svelte:235 placeholder= · CoverageList.svelte:236 aria-label=
+- `coverage_how_much_of_each_character_s_kit_the` — CoverageList.svelte:237 <p>
+  > How much of each character’s kit the rotation planner draws, ability by ability. Hover a segment for its details, or select a character to see all of them.
+  - terms: 📖 rotation
+- `coverage_search_characters` — CoverageList.svelte:268 placeholder= · CoverageList.svelte:269 aria-label=
   > Search characters
-- `coverage_show` — CoverageList.svelte:240 aria-label=
+- `coverage_show` — CoverageList.svelte:273 aria-label=
   > Show
-- `coverage_my_constellations` — CoverageList.svelte:247 <button>
+- `coverage_my_constellations` — CoverageList.svelte:280 <button>
   > My constellations
   - terms: 🎮 Constellation
-- `coverage_sort` — CoverageList.svelte:250 aria-label=
+- `coverage_sort` — CoverageList.svelte:283 aria-label=
   > Sort
-- `coverage_newest_first` — CoverageList.svelte:251 script
+- `coverage_newest_first` — CoverageList.svelte:284 script
   > Newest first
-- `coverage_by_name` — CoverageList.svelte:251 script
+- `coverage_by_name` — CoverageList.svelte:284 script
   > By name
-- `coverage_least_covered_first` — CoverageList.svelte:251 script
+- `coverage_least_covered_first` — CoverageList.svelte:284 script
   > Least covered first
-- `coverage_showing_1_character_from_the_rotation` — CoverageList.svelte:270 span:
-  > Showing 1 character from the Rotation Planner.
-  - terms: 📖 Rotation Planner
-- `coverage_showing_length_characters_from_the` — CoverageList.svelte:271 span: — ⚑ plural?
-  > Showing {pinned.length} characters from the Rotation Planner.
+- `coverage_showing_1_character_from_the_rotation` — CoverageList.svelte:303 span:
+  > Showing 1 character from the rotation planner.
+  - terms: 📖 rotation
+- `coverage_showing_length_characters_from_the` — CoverageList.svelte:304 span: — ⚑ plural?
+  > Showing {pinned.length} characters from the rotation planner.
   - vars: `pinned.length`
-  - terms: 📖 Rotation Planner
-- `coverage_show_all_characters` — CoverageList.svelte:273 <button>
+  - terms: 📖 rotation
+- `coverage_show_all_characters` — CoverageList.svelte:306 <button>
   > Show all characters
-- `coverage_lit_of_of` — CoverageList.svelte:320 <span>
+- `coverage_lit_of_of` — CoverageList.svelte:353 <span>
   > {row.lit} of {row.of}
   - vars: `row.lit` `row.of`
-- `coverage_lit_of_of_parts_modeled` — CoverageList.svelte:326 label=
+- `coverage_lit_of_of_parts_modeled` — CoverageList.svelte:359 label=
   > {row.lit} of {row.of} parts modeled
   - vars: `row.lit` `row.of`
-- `coverage_loading` — CoverageList.svelte:336 <p> · CoverageList.svelte:378 <p>
+- `coverage_loading` — CoverageList.svelte:369 <p> · CoverageList.svelte:411 <p>
   > Loading…
-- `coverage_no_characters_match_these_filters` — CoverageList.svelte:367 <li>
+- `coverage_no_characters_match_these_filters` — CoverageList.svelte:400 <li>
   > No characters match these filters.
 - `coverage_timed_from_gcsim_s_frame_data` — coverageText.ts:22 frames.gcsim:
   > Timed from gcsim’s frame data.
@@ -57,8 +57,7 @@
   > Timed from frame counts measured by hand rather than gcsim.
   - terms: 🔒 gcsim
 - `coverage_there_is_no_frame_data_for_this_yet_so` — coverageText.ts:27 frames.none:
-  > There is no frame data for this yet, so the Planner uses a generic length.
-  - terms: 📖 Planner
+  > There is no frame data for this yet, so the planner uses a generic length.
 - `coverage_some_forms_have_no_frame_data_and_use_a` — coverageText.ts:28 frames.someForms:
   > Some forms have no frame data and use a generic length.
 - `coverage_this_kit_has_no_charged_attack_frames_so` — coverageText.ts:30 charged.generic:
@@ -82,8 +81,8 @@
   > Measured from gcsim: this applies no element.
   - terms: 🔒 gcsim
 - `coverage_not_measured_yet_so_the_rotation_planner` — coverageText.ts:39 app.atCast:
-  > Not measured yet, so the Rotation Planner applies the element once, at the cast, and marks it on the aura lane.
-  - terms: 📖 Rotation Planner · 📖 aura lane
+  > Not measured yet, so the rotation planner applies the element once, at the cast, and marks it on the aura lane.
+  - terms: 📖 aura lane · 📖 rotation
 - `coverage_timing_is_measured_but_some_hits_gauge` — coverageText.ts:40 app.unitsUnmeasured:
   > Timing is measured, but some hits’ gauge units are assumed to be 1U.
   - terms: 🏷 gauge units
@@ -105,19 +104,17 @@
   > Its summon is drawn; it deals no damage of its own.
   - terms: 🏷 summon
 - `coverage_part_of_this_waits_on_healing_energy_or` — coverageText.ts:48 grants.noReader:
-  > Part of this waits on healing, energy or HP changes, which the Planner doesn’t track, so it isn’t drawn.
-  - terms: 📖 Planner · 🎮 Energy · 🎮 HP
+  > Part of this waits on healing, energy or HP changes, which the planner doesn’t track, so it isn’t drawn.
+  - terms: 🎮 Energy · 🎮 HP
 - `coverage_its_exact_value_isn_t_known_yet_so_the` — coverageText.ts:49 grants.unknownValue:
   > Its exact value isn’t known yet, so the bar is drawn without one.
 - `coverage_this_hasn_t_been_added_to_the_planner` — coverageText.ts:50 grants.none:
-  > This hasn’t been added to the Planner yet.
-  - terms: 📖 Planner
+  > This hasn’t been added to the planner yet.
 - `coverage_nothing_here_changes_what_the_planner` — coverageText.ts:51 grants.nothingToModel:
-  > Nothing here changes what the Planner draws.
-  - terms: 📖 Planner
+  > Nothing here changes what the planner draws.
 - `coverage_the_rotation_planner_doesn_t_show_this` — coverageText.ts:52 grants.notModeled:
-  > The Rotation Planner doesn’t show this.
-  - terms: 📖 Rotation Planner
+  > The rotation planner doesn’t show this.
+  - terms: 📖 rotation
 - `coverage_there_s_nothing_in_this_slot` — coverageText.ts:53 grants.noHost:
   > There’s nothing in this slot.
 - `coverage_modeled` — coverageText.ts:57 lit:
@@ -129,16 +126,13 @@
 - `coverage_nothing_to_model` — coverageText.ts:61 na:
   > Nothing to model
 - `coverage_drawn_by_the_planner` — coverageText.ts:65 lit:
-  > Drawn by the Planner.
-  - terms: 📖 Planner
+  > Drawn by the planner.
 - `coverage_drawn_with_a_stand_in` — coverageText.ts:66 provisional:
   > Drawn with a stand-in.
 - `coverage_in_the_kit_not_yet_in_the_planner` — coverageText.ts:67 missing:
-  > In the kit, not yet in the Planner.
-  - terms: 📖 Planner
+  > In the kit, not yet in the planner.
 - `coverage_outside_the_planner_s_scope_the_details` — coverageText.ts:68 notModeled:
-  > Outside the Planner’s scope; the details say why.
-  - terms: 📖 Planner
+  > Outside the planner’s scope; the details say why.
 - `coverage_nothing_of_that_kind_in_the_kit` — coverageText.ts:69 na:
   > Nothing of that kind in the kit.
 - `coverage_normal` — coverageText.ts:74 normals:
@@ -218,5 +212,5 @@
 
 A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
 
-- `{cav}` — CoverageList.svelte:356, each over `caveatsOf(d.data, c.hosts)`
-- `{cav}` — CoverageList.svelte:394, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:389, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:427, each over `caveatsOf(d.data, c.hosts)`
