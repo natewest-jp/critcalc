@@ -73,5 +73,6 @@
  * `onMount`). The hash is preserved; only the search is dropped.
  */
 export function stripDeepLinkParams(url: URL): void {
+	// i18n: raw path. The URL stays the one the reader is on, locale prefix and all.
 	history.replaceState(history.state, '', url.pathname + url.hash);
 }

@@ -14,7 +14,7 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, type Component } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { resolve } from '$app/paths';
+	import { hrefTo, routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import { T_QUICK, motion, introLive, outroInert, scrollBehavior } from '$lib/motion';
 	import Mark from '$lib/components/Mark.svelte';
@@ -176,7 +176,7 @@
 
 	/** The tool underneath, if any (its button toggles back onto it). */
 	const tool = $derived(
-		menu.routed ? undefined : TOOLS.find((t) => page.url.pathname.startsWith(resolve(t.path)))
+		menu.routed ? undefined : TOOLS.find((t) => routeOf(page.url).startsWith(t.path))
 	);
 
 	// ── A chapter section: Help's and About's existing chapters ─────────────
@@ -310,7 +310,7 @@
 				<a
 					class="tool-tile"
 					class:is-on={tool?.path === t.path}
-					href={resolve(t.path)}
+					href={hrefTo(t.path)}
 					aria-current={tool?.path === t.path ? 'page' : undefined}
 					onclick={(e) => {
 						if (tool?.path === t.path) {
@@ -375,8 +375,6 @@
 			{/if}
 		{/if}
 
-		<!-- Section paths come resolved from menuState (SECTION_GROUPS). -->
-		<!-- eslint-disable svelte/no-navigation-without-resolve -->
 		<div class="side-group-items">
 			{#each itemsOf(profileGroup) as it (it.id)}
 				{@render sideItem(it)}
@@ -394,7 +392,7 @@
 					class="side-item side-fold"
 					class:is-in={inside}
 					class:is-on={section === first.id}
-					href={first.path}
+					href={hrefTo(first.path)}
 					aria-expanded={inside}
 					aria-current={section === first.id ? 'page' : undefined}
 					onclick={(e) => go(e, first)}
@@ -407,7 +405,7 @@
 							<a
 								class="side-item side-subitem"
 								class:is-on={section === it.id}
-								href={it.path}
+								href={hrefTo(it.path)}
 								aria-current={section === it.id ? 'page' : undefined}
 								onclick={(e) => go(e, it)}>{it.label}</a
 							>
@@ -465,7 +463,7 @@
 			class="side-item"
 			class:is-on={on}
 			class:is-mine={MINE.has(it.id)}
-			href={it.path}
+			href={hrefTo(it.path)}
 			aria-current={section === it.id ? 'page' : undefined}
 			onclick={(e) => go(e, it)}
 		>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import { startShootingStars } from '$lib/landing/shootingStars';
 	import { isToolPath } from '$lib/landing/transition';
@@ -20,7 +21,7 @@
 	// DURING a pan). The first meteor after a restart waits 4–12s, so the
 	// descend is always clear of them. Only TOOL routes suspend — the landing
 	// AND the static pages keep the scene (and its meteors) live.
-	const suspended = $derived(isToolPath(page.url.pathname));
+	const suspended = $derived(isToolPath(routeOf(page.url)));
 
 	$effect(() => {
 		if (suspended) return;

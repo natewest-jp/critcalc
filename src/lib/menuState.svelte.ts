@@ -26,7 +26,8 @@ import type { TeamRecord } from '$lib/storage/records';
 import type { Snippet } from 'svelte';
 import { goto, pushState } from '$app/navigation';
 import { page } from '$app/state';
-import { resolve } from '$app/paths';
+import type { Pathname } from '$app/types';
+import { hrefTo } from '$lib/i18n/paths';
 import { ABOUT_AREA, HELP_AREA, type ChromeAreaId } from '$lib/help/areas';
 
 export type Section =
@@ -42,12 +43,14 @@ export type Section =
 	| `help/${string}`
 	| `about/${string}`;
 
-export type SectionItem = { id: Section; label: string; path: string; tool?: string };
+/** `path` is canonical (`/roster`): localize it with `hrefTo` where it becomes a
+ *  link, and match it against `routeOf(page.url)`. */
+export type SectionItem = { id: Section; label: string; path: Pathname; tool?: string };
 export type SectionGroup = { id: string; title: string | null; items: SectionItem[] };
 
 const LIBRARY_ITEMS: SectionItem[] = [
-	{ id: 'rotations', label: 'Rotations', path: resolve('/library/rotations'), tool: 'Planner' },
-	{ id: 'lineups', label: 'Lineups', path: resolve('/library/lineups'), tool: 'Builder' }
+	{ id: 'rotations', label: 'Rotations', path: '/library/rotations', tool: 'Planner' },
+	{ id: 'lineups', label: 'Lineups', path: '/library/lineups', tool: 'Builder' }
 ];
 
 const chapterItems = (area: typeof HELP_AREA): SectionItem[] =>
@@ -65,10 +68,10 @@ export const SECTION_GROUPS: SectionGroup[] = [
 		id: 'profile',
 		title: null,
 		items: [
-			{ id: 'profile', label: 'Profile', path: resolve('/profile') },
-			{ id: 'profile/new', label: 'Add a profile', path: resolve('/profile/new') },
-			{ id: 'roster', label: 'Roster', path: resolve('/roster') },
-			{ id: 'teams', label: 'Teams', path: resolve('/teams') }
+			{ id: 'profile', label: 'Profile', path: '/profile' },
+			{ id: 'profile/new', label: 'Add a profile', path: '/profile/new' },
+			{ id: 'roster', label: 'Roster', path: '/roster' },
+			{ id: 'teams', label: 'Teams', path: '/teams' }
 		]
 	},
 	{ id: 'library', title: 'Library', items: LIBRARY_ITEMS },
@@ -78,9 +81,9 @@ export const SECTION_GROUPS: SectionGroup[] = [
 		id: 'settings',
 		title: 'Settings',
 		items: [
-			{ id: 'settings', label: 'Settings', path: resolve('/settings') },
+			{ id: 'settings', label: 'Settings', path: '/settings' },
 			// ⚓ Outside every profile, as Settings is (notices design §5).
-			{ id: 'trash', label: 'Trash', path: resolve('/trash') }
+			{ id: 'trash', label: 'Trash', path: '/trash' }
 		]
 	}
 ];
@@ -96,11 +99,12 @@ export const itemOf = (id: Section): SectionItem | undefined => ITEMS.find((i) =
 
 const normalize = (p: string) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p);
 
-/** The section an address names, if any (`/library` is the old Library's,
- *  read as Rotations, and its `?tab=roster` as the Roster). */
+/** The section a canonical route names, if any (`/library` is the old
+ *  Library's, read as Rotations, and its `?tab=roster` as the Roster). Pass
+ *  `routeOf(url)`, not the raw pathname. */
 export function sectionForPath(pathname: string, search = ''): Section | null {
 	const p = normalize(pathname);
-	if (p === resolve('/library')) return /[?&]tab=roster(&|$)/.test(search) ? 'roster' : 'rotations';
+	if (p === '/library') return /[?&]tab=roster(&|$)/.test(search) ? 'roster' : 'rotations';
 	return ITEMS.find((i) => i.path === p)?.id ?? null;
 }
 
@@ -118,6 +122,7 @@ export const chapterSection = (area: ChromeAreaId, chapter: string): Section =>
  */
 const SURFACE_KEY = 'critcalc:lastSurface';
 
+/** Pass the canonical route (`routeOf`), so a reload in any locale reads it. */
 export function rememberSurface(pathname: string): void {
 	try {
 		sessionStorage.setItem(SURFACE_KEY, pathname);
@@ -126,9 +131,10 @@ export function rememberSurface(pathname: string): void {
 	}
 }
 
-function lastSurface(): string | null {
+/** Canonical, as `rememberSurface` is handed it. */
+function lastSurface(): Pathname | null {
 	try {
-		return sessionStorage.getItem(SURFACE_KEY);
+		return sessionStorage.getItem(SURFACE_KEY) as Pathname | null;
 	} catch {
 		return null;
 	}
@@ -194,9 +200,8 @@ class MenuState {
 
 	#push(section: Section): void {
 		const depth = (page.state.menuDepth ?? 0) + 1;
-		const path = itemOf(section)?.path ?? '';
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- section paths are resolved in SECTION_GROUPS
-		pushState(path, {
+		const item = itemOf(section);
+		pushState(item ? hrefTo(item.path) : '', {
 			...page.state,
 			menu: section,
 			menuDepth: depth,
@@ -255,13 +260,8 @@ class MenuState {
 			const place = this.section;
 			const to =
 				lastSurface() ??
-				(place === 'rotations'
-					? resolve('/planner')
-					: place === 'lineups'
-						? resolve('/builder')
-						: resolve('/'));
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolved above
-			void goto(to);
+				(place === 'rotations' ? '/planner' : place === 'lineups' ? '/builder' : '/');
+			void goto(hrefTo(to));
 			return;
 		}
 		if (depth > 0) history.go(-depth);
@@ -269,9 +269,8 @@ class MenuState {
 
 	/** A pick that goes to a TOOL: leave the menu entries in history (a pop
 	 *  and a goto would race) and navigate. The goto drops the shallow state. */
-	leaveTo(path: string): void {
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- callers pass a resolved path
-		void goto(path);
+	leaveTo(path: Pathname): void {
+		void goto(hrefTo(path));
 	}
 }
 

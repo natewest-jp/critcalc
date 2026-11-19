@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hrefTo } from '$lib/i18n/paths';
 	/**
 	 * About | Help — the static pages as ONE place (⚓ Nate 2026-09-23). The
 	 * heading of the area routes is these two tabs, the current one lit, and
@@ -15,9 +16,6 @@
 	const ORDER: ChromeAreaId[] = ['about', 'help'];
 </script>
 
-<!-- Area paths come out of areas.ts already base-resolved (the HelpAreaShell
-	 precedent), so resolve() again would double the base prefix. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <nav class="area-tabs" aria-label="Help and About">
 	{#each ORDER as id (id)}
 		{@const area = AREAS[id]}
@@ -25,7 +23,7 @@
 			class="area-tab"
 			class:is-current={id === current}
 			aria-current={id === current ? 'page' : undefined}
-			href={area.chapters[0].path}>{area.title}</a
+			href={hrefTo(area.chapters[0].path)}>{area.title}</a
 		>
 	{/each}
 </nav>

@@ -13,6 +13,7 @@
 
 import { page } from '$app/state';
 import { menu } from '$lib/menuState.svelte';
+import { routeOf } from '$lib/i18n/paths';
 
 export const keysSheet = $state<{ open: boolean }>({ open: false });
 
@@ -126,7 +127,7 @@ export function currentKeyArea(): KeyAreaId {
 	if (section === 'roster') return 'roster';
 	if (section === 'teams') return 'teams';
 	const chapter = section?.startsWith('help/') ? section.slice(5) : null;
-	const path = page.url.pathname;
+	const path = routeOf(page.url);
 	for (const id of ['planner', 'builder', 'visualizers'] as const) {
 		if (chapter === id || (!section && path.includes(`/${id}`))) return id;
 	}

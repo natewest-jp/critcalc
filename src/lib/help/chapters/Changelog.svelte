@@ -24,7 +24,7 @@
 	 .timeline. The daily check-in proposes an entry when a user-visible to-do
 	 item is removed. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { chapterSection, menu } from '$lib/menuState.svelte';
 
@@ -43,7 +43,7 @@
 <p class="lede">
 	<a href="#known-gaps">Known gaps</a> are at the bottom of the page. For how far each character’s
 	kit has gotten, see the
-	<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
+	<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
 </p>
 
 <section>
@@ -75,7 +75,7 @@
 				until just before Fagio overheats (Decoding Power reaches maximum), and it cools off just
 				like in-game (faster off-field, cleared by a Skill tap). If you don’t want the full Charged
 				Attack, you can choose how long to hold it <a
-					href="{resolve('/help/planner')}#time-token"
+					href="{hrefTo('/help/planner')}#time-token"
 					onclick={openTimeToken}>with C ~Xs</a
 				>. Neuvillette’s Charged Attack also takes C ~Xs now, to end Equitable Judgment early.
 			</p>
@@ -132,7 +132,7 @@
 			</p>
 			<p>
 				Artifact odds has a new Try a reshape button that simulates the game’s Reshape animation.
-				<a href="{resolve('/visualizers')}?i=artifact&do=reshape">Give it a try!</a>
+				<a href="{hrefTo('/visualizers')}?i=artifact&do=reshape">Give it a try!</a>
 			</p>
 		</article>
 		<article class="entry">
@@ -248,7 +248,6 @@
 			<p>
 				critcalc.app goes live with a team builder, rotation planner, and eight visualizers. Source
 				code is on
-				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external -->
 				<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
 					>GitHub</a
 				>.
@@ -261,7 +260,7 @@
 	<h2 id="known-gaps">Known gaps</h2>
 	<p>
 		Longer-term limits that are not yet modeled. Gaps in a single character’s kit are on the
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
+		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
 	</p>
 	<ul>
 		<li>

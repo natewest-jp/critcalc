@@ -12,7 +12,7 @@
 <script lang="ts">
 	import { notices, announceAfterReload } from '$lib/notices.svelte';
 	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { HUMAN_TIMING_DEFAULTS, siteSettings, SWAP_PING_DEFAULT } from '$lib/stores';
 	import Mark from './Mark.svelte';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
@@ -699,7 +699,7 @@
 			<div class="sp-row">
 				<span class="sp-name">Clear profile data</span>
 				<span class="sp-ctl">
-					<a class="btn" href={resolve('/profile')}>Open Profile</a>
+					<a class="btn" href={hrefTo('/profile')}>Open Profile</a>
 				</span>
 				<span class="sp-note">
 					Clear a profile’s roster, rotations, lineups, or teams from its own page.

@@ -42,27 +42,27 @@
   - terms: 🎮 Constellation · 📖 instrument · 📖 notation · 📖 rotation · 📖 loadout
 - `privacy_reports_when_you_send_one` — Privacy.svelte:62 <h3>
   > Reports, when you send one
-- `privacy_the_feedback_form_is_a_google_form` — Privacy.svelte:64 <p>
+- `privacy_the_feedback_form_is_a_google_form` — Privacy.svelte:63 <p>
   > The feedback form is a Google Form. <strong>Report a problem</strong> opens it with some answers already filled in: which tool you were in, a share link to what you were looking at, critcalc’s build, and your browser’s user-agent string, plus the error message if something crashed. Those reach Google when the form opens, and become a report only if you submit it. <a>Google’s privacy policy</a> covers the form.
   - terms: 🔒 critcalc
-- `privacy_visit_counts` — Privacy.svelte:75 <h3>
+- `privacy_visit_counts` — Privacy.svelte:73 <h3>
   > Visit counts
-- `privacy_critcalc_uses_cloudflare_web_analytics` — Privacy.svelte:77 <p>
+- `privacy_critcalc_uses_cloudflare_web_analytics` — Privacy.svelte:74 <p>
   > critcalc uses Cloudflare Web Analytics to count visits: which pages are viewed, the referring site, the browser and device type, and the country. Cloudflare says it uses no cookies or local storage for this and doesn’t record the query string, so the rotation inside a share link isn’t part of it. Its <a>Web Analytics FAQ</a> has the details.
   - terms: 🔒 critcalc · 📖 rotation
-- `privacy_the_host` — Privacy.svelte:90 <h3>
+- `privacy_the_host` — Privacy.svelte:86 <h3>
   > The host
-- `privacy_critcalc_is_served_by_cloudflare_pages` — Privacy.svelte:91 <p>
+- `privacy_critcalc_is_served_by_cloudflare_pages` — Privacy.svelte:87 <p>
   > critcalc is served by Cloudflare Pages. Like any web host, Cloudflare handles each request, your IP address included, to deliver the page.
   - terms: 🔒 critcalc
-- `privacy_what_critcalc_doesn_t_have` — Privacy.svelte:98 <h2>
+- `privacy_what_critcalc_doesn_t_have` — Privacy.svelte:94 <h2>
   > What critcalc doesn’t have
   - terms: 🔒 critcalc
-- `privacy_no_accounts_no_ads_no_third_party` — Privacy.svelte:99 <p>
+- `privacy_no_accounts_no_ads_no_third_party` — Privacy.svelte:95 <p>
   > No accounts, no ads, no third-party scripts beyond the analytics above, and no fonts or images loaded from anywhere else. Links to other sites open in a new tab, and those sites’ own policies apply there.
-- `privacy_changes` — Privacy.svelte:107 <h2>
+- `privacy_changes` — Privacy.svelte:103 <h2>
   > Changes
-- `privacy_if_any_of_this_changes_this_page_changes` — Privacy.svelte:108 <p>
+- `privacy_if_any_of_this_changes_this_page_changes` — Privacy.svelte:104 <p>
   > If any of this changes, this page changes first.
-- `privacy_last_updated_october_26_2026` — Privacy.svelte:109 <p>
+- `privacy_last_updated_october_26_2026` — Privacy.svelte:105 <p>
   > Last updated October 26, 2026.

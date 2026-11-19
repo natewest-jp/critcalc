@@ -24,7 +24,7 @@
 		type OwnershipView
 	} from './lib/facets';
 	import { afterNavigate, goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { hrefTo, routeOf } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
@@ -146,7 +146,7 @@
 	//   so the slot index is the entire payload.
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
-		if (!url || !url.pathname.endsWith('/builder')) return;
+		if (!url || !routeOf(url).endsWith('/builder')) return;
 		const teamParam = url.searchParams.get('team');
 		const swapParam = url.searchParams.get('swap');
 		const boardParam = url.searchParams.get('b');
@@ -544,7 +544,7 @@
 			const pin = team.pinnedRotationId;
 			if (pin && (await storageSession.exists(pin))) await storageSession.open(pin);
 			else await storageSession.planTeam(team.slots, team.con, team.teamId);
-			void goto(resolve('/planner'));
+			void goto(hrefTo('/planner'));
 		})();
 	}
 
@@ -807,7 +807,7 @@
 			rt.setSlot(s.slot, id);
 			errandOpen = false;
 			chosenTeamId = null;
-			void goto(resolve('/planner'));
+			void goto(hrefTo('/planner'));
 			return;
 		}
 		const team = teamById(s.teamId);
@@ -829,7 +829,7 @@
 				label: `Try it with ${name} in the Planner`,
 				run: () => {
 					documentBar.tryWithSwap(pin, incumbent, id, `${pin.name} · ${name}`);
-					void goto(resolve('/planner'));
+					void goto(hrefTo('/planner'));
 				}
 			});
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
@@ -868,7 +868,7 @@
 		errandOpen = false;
 		swapping = null;
 		chosenTeamId = null;
-		void goto(resolve('/planner'));
+		void goto(hrefTo('/planner'));
 	}
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
@@ -1458,7 +1458,7 @@
 				with no capabilities here means “unknown”, not “no”.
 				<a
 					class="link tb-stubs-link"
-					href="{resolve('/coverage')}?c={split.uncurated.map((e) => e.id).join(',')}"
+					href="{hrefTo('/coverage')}?c={split.uncurated.map((e) => e.id).join(',')}"
 					onclick={(e) =>
 						openCoverage(
 							e,

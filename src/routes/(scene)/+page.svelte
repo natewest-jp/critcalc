@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { goto, preloadData } from '$app/navigation';
 	import {
 		FADE_DURATION_MS,
@@ -125,8 +125,8 @@
 			return;
 		}
 		event.preventDefault();
-		startSceneTransition(resolve(path));
-		requestAnimationFrame(() => requestAnimationFrame(() => goto(resolve(path))));
+		startSceneTransition(path);
+		requestAnimationFrame(() => requestAnimationFrame(() => goto(hrefTo(path))));
 	}
 
 	// Warm the tool on press intent: preload the route's code + data so the
@@ -135,7 +135,7 @@
 	// source). preloadData dedupes and no-ops if already warm, so firing on
 	// every pointerdown is safe.
 	function warmTool(path: (typeof tools)[number]['path']) {
-		preloadData(resolve(path)).catch(() => {});
+		preloadData(hrefTo(path)).catch(() => {});
 	}
 </script>
 
@@ -178,13 +178,13 @@
 							{#if line.href === '/coverage'}
 								<a
 									class="notice__detail link link--quiet"
-									href={resolve('/coverage')}
+									href={hrefTo('/coverage')}
 									onclick={(e) => openCoverage(e)}>{@render parts()}</a
 								>
 							{:else if line.href === '/builder'}
 								<a
 									class="notice__detail link link--quiet"
-									href={resolve('/builder')}
+									href={hrefTo('/builder')}
 									onclick={(e) => navigateToTool(e, '/builder')}>{@render parts()}</a
 								>
 							{:else}
@@ -201,7 +201,7 @@
 				{@const art = HERO_ART[tool.art]}
 				<a
 					class="hero"
-					href={resolve(tool.path)}
+					href={hrefTo(tool.path)}
 					onpointerdown={() => warmTool(tool.path)}
 					onkeydown={(e) => e.key === 'Enter' && warmTool(tool.path)}
 					onclick={(e) => navigateToTool(e, tool.path)}

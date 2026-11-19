@@ -198,3 +198,11 @@ pass; worksheet 03 marked superseded.
 The surface table covers the profiles layout (eight new surfaces, `docbar` retired), the
 orphan check reads every key in a heading, and the 35 orphaned Visualizer notes are
 re-keyed or retired. Record: `docs/rounds/ledger-refresh-2026-11-19.md`.
+
+## ✅ Extracted messages are read back — 2026-11-19
+
+Once a string moves into `messages/en.json`, the extractor reads it back: each key is a
+message on the surface its key names, located at its `m.<key>(` call sites, so counts and
+keys hold across extraction. A literal that mints the same key joins it; one with other
+text is a CONFLICT, and an en.json key nothing calls is UNUSED. Record:
+`docs/rounds/i18n-setup-2026-11-19.md`.

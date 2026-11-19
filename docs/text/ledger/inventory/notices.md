@@ -79,55 +79,55 @@
   > That share link couldn’t be read. It may have been cut short when it was copied, so ask for the full link.
 - `notices_transaction_aborted` — db.ts:79 onabort: — ⚑ thrown
   > transaction aborted
-- `notices_your_roster_rotations_and_lineups_are` — session.svelte.ts:148 MIGRATED_NOTICE:
+- `notices_your_roster_rotations_and_lineups_are` — session.svelte.ts:149 MIGRATED_NOTICE:
   > Your roster, rotations, and lineups are now in a profile, {MIGRATED_PROFILE_NAME}
   - vars: `MIGRATED_PROFILE_NAME`
   - terms: 📖 rotation
-- `notices_couldn_t_save_your_changes` — session.svelte.ts:161 SAVE_FAILED_NOTICE:
+- `notices_couldn_t_save_your_changes` — session.svelte.ts:162 SAVE_FAILED_NOTICE:
   > Couldn’t save your changes.
-- `notices_it_s_been_a_while_since_your_last_backup` — session.svelte.ts:342 remindBackup:
+- `notices_it_s_been_a_while_since_your_last_backup` — session.svelte.ts:343 remindBackup:
   > It’s been a while since your last backup
-- `notices_you_haven_t_backed_up_your_work_yet` — session.svelte.ts:343 remindBackup:
+- `notices_you_haven_t_backed_up_your_work_yet` — session.svelte.ts:344 remindBackup:
   > You haven’t backed up your work yet
-- `notices_download_a_backup` — session.svelte.ts:346 label: · session.svelte.ts:376 label: · session.svelte.ts:496 label: · session.svelte.ts:530 label:
+- `notices_download_a_backup` — session.svelte.ts:347 label: · session.svelte.ts:377 label: · session.svelte.ts:497 label: · session.svelte.ts:531 label:
   > Download a backup
-- `notices_settings` — session.svelte.ts:348 label:
+- `notices_settings` — session.svelte.ts:349 label:
   > Settings
-- `notices_everything_was_deleted_in_another_tab_so` — session.svelte.ts:395 attach:
+- `notices_everything_was_deleted_in_another_tab_so` — session.svelte.ts:396 attach:
   > Everything was deleted in another tab, so this tab reloaded
-- `notices_a_backup_was_restored_in_another_tab_so` — session.svelte.ts:396 attach:
+- `notices_a_backup_was_restored_in_another_tab_so` — session.svelte.ts:397 attach:
   > A backup was restored in another tab, so this tab reloaded
-- `notices_trying_again_your_work_stays_in_this_tab` — session.svelte.ts:495 body:
+- `notices_trying_again_your_work_stays_in_this_tab` — session.svelte.ts:496 body:
   > Trying again… Your work stays in this tab until it saves.
-- `notices_this_tab_can_t_save` — session.svelte.ts:528 lead:
+- `notices_this_tab_can_t_save` — session.svelte.ts:529 lead:
   > This tab can’t save.
-- `notices_your_browser_isn_t_letting_critcalc` — session.svelte.ts:529 body:
+- `notices_your_browser_isn_t_letting_critcalc` — session.svelte.ts:530 body:
   > Your browser isn’t letting critcalc store anything, so your work here lasts until you close the tab.
   - terms: 🔒 critcalc
-- `notices_your_saved_work_couldn_t_be_opened_in` — session.svelte.ts:536 lead:
+- `notices_your_saved_work_couldn_t_be_opened_in` — session.svelte.ts:537 lead:
   > Your saved work couldn’t be opened in this tab.
-- `notices_reload_to_try_again_changes_made_here` — session.svelte.ts:537 body:
+- `notices_reload_to_try_again_changes_made_here` — session.svelte.ts:538 body:
   > Reload to try again. Changes made here last until you close the tab.
-- `notices_reload` — session.svelte.ts:538 label:
+- `notices_reload` — session.svelte.ts:539 label:
   > Reload
-- `notices_couldn_t_make_a_backup_file_from_this` — session.svelte.ts:554 downloadBackup:
+- `notices_couldn_t_make_a_backup_file_from_this` — session.svelte.ts:555 downloadBackup:
   > Couldn’t make a backup file from this browser’s data.
-- `notices_moved_to_trash` — session.svelte.ts:702 remove: · session.svelte.ts:1848 deleteTeam:
+- `notices_moved_to_trash` — session.svelte.ts:703 remove: · session.svelte.ts:1849 deleteTeam:
   > Moved to Trash
-- `notices_undo` — session.svelte.ts:705 label: · session.svelte.ts:1849 label: · session.svelte.ts:2064 label:
+- `notices_undo` — session.svelte.ts:706 label: · session.svelte.ts:1850 label: · session.svelte.ts:2065 label:
   > Undo
-- `notices_this_type_was_deleted_in_another_tab_so` — session.svelte.ts:744 deletedElsewhere: — ⚑ plural?
+- `notices_this_type_was_deleted_in_another_tab_so` — session.svelte.ts:745 deletedElsewhere: — ⚑ plural?
   > This {rec.type} was deleted in another tab, so this tab moved on
   - vars: `rec.type`
-- `notices_lineup_1` — session.svelte.ts:883 board:
+- `notices_lineup_1` — session.svelte.ts:884 board:
   > Lineup 1
-- `notices_storage_unavailable` — session.svelte.ts:1243 restore: · session.svelte.ts:1281 wipe: — ⚑ thrown
+- `notices_storage_unavailable` — session.svelte.ts:1244 restore: · session.svelte.ts:1282 wipe: — ⚑ thrown
   > storage unavailable
-- `notices_the_library` — session.svelte.ts:1558 where:
+- `notices_the_library` — session.svelte.ts:1559 where:
   > the Library
-- `notices_theorycraft_s_library` — session.svelte.ts:1560 where:
+- `notices_theorycraft_s_library` — session.svelte.ts:1561 where:
   > Theorycraft’s Library
-- `notices_its_profile_s_library` — session.svelte.ts:1563 where:
+- `notices_its_profile_s_library` — session.svelte.ts:1564 where:
   > its profile’s Library
 
 ## Rendered from data

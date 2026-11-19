@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import { browser } from '$app/environment';
 	import { menu, sectionForPath } from '$lib/menuState.svelte';
 
 	let { children } = $props();
-	const pathname = $derived(page.url.pathname);
+	const pathname = $derived(routeOf(page.url));
 
 	// ⚓ Every page here is a SECTION of the menu state (build plan §13, 2c),
 	// which the scene layout renders in the browser: the address names it, and

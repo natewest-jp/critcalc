@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { routeOf } from '$lib/i18n/paths';
 	import { named, notices } from '$lib/notices.svelte';
 	import { chapterSection, menu } from '$lib/menuState.svelte';
 	import { onMount, tick, untrack } from 'svelte';
@@ -258,7 +259,7 @@
 	// dev warning that is the accepted price.
 	afterNavigate(async (nav) => {
 		const url = nav.to?.url;
-		if (!url || !url.pathname.startsWith('/visualizers')) return;
+		if (!url || !routeOf(url).startsWith('/visualizers')) return;
 		const param = url.searchParams.get('i');
 		if (!param) return;
 		const action = url.searchParams.get('do');

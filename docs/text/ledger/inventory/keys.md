@@ -23,79 +23,79 @@
   > Close
 - `keys_or` — KeysSheet.svelte:82 <span>
   > or
-- `keys_everywhere` — keysSheet.svelte.ts:35 title:
+- `keys_everywhere` — keysSheet.svelte.ts:36 title:
   > Everywhere
-- `keys_show_these_shortcuts` — keysSheet.svelte.ts:38 does:
+- `keys_show_these_shortcuts` — keysSheet.svelte.ts:39 does:
   > Show these shortcuts
-- `keys_close_a_menu_a_dialog_or_help` — keysSheet.svelte.ts:40 does:
+- `keys_close_a_menu_a_dialog_or_help` — keysSheet.svelte.ts:41 does:
   > Close a menu, a dialog, or Help
-- `keys_check_that_your_work_is_saved_it_saves` — keysSheet.svelte.ts:42 does:
+- `keys_check_that_your_work_is_saved_it_saves` — keysSheet.svelte.ts:43 does:
   > Check that your work is saved (it saves as you go)
-- `keys_rotation_planner` — keysSheet.svelte.ts:47 title:
+- `keys_rotation_planner` — keysSheet.svelte.ts:48 title:
   > Rotation Planner
   - terms: 📖 Rotation Planner
-- `keys_play_or_pause` — keysSheet.svelte.ts:50 does:
+- `keys_play_or_pause` — keysSheet.svelte.ts:51 does:
   > Play or pause
-- `keys_back_to_the_start` — keysSheet.svelte.ts:51 does:
+- `keys_back_to_the_start` — keysSheet.svelte.ts:52 does:
   > Back to the start
-- `keys_undo_a_notation_change` — keysSheet.svelte.ts:53 does:
+- `keys_undo_a_notation_change` — keysSheet.svelte.ts:54 does:
   > Undo a notation change
   - terms: 📖 notation
-- `keys_redo` — keysSheet.svelte.ts:54 does: · keysSheet.svelte.ts:89 does:
+- `keys_redo` — keysSheet.svelte.ts:55 does: · keysSheet.svelte.ts:90 does:
   > Redo
-- `keys_switch_to_the_other_rotation_of_a_pair` — keysSheet.svelte.ts:58 does:
+- `keys_switch_to_the_other_rotation_of_a_pair` — keysSheet.svelte.ts:59 does:
   > Switch to the other rotation of a pair, or back to the last one you had open
   - terms: 📖 rotation
-- `keys_step_through_the_event_log` — keysSheet.svelte.ts:61 does:
+- `keys_step_through_the_event_log` — keysSheet.svelte.ts:62 does:
   > Step through the event log
-- `keys_jump_to_the_first_or_last_event` — keysSheet.svelte.ts:62 does:
+- `keys_jump_to_the_first_or_last_event` — keysSheet.svelte.ts:63 does:
   > Jump to the first or last event
-- `keys_team_builder` — keysSheet.svelte.ts:67 title:
+- `keys_team_builder` — keysSheet.svelte.ts:68 title:
   > Team Builder
   - terms: 📖 Team Builder
-- `keys_back_to_the_last_lineup_you_had_open` — keysSheet.svelte.ts:70 does:
+- `keys_back_to_the_last_lineup_you_had_open` — keysSheet.svelte.ts:71 does:
   > Back to the last lineup you had open
-- `keys_cancel_a_swap` — keysSheet.svelte.ts:72 does:
+- `keys_cancel_a_swap` — keysSheet.svelte.ts:73 does:
   > Cancel a swap
-- `keys_roster` — keysSheet.svelte.ts:77 title:
+- `keys_roster` — keysSheet.svelte.ts:78 title:
   > Roster
   - terms: 📖 Roster
-- `keys_while_the_roster_is_unlocked_for_editing` — keysSheet.svelte.ts:78 note:
+- `keys_while_the_roster_is_unlocked_for_editing` — keysSheet.svelte.ts:79 note:
   > While the roster is unlocked for editing.
-- `keys_move_between_characters` — keysSheet.svelte.ts:81 does:
+- `keys_move_between_characters` — keysSheet.svelte.ts:82 does:
   > Move between characters
-- `keys_owned` — keysSheet.svelte.ts:82 does:
+- `keys_owned` — keysSheet.svelte.ts:83 does:
   > Owned
-- `keys_not_owned` — keysSheet.svelte.ts:83 does:
+- `keys_not_owned` — keysSheet.svelte.ts:84 does:
   > Not owned
-- `keys_toggle_owned` — keysSheet.svelte.ts:84 does:
+- `keys_toggle_owned` — keysSheet.svelte.ts:85 does:
   > Toggle owned
-- `keys_add_to_or_remove_from_the_wishlist` — keysSheet.svelte.ts:85 does:
+- `keys_add_to_or_remove_from_the_wishlist` — keysSheet.svelte.ts:86 does:
   > Add to or remove from the wishlist
-- `keys_leave_out_of_imaginarium_theater_or_put` — keysSheet.svelte.ts:86 does:
+- `keys_leave_out_of_imaginarium_theater_or_put` — keysSheet.svelte.ts:87 does:
   > Leave out of Imaginarium Theater, or put back
-- `keys_set_the_constellation` — keysSheet.svelte.ts:87 does:
+- `keys_set_the_constellation` — keysSheet.svelte.ts:88 does:
   > Set the constellation
   - terms: 🎮 Constellation
-- `keys_undo` — keysSheet.svelte.ts:88 does:
+- `keys_undo` — keysSheet.svelte.ts:89 does:
   > Undo
-- `keys_while_a_team_is_open` — keysSheet.svelte.ts:95 note:
+- `keys_while_a_team_is_open` — keysSheet.svelte.ts:96 note:
   > While a team is open.
-- `keys_choose_a_slot` — keysSheet.svelte.ts:98 does:
+- `keys_choose_a_slot` — keysSheet.svelte.ts:99 does:
   > Choose a slot
-- `keys_leave_the_team_asks_first_if_it_has` — keysSheet.svelte.ts:99 does:
+- `keys_leave_the_team_asks_first_if_it_has` — keysSheet.svelte.ts:100 does:
   > Leave the team (asks first if it has changes)
-- `keys_visualizers` — keysSheet.svelte.ts:104 title:
+- `keys_visualizers` — keysSheet.svelte.ts:105 title:
   > Visualizers
   - terms: 📖 Visualizers
-- `keys_in_the_gauge_explorer_with_an` — keysSheet.svelte.ts:105 note:
+- `keys_in_the_gauge_explorer_with_an` — keysSheet.svelte.ts:106 note:
   > In the Gauge Explorer, with an application selected.
   - terms: 📖 Gauge Explorer
-- `keys_move_it_by_0_1s` — keysSheet.svelte.ts:108 does:
+- `keys_move_it_by_0_1s` — keysSheet.svelte.ts:109 does:
   > Move it by 0.1s
-- `keys_move_it_by_1s` — keysSheet.svelte.ts:114 does:
+- `keys_move_it_by_1s` — keysSheet.svelte.ts:115 does:
   > Move it by 1s
-- `keys_edit_it` — keysSheet.svelte.ts:116 does:
+- `keys_edit_it` — keysSheet.svelte.ts:117 does:
   > Edit it
-- `keys_remove_it` — keysSheet.svelte.ts:117 does:
+- `keys_remove_it` — keysSheet.svelte.ts:118 does:
   > Remove it

@@ -73,22 +73,22 @@
 - `planner_tip_on_on_on_on_the_team_start_s_to_end` — PlannerInspector.svelte:214 <p> — ⚑ assembled
   > {tip.on ? `On ${tip.on}` : 'On the team'} · {fmtSecs(tip.start)}s to {fmtSecs(tip.end)}s
   - vars: `tip.on ? 'On ${tip.on}' : 'On the team'` `fmtSecs(tip.start)` `fmtSecs(tip.end)`
-- `planner_a_sample_rotation_written_for_critcalc` — PlannerInspector.svelte:230 <p>
+- `planner_a_sample_rotation_written_for_critcalc` — PlannerInspector.svelte:229 <p>
   > A sample rotation, written for critcalc.
   - terms: 🔒 critcalc · 📖 rotation
-- `planner_a_sample_rotation_adapted_from_name` — PlannerInspector.svelte:232 <p>
+- `planner_a_sample_rotation_adapted_from_name` — PlannerInspector.svelte:231 <p>
   > A sample rotation, adapted from <a>{sample.source.name}</a>.
   - vars: `sample.source.name`
   - terms: 📖 rotation
-- `planner_a_sample_rotation_from_name` — PlannerInspector.svelte:237 <p>
+- `planner_a_sample_rotation_from_name` — PlannerInspector.svelte:236 <p>
   > A sample rotation, from <a>{sample.source.name}</a>.
   - vars: `sample.source.name`
   - terms: 📖 rotation
-- `planner_put_a_character_on_the_team_and_their` — PlannerInspector.svelte:247 <p>
+- `planner_put_a_character_on_the_team_and_their` — PlannerInspector.svelte:245 <p>
   > Put a character on the team, and their details show here.
-- `planner_coverage_for_this_team` — PlannerInspector.svelte:268 <a>
+- `planner_coverage_for_this_team` — PlannerInspector.svelte:266 <a>
   > Coverage for this team
-- `planner_click_an_ability_or_a_buff_on_the` — PlannerInspector.svelte:272 <p>
+- `planner_click_an_ability_or_a_buff_on_the` — PlannerInspector.svelte:270 <p>
   > Click an ability or a buff on the timeline, or a portrait on the bench, to see it here.
   - terms: 📖 timeline · 📖 bench
 - `planner_name_s_coverage_with_the_parts_this` — RotationCoverage.svelte:63 label=
@@ -900,120 +900,120 @@
 - `planner_loaded_shared_rotation` — +page.svelte:82 receive:
   > Loaded shared rotation
   - terms: 📖 rotation
-- `planner_team_loaded` — +page.svelte:173 afterNavigate:
+- `planner_team_loaded` — +page.svelte:164 afterNavigate:
   > Team loaded
-- `planner_target_is_one_enemy_with_no_permanent` — +page.svelte:289 AURA_NOTES:
+- `planner_target_is_one_enemy_with_no_permanent` — +page.svelte:280 AURA_NOTES:
   > Target is one enemy with no permanent aura, and it never applies an element back at you.
   - terms: 🏷 aura
-- `planner_a_pip_with_a_yellow_ring_has_no_measured` — +page.svelte:290 AURA_NOTES:
+- `planner_a_pip_with_a_yellow_ring_has_no_measured` — +page.svelte:281 AURA_NOTES:
   > A pip with a yellow ring has no measured gauge strength, so the rotation planner uses 1U for that hit.
   - terms: 📖 rotation · 🏷 gauge
-- `planner_copy_link` — +page.svelte:359 <span>
+- `planner_copy_link` — +page.svelte:350 <span>
   > Copy link
-- `planner_copy_kqm_notation` — +page.svelte:368 <span>
+- `planner_copy_kqm_notation` — +page.svelte:359 <span>
   > Copy KQM notation
   - terms: 📖 notation · 🔒 KQM
-- `planner_copy_timeline_image` — +page.svelte:376 <span>
+- `planner_copy_timeline_image` — +page.svelte:367 <span>
   > Copy timeline image
   - terms: 📖 timeline
-- `planner_download_timeline_image` — +page.svelte:384 <span>
+- `planner_download_timeline_image` — +page.svelte:375 <span>
   > Download timeline image
   - terms: 📖 timeline
-- `planner_show_the_bench` — +page.svelte:402 aria-label= · +page.svelte:403 title=
+- `planner_show_the_bench` — +page.svelte:393 aria-label= · +page.svelte:394 title=
   > Show the bench
   - terms: 📖 bench
-- `planner_fold_the_bench` — +page.svelte:402 aria-label= · +page.svelte:403 title=
+- `planner_fold_the_bench` — +page.svelte:393 aria-label= · +page.svelte:394 title=
   > Fold the bench
   - terms: 📖 bench
-- `planner_playback` — +page.svelte:468 aria-label=
+- `planner_playback` — +page.svelte:459 aria-label=
   > Playback
-- `planner_back_to_the_start` — +page.svelte:479 aria-label= · +page.svelte:753 <span>
+- `planner_back_to_the_start` — +page.svelte:470 aria-label= · +page.svelte:744 <span>
   > Back to the start
-- `planner_back_to_the_start_home` — +page.svelte:480 title=
+- `planner_back_to_the_start_home` — +page.svelte:471 title=
   > Back to the start (Home)
-- `planner_pause` — +page.svelte:491 aria-label=
+- `planner_pause` — +page.svelte:482 aria-label=
   > Pause
-- `planner_play_the_rotation` — +page.svelte:491 aria-label=
+- `planner_play_the_rotation` — +page.svelte:482 aria-label=
   > Play the rotation
   - terms: 📖 rotation
-- `planner_pause_space` — +page.svelte:492 title=
+- `planner_pause_space` — +page.svelte:483 title=
   > Pause (Space)
-- `planner_play_the_rotation_at_game_speed_space` — +page.svelte:492 title=
+- `planner_play_the_rotation_at_game_speed_space` — +page.svelte:483 title=
   > Play the rotation at game speed (Space)
   - terms: 📖 rotation
-- `planner_playback_speed_rate` — +page.svelte:515 aria-label=
+- `planner_playback_speed_rate` — +page.svelte:506 aria-label=
   > Playback speed {rateLabel(playback.rate)}
   - vars: `rateLabel(playback.rate)`
-- `planner_playback_speed_rate_slow_down_to_learn_a` — +page.svelte:516 title=
+- `planner_playback_speed_rate_slow_down_to_learn_a` — +page.svelte:507 title=
   > Playback speed: {rateLabel( playback.rate )}. Slow down to learn a rotation; the count-in keeps its pace
   - vars: `rateLabel(
 							playback.rate
 						)`
   - terms: 📖 rotation
-- `planner_draw_the_laps_that_follow_the_rotation` — +page.svelte:544 title=
+- `planner_draw_the_laps_that_follow_the_rotation` — +page.svelte:535 title=
   > Draw the laps that follow: the rotation runs on past its end, cooldowns and buffs carried
   - terms: 🎮 cooldown · 📖 rotation
-- `planner_laps` — +page.svelte:548 <span> · +page.svelte:784 <span>
+- `planner_laps` — +page.svelte:539 <span> · +page.svelte:775 <span>
   > Laps
   - terms: 📖 Laps
-- `planner_zoom` — +page.svelte:569 label= · +page.svelte:569 ariaLabel= · +page.svelte:587 aria-label=
+- `planner_zoom` — +page.svelte:560 label= · +page.svelte:560 ariaLabel= · +page.svelte:578 aria-label=
   > Zoom
-- `planner_zoom_out` — +page.svelte:576 aria-label=
+- `planner_zoom_out` — +page.svelte:567 aria-label=
   > Zoom out
-- `planner_zoom_in` — +page.svelte:592 aria-label=
+- `planner_zoom_in` — +page.svelte:583 aria-label=
   > Zoom in
-- `planner_reset` — +page.svelte:603 <button>
+- `planner_reset` — +page.svelte:594 <button>
   > Reset
-- `planner_total_x_s` — +page.svelte:640 <span>
+- `planner_total_x_s` — +page.svelte:631 <span>
   > <span>Total</span> {Math.round(pv.totalDuration * 10) / 10}s
   - vars: `Math.round(pv.totalDuration * 10) / 10`
-- `planner_human_timing` — +page.svelte:655 aria-label= · +page.svelte:800 <span>
+- `planner_human_timing` — +page.svelte:646 aria-label= · +page.svelte:791 <span>
   > Human timing
   - terms: 📖 Human timing
-- `planner_human_timing_is_on_the_total_includes` — +page.svelte:657 title=
+- `planner_human_timing_is_on_the_total_includes` — +page.svelte:648 title=
   > Human timing is on: the Total includes the pauses a person takes. Turn it off for frame-perfect timing.
   - terms: 📖 Human timing
-- `planner_frame_perfect_timing_turn_human_timing` — +page.svelte:658 title=
+- `planner_frame_perfect_timing_turn_human_timing` — +page.svelte:649 title=
   > Frame-perfect timing. Turn Human timing on to include the pauses a person takes (set it up in Settings).
   - terms: 📖 Human timing
-- `planner_timeline_layers` — +page.svelte:704 aria-label=
+- `planner_timeline_layers` — +page.svelte:695 aria-label=
   > Timeline layers
-- `planner_draw_buff_bars_weapon_procs_always_on` — +page.svelte:710 title=
+- `planner_draw_buff_bars_weapon_procs_always_on` — +page.svelte:701 title=
   > Draw buff bars, weapon procs, always-on buffs, Nightsoul bursts and Ascendant Gleam
   - terms: 🎮 Ascendant Gleam · 🎮 Nightsoul · 🎮 Elemental Burst
-- `planner_buffs` — +page.svelte:717 <span>
+- `planner_buffs` — +page.svelte:708 <span>
   > Buffs
-- `planner_draw_the_target_s_elemental_gauge_with` — +page.svelte:724 title=
+- `planner_draw_the_target_s_elemental_gauge_with` — +page.svelte:715 title=
   > Draw the target's elemental gauge, with applications and reactions
   - terms: 🏷 gauge
-- `planner_auras` — +page.svelte:729 <span>
+- `planner_auras` — +page.svelte:720 <span>
   > Auras
-- `planner_playback_timing_and_panels` — +page.svelte:739 ariaLabel=
+- `planner_playback_timing_and_panels` — +page.svelte:730 ariaLabel=
   > Playback, timing and panels
-- `planner_speed` — +page.svelte:756 <div>
+- `planner_speed` — +page.svelte:747 <div>
   > Speed
-- `planner_log` — +page.svelte:816 <span> · +page.svelte:860 <span>
+- `planner_log` — +page.svelte:807 <span> · +page.svelte:851 <span>
   > Log
-- `planner_inspector` — +page.svelte:830 <span> · +page.svelte:875 <span> · +page.svelte:915 asideTitle=
+- `planner_inspector` — +page.svelte:821 <span> · +page.svelte:866 <span> · +page.svelte:906 asideTitle=
   > Inspector
-- `planner_share` — +page.svelte:836 <div> · +page.svelte:887 label=
+- `planner_share` — +page.svelte:827 <div> · +page.svelte:878 label=
   > Share
-- `planner_toggle_the_aura_log` — +page.svelte:854 aria-label=
+- `planner_toggle_the_aura_log` — +page.svelte:845 aria-label=
   > Toggle the aura log
   - terms: 📖 aura log
-- `planner_the_target_s_aura_application_by` — +page.svelte:855 title=
+- `planner_the_target_s_aura_application_by` — +page.svelte:846 title=
   > The target's aura, application by application
   - terms: 🏷 aura
-- `planner_the_team_and_anything_you_click_on_the` — +page.svelte:871 title=
+- `planner_the_team_and_anything_you_click_on_the` — +page.svelte:862 title=
   > The team, and anything you click on the timeline or the bench
   - terms: 📖 timeline · 📖 bench
-- `planner_share_this_rotation` — +page.svelte:888 ariaLabel=
+- `planner_share_this_rotation` — +page.svelte:879 ariaLabel=
   > Share this rotation
   - terms: 📖 rotation
-- `planner_aura_log` — +page.svelte:915 asideTitle= · +page.svelte:957 <div>
+- `planner_aura_log` — +page.svelte:906 asideTitle= · +page.svelte:948 <div>
   > Aura log
   - terms: 📖 aura log
-- `planner_this_rotation_puts_nothing_on_the_target` — +page.svelte:964 empty=
+- `planner_this_rotation_puts_nothing_on_the_target` — +page.svelte:955 empty=
   > This rotation puts nothing on the target.
   - terms: 📖 rotation
 

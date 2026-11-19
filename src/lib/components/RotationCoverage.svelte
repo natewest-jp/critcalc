@@ -13,7 +13,7 @@
 	import { COLUMN_LABEL } from '$lib/coverage/coverageText';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import type { TimelineEvent } from '$lib/utils/rotationEvents';
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import CoverageStrip from './CoverageStrip.svelte';
 
 	let {
@@ -53,7 +53,7 @@
 		{#each rows as row (row.id)}
 			<a
 				class="link link--quiet rp-cov-name"
-				href="{resolve('/coverage')}?c={row.id}"
+				href="{hrefTo('/coverage')}?c={row.id}"
 				onclick={(e) => openCoverage(e, [row.id])}>{row.name}</a
 			>
 			<CoverageStrip

@@ -8,7 +8,7 @@
 	 Abyss banner + Opponents need a CURRENT cycle in season-dates.json, so the
 	 copy says "when a cycle is listed". The Theater section is design doc §12. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import HelpFigure from '$lib/components/HelpFigure.svelte';
 	import HelpRef from '$lib/components/HelpRef.svelte';
@@ -142,7 +142,7 @@
 	<p>
 		Some kits have no capability data yet. While you filter by capability they are listed separately
 		under “Not yet curated”, because a missing icon there means unknown rather than no. The
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows where each
+		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows where each
 		character currently stands.
 	</p>
 </section>

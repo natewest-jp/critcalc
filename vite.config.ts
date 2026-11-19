@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { defineConfig } from 'vitest/config';
 
 /** Dev-only: let the browser cache /assets/* (portraits, icons) instead of
@@ -53,7 +54,9 @@ function buildId(): string {
 }
 
 export default defineConfig({
-	plugins: [sveltekit(), devAssetCache],
+	// Paraglide's compiler options live in project.inlang/paraglide.config.js,
+	// shared with the `i18n` script.
+	plugins: [paraglideVitePlugin({ project: './project.inlang' }), sveltekit(), devAssetCache],
 	define: {
 		/* The footer's copyright year, inlined at BUILD time.
 		 *

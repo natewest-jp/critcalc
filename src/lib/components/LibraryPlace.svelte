@@ -11,7 +11,7 @@
 -->
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { resolve } from '$app/paths';
+	import { routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
@@ -40,7 +40,7 @@
 	let { place }: { place: DocTool } = $props();
 
 	const type = $derived(place === 'planner' ? 'rotation' : 'lineup');
-	const toolPath = $derived(resolve(place === 'planner' ? '/planner' : '/builder'));
+	const toolPath = $derived(place === 'planner' ? '/planner' : '/builder');
 
 	let docs = $state<DocumentRecord[]>([]);
 	let loaded = $state(false);
@@ -135,7 +135,7 @@
 
 	/** Back onto the tool if it is underneath, else go to it. */
 	function arrive(): void {
-		if (page.url.pathname.startsWith(toolPath) && !menu.routed) menu.close();
+		if (routeOf(page.url).startsWith(toolPath) && !menu.routed) menu.close();
 		else menu.leaveTo(toolPath);
 	}
 

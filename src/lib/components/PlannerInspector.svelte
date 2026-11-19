@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { rotationTwin } from '$lib/travelerTwin.svelte';
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import CharacterDetails from '$lib/components/CharacterDetails.svelte';
 	import BuffDetailRows from '$lib/components/BuffDetailRows.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -225,7 +225,6 @@
 	{:else}
 		<!-- ── THE TEAM ───────────────────────────────────────────────────── -->
 		{#if sample}
-			<!-- eslint-disable svelte/no-navigation-without-resolve -- the source's own site -->
 			<p class="pi-credit">
 				{#if !sample.source}
 					A sample rotation, written for critcalc.
@@ -241,7 +240,6 @@
 					>.
 				{/if}
 			</p>
-			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{/if}
 		{#if team.length === 0}
 			<p class="pi-empty">Put a character on the team, and their details show here.</p>
@@ -264,7 +262,7 @@
 			<div class="pi-coverage">
 				<a
 					class="link"
-					href="{resolve('/coverage')}?c={team.join(',')}"
+					href="{hrefTo('/coverage')}?c={team.join(',')}"
 					onclick={(e) => openCoverage(e, team)}>Coverage for this team</a
 				>
 			</div>

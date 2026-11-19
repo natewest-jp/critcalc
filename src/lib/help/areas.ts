@@ -16,7 +16,7 @@
  */
 
 import type { Component } from 'svelte';
-import { resolve } from '$app/paths';
+import type { Pathname } from '$app/types';
 
 export type ChromeAreaId = 'help' | 'about';
 
@@ -24,8 +24,8 @@ export type Chapter = {
 	/** Stable id, and the chapter's slug within its area. */
 	id: string;
 	title: string;
-	/** Canonical route, already base-resolved — hrefs use it verbatim. */
-	path: string;
+	/** Canonical route: localize it with `hrefTo` from `$lib/i18n/paths`. */
+	path: Pathname;
 	/** Overlay-only lazy loader; routes import the component directly. */
 	load: () => Promise<{ default: Component }>;
 	/** Renders WITHOUT the `.prose` article, whose typography would restyle a
@@ -49,25 +49,25 @@ export const HELP_AREA: Area = {
 		{
 			id: 'faq',
 			title: 'FAQ',
-			path: resolve('/help'),
+			path: '/help',
 			load: () => import('./chapters/Faq.svelte')
 		},
 		{
 			id: 'builder',
 			title: 'Team builder',
-			path: resolve('/help/builder'),
+			path: '/help/builder',
 			load: () => import('./chapters/TeamBuilder.svelte')
 		},
 		{
 			id: 'planner',
 			title: 'Rotation planner',
-			path: resolve('/help/planner'),
+			path: '/help/planner',
 			load: () => import('./chapters/RotationPlanner.svelte')
 		},
 		{
 			id: 'visualizers',
 			title: 'Visualizers',
-			path: resolve('/help/visualizers'),
+			path: '/help/visualizers',
 			load: () => import('./chapters/Visualizers.svelte')
 		}
 	]
@@ -84,39 +84,39 @@ export const ABOUT_AREA: Area = {
 		{
 			id: 'about',
 			title: 'About',
-			path: resolve('/about'),
+			path: '/about',
 			load: () => import('./chapters/About.svelte')
 		},
 		{
 			// ⚓ Nate 2026-10-21: the noticeable changes, newest first.
 			id: 'changelog',
 			title: 'What’s new',
-			path: resolve('/changelog'),
+			path: '/changelog',
 			load: () => import('./chapters/Changelog.svelte')
 		},
 		{
 			id: 'contribute',
 			title: 'Contribute',
-			path: resolve('/contribute'),
+			path: '/contribute',
 			load: () => import('./chapters/Contribute.svelte')
 		},
 		{
 			id: 'beta',
 			title: 'Beta',
-			path: resolve('/beta'),
+			path: '/beta',
 			load: () => import('./chapters/Beta.svelte')
 		},
 		{
 			id: 'privacy',
 			title: 'Privacy',
-			path: resolve('/privacy'),
+			path: '/privacy',
 			load: () => import('./chapters/Privacy.svelte')
 		},
 		{
 			// ⚓ Nate 2026-09-23: the coverage page's home in the navigation.
 			id: 'coverage',
 			title: 'Coverage',
-			path: resolve('/coverage'),
+			path: '/coverage',
 			load: () => import('$lib/components/CoverageList.svelte'),
 			bare: true
 		}

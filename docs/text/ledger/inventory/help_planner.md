@@ -105,168 +105,168 @@
 - `help_planner_a_rotation_can_only_use_one_blank_if_you` — RotationPlanner.svelte:180 <p>
   > A rotation can only use one Blank (if you would like support for more than one Blank, please <a>request it</a>). Its actions use generic timing, and none of them hit, grant a buff, or apply an element.
   - terms: 📖 rotation
-- `help_planner_blank_counts_as_no_element_it_never` — RotationPlanner.svelte:186 <p>
+- `help_planner_blank_counts_as_no_element_it_never` — RotationPlanner.svelte:185 <p>
   > Blank counts as no element. It never breaks a rule like Nilou’s (no Pyro, Cryo, Electro, Anemo, or Geo teammates), but it can’t supply an element a teammate needs either, like the Electro member Chevreuse looks for.
   - terms: 🎮 Electro · 🎮 Anemo · 🎮 Pyro · 🎮 Cryo · 🎮 Geo
-- `help_planner_reading_the_timeline` — RotationPlanner.svelte:194 <h2>
+- `help_planner_reading_the_timeline` — RotationPlanner.svelte:193 <h2>
   > Reading the timeline
   - terms: 📖 timeline
-- `help_planner_columbina_s_rows_over_the_first_five` — RotationPlanner.svelte:197 alt=
+- `help_planner_columbina_s_rows_over_the_first_five` — RotationPlanner.svelte:196 alt=
   > Columbina’s rows over the first five seconds: her skill and its cooldown, two summons, her burst, her active row, and the swap connector down to Ineffa, numbered.
   - terms: 🎮 cooldown · 🏷 summon · 🎮 Elemental Skill · 🎮 Elemental Burst
-- `help_planner_each_character_gets_a_group_of_rows` — RotationPlanner.svelte:199 <p>
+- `help_planner_each_character_gets_a_group_of_rows` — RotationPlanner.svelte:198 <p>
   > Each character gets a group of rows: their skill
   - terms: 🎮 Elemental Skill
-- `help_planner_then_any_summons_and_shields` — RotationPlanner.svelte:200 <p>
+- `help_planner_then_any_summons_and_shields` — RotationPlanner.svelte:199 <p>
   > , then any summons and shields
   - terms: 🏷 summon
-- `help_planner_then_their_burst` — RotationPlanner.svelte:201 <p>
+- `help_planner_then_their_burst` — RotationPlanner.svelte:200 <p>
   > , then their burst
   - terms: 🎮 Elemental Burst
-- `help_planner_then_the_active_row` — RotationPlanner.svelte:201 <p>
+- `help_planner_then_the_active_row` — RotationPlanner.svelte:200 <p>
   > , then the active row
-- `help_planner_which_shows_when_they_re_on_field_and` — RotationPlanner.svelte:203 <p>
+- `help_planner_which_shows_when_they_re_on_field_and` — RotationPlanner.svelte:202 <p>
   > , which shows when they’re on field and what they’re doing. Received buffs and weapon procs follow underneath, and connectors mark each swap
-- `help_planner_a_skill_or_burst_bar_is_followed_by_a` — RotationPlanner.svelte:206 <p>
+- `help_planner_a_skill_or_burst_bar_is_followed_by_a` — RotationPlanner.svelte:205 <p>
   > A skill or burst bar is followed by a faded tail
   - terms: 🎮 Elemental Skill · 🎮 Elemental Burst
-- `help_planner_labeled_with_the_cooldown_ending_where` — RotationPlanner.svelte:207 <p>
+- `help_planner_labeled_with_the_cooldown_ending_where` — RotationPlanner.svelte:206 <p>
   > labeled with the cooldown, ending where the ability can be used again. A stance that lasts longer than its own cooldown is drawn dimmer past the point where the cooldown ran out.
   - terms: 🎮 cooldown
-- `help_planner_below_the_characters_are_the_team_wide` — RotationPlanner.svelte:212 <p>
+- `help_planner_below_the_characters_are_the_team_wide` — RotationPlanner.svelte:211 <p>
   > Below the characters are the team-wide lanes — team buffs, Nightsoul bursts, and Moonsign’s Ascendant Gleam bonuses when the team has them — and above the composer a strip lists the always-on bonuses: resonances, faction bonuses, and permanent passives.
   - terms: 🎮 Ascendant Gleam · 🎮 Nightsoul · 🎮 Moonsign · 📖 composer · 🎮 Elemental Burst
-- `help_planner_energy_isn_t_modeled_a_burst_is_ready` — RotationPlanner.svelte:217 <p>
+- `help_planner_energy_isn_t_modeled_a_burst_is_ready` — RotationPlanner.svelte:216 <p>
   > Energy isn’t modeled: A burst is ready whenever its cooldown is.
   - terms: 🎮 cooldown · 🎮 Energy · 🎮 Elemental Burst
-- `help_planner_zoom_in_the_toolbar_opens_a_slider_and` — RotationPlanner.svelte:219 <p>
+- `help_planner_zoom_in_the_toolbar_opens_a_slider_and` — RotationPlanner.svelte:218 <p>
   > <strong>Zoom</strong> in the toolbar opens a slider and <strong>Reset</strong>; the mouse wheel over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
   - terms: 📖 rotation
-- `help_planner_buffs_and_auras_in_the_toolbar_are` — RotationPlanner.svelte:223 <p>
+- `help_planner_buffs_and_auras_in_the_toolbar_are` — RotationPlanner.svelte:222 <p>
   > <strong>Buffs</strong> and <strong>Auras</strong> in the toolbar are layers. Buffs hides every bar that says what a cast grants — buff rows, weapon procs, the team lanes, and the always-on strip — and Auras hides the aura lane. Skills, bursts, summons, and shields stay, since they say when an ability is happening. With both off, the timeline is ability timings and nothing else. If you change either one, your choice is remembered. On a small screen both are off to begin with.
   - terms: 📖 aura lane · 📖 timeline · 🏷 summon · 🎮 Elemental Burst
-- `help_planner_timing_like_a_person` — RotationPlanner.svelte:232 <h2>
+- `help_planner_timing_like_a_person` — RotationPlanner.svelte:231 <h2>
   > Timing like a person
-- `help_planner_human_timing_is_on_by_default_it_adds` — RotationPlanner.svelte:234 <p>
+- `help_planner_human_timing_is_on_by_default_it_adds` — RotationPlanner.svelte:233 <p>
   > <strong>Human timing</strong> is on by default. It adds some frames of reaction time before each input the game doesn’t buffer for you: after a skill, burst, plunge, dash, or jump, from a normal attack into anything but another normal or a charged attack, and on the first input after a swap. Normal into normal and normal into charged are exempt, because the game allows queuing of those inputs. A bow’s charged shot is the exception: It always takes the reaction time.
   - terms: 🎮 Charged Attack · 🎮 Normal Attack · 📖 Human timing · 🎮 Plunging Attack · 🎮 Elemental Skill · 🎮 Elemental Burst · 🎮 Bow
-- `help_planner_flins_s_active_row_with_a_hatched_sliver` — RotationPlanner.svelte:242 alt=
+- `help_planner_flins_s_active_row_with_a_hatched_sliver` — RotationPlanner.svelte:241 alt=
   > Flins’s active row, with a hatched sliver of reaction time before each input after his swap in, one of them numbered.
-- `help_planner_settings_decides_what_it_changes_padding` — RotationPlanner.svelte:244 <p>
+- `help_planner_settings_decides_what_it_changes_padding` — RotationPlanner.svelte:243 <p>
   > Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time. This is 10 frames to start with (the KQM starting point), and you can adjust it there. <strong>Animations</strong> lets each action play out in full instead of canceling. <strong>Both</strong> enables both. The padding shows as hatched slivers
   - terms: 🔒 KQM
-- `help_planner_on_the_active_row_which_mark_padding` — RotationPlanner.svelte:248 <p>
+- `help_planner_on_the_active_row_which_mark_padding` — RotationPlanner.svelte:247 <p>
   > on the active row, which <strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside <strong>Total</strong> says so and opens Settings.
   - terms: 📖 Human timing · 📖 rotation
-- `help_planner_swaps_take_time_either_way_your_ping` — RotationPlanner.svelte:255 <p> — ⚑ entity
+- `help_planner_swaps_take_time_either_way_your_ping` — RotationPlanner.svelte:254 <p> — ⚑ entity
   > Swaps take time either way: your ping plus about 90 ms, set under <strong>Swap ping</strong> in Settings. If you write the same character on both sides of a <code>></code> it costs no swap time, since the character never left the field. Laps relies on this when a rotation ends with the character it starts with.
   - terms: 📖 rotation · 📖 Laps
-- `help_planner_a_swap_ends_a_stance_only_where_the_game` — RotationPlanner.svelte:261 <p>
+- `help_planner_a_swap_ends_a_stance_only_where_the_game` — RotationPlanner.svelte:260 <p>
   > A swap ends a stance only where the game does: Hu Tao’s Paramita ends when she leaves, while Mavuika’s Nightsoul Blessing or Noelle’s Sweeping Time carries on. A few stances hold the field — Mizuki’s Dreamdrifter keeps her on field until it ends, unless the segment is cut short with a time token or a second press of her skill.
   - terms: 🎮 Nightsoul · 🎮 Elemental Skill
-- `help_planner_because_human_timing_is_your_preference` — RotationPlanner.svelte:267 <p>
+- `help_planner_because_human_timing_is_your_preference` — RotationPlanner.svelte:266 <p>
   > Because Human timing is your preference, it isn’t stored in a share link. Someone opening your rotation sees it at their own setting.
   - terms: 📖 Human timing · 📖 rotation
-- `help_planner_playing_it_back` — RotationPlanner.svelte:274 <h2>
+- `help_planner_playing_it_back` — RotationPlanner.svelte:273 <h2>
   > Playing it back
-- `help_planner_the_playback_controls_with_laps_on_and` — RotationPlanner.svelte:277 alt=
+- `help_planner_the_playback_controls_with_laps_on_and` — RotationPlanner.svelte:276 alt=
   > The playback controls with Laps on, and the timeline zoomed out: the cursor partway through the first lap and the gold mark where the second begins, numbered.
   - terms: 📖 timeline · 📖 Laps
-- `help_planner_play` — RotationPlanner.svelte:280 <strong>
+- `help_planner_play` — RotationPlanner.svelte:279 <strong>
   > Play
-- `help_planner_or_space_runs_a_cursor` — RotationPlanner.svelte:281 <p>
+- `help_planner_or_space_runs_a_cursor` — RotationPlanner.svelte:280 <p>
   > (or Space) runs a cursor
-- `help_planner_along_the_timeline_at_game_speed_and_the` — RotationPlanner.svelte:281 <p>
+- `help_planner_along_the_timeline_at_game_speed_and_the` — RotationPlanner.svelte:280 <p>
   > along the timeline at game speed, and the plate
   - terms: 📖 timeline
-- `help_planner_beside_it_slows_it_to_0_75_or_0_5_with` — RotationPlanner.svelte:282 <p>
+- `help_planner_beside_it_slows_it_to_0_75_or_0_5_with` — RotationPlanner.svelte:281 <p>
   > beside it slows it to 0.75× or 0.5×. With sound on, you’ll hear four beats to count you in, then a note for every input. Settings has the sounds and the volume. <strong>Back to the start</strong> (Home) rewinds.
-- `help_planner_bluetooth_headphones_and_speakers_delay` — RotationPlanner.svelte:287 <p>
+- `help_planner_bluetooth_headphones_and_speakers_delay` — RotationPlanner.svelte:286 <p>
   > Bluetooth headphones and speakers delay sound by a tenth of a second or more, so the cursor waits for your device’s delay and stays in step with what you hear.
-- `help_planner_laps` — RotationPlanner.svelte:292 <strong>
+- `help_planner_laps` — RotationPlanner.svelte:291 <strong>
   > Laps
   - terms: 📖 Laps
-- `help_planner_simulates_the_rotation_five_times_in_a` — RotationPlanner.svelte:293 <p>
+- `help_planner_simulates_the_rotation_five_times_in_a` — RotationPlanner.svelte:292 <p>
   > simulates the rotation five times in a row, as one run. A skill still on cooldown waits and pushes the rest back, and buffs, stacks, and auras carry from one lap into the next, so a rotation that doesn’t loop cleanly shows it. Gold marks
   - terms: 🎮 cooldown · 📖 rotation · 🎮 Elemental Skill
-- `help_planner_on_the_ruler_show_where_each_lap_begins` — RotationPlanner.svelte:295 <p>
+- `help_planner_on_the_ruler_show_where_each_lap_begins` — RotationPlanner.svelte:294 <p>
   > on the ruler show where each lap begins. Laps isn’t saved, shared, or exported.
   - terms: 📖 Laps
-- `help_planner_the_enemy_s_aura` — RotationPlanner.svelte:302 <h2>
+- `help_planner_the_enemy_s_aura` — RotationPlanner.svelte:301 <h2>
   > The enemy’s aura
   - terms: 🏷 aura
-- `help_planner_the_aura_lane_over_the_first_seven` — RotationPlanner.svelte:305 alt=
+- `help_planner_the_aura_lane_over_the_first_seven` — RotationPlanner.svelte:304 alt=
   > The aura lane over the first seven seconds: Hydro and then Electro gauge lines, their element pills, the Lunar-Charged marker, and a Thundercloud below the baseline, numbered.
   - terms: 🎮 Lunar-Charged · 🎮 Thundercloud · 📖 gauge lines · 📖 aura lane · 🎮 Electro · 🎮 Hydro
-- `help_planner_the_aura_lane_above_the_ruler_represents` — RotationPlanner.svelte:307 <p>
+- `help_planner_the_aura_lane_above_the_ruler_represents` — RotationPlanner.svelte:306 <p>
   > The aura lane above the ruler represents the elemental aura on the enemy. The gauge lines
   - terms: 📖 gauge lines · 📖 aura lane · 🏷 aura
-- `help_planner_draw_each_element_attached_to_them_and_a` — RotationPlanner.svelte:310 <p>
+- `help_planner_draw_each_element_attached_to_them_and_a` — RotationPlanner.svelte:309 <p>
   > draw each element attached to them, and a line’s height is how much gauge is left, so you can see an aura land, decay, get topped up, and get eaten by a reaction. The gaps are where the next trigger has nothing to react with. Hover anywhere on it to read all the auras present at that moment.
   - terms: 🏷 gauge · 🏷 aura
-- `help_planner_above_the_lines_a_pill` — RotationPlanner.svelte:314 <p>
+- `help_planner_above_the_lines_a_pill` — RotationPlanner.svelte:313 <p>
   > Above the lines, a pill
-- `help_planner_in_the_element_s_color_marks_each_hit` — RotationPlanner.svelte:315 <p>
+- `help_planner_in_the_element_s_color_marks_each_hit` — RotationPlanner.svelte:314 <p>
   > in the element’s color marks each hit that applied an element, and a labeled marker
-- `help_planner_above_that_names_each_reaction_it_caused` — RotationPlanner.svelte:316 <p>
+- `help_planner_above_that_names_each_reaction_it_caused` — RotationPlanner.svelte:315 <p>
   > above that names each reaction it caused. A run of a ticking reaction such as Electro-Charged is one marker with a count. Frozen, Quicken, Burning, and Burning’s Dendro fuel are separate objects from the auras that made them, with their own decay, so they get their own lines. A yellow ring on a pill means the hit has no measured gauge strength, and 1U is assumed.
   - terms: 🎮 Electro-Charged · 🎮 Burning · 🎮 Quicken · 🎮 Dendro · 🎮 Frozen · 🏷 gauge
-- `help_planner_the_reaction_spawns` — RotationPlanner.svelte:323 <strong>
+- `help_planner_the_reaction_spawns` — RotationPlanner.svelte:322 <strong>
   > The reaction spawns
   - terms: 📖 reaction spawns
-- `help_planner_below_the_baseline_are_what_some` — RotationPlanner.svelte:324 <p>
+- `help_planner_below_the_baseline_are_what_some` — RotationPlanner.svelte:323 <p>
   > , below the baseline, are what some reactions leave behind: a Dendro Core from Bloom, a Starlight Prism from Stellar-Conduct, a Thundercloud from Lunar-Charged, and Moondrifts from Lunar-Crystallize. A dot marks each one appearing, and a stepped shape shows how many there are, so a step down is one expiring or being spent. A Dendro Core arrives half a second after its Bloom, lasts 6s, and there can be five on the field at once. Hyperbloom or Burgeon takes the oldest Dendro Core. A Starlight Prism lasts 7s and a further Stellar-Conduct refreshes it. There is only ever one Thundercloud, lasting 5.5s, and another Lunar-Charged restarts its clock. Lunar-Crystallize keeps three Moondrifts topped up, 9s each, drawn as one row. The damage these deal isn’t modeled; their presence is, along with any character effect that depends on it.
   - terms: 🎮 Lunar-Crystallize · 🎮 Stellar-Conduct · 🎮 Starlight Prism · 🎮 Lunar-Charged · 🎮 Thundercloud · 🎮 Dendro Core · 🎮 Hyperbloom · 🎮 Burgeon · 🎮 Bloom
-- `help_planner_the_polestar_field_a_starlight_prism` — RotationPlanner.svelte:337 <p>
+- `help_planner_the_polestar_field_a_starlight_prism` — RotationPlanner.svelte:336 <p>
   > <strong>The Polestar Field.</strong> A Starlight Prism holds a Polestar Field around it, and the field’s buffs sit in the team buffs, because any party member’s Stellar-Conduct raises the same field. Its Cryo and Electro bonus moves: The field counts the Cryo and Electro hits that applied an element, resets every 4s, and boosts based on that count — 20% with none, 29% at one, up to 40% at twelve.
   - terms: 🎮 Stellar-Conduct · 🎮 Starlight Prism · 🎮 Polestar Field · 🎮 Electro · 🎮 Cryo
-- `help_planner_log_in_the_toolbar_opens_the_aura_log` — RotationPlanner.svelte:343 <p>
+- `help_planner_log_in_the_toolbar_opens_the_aura_log` — RotationPlanner.svelte:342 <p>
   > <strong>Log</strong> in the toolbar opens the aura log beside the timeline. Hovering a row highlights that moment on the aura lane, clicking one scrolls there, and clicking a pill or marker on the aura lane opens the log at its row. The log also works with the Auras layer off.
   - terms: 📖 aura lane · 📖 timeline · 📖 aura log
-- `help_planner_the_model_behind_it_is_the_gauge` — RotationPlanner.svelte:347 <p>
+- `help_planner_the_model_behind_it_is_the_gauge` — RotationPlanner.svelte:346 <p>
   > The model behind it is the gauge explorer’s: the ×0.8 aura tax, decay rates, how much each reaction consumes, and the Crystallize cooldown. It assumes one enemy without a permanent aura that applies nothing back to you, and Shatter isn’t modeled. (If you would like to see permanent auras as a feature, please send a request through the <a>feedback form</a>.)
   - terms: 🎮 Crystallize · 🎮 cooldown · 🎮 Shatter · 🏷 gauge · 🏷 aura
-- `help_planner_the_inspector` — RotationPlanner.svelte:358 <h2>
+- `help_planner_the_inspector` — RotationPlanner.svelte:356 <h2>
   > The inspector
-- `help_planner_the_inspector_open_on_the_team_columbina` — RotationPlanner.svelte:361 alt=
+- `help_planner_the_inspector_open_on_the_team_columbina` — RotationPlanner.svelte:359 alt=
   > The inspector open on the team: Columbina’s caveats for her normal attack, skill, and burst, then Ineffa, then Sucrose’s.
   - terms: 🎮 Normal Attack · 🎮 Elemental Skill · 🎮 Elemental Burst
-- `help_planner_inspector_opens_a_panel_beside_the` — RotationPlanner.svelte:364 <p>
+- `help_planner_inspector_opens_a_panel_beside_the` — RotationPlanner.svelte:362 <p>
   > <strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character with the caveats on their kit, where the timeline knowingly differs from the game, with constellation notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon or shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing again closes it. A character’s page links to their coverage.
   - terms: 🎮 Constellation · 📖 rotation · 📖 timeline · 🏷 summon · 📖 bench
-- `help_planner_turn_on_coverage_strips_in_settings_to` — RotationPlanner.svelte:371 <p>
+- `help_planner_turn_on_coverage_strips_in_settings_to` — RotationPlanner.svelte:369 <p>
   > Turn on <strong>Coverage strips</strong> in Settings to draw each character’s coverage under the composer and dim the parts of the kit this rotation doesn’t use.
   - terms: 📖 composer · 📖 rotation
-- `help_planner_saving_comparing_and_sharing` — RotationPlanner.svelte:378 <h2>
+- `help_planner_saving_comparing_and_sharing` — RotationPlanner.svelte:376 <h2>
   > Saving, comparing, and sharing
-- `help_planner_the_planner_shows_one_rotation_at_a_time` — RotationPlanner.svelte:379 <p>
+- `help_planner_the_planner_shows_one_rotation_at_a_time` — RotationPlanner.svelte:377 <p>
   > The planner shows one rotation at a time and saves it as you work, in the profile you’re in. The rotation’s name in the top bar opens <strong>Rotations</strong> in the Library, where <strong>New rotation</strong> starts another and each one can be pinned, renamed, or deleted.
   - terms: 📖 rotation
-- `help_planner_a_rotation_in_theorycraft_can_go_to_one` — RotationPlanner.svelte:384 <p>
+- `help_planner_a_rotation_in_theorycraft_can_go_to_one` — RotationPlanner.svelte:382 <p>
   > A rotation in Theorycraft can go to one of your profiles with <strong>Move to a profile</strong>. Before it moves, you see which levels change, since the profile’s roster decides them for characters you own.
   - terms: 📖 rotation
-- `help_planner_compare_under_the_bench_pairs_two` — RotationPlanner.svelte:390 <p>
+- `help_planner_compare_under_the_bench_pairs_two` — RotationPlanner.svelte:388 <p>
   > <strong>Compare</strong>, under the bench, pairs two rotations. <strong>Duplicate and compare</strong> copies this one so you can change the copy, and <strong>Compare with…</strong> picks another from the Library. The button that takes Compare’s place, or ⌃`, switches between them.
   - terms: 📖 rotation · 📖 Compare · 📖 bench
-- `help_planner_share_in_the_toolbar_copies_a_link_the` — RotationPlanner.svelte:396 <p>
+- `help_planner_share_in_the_toolbar_copies_a_link_the` — RotationPlanner.svelte:394 <p>
   > <strong>Share</strong> in the toolbar copies a link, the KQM notation, or an image of the timeline. The link opens the rotation with its constellations and loadouts in Theorycraft, so it doesn’t change the reader’s profiles. The KQM copy removes inputs that are specific to critcalc — time tokens, optional marks, and stack counts — and keeps the rest as you wrote it. The image is the whole timeline, not only the part on screen, with the notation written above it.
   - terms: 🎮 Constellation · 🔒 critcalc · 📖 notation · 📖 rotation · 📖 loadout · 📖 timeline · 🔒 KQM
-- `help_planner_on_a_phone` — RotationPlanner.svelte:405 <h2>
+- `help_planner_on_a_phone` — RotationPlanner.svelte:403 <h2>
   > On a phone
-- `help_planner_the_rotation_planner_on_a_phone_the` — RotationPlanner.svelte:408 alt=
+- `help_planner_the_rotation_planner_on_a_phone_the` — RotationPlanner.svelte:406 alt=
   > The rotation planner on a phone: the bench as a row above the timeline, and the composer open at the foot of the screen with its row of keys.
   - terms: 📖 composer · 📖 rotation · 📖 timeline · 📖 bench
-- `help_planner_on_a_phone_the_composer` — RotationPlanner.svelte:410 <p>
+- `help_planner_on_a_phone_the_composer` — RotationPlanner.svelte:408 <p>
   > On a phone the composer
   - terms: 📖 composer
-- `help_planner_docks_to_the_bottom_of_the_screen` — RotationPlanner.svelte:411 <p>
+- `help_planner_docks_to_the_bottom_of_the_screen` — RotationPlanner.svelte:409 <p>
   > docks to the bottom of the screen. Collapsed it shows the last line of the rotation. Tap it to open it with the keyboard, and tap anywhere else to close it. A row of keys
   - terms: 📖 rotation
-- `help_planner_above_the_keyboard_offers_the_inputs` — RotationPlanner.svelte:413 <p>
+- `help_planner_above_the_keyboard_offers_the_inputs` — RotationPlanner.svelte:411 <p>
   > above the keyboard offers the inputs that fit where the cursor is.
-- `help_planner_the_bench_becomes_a_row` — RotationPlanner.svelte:416 <p>
+- `help_planner_the_bench_becomes_a_row` — RotationPlanner.svelte:414 <p>
   > The bench becomes a row
   - terms: 📖 bench
-- `help_planner_above_the_timeline_the_arrow_at_the_left` — RotationPlanner.svelte:417 <p>
+- `help_planner_above_the_timeline_the_arrow_at_the_left` — RotationPlanner.svelte:415 <p>
   > above the timeline. The arrow at the left end of the strip above it folds the row away. Tapping a portrait on a phone opens the character’s details. The Buffs and Auras layers are turned off by default and the zoom starts wider than on desktop.
   - terms: 📖 timeline

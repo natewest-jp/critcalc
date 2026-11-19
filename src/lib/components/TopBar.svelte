@@ -13,7 +13,7 @@
 <script lang="ts">
 	import { keysSheet } from '$lib/keysSheet.svelte';
 	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
+	import { hrefTo, routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import { TOOLS } from '$lib/tools';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
@@ -42,11 +42,11 @@
 	type Menu = 'help' | 'profile' | null;
 	let menu = $state<Menu>(null);
 
-	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(resolve(t.path))));
+	const tool = $derived(TOOLS.find((t) => routeOf(page.url).startsWith(t.path)));
 	const docTool = $derived(
 		tool?.path === '/planner' ? 'planner' : tool?.path === '/builder' ? 'builder' : null
 	);
-	const landing = $derived(page.url.pathname === resolve('/'));
+	const landing = $derived(routeOf(page.url) === '/');
 	const profile = $derived(storageSession.profile);
 	/** ⚓ A guest (§4.6): a Theorycraft document shown in a real profile. The
 	 *  button wears Theorycraft's white, and the white comes with the word. */
@@ -157,7 +157,7 @@
 <header class="tb">
 	<!-- ── Brand ───────────────────────────────────────────────────────── -->
 	<div class="tb-brand">
-		<a class="tb-home" href={resolve('/')} aria-label="critcalc.app home">
+		<a class="tb-home" href={hrefTo('/')} aria-label="critcalc.app home">
 			<!-- The logo INLINE, not an <img>, so it can dim in the paint
 			     (fill-opacity) — the chrome state contract on a bar that rides
 			     the parallax at fractional x. ⚠ The path is a copy of
@@ -175,8 +175,7 @@
 			>
 			<span class="tb-wordmark">critcalc.app</span>
 		</a>
-		<a class="tb-beta" href={resolve('/beta')} title="What beta means here" onclick={onBeta}>Beta</a
-		>
+		<a class="tb-beta" href={hrefTo('/beta')} title="What beta means here" onclick={onBeta}>Beta</a>
 	</div>
 
 	<!-- ── Three equal tool buttons, centred (form 5) ─────────────────── -->
@@ -191,7 +190,7 @@
 				class:is-current={current}
 				class:has-doc={withDoc}
 				class:is-guest={current && guest}
-				href={resolve(t.path)}
+				href={hrefTo(t.path)}
 				aria-current={current ? 'page' : undefined}
 				title={withDoc ? `Your ${docTool === 'planner' ? 'rotations' : 'lineups'}` : undefined}
 				onclick={(e) => onTool(e, t.path)}
@@ -391,7 +390,7 @@
 							role="menuitem"
 							onclick={() => {
 								menu = null;
-								menuState.show(chapterSection('help', helpChapterForPath(page.url.pathname)));
+								menuState.show(chapterSection('help', helpChapterForPath(routeOf(page.url))));
 							}}><Mark name="help" /> Help</button
 						>
 						<button
@@ -415,7 +414,7 @@
 							role="menuitem"
 							prefill={{
 								category: 'broken',
-								tool: feedbackToolForPath(page.url.pathname),
+								tool: feedbackToolForPath(routeOf(page.url)),
 								includeTech: true
 							}}
 							shareUrl={reportShareUrl}

@@ -73,6 +73,11 @@ vite.config.ts.timestamp-*
 .claude/projects/
 .claude/history.jsonl
 
+# Paraglide's compiled messages, rebuilt from messages/*.json by the Vite
+# plugin and the `i18n` script.
+/src/lib/paraglide/
+/project.inlang/cache/
+
 # Misc
 .cache/
 /coverage/

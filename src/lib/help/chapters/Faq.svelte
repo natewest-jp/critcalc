@@ -8,7 +8,7 @@
 	 describe the thing. The home-screen links go to Google's and Apple's own
 	 help pages. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 </script>
@@ -31,7 +31,7 @@
 	<h3>What does the beta tag mean?</h3>
 	<p>
 		That the site is still in its early stages and could use some help. The
-		<a href={resolve('/beta')}>Beta</a> page goes into a little more detail.
+		<a href={hrefTo('/beta')}>Beta</a> page goes into a little more detail.
 	</p>
 </section>
 
@@ -41,7 +41,7 @@
 	<h3>Do I need an account?</h3>
 	<p>
 		No. Everything you set up (your profiles with their rosters, teams, rotations, and lineups, and
-		your settings) is stored in this browser and nowhere else. <a href={resolve('/privacy')}
+		your settings) is stored in this browser and nowhere else. <a href={hrefTo('/privacy')}
 			>Privacy</a
 		>
 		lists exactly what is kept in your browser and what leaves it. Because nothing is kept anywhere else,
@@ -50,7 +50,7 @@
 
 	<h3>How do I move my data to another device?</h3>
 	<p>
-		In <a href={resolve('/settings')}>Settings</a> under <strong>Backup</strong>, click
+		In <a href={hrefTo('/settings')}>Settings</a> under <strong>Backup</strong>, click
 		<strong>Export…</strong> to download all your data as one file. Move that file to the other
 		device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
 		file’s data. The file carries every profile in this browser, each with its roster, teams, rotations,
@@ -78,20 +78,19 @@
 	<p>
 		Each kit starts from genshin-db’s datamine and is curated by hand: effects and conditions from
 		the kit text, frame counts measured against gcsim wherever it has the character. Kits newer than
-		genshin-db’s text are read from the Fandom wiki’s tooltips. <a href={resolve('/about')}>About</a
-		> gives the full list of sources behind this project.
+		genshin-db’s text are read from the Fandom wiki’s tooltips. <a href={hrefTo('/about')}>About</a> gives
+		the full list of sources behind this project.
 	</p>
 
 	<h3>Is my character fully in?</h3>
 	<p>
-		The <a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> answers that
+		The <a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> answers that
 		for every character, ability by ability, and gives the reason for anything the rotation planner leaves
 		out. A character without curated frames still appears everywhere, marked “Not yet curated”, with generic
 		frame timings as a stand-in.
 	</p>
 
 	<h3>Something looks wrong.</h3>
-	<!-- eslint-disable svelte/no-navigation-without-resolve -- the external form -->
 	<p>
 		Please report it through the
 		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>.
@@ -100,7 +99,6 @@
 		at already filled in. A character’s details card has its own link:
 		<strong>Something not right with this character?</strong>
 	</p>
-	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 </section>
 
 <section>
@@ -111,7 +109,7 @@
 		Check <strong>Human timing</strong> (it’s on by default). This pads every input the game doesn’t
 		buffer with a few frames of reaction time — 10 to start with, which is the KQM starting point.
 		Normal attack into normal attack is queued up by the game, so no padding is added there. Turn it
-		off in <a href={resolve('/settings')}>Settings</a> to see the frame-perfect rotation, or tune it there.
+		off in <a href={hrefTo('/settings')}>Settings</a> to see the frame-perfect rotation, or tune it there.
 	</p>
 	<p>
 		Swapping characters costs time either way. Swaps are calculated as your ping plus about 90 ms.

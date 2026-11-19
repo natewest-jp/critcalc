@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { routeOf } from '$lib/i18n/paths';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { onMount, untrack } from 'svelte';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
@@ -110,7 +111,7 @@
 
 	// Chrome identity derives from the route; the nav lists every tool and marks
 	// the current one (see the centered switcher in the chrome strip).
-	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(t.path)));
+	const tool = $derived(TOOLS.find((t) => routeOf(page.url).startsWith(t.path)));
 
 	// Reveal state (ascend choreography v2). Arriving via the camera pan, the
 	// shell stays visibility:hidden — laid out (so editors still measure) but
@@ -402,7 +403,7 @@
 	 *  ribbon round). */
 	function snapBench() {
 		if (!benchMount) return;
-		const a = measureBenchAnchor(page.url.pathname);
+		const a = measureBenchAnchor(routeOf(page.url));
 		if (!a) {
 			benchVisible = false;
 			return;
@@ -518,7 +519,7 @@
 				clearTimeout(benchTravelTimer);
 				benchTravelTimer = setTimeout(
 					() => {
-						if (!measureBenchAnchor(page.url.pathname)) {
+						if (!measureBenchAnchor(routeOf(page.url))) {
 							benchVisible = false;
 							cancelToolNavAnims(mount, false);
 							mount.style.opacity = '';
@@ -578,7 +579,7 @@
 		if (!toolMain) return null;
 		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
 		// The latest layer stamped with this path (the bench anchor's rule).
-		const layer = pages.filter((p) => p.dataset.page === page.url.pathname).pop();
+		const layer = pages.filter((p) => p.dataset.page === routeOf(page.url)).pop();
 		const surface = layer?.querySelector<HTMLElement>('.tool-surface');
 		if (!layer || !surface) return null;
 		const cols = [...surface.querySelectorAll<HTMLElement>('.tc-main, .tc-aside-box')];
@@ -667,7 +668,7 @@
 	// once per element, so a revived layer keeps its original stamp — which is
 	// exactly what lets afterNavigate recognize it as the incoming page again.
 	function stampPage(node: HTMLElement) {
-		node.dataset.page = page.url.pathname;
+		node.dataset.page = routeOf(page.url);
 	}
 
 	beforeNavigate(() => {
@@ -732,7 +733,7 @@
 
 	function auditLayers() {
 		if (!toolMain || document.hidden || performance.now() < navSettleDeadline) return;
-		const path = page.url.pathname;
+		const path = routeOf(page.url);
 		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
 		// Same rule the pan and the dock measurement use: the latest layer
 		// stamped with the current path is the real one.
@@ -801,11 +802,11 @@
 			requestAnimationFrame(snapBench);
 			return;
 		}
-		const path = page.url.pathname;
+		const path = routeOf(page.url);
 		const matches = pages.filter((p) => p.dataset.page === path);
 		const incoming = matches[matches.length - 1] ?? pages[pages.length - 1];
 		const outgoing = pages.filter((p) => p !== incoming);
-		const fromPath = nav.from?.url.pathname ?? '';
+		const fromPath = nav.from ? routeOf(nav.from.url) : '';
 
 		// The world's screen-space delta for this leg, and the scene's own
 		// clock (the camera started at beforeNavigate). Pinning every WAAPI
@@ -963,7 +964,7 @@
 	 *  page fail, so the Visualizers' tile state is out of reach — its URL it
 	 *  is). The Builder's bar loads on demand, as the layout never needs it. */
 	async function crashShareUrl(): Promise<string | null> {
-		const tool = feedbackToolForPath(page.url.pathname);
+		const tool = feedbackToolForPath(routeOf(page.url));
 		if (tool === 'planner') return documentBar.shareUrl();
 		if (tool === 'builder') return (await import('$lib/boardBar.svelte')).boardBar.shareUrl();
 		return location.href;
@@ -979,7 +980,7 @@
 	out:plainExit|global
 >
 	<div class="tool-main" bind:this={toolMain}>
-		{#key page.url.pathname}
+		{#key routeOf(page.url)}
 			<div class="tool-page" use:stampPage out:holdPage>
 				<!-- ⚠️ `+error.svelte` DOES NOT COVER THIS. SvelteKit's error page
 				     catches load and routing failures; a throw during component
@@ -1003,7 +1004,7 @@
 						<RenderCrash
 							title="This tool ran into a problem."
 							body="The rest of the site is fine, and your saved rotations and lineups are untouched."
-							tool={feedbackToolForPath(page.url.pathname)}
+							tool={feedbackToolForPath(routeOf(page.url))}
 							{error}
 							{reset}
 							shareUrl={crashShareUrl}

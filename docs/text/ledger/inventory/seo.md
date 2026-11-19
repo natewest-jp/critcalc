@@ -5,9 +5,9 @@
 
 **49 messages** · `SeoHead.svelte` · `seo.ts`
 
-- `seo_page_not_found` — SeoHead.svelte:29 title:
+- `seo_page_not_found` — SeoHead.svelte:36 title:
   > Page not found
-- `seo_something_went_wrong` — SeoHead.svelte:29 title:
+- `seo_something_went_wrong` — SeoHead.svelte:36 title:
   > Something went wrong
 - `seo_critcalc_app_tools_for_genshin_impact` — seo.ts:55 OG_IMAGE_ALT:
   > critcalc.app — tools for Genshin Impact

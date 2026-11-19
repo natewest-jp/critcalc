@@ -5,9 +5,9 @@
 
 **13 messages** · `AreaTabs.svelte` · `HelpAreaShell.svelte` · `areas.ts`
 
-- `help_help_and_about` — AreaTabs.svelte:21 aria-label=
+- `help_help_and_about` — AreaTabs.svelte:19 aria-label=
   > Help and About
-- `help_title_sections` — HelpAreaShell.svelte:74 aria-label=
+- `help_title_sections` — HelpAreaShell.svelte:70 aria-label=
   > {area.title} sections
   - vars: `area.title`
 - `help_help` — areas.ts:47 title:

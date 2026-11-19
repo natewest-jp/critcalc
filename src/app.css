@@ -4421,3 +4421,33 @@ img {
 		min-height: 2.1rem;
 	}
 }
+
+/* ── CJK type (the translated locales) ──────────────────────────────────────
+   Plex and Bitter carry no CJK glyphs, so Japanese and Chinese text falls
+   back character by character. These blocks name the platform's own CJK sans
+   in every stack (Hiragino or PingFang on Apple, Yu Gothic or YaHei on
+   Windows, Noto elsewhere), so the fallback is chosen rather than left to the
+   generic family: Bitter's `serif` would otherwise set CJK headings in a
+   Mincho or Song serif, and the mono stack in whatever the system pairs with
+   `monospace`. Latin keeps its own faces; only the CJK characters change.
+   System fonts download nothing (docs/rounds/launch-roadmap.md § the wording
+   pass). The knob is `--font-cjk`, one list per locale. Headings in gothic
+   rather than mincho is a first cut for Nate to judge on screen.
+   `<html lang>` is set per page by hooks.server.ts. */
+:root:lang(ja) {
+	--font-cjk:
+		'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo,
+		'Noto Sans JP', 'Noto Sans CJK JP';
+}
+:root:lang(zh-Hans) {
+	--font-cjk:
+		'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC';
+}
+:root:lang(ja),
+:root:lang(zh-Hans) {
+	--font-display: 'Bitter Variable', Bitter, var(--font-cjk), sans-serif;
+	--font-body: 'IBM Plex Sans Variable', 'IBM Plex Sans', var(--font-cjk), sans-serif;
+	--font-mono: 'IBM Plex Mono', var(--font-cjk), monospace;
+	--font-condensed:
+		'IBM Plex Sans Condensed', 'IBM Plex Sans Variable', var(--font-cjk), sans-serif;
+}

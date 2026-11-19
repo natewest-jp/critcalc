@@ -11,59 +11,59 @@
   > help
 - `menu_this_page_couldn_t_load_check_your` — MenuState.svelte:197 $effect:
   > This page couldn’t load. Check your connection and try again.
-- `menu_menu` — MenuState.svelte:290 aria-label= · MenuState.svelte:496 <button>
+- `menu_menu` — MenuState.svelte:290 aria-label= · MenuState.svelte:494 <button>
   > Menu
 - `menu_sections` — MenuState.svelte:301 aria-label=
   > Sections
-- `menu_add_a_profile` — MenuState.svelte:372 <span> · MenuState.svelte:538 <h3> · MenuState.svelte:551 <button> · menuState.svelte.ts:69 label:
+- `menu_add_a_profile` — MenuState.svelte:372 <span> · MenuState.svelte:536 <h3> · MenuState.svelte:549 <button> · menuState.svelte.ts:72 label:
   > Add a profile
-- `menu_keyboard_shortcuts` — MenuState.svelte:421 <span>
+- `menu_keyboard_shortcuts` — MenuState.svelte:419 <span>
   > Keyboard shortcuts
-- `menu_report_a_problem` — MenuState.svelte:429 <span>
+- `menu_report_a_problem` — MenuState.svelte:427 <span>
   > Report a problem
-- `menu_back_to_the_short` — MenuState.svelte:509 aria-label=
+- `menu_back_to_the_short` — MenuState.svelte:507 aria-label=
   > Back to the {tool.short}
   - vars: `tool.short`
-- `menu_close` — MenuState.svelte:509 aria-label=
+- `menu_close` — MenuState.svelte:507 aria-label=
   > Close
-- `menu_back_to_the_short_esc` — MenuState.svelte:510 title=
+- `menu_back_to_the_short_esc` — MenuState.svelte:508 title=
   > Back to the {tool.short} (Esc)
   - vars: `tool.short`
-- `menu_close_esc` — MenuState.svelte:510 title=
+- `menu_close_esc` — MenuState.svelte:508 title=
   > Close (Esc)
-- `menu_theorycraft_has_every_character_at_every` — MenuState.svelte:540 <p>
+- `menu_theorycraft_has_every_character_at_every` — MenuState.svelte:538 <p>
   > Theorycraft has every character at every level, so it has no roster. Add a profile to mark what you own and set your constellations.
   - terms: 🎮 Constellation
-- `menu_teams_belong_to_a_profile_add_one_to` — MenuState.svelte:545 <p>
+- `menu_teams_belong_to_a_profile_add_one_to` — MenuState.svelte:543 <p>
   > Teams belong to a profile. Add one to name the teams you play and start rotations and lineups from them.
   - terms: 📖 rotation
-- `menu_this_section_ran_into_a_problem` — MenuState.svelte:583 title=
+- `menu_this_section_ran_into_a_problem` — MenuState.svelte:581 title=
   > This section ran into a problem.
-- `menu_the_rest_of_the_site_is_fine_and_your` — MenuState.svelte:584 body=
+- `menu_the_rest_of_the_site_is_fine_and_your` — MenuState.svelte:582 body=
   > The rest of the site is fine, and your saved work is untouched.
-- `menu_rotations` — menuState.svelte.ts:49 label:
+- `menu_rotations` — menuState.svelte.ts:52 label:
   > Rotations
   - terms: 📖 rotation
-- `menu_planner` — menuState.svelte.ts:49 tool:
+- `menu_planner` — menuState.svelte.ts:52 tool:
   > Planner
   - terms: 📖 Planner
-- `menu_lineups` — menuState.svelte.ts:50 label:
+- `menu_lineups` — menuState.svelte.ts:53 label:
   > Lineups
-- `menu_builder` — menuState.svelte.ts:50 tool:
+- `menu_builder` — menuState.svelte.ts:53 tool:
   > Builder
   - terms: 📖 Builder
-- `menu_profile` — menuState.svelte.ts:68 label:
+- `menu_profile` — menuState.svelte.ts:71 label:
   > Profile
-- `menu_roster` — menuState.svelte.ts:70 label:
+- `menu_roster` — menuState.svelte.ts:73 label:
   > Roster
   - terms: 📖 Roster
-- `menu_library` — menuState.svelte.ts:74 title:
+- `menu_library` — menuState.svelte.ts:77 title:
   > Library
-- `menu_help_c47a` — menuState.svelte.ts:75 title:
+- `menu_help_c47a` — menuState.svelte.ts:78 title:
   > Help
-- `menu_about` — menuState.svelte.ts:76 title:
+- `menu_about` — menuState.svelte.ts:79 title:
   > About
-- `menu_settings` — menuState.svelte.ts:79 title: · menuState.svelte.ts:81 label:
+- `menu_settings` — menuState.svelte.ts:82 title: · menuState.svelte.ts:84 label:
   > Settings
-- `menu_trash` — menuState.svelte.ts:83 label:
+- `menu_trash` — menuState.svelte.ts:86 label:
   > Trash

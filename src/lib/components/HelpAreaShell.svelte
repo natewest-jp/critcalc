@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hrefTo } from '$lib/i18n/paths';
 	import type { Component } from 'svelte';
 	import type { Area } from '$lib/help/areas';
 	import { findChapter } from '$lib/help/areas';
@@ -55,11 +56,6 @@
 	}
 </script>
 
-<!-- Chapter hrefs come out of areas.ts already base-resolved (that is where the
-	 route literals live and where resolve() is called), so calling resolve()
-	 again on them here would double the base prefix. The rule cannot see that
-	 from a variable, hence the file-scoped exemption. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <!-- ↻ 2026-10-19 (⚓ Nate): ONE scroll model, whichever way you arrived. The
      page used to hand its scroll to the pages panel, so the area tabs, their
      rule and the chapter list scrolled away with the text; in the overlay
@@ -78,7 +74,7 @@
 						<a
 							class="area-chapter"
 							class:is-current={ch.id === current.id}
-							href={ch.path}
+							href={hrefTo(ch.path)}
 							aria-current={ch.id === current.id ? 'page' : undefined}>{ch.title}</a
 						>
 

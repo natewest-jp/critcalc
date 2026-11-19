@@ -9,48 +9,48 @@
   > instrument id not url-plain: {id}
   - vars: `id`
   - terms: 📖 instrument
-- `vz_undo` — +page.svelte:186 label:
+- `vz_undo` — +page.svelte:187 label:
   > Undo
-- `vz_that_instrument_link_couldn_t_be_read_it` — +page.svelte:270 afterNavigate:
+- `vz_that_instrument_link_couldn_t_be_read_it` — +page.svelte:271 afterNavigate:
   > That instrument link couldn’t be read. It may have been cut short when it was copied.
   - terms: 📖 instrument
-- `vz_instruments_shown` — +page.svelte:367 aria-label=
+- `vz_instruments_shown` — +page.svelte:368 aria-label=
   > Instruments shown
-- `vz_the_window_is_too_narrow_for_opt` — +page.svelte:377 title= — ⚑ plural?
+- `vz_the_window_is_too_narrow_for_opt` — +page.svelte:378 title= — ⚑ plural?
   > The window is too narrow for {opt} instruments side by side
   - vars: `opt`
-- `vz_show_as_many_instruments_as_the_window` — +page.svelte:379 title=
+- `vz_show_as_many_instruments_as_the_window` — +page.svelte:380 title=
   > Show as many instruments as the window fits
-- `vz_show_opt_instrument_x_at_a_time` — +page.svelte:380 title= — ⚑ plural?
+- `vz_show_opt_instrument_x_at_a_time` — +page.svelte:381 title= — ⚑ plural?
   > Show {opt} instrument{opt === 1 ? '' : 's'} at a time
   - vars: `opt` `opt === 1 ? '' : 's'`
   - terms: 📖 instrument
-- `vz_auto` — +page.svelte:383 button:
+- `vz_auto` — +page.svelte:384 button:
   > Auto
-- `vz_reset_layout` — +page.svelte:394 <button>
+- `vz_reset_layout` — +page.svelte:395 <button>
   > Reset layout
-- `vz_put_this_instrument_s_controls_back_to` — +page.svelte:434 title=
+- `vz_put_this_instrument_s_controls_back_to` — +page.svelte:435 title=
   > Put this instrument’s controls back to their defaults
   - terms: 📖 instrument
-- `vz_defaults` — +page.svelte:437 <span>
+- `vz_defaults` — +page.svelte:438 <span>
   > Defaults
-- `vz_copy_a_link_that_reopens_this_instrument` — +page.svelte:445 title=
+- `vz_copy_a_link_that_reopens_this_instrument` — +page.svelte:446 title=
   > Copy a link that reopens this instrument as it looks now
   - terms: 📖 instrument
-- `vz_copy_failed` — +page.svelte:451 span:
+- `vz_copy_failed` — +page.svelte:452 span:
   > Copy failed
-- `vz_copied` — +page.svelte:453 span:
+- `vz_copied` — +page.svelte:454 span:
   > Copied
-- `vz_copy_link` — +page.svelte:454 span:
+- `vz_copy_link` — +page.svelte:455 span:
   > Copy link
-- `vz_more_instrument_actions` — +page.svelte:459 ariaLabel=
+- `vz_more_instrument_actions` — +page.svelte:460 ariaLabel=
   > More instrument actions
   - terms: 📖 instrument
-- `vz_how_it_works` — +page.svelte:467 <button>
+- `vz_how_it_works` — +page.svelte:468 <button>
   > How it works
-- `vz_report_a_problem` — +page.svelte:476 <span>
+- `vz_report_a_problem` — +page.svelte:477 <span>
   > Report a problem
-- `vz_layout` — +page.svelte:484 label=
+- `vz_layout` — +page.svelte:485 label=
   > Layout
 - `vz_x_u` — gaugeStage.ts:34 fmtU:
   > {u.toFixed(2)}U

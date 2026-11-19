@@ -11,7 +11,7 @@
 	 IT (its Web Analytics FAQ) — we have not measured the beacon. Update
 	 "Last updated" with any change. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 </script>
 
 <h1>Privacy</h1>
@@ -36,7 +36,7 @@
 		<li>Whether critcalc has already asked your browser to keep its data.</li>
 	</ul>
 	<p>
-		critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a>
+		critcalc sets no cookies. A backup file from <a href={hrefTo('/settings')}>Settings</a>
 		carries all of it. <strong>Clear data</strong> on a profile’s own page clears what it holds: its
 		roster, teams, rotations, and lineups. <strong>Delete everything</strong> in Settings removes every
 		profile, the Trash, and your settings from this browser.
@@ -60,7 +60,6 @@
 	</p>
 
 	<h3>Reports, when you send one</h3>
-	<!-- eslint-disable svelte/no-navigation-without-resolve -- the external form -->
 	<p>
 		The feedback form is a Google Form. <strong>Report a problem</strong> opens it with some answers
 		already filled in: which tool you were in, a share link to what you were looking at, critcalc’s
@@ -70,10 +69,8 @@
 			>Google’s privacy policy</a
 		> covers the form.
 	</p>
-	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 	<h3>Visit counts</h3>
-	<!-- eslint-disable svelte/no-navigation-without-resolve -- the external FAQ -->
 	<p>
 		critcalc uses Cloudflare Web Analytics to count visits: which pages are viewed, the referring
 		site, the browser and device type, and the country. Cloudflare says it uses no cookies or local
@@ -85,7 +82,6 @@
 			rel="noopener noreferrer">Web Analytics FAQ</a
 		> has the details.
 	</p>
-	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 	<h3>The host</h3>
 	<p>

@@ -8,7 +8,7 @@
 	 log, the view bar / document bar. ⚓ A limit is the TOOL's ("The Rotation
 	 Planner doesn't…"); "we" only for a choice that isn't a limit. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 	import HelpFigure from '$lib/components/HelpFigure.svelte';
@@ -157,7 +157,7 @@
 	<p>
 		A character without curated frame data carries a mark beside their name, and their actions are
 		drawn with generic timing. The
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what is covered
+		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what is covered
 		for each character.
 	</p>
 </section>
@@ -179,7 +179,6 @@
 	</p>
 	<p>
 		A rotation can only use one Blank (if you would like support for more than one Blank, please
-		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the external form -->
 		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">request it</a>). Its
 		actions use generic timing, and none of them hit, grant a buff, or apply an element.
 	</p>
@@ -349,7 +348,6 @@
 		reaction consumes, and the Crystallize cooldown. It assumes one enemy without a permanent aura
 		that applies nothing back to you, and Shatter isn’t modeled. (If you would like to see permanent
 		auras as a feature, please send a request through the
-		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the external form -->
 		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>.)
 	</p>
 </section>

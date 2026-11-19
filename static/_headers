@@ -15,6 +15,19 @@
 /404.html
   X-Robots-Tag: noindex
 
+# The translated locales ship unlinked and out of search until Nate opens
+# each one (src/lib/i18n/locale.ts § isIndexed). Every page already says
+# noindex in its head; this says it for anything that reads only headers.
+# Opening a locale removes its two rules here.
+/ja
+  X-Robots-Tag: noindex
+/ja/*
+  X-Robots-Tag: noindex
+/zh
+  X-Robots-Tag: noindex
+/zh/*
+  X-Robots-Tag: noindex
+
 # The HTML shell must NOT be held. Cloudflare Pages' default for non-hashed
 # assets is 4h must-revalidate, which would pin a user to a stale shell for
 # hours after a fix ships — exactly wrong in the weeks after launch, when

@@ -1,4 +1,5 @@
 import { beforeNavigate } from '$app/navigation';
+import { routeOf } from '$lib/i18n/paths';
 
 /**
  * CLOSE AS YOU LEAVE — for a surface PORTALLED out of a tool page (a menu, a
@@ -21,6 +22,6 @@ import { beforeNavigate } from '$app/navigation';
  */
 export function closeOnLeave(isOpen: () => boolean, close: () => void): void {
 	beforeNavigate((nav) => {
-		if (isOpen() && nav.to?.url.pathname !== nav.from?.url.pathname) close();
+		if (isOpen() && nav.to && nav.from && routeOf(nav.to.url) !== routeOf(nav.from.url)) close();
 	});
 }

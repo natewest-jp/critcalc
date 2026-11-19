@@ -20,7 +20,10 @@ function walk(dir: string, out: string[] = []): string[] {
 	return out;
 }
 
-const files = walk(SRC).map((p) => relative(ROOT, p));
+/** Paraglide's compiled output is generated, and not ours to hold to rules. */
+const files = walk(SRC)
+	.map((p) => relative(ROOT, p))
+	.filter((f) => !f.startsWith('src/lib/paraglide/'));
 const read = (f: string) => readFileSync(join(ROOT, f), 'utf8');
 
 /** Strip comments and `<code>` spans, so a rule can be explained in prose
@@ -189,5 +192,65 @@ describe('symbol marks are geometry, not type (.claude/rules/ui.md: sub-pixel la
 	it('every allowance still matches its file', () => {
 		const stale = ALLOWED.filter((a) => !read(a.file).includes(a.span));
 		expect(stale).toEqual([]);
+	});
+});
+
+/**
+ * The locale lives in the path, so every internal URL goes through
+ * `$lib/i18n/paths`: `hrefTo` on the way out, `routeOf` on the way in. A bare
+ * path drops a Japanese reader into English, and a bare `page.url.pathname`
+ * comparison fails on every locale but English.
+ */
+describe('internal URLs keep the locale (src/lib/i18n/paths.ts)', () => {
+	const PATHS = 'src/lib/i18n/paths.ts';
+	const code = files.filter((f) => /\.(svelte|ts)$/.test(f) && !f.endsWith('.test.ts'));
+	/** Dev-only pages, never localized. */
+	const DEV = /^src\/routes\/(styleguide|\(scene\)\/lab)\//;
+
+	it("nothing imports SvelteKit's resolve (paths.ts says why)", () => {
+		const offenders = code.filter(
+			(f) => !DEV.test(f) && /from\s+['"]\$app\/paths['"]/.test(read(f))
+		);
+		expect(offenders).toEqual([]);
+	});
+
+	// A static file (`/manifest.webmanifest`) has no locale and is exempt.
+	it('no markup links to a bare internal path', () => {
+		const offenders = code.filter(
+			(f) =>
+				f.endsWith('.svelte') &&
+				!DEV.test(f) &&
+				/\shref=(["'`]|\{\s*["'`])\/(?!\/|assets\/|[\w/-]*\.\w+["'`])/.test(stripComments(read(f)))
+		);
+		expect(offenders).toEqual([]);
+	});
+
+	it('no navigation call names a bare internal path', () => {
+		const offenders = code.filter(
+			(f) =>
+				!DEV.test(f) &&
+				/\b(goto|pushState|replaceState|preloadData|preloadCode)\(\s*["'`]\/|\bredirect\(\s*\d+\s*,\s*["'`]\//.test(
+					stripComments(read(f))
+				)
+		);
+		expect(offenders).toEqual([]);
+	});
+
+	it('nothing reads a pathname except through routeOf', () => {
+		// A line that keeps the browser's own path on purpose (to navigate back to
+		// it, or to rewrite the URL in place) says so with `i18n: raw path`.
+		const offenders = code.flatMap((f) => {
+			if (f === PATHS || DEV.test(f)) return [];
+			return read(f)
+				.split('\n')
+				.map((line, i, all) => ({ line, i, prev: all[i - 1] ?? '' }))
+				.filter(
+					({ line, prev }) =>
+						/\b(url|location)\.pathname\b/.test(stripComments(line)) &&
+						!/i18n: raw path/.test(line + prev)
+				)
+				.map(({ i }) => `${f}:${i + 1}`);
+		});
+		expect(offenders).toEqual([]);
 	});
 });

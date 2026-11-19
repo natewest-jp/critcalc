@@ -1,6 +1,6 @@
 # Internationalization Plan
 
-**Status:** Not started
+**Status:** Platform built (`docs/rounds/i18n-setup-2026-11-19.md`); the frame pilot is next (`docs/todo.md`). Where this plan and the setup record differ, the record is what shipped: system CJK fonts instead of Plex CJK, and locales `ja` then `zh` first (`docs/rounds/launch-roadmap.md` § locale priority).
 **Scope:** Add multi-language support to critcalc
 **Target locales:** English (default), Spanish, French, Russian, Chinese, Japanese, Korean
 

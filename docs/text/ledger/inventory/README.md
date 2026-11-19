@@ -44,6 +44,7 @@ flags: off-glossary 1 · assembled 29 · plural? 63 · x-for-× 1 · entity 6 ·
 terms: 181 terms + 29 avoided forms in the termbase, 1092 messages carry one
 unassigned: none
 orphaned notes: none
+extracted to messages/en.json: 10
 ```
 
 **Terms** (`../terms.json`): 🔒 frozen, English everywhere · 🎮 game, the game's own translation · 🏷 label stays, explanation translates · 📖 house, translated once and reused.

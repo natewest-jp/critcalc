@@ -5,7 +5,7 @@
 	 the project says what it is FOR — once, as a description (style guide
 	 §1.3). Credits name every source a help chapter cites. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
 
@@ -24,18 +24,18 @@
 		Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred,
 		buffs, and more), sourced from the kits at the constellations you own, and what switching out a
 		team member would cost or gain.
-		<a href={resolve('/help/builder')}>How it works</a>
+		<a href={hrefTo('/help/builder')}>How it works</a>
 	</p>
 	<p>
 		<strong>The rotation planner</strong> turns a rotation written in KQM notation into a timeline
 		of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can
 		also practice a rotation by playing it back at game speed with audio cues.
-		<a href={resolve('/help/planner')}>How it works</a>
+		<a href={hrefTo('/help/planner')}>How it works</a>
 	</p>
 	<p>
 		<strong>The visualizers</strong> are eight small instruments, each about one mechanic: crit,
 		elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds,
-		and wish odds. <a href={resolve('/help/visualizers')}>How they work</a>
+		and wish odds. <a href={hrefTo('/help/visualizers')}>How they work</a>
 	</p>
 </section>
 
@@ -49,7 +49,7 @@
 	<p>
 		Curation is uneven, because some kits are much harder to model than others. Where a character
 		isn’t finished, the tools say so rather than guess, and the
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what the rotation
+		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what the rotation
 		planner draws and what it leaves out.
 	</p>
 </section>
@@ -59,7 +59,7 @@
 	<p>
 		critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans
 		heavily on what the community has measured. Corrections are welcome! The
-		<a href={resolve('/contribute')}>Contribute</a> page says how to help.
+		<a href={hrefTo('/contribute')}>Contribute</a> page says how to help.
 	</p>
 </section>
 

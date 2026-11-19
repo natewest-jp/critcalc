@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { localizeHref } from '$lib/paraglide/runtime';
+	import { isIndexed, ogLocale } from '$lib/i18n/locale';
+	import { routeOf } from '$lib/i18n/paths';
 	import {
 		metaFor,
 		titleFor,
@@ -17,8 +20,12 @@
 	// tags, and which one wins is up to each individual scraper. If a page needs
 	// different meta, give it an entry in $lib/seo.ts — do not render this twice.
 
-	const pathname = $derived(page.url.pathname);
+	// The canonical route keys the map; the reader's own locale names the URL.
+	const pathname = $derived(routeOf(page.url));
 	const meta = $derived(metaFor(pathname));
+	const pageUrl = $derived(canonicalFor(localizeHref(pathname)));
+	// A locale not yet open to search is noindex on every page (locale.ts).
+	const hidden = $derived(meta.noindex || !isIndexed());
 
 	// The error page is a real route in SvelteKit's eyes but not in the map, and
 	// it must never be indexed — an unmatched URL is not a page. Status is 200 on
@@ -36,7 +43,7 @@
 	<meta name="description" content={meta.description} />
 
 	<!-- A noindex page carries no canonical: the two together are mixed signals. -->
-	{#if isError || meta.noindex}
+	{#if isError || hidden}
 		<meta name="robots" content="noindex" />
 	{:else}
 		<link rel="canonical" href={canonicalFor(pathname)} />
@@ -47,10 +54,10 @@
 	     dropped, which looks exactly like "no card" and is invisible locally. -->
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content={SITE_NAME} />
-	<meta property="og:locale" content="en_US" />
+	<meta property="og:locale" content={ogLocale()} />
 	<meta property="og:title" content={title} />
 	<meta property="og:description" content={meta.description} />
-	<meta property="og:url" content={canonicalFor(pathname)} />
+	<meta property="og:url" content={pageUrl} />
 	<meta property="og:image" content={`${SITE_URL}${OG_IMAGE}`} />
 	<!-- Dimensions let a scraper lay the card out before the image finishes
 	     downloading, which is the difference between a card that pops in and one
