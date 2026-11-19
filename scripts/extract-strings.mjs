@@ -78,19 +78,32 @@ const SURFACES = [
 	['seo', /^lib\/seo\.ts$|SeoHead\.svelte$/],
 	[
 		'chrome',
-		/SiteChrome|NavPanel|SiteFooter|ChromeOverlay|ChromeModals|^lib\/tools\.ts$|toolChrome\.ts$|BandMenu|ToolStack|^routes\/\+layout\.svelte$|\(scene\)\/\+layout\.svelte$|\(pages\)\/\+layout\.svelte$/
+		/TopBar|NewTag|SiteFooter|^lib\/tools\.ts$|toolChrome\.ts$|BandMenu|ToolStack|^routes\/\+layout\.svelte$|\(scene\)\/\+layout\.svelte$|\(pages\)\/\+layout\.svelte$/
+	],
+	['menu', /MenuState\.svelte$|menuState\.svelte\.ts$/],
+	['keys', /KeysSheet\.svelte$|keysSheet\.svelte\.ts$/],
+	// What the site says about saving, links and the layout change: toasts, banners, dialogs.
+	[
+		'notices',
+		/NoticeBanners|NoticeRegion|LinksDialog|FlipNoticeDialog|^lib\/documentBar\.svelte\.ts$|^lib\/storage\/(session\.svelte|arrivals|db)\.ts$/
 	],
 	['landing', /^routes\/\(scene\)\/\+page\.svelte$|^lib\/landing\/|components\/landing\//],
-	['errors', /\+error\.svelte$|\(tools\)\/\+layout\.svelte$|ToolColumns/],
+	['errors', /\+error\.svelte$|\(tools\)\/\+layout\.svelte$|ToolColumns|RenderCrash/],
 	[
 		'bench',
-		/BenchBand|SlotPortrait|SidePortrait|LoadoutPanel|TeamBonusesBlock|utils\/resonance\.ts$|loadoutIcons/
+		/BenchBand|SlotPortrait|SidePortrait|LoadoutPanel|TeamBonusesBlock|CompareControl|utils\/resonance\.ts$|loadoutIcons/
 	],
 	[
-		'docbar',
-		/DocumentActions|DocumentTabs|documentBar|rotationTabs|SavedNotationsOverlay|TabsFullDialog|TabLimitDialog|boardBar|^lib\/boards\.svelte\.ts$|boardUrl|^lib\/library(\.svelte)?\.ts$|LibraryOverlay|LibraryView/
+		'library',
+		/LibraryPlace|MoveDialog|moveRequest|^lib\/storage\/convert\.ts$|rotationTabs|boardBar|^lib\/boards\.svelte\.ts$|boardUrl|^lib\/library(\.svelte)?\.ts$/
 	],
-	['settings', /SettingsPanel|settingsBackup|playback\/tones\.ts$|\/settings\/\+page/],
+	['teams', /TeamsPlace|TeamDetail|TeamLoadoutPlates|TeamMemberPortrait|SaveTeamButton/],
+	['trash', /TrashPlace/],
+	['profile', /ProfileForm|profileLook|^lib\/storage\/(migrate|records)\.ts$/],
+	[
+		'settings',
+		/SettingsPanel|settingsBackup|^lib\/storage\/backup\.ts$|playback\/tones\.ts$|\/settings\/\+page/
+	],
 	['coverage', /^lib\/coverage\/|CoverageList|CoverageStrip|\/coverage\/\+page/],
 	[
 		'help',
@@ -99,6 +112,7 @@ const SURFACES = [
 	['help_planner', /help\/chapters\/RotationPlanner/],
 	['help_tb', /help\/chapters\/TeamBuilder/],
 	['help_vz', /help\/chapters\/Visualizers/],
+	['changelog', /help\/chapters\/Changelog|\/changelog\//],
 	['about', /help\/chapters\/About|\/about\/\+page/],
 	['faq', /help\/chapters\/Faq|\/faq\//],
 	['beta', /help\/chapters\/Beta|\/beta\//],
@@ -113,13 +127,14 @@ const SURFACES = [
 	['vz_breakdown', /BreakdownInstrument|visualizers\/lib\/breakdown\.ts$/],
 	['vz_artifact', /Artifact(Instrument)?\.svelte$|artifactOdds|appraise|ValueWheel/],
 	['vz', /visualizers\/|utils\/instrumentUrl\.ts$/],
+	// The Roster and the character inspector, which the Planner's inspector also shows.
 	[
 		'tb',
-		/builder\/|CharacterCard|CompositionChips|RosterTab|CharacterFilterRail|CharacterGrid|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons/
+		/builder\/|CharacterCard|CompositionChips|RosterTab|CharacterFilterStrip|MoreFilters|CharacterGrid|CharacterDetails|InspectModal|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons|^lib\/theater\.ts$|^lib\/data\/characterLookup\.ts$/
 	],
 	[
 		'planner',
-		/planner\/|plannerSamples|RotationTimeline|RotationNotes|RotationCoverage|BuffTooltip|EventLog|^lib\/timeline\/|^lib\/sim\/|^lib\/playback\/|utils\/(notation|auraDisplay|kqmExport|timelineExport|castTokens|rotationUrl|urlCodec|tokenizer)/
+		/planner\/|plannerSamples|PlannerInspector|BuffDetailRows|RotationTimeline|RotationNotes|RotationCoverage|BuffTooltip|EventLog|^lib\/timeline\/|^lib\/sim\/|^lib\/playback\/|utils\/(notation|auraDisplay|kqmExport|timelineExport|castTokens|rotationUrl|urlCodec|tokenizer)/
 	]
 ];
 
@@ -322,6 +337,12 @@ function looksLikeText(raw, field = '') {
 		const words = toks.filter((k) => k !== 'X').length;
 		if (codeCtx && !textCtx) return marked < words / 2 && /[A-Z]/.test(t[0] ?? '');
 		if (words > 0 && marked === words) return false; // a class list, a CSS value
+		// A BEM class list handed to a snippet: `editInRoster('btn btn--sm')`.
+		if (
+			toks.every((k) => /^[a-z][a-z0-9]*(-{1,2}[a-z0-9]+)*$/.test(k)) &&
+			toks.some((k) => k.includes('--'))
+		)
+			return false;
 		return true;
 	}
 	// One token. A code-shaped field wins: `textDecorationLine: 'underline'`.
@@ -1067,8 +1088,10 @@ const orphanNotes = [];
 if (existsSync(NOTES)) {
 	for (const f of readdirSync(NOTES).filter((n) => n.endsWith('.md'))) {
 		const body = readFileSync(join(NOTES, f), 'utf8');
-		for (const m of body.matchAll(/^#{2,4} `([a-z0-9_]+)`/gm))
-			if (!keys.has(m[1])) orphanNotes.push(`${f}: ${m[1]}`);
+		// A heading may name several keys (`a` · `b`): check every one of them.
+		for (const [heading] of body.matchAll(/^#{2,4} `[a-z0-9_]+`.*$/gm))
+			for (const [, key] of heading.matchAll(/`([a-z0-9_]+)`/g))
+				if (!keys.has(key)) orphanNotes.push(`${f}: ${key}`);
 	}
 }
 

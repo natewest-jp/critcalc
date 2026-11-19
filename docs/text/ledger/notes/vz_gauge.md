@@ -37,8 +37,7 @@ damage multiplier — the same family names the reverse `Vaporize ×1.5`.
 
 ### `vz_gauge_crystallize_blocked`
 
-Chart label for a Crystallize attempt inside the 1s reaction cooldown. In the log the
-same event reads `vz_gauge_crystallize_blocked_by_its_1s_cooldown`.
+Chart label for a Crystallize attempt inside the 1s reaction cooldown.
 
 ### `vz_gauge_bloom_via_quicken`
 
@@ -91,31 +90,10 @@ gauge) and `TryVaporize` (refused while any Frozen remains).
 the Burning ICD — about every 2s (KQM §3.9, gcsim). "or faster": the fuel drains at the
 larger of its own decay and 0.4U per second.
 
-### `vz_gauge_el_auraafter_after_tax`
+### `vz_gauge_topped_up`
 
-Log line: an element became an aura. `{el}` is the element's name, the number its gauge
-after the ×0.8 tax.
-
-### `vz_gauge_el_topped_up_to_auraafter_rate_kept`
-
-⚠️ "topped up TO", not "after tax": a top-up keeps the larger of the standing aura and
-the new taxed gauge, so the number can be the old aura, untouched by this hit.
-
-### `vz_gauge_spent_trigger_trigger_trigger`
-
-The tail of a reaction line, e.g. "Vaporize ×2: −2U Pyro, −1U Hydro trigger": what the
-aura lost, then what the TRIGGER spent. ⚓ Both numbers on purpose — they differ by the
-reaction's modifier, which is the lesson of the Vaporize and Reverse Melt scenarios.
-⚠️ ASSEMBLED with the reaction name and the consumed list.
-
-### `vz_gauge_count_electro_charged_ticks_0_4u_from`
-
-⚠️ Needs an ICU plural on the count. "from both each tick" — every tick drains 0.4U from
-each of the two auras.
-
-### `vz_gauge_burning_ends_swept`
-
-`{swept}` is ` (Burning, Dendro gone)` or empty — ASSEMBLED.
+An attach word over a pill. ⚠️ A top-up keeps the larger of the standing aura and the new
+taxed gauge, so the aura can be left exactly as it was.
 
 ### `vz_gauge_max_apps_applications_is_the_most`
 
@@ -124,26 +102,17 @@ Tooltip on the disabled Add at the cap. ⚠️ Plural on the count (always 8 tod
 ### `vz_gauge_add`
 
 The Add button's word; hidden below 40rem, where the ＋ stands alone (`aria-label` keeps
-`vz_gauge_add_application`).
+`vz_gauge_add_an_application`).
 
 ### `vz_gauge_click_to_add`
 
 Drawn over the faint marker that previews a click on the band — a hint, 10px, short.
 
-### `vz_gauge_element_gauge_u_at_x_seconds`
+### `vz_gauge_element_gauge_u_at_x_seconds_6584` · `vz_gauge_element_gauge_u_at_x_seconds_117b`
 
 A marker's accessible name, e.g. "Hydro 2U at 1.5 seconds". ⚠️ ASSEMBLED.
 
-### `vz_gauge_point_at_the_chart_or_press_play_to_read`
+### `vz_gauge_point_at_the_chart_to_read_the_aura_at`
 
-The Readout's resting instruction. "Point at": hovering the plot reads that moment (a
-touch taps or drags the playhead instead).
-
-### `vz_gauge_no_aura_the_next_element_applies_fresh`
-
-⚓ A teaching sentence, not an empty state (worksheet 03): the gap IS the information.
-⛔ Don't reduce it to "No aura."
-
-### `vz_gauge_aura_log`
-
-⚓ The planner's name for the same component — one name in both tools (worksheet 03).
+The Readout's resting instruction. "Point at": hovering the plot reads that moment, and
+pressing pins it. "Tap" and "drag" are for the pills, which are touch targets too.

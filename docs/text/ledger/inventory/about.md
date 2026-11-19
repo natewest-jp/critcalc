@@ -14,22 +14,22 @@
 - `about_the_tools` — About.svelte:21 <h2>
   > The tools
 - `about_the_team_builder_is_a_party_setup_screen` — About.svelte:23 <p>
-  > <strong>The Team Builder</strong> is a party setup screen for Stygian Onslaught, the Spiral Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred, buffs, and more), sourced from the kits at the constellations you own, and what switching out a team member would cost or gain. <a>How it works</a>
-  - terms: 🎮 Constellation · 📖 Team Builder · 🏷 RES shred
+  > <strong>The team builder</strong> is a party setup screen for Stygian Onslaught, the Spiral Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred, buffs, and more), sourced from the kits at the constellations you own, and what switching out a team member would cost or gain. <a>How it works</a>
+  - terms: 🎮 Constellation · 🏷 RES shred
 - `about_the_rotation_planner_turns_a_rotation` — About.svelte:30 <p>
-  > <strong>The Rotation Planner</strong> turns a rotation written in KQM notation into a timeline of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can also practice a rotation by playing it back at game speed with audio cues. <a>How it works</a>
-  - terms: 📖 Rotation Planner · 🎮 cooldown · 📖 notation · 📖 rotation · 📖 timeline · 🏷 aura · 🔒 KQM
+  > <strong>The rotation planner</strong> turns a rotation written in KQM notation into a timeline of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can also practice a rotation by playing it back at game speed with audio cues. <a>How it works</a>
+  - terms: 🎮 cooldown · 📖 notation · 📖 rotation · 📖 timeline · 🏷 aura · 🔒 KQM
 - `about_the_visualizers_are_eight_small` — About.svelte:36 <p>
-  > <strong>The Visualizers</strong> are eight small instruments, each about one mechanic: crit, elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds, and wish odds. <a>How they work</a>
-  - terms: 📖 Visualizers · 🏷 gauge · 🎮 DEF · 🎮 RES · 🏷 ICD
+  > <strong>The visualizers</strong> are eight small instruments, each about one mechanic: crit, elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds, and wish odds. <a>How they work</a>
+  - terms: 🏷 gauge · 🎮 DEF · 🎮 RES · 🏷 ICD
 - `about_where_the_data_comes_from` — About.svelte:43 <h2>
   > Where the data comes from
 - `about_each_character_starts_from_genshin_db_s` — About.svelte:44 <p>
   > Each character starts from genshin-db’s datamined kit and is then curated by hand. The effects, their conditions, and their constellation gates are written from the kit text, and frame counts are measured against gcsim wherever it has the character.
   - terms: 🎮 Constellation · 🔒 gcsim
 - `about_curation_is_uneven_because_some_kits_are` — About.svelte:49 <p>
-  > Curation is uneven, because some kits are much harder to model than others. Where a character isn’t finished, the tools say so rather than guess, and the <a>coverage page</a> shows what the Rotation Planner draws and what it leaves out.
-  - terms: 📖 Rotation Planner
+  > Curation is uneven, because some kits are much harder to model than others. Where a character isn’t finished, the tools say so rather than guess, and the <a>coverage page</a> shows what the rotation planner draws and what it leaves out.
+  - terms: 📖 rotation
 - `about_who_makes_it` — About.svelte:58 <h2>
   > Who makes it
 - `about_critcalc_is_nate_west_s_project_it_is` — About.svelte:59 <p>
@@ -41,8 +41,8 @@
   > <a>gcsim</a>, the open-source combat simulator: frame data, tick cadences, ICD groups, targeting, and the reference for the gauge model.
   - terms: 🔒 gcsim · 🏷 gauge · 🏷 ICD
 - `about_keqing_mains_the_notation_the_rotation` — About.svelte:75 <li>
-  > <a>Keqing Mains</a>: the notation the Rotation Planner reads, and the theorycrafting conventions the tools follow.
-  - terms: 📖 Rotation Planner · 🔒 Keqing Mains · 📖 notation
+  > <a>Keqing Mains</a>: the notation the rotation planner reads, and the theorycrafting conventions the tools follow.
+  - terms: 🔒 Keqing Mains · 📖 notation · 📖 rotation
 - `about_genshin_db_the_datamined_kits_every` — About.svelte:79 <li>
   > <a>genshin-db</a>: the datamined kits every character starts from.
 - `about_the_genshin_impact_fandom_wiki_kit` — About.svelte:84 <li>
@@ -50,12 +50,11 @@
   - terms: 🎮 Genshin Impact
 - `about_lunaris_moe_for_stygian_onslaught_and` — About.svelte:89 <li>
   > <a>Lunaris.moe</a> for Stygian Onslaught and Spiral Abyss data, and <a>Stygian.moe</a> for cross-checking season dates.
-- `about_gganalysis_which_wish_odds_is_tested` — About.svelte:95 <li>
-  > <a>GGanalysis</a>, which Wish Odds is tested against; and Genshin Optimizer and SiriYu’s reshape solver, the two models behind Artifact Odds’ reading of a reshape.
-  - terms: 🔒 Genshin Optimizer · 📖 Artifact Odds · 📖 Wish Odds
+- `about_gganalysis_which_the_wish_odds` — About.svelte:95 <li>
+  > <a>GGanalysis</a>, which the wish odds visualizer is tested against; and Genshin Optimizer and SiriYu’s reshape solver, the two models behind the artifact odds visualizer’s reading of a reshape.
+  - terms: 🔒 Genshin Optimizer
 - `about_eodgamer_s_crit_heatmap_the_spreadsheet` — About.svelte:101 <li>
-  > <a>EODGamer’s crit heatmap</a>, the spreadsheet the Crit Heatmap grew out of.
-  - terms: 📖 Crit Heatmap
+  > <a>EODGamer’s crit heatmap</a>, the spreadsheet the crit heatmap grew out of.
 - `about_type_is_ibm_plex_and_bitter_the` — About.svelte:105 <li>
   > Type is IBM Plex and Bitter; the interface icons are Lucide’s. Both are open-licensed.
 - `about_a_fan_project` — About.svelte:110 <h2>

@@ -8,10 +8,10 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ▶ Now
 
-- **Translation: Simplified Chinese and Japanese (⚓ Nate 2026-11-18: after the Help screenshots, so Help is translated once).** Run alone; it is token-heavy. Plan: `docs/design/i18n-plan.md`, locale priority in `docs/rounds/launch-roadmap.md` § The wording pass, then i18n. Claude's recommendation, two rounds:
-  1. **Refresh the ledger** (`docs/text/ledger-plan.md`). On 2026-11-18 `extract-strings.mjs` found 2,628 messages, 465 of them unassigned across the profiles layout's 39 files (top bar, menu state, Library, Teams, Trash, profile form, Changelog…), and 35 notes orphaned by the Visualizer rewrites. Assign the files to surfaces, move any ruling worth keeping out of the orphaned notes, then `--write`.
-  2. **A pilot on the frame only:** top bar, menus, landing, Settings, and error pages; tool interiors (mostly Tier C jargon) and Help wait. Paraglide wired in, locale in the path (`/ja/`, `/zh/`), never in `?r=`; game terms from genshin-db, never translated by us; system CJK fonts; a pseudo-locale pass for layout breaks before any real translation; shipped unlinked and `noindex` until Nate opens it.
-     Open questions for Nate: who reviews each language (unreviewed machine translation is a public call); hidden pilot or a labeled beta; whether Cloudflare analytics show zh/ja visitors yet.
+- **Translation: Simplified Chinese and Japanese (⚓ Nate 2026-11-18: after the Help screenshots, so Help is translated once).** Run alone; it is token-heavy. Plan: `docs/design/i18n-plan.md`, locale priority in `docs/rounds/launch-roadmap.md` § The wording pass, then i18n. The ledger is current (`docs/rounds/ledger-refresh-2026-11-19.md`). Next:
+  - **A pilot on the frame only:** top bar, menus, landing, Settings, and error pages; tool interiors (mostly Tier C jargon) and Help wait. Paraglide wired in, locale in the path (`/ja/`, `/zh/`), never in `?r=`; game terms from genshin-db, never translated by us; system CJK fonts; a pseudo-locale pass for layout breaks before any real translation; shipped unlinked and `noindex` until Nate opens it. Fix the frame's assembled strings and hand-made plurals first (listed in the refresh record).
+  - **Reviewers (Nate, 2026-11-19):** Japanese has a reviewer; Chinese has none yet. Nate's idea: share the site on Reddit and ask for language reviewers there. Analytics show visits from a couple dozen countries, likely many of them bots; real use looks mostly US and Canada.
+  - Claude's recommendation, not yet ruled: Japanese first, since it has a reviewer; Japanese goes public once reviewed, and Chinese stays hidden until a reviewer is found. The specific request for reviewers waits until the hidden pilot exists, so they have something concrete to read.
 
 ## ⏭ Next
 

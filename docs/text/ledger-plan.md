@@ -192,3 +192,9 @@ text, so notes written before a rewrite orphan). Headings are `### \`key\``, whi
 what the extractor's orphan check reads. ✅ `notes/vz_crit.md`— the first, from the Crit
 Heatmap pass; worksheet 01 marked superseded. ✅`notes/vz_gauge.md` — the Gauge Explorer
 pass; worksheet 03 marked superseded.
+
+## ✅ Refresh for the profiles layout — 2026-11-19
+
+The surface table covers the profiles layout (eight new surfaces, `docbar` retired), the
+orphan check reads every key in a heading, and the 35 orphaned Visualizer notes are
+re-keyed or retired. Record: `docs/rounds/ledger-refresh-2026-11-19.md`.

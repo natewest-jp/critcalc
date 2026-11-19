@@ -56,11 +56,6 @@ order (RES first everywhere). The internal id stays `defres`.
   `vz_defres_other_resistance_shred_percent` is expected, ⛔ not a fix to make.
 - ⚠️ **"Defense" is US English** (glossary §4) and stays.
 
-### `vz_defres_most_enemies_resist_10_shred_subtracts`
-
-The RES chart's caption. "Most enemies resist 10%" is the game's common base RES. "At half the
-rate" = below 0%, the multiplier is `1 − res/2`.
-
 ### `vz_defres_equal_levels_already_cost_you_half_your`
 
 The DEF chart's caption. ⚓ "Equal levels already cost you half" is the fact that surprises
@@ -78,25 +73,18 @@ point.
 
 The RES chart's message when the enemy is immune. Immunity is ×0 — ⛔ no shred lowers it.
 
-### `vz_defres_total_of_your_hit_s_damage_gets_through`
+### `vz_defres_at_finalres_res_resnow_of_the_hit_gets` · `vz_defres_at_baseres_res_before_shred_b_of_the_hit` · `vz_defres_level_charlevel_against_level_enemylevel_1331` · `vz_defres_level_charlevel_against_level_enemylevel_ca71`
 
-The Readout headline: a multiplier (`×0.450`) followed by the phrase. ⚠️ ASSEMBLED — the
-number leads in English; a locale may need it elsewhere.
+The RES and DEF rows' tooltips, each a whole sentence: the multiplier (`×0.450`) sits
+mid-sentence, so a locale places it where its grammar wants. The "before shred" forms are
+separate messages, ⛔ never a fragment added to the others.
 
-### `vz_defres_at_finalres_res_resshred_baseres_before`
+### `vz_defres_damage_from_your_shred_and_def_ignore` · `vz_defres_damage_from_your_shred` · `vz_defres_damage_from_shred_with_none_picked` · `vz_defres_the_enemy_is_immune_to_element`
 
-The RES row: "×0.900 at 10% RES (50% before shred)". ⚠️ ASSEMBLED — the parenthesis appears
-only when shred is picked; a locale needs both whole forms, ⛔ not a fragment.
-
-### `vz_defres_lv_charlevel_vs_lv_enemylevel_defshred`
-
-The DEF row: "Lv 90 vs Lv 100 · −30% DEF · 60% ignored". ⚠️ ASSEMBLED from up to three parts
-joined by " · "; each optional part is its own message below it in the inventory.
-
-### `vz_defres_your_shred_and_def_ignore_add_x_damage`
-
-"Your shred and DEF ignore add 12.3% damage against this enemy" — the gain over the same hit
-with nothing picked. ⚠️ The number sits mid-sentence. "Shred" here covers RES and DEF shred.
+The Readout headline: a figure (`+12.3%`, `+0%`, or `×0` when immune) followed by one of
+these sentences, the gain over the same hit with nothing picked. ⚠️ ASSEMBLED: the figure is
+its own element and leads in English; a locale may need it inside the sentence. "Shred" here
+covers RES and DEF shred.
 
 ### `vz_defres_above_75_res_shred_works_at_less_than`
 
@@ -113,8 +101,8 @@ Musou Isshin), "whole party", "own Skill DMG only" (Yae C6 — the Sesshou Sakur
 Only the RES list can be empty (DEF shred and ignore are element-free). "In the data" — the
 sources are derived from the characters and sets the site models.
 
-### `vz_defres_res_0_1_res_2_0_75_1_res_75_1_4_res_1`
+### `vz_defres_regime_res_below_0_1_res_2_0_75_1_res`
 
-🔒 A formula (conventions §I). ⚠️⚠️ It embeds English words (`res`) — ⛔ a translator must
-not localize them; the surrounding prose defines them. Same for
-`vz_defres_100_yours_100_yours_100_enemy_1_shred_1` (`yours`, `enemy`, `shred`, `ignore`).
+🔒 The formulas (conventions §I). ⚠️⚠️ They embed English words (`res`, `yours`, `enemy`,
+`shred`, `ignore`): ⛔ a translator must not localize them; the surrounding prose defines
+them. `{regime}` is the sentence before them, a message of its own.

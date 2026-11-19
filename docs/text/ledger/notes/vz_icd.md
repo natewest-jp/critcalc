@@ -36,16 +36,9 @@ CSS, so write them sentence case.
 anyone cares. ↻ Nate's fix: "some hits … their element" — the old "stops every hit" was
 false. ⛔ Keep it one sentence.
 
-### `vz_icd_every_hit_applies_its_element`
+### `vz_icd_with_no_icd_every_hit_applies`
 
-The No ICD rule line. Also what a timer of 0 reads as under Custom — which cannot be
-reached (the slider starts at 0.5s), so this line is No ICD's alone.
-
-### `vz_icd_at_most_cap_per_window`
-
-New with the pass. "Window" = one run of the ICD timer, the band under the chart. The
-game stores each ICD group as a finite list of which hits apply; the number is how many
-applications that list holds (Standard: 8, a limit only reached at ~10 hits per second).
+The No ICD rule's reason line, read when a hit is pointed at.
 
 ### `vz_icd_its_own`
 
@@ -84,25 +77,21 @@ meaning the counter never applies anything and only the timer does.
 
 ### `vz_icd_limit_per_window`
 
-Custom's cap slider. Its readout says `None` at the top stop (no limit).
+Custom's cap slider. Its readout says `None` at the top stop (no limit). "Window" is one
+run of the ICD timer, the band under the chart. The game stores each ICD group as a finite
+list of which hits apply, and the limit is how many applications that list holds (Standard:
+8, reached only at about 10 hits per second). ⚓ Per window, never per second (worksheet 02).
 
 ### `vz_icd_none`
 
 `Limit per window` readout at its top stop — no limit.
 
-### `vz_icd_1_2_3_hit_counter`
+### `vz_icd_the_hit_counter_a_ringed_number_is_a_hit` · `vz_icd_a_dash_the_window_s_limit_is_reached`
 
-🔒 The digits are a picture of the counter row, not words — they stay `1 2 3` in every
-locale; only "hit counter" translates.
-
-### `vz_icd_1_applied_by_the_counter`
-
-🔒 The ringed `1` is a picture; only the phrase translates. The ring marks a hit that
-applied because the counter came round, as opposed to the timer running out.
-
-### `vz_icd_window_limit_reached`
-
-🔒 The dash is a picture. Shown only when some hit is past its window's limit.
+The counter row's tip. The ring marks a hit that applied because the counter came round,
+as opposed to the timer running out; the dash marks a hit past its window's limit. ⚠️
+ASSEMBLED: the dash sentence is added only when a limit is set and the counter is on, so a
+locale needs both whole forms.
 
 ### `vz_icd_point_at_a_hit_to_read_why_it_applies_or`
 
@@ -122,11 +111,6 @@ counter never restarts the timer. Keep both halves.
 
 The counter half of the same asymmetry — "keeps running" is the point: an application by
 the counter does NOT restart the timer.
-
-### `vz_icd_text_x_in_each_timer_window`
-
-⚓ PER WINDOW, never per second (worksheet 02 → the pass): an average over the string on
-screen moved with the Hits slider. `{text}` is a number or a range (`1–2`, en dash).
 
 ### `vz_icd_sends_the_first_8_hits_within_15s_that`
 
