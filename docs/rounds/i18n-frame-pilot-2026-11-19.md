@@ -69,7 +69,7 @@ Theorycraft in Japanese would need a lookup by profile kind, not a message.
 Gates on all three branches: vitest (2,978), check, lint, build. `npm run test:e2e:chrome`
 after the round: 73 passed, 1 skipped. Both engines are still to run before a merge. In headless Chrome against the production build: `/`, `/settings`, `/ja`,
 `/ja/settings`, `/en-XA` and its Settings, Planner and Roster, at 1440 and 390 wide, with no
-page errors. Nothing here has been looked at in real Safari.
+page errors. ⚓ Nate looked at the pseudo-locale and the Japanese frame and passed both (2026-11-19).
 
 ## Seen in the pseudo-locale, for Nate's eye
 
