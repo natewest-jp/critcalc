@@ -2,6 +2,7 @@
 	 Identical on the landing and the static pages (positioned by the scene
 	 layout). Quiet dimmed tone, no hover. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import HRule from '$lib/components/HRule.svelte';
 
 	/** The copy at the END of a page panel (short screens — see the pages
@@ -22,10 +23,7 @@
 		 one message before extraction (docs/text/style-guide.md § 3.1).
 		 The year is a build constant; vite.config.ts says why it cannot read the
 		 clock here. -->
-	<p class="ftr__legal">
-		© {__BUILD_YEAR__} critcalc.app, an unofficial fan project not affiliated with HoYoverse. Genshin
-		Impact and all related trademarks and assets are © HoYoverse.
-	</p>
+	<p class="ftr__legal">{m.chrome_footer_legal({ year: __BUILD_YEAR__ })}</p>
 </footer>
 
 <style>

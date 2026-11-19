@@ -1,3 +1,4 @@
+import { m } from '$lib/paraglide/messages';
 /**
  * THE MENU STATE (profiles and surfaces design §6; build plan §13, phase 2c):
  * everything you go to on purpose (the Library, the Roster, Help, About,
@@ -45,12 +46,26 @@ export type Section =
 
 /** `path` is canonical (`/roster`): localize it with `hrefTo` where it becomes a
  *  link, and match it against `routeOf(page.url)`. */
-export type SectionItem = { id: Section; label: string; path: Pathname; tool?: string };
+export type SectionItem = { id: Section; label: string; path: Pathname };
 export type SectionGroup = { id: string; title: string | null; items: SectionItem[] };
 
+// Labels and titles are getters, so each read asks the message for the current
+// locale: a plain string here would freeze one language for the whole prerender.
 const LIBRARY_ITEMS: SectionItem[] = [
-	{ id: 'rotations', label: 'Rotations', path: '/library/rotations', tool: 'Planner' },
-	{ id: 'lineups', label: 'Lineups', path: '/library/lineups', tool: 'Builder' }
+	{
+		id: 'rotations',
+		get label() {
+			return m.menu_rotations();
+		},
+		path: '/library/rotations'
+	},
+	{
+		id: 'lineups',
+		get label() {
+			return m.menu_lineups();
+		},
+		path: '/library/lineups'
+	}
 ];
 
 const chapterItems = (area: typeof HELP_AREA): SectionItem[] =>
@@ -68,22 +83,78 @@ export const SECTION_GROUPS: SectionGroup[] = [
 		id: 'profile',
 		title: null,
 		items: [
-			{ id: 'profile', label: 'Profile', path: '/profile' },
-			{ id: 'profile/new', label: 'Add a profile', path: '/profile/new' },
-			{ id: 'roster', label: 'Roster', path: '/roster' },
-			{ id: 'teams', label: 'Teams', path: '/teams' }
+			{
+				id: 'profile',
+				get label() {
+					return m.menu_profile();
+				},
+				path: '/profile'
+			},
+			{
+				id: 'profile/new',
+				get label() {
+					return m.menu_add_a_profile();
+				},
+				path: '/profile/new'
+			},
+			{
+				id: 'roster',
+				get label() {
+					return m.menu_roster();
+				},
+				path: '/roster'
+			},
+			{
+				id: 'teams',
+				get label() {
+					return m.menu_teams();
+				},
+				path: '/teams'
+			}
 		]
 	},
-	{ id: 'library', title: 'Library', items: LIBRARY_ITEMS },
-	{ id: 'help', title: 'Help', items: chapterItems(HELP_AREA) },
-	{ id: 'about', title: 'About', items: chapterItems(ABOUT_AREA) },
+	{
+		id: 'library',
+		get title() {
+			return m.menu_library();
+		},
+		items: LIBRARY_ITEMS
+	},
+	{
+		id: 'help',
+		get title() {
+			return m.menu_help_group();
+		},
+		items: chapterItems(HELP_AREA)
+	},
+	{
+		id: 'about',
+		get title() {
+			return m.menu_about();
+		},
+		items: chapterItems(ABOUT_AREA)
+	},
 	{
 		id: 'settings',
-		title: 'Settings',
+		get title() {
+			return m.menu_settings();
+		},
 		items: [
-			{ id: 'settings', label: 'Settings', path: '/settings' },
+			{
+				id: 'settings',
+				get label() {
+					return m.menu_settings();
+				},
+				path: '/settings'
+			},
 			// ⚓ Outside every profile, as Settings is (notices design §5).
-			{ id: 'trash', label: 'Trash', path: '/trash' }
+			{
+				id: 'trash',
+				get label() {
+					return m.menu_trash();
+				},
+				path: '/trash'
+			}
 		]
 	}
 ];

@@ -47,6 +47,8 @@
  */
 
 import type { CueKind } from './cues';
+import { labels } from '$lib/i18n/labels';
+import { m } from '$lib/paraglide/messages';
 
 // ── Sets ──────────────────────────────────────────────────────────────────
 
@@ -59,20 +61,20 @@ import type { CueKind } from './cues';
  */
 export type VoiceId = 'marimba' | 'bell' | 'vibraphone' | 'pipe' | 'glass';
 export const VOICE_IDS: readonly VoiceId[] = ['marimba', 'bell', 'vibraphone', 'pipe', 'glass'];
-export const VOICE_LABELS: Record<VoiceId, string> = {
-	marimba: 'Marimba',
-	bell: 'Bell',
-	vibraphone: 'Vibraphone',
-	pipe: 'Pipe',
-	glass: 'Glass'
-};
+export const VOICE_LABELS = labels<VoiceId>({
+	marimba: m.settings_marimba,
+	bell: m.settings_bell,
+	vibraphone: m.settings_vibraphone,
+	pipe: m.settings_pipe,
+	glass: m.settings_glass
+});
 /** The Settings' first choice: a metronome, or a melodic voice. */
 export type SoundMode = 'metronome' | 'melodic';
 export const SOUND_MODES: readonly SoundMode[] = ['metronome', 'melodic'];
-export const SOUND_MODE_LABELS: Record<SoundMode, string> = {
-	metronome: 'Metronome',
-	melodic: 'Melodic'
-};
+export const SOUND_MODE_LABELS = labels<SoundMode>({
+	metronome: m.settings_metronome,
+	melodic: m.settings_melodic
+});
 /** What actually plays: the metronome, or one voice. */
 export type SoundSet = 'metronome' | VoiceId;
 export const SOUND_SETS: readonly SoundSet[] = ['metronome', ...VOICE_IDS];
@@ -134,31 +136,20 @@ export const ORDERS: Record<OrderId, { attack: Slot; skill: Slot; burst: Slot }>
 	/** The heavier the input, the higher. */
 	rising: { attack: 'low', skill: 'mid', burst: 'high' }
 };
-export const ORDER_LABELS: Record<OrderId, string> = {
-	weighty: 'Weighty',
-	skillUp: 'Skill up',
-	rising: 'Rising'
-};
+export const ORDER_LABELS = labels<OrderId>({
+	weighty: m.settings_weighty,
+	skillUp: m.settings_skill_up,
+	rising: m.settings_rising
+});
 /** "Burst low · skill middle · attacks high" — an order spelled out, bottom
- *  up, for the Settings hint. Derived from `ORDERS`, so it cannot drift. */
-export function orderHint(id: OrderId): string {
-	const o = ORDERS[id];
-	const word: Record<Slot, string> = { low: 'low', mid: 'middle', high: 'high' };
-	const rank: Record<Slot, number> = { low: 0, mid: 1, high: 2 };
-	return (
-		[
-			['attacks', o.attack],
-			['skill', o.skill],
-			['burst', o.burst]
-		] as const
-	)
-		.slice()
-		.sort((a, b) => rank[a[1]] - rank[b[1]])
-		.map(
-			([role, slot], i) => `${i === 0 ? role[0].toUpperCase() + role.slice(1) : role} ${word[slot]}`
-		)
-		.join(' · ');
-}
+ *  up, for the Settings hint. One whole message per order, so a locale can
+ *  reorder and inflect it; `tones.test.ts` checks each against `ORDERS`. */
+const ORDER_HINTS = labels<OrderId>({
+	weighty: m.settings_order_weighty,
+	skillUp: m.settings_order_skill_up,
+	rising: m.settings_order_rising
+});
+export const orderHint = (id: OrderId): string => ORDER_HINTS[id];
 
 /**
  * The four note sets Nate chose at a keyboard (2026-09-29), each A plus two
@@ -181,12 +172,12 @@ export const NOTE_SETS: Record<NoteSetId, { mid: Note; high: Note; count: Note }
 	 *  folk, a morning field. Count on D. */
 	meadow: { mid: 7, high: 9, count: 5 }
 };
-export const NOTE_SET_LABELS: Record<NoteSetId, string> = {
-	open: 'Open',
-	anchor: 'Anchor',
-	lantern: 'Lantern',
-	meadow: 'Meadow'
-};
+export const NOTE_SET_LABELS = labels<NoteSetId>({
+	open: m.settings_open,
+	anchor: m.settings_anchor,
+	lantern: m.settings_lantern,
+	meadow: m.settings_meadow
+});
 /** "A · B · E" — the notes, for the Settings hint. */
 export function noteSetNotes(id: NoteSetId): string {
 	const n = NOTE_SETS[id];
@@ -201,12 +192,12 @@ export function noteSetNotes(id: NoteSetId): string {
  */
 export type SwapStyle = 'off' | 'humLow' | 'humFifth' | 'humRise';
 export const SWAP_STYLES: readonly SwapStyle[] = ['off', 'humLow', 'humFifth', 'humRise'];
-export const SWAP_STYLE_LABELS: Record<SwapStyle, string> = {
-	off: 'Off',
-	humLow: 'Low',
-	humFifth: 'Fifth',
-	humRise: 'Rise'
-};
+export const SWAP_STYLE_LABELS = labels<SwapStyle>({
+	off: m.settings_off,
+	humLow: m.settings_low,
+	humFifth: m.settings_fifth,
+	humRise: m.settings_rise
+});
 
 /** What the voice, the order, the note set and the swap together select. */
 export type SoundChoice = { set: SoundSet; order: OrderId; notes: NoteSetId; swap: SwapStyle };

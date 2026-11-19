@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
 </script>
 
-<h1>Settings</h1>
+<h1>{m.settings_settings()}</h1>
 <SettingsPanel />
 
 <style>

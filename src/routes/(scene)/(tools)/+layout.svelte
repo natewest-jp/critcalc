@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { routeOf } from '$lib/i18n/paths';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { onMount, untrack } from 'svelte';
@@ -67,9 +68,9 @@
 		notices.banner({
 			key,
 			kind: 'warning',
-			lead: 'Open in another tab.',
-			body: 'This tab can view but not change anything.',
-			actions: [{ label: 'Edit here', run: editHere }],
+			lead: m.errors_open_in_another_tab(),
+			body: m.errors_this_tab_can_view_but_not_change(),
+			actions: [{ label: m.errors_edit_here(), run: editHere }],
 			dismissable: true
 		});
 		if (tool?.path === '/planner') rotationTabs.held = { editHere };
@@ -1002,8 +1003,8 @@
 
 					{#snippet failed(error, reset)}
 						<RenderCrash
-							title="This tool ran into a problem."
-							body="The rest of the site is fine, and your saved rotations and lineups are untouched."
+							title={m.errors_this_tool_ran_into_a_problem()}
+							body={m.errors_the_rest_of_the_site_is_fine_and_your()}
 							tool={feedbackToolForPath(routeOf(page.url))}
 							{error}
 							{reset}

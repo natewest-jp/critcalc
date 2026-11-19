@@ -16,12 +16,13 @@
   follows in em) and `--new-tag-overhang`.
 -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	/** Which surface it stands on: a Library card, or a plate on the
 	 *  Builder (⚓ Nate 2026-11-11: each its own size). */
 	let { on }: { on: 'library' | 'builder' } = $props();
 </script>
 
-<span class="new-tag new-tag--{on}">New</span>
+<span class="new-tag new-tag--{on}">{m.chrome_new()}</span>
 
 <style>
 	.new-tag {

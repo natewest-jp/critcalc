@@ -14,6 +14,8 @@
 import { characterIndex, inTheWorks } from '$lib/data/characterIndex.generated';
 import { currentAbyss, currentSeason } from '$lib/endgame';
 import { currentTheater } from '$lib/theater';
+import { htmlLang } from '$lib/i18n/locale';
+import { m } from '$lib/paraglide/messages';
 
 /** One quieter line under the headline — its fine print, optionally a link.
  *  `parts` are joined by " · " on a wide screen; on a phone each takes its own
@@ -50,7 +52,7 @@ function announcementsAt(now: Date): Announcement[] {
 	return [
 		{
 			id: 'current-7-2',
-			text: 'Data current to Genshin Impact 7.2',
+			text: m.landing_data_current_to_genshin_impact_version({ version: '7.2' }),
 			lines: [endgameLine(now), countLine()].filter((l): l is AnnouncementLine => !!l),
 			// 7.2 went live 2026-11-04 and 7.3 is due 2026-12-16, six weeks on
 			// (`docs/library/game/release-calendar.md`). ⚠ The 7.1 entry expired
@@ -73,9 +75,9 @@ function endgameLine(now: Date): AnnouncementLine | undefined {
 	const season = currentSeason(now);
 	const theater = currentTheater(now);
 	const parts = [
-		abyss && `Spiral Abyss (${shortDate(abyss.start)})`,
-		season && `Stygian Onslaught ${season.version}`,
-		theater && `Imaginarium Theater (${monthName(theater.start)})`
+		abyss && m.landing_spiral_abyss_date({ date: shortDate(abyss.start) }),
+		season && m.landing_stygian_onslaught_version({ version: season.version }),
+		theater && m.landing_imaginarium_theater_month({ month: monthName(theater.start) })
 	].filter(Boolean);
 	return parts.length ? { parts: parts as string[], href: '/builder' } : undefined;
 }
@@ -84,13 +86,13 @@ function endgameLine(now: Date): AnnouncementLine | undefined {
  *  would show the 15th west of Greenwich). */
 function shortDate(iso: string): string {
 	const [y, m, d] = iso.split('-').map(Number);
-	return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+	return new Date(y, m - 1, d).toLocaleDateString(htmlLang(), { month: 'short', day: 'numeric' });
 }
 
 /** "November" from an ISO day, read as a LOCAL date, as `shortDate`. */
 function monthName(iso: string): string {
 	const [y, m] = iso.split('-').map(Number);
-	return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long' });
+	return new Date(y, m - 1, 1).toLocaleDateString(htmlLang(), { month: 'long' });
 }
 
 /** "117 characters modeled · 4 in progress". ⚠ The Traveler counts ONCE, as
@@ -104,8 +106,8 @@ function countLine(): AnnouncementLine {
 	// character (⚓ Nate, 2026-10-18).
 	const total = characterIndex.filter((c) => c.id !== 'blank' && !isTraveler(c.id)).length + 1;
 	const modeled = total - inTheWorks.length;
-	const parts = [`${modeled} characters modeled`];
-	if (inTheWorks.length) parts.push(`${inTheWorks.length} in progress`);
+	const parts: string[] = [m.landing_characters_modeled({ count: modeled })];
+	if (inTheWorks.length) parts.push(m.landing_count_in_progress({ count: inTheWorks.length }));
 	return { parts, href: '/coverage' };
 }
 

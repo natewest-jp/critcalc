@@ -14,6 +14,8 @@
 // chrome's "?" overlay. Tool paths and help chapter ids are deliberately the
 // same slug, which helpChapterForPath() relies on.
 
+import { m } from '$lib/paraglide/messages';
+
 export type ToolPath = '/visualizers' | '/planner' | '/builder';
 
 export type ToolInfo = {
@@ -27,8 +29,36 @@ export type ToolInfo = {
 // Order is the task narrative — build the team, plan its rotation, then the
 // reference shelf — and matches the landing hero cards left to right. Each
 // tool's send-affordance sits on the edge facing the tool it sends to.
+//
+// The names are getters, so each read asks the message for the current
+// locale: a plain string here would be read once, at module load, and freeze
+// one language for the whole prerender.
 export const TOOLS: ToolInfo[] = [
-	{ path: '/builder', title: 'Team builder', short: 'Builder' },
-	{ path: '/planner', title: 'Rotation planner', short: 'Planner' },
-	{ path: '/visualizers', title: 'Visualizers', short: 'Visualizers' }
+	{
+		path: '/builder',
+		get title() {
+			return m.chrome_team_builder();
+		},
+		get short() {
+			return m.chrome_builder();
+		}
+	},
+	{
+		path: '/planner',
+		get title() {
+			return m.chrome_rotation_planner();
+		},
+		get short() {
+			return m.chrome_planner();
+		}
+	},
+	{
+		path: '/visualizers',
+		get title() {
+			return m.chrome_visualizers();
+		},
+		get short() {
+			return m.chrome_visualizers();
+		}
+	}
 ];
