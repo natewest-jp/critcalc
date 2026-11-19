@@ -379,6 +379,7 @@ Multi-agent workflows are **pre-authorized** on this project, for the time effic
 ### ⚓ Locale priority (Nate, 2026-08-14) — SUPERSEDES the plan's flat seven-locale list
 
 **Tier 1: Simplified Chinese + Japanese.** The reasoning is _reach_, not headcount: these are the two large player populations **least likely to be able to use the site in English**. That is the correct axis and it should stay the stated one.
+**Order within Tier 1 (⚓ Nate, 2026-11-19):** Japanese first, then Simplified Chinese right after, once Japanese has shown the conversion is manageable. Japanese has a reviewer; detail in `docs/todo.md`.
 **Tier 2 (lower): European languages** — ES/FR/RU. High English-literacy overlap in the theorycrafting community specifically.
 **Tier 2 (lower): Korean** — ⚠️ Nate is unsure of Genshin's KR popularity. Don't guess; **analytics will answer it** within weeks of launch. Same for whether zh/ja users actually arrive in the numbers that justify the work.
 
