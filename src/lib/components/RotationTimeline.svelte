@@ -31,7 +31,7 @@
 	import { below, narrowForm } from '$lib/media.svelte';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { routeOf } from '$lib/i18n/paths';
 	import { menu } from '$lib/menuState.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { notices } from '$lib/notices.svelte';
@@ -1872,7 +1872,7 @@
 	// stops being the route, so on a pan away it slides out with its page
 	// rather than hanging over the next tool.
 	let docked = $derived(below('compact'));
-	let onPlanner = $derived(page.url.pathname.startsWith(resolve('/planner')));
+	let onPlanner = $derived(routeOf(page.url).startsWith('/planner'));
 	// ⚓ And never over the menu state (2026-10-27): the dock lives on <body>
 	// at z 15, so a full-screen section (z 9) opened from the planner had the
 	// collapsed strip floating over it. The menu is a shallow entry, so the
@@ -2023,7 +2023,7 @@
 		// The tooltip is portalled to <body>, so a paused page no longer hides
 		// it: an open one would float over the next tool.
 		tooltip = null;
-		if (!nav.to?.url.pathname.startsWith(resolve('/planner'))) {
+		if (!(nav.to && routeOf(nav.to.url).startsWith('/planner'))) {
 			dockOpen = false;
 			dockPlace?.(false);
 			// The transport's clock and scheduler are not effects either, so the
@@ -2033,7 +2033,7 @@
 		}
 	});
 	afterNavigate((nav) => {
-		if (nav.to?.url.pathname.startsWith(resolve('/planner'))) dockPlace?.(docked && !menu.open);
+		if (nav.to && routeOf(nav.to.url).startsWith('/planner')) dockPlace?.(docked && !menu.open);
 	});
 	// Opening a section folds the dock, so it comes back collapsed.
 	$effect(() => {

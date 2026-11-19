@@ -53,7 +53,6 @@
      link in the click itself would detach the <a> before its default action
      opens the tab. The rule below is for in-site paths; this href is the
      external form. -->
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <a
 	class={className}
 	{href}
@@ -64,4 +63,3 @@
 		if (onclick) setTimeout(onclick);
 	}}>{@render children()}</a
 >
-<!-- eslint-enable svelte/no-navigation-without-resolve -->

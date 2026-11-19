@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
+	import { hrefTo, routeOf } from '$lib/i18n/paths';
 	import { dev } from '$app/environment';
 	import VeilGround from '$lib/components/VeilGround.svelte';
 	import HRule from '$lib/components/HRule.svelte';
@@ -48,7 +48,7 @@
 		<!-- The chrome's lockup heads the block and IS the home link (same
 		     proportions as TopBar's .tb-logo — the mark 1.5714× the
 		     wordmark, lifted −0.18em). -->
-		<a class="brand" href={resolve('/')} aria-label="critcalc.app home">
+		<a class="brand" href={hrefTo('/')} aria-label="critcalc.app home">
 			<img src="/critcalc-logo-white.svg" alt="" />
 			<span class="wordmark">critcalc.app</span>
 		</a>
@@ -80,12 +80,12 @@
 						class="btn btn--glass ctx-glass"
 						prefill={{
 							category: 'broken',
-							tool: feedbackToolForPath(page.url.pathname),
+							tool: feedbackToolForPath(routeOf(page.url)),
 							error: `${page.status} ${page.error?.message ?? ''}`
 						}}>Report this</ReportLink
 					>
 				{:else}
-					<a class="btn btn--glass ctx-glass" href={resolve('/contribute')}>Report a problem</a>
+					<a class="btn btn--glass ctx-glass" href={hrefTo('/contribute')}>Report a problem</a>
 				{/if}
 			</div>
 		{/if}
@@ -96,7 +96,7 @@
 		<nav class="tools-nav" aria-label="Tools">
 			<ul class="tools">
 				{#each TOOLS as tool (tool.path)}
-					<li><a class="link" href={resolve(tool.path)}>{tool.title}</a></li>
+					<li><a class="link" href={hrefTo(tool.path)}>{tool.title}</a></li>
 				{/each}
 			</ul>
 		</nav>

@@ -201,7 +201,6 @@
 	beforeNavigate((nav) => {
 		const to = nav.to?.url;
 		if (nav.willUnload || !to) return;
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the address SvelteKit was already going to
 		if (hold(() => void goto(to))) nav.cancel();
 	});
 

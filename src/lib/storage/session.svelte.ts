@@ -17,6 +17,7 @@
  * says the changes are not being kept.
  */
 
+import { routeOf } from '$lib/i18n/paths';
 import {
 	boardFocus,
 	boards,
@@ -2473,9 +2474,10 @@ class StorageSession {
 		// the path is no guide: `/help/planner` over the Builder flipped the
 		// Planner's document, unseen.
 		if (document.querySelector('[data-menu-state]')) return;
-		const tool: DocTool | null = location.pathname.includes('/planner')
+		const route = routeOf(location.href);
+		const tool: DocTool | null = route.startsWith('/planner')
 			? 'planner'
-			: location.pathname.includes('/builder')
+			: route.startsWith('/builder')
 				? 'builder'
 				: null;
 		if (!tool || document.querySelector('[role="dialog"][aria-modal="true"]')) return;

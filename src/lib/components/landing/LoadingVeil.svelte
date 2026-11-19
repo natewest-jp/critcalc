@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { routeOf } from '$lib/i18n/paths';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { isToolPath } from '$lib/landing/transition';
@@ -39,7 +40,7 @@
 	onMount(() => {
 		if (!show) return;
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-		const hold = isToolPath(location.pathname) ? TOOL_HOLD_MS : SCENE_HOLD_MS;
+		const hold = isToolPath(routeOf(location.href)) ? TOOL_HOLD_MS : SCENE_HOLD_MS;
 
 		let holdTimer = 0 as ReturnType<typeof setTimeout> | 0;
 		let capTimer = 0 as ReturnType<typeof setTimeout> | 0;

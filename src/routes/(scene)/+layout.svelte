@@ -17,7 +17,7 @@
 	import { flipNotice, raiseFlipNotice } from '$lib/flipNotice.svelte';
 	import { browser, dev } from '$app/environment';
 	import { menu, rememberSurface } from '$lib/menuState.svelte';
-	import { resolve } from '$app/paths';
+	import { routeOf } from '$lib/i18n/paths';
 	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import {
@@ -45,16 +45,16 @@
 	// The site-frame chrome + footer show on the landing + static pages, never on
 	// the tool routes (they carry their own chrome). Reactive so they appear/clear
 	// as you navigate.
-	const pathname = $derived(page.url.pathname);
+	const pathname = $derived(routeOf(page.url));
 
 	// The landing or a tool, as the menu state's way back from a reload.
 	$effect(() => {
-		if (pathname === resolve('/') || isToolPath(pathname)) rememberSurface(pathname);
+		if (pathname === '/' || isToolPath(pathname)) rememberSurface(pathname);
 	});
 
 	// Set the baseline path once so cold loads on a tool URL snap layers to
 	// tool rest state on mount (no entry animation from landing → tool).
-	const initialPath = page.url.pathname;
+	const initialPath = routeOf(page.url);
 	initScenePath(initialPath);
 
 	// ⚠ TOOLS-OVER-SCENE EXPERIMENT (Nate 2026-08-05): the tool shell is
@@ -70,7 +70,7 @@
 	// below so the SSR HTML already carries the right rest-state transform/
 	// opacity — without this, paint #1 shows the layer uncentered (no
 	// translate(-50%)) or undimmed, and hydration would visibly snap it into
-	// place. Captured into consts so the bindings don't track page.url.pathname
+	// place. Captured into consts so the bindings don't track page.url
 	// reactively — once hydration runs, the WAAPI animations own these inline
 	// styles via direct el.style writes. Built from restTransform so the SSR
 	// strings stay in lockstep with the sceneLayer action, including the side-
@@ -260,7 +260,7 @@
 		restTimer = setTimeout(() => {
 			// A newer navigation re-scheduled (and un-rested) already; its own
 			// timer owns the decision — this check just guards the stale fire.
-			if (isToolPath(page.url.pathname)) sceneResting = true;
+			if (isToolPath(routeOf(page.url))) sceneResting = true;
 		}, timeUntilSettle() + REST_AFTER_SETTLE_MS);
 	}
 
@@ -302,10 +302,11 @@
 		// descend then plays behind the fading shell; heading to a content page
 		// there is no shell to hide behind, but the scene simply needs to be
 		// painted for it.
-		if (!isToolPath(nav.to.url.pathname)) sceneOccluded.set(false);
-		startSceneTransition(nav.to.url.pathname);
+		const to = routeOf(nav.to.url);
+		if (!isToolPath(to)) sceneOccluded.set(false);
+		startSceneTransition(to);
 		// After the kickoff, so timeUntilSettle() sees this leg's fresh clock.
-		scheduleRest(nav.to.url.pathname, nav.from?.url.pathname);
+		scheduleRest(to, nav.from ? routeOf(nav.from.url) : undefined);
 	});
 
 	// The brand keep-out (starPass.ts § STAR_KEEPOUT_*): hand the renderer the

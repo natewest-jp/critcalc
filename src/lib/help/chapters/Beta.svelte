@@ -7,7 +7,7 @@
 	 checking matters most), and ⛔ it still names no end date. Style guide
 	 §1.4: "I" for what is personal, "we" for modelling decisions. -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
 
@@ -22,19 +22,19 @@
 	<h2 id="report">If something looks wrong</h2>
 	<p>
 		I’ve only been able to test the site on the few devices I own, so if something doesn’t look
-		right on yours, <a href={resolve('/contribute')}>I’d like to hear about it</a>.
+		right on yours, <a href={hrefTo('/contribute')}>I’d like to hear about it</a>.
 	</p>
 	<p>
 		The character data is where I could use the most help. Every kit is curated by hand from the kit
 		text and timed against gcsim’s measured frames wherever gcsim has the character, and where a kit
 		isn’t finished the tools say so instead of guessing. The
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows how far each
+		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows how far each
 		character has gotten.
 	</p>
 	<p>
 		That said, I don’t have all characters or constellations. Calling all mains! If you see
 		something wrong with a character you know,
-		<a href={resolve('/contribute')}>Contribute</a> says how to report it.
+		<a href={hrefTo('/contribute')}>Contribute</a> says how to report it.
 		<strong>Report a problem</strong>
 		in the top bar’s <strong>?</strong> menu is the fastest way, because it sends a link to exactly what
 		you were looking at.

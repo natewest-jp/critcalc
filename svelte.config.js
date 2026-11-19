@@ -1,4 +1,35 @@
 import adapter from '@sveltejs/adapter-static';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+/**
+ * Every page in every locale but English, for the prerenderer. English is
+ * found by crawling from `*`; the other locales are linked from nowhere until
+ * Nate opens them, so the crawler would never reach them. The list is read from
+ * the route tree and the inlang project, so neither has a second copy to keep.
+ * Dev-only routes (/lab, /styleguide) are left out: they never prerender.
+ */
+function localeEntries() {
+	const { baseLocale, locales } = JSON.parse(readFileSync('project.inlang/settings.json', 'utf8'));
+	const routes = [];
+	const walk = (dir) => {
+		for (const name of readdirSync(dir)) {
+			const p = join(dir, name);
+			if (statSync(p).isDirectory()) walk(p);
+			else if (name === '+page.svelte' || name === '+page.ts') {
+				const segs = relative('src/routes', dir)
+					.split('/')
+					.filter((seg) => seg && !/^\(.*\)$/.test(seg));
+				if (segs[0] === 'lab' || segs[0] === 'styleguide') continue;
+				routes.push('/' + segs.join('/'));
+			}
+		}
+	};
+	walk('src/routes');
+	return locales
+		.filter((l) => l !== baseLocale)
+		.flatMap((l) => [...new Set(routes)].map((r) => (r === '/' ? `/${l}` : `/${l}${r}`)));
+}
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -18,7 +49,8 @@ const config = {
 		// unmatched requests, so this gives visitors the app's own error page
 		// instead of Cloudflare's generic one. All real routes are prerendered,
 		// so the fallback only ever fires for genuine not-found paths.
-		adapter: adapter({ fallback: '404.html' })
+		adapter: adapter({ fallback: '404.html' }),
+		prerender: { entries: ['*', ...localeEntries()] }
 	}
 };
 

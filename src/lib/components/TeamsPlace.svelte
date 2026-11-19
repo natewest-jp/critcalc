@@ -17,7 +17,7 @@
   team already holds a set. Strings are working copy.
 -->
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
 	import Mark from './Mark.svelte';
@@ -87,21 +87,21 @@
 	// ── Starting work from a team ───────────────────────────────────────────
 
 	/** Onto a tool: back onto it if it is underneath, else go to it. */
-	function arrive(path: string): void {
-		if (page.url.pathname.startsWith(path) && !menu.routed) menu.close();
+	function arrive(path: '/planner' | '/builder'): void {
+		if (routeOf(page.url).startsWith(path) && !menu.routed) menu.close();
 		else menu.leaveTo(path);
 	}
 
 	async function plan(t: TeamRecord): Promise<void> {
 		await storageSession.planTeam(t.slots, undefined, t.id);
-		arrive(resolve('/planner'));
+		arrive('/planner');
 	}
 
 	/** ⚓ A NEW lineup of the chosen shape, holding this team (Nate
 	 *  2026-10-23); placing a team into an existing lineup is a later design. */
 	async function newLineup(t: TeamRecord, preset: BoardPreset): Promise<void> {
 		await storageSession.create('builder', preset, t.slots, t.id);
-		arrive(resolve('/builder'));
+		arrive('/builder');
 	}
 
 	// ── Delete, confirmed by a second click ─────────────────────────────────

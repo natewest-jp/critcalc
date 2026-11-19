@@ -11,6 +11,7 @@
  */
 
 import { chapterSection, menu } from '$lib/menuState.svelte';
+import { routeOf } from '$lib/i18n/paths';
 
 let pendingFocus: string[] | null = null;
 
@@ -29,7 +30,7 @@ const PAGE_ROUTE = /^\/(about|help|contribute|privacy|settings|coverage)(\/|$)/;
 export function openCoverage(event: MouseEvent, ids: string[] = []): void {
 	if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
 		return; // a new tab: let the href work
-	if (PAGE_ROUTE.test(location.pathname)) return;
+	if (PAGE_ROUTE.test(routeOf(location.href))) return;
 	event.preventDefault();
 	pendingFocus = ids.length > 0 ? ids : null;
 	menu.show(chapterSection('about', 'coverage'));

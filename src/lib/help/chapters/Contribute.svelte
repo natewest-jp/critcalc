@@ -9,7 +9,7 @@
 	 feature requests, not player corrections — and stays in About's credits. -->
 
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 </script>
@@ -20,13 +20,11 @@
 
 <section>
 	<h2 id="report">Report a problem</h2>
-	<!-- eslint-disable svelte/no-navigation-without-resolve -- the external form -->
 	<p>
 		Reports go through the
 		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>, which
 		takes bugs, characters that behave differently from the game, ideas, and anything else.
 	</p>
-	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	<p>
 		The quickest route is <strong>Report a problem</strong> in the top bar’s
 		<strong>?</strong> menu, which opens the form with a link to what you’re looking at, so I see
@@ -39,7 +37,7 @@
 	</p>
 	<p>
 		Before reporting a missing mechanic, check the
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>. A part of a
+		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>. A part of a
 		kit the rotation planner leaves out on purpose is listed there with the reason.
 	</p>
 </section>

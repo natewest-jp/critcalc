@@ -17,7 +17,7 @@
 	import { onMount, tick } from 'svelte';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 	import { replaceState } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { hrefTo, routeOf } from '$lib/i18n/paths';
 	import { characterIndex } from '$lib/data/characterIndex.generated';
 	import { loadCharacter } from '$lib/data/characterData';
 	import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
@@ -95,7 +95,7 @@
 
 	/** True on the /coverage route itself; false inside the About overlay,
 	 *  where the URL is whatever tool the overlay floats over. */
-	const onRoute = () => location.pathname.replace(/\/$/, '').endsWith('/coverage');
+	const onRoute = () => routeOf(location.href).replace(/\/$/, '') === '/coverage';
 
 	/** The avatar's outfit and Traveler wait for mount: the prerendered HTML
 	 *  carries the defaults, and hydration does not reconcile an `<img src>`,
@@ -126,7 +126,7 @@
 
 	function showAll() {
 		pinned = [];
-		if (onRoute()) replaceState(resolve('/coverage'), {});
+		if (onRoute()) replaceState(hrefTo('/coverage'), {});
 	}
 
 	const visible = $derived.by(() => {

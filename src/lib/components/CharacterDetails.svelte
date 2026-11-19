@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { hrefTo, routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import { feedbackToolForPath } from '$lib/feedback';
 	import ReportLink from '$lib/components/ReportLink.svelte';
@@ -143,7 +143,7 @@
 				not “no”.
 				<a
 					class="link dc-stub-link"
-					href="{resolve('/coverage')}?c={entry.id}"
+					href="{hrefTo('/coverage')}?c={entry.id}"
 					onclickcapture={seeCoverage}>See coverage</a
 				>
 			</p>
@@ -153,7 +153,7 @@
 				rotation timing is approximate in the Planner.
 				<a
 					class="link dc-stub-link"
-					href="{resolve('/coverage')}?c={entry.id}"
+					href="{hrefTo('/coverage')}?c={entry.id}"
 					onclickcapture={seeCoverage}>See coverage</a
 				>
 			</p>
@@ -317,7 +317,7 @@
 			class="link"
 			prefill={{
 				category: 'character',
-				tool: feedbackToolForPath(page.url.pathname),
+				tool: feedbackToolForPath(routeOf(page.url)),
 				character: entry?.displayName ?? id,
 				constellation: entry?.noConstellations ? undefined : viewCon,
 				includeTech: true
