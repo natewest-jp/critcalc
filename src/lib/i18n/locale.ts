@@ -13,11 +13,17 @@ import { baseLocale, getLocale, type Locale } from '$lib/paraglide/runtime';
 export { baseLocale, getLocale, locales, type Locale } from '$lib/paraglide/runtime';
 
 /** `<html lang>`. Chinese is Simplified, and saying so lets the browser pick
- *  Simplified glyph forms from the system CJK font. */
-const HTML_LANG: Record<Locale, string> = { en: 'en', ja: 'ja', zh: 'zh-Hans' };
+ *  Simplified glyph forms from the system CJK font. `en-XA` is the
+ *  pseudo-locale (`./pseudo.ts`): accented English, never opened to search. */
+const HTML_LANG: Record<Locale, string> = { en: 'en', ja: 'ja', zh: 'zh-Hans', 'en-XA': 'en-XA' };
 
 /** `og:locale` wants a territory. */
-const OG_LOCALE: Record<Locale, string> = { en: 'en_US', ja: 'ja_JP', zh: 'zh_CN' };
+const OG_LOCALE: Record<Locale, string> = {
+	en: 'en_US',
+	ja: 'ja_JP',
+	zh: 'zh_CN',
+	'en-XA': 'en_XA'
+};
 
 export const htmlLang = (locale: Locale = getLocale()) => HTML_LANG[locale];
 export const ogLocale = (locale: Locale = getLocale()) => OG_LOCALE[locale];

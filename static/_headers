@@ -27,6 +27,11 @@
   X-Robots-Tag: noindex
 /zh/*
   X-Robots-Tag: noindex
+# The pseudo-locale (src/lib/i18n/pseudo.ts) is never opened.
+/en-XA
+  X-Robots-Tag: noindex
+/en-XA/*
+  X-Robots-Tag: noindex
 
 # The HTML shell must NOT be held. Cloudflare Pages' default for non-hashed
 # assets is 4h must-revalidate, which would pin a user to a stale shell for
