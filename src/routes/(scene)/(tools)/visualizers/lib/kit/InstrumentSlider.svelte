@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick, type Snippet } from 'svelte';
 	import { clamp, decimalsOf, fieldChars, formatField, parseField } from './numberField';
+	import { m } from '$lib/paraglide/messages';
 
 	/**
 	 * THE INSTRUMENT SLIDER: a label, a value you can type, and a track (the
@@ -248,7 +249,7 @@
 					spellcheck="false"
 					style:--is-chars={chars}
 					value={draft ?? restText}
-					aria-label="{aria ?? label}, type a value"
+					aria-label={m.vz_label_type_a_value({ label: aria ?? label })}
 					{disabled}
 					onpointerdown={(e) => (clickFocus = document.activeElement !== e.currentTarget)}
 					onmouseup={(e) => {

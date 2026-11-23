@@ -5,6 +5,7 @@
 	import { portal } from '$lib/actions/portal';
 	import Mark from '$lib/components/Mark.svelte';
 	import type { ReshapeRoll } from './appraise';
+	import { m } from '$lib/paraglide/messages';
 
 	/**
 	 * "TRY A RESHAPE": one reshape, played as the game plays it (Nate's
@@ -45,8 +46,8 @@
 		originalCounts: number[];
 		roll: ReshapeRoll;
 		mainName: string;
-		/** "Standard", "Advanced", "Decreed" */
-		kind: string;
+		/** The kind of reshape, by id: its name is in the title's message */
+		kind: 'standard' | 'advanced' | 'decreed';
 		/** Your stats' value on each card ("34.2 CV"), under it */
 		originalValue: string;
 		resultValue: string;
@@ -182,7 +183,7 @@
 >
 	<div class="rr-panel ctx-dark" role="dialog" aria-modal="true" aria-labelledby="rr-title">
 		<h2 class="rr-title" id="rr-title">
-			{phase === 'rolling' ? `${kind} reshape` : 'Select a result to keep'}
+			{phase === 'rolling' ? m.vz_kind_reshape({ tier: kind }) : m.vz_select_a_result_to_keep()}
 		</h2>
 		<div class="rr-pair" class:is-rolling={phase === 'rolling'}>
 			<label
@@ -195,7 +196,7 @@
 				<span class="rr-rank">{originalRank}</span>
 				<span class="rr-radio">
 					<input type="radio" name="rr-keep" value="original" bind:group={keep} />
-					Keep the original
+					{m.vz_keep_the_original()}
 				</span>
 			</label>
 			<span class="rr-arrow" aria-hidden="true"><Mark name="forwardSlim" size={14} /></span>
@@ -214,20 +215,22 @@
 				<span class="rr-rank rr-later">{resultRank}</span>
 				<span class="rr-radio rr-later" inert={phase === 'rolling'}>
 					<input type="radio" name="rr-keep" value="result" bind:group={keep} />
-					Keep the reshaped result
+					{m.vz_keep_the_reshaped_result()}
 				</span>
 			</label>
 		</div>
 		<p class="note rr-verdict rr-later">{verdict}</p>
 		<div class="rr-actions">
 			{#if phase === 'rolling'}
-				<button class="btn" onclick={toResult}>Skip</button>
+				<button class="btn" onclick={toResult}>{m.vz_skip()}</button>
 			{:else}
-				<button class="btn" onclick={onretry}><Mark name="dice" size={13} /> Try again</button>
+				<button class="btn" onclick={onretry}
+					><Mark name="dice" size={13} /> {m.vz_try_again()}</button
+				>
 				<button
 					class="btn btn--primary"
 					bind:this={confirmEl}
-					onclick={() => onclose(keep === 'result')}>Confirm</button
+					onclick={() => onclose(keep === 'result')}>{m.vz_confirm()}</button
 				>
 			{/if}
 		</div>

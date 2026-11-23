@@ -5,6 +5,7 @@
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { INSTRUMENTS, type InstrumentId } from './workspace';
+	import { m } from '$lib/paraglide/messages';
 
 	// Per-tile instrument switcher: the chip row didn't scale past five
 	// instruments, so each tile gets a compact trigger + portal listbox.
@@ -139,7 +140,7 @@
 		style:left="{menuX}px"
 		style:top="{menuY}px"
 		role="listbox"
-		aria-label="Choose instrument"
+		aria-label={m.vz_choose_instrument()}
 		tabindex="-1"
 		onkeydown={onListKeydown}
 	>
@@ -164,7 +165,7 @@
 				{#if at !== -1 && at !== slot}
 					<!-- Picking this one SWAPS the two tiles — the same exchange the
 					     bench slots make, so it wears the same mark. -->
-					<span class="ip-badge">Tile {at + 1} <Mark name="swap" size={12} /></span>
+					<span class="ip-badge">{m.vz_tile_x({ n: at + 1 })} <Mark name="swap" size={12} /></span>
 				{:else if inst.id === current}
 					<span class="ip-badge ip-badge-here"><Mark name="check" size={12} /></span>
 				{/if}

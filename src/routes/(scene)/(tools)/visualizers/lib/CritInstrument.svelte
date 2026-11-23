@@ -2,6 +2,8 @@
 	import CritHeatmap from './CritHeatmap.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import {
 		CR_MIN,
 		CR_MAX,
@@ -62,8 +64,6 @@
 	// the rolled one
 	let hoverCount = $state<number | null>(null);
 	const readCount = $derived(hoverCount ?? (rollResult ? rollCrits : null));
-
-	const hitsWord = (n: number) => (n === 1 ? 'hit' : 'hits');
 
 	// ── Geometry ───────────────────────────────────────────────────────────
 	let graphW = $state(900);
@@ -199,10 +199,19 @@
 <!-- A strip row's sentence: "k of n hits crit", what that scores, and how often.
      A snippet, because its longest case also reserves the line's room. -->
 {#snippet countLine(k: number, chance: string)}
-	{k} of {hitsPerRotation}
-	{hitsWord(hitsPerRotation)} crit:
-	<strong>{formatMultiplier(rotationMultiplier(k, hitsPerRotation, myCD))}</strong>, in {chance} of rotations.
+	<Msg
+		parts={m.vz_crit_k_of_hitsperrotation_hitsperrotation.parts({
+			k,
+			count: hitsPerRotation,
+			multiplier: formatMultiplier(rotationMultiplier(k, hitsPerRotation, myCD)),
+			chance
+		})}
+		tags={{ strong }}
+	/>
 {/snippet}
+
+{#snippet strong(text: string)}<strong>{text}</strong>{/snippet}
+{#snippet sentence(text: string)}<span class="readout-sentence">{text}</span>{/snippet}
 
 <!-- THE CRIT RATE HANDLE (design §6): its name and field where the chart
      has room for them (over the y axis's numbers, ending at the field's left
@@ -220,8 +229,8 @@
 	>
 		<InstrumentSlider
 			vertical
-			label="CRIT Rate"
-			aria="Crit rate"
+			label={m.vz_crit_crit_rate_d37f()}
+			aria={m.vz_crit_crit_rate_9bbd()}
 			bind:value={myCR}
 			min={CR_MIN}
 			max={CR_MAX}
@@ -241,7 +250,12 @@
 <div class="stage-root">
 	<div class="stage ctx-dark cv-stage">
 		<p class="readout-head stage-head cv-head">
-			{formatMultiplier(myMultiplier)}<span class="readout-sentence">average damage per hit</span>
+			<Msg
+				parts={m.vz_crit_mymultiplier_average_damage_per_hit.parts({
+					multiplier: formatMultiplier(myMultiplier)
+				})}
+				tags={{ span: sentence }}
+			/>
 		</p>
 
 		<div
@@ -259,7 +273,7 @@
 				     no-crit chance falls as hits are added, at your CRIT Rate). -->
 				<div class="cv-hits">
 					<InstrumentSlider
-						label="Hits per rotation"
+						label={m.vz_crit_hits_per_rotation()}
 						bind:value={hitsPerRotation}
 						min={HITS_MIN}
 						max={HITS_MAX}
@@ -277,10 +291,10 @@
 						class="btn btn--glass ctx-glass"
 						class:is-active={shading}
 						aria-pressed={shading}
-						title="Darkens each CRIT Rate by its chance of a whole rotation without a single crit"
+						title={m.vz_crit_darkens_each_crit_rate_by_its_chance_of()}
 						onclick={() => (shading = !shading)}
 					>
-						No-crit shading
+						{m.vz_crit_no_crit_shading()}
 					</button>
 
 					<!-- Pin: a mark and a word, the word gone where the tile is narrow.
@@ -288,13 +302,13 @@
 					<button
 						class="btn btn--glass ctx-glass cv-tool"
 						aria-pressed={!!pinned}
-						aria-label={pinned ? 'Clear pin' : 'Pin this build'}
+						aria-label={pinned ? m.vz_crit_clear_pin() : m.vz_crit_pin_this_build()}
 						onclick={() => (pinned = pinned ? null : { critRate: myCR, critDamage: myCD })}
 					>
 						<Mark name="pin" size={12} />
 						<span class="cv-stack cv-tool-word" aria-hidden="true">
-							<span class:cv-ghost={!!pinned}>Pin this build</span>
-							<span class:cv-ghost={!pinned}>Clear pin</span>
+							<span class:cv-ghost={!!pinned}>{m.vz_crit_pin_this_build()}</span>
+							<span class:cv-ghost={!pinned}>{m.vz_crit_clear_pin()}</span>
 						</span>
 					</button>
 				</div>
@@ -335,8 +349,8 @@
 					style:--stage-handle-r="{graphW - rect.x0 - rect.w - THUMB_R}px"
 				>
 					<InstrumentSlider
-						label="CRIT DMG"
-						aria="Crit damage"
+						label={m.vz_crit_crit_dmg()}
+						aria={m.vz_crit_crit_damage()}
 						bind:value={myCD}
 						min={CD_MIN}
 						max={CD_MAX}
@@ -396,8 +410,7 @@
 							font-size="10"
 							text-anchor="middle"
 						>
-							crits in {hitsPerRotation}
-							{hitsWord(hitsPerRotation)}
+							{m.vz_crit_crits_in_hitsperrotation_hitsperrotation({ count: hitsPerRotation })}
 						</text>
 					</svg>
 				{/if}
@@ -410,22 +423,21 @@
 		     In the side form this column stands beside the strip. Last, so a
 		     roll's dots grow into the space under it and move nothing. -->
 		<div class="stage-fine cv-fine">
-			<p>A hit that doesn’t crit is ×1.</p>
+			<p>{m.vz_crit_a_hit_that_doesn_t_crit_is_1()}</p>
 			<!-- The guide: one paragraph per mark, in the order the eye meets them.
 			     ⚓ TOTAL, on purpose (Nate 2026-10-02): a KQM reader takes a bare
 			     "280 CV" for artifact CV, where 280 is near impossible. -->
-			<p>The curving bands show how much your damage would increase over many rotations.</p>
+			<p>{m.vz_crit_the_curving_bands_show_how_much_your()}</p>
 			<p>
-				The solid line is every build with your {Math.round(critValue(myCR, myCD) * 100)} total crit value
-				(CV): 2 × CRIT Rate + CRIT DMG, base crit stats included. Its ring marks that budget’s best split;
-				press it to move there.
+				{m.vz_crit_the_solid_line_is_every_build_with_your({
+					cv: Math.round(critValue(myCR, myCD) * 100)
+				})}
 			</p>
-			<p>Each bar is a number of crits in one rotation. Hover or tap one to read it.</p>
+			<p>{m.vz_crit_each_bar_is_a_number_of_crits_in_one()}</p>
 			<div class="cv-rotation">
 				<button class="btn btn--glass ctx-glass cv-roll" onclick={rollIt}>
 					<Mark name="dice" size={12} />
-					Roll {hitsPerRotation}
-					{hitsWord(hitsPerRotation)}
+					{m.vz_crit_roll_hitsperrotation_hitsperrotation({ count: hitsPerRotation })}
 				</button>
 				<p class="cv-stack" aria-live="polite">
 					<span>
@@ -443,19 +455,26 @@
 									{/each}
 								</span>
 							{/key}
-							{rollCrits} of {rollResult.length}
-							{hitsWord(rollResult.length)} crit:
-							<strong
-								>{formatMultiplier(rotationMultiplier(rollCrits, rollResult.length, myCD))}</strong
-							>
-							this time.
+							<Msg
+								parts={m.vz_crit_rollcrits_of_length_length_crit_mycd.parts({
+									k: rollCrits,
+									count: rollResult.length,
+									multiplier: formatMultiplier(
+										rotationMultiplier(rollCrits, rollResult.length, myCD)
+									)
+								})}
+								tags={{ strong }}
+							/>
 						{:else}
-							On average {averageCrits.toFixed(1)} of {hitsPerRotation}
-							{hitsWord(hitsPerRotation)} crit, and {formatChance(zeroCritRisk)} of rotations never crit.
+							{m.vz_crit_on_average_x_of_hitsperrotation({
+								average: averageCrits.toFixed(1),
+								count: hitsPerRotation,
+								chance: formatChance(zeroCritRisk)
+							})}
 						{/if}
 					</span>
 					<span class="cv-ghost" aria-hidden="true">
-						On average 59.4 of 60 hits crit, and &lt;0.1% of rotations never crit.
+						{m.vz_crit_on_average_59_4_of_60_hits_crit_and_0_1()}
 					</span>
 				</p>
 			</div>
