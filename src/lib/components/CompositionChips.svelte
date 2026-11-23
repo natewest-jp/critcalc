@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	/**
 	 * CompositionChips — what a TEAM is, in three kinds of chip (lineups design
 	 * §3): its resonance, the reactions its elements can make, its factions.
@@ -50,9 +51,9 @@
 	const factions = $derived.by(() => {
 		const c = deriveTeamComposition(members);
 		const out: string[] = [];
-		if (c.hasAscendantGleam) out.push('Ascendant Gleam');
-		if (c.hasSecretRite) out.push('Secret Rite');
-		if (c.natlanCount >= 2) out.push(`Natlan ×${c.natlanCount}`);
+		if (c.hasAscendantGleam) out.push(m.tb_ascendant_gleam());
+		if (c.hasSecretRite) out.push(m.tb_secret_rite());
+		if (c.natlanCount >= 2) out.push(m.tb_natlan_natlancount({ count: c.natlanCount }));
 		return out;
 	});
 </script>

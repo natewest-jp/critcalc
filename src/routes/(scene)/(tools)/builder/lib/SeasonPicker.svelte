@@ -9,6 +9,8 @@
 	 * opaque slate menu) rather than the platform's select (Nate 2026-10-09).
 	 */
 	import Mark from '$lib/components/Mark.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import NewTag from '$lib/components/NewTag.svelte';
 	import {
@@ -64,7 +66,7 @@
 		return c && { id: c.start, name: inLang(c.name), start: c.start, end: c.end };
 	});
 	const fmtDay = (iso: string) =>
-		new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
+		new Date(`${iso}T00:00:00Z`).toLocaleDateString(getLocale(), {
 			month: 'short',
 			day: 'numeric',
 			timeZone: 'UTC'
@@ -81,9 +83,11 @@
 	<span class="sp-host" onclick={onOpen}>
 		<BandMenu
 			glass
-			ariaLabel="{kind === 'stygian' ? 'Season' : 'Cycle'}: {c.name}, {fmtDay(c.start)} – {fmtDay(
-				c.end
-			)}"
+			ariaLabel={(kind === 'stygian' ? m.tb_season_name_start_end : m.tb_cycle_name_start_end)({
+				name: c.name,
+				start: fmtDay(c.start),
+				end: fmtDay(c.end)
+			})}
 			align="start"
 		>
 			{#snippet face()}<span class="sp-face"

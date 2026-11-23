@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import InspectModal from '$lib/components/InspectModal.svelte';
 	/**
 	 * A battlefield's boss, in full (Nate 2026-10-09) — opened from the
@@ -87,7 +88,9 @@
 	<header class="bd-hero">
 		<img class="bd-art" src={bossImage(battlefield.boss, 'art')} alt="" />
 		<div class="bd-hero-text">
-			<p class="kicker bd-kicker">Battlefield {index + 1} · Stygian Onslaught {season.version}</p>
+			<p class="kicker bd-kicker">
+				{m.tb_battlefield_x_stygian_onslaught_version({ n: index + 1, version: season.version })}
+			</p>
 			<h2 class="bd-title">{cut > 0 ? fullName.slice(0, cut) : fullName}</h2>
 			{#if cut > 0}<p class="bd-family">{fullName.slice(cut + 2)}</p>{/if}
 			{#if battlefield.checks.length}
@@ -104,11 +107,11 @@
 	     difficulties. -->
 		<div class="panel panel--paper bd-card">
 			<div class="bd-hp">
-				<span class="bd-hp-label">Fearless HP</span>
+				<span class="bd-hp-label">{m.tb_fearless_hp()}</span>
 				<span class="bd-hp-value">{hp(battlefield.hp.fearless)}</span>
 			</div>
 			<div class="bd-hp">
-				<span class="bd-hp-label">Dire HP</span>
+				<span class="bd-hp-label">{m.tb_dire_hp()}</span>
 				<span class="bd-hp-value">{hp(battlefield.hp.dire)}</span>
 			</div>
 		</div>
@@ -118,10 +121,10 @@
      seasons beside them — what a player reads vs what they glance at. -->
 	<div class="bd-body">
 		<div class="bd-mechs">
-			{#each text?.mechanics ?? [] as m, i (i)}
+			{#each text?.mechanics ?? [] as mech, i (i)}
 				<section class="bd-mech">
-					<h3>{inLang(m.name)}</h3>
-					{#each inLang(m.text).split('\n') as para, j (j)}
+					<h3>{inLang(mech.name)}</h3>
+					{#each inLang(mech.text).split('\n') as para, j (j)}
 						<p>
 							{#each runs(para) as r, k (k)}{#if r.strong}<strong>{r.t}</strong
 									>{:else}{r.t}{/if}{/each}
@@ -137,7 +140,9 @@
 			{/each}
 			{#if otherRuns.length}
 				<p class="bd-runs">
-					Also in Stygian Onslaught {otherRuns.map((s) => s.version).join(', ')}
+					{m.tb_also_in_stygian_onslaught_x({
+						versions: otherRuns.map((s) => s.version).join(', ')
+					})}
 				</p>
 			{/if}
 		</aside>

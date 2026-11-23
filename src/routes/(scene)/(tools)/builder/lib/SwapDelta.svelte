@@ -13,6 +13,7 @@
 	import FingerprintGlyph from '$lib/components/FingerprintGlyph.svelte';
 	import CheckChip from './CheckChip.svelte';
 	import type { DeltaItem } from './team';
+	import { m } from '$lib/paraglide/messages';
 
 	let { items }: { items: DeltaItem[] } = $props();
 
@@ -22,7 +23,7 @@
 <span class="sd">
 	{#each items as item, i (i)}
 		<span class="sd-item" class:sd-gain={item.sign > 0} class:sd-loss={item.sign < 0}>
-			<span class="sd-sign" aria-label={item.sign > 0 ? 'Gains' : 'Loses'}
+			<span class="sd-sign" aria-label={item.sign > 0 ? m.tb_gains() : m.tb_loses()}
 				>{item.sign > 0 ? '+' : '−'}</span
 			>
 			{#if item.kind === 'facet'}
