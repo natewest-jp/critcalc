@@ -37,6 +37,7 @@
 	import { MODE_NAME, THEATER_SEASONS } from '$lib/theater';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { htmlLang } from '$lib/i18n/locale';
 
 	let { place }: { place: DocTool } = $props();
 
@@ -254,7 +255,8 @@
 		const lead = (i: number) => {
 			const boss = season?.battlefields[i]?.boss;
 			if (boss) return { boss, name: inLang(BOSSES[boss]?.name ?? { en: boss }) };
-			if (body.preset === 'abyss' && i < 2) return { tag: i === 0 ? '1st' : '2nd' };
+			if (body.preset === 'abyss' && i < 2)
+				return { tag: i === 0 ? m.library_first_half() : m.library_second_half() };
 			return { tag: String(i + 1) };
 		};
 		const mode = BOARD_PRESETS.find((p) => p.key === body.preset)?.label ?? '';
@@ -335,7 +337,7 @@
 	}
 
 	const fmtDay = (iso: string) =>
-		new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
+		new Date(`${iso}T00:00:00Z`).toLocaleDateString(htmlLang(), {
 			month: 'short',
 			day: 'numeric',
 			timeZone: 'UTC'
@@ -350,7 +352,7 @@
 	/** A running cycle's dates, "Nov 11 – Dec 23". */
 	function cycleDates(kind: Endgame): string {
 		const c = runningCycle(kind);
-		return c ? `${fmtDay(c.start)} – ${fmtDay(c.end)}` : '';
+		return c ? m.library_date_range({ start: fmtDay(c.start), end: fmtDay(c.end) }) : '';
 	}
 
 	/** A new cycle the reader hasn't acknowledged yet. */

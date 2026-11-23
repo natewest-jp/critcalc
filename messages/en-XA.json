@@ -653,5 +653,8 @@
 	"teams_delete_click_again_to_confirm": "⟦Ðéļéţé: çļîçķ åĝåîñ ţö çöñƒîŕɱ ōñé ţŵö ţĥŕéé⟧",
 	"teams_delete_t": "⟦Ðéļéţé {name} ōñé⟧",
 	"teams_delete": "⟦Ðéļéţé ōñé⟧",
-	"teams_id_open_the_team_on_slot_x": "⟦{name}: öþéñ ţĥé ţéåɱ öñ šļöţ {n} ōñé ţŵö⟧"
+	"teams_id_open_the_team_on_slot_x": "⟦{name}: öþéñ ţĥé ţéåɱ öñ šļöţ {n} ōñé ţŵö⟧",
+	"library_first_half": "⟦1šţ ōñé⟧",
+	"library_second_half": "⟦2ñð ōñé⟧",
+	"library_date_range": "⟦{start} – {end} ōñé⟧"
 }

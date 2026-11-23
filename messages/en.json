@@ -653,5 +653,8 @@
 	"teams_delete_click_again_to_confirm": "Delete: click again to confirm",
 	"teams_delete_t": "Delete {name}",
 	"teams_delete": "Delete",
-	"teams_id_open_the_team_on_slot_x": "{name}: open the team on slot {n}"
+	"teams_id_open_the_team_on_slot_x": "{name}: open the team on slot {n}",
+	"library_first_half": "1st",
+	"library_second_half": "2nd",
+	"library_date_range": "{start} – {end}"
 }
