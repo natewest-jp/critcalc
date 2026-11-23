@@ -52,8 +52,9 @@ const OFF_FIELD_WORD: Record<string, string> = {
 	get coordinatedAttack() {
 		return m.tb_coordinated_attack();
 	},
-	// Still English: lowercase "summon" would mint `tb_summon`, the key "Summon" holds.
-	summon: 'summon'
+	get summon() {
+		return m.tb_summon_b52a();
+	}
 };
 
 /** Human label for a capability's `detail` — buff stats via the planner's

@@ -73,13 +73,8 @@
 	"landing_imaginarium_theater_month": "Imaginarium Theater ({month})",
 	"landing_characters_modeled": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} character modeled",
 				"countPlural=other": "{count} characters modeled"
@@ -138,14 +133,8 @@
 	"settings_no_profiles_of_your_own": "no profiles of your own",
 	"settings_count_profiles": [
 		{
-			"declarations": [
-				"input count",
-				"input names",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "input names", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} profile ({names})",
 				"countPlural=other": "{count} profiles ({names})"
@@ -154,13 +143,8 @@
 	],
 	"settings_count_rotations": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} rotation",
 				"countPlural=other": "{count} rotations"
@@ -169,13 +153,8 @@
 	],
 	"settings_count_lineups": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} lineup",
 				"countPlural=other": "{count} lineups"
@@ -184,13 +163,8 @@
 	],
 	"settings_count_teams": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} team",
 				"countPlural=other": "{count} teams"
@@ -239,13 +213,8 @@
 	"settings_last_backup_when": "Last backup: {#value}{when}{/value}.",
 	"settings_saved_since": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{#value}{count} saved item{/value} has changed since.",
 				"countPlural=other": "{#value}{count} saved items{/value} have changed since."
@@ -452,13 +421,8 @@
 	"trash_deleted_yesterday": "Deleted yesterday",
 	"trash_deleted_days_ago": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Deleted {count} day ago",
 				"countPlural=other": "Deleted {count} days ago"
@@ -468,13 +432,8 @@
 	"trash_cleared_tomorrow": "Cleared tomorrow",
 	"trash_days_left": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} day left",
 				"countPlural=other": "{count} days left"
@@ -492,13 +451,8 @@
 	"trash_restoring_anything_of_name_s_brings_the": "Restoring anything of {name}’s brings the profile back too.",
 	"trash_count_teams": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} team",
 				"countPlural=other": "{count} teams"
@@ -523,13 +477,8 @@
 	"library_yesterday": "Yesterday",
 	"library_days_ago": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} day ago",
 				"countPlural=other": "{count} days ago"
@@ -555,13 +504,8 @@
 	"library_more_more": "+{count} more",
 	"library_more_teams": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "+{count} more team",
 				"countPlural=other": "+{count} more teams"
@@ -809,13 +753,8 @@
 	"coverage_least_covered_first": "Least covered first",
 	"coverage_showing_length_characters_from_the": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Showing {count} character from the rotation planner.",
 				"countPlural=other": "Showing {count} characters from the rotation planner."
@@ -904,13 +843,8 @@
 	"planner_cooldown": "Cooldown",
 	"planner_charges_charges": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "· {count} charge",
 				"countPlural=other": "· {count} charges"
@@ -924,15 +858,8 @@
 	"planner_always_on_for_the_whole_rotation": "Always on, for the whole rotation",
 	"planner_tip_on_on_on_on_the_team_start_s_to_end": [
 		{
-			"declarations": [
-				"input who",
-				"input name",
-				"input start",
-				"input end"
-			],
-			"selectors": [
-				"who"
-			],
+			"declarations": ["input who", "input name", "input start", "input end"],
+			"selectors": ["who"],
 			"match": {
 				"who=team": "On the team · {start}s to {end}s",
 				"who=*": "On {name} · {start}s to {end}s"
@@ -961,14 +888,8 @@
 	"planner_pushed_out_by_a_newer_core": "pushed out by a newer core",
 	"planner_human_timing_f_frames_s_s_after_the_swap": [
 		{
-			"declarations": [
-				"input frames",
-				"input seconds",
-				"local framesPlural = frames: plural"
-			],
-			"selectors": [
-				"framesPlural"
-			],
+			"declarations": ["input frames", "input seconds", "local framesPlural = frames: plural"],
+			"selectors": ["framesPlural"],
 			"match": {
 				"framesPlural=one": "Human timing: {frames} frame ({seconds}s) after the swap — nothing buffers until the new character appears.",
 				"framesPlural=other": "Human timing: {frames} frames ({seconds}s) after the swap — nothing buffers until the new character appears."
@@ -983,10 +904,7 @@
 				"input seconds",
 				"local framesPlural = frames: plural"
 			],
-			"selectors": [
-				"after",
-				"framesPlural"
-			],
+			"selectors": ["after", "framesPlural"],
 			"match": {
 				"after=normal, framesPlural=one": "Human timing: {frames} frame ({seconds}s) after a normal attack, before an input the game does not buffer.",
 				"after=normal, framesPlural=other": "Human timing: {frames} frames ({seconds}s) after a normal attack, before an input the game does not buffer.",
@@ -1036,13 +954,8 @@
 	"planner_characterid_time_s": "{name} · {seconds}s",
 	"planner_x_x_applied": [
 		{
-			"declarations": [
-				"input element",
-				"input name"
-			],
-			"selectors": [
-				"element"
-			],
+			"declarations": ["input element", "input name"],
+			"selectors": ["element"],
 			"match": {
 				"element=pyro": "Pyro applied",
 				"element=hydro": "Hydro applied",
@@ -1058,13 +971,8 @@
 	"planner_on_this_frame": "On this frame",
 	"planner_sameframe_applications": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} application",
 				"countPlural=other": "{count} applications"
@@ -1233,13 +1141,8 @@
 	"planner_f_is_the_finisher_of_a_spinning_charged": "F is the finisher of a spinning Charged Attack — {name}'s doesn't spin.",
 	"planner_only_a_bow_can_take_an_aimed_shot": [
 		{
-			"declarations": [
-				"input weapon",
-				"input name"
-			],
-			"selectors": [
-				"weapon"
-			],
+			"declarations": ["input weapon", "input name"],
+			"selectors": ["weapon"],
 			"match": {
 				"weapon=sword": "Only a bow can take an aimed shot — {name} wields a sword.",
 				"weapon=claymore": "Only a bow can take an aimed shot — {name} wields a claymore.",
@@ -1418,13 +1321,8 @@
 	"vz_gauge_add_e": "Add {element}",
 	"vz_gauge_max_apps_applications_is_the_most": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} application is the most",
 				"countPlural=other": "{count} applications is the most"
@@ -1460,13 +1358,8 @@
 	"vz_icd_applies_of_every_of": "{applies} of every {total}",
 	"vz_icd_n_th": [
 		{
-			"declarations": [
-				"input n",
-				"local nOrdinal = n: plural type=ordinal"
-			],
-			"selectors": [
-				"nOrdinal"
-			],
+			"declarations": ["input n", "local nOrdinal = n: plural type=ordinal"],
+			"selectors": ["nOrdinal"],
 			"match": {
 				"nOrdinal=one": "{n}st",
 				"nOrdinal=two": "{n}nd",
@@ -1489,9 +1382,7 @@
 				"input left",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countPlural"
-			],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "This window's {count} application is used up until the timer from hit {hit} runs out, in {left}.",
 				"countPlural=other": "This window's {count} applications are used up until the timer from hit {hit} runs out, in {left}."
@@ -1665,13 +1556,8 @@
 	"vz_wish_at_most_worst": "at most {worst}",
 	"vz_wish_n_pulls": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} pull",
 				"countPlural=other": "{count} pulls"
@@ -1848,13 +1734,8 @@
 	"tb_you_own_c_chip": "You own C{chip}",
 	"tb_hidden_more_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} more capability",
 				"countPlural=other": "{count} more capabilities"
@@ -1884,13 +1765,8 @@
 	"tb_cooldown_s_cooldown": "{seconds}s cooldown",
 	"tb_charges_charges": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "· {count} charge",
 				"countPlural=other": "· {count} charges"
@@ -1913,13 +1789,8 @@
 	"tb_roles_1_selected": "Roles: 1 selected",
 	"tb_count_character_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} character",
 				"countPlural=other": "{count} characters"
@@ -1955,13 +1826,8 @@
 	"tb_name": "Name",
 	"tb_n_character_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} character",
 				"countPlural=other": "{count} characters"
@@ -1970,13 +1836,8 @@
 	],
 	"tb_hide_the_on_field_characters": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Hide the on-field character",
 				"countPlural=other": "Hide the on-field characters"
@@ -1985,13 +1846,8 @@
 	],
 	"tb_hide_the_off_field_characters": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Hide the off-field character",
 				"countPlural=other": "Hide the off-field characters"
@@ -2000,13 +1856,8 @@
 	],
 	"tb_show_count_on_field_characters_too": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Show {count} on-field character too",
 				"countPlural=other": "Show {count} on-field characters too"
@@ -2015,13 +1866,8 @@
 	],
 	"tb_show_count_off_field_characters_too": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Show {count} off-field character too",
 				"countPlural=other": "Show {count} off-field characters too"
@@ -2031,13 +1877,8 @@
 	"tb_undo": "Undo",
 	"tb_marked_n_owned": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Marked {count} character owned",
 				"countPlural=other": "Marked {count} characters owned"
@@ -2046,13 +1887,8 @@
 	],
 	"tb_marked_n_owned_at_c6": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Marked {count} character owned at C6",
 				"countPlural=other": "Marked {count} characters owned at C6"
@@ -2061,13 +1897,8 @@
 	],
 	"tb_marked_n_not_owned": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Marked {count} character not owned",
 				"countPlural=other": "Marked {count} characters not owned"
@@ -2133,13 +1964,8 @@
 	"tb_removed_label": "Removed {team}",
 	"tb_no_repeats_count_repeated_characters": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "No repeats: a repeated character left their other team",
 				"countPlural=other": "No repeats: {count} repeated characters left their other team"
@@ -2188,13 +2014,8 @@
 	"tb_blessing_level_buff_effects_increased_by": "Blessing Level buff effects increased by 100%",
 	"tb_length_character_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} character",
 				"countPlural=other": "{count} characters"
@@ -2291,13 +2112,8 @@
 	"tb_mode_mode": "Mode: {mode}",
 	"tb_acts_acts": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "{count} act",
 				"countPlural=other": "{count} acts"
@@ -2320,13 +2136,8 @@
 	"tb_extras_extra_extra_alternate_cast": "{extras}/{extra} extra Alternate Cast members have been added. Buffs based on the number of extra members added are obtained",
 	"tb_add_at_least_need_characters_to_start": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=one": "Add at least {count} character to start the show",
 				"countPlural=other": "Add at least {count} characters to start the show"
@@ -2335,5 +2146,9 @@
 	],
 	"tb_alternate_cast": "Alternate Cast",
 	"tb_gain_flowers_per_extra_fantasia_flowers": "Gain {#b}{flowers}{/b} Fantasia Flowers",
-	"tb_gain_blessinglevels_blessing_level_s": "Gain {#b}{levels}{/b} Blessing Level(s): Increases Max HP by {#b}{hp}{/b}, ATK by {#b}{atk}{/b}, DEF by {#b}{def}{/b}, and Elemental Mastery by {#b}{em}{/b}."
+	"tb_gain_blessinglevels_blessing_level_s": "Gain {#b}{levels}{/b} Blessing Level(s): Increases Max HP by {#b}{hp}{/b}, ATK by {#b}{atk}{/b}, DEF by {#b}{def}{/b}, and Elemental Mastery by {#b}{em}{/b}.",
+	"tb_wishlist_10b4": "wishlist",
+	"tb_constellation_7af5": "constellation",
+	"tb_undo_5c6f": "undo",
+	"tb_summon_b52a": "summon"
 }

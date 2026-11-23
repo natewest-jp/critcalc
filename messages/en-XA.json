@@ -2146,5 +2146,9 @@
 	],
 	"tb_alternate_cast": "⟦Åļţéŕñåţé Çåšţ ōñé ţŵö⟧",
 	"tb_gain_flowers_per_extra_fantasia_flowers": "⟦Ĝåîñ {#b}{flowers}{/b} Ƒåñţåšîå Ƒļöŵéŕš ōñé ţŵö⟧",
-	"tb_gain_blessinglevels_blessing_level_s": "⟦Ĝåîñ {#b}{levels}{/b} Ɓļéššîñĝ Ļéṽéļ(š): Îñçŕéåšéš Ṁåẋ ĤÞ ƀý {#b}{hp}{/b}, ÅŢĶ ƀý {#b}{atk}{/b}, ÐÉƑ ƀý {#b}{def}{/b}, åñð Éļéɱéñţåļ Ṁåšţéŕý ƀý {#b}{em}{/b}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧"
+	"tb_gain_blessinglevels_blessing_level_s": "⟦Ĝåîñ {#b}{levels}{/b} Ɓļéššîñĝ Ļéṽéļ(š): Îñçŕéåšéš Ṁåẋ ĤÞ ƀý {#b}{hp}{/b}, ÅŢĶ ƀý {#b}{atk}{/b}, ÐÉƑ ƀý {#b}{def}{/b}, åñð Éļéɱéñţåļ Ṁåšţéŕý ƀý {#b}{em}{/b}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"tb_wishlist_10b4": "⟦ŵîšĥļîšţ ōñé⟧",
+	"tb_constellation_7af5": "⟦çöñšţéļļåţîöñ ōñé ţŵö⟧",
+	"tb_undo_5c6f": "⟦ûñðö ōñé⟧",
+	"tb_summon_b52a": "⟦šûɱɱöñ ōñé⟧"
 }

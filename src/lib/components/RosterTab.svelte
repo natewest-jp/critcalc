@@ -347,17 +347,15 @@
 	// ── The keys (⚓ Nate: "I want people to know the keys available to them")
 	// Key names (⌘, Ctrl, Space) are printed on the keyboard, so they stay as they are.
 	const MOD = browser && /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
-	// Still English: "wishlist", "constellation" and "undo" would mint the keys that
-	// "Wishlist", "Constellation" and "Undo" hold.
 	const KEYS: { keys: string[]; does: string }[] = [
 		{ keys: ['←', '→', '↑', '↓'], does: m.tb_move() },
 		{ keys: ['O'], does: m.tb_owned_c6dd() },
 		{ keys: ['X'], does: m.tb_not_owned_1ac4() },
 		{ keys: ['Space'], does: m.tb_owned_or_not() },
-		{ keys: ['W'], does: 'wishlist' },
+		{ keys: ['W'], does: m.tb_wishlist_10b4() },
 		{ keys: ['T'], does: m.tb_can_t_enter_theater_919b() },
-		{ keys: ['0', '–', '6'], does: 'constellation' },
-		{ keys: [MOD, 'Z'], does: 'undo' }
+		{ keys: ['0', '–', '6'], does: m.tb_constellation_7af5() },
+		{ keys: [MOD, 'Z'], does: m.tb_undo_5c6f() }
 	];
 
 	// ── Keyboard (roving focus over the shown tiles) ─────────────────────────
