@@ -20,6 +20,8 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	type FamilyId = 'all' | 'amplifying' | 'transformative' | 'additive' | 'lunar' | 'crystallize';
 	/** What a curve's reading is built from: its value formatted, the boost as a
@@ -46,6 +48,7 @@
 		label: string;
 		/** The family's explainer, in the fine print. */
 		note: string;
+		/** Never translated: a formula reads the same in every locale. */
 		formula?: string;
 		caveat?: string;
 		yLabel: string;
@@ -56,256 +59,253 @@
 	}[] = [
 		{
 			id: 'all',
-			label: 'All families',
-			note: 'How much EM boosts each family.',
-			yLabel: 'boost from EM',
-			rowHead: 'Family',
+			label: m.vz_rc_all_families(),
+			note: m.vz_rc_how_much_em_boosts_each_family(),
+			yLabel: m.vz_rc_boost_from_em(),
+			rowHead: m.vz_rc_family(),
 			usesLevel: false,
 			// ordered by height at the right edge, so the table reads like the chart
 			curves: [
 				{
-					label: 'Transformative',
-					noun: 'Transformative boost',
-					detail: 'Overloaded · Swirl · Bloom · Hyperbloom',
+					label: m.vz_rc_transformative(),
+					noun: m.vz_rc_transformative_boost(),
+					detail: m.vz_rc_overloaded_swirl_bloom_hyperbloom(),
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, _lv, rb) => (emBonus(TRANSFORMATIVE_CURVE, em) + rb) * 100,
-					read: (c) => `Transformative reactions would deal ${c.times} times their base damage.`
+					read: (c) => m.vz_rc_transformative_reactions_would_deal({ times: c.times })
 				},
 				{
-					label: 'Additive',
-					noun: 'Additive boost',
-					detail: 'Spread · Aggravate',
+					label: m.vz_rc_additive(),
+					noun: m.vz_rc_additive_boost(),
+					detail: m.vz_rc_spread_aggravate(),
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, _lv, rb) => (emBonus(ADDITIVE_CURVE, em) + rb) * 100,
-					read: (c) => `Spread and Aggravate would add ${c.times} times their base damage.`
+					read: (c) => m.vz_rc_spread_and_aggravate_would_add_times({ times: c.times })
 				},
 				{
-					label: 'Lunar & Stellar',
-					noun: 'Lunar and Stellar boost',
-					detail: 'Lunar-Charged · Lunar-Crystallize · Stellar Swirl',
+					label: m.vz_rc_lunar_stellar(),
+					noun: m.vz_rc_lunar_and_stellar_boost(),
+					detail: m.vz_rc_lunar_charged_lunar_crystallize_stellar(),
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
 					value: (em, _lv, rb) => (emBonus(SPECIAL_CURVE, em) + rb) * 100,
-					read: (c) => `Lunar and Stellar reactions would deal ${c.times} times their base damage.`
+					read: (c) => m.vz_rc_lunar_and_stellar_reactions_would_deal({ times: c.times })
 				},
 				{
-					label: 'Crystallize',
-					noun: 'Crystallize shield boost',
-					detail: 'Shield',
+					label: m.vz_rc_crystallize(),
+					noun: m.vz_rc_crystallize_shield_boost(),
+					detail: m.vz_rc_shield(),
 					color: 'var(--el-geo-main)',
 					em: null,
 					value: (em) => emBonus(CRYSTALLIZE_CURVE, em) * 100,
-					read: (c) => `A Crystallize shield would be ${c.times} times its base strength.`
+					read: (c) => m.vz_rc_a_crystallize_shield_would_be_times({ times: c.times })
 				},
 				{
-					label: 'Amplifying',
-					noun: 'Amplifying boost',
-					detail: 'Vaporize · Melt',
+					label: m.vz_rc_amplifying(),
+					noun: m.vz_rc_amplifying_boost(),
+					detail: m.vz_rc_vaporize_melt(),
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => (emBonus(AMP_CURVE, em) + rb) * 100,
 					read: (c) =>
-						`A forward Vaporize or Melt would multiply the hit by ×${(2 * (1 + c.boost)).toFixed(2)} instead of ×2, and a reverse one by ×${(1.5 * (1 + c.boost)).toFixed(2)} instead of ×1.5.`
+						m.vz_rc_a_forward_vaporize_or_melt_would_78d1({
+							forward: (2 * (1 + c.boost)).toFixed(2),
+							reverse: (1.5 * (1 + c.boost)).toFixed(2)
+						})
 				}
 			]
 		},
 		{
 			id: 'amplifying',
-			label: 'Amplifying',
-			note: 'Vaporize and Melt multiply the whole hit. Level plays no part, because the hit already scales with everything else.',
+			label: m.vz_rc_amplifying(),
+			note: m.vz_rc_vaporize_and_melt_multiply_the_whole_hit(),
 			formula: '2.78·EM/(1400+EM)',
-			yLabel: 'hit multiplier',
-			rowHead: 'Reaction',
+			yLabel: m.vz_rc_hit_multiplier(),
+			rowHead: m.vz_rc_reaction(),
 			usesLevel: false,
 			curves: [
 				{
-					label: 'Forward ×2',
-					noun: 'forward Vaporize or Melt multiplier',
-					detail: 'Hydro on Pyro Vaporize · Pyro on Cryo Melt',
+					label: m.vz_rc_forward_2(),
+					noun: m.vz_rc_forward_vaporize_or_melt_multiplier(),
+					detail: m.vz_rc_hydro_on_pyro_vaporize_pyro_on_cryo_melt(),
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => ampMultiplier(2, em, rb),
-					read: (c) => `A forward Vaporize or Melt would multiply its hit by ${c.v}.`
+					read: (c) => m.vz_rc_a_forward_vaporize_or_melt_would_6b58({ value: c.v })
 				},
 				{
-					label: 'Reverse ×1.5',
-					noun: 'reverse Vaporize or Melt multiplier',
-					detail: 'Pyro on Hydro Vaporize · Cryo on Pyro Melt',
+					label: m.vz_rc_reverse_1_5(),
+					noun: m.vz_rc_reverse_vaporize_or_melt_multiplier(),
+					detail: m.vz_rc_pyro_on_hydro_vaporize_cryo_on_pyro_melt(),
 					color: 'var(--el-cryo-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => ampMultiplier(1.5, em, rb),
-					read: (c) => `A reverse Vaporize or Melt would multiply its hit by ${c.v}.`
+					read: (c) => m.vz_rc_a_reverse_vaporize_or_melt_would({ value: c.v })
 				}
 			]
 		},
 		{
 			id: 'transformative',
-			label: 'Transformative',
-			note: 'Damage from the character’s level and EM alone. For most characters, crit, ATK, and DMG% do nothing.',
+			label: m.vz_rc_transformative(),
+			note: m.vz_rc_damage_from_the_character_s_level_and_em(),
 			formula: '16·EM/(2000+EM)',
-			yLabel: 'damage',
-			rowHead: 'Reaction',
+			yLabel: m.vz_rc_damage(),
+			rowHead: m.vz_rc_reaction(),
 			usesLevel: true,
 			curves: [
 				{
-					label: 'Hyperbloom · Burgeon · Shatter',
-					noun: 'Hyperbloom, Burgeon, or Shatter damage',
+					label: m.vz_rc_hyperbloom_burgeon_shatter(),
+					noun: m.vz_rc_hyperbloom_burgeon_or_shatter_damage(),
 					detail: '×3',
 					color: 'var(--el-dendro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(3, lv, em, rb),
-					read: (c) =>
-						`A Hyperbloom, Burgeon, or Shatter hit would deal ${c.v} damage before enemy RES.`
+					read: (c) => m.vz_rc_a_hyperbloom_burgeon_or_shatter_hit({ value: c.v })
 				},
 				{
-					label: 'Overloaded',
-					noun: 'Overloaded damage',
+					label: m.vz_rc_overloaded(),
+					noun: m.vz_rc_overloaded_damage(),
 					detail: '×2.75',
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(2.75, lv, em, rb),
-					read: (c) => `An Overloaded explosion would deal ${c.v} damage before enemy RES.`
+					read: (c) => m.vz_rc_an_overloaded_explosion_would_deal_v({ value: c.v })
 				},
 				{
-					label: 'Electro-Charged · Bloom',
-					noun: 'Electro-Charged or Bloom damage',
-					detail: '×2, Electro-Charged per tick',
+					label: m.vz_rc_electro_charged_bloom(),
+					noun: m.vz_rc_electro_charged_or_bloom_damage(),
+					detail: m.vz_rc_2_electro_charged_per_tick(),
 					color: 'var(--el-electro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(2, lv, em, rb),
-					read: (c) =>
-						`An Electro-Charged tick or a Bloom would deal ${c.v} damage before enemy RES.`
+					read: (c) => m.vz_rc_an_electro_charged_tick_or_a_bloom_would({ value: c.v })
 				},
 				{
-					label: 'Superconduct',
-					noun: 'Superconduct damage',
+					label: m.vz_rc_superconduct(),
+					noun: m.vz_rc_superconduct_damage(),
 					detail: '×1.5',
 					color: 'var(--el-cryo-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(1.5, lv, em, rb),
-					read: (c) => `A Superconduct hit would deal ${c.v} damage before enemy RES.`
+					read: (c) => m.vz_rc_a_superconduct_hit_would_deal_v_damage({ value: c.v })
 				},
 				{
-					label: 'Swirl',
-					noun: 'Swirl damage',
+					label: m.vz_rc_swirl(),
+					noun: m.vz_rc_swirl_damage(),
 					detail: '×0.6',
 					color: 'var(--el-anemo-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(0.6, lv, em, rb),
-					read: (c) => `A Swirl hit would deal ${c.v} damage before enemy RES.`
+					read: (c) => m.vz_rc_a_swirl_hit_would_deal_v_damage_before({ value: c.v })
 				},
 				{
-					label: 'Burning',
-					noun: 'damage per Burning tick',
-					detail: '×0.25 per tick',
+					label: m.vz_rc_burning(),
+					noun: m.vz_rc_damage_per_burning_tick(),
+					detail: m.vz_rc_0_25_per_tick(),
 					color: 'var(--rx-burning)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(0.25, lv, em, rb),
-					read: (c) => `Each Burning tick would deal ${c.v} damage before enemy RES.`
+					read: (c) => m.vz_rc_each_burning_tick_would_deal_v_damage({ value: c.v })
 				}
 			]
 		},
 		{
 			id: 'additive',
-			label: 'Additive',
-			note: 'Flat damage added to the hit that triggers it, which then crits and scales with DMG% along with the hit.',
+			label: m.vz_rc_additive(),
+			note: m.vz_rc_flat_damage_added_to_the_hit_that(),
 			formula: '5·EM/(1200+EM)',
-			caveat: 'Before enemy RES.',
-			yLabel: 'flat DMG added',
-			rowHead: 'Reaction',
+			caveat: m.vz_rc_before_enemy_res(),
+			yLabel: m.vz_rc_flat_dmg_added(),
+			rowHead: m.vz_rc_reaction(),
 			usesLevel: true,
 			curves: [
 				{
-					label: 'Spread',
-					noun: 'Spread damage',
-					detail: '×1.25, a Dendro hit on Quicken',
+					label: m.vz_rc_spread(),
+					noun: m.vz_rc_spread_damage(),
+					detail: m.vz_rc_1_25_a_dendro_hit_on_quicken(),
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, lv, rb) => additiveDamage(1.25, lv, em, rb),
-					read: (c) => `Spread would add ${c.v} damage to the Dendro hit that triggers it.`
+					read: (c) => m.vz_rc_spread_would_add_v_damage_to_the_dendro({ value: c.v })
 				},
 				{
-					label: 'Aggravate',
-					noun: 'Aggravate damage',
-					detail: '×1.15, an Electro hit on Quicken',
+					label: m.vz_rc_aggravate(),
+					noun: m.vz_rc_aggravate_damage(),
+					detail: m.vz_rc_1_15_an_electro_hit_on_quicken(),
 					color: 'var(--el-electro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, lv, rb) => additiveDamage(1.15, lv, em, rb),
-					read: (c) => `Aggravate would add ${c.v} damage to the Electro hit that triggers it.`
+					read: (c) => m.vz_rc_aggravate_would_add_v_damage_to_the({ value: c.v })
 				}
 			]
 		},
 		{
 			id: 'lunar',
-			label: 'Lunar & Stellar',
-			note: 'Damage from level and EM, and it can crit. Each contributing party member is counted separately; these figures are the top contributor’s 60% share. Lunar-Bloom and Stellar-Conduct deal damage only through abilities.',
+			label: m.vz_rc_lunar_stellar(),
+			note: m.vz_rc_damage_from_level_and_em_and_it_can_crit(),
 			formula: '6·EM/(2000+EM)',
-			caveat: 'Stellar Swirl figures are from gcsim, not yet confirmed in game.',
-			yLabel: 'damage',
-			rowHead: 'Reaction',
+			caveat: m.vz_rc_stellar_swirl_figures_are_from_gcsim_not(),
+			yLabel: m.vz_rc_damage(),
+			rowHead: m.vz_rc_reaction(),
 			usesLevel: true,
 			curves: [
 				{
-					label: 'Lunar-Charged · Stellar Swirl blast',
-					noun: 'Lunar-Charged or Stellar Swirl blast damage',
-					detail: '×1.8, per tick · after 3+ swirls',
+					label: m.vz_rc_lunar_charged_stellar_swirl_blast(),
+					noun: m.vz_rc_lunar_charged_or_stellar_swirl_blast(),
+					detail: m.vz_rc_1_8_per_tick_after_3_swirls(),
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(3, lv, em, rb),
-					read: (c) =>
-						`A Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, would deal ${c.v} damage before enemy RES and crit.`
+					read: (c) => m.vz_rc_a_lunar_charged_tick_or_a_stellar_swirl({ value: c.v })
 				},
 				{
-					label: 'Stellar Swirl blast',
-					noun: 'Stellar Swirl blast damage after 1–2 swirls',
-					detail: '×1.2, after 1–2 swirls',
+					label: m.vz_rc_stellar_swirl_blast(),
+					noun: m.vz_rc_stellar_swirl_blast_damage_after_1_2(),
+					detail: m.vz_rc_1_2_after_1_2_swirls(),
 					color: 'var(--el-cryo-main)',
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(2, lv, em, rb),
-					read: (c) =>
-						`A Stellar Swirl blast after 1–2 swirls would deal ${c.v} damage before enemy RES and crit.`
+					read: (c) => m.vz_rc_a_stellar_swirl_blast_after_1_2_swirls({ value: c.v })
 				},
 				{
-					label: 'Lunar-Crystallize',
-					noun: 'damage per Moondrift hit',
-					detail: '×0.96, per Moondrift hit',
+					label: m.vz_rc_lunar_crystallize(),
+					noun: m.vz_rc_damage_per_moondrift_hit(),
+					detail: m.vz_rc_0_96_per_moondrift_hit(),
 					color: 'var(--el-geo-main)',
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(1.6, lv, em, rb),
-					read: (c) =>
-						`Each Moondrift hit from Lunar-Crystallize would deal ${c.v} damage before enemy RES and crit.`
+					read: (c) => m.vz_rc_each_moondrift_hit_from_lunar({ value: c.v })
 				},
 				{
-					label: 'Stellar Swirl',
-					noun: 'Stellar Swirl damage',
+					label: m.vz_rc_stellar_swirl(),
+					noun: m.vz_rc_stellar_swirl_damage(),
 					detail: '×0.45',
 					color: 'var(--el-anemo-main)',
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(0.75, lv, em, rb),
-					read: (c) => `A Stellar Swirl hit would deal ${c.v} damage before enemy RES and crit.`
+					read: (c) => m.vz_rc_a_stellar_swirl_hit_would_deal_v_damage({ value: c.v })
 				}
 			]
 		},
 		{
 			id: 'crystallize',
-			label: 'Crystallize',
-			note: 'The shard’s shield grows with the triggering character’s level and EM, on a level table of its own.',
+			label: m.vz_rc_crystallize(),
+			note: m.vz_rc_the_shard_s_shield_grows_with_the(),
 			formula: '4.44·EM/(1400+EM)',
-			yLabel: 'shield HP',
-			rowHead: 'Shard',
+			yLabel: m.vz_rc_shield_hp(),
+			rowHead: m.vz_rc_shard(),
 			usesLevel: true,
 			curves: [
 				{
-					label: 'Shield',
-					noun: 'shield HP',
-					detail: 'any element',
+					label: m.vz_rc_shield(),
+					noun: m.vz_rc_shield_hp(),
+					detail: m.vz_rc_any_element(),
 					color: 'var(--el-geo-main)',
 					em: null,
 					value: (em, lv) => crystallizeShieldHp(lv, em),
-					read: (c) =>
-						`A Crystallize shield would absorb ${c.v} damage, or 2.5 times that against its own element.`
+					read: (c) => m.vz_rc_a_crystallize_shield_would_absorb_v({ value: c.v })
 				}
 			]
 		}
@@ -404,7 +404,7 @@
 	// lines under the ceiling — quarters of the ceiling read as 163% / 8.8k.
 	const yTicks = $derived.by(() => {
 		const mag = 10 ** Math.floor(Math.log10(yMax / 4));
-		const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((st) => yMax / st <= 5)!;
+		const step = [1, 2, 2.5, 5, 10].map((f) => f * mag).find((st) => yMax / st <= 5)!;
 		return Array.from({ length: Math.floor(yMax / step + 1e-9) }, (_, i) => (i + 1) * step);
 	});
 
@@ -459,7 +459,9 @@
 		if (!picked.em) return 'none';
 		if (rbPct === 0) return null;
 		const n = emWorthOfBonus(picked.em, em, rb);
-		return Number.isFinite(n) ? `${fmtInt(n)} more EM` : 'more than any amount of EM';
+		return Number.isFinite(n)
+			? m.vz_rc_n_more_em({ amount: fmtInt(n) })
+			: m.vz_rc_more_than_any_amount_of_em();
 	});
 
 	/** A curve's reading in words: its dot label's tooltip. */
@@ -536,6 +538,7 @@
 			const e = (i / SAMPLES) * EM_MAX;
 			d += ` L${xOf(e).toFixed(1)},${y(g(e))}`;
 		}
+		// an SVG path, not text
 		return `${d} L${xOf(EM_MAX).toFixed(1)},${compY1} Z`;
 	});
 	const compDotY = $derived.by(() => {
@@ -572,13 +575,19 @@
 <div class="stage-root">
 	<div class="stage ctx-dark">
 		<p class="readout-head stage-head">
-			{fmtGain(headGain)}<span class="readout-sentence"
-				>{picked.noun} from the next {GAIN_STEP} EM</span
-			>
+			<Msg
+				parts={m.vz_rc_headgain_noun_from_the_next_gain_step_em.parts({
+					gain: fmtGain(headGain),
+					noun: picked.noun,
+					step: GAIN_STEP
+				})}
+				tags={{ sentence }}
+			/>
+			{#snippet sentence(text: string)}<span class="readout-sentence">{text}</span>{/snippet}
 		</p>
 
 		<div class="stage-toolbar">
-			<div class="segment stage-tabs" role="radiogroup" aria-label="Reaction family">
+			<div class="segment stage-tabs" role="radiogroup" aria-label={m.vz_rc_reaction_family()}>
 				{#each FAMILIES as f (f.id)}
 					<button
 						class="btn"
@@ -592,7 +601,7 @@
 				{/each}
 			</div>
 
-			<div class="setup-bar" role="group" aria-label="Setup">
+			<div class="setup-bar" role="group" aria-label={m.vz_rc_setup()}>
 				{#if family.curves.length > 1}
 					<BandMenu role="dialog" align="start" ariaLabel="{family.rowHead}: {picked.label}">
 						{#snippet face()}
@@ -622,16 +631,16 @@
 				{/if}
 
 				{#if takesRb}
-					<BandMenu role="dialog" align="start" ariaLabel="Reaction Bonus: {rbPct}%">
+					<BandMenu role="dialog" align="start" ariaLabel={m.vz_rc_reaction_bonus_rbpct({ rbPct })}>
 						{#snippet face()}
-							<span class="setup-key">Reaction Bonus</span>
+							<span class="setup-key">{m.vz_rc_reaction_bonus()}</span>
 							<span class="setup-val setup-val--num">{rbPct}%</span>
 						{/snippet}
 						{#snippet items()}
 							<div class="setup-pop">
 								<InstrumentSlider
-									label="Reaction Bonus"
-									aria="Reaction Bonus in percent"
+									label={m.vz_rc_reaction_bonus()}
+									aria={m.vz_rc_reaction_bonus_in_percent()}
 									bind:value={rbPct}
 									min={0}
 									max={RB_MAX}
@@ -639,15 +648,19 @@
 									unit="%"
 								/>
 								{#if bonusWorth === 'none'}
-									<p class="rx-pop-note">A Reaction Bonus doesn’t apply to a Crystallize shield.</p>
+									<p class="rx-pop-note">{m.vz_rc_a_reaction_bonus_doesn_t_apply_to_a()}</p>
 								{:else if bonusWorth}
 									<p class="rx-pop-note">
-										At {em} EM, +{rbPct}% Reaction Bonus is worth {bonusWorth} on {picked.label}.
+										{m.vz_rc_at_em_em_rbpct_reaction_bonus_is_worth({
+											em,
+											rbPct,
+											worth: bonusWorth,
+											curve: picked.label
+										})}
 									</p>
 								{:else}
 									<p class="rx-pop-note">
-										A Reaction Bonus adds to the boost from EM, so it’s worth less EM where the
-										curve is steep and more where it has flattened.
+										{m.vz_rc_a_reaction_bonus_adds_to_the_boost_from()}
 									</p>
 								{/if}
 							</div>
@@ -656,17 +669,17 @@
 				{/if}
 
 				{#if family.usesLevel}
-					<BandMenu role="dialog" align="start" ariaLabel="Level: {level}">
+					<BandMenu role="dialog" align="start" ariaLabel="{m.vz_rc_level()}: {level}">
 						{#snippet face()}
-							<span class="setup-key">Level</span>
+							<span class="setup-key">{m.vz_rc_level()}</span>
 							<span class="setup-val setup-val--num">{level}</span>
 						{/snippet}
 						{#snippet items()}
 							<div class="setup-pop">
 								<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
 								<InstrumentSlider
-									label="Level"
-									aria="Character level"
+									label={m.vz_rc_level()}
+									aria={m.vz_rc_character_level()}
 									bind:value={level}
 									{...LEVEL_SLIDER}
 								/>
@@ -687,7 +700,7 @@
 				width={graphW}
 				height={H}
 				role="img"
-				aria-label="Reaction scaling curves vs Elemental Mastery"
+				aria-label={m.vz_rc_reaction_scaling_curves_vs_elemental()}
 				onpointerdown={onDown}
 				onpointermove={onMove}
 				onpointerup={onUp}
@@ -715,7 +728,7 @@
 					font-size="10"
 					text-anchor="end"
 				>
-					Elemental Mastery
+					{m.vz_rc_elemental_mastery()}
 				</text>
 
 				<!-- Value grid -->
@@ -766,7 +779,7 @@
 						font-size="10"
 						text-anchor="middle"
 					>
-						next {GAIN_STEP} EM
+						{m.vz_rc_next_gain_step_em({ step: GAIN_STEP })}
 					</text>
 				{/if}
 
@@ -776,7 +789,7 @@
 					<path d={compPath} fill="var(--chart-ink)" fill-opacity="0.45" />
 				{/if}
 				<text x={PADL} y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
-					what the next {GAIN_STEP} EM adds
+					{m.vz_rc_what_the_next_gain_step_em_adds({ step: GAIN_STEP })}
 				</text>
 
 				<!-- The EM marker, down through the strip to the handle -->
@@ -834,8 +847,8 @@
 			style:--stage-handle-r="{PADR - THUMB_R}px"
 		>
 			<InstrumentSlider
-				label="Elemental Mastery"
-				aria="Elemental Mastery"
+				label={m.vz_rc_elemental_mastery()}
+				aria={m.vz_rc_elemental_mastery()}
 				bind:value={em}
 				min={0}
 				max={EM_MAX}
@@ -846,7 +859,9 @@
 		<!-- The fine print: the family's working, which no mark can show. -->
 		<p class="stage-fine">
 			{family.note}
-			{#if family.formula}<span class="rx-formula">EM bonus {family.formula}.</span>{/if}
+			{#if family.formula}<span class="rx-formula"
+					>{m.vz_rc_em_bonus_formula({ formula: family.formula })}</span
+				>{/if}
 			{#if family.caveat}{family.caveat}{/if}
 		</p>
 	</div>

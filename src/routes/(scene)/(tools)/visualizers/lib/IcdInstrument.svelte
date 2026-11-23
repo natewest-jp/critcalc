@@ -7,6 +7,7 @@
 	import { ICD_EXAMPLES, type IcdExampleId } from './icdExamples';
 	import { evenHits, evenShare, evenSpan, landsEvery } from './icdTimeline';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'] as const;
 	type ElementId = (typeof ELEMENTS)[number];
@@ -41,9 +42,9 @@
 	// timer agree, at 2s the timer decides. 0.5s is the corpus median swing gap
 	// (0.475s over 119 strings) and the default, so the first is lit on load.
 	const ANCHORS = [
-		{ label: '~0.5s normal attacks', v: 0.5 },
-		{ label: '~1s summon ticks', v: 1 },
-		{ label: '~2s slow summon ticks', v: 2 }
+		{ label: m.vz_icd_0_5s_normal_attacks(), v: 0.5 },
+		{ label: m.vz_icd_1s_summon_ticks(), v: 1 },
+		{ label: m.vz_icd_2s_slow_summon_ticks(), v: 2 }
 	];
 
 	// ── The rule ──────────────────────────────────────────────────────────────
@@ -184,14 +185,24 @@
 	const head = $derived.by(() => {
 		if (!share)
 			return apps === sim.length
-				? { figure: `All ${sim.length}`, sentence: 'hits apply their element' }
-				: { figure: `${apps} of ${sim.length}`, sentence: 'hits apply their element' };
+				? {
+						figure: m.vz_icd_all_length({ count: sim.length }),
+						sentence: m.vz_icd_hits_apply_their_element()
+					}
+				: {
+						figure: m.vz_icd_apps_of_length({ apps, total: sim.length }),
+						sentence: m.vz_icd_hits_apply_their_element()
+					};
 		return share.applies === share.of
-			? { figure: 'Every hit', sentence: 'applies its element' }
-			: { figure: `${share.applies} of every ${share.of}`, sentence: 'hits apply their element' };
+			? { figure: m.vz_icd_every_hit(), sentence: m.vz_icd_applies_its_element() }
+			: {
+					figure: m.vz_icd_applies_of_every_of({ applies: share.applies, total: share.of }),
+					sentence: m.vz_icd_hits_apply_their_element()
+				};
 	});
 
-	const ordinal = (n: number) => (n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`);
+	const ordinal = (n: number) => m.vz_icd_n_th({ n });
+	// seconds: a unit, the same in every locale
 	const fmtS = (s: number) => `${+s.toFixed(2)}s`;
 
 	// ── Graph geometry — pixel-true (width measured, not viewBox-scaled) ──────
@@ -392,7 +403,11 @@
 	// on an example (its share is the whole list) or when every hit applies.
 	const bracket = $derived.by(() => {
 		if (!share || share.applies === share.of || share.of > xs.length) return null;
-		return { x0: xs[0], x1: xs[share.of - 1], text: `${share.applies} of these ${share.of}` };
+		return {
+			x0: xs[0],
+			x1: xs[share.of - 1],
+			text: m.vz_icd_applies_of_these_of({ applies: share.applies, total: share.of })
+		};
 	});
 
 	// ── The companion: how often the element lands, along the handle ──────
@@ -473,8 +488,8 @@
 		const i = pointed;
 		const h = sim[i];
 		const { timer, hits, cap } = params;
-		const head = `Hit ${i + 1} · ${h.time.toFixed(2)}s`;
-		if (timer === 0) return { head, applies: true, why: 'With no ICD, every hit applies.' };
+		const head = m.vz_icd_hit_x_x_s({ n: i + 1, time: h.time.toFixed(2) });
+		if (timer === 0) return { head, applies: true, why: m.vz_icd_with_no_icd_every_hit_applies() };
 		const j = windowStart(i);
 		const left = fmtS(Math.max(0, sim[j].time + timer - h.time));
 		if (h.viaTimer)
@@ -483,31 +498,40 @@
 				applies: true,
 				why:
 					i === 0
-						? `The first hit always applies, and it starts the ${fmtS(timer)} timer.`
-						: `${fmtS(timer)} have passed since the timer started, so this hit applies, starts it again and sets the counter back to 1.`
+						? m.vz_icd_the_first_hit_always_applies_and_it({ timer: fmtS(timer) })
+						: m.vz_icd_timer_have_passed_since_the_timer({ timer: fmtS(timer) })
 			};
 		if (h.applies)
 			return {
 				head,
 				applies: true,
-				why: `Every ${ordinal(hits)} hit applies. The timer from hit ${j + 1} keeps running, with ${left} left.`
+				why: m.vz_icd_every_hits_hit_applies_the_timer_from({
+					ordinal: ordinal(hits),
+					hit: j + 1,
+					left
+				})
 			};
 		if (h.capped)
 			return {
 				head,
 				applies: false,
-				why: `This window's ${cap} ${cap === 1 ? 'application is' : 'applications are'} used up until the timer from hit ${j + 1} runs out, in ${left}.`
+				why: m.vz_icd_this_window_s_cap_x_used_up_until_the({ count: cap ?? 0, hit: j + 1, left })
 			};
 		if (hits === Infinity)
 			return {
 				head,
 				applies: false,
-				why: `Only the first hit in a window applies. The timer from hit ${j + 1} has ${left} left.`
+				why: m.vz_icd_only_the_first_hit_in_a_window_applies({ hit: j + 1, left })
 			};
 		return {
 			head,
 			applies: false,
-			why: `The counter is on ${h.count} of ${hits}, and the timer from hit ${j + 1} has ${left} left.`
+			why: m.vz_icd_the_counter_is_on_count_of_hits_and_the({
+				count: h.count,
+				hits,
+				hit: j + 1,
+				left
+			})
 		};
 	});
 
@@ -515,29 +539,31 @@
 	// (design §6: definitions as tooltips on the chart's labels, no legend).
 	const LANES = $derived([
 		{
-			name: 'Hits',
+			name: m.vz_icd_hits(),
 			y: ROW.hitTop + stalk / 2 + LANE_FS * 0.35,
-			tip: 'A tall stem with the element’s icon applies its element. A short, faint one is blocked by ICD.'
+			tip: m.vz_icd_a_tall_stem_with_the_element_s_icon()
 		},
 		{
-			name: 'Counter',
+			name: m.vz_icd_counter(),
 			y: ROW.counterY,
 			tip:
-				'The hit counter. A ringed number is a hit the counter let through.' +
-				(params.cap !== undefined && counting ? ' A dash: the window’s limit is reached.' : '')
+				m.vz_icd_the_hit_counter_a_ringed_number_is_a_hit() +
+				(params.cap !== undefined && counting
+					? ' ' + m.vz_icd_a_dash_the_window_s_limit_is_reached()
+					: '')
 		},
 		{
-			name: 'Timer',
+			name: m.vz_icd_timer(),
 			y: ROW.bandTop + ROW.bandH / 2 + LANE_FS * 0.35,
-			tip: 'Each band is a timer window, started by a hit that applies once the timer has run out. Its number is how many hits it applied.'
+			tip: m.vz_icd_each_band_is_a_timer_window_started_by_a()
 		}
 	]);
 
 	const RULES: { id: Rule; label: string }[] = [
-		{ id: 'standard', label: 'Standard' },
-		{ id: 'none', label: 'No ICD' },
-		{ id: 'own', label: 'Its own' },
-		{ id: 'custom', label: 'Custom' }
+		{ id: 'standard', label: m.vz_icd_standard() },
+		{ id: 'none', label: m.vz_icd_no_icd() },
+		{ id: 'own', label: m.vz_icd_its_own() },
+		{ id: 'custom', label: m.vz_icd_custom() }
 	];
 </script>
 
@@ -552,10 +578,10 @@
 	{#if reading}
 		<p>
 			<span class="icd-reading-head">{reading.head}</span>
-			<strong>{reading.applies ? 'applies' : 'blocked'}</strong>. {reading.why}
+			<strong>{reading.applies ? m.vz_icd_applies() : m.vz_icd_blocked()}</strong>. {reading.why}
 		</p>
 	{:else}
-		<p>Point at a hit to read why it applies or is blocked.</p>
+		<p>{m.vz_icd_point_at_a_hit_to_read_why_it_applies_or()}</p>
 	{/if}
 {/snippet}
 
@@ -567,7 +593,7 @@
 
 		<div class="icd-body">
 			<div class="stage-toolbar">
-				<div class="segment stage-tabs" role="radiogroup" aria-label="String">
+				<div class="segment stage-tabs" role="radiogroup" aria-label={m.vz_icd_string()}>
 					<button
 						class="btn"
 						class:is-active={source === 'even'}
@@ -575,7 +601,7 @@
 						aria-checked={source === 'even'}
 						onclick={() => pickSource('even')}
 					>
-						Even spacing
+						{m.vz_icd_even_spacing()}
 					</button>
 					{#each ICD_EXAMPLES as ex (ex.id)}
 						<button
@@ -594,7 +620,7 @@
 				     toolbar's far end. The element colors the hits and is what a
 				     hand-off sends; its track matches the strings'. -->
 				<div class="icd-tools">
-					<div class="segment icd-elements" role="radiogroup" aria-label="Element">
+					<div class="segment icd-elements" role="radiogroup" aria-label={m.vz_icd_element()}>
 						{#each ELEMENTS as e (e)}
 							<button
 								class="btn icd-el seg-el"
@@ -615,7 +641,7 @@
 						<button
 							class="btn btn--glass ctx-glass icd-send"
 							disabled={apps === 0}
-							title="Sends the first 8 hits within 15s that apply an element — each as 1U, since the ICD timeline doesn't model gauge sizes."
+							title={m.vz_icd_sends_the_first_8_hits_within_15s_that()}
 							onclick={() =>
 								onHandoff({
 									target: 'gauge',
@@ -623,7 +649,8 @@
 									payload: icdHitsToGaugeApps(sim, element)
 								})}
 						>
-							Send to gauge explorer <Mark name="forward" size={12} />
+							{m.vz_icd_send_to_gauge_explorer()}
+							<Mark name="forward" size={12} />
 						</button>
 					{/if}
 				</div>
@@ -640,7 +667,7 @@
 					width={graphW}
 					height={ROW.H}
 					role="img"
-					aria-label="ICD hit timeline"
+					aria-label={m.vz_icd_icd_hit_timeline()}
 					onpointermove={pointAt}
 					onpointerdown={pointAt}
 					onpointerleave={(e) => {
@@ -749,7 +776,7 @@
 								fill="var(--text)"
 								font-size={fs}
 							>
-								{w.w >= BAND_WORDS * k ? `${w.count} applied` : w.count}
+								{w.w >= BAND_WORDS * k ? m.vz_icd_count_applied({ count: w.count }) : w.count}
 							</text>
 						{/if}
 					{/each}
@@ -828,7 +855,7 @@
 							fill="var(--chart-dim)"
 							font-size={LANE_FS}
 						>
-							How often the element lands on average, at each hit interval
+							{m.vz_icd_how_often_the_element_lands_on_average()}
 						</text>
 						{#each landsScale.ticks as t (t)}
 							<line
@@ -893,7 +920,7 @@
 							font-size={11 * k}
 							text-anchor={landsLabelLeft ? 'end' : 'start'}
 						>
-							every {fmtS(landsNow)}
+							{m.vz_icd_every_landsnow({ interval: fmtS(landsNow) })}
 						</text>
 					{/if}
 				</svg>
@@ -925,8 +952,8 @@
 					style:--icd-track-w="{xl(INTERVAL_MAX) - xl(INTERVAL_MIN) + 2 * THUMB_R}px"
 				>
 					<InstrumentSlider
-						label="Hit interval"
-						aria="Hit interval in seconds"
+						label={m.vz_icd_hit_interval()}
+						aria={m.vz_icd_hit_interval_in_seconds()}
 						bind:value={interval}
 						min={INTERVAL_MIN}
 						max={INTERVAL_MAX}
@@ -939,7 +966,11 @@
 							<!-- The strings' and the rule's segment, so the three rows
 							     of choices are one size (Nate 2026-11-04). Lit only
 							     while the interval is a preset's. -->
-							<span class="segment icd-anchors" role="group" aria-label="Interval presets">
+							<span
+								class="segment icd-anchors"
+								role="group"
+								aria-label={m.vz_icd_interval_presets()}
+							>
 								{#each ANCHORS as a (a.v)}
 									<button
 										class="btn"
@@ -968,11 +999,11 @@
 			<!-- THE RULE, on the surface: the presets fill in its three numbers,
 			     and moving one makes it Custom (editRule). Last, so a preset that
 			     comes and goes ("Its own") moves nothing under the hand. -->
-			<div class="icd-rule" role="group" aria-label="ICD rule">
+			<div class="icd-rule" role="group" aria-label={m.vz_icd_icd_rule()}>
 				<div class="icd-rule-grid">
 					<div class="icd-rule-head">
-						<span class="icd-rule-name">ICD</span>
-						<div class="segment" role="radiogroup" aria-label="ICD rule">
+						<span class="icd-rule-name">{m.vz_icd_icd()}</span>
+						<div class="segment" role="radiogroup" aria-label={m.vz_icd_icd_rule()}>
 							{#each RULES as r (r.id)}
 								{#if r.id !== 'own' || example}
 									<button
@@ -988,10 +1019,11 @@
 							{/each}
 						</div>
 					</div>
-					<!-- The tracks' ends are words: typed, "off" and "none" land there too. -->
+					<!-- The tracks' ends are words: typed, "off" and "none" land there too
+					     (`words` is what the field parses, so it stays English). -->
 					<InstrumentSlider
-						label="Timer"
-						aria="ICD timer in seconds"
+						label={m.vz_icd_timer()}
+						aria={m.vz_icd_icd_timer_in_seconds()}
 						bind:value={() => shown.timer, (v) => editRule(() => (customTimer = v))}
 						min={0}
 						max={TIMER_MAX}
@@ -999,34 +1031,34 @@
 						unit="s"
 						decimals={2}
 						snap={toTimer}
-						text={shown.timer === 0 ? 'Off' : null}
+						text={shown.timer === 0 ? m.vz_icd_off() : null}
 						words={{ off: 0 }}
 					/>
 					<InstrumentSlider
-						label="Hit counter"
-						aria="ICD hit counter"
+						label={m.vz_icd_hit_counter()}
+						aria={m.vz_icd_icd_hit_counter()}
 						bind:value={() => shown.hits, (v) => editRule(() => (customHits = v))}
 						min={1}
 						max={COUNTER_OFF}
 						step={1}
 						snap={Math.round}
-						text={shown.hits === COUNTER_OFF ? 'Off' : null}
+						text={shown.hits === COUNTER_OFF ? m.vz_icd_off() : null}
 						words={{ off: COUNTER_OFF }}
 					/>
 					<InstrumentSlider
-						label="Limit per window"
-						aria="Applications allowed per ICD timer window"
+						label={m.vz_icd_limit_per_window()}
+						aria={m.vz_icd_applications_allowed_per_icd_timer()}
 						bind:value={() => shown.cap, (v) => editRule(() => (customCap = v))}
 						min={1}
 						max={NO_LIMIT}
 						step={1}
 						snap={Math.round}
-						text={shown.cap === NO_LIMIT ? 'None' : null}
+						text={shown.cap === NO_LIMIT ? m.vz_icd_none() : null}
 						words={{ none: NO_LIMIT }}
 					/>
 				</div>
 				<p class="stage-fine">
-					Internal Cooldown — the hidden rule that stops some hits from applying their element.
+					{m.vz_icd_internal_cooldown_the_hidden_rule_that()}
 				</p>
 			</div>
 		</div>
