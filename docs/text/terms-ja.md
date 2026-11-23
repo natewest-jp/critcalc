@@ -4,7 +4,7 @@ How critcalc writes its terms in Japanese: the vocabulary the Japanese draft of 
 interiors (the Rotation Planner, the Team Builder with Roster, and the Visualizers) is
 written from. Each entry is numbered so a reader can answer by number.
 
-**Status.** Nate's reviewer ruled entries 31, 88, and 109; the reviewer is not a Genshin
+**Status.** Nate's reviewer ruled entries 31 and 88; the reviewer is not a Genshin
 player, so the rest are Claude's calls from the game's text and the Japanese community's own
 sources. The calls with a real alternative are the open questions at the end, which go to the
 Japanese Genshin community along with the hidden `/ja` draft. A community answer rewrites the
@@ -177,7 +177,7 @@ ICD timeline:
 
 Gauge explorer:
 
-109. forward and reverse Vaporize or Melt → 強 / 弱, as in 強蒸発, 弱溶解 · players. ⚓ Ruled by Nate's reviewer. The wiki's glossary writes フォワード / リバース (open question 8).
+109. forward and reverse Vaporize or Melt → フォワード / リバース, as in フォワード蒸発, リバース溶解 · players (the wiki's glossary). ⚓ Nate chose the community's words over the reviewer's 強 / 弱, which stays an open question (8).
 110. Overvape → オーバーヴェイプ · players
 111. aura tax (the ×0.8 on a new aura) → オーラ係数 · ours
 112. Topped up, Refreshed, Too weak (what a re-application does) → 補充, 上書き, 不足 · ours
@@ -238,7 +238,7 @@ Each is a real split between two words a player might expect. The draft uses the
 5. (86, 87) enabler and selfish carry: the loans イネーブラー and セルフィッシュキャリー, or 起点 and 自己完結型アタッカー?
 6. (92, 93) The Theater's Primary Antagonists heading and Stygian's Battlefield: does the game name them? The draft has 主な敵 and 戦場.
 7. (97) Gauge explorer: 元素量シミュレーター, or 元素量エクスプローラー?
-8. (109) Forward and reverse Vaporize and Melt: 強 / 弱, or フォワード / リバース?
+8. (109) Forward and reverse Vaporize and Melt: フォワード / リバース, or 強 / 弱?
 9. (121) A damage-formula bracket: 乗算枠, or 項?
 10. (126) substat: the game's サブ効果, or the players' サブOP?
 11. (135) soft pity: ソフト天井, or 確率上昇?

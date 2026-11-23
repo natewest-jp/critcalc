@@ -30,7 +30,7 @@ English-adjacent; CJK locales use the words their players recognize. The plan's 
 ## The review, and the calls
 
 Nate's reviewer is not a Genshin player. She ruled the questions she could: 交代 for a swap
-(31), C0–C6 rather than 凸 (88), and 強 / 弱 for forward and reverse reactions (109). ⚓ Nate
+(31), C0–C6 rather than 凸 (88), and 強 / 弱 for forward and reverse reactions (109). Once he heard the wiki's glossary writes フォワード / リバース, Nate chose those, and 強 / 弱 became open question 8. ⚓ Nate
 then asked for best calls from web sources on everything else, with any real split kept as an
 open question for the Japanese Genshin community, the same plan as Chinese.
 
