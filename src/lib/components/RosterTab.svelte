@@ -64,6 +64,8 @@
 	import { notices } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		focus = null,
@@ -83,8 +85,8 @@
 	const marks = $derived($ownership);
 	const cons = $derived($constellations);
 	const offs = $derived($theaterOff);
-	const ownedCount = $derived(Object.values(marks).filter((m) => m === 'owned').length);
-	const wishCount = $derived(Object.values(marks).filter((m) => m === 'wishlist').length);
+	const ownedCount = $derived(Object.values(marks).filter((v) => v === 'owned').length);
+	const wishCount = $derived(Object.values(marks).filter((v) => v === 'wishlist').length);
 
 	// ── The lock ─────────────────────────────────────────────────────────────
 	let editing = $state(false);
@@ -200,16 +202,16 @@
 	type Sort = 'newest' | 'name' | 'element';
 	let sort = $state<Sort>('newest');
 	const SORTS: { key: Sort; label: string }[] = [
-		{ key: 'newest', label: 'Newest' },
-		{ key: 'name', label: 'Name' },
-		{ key: 'element', label: 'Element' }
+		{ key: 'newest', label: m.tb_newest() },
+		{ key: 'name', label: m.tb_name() },
+		{ key: 'element', label: m.tb_element() }
 	];
 	/** Teams' Show toggles plus the Roster's own third, Not owned (its X is the
 	 *  roster's word for it: the key and the bulk action). None on is everyone. */
 	const SHOW_TOGGLES = [
-		{ key: 'owned', mark: 'check', label: 'Owned' },
-		{ key: 'unowned', mark: 'close', label: 'Not owned' },
-		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
+		{ key: 'owned', mark: 'check', label: m.tb_owned_b62f() },
+		{ key: 'unowned', mark: 'close', label: m.tb_not_owned_ffff() },
+		{ key: 'wishlist', mark: 'wish', label: m.tb_wishlist() }
 	] as const;
 
 	const releaseKey = (c: CharacterIndexEntry) => {
@@ -277,7 +279,6 @@
 	const belowC6Shown = $derived(
 		shown.filter((c) => marks[c.id] !== 'owned' || (!c.noConstellations && cons[c.id] !== 6))
 	);
-	const plural = (n: number) => `${n} character${n === 1 ? '' : 's'}`;
 	/** A bulk edit, and a toast whose Undo takes back ITS characters only: a
 	 *  later edit to anyone else survives it (a whole-roster restore lost
 	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk.
@@ -288,19 +289,19 @@
 		record();
 		const before = past.at(-1)!;
 		const profileId = storageSession.profile?.id;
-		const m = { ...get(ownership) };
+		const own = { ...get(ownership) };
 		const k = { ...get(constellations) };
 		for (const c of list) {
-			if (owned) m[c.id] = 'owned';
-			else delete m[c.id];
+			if (owned) own[c.id] = 'owned';
+			else delete own[c.id];
 			if (c6 && !c.noConstellations) k[c.id] = 6;
 		}
-		ownership.replaceAll(m);
+		ownership.replaceAll(own);
 		if (c6) constellations.replaceAll(k);
 		notices.toast('success', text, {
 			actions: [
 				{
-					label: 'Undo',
+					label: m.tb_undo(),
 					run: () => {
 						if (storageSession.profile?.id === profileId) takeBack(list, before);
 					}
@@ -310,28 +311,28 @@
 	}
 	function takeBack(list: CharacterIndexEntry[], before: Snapshot): void {
 		record();
-		const m = { ...get(ownership) };
+		const own = { ...get(ownership) };
 		const k = { ...get(constellations) };
 		for (const { id } of list) {
-			if (before.marks[id]) m[id] = before.marks[id];
-			else delete m[id];
+			if (before.marks[id]) own[id] = before.marks[id];
+			else delete own[id];
 			if (id in before.cons) k[id] = before.cons[id];
 			else delete k[id];
 		}
-		ownership.replaceAll(m);
+		ownership.replaceAll(own);
 		constellations.replaceAll(k);
 	}
 	function markAllOwned(): void {
 		const n = unownedShown.length;
-		bulk(unownedShown, false, true, `Marked ${plural(n)} owned`);
+		bulk(unownedShown, false, true, m.tb_marked_n_owned({ count: n }));
 	}
 	function markAllC6(): void {
 		const n = belowC6Shown.length;
-		bulk(belowC6Shown, true, true, `Marked ${plural(n)} owned at C6`);
+		bulk(belowC6Shown, true, true, m.tb_marked_n_owned_at_c6({ count: n }));
 	}
 	function markAllNotOwned(): void {
 		const n = ownedShown.length;
-		bulk(ownedShown, false, false, `Marked ${plural(n)} not owned`);
+		bulk(ownedShown, false, false, m.tb_marked_n_not_owned({ count: n }));
 	}
 	const anyBulk = $derived(!!(unownedShown.length || belowC6Shown.length || ownedShown.length));
 
@@ -344,14 +345,17 @@
 	});
 
 	// ── The keys (⚓ Nate: "I want people to know the keys available to them")
+	// Key names (⌘, Ctrl, Space) are printed on the keyboard, so they stay as they are.
 	const MOD = browser && /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
+	// Still English: "wishlist", "constellation" and "undo" would mint the keys that
+	// "Wishlist", "Constellation" and "Undo" hold.
 	const KEYS: { keys: string[]; does: string }[] = [
-		{ keys: ['←', '→', '↑', '↓'], does: 'move' },
-		{ keys: ['O'], does: 'owned' },
-		{ keys: ['X'], does: 'not owned' },
-		{ keys: ['Space'], does: 'owned or not' },
+		{ keys: ['←', '→', '↑', '↓'], does: m.tb_move() },
+		{ keys: ['O'], does: m.tb_owned_c6dd() },
+		{ keys: ['X'], does: m.tb_not_owned_1ac4() },
+		{ keys: ['Space'], does: m.tb_owned_or_not() },
 		{ keys: ['W'], does: 'wishlist' },
-		{ keys: ['T'], does: 'can’t enter Theater' },
+		{ keys: ['T'], does: m.tb_can_t_enter_theater_919b() },
 		{ keys: ['0', '–', '6'], does: 'constellation' },
 		{ keys: [MOD, 'Z'], does: 'undo' }
 	];
@@ -490,8 +494,8 @@
 		{#if anyBulk}
 			<BandMenu
 				size="sm"
-				label={filtered ? 'Mark shown' : 'Mark all'}
-				ariaLabel={filtered ? 'Mark every character shown' : 'Mark every character'}
+				label={filtered ? m.tb_mark_shown() : m.tb_mark_all()}
+				ariaLabel={filtered ? m.tb_mark_every_character_shown() : m.tb_mark_every_character()}
 			>
 				{#snippet items(close)}
 					{#if unownedShown.length}
@@ -501,7 +505,7 @@
 							onclick={() => {
 								close();
 								markAllOwned();
-							}}><Mark name="check" size={13} /> Owned</button
+							}}><Mark name="check" size={13} /> {m.tb_owned_b62f()}</button
 						>
 					{/if}
 					{#if belowC6Shown.length}
@@ -511,7 +515,7 @@
 							onclick={() => {
 								close();
 								markAllC6();
-							}}><Mark name="constellation" size={13} filled="solid" /> Owned at C6</button
+							}}><Mark name="constellation" size={13} filled="solid" /> {m.tb_owned_at_c6()}</button
 						>
 					{/if}
 					{#if ownedShown.length}
@@ -521,7 +525,7 @@
 							onclick={() => {
 								close();
 								markAllNotOwned();
-							}}><Mark name="close" size={13} /> Not owned</button
+							}}><Mark name="close" size={13} /> {m.tb_not_owned_ffff()}</button
 						>
 					{/if}
 				{/snippet}
@@ -529,15 +533,15 @@
 		{/if}
 		<button
 			class="btn btn--sm btn--icon"
-			aria-label="Undo"
-			title={MOD === '⌘' ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
+			aria-label={m.tb_undo()}
+			title={MOD === '⌘' ? m.tb_undo_z() : m.tb_undo_ctrl_z()}
 			disabled={!past.length}
 			onclick={undo}><Mark name="undo" size={13} /></button
 		>
 		<button
 			class="btn btn--sm btn--icon"
-			aria-label="Redo"
-			title={MOD === '⌘' ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
+			aria-label={m.tb_redo()}
+			title={MOD === '⌘' ? m.tb_redo_z() : m.tb_redo_ctrl_shift_z()}
 			disabled={!future.length}
 			onclick={redo}><Mark name="redo" size={13} /></button
 		>
@@ -547,12 +551,14 @@
 		class:is-active={editing}
 		class:is-nudged={nudge}
 		aria-pressed={editing}
-		aria-label={editing ? 'Lock roster' : 'Edit roster'}
+		aria-label={editing ? m.tb_lock_roster() : m.tb_edit_roster()}
 		onanimationend={() => (nudge = false)}
-		title={editing ? 'Lock the roster against stray clicks' : 'Unlock the roster to edit it'}
+		title={editing
+			? m.tb_lock_the_roster_against_stray_clicks()
+			: m.tb_unlock_the_roster_to_edit_it()}
 		onclick={toggleLock}
 		><Mark name={editing ? 'unlocked' : 'locked'} size={13} /><span class="ros-lock-word"
-			>{editing ? 'Lock roster' : 'Edit roster'}</span
+			>{editing ? m.tb_lock_roster() : m.tb_edit_roster()}</span
 		></button
 	>
 {/snippet}
@@ -567,7 +573,7 @@
 		{#if editing && keysOn}
 			<p
 				class="ros-keys"
-				aria-label="Keyboard shortcuts"
+				aria-label={m.tb_keyboard_shortcuts()}
 				in:riseIn
 				out:fade={{ duration: motion(T_QUICK), easing: linear }}
 			>
@@ -598,8 +604,8 @@
 						<input
 							class="field ros-search-field"
 							type="text"
-							placeholder="Search…"
-							aria-label="Search characters"
+							placeholder={m.tb_search()}
+							aria-label={m.tb_search_characters()}
 							bind:value={filters.search}
 							autocomplete="off"
 							autocorrect="off"
@@ -608,7 +614,7 @@
 					</span>
 				{/snippet}
 				{#snippet end()}
-					<span class="segment ros-show" role="group" aria-label="Show">
+					<span class="segment ros-show" role="group" aria-label={m.tb_show()}>
 						{#each SHOW_TOGGLES as t (t.key)}
 							{@const on = rosterView.show === t.key}
 							<button
@@ -616,7 +622,7 @@
 								class:is-active={on}
 								aria-pressed={on}
 								aria-label={t.label}
-								title={on ? 'Show everyone' : t.label}
+								title={on ? m.tb_show_everyone() : t.label}
 								onclick={() => (rosterView.show = on ? 'all' : t.key)}
 								><Mark name={t.mark} size={14} /></button
 							>
@@ -627,9 +633,11 @@
 							size="sm"
 							role="dialog"
 							mark="filter"
-							label="More"
+							label={m.tb_more()}
 							count={moreCount}
-							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+							ariaLabel={moreCount > 0
+								? m.tb_more_filters_morecount_set({ count: moreCount })
+								: m.tb_more_filters()}
 						>
 							{#snippet items(close)}
 								<MoreFilters roster={ALL} {filters} ownershipView="all" {close} />
@@ -639,7 +647,7 @@
 					<BandMenu
 						size="sm"
 						label={SORTS.find((o) => o.key === sort)?.label}
-						ariaLabel="Sort: {SORTS.find((o) => o.key === sort)?.label}"
+						ariaLabel={m.tb_sort_label({ sort: SORTS.find((o) => o.key === sort)?.label ?? '' })}
 					>
 						{#snippet items(close)}
 							{#each SORTS as o (o.key)}
@@ -663,24 +671,28 @@
 		</div>
 		<div class="ros-scroll scroll-fade" bind:this={listEl} use:scrollFade>
 			{#if editing && ownedCount === 0}
+				<!-- Both verbs are in the sentence; CSS shows the one for this pointer. -->
+				{#snippet pointer(text: string)}<span class="ros-by-pointer">{text}</span>{/snippet}
+				{#snippet touch(text: string)}<span class="ros-by-touch">{text}</span>{/snippet}
 				<p class="ros-hint">
-					Mark the characters you own by <span class="ros-by-pointer">clicking</span><span
-						class="ros-by-touch">tapping</span
-					> their portraits.
+					<Msg
+						parts={m.tb_mark_the_characters_you_own_by_clicking.parts()}
+						tags={{ pointer, touch }}
+					/>
 				</p>
 			{/if}
 
 			<div class="til" role="list">
 				{#each shown as c (c.id)}
-					{@const m = marks[c.id]}
+					{@const mk = marks[c.id]}
 					{@const src = avatar(c.id)}
 					{@const con = cons[c.id] ?? 0}
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 					<div
 						class="til-card"
 						class:is-locked={!editing}
-						class:is-owned={m === 'owned'}
-						class:is-wish={m === 'wishlist'}
+						class:is-owned={mk === 'owned'}
+						class:is-wish={mk === 'wishlist'}
 						class:is-flash={flashId === c.id}
 						class:is-nudged={nudgeId === c.id}
 						onanimationend={(e) => {
@@ -695,14 +707,16 @@
 						<div class="til-head" style:--el={elColor(c.element)}>
 							<button
 								class="til-face"
-								aria-pressed={m === 'owned'}
-								aria-label="{c.displayName}: {m === 'owned' ? 'owned' : 'not owned'}"
+								aria-pressed={mk === 'owned'}
+								aria-label={mk === 'owned'
+									? m.tb_displayname_owned({ name: c.displayName })
+									: m.tb_displayname_not_owned({ name: c.displayName })}
 								tabindex="-1"
 								title={editing
-									? m === 'owned'
-										? 'Mark not owned (X)'
-										: 'Mark owned (O)'
-									: 'Edit the roster to change this'}
+									? mk === 'owned'
+										? m.tb_mark_not_owned_x()
+										: m.tb_mark_owned_o()
+									: m.tb_edit_the_roster_to_change_this()}
 								onclick={() => (editing ? toggleOwned(c.id) : nudgeLock())}
 							>
 								{#if src}<img {src} alt="" loading="lazy" />{/if}
@@ -712,44 +726,46 @@
 									><img src={elementIcon(c.element)} alt="" /></span
 								>
 							{/if}
-							{#if m !== 'owned'}<button
+							{#if mk !== 'owned'}<button
 									class="til-corner til-corner--end til-wish"
-									class:is-active={m === 'wishlist'}
-									aria-pressed={m === 'wishlist'}
-									aria-label="Wishlist"
+									class:is-active={mk === 'wishlist'}
+									aria-pressed={mk === 'wishlist'}
+									aria-label={m.tb_wishlist()}
 									title={editing
-										? m === 'wishlist'
-											? 'Remove from wishlist (W)'
-											: 'Add to wishlist (W)'
+										? mk === 'wishlist'
+											? m.tb_remove_from_wishlist_w()
+											: m.tb_add_to_wishlist_w()
 										: undefined}
 									tabindex="-1"
 									onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
-									><Mark name="wish" size={12} filled={m === 'wishlist' && 'solid'} /></button
+									><Mark name="wish" size={12} filled={mk === 'wishlist' && 'solid'} /></button
 								>{:else}<button
 									class="til-corner til-corner--end til-wish til-theater"
 									class:is-active={!!offs[c.id]}
 									aria-pressed={!!offs[c.id]}
-									aria-label="Can’t enter Theater"
+									aria-label={m.tb_can_t_enter_theater_e6dd()}
 									title={editing
 										? offs[c.id]
-											? 'Can enter Theater (T)'
-											: 'Mark can’t enter Theater (T)'
+											? m.tb_can_enter_theater_t()
+											: m.tb_mark_can_t_enter_theater_t()
 										: offs[c.id]
-											? 'Can’t enter Theater'
+											? m.tb_can_t_enter_theater_e6dd()
 											: undefined}
 									tabindex="-1"
 									onclick={() => (editing ? toggleTheaterOff(c.id) : nudgeLock())}
 									><Mark name="theaterOff" size={12} /></button
 								>{/if}
-							{#if !editing && m === 'owned' && con > 0 && !c.noConstellations}
+							{#if !editing && mk === 'owned' && con > 0 && !c.noConstellations}
+								<!-- Notation (C2), the same in every language. -->
 								<span class="til-con">C{con}</span>
 							{/if}
 						</div>
 						<span class="til-name">{c.displayName}</span>
 						{#if editing && !c.noConstellations}
-							<div class="til-pips" role="group" aria-label="Constellation">
+							<!-- C1–C6 and their keys are notation, the same in every language. -->
+							<div class="til-pips" role="group" aria-label={m.tb_constellation()}>
 								{#each CON_PIPS as n (n)}
-									{@const on = m === 'owned' && n <= con}
+									{@const on = mk === 'owned' && n <= con}
 									<button
 										class="til-pip"
 										class:is-on={on}
@@ -770,7 +786,7 @@
 				{/each}
 			</div>
 			{#if !shown.length}
-				<p class="ros-hint">No character matches.</p>
+				<p class="ros-hint">{m.tb_no_character_matches()}</p>
 			{/if}
 		</div>
 	</div>

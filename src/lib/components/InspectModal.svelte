@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -88,8 +89,11 @@
 	onintrostart={introLive}
 	onoutrostart={outroInert}
 >
-	<button class="btn btn--icon im-close" bind:this={closeBtn} aria-label="Close" onclick={onClose}
-		><Mark name="close" size={16} /></button
+	<button
+		class="btn btn--icon im-close"
+		bind:this={closeBtn}
+		aria-label={m.tb_close()}
+		onclick={onClose}><Mark name="close" size={16} /></button
 	>
 	{@render children()}
 </div>

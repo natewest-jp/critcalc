@@ -18,6 +18,7 @@ import type {
 	RolePosition
 } from '$lib/types/character';
 import { providesFacet } from '$lib/capabilities/deriveCapabilities';
+import { m } from '$lib/paraglide/messages';
 import { FACETS, type FacetKey } from './facets';
 import {
 	FUNCTION_FACETS,
@@ -205,7 +206,8 @@ export function buildRoleSections(
 	if (category.function === 'dps') return sections;
 	const placed = new Set(sections.flatMap((s) => s.entries.map((e) => e.id)));
 	const rest = entries.filter((e) => inCategory(rolesOf(e.id), category) && !placed.has(e.id));
-	if (rest.length > 0) sections.push({ key: 'rest', label: 'Also in this role', entries: rest });
+	if (rest.length > 0)
+		sections.push({ key: 'rest', label: m.tb_also_in_this_role(), entries: rest });
 	return sections;
 }
 

@@ -32,6 +32,7 @@
 	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { ROLE_CATEGORIES, type RoleCategory } from '$lib/capabilities/roles';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		filters,
@@ -92,13 +93,16 @@
 	const chosenFacets = $derived(
 		FINGERPRINT.flatMap((c) => c.facets).filter((f) => !!activeFacets?.has(f))
 	);
-	const plateLabel = (word: string, n: number) => (n === 0 ? word : `${word}: ${n} selected`);
+	const elementsLabel = (n: number) =>
+		n === 0 ? m.tb_elements() : m.tb_elements_n_selected({ n });
+	const capabilitiesLabel = (n: number) =>
+		n === 0 ? m.tb_capabilities_ca09() : m.tb_capabilities_n_selected({ n });
 </script>
 
 <!-- The three groups, each ONE snippet so the phone's popovers hold the very
      controls the strip shows at width — same sets, same handlers. -->
 {#snippet roleBar()}
-	<div class="rfs-bar" role="group" aria-label="Role">
+	<div class="rfs-bar" role="group" aria-label={m.tb_role()}>
 		{#each ROLE_CATEGORIES as cat (cat.key)}
 			{@const on = activeRole === cat.key}
 			<button
@@ -106,7 +110,7 @@
 				class:is-active={on}
 				aria-pressed={on}
 				aria-label={cat.label}
-				title={on ? 'Show every role again' : cat.label}
+				title={on ? m.tb_show_every_role_again() : cat.label}
 				onclick={() => onRole(cat)}
 			>
 				{@render roleIcons(cat)}
@@ -121,7 +125,7 @@
 {/snippet}
 
 {#snippet elementBar()}
-	<div class="rfs-bar" role="group" aria-label="Element">
+	<div class="rfs-bar" role="group" aria-label={m.tb_element()}>
 		{#each ELEMENTS as el (el)}
 			{@const on = filters.elements.has(el)}
 			<button
@@ -141,7 +145,7 @@
 
 <!-- The fingerprint's own order and clusters (Survival · Support · Damage). -->
 {#snippet glyphRow()}
-	<div class="rfs-glyphs" role="group" aria-label="Can provide">
+	<div class="rfs-glyphs" role="group" aria-label={m.tb_can_provide()}>
 		{#each FINGERPRINT as c (c.cluster)}
 			<span class="rfs-bar">
 				{#each c.facets as facet (facet)}
@@ -151,7 +155,7 @@
 						class="btn btn--icon rfs-glyph"
 						class:is-active={on}
 						aria-pressed={on}
-						aria-label={`Can provide: ${f?.label ?? facet}`}
+						aria-label={m.tb_can_provide_facet({ facet: f?.label ?? facet })}
 						title={f ? `${f.label} — ${f.hint}` : facet}
 						onclick={() => toggleFacet(facet)}
 					>
@@ -181,7 +185,7 @@
 	{#if cat}
 		<span class="rfs-plate-icons rfs-plate-icons--role">{@render roleIcons(cat)}</span>
 	{:else}
-		<span class="band-menu-label">Roles</span>
+		<span class="band-menu-label">{m.tb_roles()}</span>
 	{/if}
 {/snippet}
 
@@ -189,14 +193,14 @@
 	<img class="rfs-plate-el" src={elementIcon(chosenElements[i])} alt="" />
 {/snippet}
 {#snippet elementFace()}
-	{@render plateFace('Elements', chosenElements.length, elementIconAt)}
+	{@render plateFace(m.tb_elements(), chosenElements.length, elementIconAt)}
 {/snippet}
 
 {#snippet glyphAt(i: number)}
 	<span class="rfs-glyph-art"><FingerprintGlyph facet={chosenFacets[i]} /></span>
 {/snippet}
 {#snippet capabilityFace()}
-	{@render plateFace('Capabilities', chosenFacets.length, glyphAt)}
+	{@render plateFace(m.tb_capabilities_ca09(), chosenFacets.length, glyphAt)}
 {/snippet}
 
 <!-- ctx-glass: the plates stand on the night, so their tokens are glass ones —
@@ -206,7 +210,7 @@
 	class:ctx-glass={!slate}
 	class:rfs--slate={slate}
 	role="group"
-	aria-label={slate ? 'Filters' : 'Role and element'}
+	aria-label={slate ? m.tb_filters() : m.tb_role_and_element()}
 >
 	{@render start?.()}
 	<div class="rfs-inline">
@@ -223,7 +227,7 @@
 			size="sm"
 			role="dialog"
 			align="start"
-			ariaLabel={activeRole ? 'Roles: 1 selected' : 'Roles'}
+			ariaLabel={activeRole ? m.tb_roles_1_selected() : m.tb_roles()}
 			face={roleFace}
 		>
 			{#snippet items()}
@@ -235,7 +239,7 @@
 			size="sm"
 			role="dialog"
 			align="start"
-			ariaLabel={plateLabel('Elements', chosenElements.length)}
+			ariaLabel={elementsLabel(chosenElements.length)}
 			face={elementFace}
 		>
 			{#snippet items()}
@@ -248,7 +252,7 @@
 				size="sm"
 				role="dialog"
 				align="start"
-				ariaLabel={plateLabel('Capabilities', chosenFacets.length)}
+				ariaLabel={capabilitiesLabel(chosenFacets.length)}
 				face={capabilityFace}
 			>
 				{#snippet items()}
@@ -261,13 +265,14 @@
 	<span class="rfs-end">
 		{#if count !== undefined}
 			<p class="rfs-count" role="status">
-				{count} character{count === 1 ? '' : 's'}{#if countNote}<span class="rfs-count-note"
+				{m.tb_count_character_x({ count })}{#if countNote}<span class="rfs-count-note"
 						>{countNote}</span
 					>{/if}
 			</p>
 		{/if}
 		{#if anyActive && onClear}
-			<button class="btn btn--sm" class:btn--glass={!slate} onclick={onClear}>Clear</button>
+			<button class="btn btn--sm" class:btn--glass={!slate} onclick={onClear}>{m.tb_clear()}</button
+			>
 		{/if}
 	</span>
 </div>

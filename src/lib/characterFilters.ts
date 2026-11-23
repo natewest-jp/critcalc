@@ -16,6 +16,7 @@
  */
 
 import type { CharacterIndexEntry } from '$lib/types/character';
+import { m } from '$lib/paraglide/messages';
 import type { SvelteSet } from 'svelte/reactivity';
 
 export type IdentityFilters = {
@@ -48,10 +49,23 @@ export type OwnershipView = 'all' | 'owned' | 'wishlist';
 /** The Show segment's choices — the Builder's band B character cell, or
  *  More when the cell folds it. */
 export const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
-	{ key: 'all', label: 'All', hint: 'Every character' },
-	{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
-	{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
+	view('all', m.tb_all, m.tb_every_character),
+	view('owned', m.tb_owned_b62f, m.tb_only_characters_you_ve_marked_as_owned),
+	view('wishlist', m.tb_wishlist, m.tb_only_characters_you_ve_wishlisted)
 ];
+
+/** A Show choice whose words are read at each use, so they follow the locale. */
+function view(key: OwnershipView, label: () => string, hint: () => string) {
+	return {
+		key,
+		get label() {
+			return label();
+		},
+		get hint() {
+			return hint();
+		}
+	};
+}
 
 export type GridFilters = {
 	elements: SvelteSet<string>;
@@ -67,6 +81,7 @@ export type GridFilters = {
 
 /** The region of a character from outside Teyvat — every Traveler, Skirk and
  *  Aloy (⚓ Nate, 2026-10-15). It is not a nation, so its chip goes LAST. */
+// Stays English: it is the data's own region value, matched against `entry.region`.
 export const REGION_OTHER = 'Other';
 
 /** The roster's region chips: the nations alphabetically, then "Other". */

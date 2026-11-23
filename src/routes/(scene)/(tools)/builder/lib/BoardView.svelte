@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	/**
 	 * THE BOARD PANE — the right half of the split screen (lineups design §2.4).
 	 * A board stacks its TEAMS vertically, each a row (§3); build step 5 gave
@@ -470,13 +471,13 @@
 	{@const plate = filled && !isErrand}
 	{@const canFill = !isErrand && rotationTabs.teams.length > 0}
 	{@const showAct = plate || canFill}
-	{@const fillLabel = `Fill ${name} from Teams`}
+	{@const fillLabel = m.tb_fill_name_from_teams({ team: name })}
 	{@const planTitle = pin
-		? `Open “${pin.name}” in the Rotation Planner`
-		: 'Open this team in the Rotation Planner'}
+		? m.tb_open_name_in_the_rotation_planner({ name: pin.name })
+		: m.tb_open_this_team_in_the_rotation_planner()}
 	{@const pinLabel = pin
-		? `Pinned rotation for ${name}: ${pin.name}`
-		: `Pin a rotation for ${name}`}
+		? m.tb_pinned_rotation_for_name_name({ team: name, name: pin.name })
+		: m.tb_pin_a_rotation_for_name({ team: name })}
 	<!-- The row's pieces, arranged twice below: the wide row and the phone's. -->
 	{#snippet boss(size: number, zoom: number)}
 		{#if field && season}
@@ -484,7 +485,7 @@
 				class="bv-boss"
 				style:--boss="{size}px"
 				style:--zoom="{zoom}px"
-				aria-label="Details: {inLang(BOSSES[field.boss].name)}"
+				aria-label={m.tb_details_name({ name: inLang(BOSSES[field.boss].name) })}
 				onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
 			>
 				<img src={bossImage(field.boss, 'icon')} alt="" />
@@ -521,7 +522,7 @@
 				<span class="bv-menu-check"
 					>{#if current}<Mark name="check" size={12} />{/if}</span
 				>
-				{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
+				{#if r}{r.name}{:else}<span class="bv-menu-quiet">{m.tb_no_pin()}</span>{/if}
 			</button>
 		{/each}
 	{/snippet}
@@ -561,7 +562,7 @@
 				onclick={() => onOpenInPlanner(team)}
 				title={planTitle}
 				aria-label={planTitle}
-				><span class="bv-vword">Planner</span><Mark name="forwardSlim" size={12} /></button
+				><span class="bv-vword">{m.tb_planner()}</span><Mark name="forwardSlim" size={12} /></button
 			>
 			{#if rotations.length > 0 || canFill}
 				<span class="bv-beside">
@@ -596,7 +597,7 @@
 						class="btn btn--sm bv-planner"
 						onclick={() => onOpenInPlanner(team)}
 						title={planTitle}
-						aria-label={planTitle}>Planner <Mark name="forward" size={12} /></button
+						aria-label={planTitle}>{m.tb_planner()} <Mark name="forward" size={12} /></button
 					>
 					{#if canFill}
 						<BandMenu
@@ -615,7 +616,7 @@
 							mark="pin"
 							size="sm"
 							align="end"
-							label={pin?.name ?? 'Rotation'}
+							label={pin?.name ?? m.tb_rotation()}
 							ariaLabel={pinLabel}
 							items={pinItems}
 						/>
@@ -651,14 +652,18 @@
 						aria-label={entry
 							? sel
 								? swapSlot === i
-									? `Stop replacing ${entry.displayName}`
-									: `Replace ${entry.displayName}, ${name} slot ${i + 1}`
-								: `${entry.displayName}, ${name} slot ${i + 1}`
+									? m.tb_stop_replacing_displayname({ name: entry.displayName })
+									: m.tb_replace_displayname_name_slot_x({
+											name: entry.displayName,
+											team: name,
+											n: i + 1
+										})
+								: m.tb_displayname_name_slot_x({ name: entry.displayName, team: name, n: i + 1 })
 							: sel && isErrand
 								? swapSlot === i
-									? `Stop adding to ${name}`
-									: `Add to ${name}, slot ${i + 1}`
-								: `Empty, ${name} slot ${i + 1}`}
+									? m.tb_stop_adding_to_name({ team: name })
+									: m.tb_add_to_name_slot_x({ team: name, n: i + 1 })
+								: m.tb_empty_name_slot_x({ team: name, n: i + 1 })}
 						onclick={(e) => {
 							e.stopPropagation();
 							if (sel && (id || isErrand) && onSwap) return onSwap(team.id, i);
@@ -719,11 +724,11 @@
 					{field
 						? phone
 							? bossName(field.boss, true)
-							: `Battlefield ${t + 1}: ${bossName(field.boss, false)}`
+							: m.tb_battlefield_x_false({ n: t + 1, boss: bossName(field.boss, false) })
 						: half
 							? t === 0
-								? 'First half'
-								: 'Second half'
+								? m.tb_first_half()
+								: m.tb_second_half()
 							: name}
 				</h3>
 				<!-- ↻ 2026-10-20 (⚓ Nate): on a phone the checks sit IN the banner,
@@ -736,7 +741,7 @@
 				     board only — a battlefield is not yours to remove. -->
 			{#if isErrand}
 				<span class="bv-team-actions">
-					<button class="btn btn--sm" onclick={() => errand?.onCancel()}>Cancel</button>
+					<button class="btn btn--sm" onclick={() => errand?.onCancel()}>{m.tb_cancel()}</button>
 				</span>
 			{:else if (half && abyss) || (board.preset === 'custom' && board.teams.length > 1)}
 				<span class="bv-team-actions">
@@ -745,16 +750,17 @@
 					{#if half && abyss}
 						<button
 							class="btn btn--sm"
-							aria-label="Opponents"
+							aria-label={m.tb_opponents()}
 							onclick={() => (opponents = t as 0 | 1)}
-							><Mark name="search" size={12} /><span class="bv-word">Opponents</span></button
+							><Mark name="search" size={12} /><span class="bv-word">{m.tb_opponents()}</span
+							></button
 						>
 					{/if}
 					{#if board.preset === 'custom' && board.teams.length > 1}
 						<button
 							class="btn btn--icon bv-remove-team"
 							onclick={() => onRemoveTeam(team.id)}
-							aria-label="Remove team {t + 1}"><Mark name="close" size={12} /></button
+							aria-label={m.tb_remove_team_x({ n: t + 1 })}><Mark name="close" size={12} /></button
 						>
 					{/if}
 				</span>
@@ -838,17 +844,20 @@
 						     against the line LESS the + button's room, held whether or
 						     not the button shows, so the decision cannot feed itself. -->
 					<span class="bv-lineup-mode"
-						>{abyssPrefix ? 'Spiral Abyss · ' : ''}{inLang(abyss.name)}</span
+						>{abyssPrefix
+							? m.tb_spiral_abyss_name({ name: inLang(abyss.name) })
+							: inLang(abyss.name)}</span
 					>
 					<span
 						class="bv-lineup-mode bv-abyss-measure"
 						aria-hidden="true"
-						bind:clientWidth={abyssTitleW}>Spiral Abyss · {inLang(abyss.name)}</span
+						bind:clientWidth={abyssTitleW}
+						>{m.tb_spiral_abyss_name({ name: inLang(abyss.name) })}</span
 					>
 					{#if blessingLines > 0}
 						<button
 							class="btn btn--icon btn--sm bv-abyss-more"
-							aria-label={blessingOpen ? 'Less' : 'More'}
+							aria-label={blessingOpen ? m.tb_less() : m.tb_more()}
 							aria-expanded={blessingOpen}
 							onclick={() => (blessingOpen = !blessingOpen)}
 							><Mark name={blessingOpen ? 'minus' : 'plus'} size={12} /></button

@@ -1746,5 +1746,594 @@
 	"vz_wish_chance_on_each_pull": "chance on each pull",
 	"vz_wish_pulls_saved": "Pulls saved",
 	"vz_wish_pulls_you_have_saved": "Pulls you have saved",
-	"vz_wish_your_character_and_weapon_banners_keep": "Your character and weapon banners keep separate pity, so the chart adds the pulls for both."
+	"vz_wish_your_character_and_weapon_banners_keep": "Your character and weapon banners keep separate pity, so the chart adds the pulls for both.",
+	"tb_heal": "Heal",
+	"tb_shield": "Shield",
+	"tb_off_field_dmg": "Off-field DMG",
+	"tb_res_shred": "RES shred",
+	"tb_cleanse": "Cleanse",
+	"tb_grouping": "Grouping",
+	"tb_buff": "Buff",
+	"tb_energy": "Energy",
+	"tb_infusion": "Infusion",
+	"tb_summon": "Summon",
+	"tb_taunt": "Taunt",
+	"tb_team_wide": "team-wide",
+	"tb_active_character": "active character",
+	"tb_self_only": "self only",
+	"tb_on_enemies": "on enemies",
+	"tb_def": "DEF",
+	"tb_all_elements": "all elements",
+	"tb_coordinated_attack": "coordinated attack",
+	"tb_after_a_normal_attack": "after a Normal Attack",
+	"tb_after_an_elemental_skill": "after an Elemental Skill",
+	"tb_after_an_elemental_burst": "after an Elemental Burst",
+	"tb_after_the_effect_ends": "after the effect ends",
+	"tb_while_shielded": "while shielded",
+	"tb_while_on_field": "while on field",
+	"tb_while_off_field": "while off-field",
+	"tb_while_the_summon_is_present": "while the summon is present",
+	"tb_during_nightsoul_s_blessing": "during Nightsoul's Blessing",
+	"tb_during_the_stance": "during the stance",
+	"tb_while_thunderous_symphony_is_ready": "while Thunderous Symphony is ready",
+	"tb_during_apex_drive": "during Apex Drive",
+	"tb_during_essential_transmutation": "during Essential Transmutation",
+	"tb_during_confirmation_of_purity": "during Confirmation of Purity",
+	"tb_during_denial_of_darkness": "during Denial of Darkness",
+	"tb_while_the_dragon_of_white_flame_is": "while the Dragon of White Flame is present",
+	"tb_while_the_dragon_of_dark_decay_is": "while the Dragon of Dark Decay is present",
+	"tb_while_adagio_coda_at_dawn_s_tolling_is_3465": "while Adagio: Coda at Dawn's Tolling is ready",
+	"tb_while_the_solo_dance_double_is_present": "while the Solo Dance Double is present",
+	"tb_while_the_ring_of_searing_radiance_is": "while the Ring of Searing Radiance is present",
+	"tb_after_an_elemental_absorption": "after an Elemental Absorption",
+	"tb_in_pneuma_alignment": "in Pneuma alignment",
+	"tb_during_spirit_envoy_metamorphosis": "during Spirit Envoy Metamorphosis",
+	"tb_while_spirit_envoy_is_on_cooldown": "while Spirit Envoy is on cooldown",
+	"tb_during_follow_up_strike": "during Follow-Up Strike",
+	"tb_during_haunted_night_s_oriole_song": "during Haunted Night's Oriole-Song",
+	"tb_while_on_the_flamestrider": "while on the Flamestrider",
+	"tb_outside_the_stance": "outside the stance",
+	"tb_outside_nightsoul_s_blessing": "outside Nightsoul's Blessing",
+	"tb_while_adagio_coda_at_dawn_s_tolling_is_c9ba": "while Adagio: Coda at Dawn's Tolling is not ready",
+	"tb_while_no_solo_dance_double_is_present": "while no Solo Dance Double is present",
+	"tb_depends_on_a_character_state": "depends on a character state",
+	"tb_needs_a_arg_enabler": "needs a {reaction} enabler",
+	"tb_inside_the_polestar_field": "inside the Polestar Field",
+	"tb_needs_arg_stacks": "needs {stack} stacks",
+	"tb_needs_arg_teammates": "needs {faction} teammates",
+	"tb_depends_on_team_elements": "depends on team elements",
+	"tb_when_active_character_is_arg": "when active character is {faction}",
+	"tb_depends_on_enemy_hp": "depends on enemy HP",
+	"tb_depends_on_own_hp": "depends on own HP",
+	"tb_depends_on_recipient_hp": "depends on recipient HP",
+	"tb_vs_arg_affected_enemies": "vs {element}-affected enemies",
+	"tb_at_a_specific_cast_in_the_chain": "at a specific cast in the chain",
+	"tb_weapon_type_dependent": "weapon-type dependent",
+	"tb_depends_on_the_situation": "depends on the situation",
+	"tb_healing": "Healing",
+	"tb_restores_teammates_hp": "Restores teammates’ HP.",
+	"tb_shields_the_active_character": "Shields the active character.",
+	"tb_interruption_res": "Interruption RES",
+	"tb_makes_teammates_harder_to_interrupt": "Makes teammates harder to interrupt.",
+	"tb_coordinated_attacks_or_damaging_summons": "Coordinated attacks or damaging summons",
+	"tb_lowers_enemy_elemental_physical_res": "Lowers enemy elemental/physical RES",
+	"tb_removes_elemental_auras_from_party": "Removes elemental auras from party members",
+	"tb_pulls_or_gathers_enemies": "Pulls or gathers enemies",
+	"tb_atk_buff": "ATK buff",
+	"tb_buffs_allies_atk": "Buffs allies’ ATK",
+	"tb_em_buff": "EM buff",
+	"tb_buffs_allies_elemental_mastery": "Buffs allies’ Elemental Mastery",
+	"tb_crit_buff": "CRIT buff",
+	"tb_buffs_allies_crit_rate_crit_dmg": "Buffs allies’ CRIT Rate / CRIT DMG",
+	"tb_dmg_buff": "DMG% buff",
+	"tb_buffs_allies_damage_bonuses": "Buffs allies’ damage bonuses",
+	"tb_hp_def_buff": "HP/DEF buff",
+	"tb_buffs_allies_hp_or_def": "Buffs allies’ HP or DEF",
+	"tb_infuses_the_active_character_s_attacks": "Infuses the active character’s attacks with an element.",
+	"tb_gives_teammates_flat_energy_particles": "Gives teammates flat Energy (particles aren’t counted).",
+	"tb_draws_opponents_attacks_away_from_you": "Draws opponents’ attacks away from you.",
+	"tb_shred": "Shred",
+	"tb_group": "Group",
+	"tb_infuse": "Infuse",
+	"tb_on_field_dps": "On-Field DPS",
+	"tb_off_field_dps": "Off-Field DPS",
+	"tb_support": "Support",
+	"tb_survivability": "Survivability",
+	"tb_all": "All",
+	"tb_every_character": "Every character",
+	"tb_owned_b62f": "Owned",
+	"tb_only_characters_you_ve_marked_as_owned": "Only characters you’ve marked as owned",
+	"tb_wishlist": "Wishlist",
+	"tb_only_characters_you_ve_wishlisted": "Only characters you’ve wishlisted",
+	"tb_you_own_c_chip": "You own C{chip}",
+	"tb_hidden_more_x": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "{count} more capability",
+				"countPlural=other": "{count} more capabilities"
+			}
+		}
+	],
+	"tb_displayname_s_details": "{name}'s details",
+	"tb_name_passive": "{name} · passive",
+	"tb_name_team_bonus": "{name} · team bonus",
+	"tb_kit_not_yet_curated_capability_data": "Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”, not “no”. {#link}See coverage{/link}",
+	"tb_capabilities_below_are_complete_frame": "Capabilities below are complete. Frame timing isn’t curated yet, so only this character’s rotation timing is approximate in the Planner. {#link}See coverage{/link}",
+	"tb_on_your_wishlist": "On your wishlist",
+	"tb_not_owned_ffff": "Not owned",
+	"tb_edit_in_roster": "Edit in Roster",
+	"tb_this_rotation": "This rotation",
+	"tb_your_roster_d858": "Your roster:",
+	"tb_your_roster_7d53": "Your roster",
+	"tb_to_set_this_character_s_constellation": "To set this character’s constellation for this rotation only, use the selector on the Planner rather than the Roster.",
+	"tb_default_build": "Default build",
+	"tb_capabilities_ca09": "Capabilities",
+	"tb_loading_kit_data": "Loading kit data…",
+	"tb_nothing_team_facing_derives_from_this_5b77": "Nothing team-facing derives from this kit.",
+	"tb_nothing_team_facing_derives_from_this_b3c5": "Nothing team-facing derives from this kit — likely a selfish carry, or curation hasn’t covered its utility yet.",
+	"tb_marked_on_the_ability_but_target_scaling": "Marked on the ability, but target/scaling not yet curated",
+	"tb_tagged": "tagged",
+	"tb_timing_reference": "Timing reference",
+	"tb_cooldown_s_cooldown": "{seconds}s cooldown",
+	"tb_charges_charges": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "· {count} charge",
+				"countPlural=other": "· {count} charges"
+			}
+		}
+	],
+	"tb_energycost_energy": "· {cost} energy",
+	"tb_something_not_right_with_this_character": "Something not right with this character?",
+	"tb_elements_n_selected": "Elements: {n} selected",
+	"tb_capabilities_n_selected": "Capabilities: {n} selected",
+	"tb_role": "Role",
+	"tb_show_every_role_again": "Show every role again",
+	"tb_element": "Element",
+	"tb_can_provide": "Can provide",
+	"tb_can_provide_facet": "Can provide: {facet}",
+	"tb_roles": "Roles",
+	"tb_elements": "Elements",
+	"tb_filters": "Filters",
+	"tb_role_and_element": "Role and element",
+	"tb_roles_1_selected": "Roles: 1 selected",
+	"tb_count_character_x": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "{count} character",
+				"countPlural=other": "{count} characters"
+			}
+		}
+	],
+	"tb_clear": "Clear",
+	"tb_no_characters_match_these_filters": "No characters match these filters.",
+	"tb_ascendant_gleam": "Ascendant Gleam",
+	"tb_secret_rite": "Secret Rite",
+	"tb_natlan_natlancount": "Natlan ×{count}",
+	"tb_all_four_team_slots_are_filled": "All four team slots are filled",
+	"tb_in_team_remove": "In team — remove",
+	"tb_in_elsewherelabel_remove": "In {team} — remove",
+	"tb_in_another_team_remove": "In another team — remove",
+	"tb_team_full": "Team full",
+	"tb_add_to_team": "Add to team",
+	"tb_id_details": "{name} details",
+	"tb_close": "Close",
+	"tb_moonsign": "Moonsign",
+	"tb_moonsign_characters_2_or_more_enable": "Moonsign characters — 2 or more enable Ascendant Gleam and the Lunar reactions",
+	"tb_hexerei": "Hexerei",
+	"tb_hexerei_characters_2_or_more_enable": "Hexerei characters — 2 or more enable Hexerei: Secret Rite",
+	"tb_stellar": "Stellar",
+	"tb_stellar_linked_enables_a_stellar": "Stellar-linked — enables a Stellar reaction, or has buffs that need one enabled",
+	"tb_show": "Show",
+	"tb_read_capabilities_at": "Read capabilities at",
+	"tb_weapon": "Weapon",
+	"tb_rarity": "Rarity",
+	"tb_region": "Region",
+	"tb_factions_buffs": "Factions / Buffs",
+	"tb_newest": "Newest",
+	"tb_name": "Name",
+	"tb_n_character_x": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "{count} character",
+				"countPlural=other": "{count} characters"
+			}
+		}
+	],
+	"tb_hide_the_on_field_characters": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Hide the on-field character",
+				"countPlural=other": "Hide the on-field characters"
+			}
+		}
+	],
+	"tb_hide_the_off_field_characters": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Hide the off-field character",
+				"countPlural=other": "Hide the off-field characters"
+			}
+		}
+	],
+	"tb_show_count_on_field_characters_too": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Show {count} on-field character too",
+				"countPlural=other": "Show {count} on-field characters too"
+			}
+		}
+	],
+	"tb_show_count_off_field_characters_too": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Show {count} off-field character too",
+				"countPlural=other": "Show {count} off-field characters too"
+			}
+		}
+	],
+	"tb_undo": "Undo",
+	"tb_marked_n_owned": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Marked {count} character owned",
+				"countPlural=other": "Marked {count} characters owned"
+			}
+		}
+	],
+	"tb_marked_n_owned_at_c6": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Marked {count} character owned at C6",
+				"countPlural=other": "Marked {count} characters owned at C6"
+			}
+		}
+	],
+	"tb_marked_n_not_owned": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Marked {count} character not owned",
+				"countPlural=other": "Marked {count} characters not owned"
+			}
+		}
+	],
+	"tb_move": "move",
+	"tb_not_owned_1ac4": "not owned",
+	"tb_owned_or_not": "owned or not",
+	"tb_can_t_enter_theater_919b": "can’t enter Theater",
+	"tb_mark_shown": "Mark shown",
+	"tb_mark_all": "Mark all",
+	"tb_mark_every_character_shown": "Mark every character shown",
+	"tb_mark_every_character": "Mark every character",
+	"tb_owned_at_c6": "Owned at C6",
+	"tb_undo_z": "Undo (⌘Z)",
+	"tb_undo_ctrl_z": "Undo (Ctrl+Z)",
+	"tb_redo": "Redo",
+	"tb_redo_z": "Redo (⇧⌘Z)",
+	"tb_redo_ctrl_shift_z": "Redo (Ctrl+Shift+Z)",
+	"tb_lock_roster": "Lock roster",
+	"tb_edit_roster": "Edit roster",
+	"tb_lock_the_roster_against_stray_clicks": "Lock the roster against stray clicks",
+	"tb_unlock_the_roster_to_edit_it": "Unlock the roster to edit it",
+	"tb_keyboard_shortcuts": "Keyboard shortcuts",
+	"tb_search": "Search…",
+	"tb_search_characters": "Search characters",
+	"tb_show_everyone": "Show everyone",
+	"tb_more": "More",
+	"tb_more_filters_morecount_set": "More filters, {count} set",
+	"tb_more_filters": "More filters",
+	"tb_sort_label": "Sort: {sort}",
+	"tb_mark_the_characters_you_own_by_clicking": "Mark the characters you own by {#pointer}clicking{/pointer}{#touch}tapping{/touch} their portraits.",
+	"tb_displayname_owned": "{name}: owned",
+	"tb_owned_c6dd": "owned",
+	"tb_mark_not_owned_x": "Mark not owned (X)",
+	"tb_mark_owned_o": "Mark owned (O)",
+	"tb_edit_the_roster_to_change_this": "Edit the roster to change this",
+	"tb_remove_from_wishlist_w": "Remove from wishlist (W)",
+	"tb_add_to_wishlist_w": "Add to wishlist (W)",
+	"tb_can_t_enter_theater_e6dd": "Can’t enter Theater",
+	"tb_can_enter_theater_t": "Can enter Theater (T)",
+	"tb_mark_can_t_enter_theater_t": "Mark can’t enter Theater (T)",
+	"tb_constellation": "Constellation",
+	"tb_no_character_matches": "No character matches.",
+	"tb_easy": "Easy",
+	"tb_normal": "Normal",
+	"tb_hard": "Hard",
+	"tb_visionary": "Visionary",
+	"tb_lunar": "Lunar",
+	"tb_off_field_cc62": "Off-field",
+	"tb_on_field_4cbe": "On-field",
+	"tb_int_res": "Int-Res",
+	"tb_atk": "ATK+",
+	"tb_em": "EM+",
+	"tb_crit": "CRIT+",
+	"tb_dmg": "DMG+",
+	"tb_hp_def": "HP/DEF+",
+	"tb_that_link_asks_for_a_team_slot_that": "That link asks for a team slot that doesn’t exist.",
+	"tb_the_planner_s_team": "the Planner’s team",
+	"tb_left_left_id": "{name} left {team}",
+	"tb_lineup_cleared": "Lineup cleared",
+	"tb_removed_label": "Removed {team}",
+	"tb_no_repeats_count_repeated_characters": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "No repeats: a repeated character left their other team",
+				"countPlural=other": "No repeats: {count} repeated characters left their other team"
+			}
+		}
+	],
+	"tb_placed_slots": "Placed {team}",
+	"tb_cast_cleared": "Cast cleared",
+	"tb_name_replaced_incumbent": "{name} replaced {old}",
+	"tb_name_replaced_old_from_team": "{name} replaced {old} (from {team})",
+	"tb_name_replaced_old_pin_is_no_longer": "{name} replaced {old}. {pin} is no longer pinned.",
+	"tb_name_replaced_old_from_team_pin_is_no": "{name} replaced {old} (from {team}). {pin} is no longer pinned.",
+	"tb_try_it_with_name_in_the_planner": "Try it with {name} in the Planner",
+	"tb_no_curated_character_matches_some_kits_62ce": "No curated character matches. Some kits unlock these capabilities at higher constellations — try “C6”.",
+	"tb_no_curated_character_matches_some_kits_80e5": "No curated character matches. Some kits unlock these capabilities at higher constellations — try “My constellations” or “C6”.",
+	"tb_no_curated_character_matches": "No curated character matches.",
+	"tb_special_guest_stars": "Special Guest Stars",
+	"tb_available_characters": "Available Characters",
+	"tb_displayname_not_owned": "{name}: not owned",
+	"tb_displayname_marked_can_t_enter_theater": "{name}: marked can’t enter Theater",
+	"tb_remove_displayname_from_the_cast_x": "Remove {name} from the cast ({n})",
+	"tb_add_displayname_to_the_cast": "Add {name} to the cast",
+	"tb_at_your_constellations": "at your constellations",
+	"tb_at_level": "at {level}",
+	"tb_base_kits_only_what_every_copy_of_the": "Base kits only — what every copy of the character can do",
+	"tb_everything_a_kit_unlocks_through_c_n": "Everything a kit unlocks through C{n}",
+	"tb_everything_the_kit_can_ever_do": "Everything the kit can ever do",
+	"tb_my_constellations": "My constellations",
+	"tb_uses_the_constellations_in_your_roster": "Uses the constellations in your Roster",
+	"tb_label_new_to_the_team": "{label} · new to the team",
+	"tb_label_from_c_mincon": "{label} · from C{n}",
+	"tb_swap_displayname_in_for_incumbent": "Swap {name} in for {old}",
+	"tb_add_displayname_to_selectedlabel": "Add {name} to {team}",
+	"tb_remove_displayname_from_from": "Remove {name} from {team}",
+	"tb_remove_displayname_from_team_slot_x": "Remove {name} from {team} (slot {n})",
+	"tb_add_displayname_to_team": "Add {name} to {team}",
+	"tb_keeps_everything": "Keeps everything",
+	"tb_trades": "Trades",
+	"tb_changes_the_reactions": "Changes the reactions",
+	"tb_not_yet_curated": "Not yet curated",
+	"tb_adds": "Adds",
+	"tb_auto_select_the_cast": "Auto-select the cast",
+	"tb_pick_everyone_eligible_up_to_this_mode_s": "Pick everyone eligible, up to this mode’s room",
+	"tb_auto_select": "Auto-select",
+	"tb_clear_the_cast": "Clear the cast",
+	"tb_blessing_level_buff_effects_increased_by": "Blessing Level buff effects increased by 100%",
+	"tb_length_character_x": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "{count} character",
+				"countPlural=other": "{count} characters"
+			}
+		}
+	],
+	"tb_these_kits_have_no_capability_data_yet": "These kits have no capability data yet — they may well do what you’re filtering for. A card with no capabilities here means “unknown”, not “no”. {#link}See their coverage{/link}",
+	"tb_no_capability_data_yet_so_this_swap_can": "No capability data yet, so this swap can’t be read.",
+	"tb_loses_nothing": "Loses nothing",
+	"tb_lineup": "Lineup",
+	"tb_characters": "Characters",
+	"tb_show_everyone_again": "Show everyone again",
+	"tb_clear_every_filter": "Clear every filter",
+	"tb_add_team": "Add team",
+	"tb_clear_every_team_in_this_lineup": "Clear every team in this lineup",
+	"tb_no_repeats": "No repeats",
+	"tb_each_character_joins_only_one_team": "Each character joins only one team.",
+	"tb_a_character_can_join_more_than_one_team": "A character can join more than one team.",
+	"tb_repeats_allowed": "Repeats allowed",
+	"tb_share_this_lineup": "Share this lineup",
+	"tb_copy_a_link_to_this_lineup": "Copy a link to this lineup",
+	"tb_share": "Share",
+	"tb_from_the_planner_plannerdocname": "From the Planner: {name}",
+	"tb_the_owned_filter_and_my_constellations": "The Owned filter and “My constellations” read your roster, which is empty.",
+	"tb_open_the_roster": "Open the Roster",
+	"tb_replacing_incumbent_selectedlabel": "Replacing {name} · {team}",
+	"tb_adding_to_selectedlabel": "Adding to {team}",
+	"tb_stop_replacing_incumbent": "Stop replacing {name}",
+	"tb_stop_adding_to_selectedlabel": "Stop adding to {team}",
+	"tb_stop_replacing_esc": "Stop replacing (Esc)",
+	"tb_stop_adding_esc": "Stop adding (Esc)",
+	"tb_selectedlabel_is_full_pick_a_member": "{team} is full. Pick a member again to remove them.",
+	"tb_adding_to_selectedlabel_destfilled_4": "Adding to {team} · {n}/4",
+	"tb_no_character_of_this_season_matches": "No character of this season matches.",
+	"tb_brings_to_selectedlabel": "Brings to {team}",
+	"tb_adds_to_selectedlabel": "Adds to {team}",
+	"tb_no_capability_data_yet_so_this_can_t_be": "No capability data yet, so this can’t be read.",
+	"tb_nothing_the_fingerprint_shows": "Nothing the fingerprint shows",
+	"tb_first_half_opponents": "First half · Opponents",
+	"tb_second_half_opponents": "Second half · Opponents",
+	"tb_first_half": "First half",
+	"tb_second_half": "Second half",
+	"tb_team_x": "Team {n}",
+	"tb_spiral_abyss_floor_12": "Spiral Abyss · Floor 12",
+	"tb_chamber_x": "Chamber {n}",
+	"tb_lv_level_hp_hp": "Lv. {level} · {hp} HP",
+	"tb_opponents_first_half": "Opponents, first half",
+	"tb_opponents_second_half": "Opponents, second half",
+	"tb_also_in_this_role": "Also in this role",
+	"tb_fill_name_from_teams": "Fill {team} from Teams",
+	"tb_open_name_in_the_rotation_planner": "Open “{name}” in the Rotation Planner",
+	"tb_open_this_team_in_the_rotation_planner": "Open this team in the Rotation Planner",
+	"tb_pinned_rotation_for_name_name": "Pinned rotation for {team}: {name}",
+	"tb_pin_a_rotation_for_name": "Pin a rotation for {team}",
+	"tb_details_name": "Details: {name}",
+	"tb_no_pin": "No pin",
+	"tb_planner": "Planner",
+	"tb_rotation": "Rotation",
+	"tb_stop_replacing_displayname": "Stop replacing {name}",
+	"tb_replace_displayname_name_slot_x": "Replace {name}, {team} slot {n}",
+	"tb_displayname_name_slot_x": "{name}, {team} slot {n}",
+	"tb_stop_adding_to_name": "Stop adding to {team}",
+	"tb_add_to_name_slot_x": "Add to {team}, slot {n}",
+	"tb_empty_name_slot_x": "Empty, {team} slot {n}",
+	"tb_battlefield_x_false": "Battlefield {n}: {boss}",
+	"tb_cancel": "Cancel",
+	"tb_opponents": "Opponents",
+	"tb_remove_team_x": "Remove team {n}",
+	"tb_spiral_abyss_name": "Spiral Abyss · {name}",
+	"tb_less": "Less",
+	"tb_battlefield_x_stygian_onslaught_version": "Battlefield {n} · Stygian Onslaught {version}",
+	"tb_fearless_hp": "Fearless HP",
+	"tb_dire_hp": "Dire HP",
+	"tb_also_in_stygian_onslaught_x": "Also in Stygian Onslaught {versions}",
+	"tb_this_team_brings_it": "This team brings it",
+	"tb_this_team_does_what_this_boss_resists": "This team does what this boss resists",
+	"tb_this_team_does_not_bring_it": "This team does not bring it",
+	"tb_this_team_avoids_it": "This team avoids it",
+	"tb_x_provides_it": "{name} provides it.",
+	"tb_lit_provide_it": "{names} provide it.",
+	"tb_outlined_would_but_not_in_this_team": "{names} would, but not in this team.",
+	"tb_locked_would_from_a_higher_constellation": "{names} would from a higher constellation.",
+	"tb_x_isn_t_curated_yet": "{name} isn’t curated yet.",
+	"tb_unknown_aren_t_curated_yet": "{names} aren’t curated yet.",
+	"tb_nobody_here_provides_it": "Nobody here provides it.",
+	"tb_this_pick_adds_it": "This pick adds it.",
+	"tb_this_pick_takes_it_away": "This pick takes it away.",
+	"tb_click_to_find_who_provides_it": "Click to find who provides it.",
+	"tb_the_team_s_capabilities": "The team's capabilities",
+	"tb_season_name_start_end": "Season: {name}, {start} – {end}",
+	"tb_cycle_name_start_end": "Cycle: {name}, {start} – {end}",
+	"tb_gains": "Gains",
+	"tb_loses": "Loses",
+	"tb_mode_mode": "Mode: {mode}",
+	"tb_acts_acts": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "{count} act",
+				"countPlural=other": "{count} acts"
+			}
+		}
+	],
+	"tb_acts_length_acts": "{count} + {arcana} acts",
+	"tb_battlefield_x": "Battlefield {n}",
+	"tb_primary_antagonists": "Primary Antagonists",
+	"tb_lv_level": "Lv. {level}",
+	"tb_opening_and_alternate_cast_members": "Opening and Alternate Cast members selected",
+	"tb_counting_one_supporting_cast_character": "Counting one Supporting Cast character from a friend",
+	"tb_count_one_supporting_cast_character_from": "Count one Supporting Cast character from a friend",
+	"tb_1_supporting_cast": "+1 Supporting Cast",
+	"tb_id_opening_character": "{name} · Opening Character",
+	"tb_supporting_cast": "Supporting Cast",
+	"tb_stats": "Stats",
+	"tb_on_field": "On-Field",
+	"tb_off_field": "Off-Field",
+	"tb_extras_extra_extra_alternate_cast": "{extras}/{extra} extra Alternate Cast members have been added. Buffs based on the number of extra members added are obtained",
+	"tb_add_at_least_need_characters_to_start": [
+		{
+			"declarations": [
+				"input count",
+				"local countPlural = count: plural"
+			],
+			"selectors": [
+				"countPlural"
+			],
+			"match": {
+				"countPlural=one": "Add at least {count} character to start the show",
+				"countPlural=other": "Add at least {count} characters to start the show"
+			}
+		}
+	],
+	"tb_alternate_cast": "Alternate Cast",
+	"tb_gain_flowers_per_extra_fantasia_flowers": "Gain {#b}{flowers}{/b} Fantasia Flowers",
+	"tb_gain_blessinglevels_blessing_level_s": "Gain {#b}{levels}{/b} Blessing Level(s): Increases Max HP by {#b}{hp}{/b}, ATK by {#b}{atk}{/b}, DEF by {#b}{def}{/b}, and Elemental Mastery by {#b}{em}{/b}."
 }

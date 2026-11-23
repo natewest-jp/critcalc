@@ -12,6 +12,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { inLang, monsterImage, type AbyssCycle } from '$lib/endgame';
+	import { m } from '$lib/paraglide/messages';
 
 	let { cycle, half, onClose }: { cycle: AbyssCycle; half: 0 | 1; onClose: () => void } = $props();
 
@@ -28,17 +29,19 @@
 {#snippet body(withClose: boolean)}
 	<header class="op-head">
 		{#if withClose}
-			<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'} · Opponents</h2>
+			<h2 class="op-title">
+				{half === 0 ? m.tb_first_half_opponents() : m.tb_second_half_opponents()}
+			</h2>
 		{:else}
 			<!-- ⚓ The shell's header grammar (Nate 2026-10-23): the context as the
 			     kicker, the half as the title. The old shell keeps its title. -->
 			<div class="op-head-text">
-				<p class="kicker op-head-kicker">Spiral Abyss · Floor 12</p>
-				<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'}</h2>
+				<p class="kicker op-head-kicker">{m.tb_spiral_abyss_floor_12()}</p>
+				<h2 class="op-title">{half === 0 ? m.tb_first_half() : m.tb_second_half()}</h2>
 			</div>
 		{/if}
 		{#if withClose}
-			<button class="btn btn--icon" bind:this={closeBtn} aria-label="Close" onclick={onClose}
+			<button class="btn btn--icon" bind:this={closeBtn} aria-label={m.tb_close()} onclick={onClose}
 				><Mark name="close" size={16} /></button
 			>
 		{/if}
@@ -46,13 +49,14 @@
 	<div class="op-body">
 		{#each cycle.chambers as ch, i (i)}
 			<section class="op-chamber">
-				<p class="kicker op-kicker">Chamber {i + 1}</p>
+				<p class="kicker op-kicker">{m.tb_chamber_x({ n: i + 1 })}</p>
 				<ul class="op-list">
-					{#each ch.halves[half] as m, j (j)}
+					{#each ch.halves[half] as mon, j (j)}
 						<li class="op-row">
-							<img src={monsterImage(m.icon)} alt="" />
-							<span class="op-name">{inLang(m.name)}</span>
-							<span class="op-meta">Lv. {ch.level} · {hp(m.hp)} HP</span>
+							<img src={monsterImage(mon.icon)} alt="" />
+							<span class="op-name">{inLang(mon.name)}</span>
+							<span class="op-meta">{m.tb_lv_level_hp_hp({ level: ch.level, hp: hp(mon.hp) })}</span
+							>
 						</li>
 					{/each}
 				</ul>
@@ -63,7 +67,11 @@
 
 <!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
      Builder's one shell, a margin that closes it. -->
-<InspectModal label="Opponents, {half === 0 ? 'first' : 'second'} half" width="40rem" {onClose}>
+<InspectModal
+	label={half === 0 ? m.tb_opponents_first_half() : m.tb_opponents_second_half()}
+	width="40rem"
+	{onClose}
+>
 	<div class="op-in">{@render body(false)}</div>
 </InspectModal>
 

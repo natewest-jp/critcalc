@@ -25,6 +25,8 @@
 		caveatText
 	} from '$lib/capabilities/capabilityText';
 	import type { Snippet } from 'svelte';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	/**
 	 * A CHARACTER'S DETAILS, the body without a shell (inspector round,
@@ -107,8 +109,8 @@
 	function sectionLabel(cap: DerivedCapability): string {
 		const { section, abilityName, variant } = cap.source;
 		const name = variant ? `${abilityName} (${variant})` : abilityName;
-		if (section === 'passive') return `${name} · passive`;
-		if (section === 'factionBonus') return `${name} · team bonus`;
+		if (section === 'passive') return m.tb_name_passive({ name });
+		if (section === 'factionBonus') return m.tb_name_team_bonus({ name });
 		return name;
 	}
 
@@ -137,25 +139,18 @@
 <div class="dc-body" class:dc-body--compact={compact} style:--el-color={color}>
 	{#if entry && !entry.curated}
 		<!-- ⚠ onclickCAPTURE, not onclick — see seeCoverage. -->
+		{#snippet link(text: string)}<a
+				class="link dc-stub-link"
+				href="{hrefTo('/coverage')}?c={entry.id}"
+				onclickcapture={seeCoverage}>{text}</a
+			>{/snippet}
 		{#if entry.caps.length === 0}
 			<p class="dc-stub-note">
-				Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
-				not “no”.
-				<a
-					class="link dc-stub-link"
-					href="{hrefTo('/coverage')}?c={entry.id}"
-					onclickcapture={seeCoverage}>See coverage</a
-				>
+				<Msg parts={m.tb_kit_not_yet_curated_capability_data.parts()} tags={{ link }} />
 			</p>
 		{:else}
 			<p class="dc-stub-note">
-				Capabilities below are complete. Frame timing isn’t curated yet, so only this character’s
-				rotation timing is approximate in the Planner.
-				<a
-					class="link dc-stub-link"
-					href="{hrefTo('/coverage')}?c={entry.id}"
-					onclickcapture={seeCoverage}>See coverage</a
-				>
+				<Msg parts={m.tb_capabilities_below_are_complete_frame.parts()} tags={{ link }} />
 			</p>
 		{/if}
 	{/if}
@@ -164,11 +159,14 @@
 	<!-- ⚓ READ-ONLY (lineups design §11.6 item 2): the Library's Roster tab is
 	     the one place the roster is edited, so details in both tools say what
 	     it holds and link there, arriving on this character. -->
-	{#snippet rosterState()}{#if myOwnership === 'owned'}<Mark name="check" size={13} /> Owned{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
+	<!-- " · C2" is notation, the same in every language. -->
+	{#snippet rosterState()}{#if myOwnership === 'owned'}<Mark name="check" size={13} />
+			{m.tb_owned_b62f()}{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
 				name="wish"
 				size={13}
 				filled="solid"
-			/> On your wishlist{:else}Not owned{/if}{/snippet}
+			/>
+			{m.tb_on_your_wishlist()}{:else}{m.tb_not_owned_ffff()}{/if}{/snippet}
 	{#snippet editInRoster(cls: string)}
 		<button
 			class={cls}
@@ -178,7 +176,7 @@
 				const target = id;
 				onLeave?.();
 				library.openRoster(target);
-			}}>Edit in Roster</button
+			}}>{m.tb_edit_in_roster()}</button
 		>
 	{/snippet}
 	{#if leadsWithRotation}
@@ -186,26 +184,26 @@
 		     roster's only as an aside: the two differ for a character you don't
 		     own, and inside a Theorycraft copy. -->
 		<section>
-			<p class="kicker">This rotation</p>
+			<p class="kicker">{m.tb_this_rotation()}</p>
+			<!-- Notation (C2), the same in every language. -->
 			<p class="dc-roster"><span class="dc-roster-state">C{rotationLevel}</span></p>
 			{#if rosterLine}
 				<p class="dc-roster-aside">
-					<span class="dc-roster-state">Your roster: {@render rosterState()}</span>
+					<span class="dc-roster-state">{m.tb_your_roster_d858()} {@render rosterState()}</span>
 					· {@render editInRoster('link link--quiet')}
 				</p>
 			{/if}
 		</section>
 	{:else if rosterLine}
 		<section>
-			<p class="kicker">Your roster</p>
+			<p class="kicker">{m.tb_your_roster_7d53()}</p>
 			<p class="dc-roster">
 				<span class="dc-roster-state">{@render rosterState()}</span>
 				{@render editInRoster('btn btn--sm')}
 			</p>
 			{#if rotationNote}
 				<p class="note dc-note">
-					To set this character’s constellation for this rotation only, use the selector on the
-					Planner rather than the Roster.
+					{m.tb_to_set_this_character_s_constellation()}
 				</p>
 			{/if}
 			<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
@@ -213,7 +211,7 @@
 		     Builder has no bench any more. Same panel the bench opens; writes
 		     land in the roster, where a rotation's own picks fall back to it. -->
 			{#if defaultBuild}
-				<p class="kicker dc-build-kicker">Default build</p>
+				<p class="kicker dc-build-kicker">{m.tb_default_build()}</p>
 				<LoadoutPanel
 					loadoutEntry={$loadout[id] ?? {}}
 					weaponType={entry?.weapon}
@@ -230,14 +228,14 @@
 
 	<!-- ── Capabilities ───────────────────────────────────── -->
 	<section>
-		<p class="kicker">Capabilities</p>
+		<p class="kicker">{m.tb_capabilities_ca09()}</p>
 		{#if !data}
-			<p class="note dc-note">Loading kit data…</p>
+			<p class="note dc-note">{m.tb_loading_kit_data()}</p>
 		{:else if sortedCaps.length === 0}
 			<p class="note dc-note">
-				Nothing team-facing derives from this kit{entry?.curated
-					? ' — likely a selfish carry, or curation hasn’t covered its utility yet'
-					: ''}.
+				{entry?.curated
+					? m.tb_nothing_team_facing_derives_from_this_b3c5()
+					: m.tb_nothing_team_facing_derives_from_this_5b77()}
 			</p>
 		{:else}
 			<ul class="dc-caps">
@@ -255,12 +253,12 @@
 							{sectionLabel(cap)}
 							{#if cap.target}· {TARGET_LABEL[cap.target] ?? cap.target}{/if}
 							{#if cap.via === 'tag'}
-								<span
-									class="dc-cap-tagged"
-									title="Marked on the ability, but target/scaling not yet curated">tagged</span
+								<span class="dc-cap-tagged" title={m.tb_marked_on_the_ability_but_target_scaling()}
+									>{m.tb_tagged()}</span
 								>
 							{/if}
 						</span>
+						<!-- Notation (C0, C2), the same in every language. -->
 						<span class="dc-cap-gate">
 							{#if cap.minConstellation > 0}
 								<span class="dc-gate-chip" class:dc-gate-chip--locked={locked(cap)}
@@ -287,7 +285,7 @@
 	<!-- ── Timing reference ───────────────────────────────── -->
 	{#if data && castAbilities.length > 0}
 		<section>
-			<p class="kicker">Timing reference</p>
+			<p class="kicker">{m.tb_timing_reference()}</p>
 			<table class="dc-timing">
 				<tbody>
 					{#each castAbilities as ability (ability.id)}
@@ -296,12 +294,16 @@
 							<td class="dc-timing-name">{ability.name}</td>
 							<td class="dc-timing-val">
 								{#if 'cooldown' in ability && ability.cooldown}<span class="dc-timing-part"
-										>{ability.cooldown}s cooldown</span
+										>{m.tb_cooldown_s_cooldown({ seconds: ability.cooldown })}</span
 									>{/if}
 								{#if 'charges' in ability && ability.charges && ability.charges > 1}
-									<span class="dc-timing-part">· {ability.charges} charges</span>{/if}
+									<span class="dc-timing-part"
+										>{m.tb_charges_charges({ count: ability.charges })}</span
+									>{/if}
 								{#if 'energyCost' in ability && ability.energyCost}
-									<span class="dc-timing-part">· {ability.energyCost} energy</span>{/if}
+									<span class="dc-timing-part"
+										>{m.tb_energycost_energy({ cost: ability.energyCost })}</span
+									>{/if}
 							</td>
 						</tr>
 					{/each}
@@ -321,7 +323,7 @@
 				character: entry?.displayName ?? id,
 				constellation: entry?.noConstellations ? undefined : viewCon,
 				includeTech: true
-			}}>Something not right with this character?</ReportLink
+			}}>{m.tb_something_not_right_with_this_character()}</ReportLink
 		>
 	</p>
 </div>

@@ -18,6 +18,7 @@
 		type OwnershipView
 	} from '$lib/characterFilters';
 	import type { WeaponType } from '$lib/types/weapon';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		roster,
@@ -45,18 +46,18 @@
 	const FACTION_BUFFS = [
 		{
 			key: 'moonsign',
-			label: 'Moonsign',
-			hint: 'Moonsign characters — 2 or more enable Ascendant Gleam and the Lunar reactions'
+			label: m.tb_moonsign(),
+			hint: m.tb_moonsign_characters_2_or_more_enable()
 		},
 		{
 			key: 'hexerei',
-			label: 'Hexerei',
-			hint: 'Hexerei characters — 2 or more enable Hexerei: Secret Rite'
+			label: m.tb_hexerei(),
+			hint: m.tb_hexerei_characters_2_or_more_enable()
 		},
 		{
 			key: 'stellar',
-			label: 'Stellar',
-			hint: 'Stellar-linked — enables a Stellar reaction, or has buffs that need one enabled'
+			label: m.tb_stellar(),
+			hint: m.tb_stellar_linked_enables_a_stellar()
 		}
 	] as const;
 
@@ -71,8 +72,8 @@
 <div class="mf">
 	{#if showOwnership}
 		<div class="mf-group">
-			<p class="kicker">Show</p>
-			<div class="segment" role="radiogroup" aria-label="Show">
+			<p class="kicker">{m.tb_show()}</p>
+			<div class="segment" role="radiogroup" aria-label={m.tb_show()}>
 				{#each OWNERSHIP_VIEWS as v (v.key)}
 					<button
 						class="btn"
@@ -88,12 +89,12 @@
 	{/if}
 	{#if lens}
 		<div class="mf-group">
-			<p class="kicker">Read capabilities at</p>
+			<p class="kicker">{m.tb_read_capabilities_at()}</p>
 			<div class="mf-lens">{@render lens(close)}</div>
 		</div>
 	{/if}
 	<div class="mf-group">
-		<p class="kicker">Weapon</p>
+		<p class="kicker">{m.tb_weapon()}</p>
 		<div class="chips">
 			{#each WEAPONS as w (w)}
 				<button
@@ -106,7 +107,7 @@
 		</div>
 	</div>
 	<div class="mf-group">
-		<p class="kicker">Rarity</p>
+		<p class="kicker">{m.tb_rarity()}</p>
 		<div class="chips">
 			{#each RARITIES as r (r)}
 				<button
@@ -119,7 +120,7 @@
 		</div>
 	</div>
 	<div class="mf-group">
-		<p class="kicker">Region</p>
+		<p class="kicker">{m.tb_region()}</p>
 		<div class="chips">
 			{#each allRegions as region (region)}
 				<button
@@ -133,7 +134,7 @@
 		</div>
 	</div>
 	<div class="mf-group">
-		<p class="kicker">Factions / Buffs</p>
+		<p class="kicker">{m.tb_factions_buffs()}</p>
 		<div class="chips">
 			{#each FACTION_BUFFS as fb (fb.key)}
 				<button

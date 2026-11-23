@@ -7,6 +7,7 @@
 	 * members), or how many short.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import NewTag from '$lib/components/NewTag.svelte';
 	import {
@@ -79,7 +80,7 @@
 	{#if fresh}<NewTag on="builder" />{/if}
 </span>
 
-<BandMenu glass ariaLabel="Mode: {MODE_NAME[mode]}" align="start">
+<BandMenu glass ariaLabel={m.tb_mode_mode({ mode: MODE_NAME[mode] })} align="start">
 	{#snippet face()}<span class="tp-face">{MODE_NAME[mode]}</span>{/snippet}
 	{#snippet items(close)}
 		{#each verdicts as v (v.mode)}
@@ -99,7 +100,9 @@
 				>
 				<span class="tp-name">{MODE_NAME[v.mode]}</span>
 				<span class="tp-acts"
-					>{rules?.acts}{rules?.arcana.length ? ` + ${rules.arcana.length}` : ''} acts</span
+					>{rules?.arcana.length
+						? m.tb_acts_length_acts({ count: rules.acts, arcana: rules.arcana.length })
+						: m.tb_acts_acts({ count: rules?.acts ?? 0 })}</span
 				>
 				<span class="tp-need">{OPENING_CAST + v.need}–{OPENING_CAST + v.most}</span>
 			</button>

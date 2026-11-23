@@ -30,6 +30,8 @@
 	import { shortName } from '$lib/data/characterLookup';
 	import type { FingerprintCluster, FingerprintSlot } from '$lib/fingerprint';
 	import FingerprintGlyph from '$lib/components/FingerprintGlyph.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	type Clusters = { cluster: FingerprintCluster; slots: FingerprintSlot[] }[];
 
@@ -69,7 +71,7 @@
 			? s.providers
 			: s.members.filter((m) => m.state === 'locked' || m.state === 'outlined').map((m) => m.id);
 
-	const names = new Intl.ListFormat('en', { type: 'conjunction' });
+	const names = new Intl.ListFormat(getLocale(), { type: 'conjunction' });
 
 	/** The slot's tooltip: its label, then one WHOLE sentence per member state
 	 *  (style guide §3.1 — each is a string of its own, with a plural form where
@@ -83,25 +85,36 @@
 		const unknown = who('unknown');
 		const lines = [`${LABEL[s.facet] ?? s.facet}.`];
 		if (lit.length)
-			lines.push(lit.length === 1 ? `${lit[0]} provides it.` : `${names.format(lit)} provide it.`);
-		if (outlined.length) lines.push(`${names.format(outlined)} would, but not in this team.`);
-		if (locked.length) lines.push(`${names.format(locked)} would from a higher constellation.`);
+			lines.push(
+				lit.length === 1
+					? m.tb_x_provides_it({ name: lit[0] })
+					: m.tb_lit_provide_it({ names: names.format(lit) })
+			);
+		if (outlined.length)
+			lines.push(m.tb_outlined_would_but_not_in_this_team({ names: names.format(outlined) }));
+		if (locked.length)
+			lines.push(m.tb_locked_would_from_a_higher_constellation({ names: names.format(locked) }));
 		if (unknown.length)
 			lines.push(
 				unknown.length === 1
-					? `${unknown[0]} isn’t curated yet.`
-					: `${names.format(unknown)} aren’t curated yet.`
+					? m.tb_x_isn_t_curated_yet({ name: unknown[0] })
+					: m.tb_unknown_aren_t_curated_yet({ names: names.format(unknown) })
 			);
 		if (!lit.length && !outlined.length && !locked.length && !unknown.length)
-			lines.push('Nobody here provides it.');
-		if (change === 'gain') lines.push('This pick adds it.');
-		else if (change === 'loss') lines.push('This pick takes it away.');
-		else if (onFind && s.state !== 'lit') lines.push('Click to find who provides it.');
+			lines.push(m.tb_nobody_here_provides_it());
+		if (change === 'gain') lines.push(m.tb_this_pick_adds_it());
+		else if (change === 'loss') lines.push(m.tb_this_pick_takes_it_away());
+		else if (onFind && s.state !== 'lit') lines.push(m.tb_click_to_find_who_provides_it());
 		return lines.join(' ');
 	}
 </script>
 
-<div class="fp" class:fp--preview={!!preview} role="list" aria-label="The team's capabilities">
+<div
+	class="fp"
+	class:fp--preview={!!preview}
+	role="list"
+	aria-label={m.tb_the_team_s_capabilities()}
+>
 	{#each shown as c (c.cluster)}
 		<span class="fp-cluster">
 			{#each c.slots as s (s.facet)}

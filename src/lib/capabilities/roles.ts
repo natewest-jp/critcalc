@@ -19,6 +19,7 @@
  */
 
 import type { CharacterRoles, RoleFunction, RolePosition } from '$lib/types/character';
+import { m } from '$lib/paraglide/messages';
 
 export { FUNCTION_FACETS } from '$lib/capabilities/deriveCapabilities';
 
@@ -37,10 +38,36 @@ export type RoleCategory = {
  *  have ≥1 function) — the on-field non-DPS case (Ifa) lands in Support +
  *  Survivability, so there is no "unclassified" bucket to surface. */
 export const ROLE_CATEGORIES: RoleCategory[] = [
-	{ key: 'onField-dps', position: 'onField', function: 'dps', label: 'On-Field DPS' },
-	{ key: 'offField-dps', position: 'offField', function: 'dps', label: 'Off-Field DPS' },
-	{ key: 'support', function: 'support', label: 'Support' },
-	{ key: 'survivability', function: 'survivability', label: 'Survivability' }
+	{
+		key: 'onField-dps',
+		position: 'onField',
+		function: 'dps',
+		get label() {
+			return m.tb_on_field_dps();
+		}
+	},
+	{
+		key: 'offField-dps',
+		position: 'offField',
+		function: 'dps',
+		get label() {
+			return m.tb_off_field_dps();
+		}
+	},
+	{
+		key: 'support',
+		function: 'support',
+		get label() {
+			return m.tb_support();
+		}
+	},
+	{
+		key: 'survivability',
+		function: 'survivability',
+		get label() {
+			return m.tb_survivability();
+		}
+	}
 ];
 
 // FUNCTION_FACETS (facets grouped under each function) moved to
