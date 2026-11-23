@@ -645,5 +645,618 @@
 	"teams_id_open_the_team_on_slot_x": "{name}：枠{n}でチームを開く",
 	"library_first_half": "前半",
 	"library_second_half": "後半",
-	"library_date_range": "{start}～{end}"
+	"library_date_range": "{start}～{end}",
+	"vz_name_is_back_to_its_defaults": "{name}を初期設定に戻しました",
+	"vz_undo": "元に戻す",
+	"vz_that_instrument_link_couldn_t_be_read_it": "その計器のリンクを読み込めませんでした。コピーしたときに途中で切れた可能性があります。",
+	"vz_instruments_shown": "表示する計器の数",
+	"vz_the_window_is_too_narrow_for_opt": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "ウィンドウの幅が足りず、計器を{count}つ並べられません"
+			}
+		}
+	],
+	"vz_show_as_many_instruments_as_the_window": "ウィンドウに収まるだけ計器を並べる",
+	"vz_show_opt_instrument_x_at_a_time": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "計器を{count}つずつ表示する"
+			}
+		}
+	],
+	"vz_auto": "自動",
+	"vz_reset_layout": "レイアウトをリセット",
+	"vz_put_this_instrument_s_controls_back_to": "この計器の設定を初期値に戻す",
+	"vz_defaults": "初期設定",
+	"vz_copy_a_link_that_reopens_this_instrument": "この計器を今の状態で開くリンクをコピー",
+	"vz_copy_failed": "コピー失敗",
+	"vz_copied": "コピーしました",
+	"vz_copy_link": "リンクをコピー",
+	"vz_more_instrument_actions": "計器のその他の操作",
+	"vz_how_it_works": "しくみ",
+	"vz_report_a_problem": "問題を報告",
+	"vz_layout": "レイアウト",
+	"vz_no_aura": "オーラなし",
+	"vz_on_the_target": "敵に付着していません",
+	"vz_from_end": "{time}以降",
+	"vz_with_x_at_t": "{time}時点、ほかに{auras}",
+	"vz_at_t": "{time}時点",
+	"vz_fischl_s_oz": "フィッシュルのオズ",
+	"vz_oz_strikes_about_once_a_second_for_10": "オズは10秒間、約1秒に1回攻撃します。",
+	"vz_hu_tao_s_charged_attacks": "胡桃の重撃",
+	"vz_n1_then_a_charged_attack_repeated": "元素スキル中に通常攻撃1段目から重撃を繰り返します：1.03秒に1回の重撃です。",
+	"vz_chevreuse_s_burst": "シュヴルーズの元素爆発",
+	"vz_eight_shells_burst_within_0_6_seconds": "8発の砲弾が0.6秒以内に2発ずつ炸裂します。",
+	"vz_layla_s_shooting_stars": "レイラの流星",
+	"vz_stars_fly_in_volleys_of_four_about_8": "シールドが続く間、流星が4発ずつ約8秒間隔で放たれます。",
+	"vz_choose_instrument": "計器を選ぶ",
+	"vz_tile_x": "パネル{n}",
+	"vz_label_type_a_value": "{label}、値を入力",
+	"vz_kind_reshape": [
+		{
+			"declarations": ["input tier"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "通常再構築",
+				"tier=advanced": "上級再構築",
+				"tier=decreed": "絶対再構築"
+			}
+		}
+	],
+	"vz_select_a_result_to_keep": "残す結果を選ぶ",
+	"vz_keep_the_original": "元の聖遺物を残す",
+	"vz_keep_the_reshaped_result": "再構築の結果を残す",
+	"vz_skip": "スキップ",
+	"vz_try_again": "もう一度",
+	"vz_confirm": "確定",
+	"vz_not_a_value_the_game_shows_nearest": "ゲームに表示されない値です。近い値：",
+	"vz_no_substat_by_that_name": "その名前のサブ効果はありません",
+	"vz_not_a_value": "値ではありません",
+	"vz_pick_the_substat_first": "先にサブ効果を選んでください",
+	"vz_crit_heatmap": "会心ヒートマップ",
+	"vz_gauge_explorer": "元素量シミュレーター",
+	"vz_icd_timeline": "ICDタイムライン",
+	"vz_reaction_curves": "元素反応カーブ",
+	"vz_damage_breakdown": "ダメージ内訳",
+	"vz_enemy_res_def": "敵の耐性と防御力",
+	"vz_artifact_odds": "聖遺物の確率",
+	"vz_wish_odds": "祈願の確率",
+	"vz_artifact_drop": "ドロップ",
+	"vz_artifact_level_up": "強化",
+	"vz_artifact_your_piece": "手持ちの聖遺物",
+	"vz_artifact_reshape": "再構築",
+	"vz_artifact_standard": "通常",
+	"vz_artifact_advanced": "上級",
+	"vz_artifact_decreed": "絶対",
+	"vz_artifact_at_least_2": "2回以上",
+	"vz_artifact_at_least_3": "3回以上",
+	"vz_artifact_at_least_4": "4回以上",
+	"vz_artifact_pyro": "炎",
+	"vz_artifact_hydro": "水",
+	"vz_artifact_electro": "雷",
+	"vz_artifact_cryo": "氷",
+	"vz_artifact_anemo": "風",
+	"vz_artifact_geo": "岩",
+	"vz_artifact_dendro": "草",
+	"vz_artifact_er": "元チャ",
+	"vz_artifact_em": "EM",
+	"vz_artifact_cr": "会心率",
+	"vz_artifact_cd": "会心ダメ",
+	"vz_artifact_physical": "物理",
+	"vz_artifact_healing": "治療",
+	"vz_artifact_your_piece_is_now_the_reshaped_result": "手持ちの聖遺物を再構築の結果にしました",
+	"vz_artifact_undo": "元に戻す",
+	"vz_artifact_the_reshaped_result_is_better": "再構築の結果のほうが良いです。",
+	"vz_artifact_your_piece_is_still_better": "元の聖遺物のほうが良いです。",
+	"vz_artifact_they_come_out_the_same": "どちらも同じです。",
+	"vz_artifact_better_than_math_round_compareto": [
+		{
+			"declarations": ["input tier", "input pct"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "通常再構築の{pct}%より良い",
+				"tier=advanced": "上級再構築の{pct}%より良い",
+				"tier=decreed": "絶対再構築の{pct}%より良い"
+			}
+		}
+	],
+	"vz_artifact_farmed": "厳選",
+	"vz_artifact_none": "なし",
+	"vz_artifact_e_dmg_bonus": "{element}元素ダメージ",
+	"vz_artifact_1_day": "1日",
+	"vz_artifact_d_days": [
+		{
+			"declarations": ["input count", "input days", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "{days}日"
+			}
+		}
+	],
+	"vz_artifact_useful_rolls": "有効強化回数",
+	"vz_artifact_slotword_s": [
+		{
+			"declarations": ["input slot"],
+			"selectors": ["slot"],
+			"match": {
+				"slot=flower": "生の花",
+				"slot=plume": "死の羽",
+				"slot=sands": "時の砂",
+				"slot=goblet": "空の杯",
+				"slot=circlet": "理の冠"
+			}
+		}
+	],
+	"vz_artifact_atleast_of_wanted": "{stats}のうち{n}つ",
+	"vz_artifact_both": "両方",
+	"vz_artifact_all_n": "{n}つすべて",
+	"vz_artifact_at_least_n": "{n}つ以上",
+	"vz_artifact_pick_2": "2つ選ぶ",
+	"vz_artifact_yours": "手持ち",
+	"vz_artifact_this_roll": "今回",
+	"vz_artifact_100_reshapename_reshapes_one_dot_each": [
+		{
+			"declarations": ["input tier", "input lit"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "通常再構築100回、1回1点：{lit}回が手持ちの聖遺物を上回る",
+				"tier=advanced": "上級再構築100回、1回1点：{lit}回が手持ちの聖遺物を上回る",
+				"tier=decreed": "絶対再構築100回、1回1点：{lit}回が手持ちの聖遺物を上回る"
+			}
+		}
+	],
+	"vz_artifact_your_tries_length_triesbeat_beat_it": "· 試行：{tries}回、うち{beat}回が上回る",
+	"vz_artifact_100_20_slotplural_like_yours_one_dot": "同じような+20の{slots}100個、1個1点：{lit}個が上回る",
+	"vz_artifact_100_pieces_one_dot_each_lit_end_above": "聖遺物100個、1個1点：{lit}個が{value}を超える",
+	"vz_artifact_half_by_median": "半数は{days}日",
+	"vz_artifact_half_of_players_have_it_within_this_many": "プレイヤーの半数がこの日数以内に手に入れます。",
+	"vz_artifact_unlucky_tenth_p90": "下位10%は{days}日",
+	"vz_artifact_the_unluckiest_10_of_players_need_this": "最も運の悪い10%のプレイヤーは、この日数以上かかります。",
+	"vz_artifact_typical_median": "中央値 {value}",
+	"vz_artifact_half_end_above_this_and_half_at_or_below": "半数がこれを超え、半数がこれ以下になります。",
+	"vz_artifact_unlucky_tenth_p10": "下位10% {value}",
+	"vz_artifact_the_unluckiest_10_end_at_or_below_this": "最も運の悪い10%はこれ以下になります。",
+	"vz_artifact_in_an_outbreak_outbreak": "乱れた地脈 {chance}",
+	"vz_artifact_main_stat": "メイン効果",
+	"vz_artifact_chance_each": "各{chance}",
+	"vz_artifact_pick_every_main_stat_you_d_be_happy_with": "妥協できるメイン効果をすべて選んでください。下の数字はそれぞれのドロップ率です。",
+	"vz_artifact_valued_stats": "狙いのステータス",
+	"vz_artifact_main": "メイン",
+	"vz_artifact_pick_the_substats_you_want_from_this": "この聖遺物の4つの中から、狙いのサブ効果を選んでください。",
+	"vz_artifact_pick_up_to_four_substats_you_want": "狙いのサブ効果を4つまで選んでください。",
+	"vz_artifact_the_number_under_each_is_its_chance_to": "下の数字は、聖遺物の4つのサブ効果のひとつになる確率です。",
+	"vz_artifact_how_many_of_them": "いくつ必要か",
+	"vz_artifact_one_set": "1セット",
+	"vz_artifact_either_set": "どちらかのセット",
+	"vz_artifact_how_many_of_your_valued_stats_it_has": "狙いのステータスをいくつ持つか",
+	"vz_artifact_has_n_wantedsubs_length_n_1_all_n_n": [
+		{
+			"declarations": ["input form", "input n"],
+			"selectors": ["form"],
+			"match": {
+				"form=all": "{n}つすべて",
+				"form=count": "{n}つ"
+			}
+		}
+	],
+	"vz_artifact_dropped_with_4_substats": "サブ効果4つでドロップ",
+	"vz_artifact_with_3": "3つ",
+	"vz_artifact_a_piece_that_drops_with_4_substats_gets": "サブ効果4つでドロップした聖遺物は、+20までに5回強化されます。3つでドロップした聖遺物は、最初の強化で4つ目のサブ効果が付きます。",
+	"vz_artifact_made_with_elixir": "エリクシル製",
+	"vz_artifact_a_piece_made_with_sanctifying_elixir": "祈聖のエリクシルで作った聖遺物は、選んだ2つのサブ効果に強化が2回以上入ることが保証されます。",
+	"vz_artifact_defined_substats": "指定ステータス",
+	"vz_artifact_pick_the_two_substats_you_chose_when": "作るときに選んだ2つのサブ効果を選んでください。この2つには+20までに合わせて2回以上の強化が保証されます。",
+	"vz_artifact_substats_to_reshape": "再構築するサブ効果",
+	"vz_artifact_your_first_two_valued_stats_on_this": "自分で選ぶまでは、この聖遺物にある狙いのステータスの最初の2つです。",
+	"vz_artifact_pick_2_substats_after_the_reshape_they": "サブ効果を2つ選んでください。再構築後、この2つに聖遺物の強化が合わせて{floor}回以上入ります。",
+	"vz_artifact_kind_of_reshape": "再構築の種類",
+	"vz_artifact_every_advanced_exegesis_dust_of": "聖啓の塵を{dust}個使うごとに次の再構築が上級再構築になり、上級が3回続くと絶対再構築になります。グラフには3種類すべてが表示されます。",
+	"vz_artifact_clear": "クリア",
+	"vz_artifact_these_values_fit_more_than_one_upgrade": "この値は複数の強化回数に当てはまります。カードの下で、ゲームと一致するものを選んでください。",
+	"vz_artifact_substat_x": "サブ効果{n}",
+	"vz_artifact_substat": "サブ効果…",
+	"vz_artifact_value_for_substat_x": "サブ効果{n}の値",
+	"vz_artifact_level": "レベル",
+	"vz_artifact_the_4th_substat_is_grayed_out": "4つ目のサブ効果が灰色（未解放）",
+	"vz_artifact_upgrade_counts": "強化回数",
+	"vz_artifact_these_values_fit_length_different": [
+		{
+			"declarations": [
+				"input count",
+				"local countExact = count",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countExact", "countPlural"],
+			"match": {
+				"countExact=*, countPlural=other": "この値は{count}通りの強化回数に当てはまります。"
+			}
+		}
+	],
+	"vz_artifact_pick_the_one_the_game_shows_when_you": "聖遺物を再構築するときにゲームに表示されるものを選んでください：",
+	"vz_artifact_pick_the_one_it_got_if_you_know_it": "分かれば、実際の回数を選んでください：",
+	"vz_artifact_the_number_beside_each_substat_is_how": "各サブ効果の横の数字は強化された回数で、ゲームの再構築画面に表示される数字と同じです。狙いのステータスは強調表示されます。",
+	"vz_artifact_pick_your_piece_s_level_levels_these": "聖遺物のレベルを選んでください。この値になりえないレベルは暗く表示されます。",
+	"vz_artifact_enter_each_substat_and_its_value_exactly": "各サブ効果とその値をゲームの表示どおりに入力し、聖遺物のレベルを選んでください。",
+	"vz_artifact_not_entered": "未入力",
+	"vz_artifact_your_piece_x": "手持ちの聖遺物：{piece}",
+	"vz_artifact_enter_your_piece": "聖遺物を入力",
+	"vz_artifact_domain_chance_of_the_piece_within_days": "{chance}{#span}{days}以内にこの聖遺物が手に入る確率{/span}",
+	"vz_artifact_pick_a_substat": "サブ効果を選んでください",
+	"vz_artifact_reshaping_needs_a_20_piece": "再構築には+20の聖遺物が必要です",
+	"vz_artifact_pick_two_substats_to_reshape": "再構築するサブ効果を2つ選んでください",
+	"vz_artifact_enter_your_piece_to_see_how_it_measures": "聖遺物を入力すると、その出来がわかります",
+	"vz_artifact_beats_chance_a_reshapename_reshape_beats": [
+		{
+			"declarations": ["input tier", "input chance"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "{chance}{#span}通常再構築が手持ちの聖遺物を上回る確率{/span}",
+				"tier=advanced": "{chance}{#span}上級再構築が手持ちの聖遺物を上回る確率{/span}",
+				"tier=decreed": "{chance}{#span}絶対再構築が手持ちの聖遺物を上回る確率{/span}"
+			}
+		}
+	],
+	"vz_artifact_better_than_x_of_20_slotplural_with": "{pct}%より良い{#span}（同じサブ効果4つを持つ+20の{slots}の中で）{/span}",
+	"vz_artifact_beats_chance_it_ends_above_reference_x": [
+		{
+			"declarations": ["input when", "input chance", "input value"],
+			"selectors": ["when"],
+			"match": {
+				"when=now": "{chance}{#span}{value}を超える確率{/span}",
+				"when=end": "{chance}{#span}+20で{value}を超える確率{/span}"
+			}
+		}
+	],
+	"vz_artifact_view": "表示",
+	"vz_artifact_setup": "設定",
+	"vz_artifact_piece": "聖遺物",
+	"vz_artifact_set": "セット",
+	"vz_artifact_either": "どちらか",
+	"vz_artifact_one": "1つ",
+	"vz_artifact_has": "持つ数",
+	"vz_artifact_dropped_with": "ドロップ時",
+	"vz_artifact_4_substats": "サブ効果4つ",
+	"vz_artifact_3_substats": "サブ効果3つ",
+	"vz_artifact_made": "入手方法",
+	"vz_artifact_with_elixir": "エリクシル",
+	"vz_artifact_reshape_reshapeface": "再構築：{face}",
+	"vz_artifact_try_a_reshape": "再構築を試す",
+	"vz_artifact_element_dmg_bonus": "{element}元素ダメージ",
+	"vz_artifact_your_only_valued_stat_is_this_piece_s": "狙いのステータスがこの聖遺物のメイン効果だけです。サブ効果も選んでください。",
+	"vz_artifact_enter_all_four_of_its_substats_a_grayed": "サブ効果を4つすべて入力してください。灰色のものも含みます。",
+	"vz_artifact_enter_a_piece_to_see_how_it_measures_up": "聖遺物を入力すると、その出来がわかります。",
+	"vz_artifact_finish_your_piece": "聖遺物の入力を終える",
+	"vz_artifact_one_of_these_values_isn_t_possible_for": "そのサブ効果にはありえない値があります。ゲームの表示と照らし合わせてください。",
+	"vz_artifact_edit_your_piece": "聖遺物を編集",
+	"vz_artifact_these_values_add_up_to_x_upgrade_x_but_a": [
+		{
+			"declarations": [
+				"input count",
+				"input totals",
+				"input level",
+				"input low",
+				"input high",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "この値は強化{totals}回分ですが、{level}の聖遺物は{low}～{high}回だけです。"
+			}
+		}
+	],
+	"vz_artifact_recheck_your_values_or_pick_x": "値を確認するか、{levels}を選んでください。",
+	"vz_artifact_recheck_your_values": "値を確認してください。",
+	"vz_artifact_this_piece_is_levellabel_level_it_to_20": "この聖遺物は{level}です。再構築するには+20まで強化してください。",
+	"vz_artifact_pick_the_two_substats_to_reshape_as_the": "ゲームの再構築画面と同じように、再構築するサブ効果を2つ選んでください。",
+	"vz_artifact_pick_two_substats": "サブ効果を2つ選ぶ",
+	"vz_artifact_none_of_your_valued_stats_are_on_this": "この聖遺物には狙いのステータスがひとつもありません。",
+	"vz_artifact_chance_of_this_piece_by_days_of_resin": "樹脂の日数ごとの、この聖遺物の入手確率",
+	"vz_artifact_crit_value": "会心値",
+	"vz_artifact_count_of_useful_rolls": "有効強化回数",
+	"vz_artifact_chance_to_end_above_each_x_at_20": "+20で各{unit}を超える確率",
+	"vz_artifact_days_of_resin_f956": "樹脂の日数",
+	"vz_artifact_crit_value_cv_at_20": "+20での会心値（CV）",
+	"vz_artifact_useful_rolls_in_your_valued_stats_at_20": "+20での狙いのステータスの有効強化回数",
+	"vz_artifact_chance_you_have_it_by_then": "それまでに手に入る確率",
+	"vz_artifact_chance_a_reshape_ends_above": "再構築で超える確率",
+	"vz_artifact_chance_it_ends_above": "超える確率",
+	"vz_artifact_in_an_outbreak": "乱れた地脈",
+	"vz_artifact_domain": "秘境",
+	"vz_artifact_now_nowx": "現在 {value}",
+	"vz_artifact_days_of_resin_c765": "樹脂の日数",
+	"vz_artifact_to_beat": "目標",
+	"vz_artifact_the_value_to_beat": "超えたい値",
+	"vz_artifact_about_1_in_every_perpiece_five_star": "この秘境でドロップする星5のおよそ{oneIn}個に1個が、狙いの聖遺物です。{days}は天然樹脂{resin}、1日{perDay}で計算しています。幽境の激戦の乱れた地脈では、天然樹脂を120消費するごとに、秘境から星5がさらに1個手に入ります。",
+	"vz_artifact_useful_rolls_count_every_roll_in_your": "有効強化回数は、狙いのステータスへの強化をその伸びで数えます：最大の伸びは1、最小は0.7。サブ効果の初期値も数えます。",
+	"vz_artifact_until_you_drag_it_the_value_to_beat_is_a": [
+		{
+			"declarations": ["input slot"],
+			"selectors": ["slot"],
+			"match": {
+				"slot=flower": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の生の花の中央値です。",
+				"slot=plume": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の死の羽の中央値です。",
+				"slot=sands": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の時の砂の中央値です。",
+				"slot=goblet": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の空の杯の中央値です。",
+				"slot=circlet": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の理の冠の中央値です。"
+			}
+		}
+	],
+	"vz_artifact_reshape_this_piece": "この聖遺物を再構築",
+	"vz_artifact_hp_5200": "HP",
+	"vz_artifact_atk_1fa8": "攻撃力",
+	"vz_artifact_def_6dae": "防御力",
+	"vz_artifact_hp_b294": "HP%",
+	"vz_artifact_atk_0f0a": "攻撃力%",
+	"vz_artifact_def_7253": "防御力%",
+	"vz_artifact_energy_recharge": "元素チャージ効率",
+	"vz_artifact_elemental_mastery": "元素熟知",
+	"vz_artifact_crit_rate": "会心率",
+	"vz_artifact_crit_dmg": "会心ダメージ",
+	"vz_artifact_flower": "生の花",
+	"vz_artifact_plume": "死の羽",
+	"vz_artifact_sands": "時の砂",
+	"vz_artifact_goblet": "空の杯",
+	"vz_artifact_elemental_dmg": "元素ダメージ",
+	"vz_artifact_physical_dmg": "物理ダメージ",
+	"vz_artifact_circlet": "理の冠",
+	"vz_artifact_healing_bonus": "与える治療効果",
+	"vz_breakdown_no_reaction": "反応なし",
+	"vz_breakdown_vaporize": "蒸発",
+	"vz_breakdown_melt": "溶解",
+	"vz_breakdown_spread": "草激化",
+	"vz_breakdown_aggravate": "超激化",
+	"vz_breakdown_hyperbloom": "超開花",
+	"vz_breakdown_burgeon": "烈開花",
+	"vz_breakdown_shatter": "氷砕き",
+	"vz_breakdown_overloaded": "過負荷",
+	"vz_breakdown_electro_charged": "感電",
+	"vz_breakdown_bloom": "開花",
+	"vz_breakdown_superconduct": "超電導",
+	"vz_breakdown_swirl": "拡散",
+	"vz_breakdown_burning": "燃焼",
+	"vz_breakdown_lunar_charged": "月感電",
+	"vz_breakdown_lunar_crystallize": "月結晶",
+	"vz_breakdown_stellar_swirl": "星拡散",
+	"vz_breakdown_stellar_swirl_blast_1_2_swirls": "星拡散の爆発（拡散1～2回）",
+	"vz_breakdown_stellar_swirl_blast_after_1_2_swirls": "拡散1～2回後の星拡散の爆発",
+	"vz_breakdown_stellar_swirl_blast_3_swirls": "星拡散の爆発（拡散3回以上）",
+	"vz_breakdown_stellar_swirl_blast_after_3_swirls": "拡散3回以上後の星拡散の爆発",
+	"vz_breakdown_atk": "攻撃力",
+	"vz_breakdown_hp": "HP",
+	"vz_breakdown_def": "防御力",
+	"vz_breakdown_flat_name": "{name}（固定値）",
+	"vz_breakdown_direct_hit": "直接ダメージ",
+	"vz_breakdown_additive": "激化反応",
+	"vz_breakdown_transformative": "転化反応",
+	"vz_breakdown_lunar_stellar": "月反応と星反応",
+	"vz_breakdown_reaction_bonus_2e6f": "+ 反応ダメージボーナス",
+	"vz_breakdown_em_em_rb": "EM {em} · +{rb}%",
+	"vz_breakdown_em_em_d939": "EM {em}",
+	"vz_breakdown_elemental_mastery": "元素熟知",
+	"vz_breakdown_crit_on_average": "会心（平均）",
+	"vz_breakdown_1_crit_rate_crit_dmg": "1 + 会心率 × 会心ダメージ",
+	"vz_breakdown_with_cr_crit_rate_and_cd_crit_dmg_the": "会心率{cr}、会心ダメージ{cd}なら、ヒットは平均で非会心の{factor}になります。",
+	"vz_breakdown_dmg_bonus": "ダメージバフ",
+	"vz_breakdown_1_dmg_bonus": "1 + ダメージバフ",
+	"vz_breakdown_a_x_dmg_bonus_would_make_the_hit_sheet": "ダメージバフ{bonus}%で、ヒットは{factor}になります。",
+	"vz_breakdown_enemy_def": "敵の防御力",
+	"vz_breakdown_lv_charlevel_vs_enemylevel_defshredpct": "Lv.{level} 対 {enemy} · −{shred}% · −{ignore}%",
+	"vz_breakdown_lv_charlevel_vs_enemylevel": "Lv.{level} 対 {enemy}",
+	"vz_breakdown_at_level_charlevel_against_a_level_2510": "Lv.{level}でLv.{enemy}の敵に対しては、防御力ダウン{shred}%と防御無視{ignore}%を適用した敵の防御力で、ヒットの{share}が通ります。",
+	"vz_breakdown_at_level_charlevel_against_a_level_89c8": "Lv.{level}でLv.{enemy}の敵に対しては、敵の防御力でヒットの{share}が通ります。",
+	"vz_breakdown_enemy_res": "敵の耐性",
+	"vz_breakdown_below_0_res_only_half_the_shred_counts": "耐性0%未満では耐性ダウンが半分しか効かず、敵はヒットの{share}を受けます。",
+	"vz_breakdown_at_enemyres_res_the_enemy_would_take": "耐性{res}%では、敵はヒットの{share}を受けます。",
+	"vz_breakdown_from_75_res_the_formula_changes_to_a": "耐性75%からは式が曲線に変わり、敵はヒットの{share}を受けます。",
+	"vz_breakdown_level_base": "レベル基礎値",
+	"vz_breakdown_from_the_level_table": "レベル表から",
+	"vz_breakdown_lv_charlevel": "Lv.{level}",
+	"vz_breakdown_every_level_charlevel_character_starts_a": "Lv.{level}のキャラクターは、どれも同じ基礎値から反応を起こします：{base}。",
+	"vz_breakdown_mult_60_top_contributor_share": "{mult} × 最大貢献者の取り分60%",
+	"vz_breakdown_reaction_phrase_a_phrase_reaction_name": [
+		{
+			"declarations": ["input form", "input name", "input mult", "input shown"],
+			"selectors": ["form"],
+			"match": {
+				"form=name": "{name}は基礎値を{mult}倍にし、最大貢献者がその60%を与えます：×{shown}。",
+				"form=phrase": "{name}は基礎値を{mult}倍にし、最大貢献者がその60%を与えます：×{shown}。"
+			}
+		}
+	],
+	"vz_breakdown_name_multiplies_the_base_by_mult": "{name}は基礎値を{mult}倍にします。",
+	"vz_breakdown_1_5_em_em_1200_bonusword": "1 + 5 × EM ÷ (EM + 1200){bonus}",
+	"vz_breakdown_1_6_em_em_2000_bonusword": "1 + 6 × EM ÷ (EM + 2000){bonus}",
+	"vz_breakdown_1_16_em_em_2000_bonusword": "1 + 16 × EM ÷ (EM + 2000){bonus}",
+	"vz_breakdown_em_reaction_bonus": "EM + 反応ダメージボーナス",
+	"vz_breakdown_em": "EM",
+	"vz_breakdown_em_and_the_rb_reaction_bonus_together": "EMと反応ダメージボーナス+{rb}%を合わせて{factor}になります。",
+	"vz_breakdown_em_would_raise_it_value": "EMで{factor}になります。",
+	"vz_breakdown_scaling_stat_4658": "参照ステータス：{stat}",
+	"vz_breakdown_1_stat_flat_stat_base_stat": "1 + {stat}% + {stat}（固定値） ÷ 基礎{stat}",
+	"vz_breakdown_sheet_stat": "{stat} {total}",
+	"vz_breakdown_your_sheet_stat_would_make_the_hit_sheet": "{stat} {total}で、ヒットは基礎{stat}だけの場合の{factor}になります。",
+	"vz_breakdown_mult_1_2_78_em_em_1400_bonusword": "{mult} × (1 + 2.78 × EM ÷ (EM + 1400){bonus})",
+	"vz_breakdown_a_x_name_would_multiply_the_hit_by_f": [
+		{
+			"declarations": ["input direction", "input name", "input factor"],
+			"selectors": ["direction"],
+			"match": {
+				"direction=forward": "フォワード{name}で、ヒットは{factor}になります。",
+				"direction=reverse": "リバース{name}で、ヒットは{factor}になります。"
+			}
+		}
+	],
+	"vz_breakdown_your_hit": "ヒット",
+	"vz_breakdown_vs_base_stat_alone": "基礎{stat}だけの場合との比",
+	"vz_breakdown_together_these_would_make_the_hit_mult": "合わせると、ヒットは天賦倍率をかける前で、基礎{stat}だけの場合の{factor}になります。",
+	"vz_breakdown_the_chunk": "加算ダメージ",
+	"vz_breakdown_added_to_the_hit_s_base_damage": "ヒットの基礎ダメージに加算",
+	"vz_breakdown_name_would_add_achunk_to_the_hit_s_base": "{name}はヒットの基礎ダメージに{chunk}を加算します。ここから先はヒットのほかの乗算枠がかかります。",
+	"vz_breakdown_damage_added": "加算されるダメージ",
+	"vz_breakdown_on_average": "平均",
+	"vz_breakdown_on_average_name_would_add_mult_damage_to": "平均すると、{name}は発生するヒットごとに{damage}のダメージを加算します。",
+	"vz_breakdown_base_dmg_bonus": "基礎ダメージアップ",
+	"vz_breakdown_1_base_dmg_bonus": "1 + 基礎ダメージアップ",
+	"vz_breakdown_a_basedmgpct_base_dmg_bonus_would_raise": "基礎ダメージアップ{bonus}%で{factor}になります。",
+	"vz_breakdown_elevation": "向上",
+	"vz_breakdown_1_elevation_after_every_other_bracket": "1 + 向上（ほかのすべての乗算枠の後）",
+	"vz_breakdown_a_elevationpct_elevation_would_raise_it": "向上{bonus}%で{factor}になります。",
+	"vz_breakdown_damage_7bf6": "ダメージ",
+	"vz_breakdown_name_hit": "{name}のヒット",
+	"vz_breakdown_on_average_one_reaction_phrase_name_hit": "平均すると、最大貢献者として{hit}1回で{damage}のダメージを与えます。",
+	"vz_breakdown_one_name_hit_would_deal_mult_damage": "{name}のヒット1回で{damage}のダメージを与えます。",
+	"vz_breakdown_one_more_label_roll_stat_would_raise_the": "{stat}をもう1回強化（{step}）すると、ダメージが{gain}%上がります。",
+	"vz_breakdown_stellar_swirl_blast_damage": "星拡散の爆発ダメージ",
+	"vz_breakdown_name_damage": "{name}ダメージ",
+	"vz_breakdown_read_it_supplies_x_of_the_boost": "{read}上昇分の{share}%を担います。",
+	"vz_breakdown_read_it_takes_back_x_of_the_boost": "{read}上昇分の{share}%を打ち消します。",
+	"vz_breakdown_each_bar_multiplies_the_hit_and_each": "各バーはヒットに乗算され、目盛り線1本ごとに2倍になります。そのため×2はどこにあっても同じ大きさで、減少は逆向きに伸びます。天賦倍率は攻撃ごとに違うため、結果は基礎{stat}だけのヒットとの比で示します。",
+	"vz_breakdown_spread_and_aggravate_add_a_flat_chunk": "草激化と超激化は、レベルとEMだけで決まる固定のダメージを加算します。加算分はヒットのほかの乗算枠にも乗るので、会心も発生し、ダメージバフも受けます。",
+	"vz_breakdown_damage_from_level_and_em_alone_so_the": "レベルとEMだけで決まるダメージなので、結果は実数になります。ほとんどのキャラクターでは会心、攻撃力、ダメージバフは影響せず、敵の防御力も適用されません。",
+	"vz_breakdown_damage_from_level_and_em_with_two": "レベルとEMで決まるダメージに、独自の乗算枠が2つあります：基礎ダメージアップと向上。会心は発生し、敵の防御力は適用されません。この数値は最大貢献者の取り分60%です。",
+	"vz_breakdown_stat_percent_bonus": "{stat}%",
+	"vz_breakdown_dmg_bonus_percent": "ダメージバフ（%）",
+	"vz_breakdown_crit_rate": "会心率",
+	"vz_breakdown_crit_rate_percent": "会心率（%）",
+	"vz_breakdown_crit_dmg": "会心ダメージ",
+	"vz_breakdown_crit_dmg_percent": "会心ダメージ（%）",
+	"vz_breakdown_reaction_bonus_b017": "反応ダメージボーナス",
+	"vz_breakdown_reaction_bonus_percent": "反応ダメージボーナス（%）",
+	"vz_breakdown_base_dmg_bonus_percent": "基礎ダメージアップ（%）",
+	"vz_breakdown_elevation_percent": "向上（%）",
+	"vz_breakdown_enemy_level": "敵のレベル",
+	"vz_breakdown_enemy_res_after_shred": "耐性ダウン後の敵の耐性",
+	"vz_breakdown_enemy_res_after_shred_percent": "耐性ダウン後の敵の耐性（%）",
+	"vz_breakdown_def_shred": "防御力ダウン",
+	"vz_breakdown_def_shred_percent": "防御力ダウン（%）",
+	"vz_breakdown_def_ignore": "防御無視",
+	"vz_breakdown_def_ignore_percent": "防御無視（%）",
+	"vz_breakdown_cr_cr_cd_cd": "会心率 {cr} · 会心ダメ {cd}",
+	"vz_breakdown_em_em_050d": "EM {em}",
+	"vz_breakdown_stat_sheet_dmg_dmgpct_crit_amp_em": "{stat} {total} · ダメバフ {dmg} · {crit}",
+	"vz_breakdown_em_crit_dmg_dmgpct": "{em} · {crit} · ダメバフ {dmg}",
+	"vz_breakdown_def_defremoved": "· 防御力 −{removed}%",
+	"vz_breakdown_lv_enemylevel_res_enemyres_defmods_def": "Lv.{level} · 耐性 {res}%",
+	"vz_breakdown_res_enemyres": "耐性 {res}%",
+	"vz_breakdown_none": "なし",
+	"vz_breakdown_x_headnoun_from_one_more_x_roll": "{gain}{#span}{stats}をもう1回強化したときの{noun}{/span}",
+	"vz_breakdown_substat": "サブ効果",
+	"vz_breakdown_damage_family": "ダメージの系統",
+	"vz_breakdown_setup": "設定",
+	"vz_breakdown_reaction": "反応",
+	"vz_breakdown_reaction_reaction": "反応：{face}",
+	"vz_breakdown_stats": "ステータス",
+	"vz_breakdown_stats_statsface": "ステータス：{face}",
+	"vz_breakdown_scaling_stat_1266": "参照ステータス",
+	"vz_breakdown_base_stat": "基礎{stat}",
+	"vz_breakdown_flat_stat": "{stat}（固定値）",
+	"vz_breakdown_your_level_charlevel": "自分のレベル：{level}",
+	"vz_breakdown_your_level": "自分のレベル",
+	"vz_breakdown_level": "レベル",
+	"vz_breakdown_character_level": "キャラクターのレベル",
+	"vz_breakdown_enemy": "敵",
+	"vz_breakdown_enemy_enemyface": "敵：{face}",
+	"vz_breakdown_the_hit_s_damage_formula_one_column_per": "ヒットのダメージ式、乗算枠ごとに1列",
+	"vz_breakdown_damage_5419": "ダメージ",
+	"vz_breakdown_times_a_hit_from_base_stat_alone": "基礎{stat}だけのヒットに対する倍率",
+	"vz_breakdown_family_the_marks_at_the_end_of_a_bar_are": "バーの先端の印は、そのサブ効果を星5の平均の伸びでもう1回強化したときの上昇分です。",
+	"vz_breakdown_hover_or_tap_a_column_to_read_it_and": "列にカーソルを合わせるかタップすると内容が表示され、つまみのある列はドラッグでステータスを変えられます。",
+	"vz_breakdown_hover_or_tap_a_row_to_read_it": "行にカーソルを合わせるかタップすると内容が表示されます。",
+	"vz_crit_crit_rate_and_crit_damage_heatmap": "会心率と会心ダメージのヒートマップ",
+	"vz_crit_below_the_base_5_crit_rate": "基礎会心率5%未満",
+	"vz_crit_x_cv": "CV {cv}",
+	"vz_crit_best_split_of_this_budget": "この会心値の最適配分",
+	"vz_crit_average_damage": "平均ダメージ",
+	"vz_crit_crits_in_n_x": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "{count}ヒット中の会心数"
+			}
+		}
+	],
+	"vz_crit_pinneddelta_vs_pinned": "ピン留め比 {delta}",
+	"vz_crit_move_to_the_best_split_of_this_budget": "この会心値の最適配分に移動",
+	"vz_crit_k_of_hitsperrotation_hitsperrotation": [
+		{
+			"declarations": [
+				"input count",
+				"input k",
+				"input multiplier",
+				"input chance",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "{count}ヒット中{k}回会心：{#strong}{multiplier}{/strong}、ローテーションの{chance}で発生します。"
+			}
+		}
+	],
+	"vz_crit_crit_rate_d37f": "会心率",
+	"vz_crit_crit_rate_9bbd": "会心率",
+	"vz_crit_mymultiplier_average_damage_per_hit": "{multiplier}{#span}1ヒットあたりの平均ダメージ{/span}",
+	"vz_crit_hits_per_rotation": "ローテーションあたりのヒット数",
+	"vz_crit_darkens_each_crit_rate_by_its_chance_of": "ローテーション全体で一度も会心が発生しない確率に応じて、各会心率を暗くする",
+	"vz_crit_no_crit_shading": "会心なしの陰影",
+	"vz_crit_clear_pin": "ピン留めを解除",
+	"vz_crit_pin_this_build": "このビルドをピン留め",
+	"vz_crit_crit_dmg": "会心ダメージ",
+	"vz_crit_crit_damage": "会心ダメージ",
+	"vz_crit_crits_in_hitsperrotation_hitsperrotation": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "{count}ヒット中の会心数"
+			}
+		}
+	],
+	"vz_crit_a_hit_that_doesn_t_crit_is_1": "会心が発生しないヒットを×1とします。",
+	"vz_crit_the_curving_bands_show_how_much_your": "曲線の帯は、多くのローテーションを通してダメージがどれだけ増えるかを示します。",
+	"vz_crit_the_solid_line_is_every_build_with_your": "実線は、合計会心値（CV）{cv}のビルドすべてです：2 × 会心率 + 会心ダメージ、基礎の会心ステータスを含みます。その上の円がこの会心値の最適配分で、押すとそこへ移動します。",
+	"vz_crit_each_bar_is_a_number_of_crits_in_one": "各バーは1ローテーション中の会心数です。カーソルを合わせるかタップすると内容が表示されます。",
+	"vz_crit_roll_hitsperrotation_hitsperrotation": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "{count}ヒットを試す"
+			}
+		}
+	],
+	"vz_crit_rollcrits_of_length_length_crit_mycd": [
+		{
+			"declarations": [
+				"input count",
+				"input k",
+				"input multiplier",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "{count}ヒット中{k}回会心：今回は{#strong}{multiplier}{/strong}です。"
+			}
+		}
+	],
+	"vz_crit_on_average_x_of_hitsperrotation": [
+		{
+			"declarations": [
+				"input count",
+				"input average",
+				"input chance",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "平均で{count}ヒット中{average}回会心し、ローテーションの{chance}は一度も会心しません。"
+			}
+		}
+	],
+	"vz_crit_on_average_59_4_of_60_hits_crit_and_0_1": "平均で60ヒット中59.4回会心し、ローテーションの<0.1%は一度も会心しません。"
 }
