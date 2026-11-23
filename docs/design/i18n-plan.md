@@ -71,6 +71,12 @@ localize the _explanation_ (tooltip / help text) instead. Keep the strings
 extractable so native-speaker users can correct them. This converts an
 impossible research task into a community contribution surface.
 
+**By locale (⚓ Nate, 2026-11-23):** keeping the English term is the rule for the European
+locales, whose players are English-adjacent. CJK locales use the words their players
+recognize, often a loan in the local script, so Japanese writes オーラ and ハイパーキャリー rather
+than aura and hypercarry. Latin letters stay only where those players write them too (ICD, CV,
+C0–C6). The Japanese vocabulary is `docs/text/terms-ja.md`.
+
 ---
 
 ## 3. Implementation
@@ -179,8 +185,9 @@ Phased. Each phase = a separate session with a verifiable artifact.
       Finds ~90% of layout bugs at zero translation cost.
 
 - [ ] **5. Translation pass**
-      Fill the six locale files. Explicit instruction: **leave Tier C terms in
-      English** unless there is a well-established community equivalent.
+      Fill the six locale files. Tier C terms follow §2 by locale: English for the
+      European locales unless there is a well-established local equivalent, the
+      players' own words for CJK.
 
 - [ ] **6. Review & community loop**
       Japanese is self-verifiable. Ship the rest marked as community-editable, with
