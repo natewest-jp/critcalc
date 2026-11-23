@@ -1,37 +1,39 @@
-# Japanese terms: the list for the reviewer
+# Japanese terms
 
-Claude's proposals for how critcalc writes its terms in Japanese, gathered in one place so
-the reviewer can rule on them before the tool interiors (the Rotation Planner, the Team
-Builder with Roster, and the Visualizers) are translated. Nothing here is ruled yet. Answer
-by number ("12: ok", "31: プレイヤーは○○と言う"); a ruling then moves into
-`ledger/terms.json` as the term's Japanese form, and the entry here is marked ruled.
+How critcalc writes its terms in Japanese: the vocabulary the Japanese draft of the tool
+interiors (the Rotation Planner, the Team Builder with Roster, and the Visualizers) is
+written from. Each entry is numbered so a reader can answer by number.
+
+**Status.** Nate's reviewer ruled entries 31, 88, and 109; the reviewer is not a Genshin
+player, so the rest are Claude's calls from the game's text and the Japanese community's own
+sources. The calls with a real alternative are the open questions at the end, which go to the
+Japanese Genshin community along with the hidden `/ja` draft. A community answer rewrites the
+entry here, and the strings follow.
 
 The English terms and their classes come from the termbase (`ledger/terms.json`, ruled in
 `glossary.md`). The interiors' strings are listed in `ledger/inventory/` (`planner`, `bench`,
 `coverage`, `tb`, `vz`, `vz_*`).
 
-## How the proposals were chosen
+## How the words were chosen
 
-`docs/design/i18n-plan.md` §2 says to keep an English community term unless there is a
-well-established local one. Japanese players have their own word for most of them, often a
-katakana loan (ハイパーキャリー, オーラ), so the default here is the word Japanese players use,
-and the English letters stay only where players write them too (ICD, CV, EM, 1U, C6).
+For CJK locales, critcalc uses the words that locale's players recognize (⚓ Nate,
+2026-11-23; the rule is in `docs/design/i18n-plan.md` §2). For Japanese that is often a
+katakana loan (オーラ, ハイパーキャリー). Latin letters stay only where Japanese players write
+them too (ICD, CV, EM, 1U, C0–C6).
 
 Each entry is marked with where its word comes from:
 
 - **game**: the game's own Japanese text, checked in genshin-db's Japanese talent,
-  constellation, weapon, and artifact text. Never translated by us.
+  constellation, weapon, and artifact text, or quoted from the game's UI by the Japanese wiki
+  and strategy sites. Never translated by us.
 - **players**: the Japanese community's word, from the Japanese Genshin wiki's glossary
-  (wikiwiki.jp `用語集/攻略`) and the large strategy sites (Altema, Game8).
+  (wikiwiki.jp `用語集/攻略`) and the large strategy sites (Altema, Game8, GameWith).
 - **ours**: a term critcalc coined. It translates once and is reused everywhere.
 - **kept**: written in Latin letters, as Japanese players write it.
 
-"Check" marks a proposal Claude is least sure of, with the reason.
+## A. Already on /ja
 
-## A. Already on /ja (for reference)
-
-Drafted in the frame, notices, and sections rounds. Listed so the whole vocabulary is on one
-sheet; they can be ruled on with the rest.
+Drafted in the frame, notices, and sections rounds.
 
 1. rotation → ローテーション · ours
 2. lineup → ラインナップ · ours
@@ -57,93 +59,104 @@ sheet; they can be ruled on with the rest.
 ## B. Mechanics shared by the tools
 
 21. ICD → ICD · kept. Explained once as 元素付着のクールタイム; players also write 元素付着CT.
-22. gauge (how much of an element is on the enemy) → 元素量 · players (the wiki's article name)
+22. gauge (how much of an element is on the enemy) → 元素量 · players
 23. gauge units → U after a number, 元素量1U · kept
-24. aura (the element sitting on the enemy) → オーラ · players (also 下地). It stays distinct from 元素量 (the amount) and 元素付着 (a hit landing), as the English keeps aura and gauge apart.
+24. aura (the element sitting on the enemy) → オーラ · players. It stays distinct from 元素量 (the amount) and 元素付着 (a hit landing), as the English keeps aura and gauge apart.
 25. Target aura → 敵のオーラ · players
 26. trigger (the element that reacts with an aura) → トリガー · players
-27. decay → 減衰 · players. Check: common in explanations, but not in the wiki's glossary.
-28. cooldown → クールタイム · game. CT only in dense labels. Never CD, which means CRIT DMG in English.
-29. stacks → 層 · game ("3層まで重ね掛け"). Players also say スタック; the proposal follows the game.
-30. on-field / off-field, in prose → フィールド上 / 待機中 · game. The role badges use the players' words (entries 70 and 71).
-31. swap (switching characters in combat) → 交代 · players. The game writes キャラを切り替える; the frame already uses 交代. Swapping a character into a slot is a different thing, 入れ替え, as the Builder draft has it.
+27. decay → 減衰 · players
+28. cooldown → クールタイム · game. CT only in dense labels, and never CD.
+29. stacks → 層 · game ("3層まで重ね掛け")
+30. on-field / off-field, in prose → フィールド上 / 待機中 · game. The role badges use the players' words (70 to 72).
+31. swap (switching characters in combat) → 交代 · players. ⚓ Ruled by Nate's reviewer. Swapping a character into a slot is a different thing, 入れ替え.
 32. frame (1/60 s) → フレーム · players
-33. buff → バフ · players. Team buffs → チームバフ; Always-on buffs → 常時バフ.
-34. proc (a weapon or set effect firing) → 発動 · game. Trigger cooldown → 発動クールタイム.
+33. buff → バフ; Team buffs → チームバフ; Always-on buffs → 常時バフ · players
+34. proc (a weapon or set effect firing) → 発動; trigger cooldown → 発動クールタイム · game
 35. Lasts / duration → 継続時間 · game
-36. uptime (the share of the rotation a buff covers) → 維持率 · players. Check: understood, but less settled than the others.
-37. summon → 召喚物 · players. Check: the game writes the verb 召喚 and names each summon.
+36. uptime (the share of the rotation a buff covers) → 維持率 · players
+37. summon → 召喚物 · players
 38. charges → 使用可能回数 · game
 39. a hit crits → 会心が発生する · game. "Average damage per hit" → 1ヒットあたりの平均ダメージ.
-40. curated / modeled (critcalc has entered a kit's data) → 対応済み · ours, matching 対応状況. "Not curated yet" → 未対応.
+40. curated / modeled (critcalc has entered a kit's data) → 対応済み; not yet → 未対応 · ours
 41. measured (from gcsim or by hand) → 計測済み · ours
-42. generic timing → 汎用タイミング · ours. stand-in → 代用 · ours.
+42. generic timing → 汎用タイミング; stand-in → 代用 · ours
 
 ## C. Rotation Planner
 
 43. timeline → タイムライン · ours
-44. the bench (the slot cards beside the timeline) → ベンチ · ours. Check: a reader may prefer キャラ枠, but 枠 already names one slot.
+44. the bench (the slot cards beside the timeline) → ベンチ · ours
 45. Inspector (the details panel) → 詳細 · ours
 46. composer (where notation is typed) → 表記エディタ · ours
-47. aura lane → オーラレーン · ours. gauge lines → 元素量ライン · ours. reaction spawns (Dendro Cores, Thunderclouds) → 反応生成物 · ours.
+47. aura lane → オーラレーン; gauge lines → 元素量ライン; reaction spawns (Dendro Cores, Thunderclouds) → 反応生成物 · ours
 48. aura log → オーラログ · ours
 49. Timeline layers → 表示レイヤー · ours
 50. Laps (the rotation run again after its end) → 周回, with 2周目 for the second lap · ours
 51. Playback → 再生; count-in → カウントイン · ours
-52. Frame-perfect timing → 最速入力 · ours. Check: literal, but it is the plain way to say no human delay.
-53. cast animation → モーション (entry 10); a cast → 発動
+52. Frame-perfect timing → 最速入力 · ours (open question 1)
+53. cast animation → モーション (10); a cast → 発動
 54. Ready again → 再使用可能 · ours
 55. hold, tap (hE, E) → 長押し, 一回押し · game
-56. dash, jump, plunge, aimed shot → ダッシュ, ジャンプ, 落下攻撃, 狙い撃ち · game
-57. finisher (of a spinning charged attack) → 最終段 · players. Check.
-58. short burst (sQ) → 短縮版の元素爆発 · ours. Check: the kits that have one describe it in their own words.
-59. Flat DMG (Normal Flat DMG and the like) → ダメージ加算（固定値） · players. Check: the game words these as ダメージアップ, with the amount based on a stat.
+56. charged attack, dash, jump, plunge, aimed shot → 重撃, ダッシュ, ジャンプ, 落下攻撃, 狙い撃ち · game
+57. finisher (of a spinning charged attack) → 最終段 · players
+58. short burst (sQ) → 短縮版の元素爆発 · ours
+59. Flat DMG (Normal Flat DMG and the like) → ダメージ加算（固定値） · players
 60. DEF Ignore → 防御無視 · players
-61. Reaction Bonus → 反応ダメージボーナス · ours. Check: the game writes ○○反応のダメージ+X% case by case.
+61. Reaction Bonus → 反応ダメージボーナス · ours (open question 2). The game writes ○○反応のダメージ+X% case by case.
 62. Base DMG Bonus → the game's 基礎ダメージ wording · game
 63. Hypercarry (a sample's name) → ハイパーキャリー · players
-64. National (Raiden National) → ナショナル, as in 雷電ナショナル · players (Altema). Chinese players say 国家队.
-65. Double Hydro (Hu Tao Double Hydro) → ダブル水 · players. Check: Claude could not find it in a glossary.
+64. National (Raiden National) → ナショナル, as in 雷電ナショナル · players
+65. Double Hydro (Hu Tao Double Hydro) → ダブル水 · players (open question 3)
 66. Sac Frags (the weapon, in a sample's name) → 祭礼の断片 · game
 67. Nightsoul Burst, NB → 夜魂バースト · game. NB stays only in the timeline's dense labels.
 
 ## D. Team Builder and Roster
 
-68. capabilities (who can heal, shield, buff, and at which constellation) → 能力; the team's capabilities → チームの能力 · ours. Check: 役割 would read well but is entry 69.
+68. capabilities (who can heal, shield, buff, and at which constellation) → 能力; the team's capabilities → チームの能力 · ours (open question 4)
 69. Role → 役割 · players
-70. On-Field DPS → メインアタッカー · players. Japanese players name the role, not the field position.
+70. On-Field DPS → メインアタッカー · players. Japanese players name the role rather than the field position.
 71. Off-Field DPS → サブアタッカー · players
-72. Off-field DMG (a capability) → 裏火力 · players. Check: the badge is about damage dealt off-field, which 待機中 says too formally.
+72. Off-field DMG (a capability) → 裏火力 · players
 73. Support → サポーター · players
 74. Survivability → 生存力 · players
 75. Healing, Shield → 回復, シールド · game
-76. Cleanse (removes auras from the party) → 元素付着解除 · ours. Check: there may be a shorter players' word.
+76. Cleanse (removes auras from the party) → 元素付着解除 · ours
 77. Taunt → 挑発 · game
 78. Infuse, Infusion → 元素付与 · game
 79. RES shred, Shred → 耐性ダウン · players
 80. DEF shred → 防御力ダウン · players
 81. Grouping (pulls or gathers enemies) → 集敵 · players
-82. Energy (gives teammates flat Energy) → 元素エネルギー · game. Battery, if it appears, → バッテリー · players.
+82. Energy (gives teammates flat Energy) → 元素エネルギー · game. Battery, where it appears, → バッテリー · players.
 83. Interruption RES → 中断耐性 · game
 84. coordinated attack → 協同攻撃 · game
 85. ATK buff, CRIT buff, DMG% buff, EM buff, HP/DEF buff → 攻撃力バフ, 会心バフ, ダメージバフ, 元素熟知バフ, HP・防御力バフ · players
-86. enabler (needs a Bloom enabler) → イネーブラー · players (the wiki keeps the loan). Check: 起点 reads more naturally to some players.
-87. selfish carry → セルフィッシュキャリー · players. Check: the wiki has only the loan; 自己完結型アタッカー is clearer.
-88. constellations → 命ノ星座 in prose; C0–C6 stay. Players also say 凸 (無凸, 完凸). The proposal keeps C0–C6 as notation, so the reviewer may want 凸 in the lens labels ("Base kits only", "My constellations", "C6").
+86. enabler (needs a Bloom enabler) → イネーブラー · players (open question 5)
+87. selfish carry → セルフィッシュキャリー · players (open question 5)
+88. constellations → 命ノ星座 in prose, with C0–C6 as written · game, kept. ⚓ Ruled by Nate's reviewer: C0–C6, not 凸.
 89. Lock the roster → 所持キャラをロック · ours
 90. Compare → 比較 · ours
 91. audition (trying a character in a team's slot) → お試し · ours
-92. Imaginarium Theater's roles and terms (Opening Character, Alternate Cast, Supporting Cast, Special Guest Stars, Visionary, Fantasia Flowers, Blessing Level, acts, Arcana) → the game's own UI text · game. These are not in genshin-db; the reviewer or an in-game screenshot is the source.
-93. Stygian Onslaught's terms (Battlefield, Primary Antagonists, Dire HP, Fearless HP) → the game's own UI text · game, as entry 92.
-94. Factions and states (Moonsign, Hexerei, Nightsoul's Blessing, Pneuma alignment) → 月兆, the game's word for Hexerei, 夜魂の加護, and the game's word for Pneuma · game
+92. Imaginarium Theater · game, from the Japanese wiki's 幻想シアター page:
+    - Opening Characters → 開幕キャスト
+    - Alternate Cast → 待機キャスト
+    - Supporting Cast (a friend's character) → サポートキャスト
+    - Special Guest Stars → 特別招待キャスト
+    - the modes Easy, Normal, Hard, Visionary, Lunar → イージー, ノーマル, ハード, マスター, 月諭 (Visionary is the fourth mode, which Japanese calls マスター)
+    - act → 幕 (第3幕); Arcana → アルカナ
+    - Fantasia Flowers → 幻戯の花; Blessing Level → 祝福レベル
+    - Primary Antagonists (the heading over the boss acts) → 主な敵 · ours, as the wiki names no heading (open question 6)
+93. Stygian Onslaught · game, from the Japanese wiki's 幽境の激戦 page:
+    - Fearless and Dire are difficulties 5 and 6, エクストラ and アルティメット, so Fearless HP and Dire HP → エクストラのHP and アルティメットのHP
+    - Battlefield (one of the season's three fights) → 戦場 · ours, as the wiki names no term (open question 6)
+    - Disturbance Outbreak (extra artifact drops) → 乱れた地脈
+94. Factions and states · game: Moonsign → 月兆; Ascendant Gleam → 月兆・満照; Hexerei → 魔導; Secret Rite → 魔導秘儀; Nightsoul's Blessing → 夜魂の加護; Pneuma → プネウマ
 
 ## E. Visualizers
 
-The instrument names are ours and translate (glossary §1). Proposed:
+The instrument names are ours and translate (glossary §1):
 
 95. Crit heatmap → 会心ヒートマップ
 96. ICD timeline → ICDタイムライン
-97. Gauge explorer → 元素量シミュレーター. Check: エクスプローラー is the literal loan, but a reader expects a tool name to say what it does.
+97. Gauge explorer → 元素量シミュレーター. エクスプローラー is the literal loan; a tool name that says what it does reads better (open question 7).
 98. Reaction curves → 元素反応カーブ
 99. Damage breakdown → ダメージ内訳
 100.  Enemy RES & DEF → 敵の耐性と防御力
@@ -153,30 +166,30 @@ The instrument names are ours and translate (glossary §1). Proposed:
 
 Crit heatmap:
 
-104. CV, crit value → CV, 会心値 · players. Check: Japanese players more often rate artifacts by スコア, which also counts ATK%, so CV must not be rendered as スコア.
+104. CV, crit value → CV, 会心値 · players. Not スコア: the players' artifact score also counts ATK%.
 105. Hits per rotation → ローテーションあたりのヒット数 · ours
 106. best split (of a crit budget) → 最適配分 · ours
 
 ICD timeline:
 
 107. hit counter, timer → ヒットカウンター, タイマー · players
-108. timer window → 区間 · ours. Check.
+108. timer window → 区間 · ours
 
 Gauge explorer:
 
-109. forward and reverse Vaporize or Melt → フォワード / リバース, with the multiplier: 2倍蒸発, 1.5倍溶解 · players (the wiki's words). Some players say 強蒸発 / 弱蒸発 instead; the reviewer's call.
+109. forward and reverse Vaporize or Melt → 強 / 弱, as in 強蒸発, 弱溶解 · players. ⚓ Ruled by Nate's reviewer. The wiki's glossary writes フォワード / リバース (open question 8).
 110. Overvape → オーバーヴェイプ · players
-111. aura tax (the ×0.8 on a new aura) → オーラ係数 · ours. Check.
+111. aura tax (the ×0.8 on a new aura) → オーラ係数 · ours
 112. Topped up, Refreshed, Too weak (what a re-application does) → 補充, 上書き, 不足 · ours
 113. fuel (Burning's hidden gauge) → 燃料 · ours
 
 Reaction curves:
 
 114. Amplifying, Additive, Transformative → 増幅反応, 激化反応, 転化反応 · players. Japanese has no word for "additive"; Spread and Aggravate are the 激化 reactions, so the family takes that name.
-115. Lunar reactions → 月反応 · game. Stellar reactions → the game's word · game.
+115. Lunar reactions → 月反応 (月感電, 月開花, 月結晶); Stellar reactions → 星反応 (星電導, 星拡散); Radiance → 輝映 · game. Stellar Glimmer is not in genshin-db's Japanese text yet: `// TODO: data gap` when it is extracted.
 116. Reaction family → 反応の系統 · ours
 117. Crystallize shard → 結晶の欠片 · game
-118. top contributor (the Lunar damage share) → 最大貢献者 · ours. Check against the game's Lunar text when it is sourced.
+118. top contributor (the Lunar damage share) → 最大貢献者 · ours
 
 Enemy RES & DEF:
 
@@ -185,39 +198,47 @@ Enemy RES & DEF:
 
 Damage breakdown:
 
-121. bracket (one multiplying term of the damage formula) → 項 · ours. Check: players say ○○枠 (バフ枠), but 枠 is already a slot (entry 14).
+121. bracket (one multiplying term of the damage formula) → 乗算枠 · players (open question 9). Players say ○○枠 (バフ枠); the compound keeps it apart from a slot (14), which is 枠 alone.
 122. talent multiplier → 天賦倍率 · players
-123. scaling stat → 参照ステータス · players (○○参照)
-124. Elevation → the game's word · game. The game writes the verb only; the reviewer may know a players' noun.
+123. scaling stat → 参照ステータス · players
+124. Elevation → 向上 · game (the kit text links the word: ダメージが7%向上する)
 125. level base → レベル基礎値 · ours
 
 Artifact odds:
 
-126. substat, main stat → サブOP, メインOP · players. Check: サブステータス is clearer to a casual reader.
+126. substat, main stat → サブ効果, メイン効果 · game (the reshape screen's words) (open question 10)
 127. roll (one upgrade into a substat) → 強化, with 伸び for its size · players
 128. upgrade counts → 強化回数 · players
 129. useful rolls, valued stats → 有効強化回数, 狙いのステータス · ours
-130. reshape, Advanced, Decreed → the game's words · game
-131. Sanctifying Elixir, Dust of Enlightenment → 祈聖のエリクシル, 聖啓の塵 · game
+130. reshape, Advanced, Decreed → 再構築, 上級再構築, 絶対再構築 · game
+131. Sanctifying Elixir, Dust of Enlightenment → 祈聖のエリクシル, 聖啓の塵 · game. Defined substats → 指定ステータス · game.
 132. resin, domain → 天然樹脂, 秘境 · game
 133. the unluckiest tenth → 下位10% · ours
 
 Wish odds:
 
 134. pity → 天井 · players
-135. soft pity → 確率上昇 · players. Check: 仮天井 means something else (the 90th pull, before the guarantee).
+135. soft pity → ソフト天井 · players (open question 11)
 136. the 50/50 → 50/50, and losing it → すり抜け · players
 137. guarantee → 確定 · players
 138. Capturing Radiance → 掴みし明光 · game
 139. featured → ピックアップ · game
-140. Fate Points, Epitomized Path → the game's words · game
+140. Fate Points, Epitomized Path → 命定値, 神鋳定軌 · game
 141. pulls → 祈願回数, and N連 in counts · players
-142. Character Event Wish, Weapon Event Wish → the game's banner names · game
+142. Character Event Wish, Weapon Event Wish → イベント祈願・キャラクター, イベント祈願・武器 · game
 
-## Questions for the reviewer
+## Open questions for the Japanese community
 
-- 31: 交代 or the game's 切り替え for switching characters?
-- 88: should the lens labels speak in 凸 (無凸, 完凸) rather than C0 and C6?
-- 109: フォワード/リバース or 強/弱?
-- 121: is ○○枠 so settled for damage brackets that 項 would read as wrong, despite 枠 also meaning a slot?
-- 92 and 93: the Theater and Stygian names need the game's Japanese UI text, which genshin-db does not carry.
+Each is a real split between two words a player might expect. The draft uses the first.
+
+1. (52) Frame-perfect timing: 最速入力, or フレーム単位の正確な入力?
+2. (61) Reaction Bonus: 反応ダメージボーナス, or a players' word for the formula's reaction bonus?
+3. (65) Double Hydro, in team names: ダブル水, or 水2?
+4. (68) A character's capabilities (heal, shield, buff): 能力, or 役割 (which the draft gives to Role)?
+5. (86, 87) enabler and selfish carry: the loans イネーブラー and セルフィッシュキャリー, or 起点 and 自己完結型アタッカー?
+6. (92, 93) The Theater's Primary Antagonists heading and Stygian's Battlefield: does the game name them? The draft has 主な敵 and 戦場.
+7. (97) Gauge explorer: 元素量シミュレーター, or 元素量エクスプローラー?
+8. (109) Forward and reverse Vaporize and Melt: 強 / 弱, or フォワード / リバース?
+9. (121) A damage-formula bracket: 乗算枠, or 項?
+10. (126) substat: the game's サブ効果, or the players' サブOP?
+11. (135) soft pity: ソフト天井, or 確率上昇?
