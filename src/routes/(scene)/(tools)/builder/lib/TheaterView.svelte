@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { elementLabel } from '$lib/utils/auraDisplay';
 	import Msg from '$lib/components/Msg.svelte';
 	/**
 	 * AN IMAGINARIUM THEATER LINEUP — the right pane (⚓ Nate 2026-11-11): the
@@ -160,7 +161,7 @@
 		<div class="th-body th-stats">
 			{#each elements as e (e)}
 				<span class="th-chip"
-					><img src={elementIcon(e)} alt={e} /> ×{stats.elements[e as Element]}</span
+					><img src={elementIcon(e)} alt={elementLabel(e)} /> ×{stats.elements[e as Element]}</span
 				>
 			{/each}
 			<span class="th-rule th-rule--short" aria-hidden="true"></span>

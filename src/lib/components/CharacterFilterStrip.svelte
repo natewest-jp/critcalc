@@ -33,6 +33,7 @@
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { ROLE_CATEGORIES, type RoleCategory } from '$lib/capabilities/roles';
 	import { m } from '$lib/paraglide/messages';
+	import { elementLabel } from '$lib/utils/auraDisplay';
 
 	let {
 		filters,
@@ -133,8 +134,8 @@
 				class:is-active={on}
 				style:--el={elColor(el)}
 				aria-pressed={on}
-				aria-label={el}
-				title={el[0].toUpperCase() + el.slice(1)}
+				aria-label={elementLabel(el)}
+				title={elementLabel(el)}
 				onclick={() => toggle(el)}
 			>
 				<img src={elementIcon(el)} alt="" />
