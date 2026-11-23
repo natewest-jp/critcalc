@@ -86,7 +86,8 @@ import { teamOfWork } from '$lib/storage/teamLoadout';
 import { pickSample } from '$lib/data/plannerSamples';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { untrack } from 'svelte';
-import { notices } from '$lib/notices.svelte';
+import { namedMessage, notices } from '$lib/notices.svelte';
+import { m } from '$lib/paraglide/messages';
 
 export type RotationTab = {
 	id: string;
@@ -468,8 +469,8 @@ class RotationTabsState {
 		const undo = this.#snapshot();
 		this.setSlot(index, null);
 		const name = getCharacterIndexEntry(id)?.displayName ?? id;
-		notices.toast('success', `${name} is off the team`, {
-			actions: [{ label: 'Undo', run: undo }]
+		notices.toast('success', namedMessage(m.library_name_is_off_the_team, { name: [name] }), {
+			actions: [{ label: m.notices_undo(), run: undo }]
 		});
 	}
 
@@ -478,7 +479,9 @@ class RotationTabsState {
 		if (!this.canEdit()) return;
 		const undo = this.#snapshot();
 		this.clearDocument();
-		notices.toast('success', 'Rotation cleared', { actions: [{ label: 'Undo', run: undo }] });
+		notices.toast('success', m.library_rotation_cleared(), {
+			actions: [{ label: m.notices_undo(), run: undo }]
+		});
 	}
 
 	// -------------------------------------------------------------------------
@@ -520,6 +523,7 @@ class RotationTabsState {
 	 * the team's own, gaps included. The caller hands it to
 	 * `documentBar.receive`, which places it like any arriving document.
 	 */
+	// ⚠️ A placeholder `isMintedLabel` (migrate.ts) knows by its English: not a message.
 	teamDocument(ids: readonly (string | null)[], label = 'Imported team'): Omit<RotationTab, 'id'> {
 		const seating = placedSeating(seatsFromLegacy(ids));
 		return { label, notation: '', slots: seating.seats, placed: seating.placed };

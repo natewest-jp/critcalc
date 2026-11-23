@@ -18,7 +18,7 @@
 	import { get } from 'svelte/store';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { menu } from '$lib/menuState.svelte';
-	import { notices, named } from '$lib/notices.svelte';
+	import { notices, namedMessage } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { pictureOf, type Picture, type ProfileColor, type Twin } from '$lib/storage/records';
 	import { PROFILE_PICTURES } from '$lib/profilePictures.generated';
@@ -37,6 +37,7 @@
 		searchCharacterIndex
 	} from '$lib/data/characterLookup';
 	import { constellations, loadout, ownership, siteSettings } from '$lib/stores';
+	import { m } from '$lib/paraglide/messages';
 	import { hasAvatar } from '$lib/utils/getAvatar';
 
 	let { mode }: { mode: 'new' | 'edit' } = $props();
@@ -124,7 +125,9 @@
 	// ── Character pictures: any character, the profile's own first ─────────
 	/** ⚓ ONE Traveler (characterLookup): the variants share a portrait. */
 	const pictureName = (id: string) =>
-		id.startsWith('traveler_') ? 'Traveler' : (getCharacterIndexEntry(id)?.displayName ?? id);
+		id.startsWith('traveler_')
+			? m.profile_traveler()
+			: (getCharacterIndexEntry(id)?.displayName ?? id);
 	/** ⚓ `blank` is the notation's empty seat, not a character. */
 	const oneEach = (ids: string[]): string[] => {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local to one call, never read reactively
@@ -183,12 +186,12 @@
 	// every profile, and a reset there aimed at "whoever is active". Pick what
 	// to clear, then one dialog says what goes and what can come back.
 	const CLEARABLE = [
-		['constellations', 'Constellation levels'],
-		['loadouts', 'Loadouts'],
-		['ownership', 'Owned and wishlisted'],
-		['rotations', 'Rotations'],
-		['lineups', 'Lineups'],
-		['teams', 'Teams']
+		['constellations', m.profile_constellation_levels],
+		['loadouts', m.profile_loadouts],
+		['ownership', m.profile_owned_and_wishlisted],
+		['rotations', m.profile_rotations],
+		['lineups', m.profile_lineups],
+		['teams', m.profile_teams]
 	] as const;
 	type Clearable = (typeof CLEARABLE)[number][0];
 	/** ⚓ Theorycraft keeps only rotations and lineups (no roster, no teams),
@@ -200,8 +203,8 @@
 	);
 	const trashNote = $derived(
 		theorycraft
-			? 'Rotations and lineups go to the Trash for 30 days.'
-			: 'Rotations, lineups, and teams go to the Trash for 30 days.'
+			? m.profile_rotations_and_lineups_go_to_the_trash()
+			: m.profile_rotations_lineups_and_teams_go_to_the()
 	);
 	let toClear = $state<Record<Clearable, boolean>>({
 		constellations: false,
@@ -218,17 +221,18 @@
 		const c = toClear;
 		const trashed = c.rotations || c.lineups || c.teams;
 		const gone = c.constellations || c.loadouts || c.ownership;
-		const body = [
-			trashed && trashNote,
-			gone && 'Constellation levels, loadouts, and owned marks can’t be brought back.'
-		]
-			.filter(Boolean)
-			.join(' ');
+		const goneNote = m.profile_constellation_levels_loadouts_and_owned();
+		const body =
+			trashed && gone
+				? m.profile_two_notes({ first: trashNote, second: goneNote })
+				: trashed
+					? trashNote
+					: goneNote;
 		const ok = await notices.ask({
-			title: `Clear ${target.name}’s data?`,
+			title: m.profile_clear_name_s_data({ name: target.name }),
 			body,
-			confirm: 'Clear',
-			cancel: 'Keep it',
+			confirm: m.profile_clear(),
+			cancel: m.profile_keep_it(),
 			danger: true
 		});
 		if (!ok) return;
@@ -239,7 +243,7 @@
 		if (c.lineups) await storageSession.removeAll('lineup');
 		if (c.teams) await storageSession.removeAllTeams();
 		for (const k of Object.keys(toClear) as Clearable[]) toClear[k] = false;
-		notices.toast('success', named`Cleared ${target.name}’s data`);
+		notices.toast('success', namedMessage(m.profile_cleared_name_s_data, { name: target.name }));
 	}
 
 	// ── Delete, asked as a DIALOG (notices §3.4) ────────────────────────────
@@ -247,7 +251,6 @@
 	// (everything in the account goes with it), which a button's label cannot
 	// hold (Nate, 2026-10-26). ↻ Since the Trash it no longer offers a backup:
 	// the whole account can come back from there for 30 days (§5).
-	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 	async function del(): Promise<void> {
 		const target = editing;
 		if (!target) return;
@@ -257,16 +260,16 @@
 			storageSession.documents('lineup').then(live),
 			storageSession.teams().then(live)
 		]);
-		const what = [
-			plural(rot, 'rotation', 'rotations'),
-			plural(lin, 'lineup', 'lineups'),
-			plural(tms, 'team', 'teams')
-		].join(', ');
+		const what = m.profile_counts({
+			rotations: m.settings_count_rotations({ count: rot }),
+			lineups: m.settings_count_lineups({ count: lin }),
+			teams: m.settings_count_teams({ count: tms })
+		});
 		const ok = await notices.ask({
-			title: `Delete ${target.name}?`,
-			body: `Its roster and ${what} go with it. You can restore it from the Trash for 30 days.`,
-			confirm: 'Delete profile',
-			cancel: 'Keep it',
+			title: m.profile_delete_name({ name: target.name }),
+			body: m.profile_its_roster_and_what_go_with_it_you_can({ what }),
+			confirm: m.profile_delete_profile(),
+			cancel: m.profile_keep_it(),
 			danger: true
 		});
 		if (!ok) return;
@@ -293,10 +296,10 @@
 
 {#snippet twinRow()}
 	<div class="sp-row">
-		<span class="sp-name">Traveler</span>
+		<span class="sp-name">{m.profile_traveler()}</span>
 		<span class="sp-ctl">
-			<span class="segment" role="radiogroup" aria-label="Traveler">
-				{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
+			<span class="segment" role="radiogroup" aria-label={m.profile_traveler()}>
+				{#each [['aether', m.profile_aether()], ['lumine', m.profile_lumine()]] as const as [value, label] (value)}
 					<button
 						class="btn"
 						class:is-active={twin === value}
@@ -307,30 +310,30 @@
 				{/each}
 			</span>
 		</span>
-		<span class="sp-note">Which twin takes the role of Traveler in this account.</span>
+		<span class="sp-note">{m.profile_which_twin_takes_the_role_of_traveler_in()}</span>
 	</div>
 {/snippet}
 
 {#snippet clearRow()}
 	<div class="sp-row">
-		<span class="sp-name">Clear data</span>
+		<span class="sp-name">{m.profile_clear_data()}</span>
 		<span class="sp-ctl sp-ctl--clear">
 			<span class="pf-clear" class:pf-clear--one={theorycraft}>
 				{#each clearable as [key, label] (key)}
 					<label class="check">
 						<input type="checkbox" bind:checked={toClear[key]} />
 						<span class="check-box"></span>
-						{label}
+						{label()}
 					</label>
 				{/each}
 			</span>
 			<button class="btn btn--danger" disabled={!anyToClear} onclick={() => void clearData()}
-				><Mark name="clear" /> Clear…</button
+				><Mark name="clear" /> {m.profile_clear_ellipsis()}</button
 			>
 		</span>
 		<span class="sp-note">
 			{trashNote}
-			{#if !theorycraft}Constellation levels, loadouts, and owned marks can’t be brought back.{/if}
+			{#if !theorycraft}{m.profile_constellation_levels_loadouts_and_owned()}{/if}
 		</span>
 	</div>
 {/snippet}
@@ -339,25 +342,22 @@
      so Profile reads like the page beside it (2026-10-26). -->
 {#if mode === 'edit' && !editing}
 	<div class="sp">
-		<p class="lede">Theorycraft is the built-in profile, and has fewer settings.</p>
+		<p class="lede">{m.profile_theorycraft_is_the_built_in_profile_and()}</p>
 		<section class="sp-section">{@render twinRow()}</section>
 		<section class="sp-section">
-			<h2 class="kicker sp-section-title">Data</h2>
+			<h2 class="kicker sp-section-title">{m.profile_data()}</h2>
 			{@render clearRow()}
 		</section>
 	</div>
 {:else}
 	{#if mode === 'new'}
-		<p class="lede">
-			A profile is one Genshin account, kept in this browser: its roster, teams, rotations, and
-			lineups. Shared links open in Theorycraft, so your profiles stay as you left them.
-		</p>
+		<p class="lede">{m.profile_a_profile_is_one_genshin_account_kept_in()}</p>
 	{/if}
 
 	<div class="sp">
 		<section class="sp-section">
 			<label class="sp-row">
-				<span class="sp-name">Name</span>
+				<span class="sp-name">{m.profile_name()}</span>
 				<span class="sp-ctl">
 					{#if editing}
 						<input
@@ -372,21 +372,23 @@
 						<input
 							class="field"
 							bind:value={name}
-							placeholder="My profile"
+							placeholder={m.profile_my_profile()}
 							maxlength="40"
 							aria-invalid={reserved}
 						/>
 					{/if}
 				</span>
 				{#if reserved}
-					<span class="sp-note pf-warn">Theorycraft is the built-in profile’s name.</span>
+					<span class="sp-note pf-warn">{m.profile_theorycraft_is_the_built_in_profile_s()}</span>
 				{:else if twinNamed}
-					<span class="sp-note">Another profile is called {twinNamed.name}.</span>
+					<span class="sp-note"
+						>{m.profile_another_profile_is_called_name({ name: twinNamed.name })}</span
+					>
 				{/if}
 			</label>
 
 			<div class="sp-row">
-				<span class="sp-name">Picture</span>
+				<span class="sp-name">{m.profile_picture()}</span>
 				<span class="sp-ctl">
 					<span
 						class="pf-current"
@@ -394,15 +396,15 @@
 					>
 						{#if currentUrl}<img src={currentUrl} alt="" />{/if}
 					</span>
-					<button class="btn" onclick={() => (picking = true)}>Change…</button>
+					<button class="btn" onclick={() => (picking = true)}>{m.profile_change()}</button>
 				</span>
-				<span class="sp-note">Any character or quest avatar.</span>
+				<span class="sp-note">{m.profile_any_character_or_quest_avatar()}</span>
 			</div>
 
 			<div class="sp-row">
-				<span class="sp-name">Color</span>
+				<span class="sp-name">{m.profile_color()}</span>
 				<span class="sp-ctl">
-					<span class="swatches" role="radiogroup" aria-label="Color">
+					<span class="swatches" role="radiogroup" aria-label={m.profile_color()}>
 						{#each REAL_COLORS as c (c)}
 							<button
 								class="swatch"
@@ -417,7 +419,7 @@
 						{/each}
 					</span>
 				</span>
-				<span class="sp-note">The frame around the picture.</span>
+				<span class="sp-note">{m.profile_the_frame_around_the_picture()}</span>
 			</div>
 
 			{@render twinRow()}
@@ -426,7 +428,7 @@
 				<div class="sp-row sp-row--action">
 					<span class="sp-ctl">
 						<button class="btn btn--primary" disabled={!color || reserved} onclick={create}
-							><Mark name="plus" /> Add profile</button
+							><Mark name="plus" /> {m.profile_add_profile()}</button
 						>
 					</span>
 				</div>
@@ -435,16 +437,16 @@
 
 		{#if editing}
 			<section class="sp-section">
-				<h2 class="kicker sp-section-title">Data</h2>
+				<h2 class="kicker sp-section-title">{m.profile_data()}</h2>
 				{@render clearRow()}
 				<div class="sp-row">
-					<span class="sp-name">Delete profile</span>
+					<span class="sp-name">{m.profile_delete_profile()}</span>
 					<span class="sp-ctl">
 						<button class="btn btn--danger" onclick={() => void del()}
-							><Mark name="delete" /> Delete profile…</button
+							><Mark name="delete" /> {m.profile_delete_profile_ellipsis()}</button
 						>
 					</span>
-					<span class="sp-note">Its roster and everything in it go to the Trash for 30 days.</span>
+					<span class="sp-note">{m.profile_its_roster_and_everything_in_it_go_to()}</span>
 				</div>
 			</section>
 		{/if}
@@ -452,9 +454,13 @@
 {/if}
 
 {#if picking}
-	<InspectModal label="Choose a picture" width="44rem" onClose={() => (picking = false)}>
+	<InspectModal
+		label={m.profile_choose_a_picture()}
+		width="44rem"
+		onClose={() => (picking = false)}
+	>
 		<div class="pf-picker">
-			<p class="kicker">Profile picture</p>
+			<p class="kicker">{m.profile_profile_picture()}</p>
 			<div class="pictures">
 				{#each PROFILE_PICTURES as art (art.id)}
 					{@const p: Picture = { kind: 'art', name: art.id }}
@@ -475,20 +481,22 @@
 				class="field pf-search"
 				type="search"
 				bind:value={query}
-				placeholder="Search characters"
-				aria-label="Search characters"
+				placeholder={m.profile_search_characters()}
+				aria-label={m.profile_search_characters()}
 			/>
 			{#if owned.length && !query.trim()}
-				<span class="pf-sub">Characters you own</span>
+				<span class="pf-sub">{m.profile_characters_you_own()}</span>
 				<div class="pictures">
 					{#each owned as id (id)}{@render character(id)}{/each}
 				</div>
-				<span class="pf-sub">Everyone else</span>
+				<span class="pf-sub">{m.profile_everyone_else()}</span>
 			{/if}
 			<div class="pictures">
 				{#each found as id (id)}{@render character(id)}{/each}
 			</div>
-			{#if !found.length}<span class="pf-sub">No character matches “{query.trim()}”.</span>{/if}
+			{#if !found.length}<span class="pf-sub"
+					>{m.profile_no_character_matches_x({ query: query.trim() })}</span
+				>{/if}
 		</div>
 	</InspectModal>
 {/if}

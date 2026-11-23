@@ -36,6 +36,7 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { MODE_NAME, THEATER_SEASONS } from '$lib/theater';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let { place }: { place: DocTool } = $props();
 
@@ -191,13 +192,13 @@
 		(d.type === 'rotation' ? rotationLabel(d.body.slots) : lineupLabel((d as LineupDocument).body));
 
 	const ago = (t: number): string => {
-		const m = Math.round((Date.now() - t) / 60_000);
-		if (m < 1) return 'Just now';
-		if (m < 60) return `${m} min ago`;
-		const h = Math.round(m / 60);
-		if (h < 24) return `${h} h ago`;
+		const min = Math.round((Date.now() - t) / 60_000);
+		if (min < 1) return m.library_just_now();
+		if (min < 60) return m.library_m_min_ago({ m: min });
+		const h = Math.round(min / 60);
+		if (h < 24) return m.library_h_h_ago({ h });
 		const days = Math.round(h / 24);
-		return days === 1 ? 'Yesterday' : `${days} days ago`;
+		return days === 1 ? m.library_yesterday() : m.library_days_ago({ count: days });
 	};
 
 	/** What a guest changes: its levels that differ from the rotation's own
@@ -383,7 +384,7 @@
 			placeholder={d.type === 'rotation'
 				? rotationLabel(d.body.slots)
 				: lineupLabel((d as LineupDocument).body)}
-			aria-label="Name"
+			aria-label={m.library_name()}
 			use:focusSelect
 			onclick={(e) => e.stopPropagation()}
 			onblur={commitRename}
@@ -408,35 +409,38 @@
 		<button
 			class="row-act"
 			class:is-on={d.pinned}
-			aria-label={d.pinned ? 'Unpin' : 'Pin'}
-			title={d.pinned ? 'Unpin' : 'Pin'}
+			aria-label={d.pinned ? m.library_unpin() : m.library_pin()}
+			title={d.pinned ? m.library_unpin() : m.library_pin()}
 			onclick={() => storageSession.setPinned(d.id, !d.pinned)}
 			><Mark name="pin" size={14} /></button
 		>
-		<button class="row-act" aria-label="Rename" title="Rename" onclick={() => startRename(d)}
-			><Mark name="edit" size={14} /></button
+		<button
+			class="row-act"
+			aria-label={m.library_rename()}
+			title={m.library_rename()}
+			onclick={() => startRename(d)}><Mark name="edit" size={14} /></button
 		>
 		{#if canMove}
 			<button
 				class="row-act"
-				aria-label={MOVE_TO_PROFILE}
-				title={MOVE_TO_PROFILE}
+				aria-label={MOVE_TO_PROFILE()}
+				title={MOVE_TO_PROFILE()}
 				onclick={() => (moveRequest.id = d.id)}><Mark name="forward" size={14} /></button
 			>
 		{/if}
 		<button
 			class="row-act row-act--danger"
 			class:is-armed={armed === d.id}
-			aria-label={armed === d.id ? 'Delete: click again to confirm' : 'Delete'}
-			title={armed === d.id ? 'Click again to delete' : 'Delete'}
+			aria-label={armed === d.id ? m.library_delete_click_again_to_confirm() : m.library_delete()}
+			title={armed === d.id ? m.library_click_again_to_delete() : m.library_delete()}
 			onclick={() => del(d)}
 			><Mark name={armed === d.id ? 'warn' : 'delete'} size={14} />{#if armed === d.id}<span
-					>Delete?</span
+					>{m.library_delete_question()}</span
 				>{/if}</button
 		>
 	</span>
 	<span class="row-more">
-		<BandMenu mark="more" compact size="sm" ariaLabel="More for {label(d)}">
+		<BandMenu mark="more" compact size="sm" ariaLabel={m.library_more_for_d({ name: label(d) })}>
 			{#snippet items(close)}
 				<button
 					class="band-menu-item"
@@ -444,7 +448,7 @@
 					onclick={() => {
 						close();
 						void storageSession.setPinned(d.id, !d.pinned);
-					}}><Mark name="pin" size={14} /> {d.pinned ? 'Unpin' : 'Pin'}</button
+					}}><Mark name="pin" size={14} /> {d.pinned ? m.library_unpin() : m.library_pin()}</button
 				>
 				<button
 					class="band-menu-item"
@@ -452,7 +456,7 @@
 					onclick={() => {
 						close();
 						startRename(d);
-					}}><Mark name="edit" size={14} /> Rename</button
+					}}><Mark name="edit" size={14} /> {m.library_rename()}</button
 				>
 				{#if canMove}
 					<button
@@ -461,7 +465,7 @@
 						onclick={() => {
 							close();
 							moveRequest.id = d.id;
-						}}><Mark name="forward" size={14} /> {MOVE_TO_PROFILE}</button
+						}}><Mark name="forward" size={14} /> {MOVE_TO_PROFILE()}</button
 					>
 				{/if}
 				<!-- The first tap arms, the second deletes (the inline button's
@@ -474,7 +478,7 @@
 						del(d);
 					}}
 					><Mark name={armed === d.id ? 'warn' : 'delete'} size={14} />
-					{armed === d.id ? 'Tap again to delete' : 'Delete'}</button
+					{armed === d.id ? m.library_tap_again_to_delete() : m.library_delete()}</button
 				>
 			{/snippet}
 		</BandMenu>
@@ -486,19 +490,22 @@
 	{@const rot = d as RotationDocument}
 	<div class="row-line" class:is-current={isCurrent} class:row-line--b={tag === 'B'}>
 		<button class="row-main" onclick={() => choose(d)} disabled={renaming === d.id}>
-			{#if tag}<span class="pair-tag" title="Compared as {tag}">{tag}</span>{/if}
+			{#if tag}<span class="pair-tag" title={m.library_compared_as_tag({ tag })}>{tag}</span>{/if}
 			{@render portraits(rot.body.slots, 28)}
 			<span class="row-text">
 				<span class="card-head">
 					{@render labelOrEdit(d)}
-					{#if d.pinned}<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span
+					{#if d.pinned}<span class="card-pin" title={m.library_pinned()}
+							><Mark name="pin" size={12} /></span
 						>{/if}
 				</span>
 				<span class="row-meta">
-					{#if isCurrent}<span class="row-now">Open now</span>{/if}
-					{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+					{#if isCurrent}<span class="row-now">{m.library_open_now()}</span>{/if}
+					{#if d.fromLink}<span class="row-flag"
+							><Mark name="link" size={11} /> {m.library_from_a_link()}</span
 						>{/if}
-					{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span
+					{#if fromProfile(d)}<span class="row-flag row-flag--guest"
+							>{m.library_from_d({ name: fromProfile(d) ?? '' })}</span
 						>{/if}
 					<span>{ago(recency(d))}</span>
 				</span>
@@ -520,28 +527,31 @@
 	<li class="card" class:is-current={isCurrent}>
 		<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
 			<span class="card-top">
-				{#if b}<span class="pair-tag" title="Compared as A">A</span>{/if}
+				{#if b}<span class="pair-tag" title={m.library_compared_as_tag({ tag: 'A' })}>A</span>{/if}
 				{@render portraits(rot.body.slots, 34)}
 			</span>
 			<span class="card-head">
 				{@render labelOrEdit(d)}
-				<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span>
+				<span class="card-pin" title={m.library_pinned()}><Mark name="pin" size={12} /></span>
 			</span>
 			{#if notationHead(rot)}<span class="card-notation">{notationHead(rot)}</span>{/if}
 			<span class="row-meta">
-				{#if isCurrent}<span class="row-now">Open now</span>{/if}
-				{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+				{#if isCurrent}<span class="row-now">{m.library_open_now()}</span>{/if}
+				{#if d.fromLink}<span class="row-flag"
+						><Mark name="link" size={11} /> {m.library_from_a_link()}</span
 					>{/if}
-				{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span>{/if}
+				{#if fromProfile(d)}<span class="row-flag row-flag--guest"
+						>{m.library_from_d({ name: fromProfile(d) ?? '' })}</span
+					>{/if}
 				<span>{ago(recency(d))}</span>
 			</span>
 		</button>
 		{#if !pickFor}{@render actions(d)}{/if}
 		{#if b}
 			<button class="card-foot" class:is-current={b.id === currentId} onclick={() => choose(b)}>
-				<span class="pair-tag" title="Compared as B">B</span>
+				<span class="pair-tag" title={m.library_compared_as_tag({ tag: 'B' })}>B</span>
 				<span class="row-label" class:is-derived={!b.name}>{label(b)}</span>
-				{#if b.id === currentId}<span class="row-now">Open now</span>{/if}
+				{#if b.id === currentId}<span class="row-now">{m.library_open_now()}</span>{/if}
 			</button>
 		{/if}
 		{#if guest && !pickFor}
@@ -550,9 +560,9 @@
 				class:is-current={guest.id === plannerCurrent}
 				onclick={() => choose(guest)}
 			>
-				<span class="guest-tag">Theorycraft copy</span>
+				<span class="guest-tag">{m.library_theorycraft_copy()}</span>
 				<span class="guest-levels">{levelsLine(rot, guest as RotationDocument)}</span>
-				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
+				{#if guest.id === plannerCurrent}<span class="row-now">{m.library_open_now()}</span>{/if}
 			</button>
 		{/if}
 	</li>
@@ -571,11 +581,11 @@
 				class:is-current={guest.id === plannerCurrent}
 				onclick={() => choose(guest)}
 			>
-				<span class="guest-tag">Theorycraft copy</span>
+				<span class="guest-tag">{m.library_theorycraft_copy()}</span>
 				<span class="guest-levels"
 					>{levelsLine(d as RotationDocument, guest as RotationDocument)}</span
 				>
-				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
+				{#if guest.id === plannerCurrent}<span class="row-now">{m.library_open_now()}</span>{/if}
 			</button>
 		{/if}
 	</li>
@@ -600,7 +610,7 @@
 					{@render portraits(ids, LU_FACE)}
 				</span>
 			{/each}
-			{#if th.more > 0}<span class="lu-more">+{th.more} more</span>{/if}
+			{#if th.more > 0}<span class="lu-more">{m.library_more_more({ count: th.more })}</span>{/if}
 		</span>
 	{:else}
 		<span class="lu-teams">
@@ -626,7 +636,7 @@
 					{#if name}<span class="lu-name">{name}</span>{/if}
 				</span>
 			{/each}
-			{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span>{/if}
+			{#if more > 0}<span class="lu-more">{m.library_more_teams({ count: more })}</span>{/if}
 		</span>
 	{/if}
 {/snippet}
@@ -648,8 +658,9 @@
 					     label already IS its mode. -->
 				{#if d.name && end.mode}<span>{end.mode}</span>{/if}
 				{#if th?.mode}<span>{th.mode}</span>{/if}
-				{#if isCurrent}<span class="row-now">Open now</span>{/if}
-				{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+				{#if isCurrent}<span class="row-now">{m.library_open_now()}</span>{/if}
+				{#if d.fromLink}<span class="row-flag"
+						><Mark name="link" size={11} /> {m.library_from_a_link()}</span
 					>{/if}
 				<span>{ago(recency(d))}</span>
 			</span>
@@ -677,15 +688,15 @@
 <div class="place">
 	<div class="place-acts">
 		{#if pickFor}
-			<p class="pick-head">Choose a rotation to compare with</p>
-			<button class="btn" onclick={() => (menu.pickFor = null)}>Cancel</button>
+			<p class="pick-head">{m.library_choose_a_rotation_to_compare_with()}</p>
+			<button class="btn" onclick={() => (menu.pickFor = null)}>{m.library_cancel()}</button>
 		{:else if place === 'planner'}
 			<button class="btn place-new" onclick={() => create()}
-				><Mark name="plus" size={14} /> New rotation</button
+				><Mark name="plus" size={14} /> {m.library_new_rotation()}</button
 			>
 		{:else}
 			<span class="place-new-menu"
-				><BandMenu label="New lineup" mark="plus" align="start">
+				><BandMenu label={m.library_new_lineup()} mark="plus" align="start">
 					{#snippet items(close)}
 						{#each BOARD_PRESETS as p (p.key)}
 							<button
@@ -708,23 +719,25 @@
 			<button
 				class="chip"
 				onclick={() => (menu.teamFilter = null)}
-				aria-label={`Show all, not only ${filter.label}`}
-				title="Show all">{filter.label} <Mark name="close" size={12} /></button
+				aria-label={m.library_show_all_not_only_label({ label: filter.label })}
+				title={m.library_show_all()}>{filter.label} <Mark name="close" size={12} /></button
 			>
 		{/if}
 	</div>
 
 	{#if loaded && docs.length === 0 && place === 'planner'}
 		<!-- The Builder's says so under This cycle, below. -->
-		<p class="empty">Nothing saved yet. A rotation is saved here as soon as you start one.</p>
+		<p class="empty">{m.library_nothing_saved_yet_a_rotation_is_saved()}</p>
 	{:else if loaded && listed.length === 0 && (place === 'planner' || filter)}
 		<!-- The reason it is empty, not a guess: pick mode hides the rotation
 		     being compared, so a lone rotation has no partner. -->
 		<p class="empty">
 			{#if menu.pickFor && !menu.teamFilter}
-				There’s no other rotation to compare with yet. Make a second one first.
+				{m.library_there_s_no_other_rotation_to_compare()}
+			{:else if place === 'planner'}
+				{m.library_no_rotations_for_this_team_yet()}
 			{:else}
-				No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.
+				{m.library_no_lineups_for_this_team_yet()}
 			{/if}
 		</p>
 	{:else if place === 'planner'}
@@ -733,14 +746,14 @@
 		     top — and Recent runs beneath as full-width rows. (Tried first: a
 		     column aside, which put the most-used ones out of the way.) -->
 		{#if pinned.length}
-			<p class="sec">Pinned</p>
+			<p class="sec">{m.library_pinned()}</p>
 			<ul class="cards shelf">
 				{#each pinned as e (e.d.id)}{@render shelfCard(e.d, e.b)}{/each}
 			</ul>
 		{/if}
 		{#if recent.length}
-			<section class="lib-recent" aria-label="Recent">
-				{#if pinned.length}<p class="sec">Recent</p>{/if}
+			<section class="lib-recent" aria-label={m.library_recent()}>
+				{#if pinned.length}<p class="sec">{m.library_recent()}</p>{/if}
 				<ul class="rows">
 					{#each recent as e (e.d.id)}{@render row(e.d, e.b)}{/each}
 				</ul>
@@ -748,21 +761,21 @@
 		{/if}
 	{:else}
 		{#if showCycle}
-			<p class="sec sec--cycle">This cycle</p>
+			<p class="sec sec--cycle">{m.library_this_cycle()}</p>
 			<!-- ⚓ The blank cards lead (Nate 2026-11-11): what's newly
 			     offered comes first, then the lineups already made. -->
 			<ul class="cards">
 				{#each blanks as kind (kind)}{@render blankCard(kind)}{/each}
 				{#each cycleLineups as d (d.id)}{@render lineupCard(d)}{/each}
 			</ul>
-			{#if others.length}<p class="sec sec--cycle sec--after">Other lineups</p>{/if}
+			{#if others.length}<p class="sec sec--cycle sec--after">{m.library_other_lineups()}</p>{/if}
 		{/if}
 		{#if others.length}
 			<ul class="cards">
 				{#each others as d (d.id)}{@render lineupCard(d)}{/each}
 			</ul>
 		{:else if loaded && docs.length === 0}
-			<p class="empty">Nothing saved yet. A lineup is saved here as soon as you start one.</p>
+			<p class="empty">{m.library_nothing_saved_yet_a_lineup_is_saved_here()}</p>
 		{/if}
 	{/if}
 </div>

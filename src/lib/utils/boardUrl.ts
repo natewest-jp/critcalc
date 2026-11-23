@@ -24,6 +24,7 @@
 
 import { deflateToBase64Url, inflateFromBase64Url } from './urlCodec';
 import { isCycleId } from '$lib/storage/records';
+import { m } from '$lib/paraglide/messages';
 
 const TEAM_SIZE = 4;
 /** Safety bounds for a decoded link — a hostile `?b=` must not build a board
@@ -84,7 +85,7 @@ export async function decodeBoard(param: string | null | undefined): Promise<Sha
 			label:
 				typeof data.label === 'string' && data.label.trim()
 					? data.label.trim().slice(0, MAX_LABEL)
-					: 'Shared lineup',
+					: m.library_shared_lineup(),
 			noRepeats: data.noRepeats !== false,
 			...(PRESETS.includes(data.preset as string) && {
 				preset: data.preset as SharedBoard['preset']

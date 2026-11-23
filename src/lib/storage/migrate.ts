@@ -103,6 +103,8 @@ const nonEmpty = (o: object) => Object.keys(o).length > 0;
  * contents. A saved entry's name was always typed (or accepted) at Save, so
  * it is kept whatever it says.
  */
+/** ⚠️ It reads the placeholders' English, so they stay English (not messages):
+ *  a translated one would be saved as the player's own name. */
 export function isMintedLabel(label: string): boolean {
 	return (
 		/^(Tab|Lineup) \d+$/.test(label) ||

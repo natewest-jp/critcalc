@@ -23,6 +23,7 @@
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementPalette } from '$lib/utils/elementColors';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		charId,
@@ -95,9 +96,12 @@
 	<button
 		class="tlp-plate"
 		class:is-unset={!artifact}
-		title={artifact?.name ?? 'Artifact set'}
+		title={artifact?.name ?? m.teams_artifact_set()}
 		aria-expanded={open}
-		aria-label="{char?.displayName ?? charId}: artifact set, {artifact?.name ?? 'none'}"
+		aria-label={m.teams_charid_artifact_set_x({
+			name: char?.displayName ?? charId,
+			set: artifact?.name ?? m.teams_none()
+		})}
 		onclick={toggle}
 	>
 		<img
@@ -106,14 +110,17 @@
 				: GENERIC_ARTIFACT_ICON}
 			alt=""
 		/>
-		<span class="tlp-name">{artifact?.name ?? 'Artifact set'}</span>
+		<span class="tlp-name">{artifact?.name ?? m.teams_artifact_set()}</span>
 	</button>
 	<button
 		class="tlp-plate"
 		class:is-unset={!weapon}
-		title={weapon ? `${weapon.name} R${ref}` : 'Weapon'}
+		title={weapon ? `${weapon.name} R${ref}` : m.teams_weapon()}
 		aria-expanded={open}
-		aria-label="{char?.displayName ?? charId}: weapon, {weapon ? `${weapon.name} R${ref}` : 'none'}"
+		aria-label={m.teams_charid_weapon_x({
+			name: char?.displayName ?? charId,
+			weapon: weapon ? `${weapon.name} R${ref}` : m.teams_none()
+		})}
 		onclick={toggle}
 	>
 		<img
@@ -122,7 +129,7 @@
 				: weaponTypeIcon(char?.weapon)}
 			alt=""
 		/>
-		<span class="tlp-name">{weapon?.name ?? 'Weapon'}</span>
+		<span class="tlp-name">{weapon?.name ?? m.teams_weapon()}</span>
 		{#if weapon}<span class="tlp-ref">R{ref}</span>{/if}
 	</button>
 </div>
@@ -132,7 +139,7 @@
 		class="tlp-backdrop"
 		role="button"
 		tabindex="-1"
-		aria-label="Close the loadout popover"
+		aria-label={m.teams_close_the_loadout_popover()}
 		use:portal
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
@@ -145,7 +152,7 @@
 		bind:this={panelEl}
 		use:portal
 		role="dialog"
-		aria-label="Artifact set and weapon"
+		aria-label={m.teams_artifact_set_and_weapon()}
 		tabindex="-1"
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}

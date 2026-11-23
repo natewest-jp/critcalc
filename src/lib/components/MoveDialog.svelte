@@ -19,6 +19,7 @@
 	import { pictureUrl } from '$lib/profileLook';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { siteSettings } from '$lib/stores';
+	import { m } from '$lib/paraglide/messages';
 
 	let { id }: { id: string } = $props();
 
@@ -87,11 +88,13 @@
 >
 	<div class="mv-panel ctx-dark" role="alertdialog" aria-modal="true" aria-labelledby="mv-title">
 		<h2 class="title" id="mv-title">
-			Move to {targets.length === 1 && target ? target.name : 'a profile'}
+			{targets.length === 1 && target
+				? m.library_move_to_name({ name: target.name })
+				: m.library_move_to_a_profile()}
 		</h2>
 
 		{#if targets.length > 1}
-			<div class="targets" role="radiogroup" aria-label="Profile">
+			<div class="targets" role="radiogroup" aria-label={m.library_profile()}>
 				{#each targets as p (p.id)}
 					<button
 						class="target"
@@ -111,11 +114,13 @@
 			<p class="note">&nbsp;</p>
 		{:else if changes.length === 0}
 			<p class="note">
-				No levels change in {target?.name}.
+				{m.library_no_levels_change_in_name({ name: target?.name ?? '' })}
 			</p>
 		{:else}
 			<p class="note">
-				In {target?.name}, owned characters read the roster, so this {kind} changes:
+				{kind === 'rotation'
+					? m.library_in_name_owned_characters_change_rotation({ name: target?.name ?? '' })
+					: m.library_in_name_owned_characters_change_lineup({ name: target?.name ?? '' })}
 			</p>
 			<ul class="changes">
 				{#each changes as c (c.id)}
@@ -126,21 +131,23 @@
 				{/each}
 			</ul>
 			<p class="note note--quiet">
-				If this {kind} depends on those levels, keep it in Theorycraft.
+				{kind === 'rotation'
+					? m.library_if_this_rotation_depends_on_those_levels()
+					: m.library_if_this_lineup_depends_on_those_levels()}
 			</p>
 		{/if}
 
 		{#if failed}
-			<p class="note note--failed" role="alert">Couldn’t move it. Try again.</p>
+			<p class="note note--failed" role="alert">{m.library_couldn_t_move_it_try_again()}</p>
 		{/if}
 
 		<div class="actions">
-			<button class="btn" onclick={cancel}>Cancel</button>
+			<button class="btn" onclick={cancel}>{m.library_cancel()}</button>
 			<button
 				class="btn btn--primary"
 				bind:this={confirmEl}
 				disabled={!target || changes === null || busy}
-				onclick={confirm}>Move</button
+				onclick={confirm}>{m.library_move()}</button
 			>
 		</div>
 	</div>

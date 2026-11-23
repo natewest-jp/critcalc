@@ -21,10 +21,11 @@ import {
 } from './boards.svelte';
 import { encodeBoard, type SharedBoard } from './utils/boardUrl';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
+import { m } from '$lib/paraglide/messages';
 
 /** A team that found no room on the open lineup (a full one, or a Theater
  *  cast, which has no teams) opens in a lineup of its own. */
-export const TEAM_IN_NEW_LINEUP = 'Team added to a new Custom lineup';
+export const TEAM_IN_NEW_LINEUP = m.library_team_added_to_a_new_custom_lineup;
 /** Any of the board's teams holds anyone: a board worth sharing. */
 export function boardHasMembers(board: Board): boolean {
 	return board.teams.some((t) => t.slots.some((s) => s !== null));
@@ -39,12 +40,12 @@ class BoardBarState {
 		void documentsReady.then(async (viaStore) => {
 			if (!viaStore) {
 				boards.restoreFrom(doc);
-				notices.toast('info', 'Loaded shared lineup');
+				notices.toast('info', m.library_loaded_shared_lineup());
 				return;
 			}
 			const { storageSession } = await import('./storage/session.svelte');
 			const { switched, id, movable } = await storageSession.receiveLineup(doc);
-			documentBar.arrived(switched, 'Loaded shared lineup', id, movable);
+			documentBar.arrived(switched, m.library_loaded_shared_lineup(), id, movable);
 		});
 	}
 
@@ -65,19 +66,19 @@ class BoardBarState {
 			}
 			if (this.#placeTeam(ids)) {
 				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT());
-				else notices.toast('success', 'Team added to the lineup');
+				else notices.toast('success', m.library_team_added_to_the_lineup());
 				return;
 			}
 			const board = makeBoard('');
 			board.teams[0].slots = Array.from({ length: 4 }, (_, i) => ids[i] ?? null);
 			if (!viaStore) {
 				boards.restoreFrom(board);
-				notices.toast('success', TEAM_IN_NEW_LINEUP);
+				notices.toast('success', TEAM_IN_NEW_LINEUP());
 				return;
 			}
 			const { storageSession } = await import('./storage/session.svelte');
 			const got = await storageSession.receiveLineup(board);
-			documentBar.arrived(switched || got.switched, TEAM_IN_NEW_LINEUP, got.id, got.movable);
+			documentBar.arrived(switched || got.switched, TEAM_IN_NEW_LINEUP(), got.id, got.movable);
 		});
 	}
 
@@ -103,12 +104,12 @@ class BoardBarState {
 			const url = await this.shareUrl();
 			if (!url) return null;
 			await navigator.clipboard.writeText(url);
-			return { ok: true, short: 'Copied', long: 'Link copied' };
+			return { ok: true, short: m.notices_copied(), long: m.notices_link_copied() };
 		} catch {
 			return {
 				ok: false,
-				short: 'Couldn’t copy',
-				long: 'Couldn’t copy the link. The browser may have blocked the clipboard.'
+				short: m.notices_couldn_t_copy(),
+				long: m.notices_couldn_t_copy_what_the_browser_may_have({ what: m.notices_the_link() })
 			};
 		}
 	}

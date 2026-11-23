@@ -5,54 +5,54 @@
 
 **22 messages** · `TrashPlace.svelte`
 
-- `trash_rotation` — TrashPlace.svelte:35 rotation:
+- `trash_rotation` — TrashPlace.svelte:36 m()
   > Rotation
   - terms: 📖 rotation
-- `trash_lineup` — TrashPlace.svelte:36 lineup:
+- `trash_lineup` — TrashPlace.svelte:37 m()
   > Lineup
-- `trash_profile` — TrashPlace.svelte:38 profile:
+- `trash_team` — TrashPlace.svelte:38 m()
+  > Team
+- `trash_profile` — TrashPlace.svelte:39 m()
   > Profile
-- `trash_deleted_just_now` — TrashPlace.svelte:60 ago:
+- `trash_deleted_just_now` — TrashPlace.svelte:61 m()
   > Deleted just now
-- `trash_deleted_m_min_ago` — TrashPlace.svelte:61 ago:
+- `trash_deleted_m_min_ago` — TrashPlace.svelte:62 m()
   > Deleted {m} min ago
   - vars: `m`
-- `trash_deleted_h_h_ago` — TrashPlace.svelte:63 ago:
+- `trash_deleted_h_h_ago` — TrashPlace.svelte:64 m()
   > Deleted {h} h ago
   - vars: `h`
-- `trash_deleted_yesterday` — TrashPlace.svelte:65 ago:
+- `trash_deleted_yesterday` — TrashPlace.svelte:66 m()
   > Deleted yesterday
-- `trash_deleted_days_days_ago` — TrashPlace.svelte:65 ago: — ⚑ plural?
-  > Deleted {days} days ago
-  - vars: `days`
-- `trash_cleared_tomorrow` — TrashPlace.svelte:69 left:
+- `trash_deleted_days_ago` — TrashPlace.svelte:66 m()
+  > Deleted {count} day ago | Deleted {count} days ago
+  - vars: `count`
+- `trash_cleared_tomorrow` — TrashPlace.svelte:70 m()
   > Cleared tomorrow
-- `trash_days_days_left` — TrashPlace.svelte:69 left: — ⚑ plural?
-  > {days} days left
-  - vars: `days`
-- `trash_empty_trash_ad55` — TrashPlace.svelte:77 title:
+- `trash_days_left` — TrashPlace.svelte:70 m()
+  > {count} day left | {count} days left
+  - vars: `count`
+- `trash_empty_trash_question` — TrashPlace.svelte:78 m()
   > Empty Trash?
-- `trash_everything_in_it_is_deleted_for_good` — TrashPlace.svelte:78 body:
+- `trash_everything_in_it_is_deleted_for_good` — TrashPlace.svelte:79 m()
   > Everything in it is deleted for good.
-- `trash_empty_trash_cb42` — TrashPlace.svelte:79 confirm: · TrashPlace.svelte:92 <button>
+- `trash_empty_trash` — TrashPlace.svelte:80 m() · TrashPlace.svelte:93 m()
   > Empty Trash
-- `trash_keep_it` — TrashPlace.svelte:80 cancel:
+- `trash_keep_it` — TrashPlace.svelte:81 m()
   > Keep it
-- `trash_deleted_work_stays_here_for_30_days_then` — TrashPlace.svelte:89 <p>
+- `trash_deleted_work_stays_here_for_30_days_then` — TrashPlace.svelte:90 m()
   > Deleted work stays here for 30 days, then it’s cleared.
-- `trash_the_trash_is_empty` — TrashPlace.svelte:98 <p>
+- `trash_the_trash_is_empty` — TrashPlace.svelte:99 m()
   > The Trash is empty.
-- `trash_deleted_profile` — TrashPlace.svelte:112 <span>
+- `trash_deleted_profile` — TrashPlace.svelte:113 m()
   > Deleted profile
-- `trash_your_current_profile` — TrashPlace.svelte:114 <span>
+- `trash_your_current_profile` — TrashPlace.svelte:115 m()
   > Your current profile
-- `trash_restoring_anything_of_name_s_brings_the` — TrashPlace.svelte:119 <p>
-  > Restoring anything of {p.name}’s brings the profile back too.
-  - vars: `p.name`
-- `trash_1_team` — TrashPlace.svelte:138 span:
-  > 1 team
-- `trash_e_teams` — TrashPlace.svelte:138 span: — ⚑ plural?
-  > {teamCount(e)} teams
-  - vars: `teamCount(e)`
-- `trash_restore` — TrashPlace.svelte:147 <button>
+- `trash_restoring_anything_of_name_s_brings_the` — TrashPlace.svelte:121 m()
+  > Restoring anything of {name}’s brings the profile back too.
+  - vars: `name`
+- `trash_count_teams` — TrashPlace.svelte:140 m()
+  > {count} team | {count} teams
+  - vars: `count`
+- `trash_restore` — TrashPlace.svelte:148 m()
   > Restore

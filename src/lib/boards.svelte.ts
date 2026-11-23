@@ -38,6 +38,7 @@ import { ownership, type SavedNotation } from './stores';
 import { belongsToTeam, linkedTeam } from './storage/teamLoadout';
 import type { TeamRecord } from './storage/records';
 import { get } from 'svelte/store';
+import { m } from '$lib/paraglide/messages';
 
 export type TeamSlot = string | null;
 
@@ -139,13 +140,26 @@ export function makeTeam(slots: TeamSlot[] = emptySlots()): BoardTeam {
 	return { id: genId(), slots: normalizeSlots(slots) };
 }
 
+/** A preset whose words are read at each use, in the page's language. */
+function preset(key: BoardPreset, label: () => string, hint: () => string) {
+	return {
+		key,
+		get label() {
+			return label();
+		},
+		get hint() {
+			return hint();
+		}
+	};
+}
+
 /** The three shapes a new lineup can take, in menu order (the Library's,
  *  Teams' and a team's New lineup menus). */
 export const BOARD_PRESETS: readonly { key: BoardPreset; label: string; hint: string }[] = [
-	{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
-	{ key: 'abyss', label: 'Spiral Abyss', hint: 'Two teams' },
-	{ key: 'theater', label: 'Imaginarium Theater', hint: 'A cast for this month' },
-	{ key: 'custom', label: 'Custom', hint: 'One team, add more as you go' }
+	preset('stygian', m.library_stygian_onslaught, m.library_three_teams),
+	preset('abyss', m.library_spiral_abyss, m.library_two_teams),
+	preset('theater', m.library_imaginarium_theater, m.library_a_cast_for_this_month),
+	preset('custom', m.library_custom, m.library_one_team_add_more_as_you_go)
 ];
 
 /** The shapes a TEAM can start: every preset but the Theater, which holds a

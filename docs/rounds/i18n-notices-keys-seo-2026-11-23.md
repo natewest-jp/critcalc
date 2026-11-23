@@ -22,9 +22,9 @@ fix), and this record on `docs/i18n-notices-keys-seo`.
     messages now.
   - The phone list's "**Title:** body" is one message with markup, so the colon is the
     locale's (Japanese uses `：` and no space).
-  - The new blank lineup's name, "Lineup 1", is a message: it is named in the language of the
-    tab that makes it. The Builder's pre-session default (`boards.svelte.ts`) stays English;
-    it waits for the Builder's interior.
+  - The new blank lineup's name, "Lineup 1", was made a message here and reverted in the next
+    round (`i18n-sections-2026-11-23.md`): it is a placeholder `isMintedLabel` knows by its
+    English, never shown as a name.
 - **The shortcuts sheet** (44): its table is `keyAreas()`, built at each opening. Key names
   (Esc, Space, Home, Delete) stay as printed on the key.
 - **Page meta** (50): `seo.ts`'s map holds message getters (`entry()`), so each prerendered

@@ -33,6 +33,8 @@
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
 	import { belongsToTeam } from '$lib/storage/teamLoadout';
 	import { ownership, siteSettings } from '$lib/stores';
+	import { m } from '$lib/paraglide/messages';
+	import Msg from './Msg.svelte';
 
 	const twin = $derived(storageSession.profile?.twin ?? 'aether');
 	const avatar = (id: string) =>
@@ -76,8 +78,6 @@
 			counts = m;
 		});
 	});
-
-	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 	function showWork(t: TeamRecord, section: 'rotations' | 'lineups'): void {
 		menu.teamFilter = { team: t, label: label(t) };
@@ -141,6 +141,9 @@
 	const owned = (id: string) => !hasOwned || $ownership[id] === 'owned';
 </script>
 
+<!-- The markup in the empty Teams message (`Msg.svelte`). -->
+{#snippet strong(text: string)}<strong>{text}</strong>{/snippet}
+
 {#if inDetail}
 	<!-- A profile switch is a fresh draft too (a new team's stays mounted). -->
 	{#key `${storageSession.profile?.id}:${detailId}`}
@@ -158,13 +161,13 @@
 	<div class="place">
 		<div class="place-acts">
 			<button class="btn place-new" onclick={() => menu.openTeam('new')}
-				><Mark name="plus" size={14} /> New team</button
+				><Mark name="plus" size={14} /> {m.teams_new_team()}</button
 			>
 		</div>
 
 		{#if loaded && teams.length === 0}
 			<p class="empty">
-				No teams yet. Make one here, or use <strong>Save as team</strong> on the Planner’s bench.
+				<Msg parts={m.teams_no_teams_yet_make_one_here_or_use_save.parts()} tags={{ strong }} />
 			</p>
 		{/if}
 
@@ -182,11 +185,13 @@
 						<button
 							class="verb verb--danger"
 							class:is-armed={armed === t.id}
-							aria-label={armed === t.id ? 'Delete: click again to confirm' : `Delete ${label(t)}`}
-							title={armed === t.id ? 'Click again to delete' : 'Delete'}
+							aria-label={armed === t.id
+								? m.teams_delete_click_again_to_confirm()
+								: m.teams_delete_t({ name: label(t) })}
+							title={armed === t.id ? m.teams_click_again_to_delete() : m.teams_delete()}
 							onclick={() => del(t)}
 							><Mark name={armed === t.id ? 'warn' : 'delete'} size={14} />{#if armed === t.id}<span
-									>Delete?</span
+									>{m.teams_delete_question()}</span
 								>{/if}</button
 						>
 					</div>
@@ -196,7 +201,9 @@
 								class="member"
 								tabindex="-1"
 								title={id ? nameOf(id) : undefined}
-								aria-label={id ? `${nameOf(id)}: open the team on slot ${i + 1}` : `Slot ${i + 1}`}
+								aria-label={id
+									? m.teams_id_open_the_team_on_slot_x({ name: nameOf(id), n: i + 1 })
+									: m.teams_slot_x({ n: i + 1 })}
 								onclick={() => menu.openTeam(t.id, i)}
 							>
 								<TeamMemberPortrait
@@ -210,17 +217,19 @@
 					</span>
 					<span class="card-work">
 						{#if c?.rotations}<button class="work" onclick={() => showWork(t, 'rotations')}
-								>{plural(c.rotations, 'rotation', 'rotations')}</button
+								>{m.settings_count_rotations({ count: c.rotations })}</button
 							>{/if}
 						{#if c?.rotations && c?.lineups}<span aria-hidden="true">·</span>{/if}
 						{#if c?.lineups}<button class="work" onclick={() => showWork(t, 'lineups')}
-								>{plural(c.lineups, 'lineup', 'lineups')}</button
+								>{m.settings_count_lineups({ count: c.lineups })}</button
 							>{/if}
-						{#if !c}<span>No rotations or lineups yet</span>{/if}
+						{#if !c}<span>{m.teams_no_rotations_or_lineups_yet()}</span>{/if}
 					</span>
 					<span class="card-acts">
-						<button class="btn btn--primary" onclick={() => plan(t)}>Plan a rotation</button>
-						<BandMenu label="New lineup" align="start">
+						<button class="btn btn--primary" onclick={() => plan(t)}
+							>{m.teams_plan_a_rotation()}</button
+						>
+						<BandMenu label={m.teams_new_lineup()} align="start">
 							{#snippet items(close)}
 								{#each TEAM_PRESETS as p (p.key)}
 									<button

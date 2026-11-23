@@ -17,6 +17,7 @@
 	import { storageSession } from '$lib/storage/session.svelte';
 	import type { TeamRecord } from '$lib/storage/records';
 	import { menu } from '$lib/menuState.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import { resolveEntry, teamsOfSlots } from '$lib/storage/teamLoadout';
 
 	/** The folded phone bench's rail: the mark alone, the words in its title. */
@@ -42,7 +43,11 @@
 
 	const current = $derived(matches?.find((t) => t.id === rt.team?.id));
 	const label = $derived(
-		current ? `In Teams${current.name ? ` · ${current.name}` : ''}` : 'Choose team'
+		current
+			? current.name
+				? m.teams_in_teams_name({ name: current.name })
+				: m.teams_in_teams()
+			: m.teams_choose_team()
 	);
 
 	/** ⚓ The new team starts with the rotation's loadout (Nate 2026-10-24),
@@ -96,7 +101,7 @@
 						onclick={() => {
 							close();
 							menu.show('teams');
-						}}>Open Teams</button
+						}}>{m.teams_open_teams()}</button
 					>
 					<button
 						class="band-menu-item"
@@ -104,7 +109,7 @@
 						onclick={() => {
 							close();
 							void save();
-						}}>Save as a new team</button
+						}}>{m.teams_save_as_a_new_team()}</button
 					>
 				{/snippet}
 			</BandMenu>
@@ -114,11 +119,11 @@
 			class="btn btn--sm st"
 			class:btn--icon={compact}
 			onclick={save}
-			title={compact ? 'Save as team' : undefined}
-			aria-label={compact ? 'Save as team' : undefined}
+			title={compact ? m.teams_save_as_team() : undefined}
+			aria-label={compact ? m.teams_save_as_team() : undefined}
 		>
 			<Mark name="plus" />
-			{#if !compact}<span class="st-label">Save as team</span>{/if}
+			{#if !compact}<span class="st-label">{m.teams_save_as_team()}</span>{/if}
 		</button>
 	{/if}
 {/if}

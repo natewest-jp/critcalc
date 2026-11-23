@@ -7,7 +7,6 @@
   each thing in it says which profile it goes back to). Restore puts a thing
   back where it came from; a thing whose profile is in the Trash brings the
   profile back with it, and the stretch says so before you press it.
-  Strings are working copy.
 -->
 <script lang="ts">
 	import Mark from './Mark.svelte';
@@ -19,6 +18,8 @@
 	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
 	import { TRASH_MS, type TrashEntry, type TrashRun } from '$lib/storage/trash';
 	import { colorValue, pictureUrl } from '$lib/profileLook';
+	import { m } from '$lib/paraglide/messages';
+	import { labels } from '$lib/i18n/labels';
 
 	let runs = $state<TrashRun[]>([]);
 	let loaded = $state(false);
@@ -31,12 +32,12 @@
 		});
 	});
 
-	const KIND: Record<string, string> = {
-		rotation: 'Rotation',
-		lineup: 'Lineup',
-		team: 'Team',
-		profile: 'Profile'
-	};
+	const KIND: Record<string, string> = labels({
+		rotation: m.trash_rotation,
+		lineup: m.trash_lineup,
+		team: m.trash_team,
+		profile: m.trash_profile
+	});
 	const kindOf = (e: TrashEntry): string =>
 		e.store === 'teams' ? 'team' : e.store === 'profiles' ? 'profile' : e.record.type;
 	const label = (e: TrashEntry): string => {
@@ -56,17 +57,17 @@
 
 	const DAY = 24 * 60 * 60 * 1000;
 	const ago = (t: number): string => {
-		const m = Math.round((Date.now() - t) / 60_000);
-		if (m < 1) return 'Deleted just now';
-		if (m < 60) return `Deleted ${m} min ago`;
-		const h = Math.round(m / 60);
-		if (h < 24) return `Deleted ${h} h ago`;
+		const min = Math.round((Date.now() - t) / 60_000);
+		if (min < 1) return m.trash_deleted_just_now();
+		if (min < 60) return m.trash_deleted_m_min_ago({ m: min });
+		const h = Math.round(min / 60);
+		if (h < 24) return m.trash_deleted_h_h_ago({ h });
 		const days = Math.round(h / 24);
-		return days === 1 ? 'Deleted yesterday' : `Deleted ${days} days ago`;
+		return days === 1 ? m.trash_deleted_yesterday() : m.trash_deleted_days_ago({ count: days });
 	};
 	const left = (t: number): string => {
 		const days = Math.max(1, Math.ceil((t + TRASH_MS - Date.now()) / DAY));
-		return days === 1 ? 'Cleared tomorrow' : `${days} days left`;
+		return days === 1 ? m.trash_cleared_tomorrow() : m.trash_days_left({ count: days });
 	};
 
 	const pictureOfProfile = (p: ProfileRecord) =>
@@ -74,10 +75,10 @@
 
 	async function emptyTrash(): Promise<void> {
 		const ok = await notices.ask({
-			title: 'Empty Trash?',
-			body: 'Everything in it is deleted for good.',
-			confirm: 'Empty Trash',
-			cancel: 'Keep it',
+			title: m.trash_empty_trash_question(),
+			body: m.trash_everything_in_it_is_deleted_for_good(),
+			confirm: m.trash_empty_trash(),
+			cancel: m.trash_keep_it(),
 			danger: true
 		});
 		if (ok) await storageSession.emptyTrash();
@@ -86,16 +87,16 @@
 
 <div class="trash">
 	<div class="trash-acts">
-		<p class="lede">Deleted work stays here for 30 days, then it’s cleared.</p>
+		<p class="lede">{m.trash_deleted_work_stays_here_for_30_days_then()}</p>
 		{#if runs.length}
 			<button class="btn btn--danger" onclick={emptyTrash}
-				><Mark name="delete" size={14} /> Empty Trash</button
+				><Mark name="delete" size={14} /> {m.trash_empty_trash()}</button
 			>
 		{/if}
 	</div>
 
 	{#if loaded && !runs.length}
-		<p class="empty">The Trash is empty.</p>
+		<p class="empty">{m.trash_the_trash_is_empty()}</p>
 	{/if}
 
 	{#each runs as r (r.profile.id + r.entries[0].record.id)}
@@ -109,14 +110,16 @@
 				<span class="group-text">
 					<span class="group-name">{p.name}</span>
 					{#if r.gone}
-						<span class="group-meta">Deleted profile</span>
+						<span class="group-meta">{m.trash_deleted_profile()}</span>
 					{:else if p.id === storageSession.profile?.id}
-						<span class="group-meta">Your current profile</span>
+						<span class="group-meta">{m.trash_your_current_profile()}</span>
 					{/if}
 				</span>
 			</header>
 			{#if r.gone && r.entries.some((e) => e.store !== 'profiles')}
-				<p class="group-note">Restoring anything of {p.name}’s brings the profile back too.</p>
+				<p class="group-note">
+					{m.trash_restoring_anything_of_name_s_brings_the({ name: p.name })}
+				</p>
 			{/if}
 
 			<ul class="rows">
@@ -134,9 +137,7 @@
 						<span class="row-text">
 							<span class="row-label">{label(e)}</span>
 							<span class="row-meta">
-								{#if teamCount(e)}<span
-										>{teamCount(e) === 1 ? '1 team' : `${teamCount(e)} teams`}</span
-									>{/if}
+								{#if teamCount(e)}<span>{m.trash_count_teams({ count: teamCount(e) })}</span>{/if}
 								<span>{ago(e.record.updatedAt)}</span>
 								<span>{left(e.record.updatedAt)}</span>
 							</span>
@@ -144,7 +145,7 @@
 						<button
 							class="btn row-restore"
 							onclick={() => storageSession.untrash(e.store, e.record.id)}
-							><Mark name="undo" size={14} /> Restore</button
+							><Mark name="undo" size={14} /> {m.trash_restore()}</button
 						>
 					</li>
 				{/each}

@@ -295,7 +295,6 @@
 	"notices_name_deleted_elsewhere_moved_on": "{name}が別のタブで削除されたため、このタブは次へ移りました",
 	"notices_this_rotation_was_deleted_in_another_tab": "このローテーションが別のタブで削除されたため、このタブは次へ移りました",
 	"notices_this_lineup_was_deleted_in_another_tab": "このラインナップが別のタブで削除されたため、このタブは次へ移りました",
-	"notices_lineup_1": "ラインナップ1",
 	"notices_profile_deleted_elsewhere": "{name}が別のタブで削除されたため、このタブはTheorycraftに移りました",
 	"notices_saved_to_theorycraft_name_plays_twin": "Theorycraftに保存しました · {name}の旅人は{twin}です",
 	"notices_saved_to_theorycraft_it_doesn_t_match": "Theorycraftに保存しました · {name}の所持キャラと合いません",
