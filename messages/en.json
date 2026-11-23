@@ -304,7 +304,7 @@
 	"notices_lineup_1": "Lineup 1",
 	"notices_profile_deleted_elsewhere": "{name} was deleted in another tab, so this tab is in Theorycraft now",
 	"notices_saved_to_theorycraft_name_plays_twin": "Saved to Theorycraft · {name} plays {twin}",
-	"notices_saved_to_theorycraft_it_doesn_t_match": "Saved to Theorycraft · it doesn't match {name}'s roster",
+	"notices_saved_to_theorycraft_it_doesn_t_match": "Saved to Theorycraft · it doesn’t match {name}’s roster",
 	"notices_the_library": "the Library",
 	"notices_theorycraft_s_library": "Theorycraft’s Library",
 	"notices_name_s_library": "{name}’s Library",
