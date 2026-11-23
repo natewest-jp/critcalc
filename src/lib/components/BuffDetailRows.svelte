@@ -11,6 +11,7 @@
 	import type { TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 	import { BUFF_STAT_ICON, BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
 	import type { Stat } from '$lib/types/ability';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		effects,
@@ -42,7 +43,7 @@
 </script>
 
 {#if isMutuallyExclusive}
-	<div class="bt-mutual">one of:</div>
+	<div class="bt-mutual">{m.planner_one_of()}</div>
 {/if}
 <!-- ⛔ KEYED BY POSITION, NOT BY `stat` (2026-08-17) — this closes a class
      rather than an instance. `(fx.stat)` asserts an invariant no caller can
@@ -71,11 +72,14 @@
 {/each}
 {#if duration != null || procCooldown != null}
 	<div class="bt-footer">
+		<!-- A bare number of seconds: the unit stays as written in every locale. -->
 		{#if duration != null}{fmtSecs(duration)}s{/if}
 		{#if duration != null && procCooldown != null}
 			·
 		{/if}
-		{#if procCooldown != null}Cooldown {fmtSecs(procCooldown)}s{/if}
+		{#if procCooldown != null}{m.planner_cooldown_proccooldown_s({
+				seconds: fmtSecs(procCooldown)
+			})}{/if}
 	</div>
 {/if}
 

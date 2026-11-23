@@ -29,6 +29,7 @@ import { invertedEffects } from '@codemirror/commands';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
 import { emptySeating, makeSeating, seatTeam, type Seating } from './notationEdit';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { m } from '$lib/paraglide/messages';
 
 /** Same seats AND same placed flags — the `vacated` memory is not compared:
  *  it is an edit's scratch, and a difference there alone is no change. */
@@ -65,7 +66,9 @@ const seatHistory = invertedEffects.of((tr) =>
 export function hintFor(seating: Seating): string {
 	const first = seating.seats.find((id): id is string => !!id);
 	const name = first ? getCharacterIndexEntry(first)?.displayName : undefined;
-	return name ? `Start with a name: ${name} E > …` : 'Type a rotation in KQM notation';
+	return name
+		? m.planner_start_with_a_name_name_e({ name })
+		: m.planner_type_a_rotation_in_kqm_notation();
 }
 
 class HintWidget extends WidgetType {
@@ -90,6 +93,7 @@ class HintWidget extends WidgetType {
 /** ⚠ Not CodeMirror's `placeholder()`: that CLONES the element it is handed,
  *  so a hint updated in place never reached the screen (a new tab still named
  *  the last tab's team). This one is recomputed from the seats field. */
+// `'doc'` is a CodeMirror dependency name, not text.
 const seatHint = EditorView.decorations.compute(['doc', seatsField], (state) =>
 	state.doc.length
 		? Decoration.none

@@ -22,6 +22,7 @@ import type {
 import { formatBuffDisplayValue } from './buffDisplay';
 import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 import { barStepsOf } from './barSteps';
+import { m } from '$lib/paraglide/messages';
 
 export type { CharReceivedBuffBar, CharReceivedBuffSubrow };
 
@@ -46,11 +47,12 @@ export function projectCharReceivedBuffRows(
 			sourceLabel = weapon?.name ?? src.weaponId;
 		} else if (src.type === 'character' && src.trigger === 'nightsoulBurst') {
 			const char = getCharacter(w.characterId);
-			sourceLabel = `${char?.displayName ?? w.characterId} NB`;
+			sourceLabel = m.planner_characterid_nb({ name: char?.displayName ?? w.characterId });
 		} else if (src.type === 'character' && src.trigger === 'stackThreshold') {
 			// Named after the fire — the team surface's rule (stack-threshold round).
 			const char = getCharacter(w.characterId);
-			const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
+			const fire =
+				src.fireLabel ?? m.planner_x_threshold({ token: AB_LABEL[src.abilityClass ?? 'skill'] });
 			sourceLabel = `${char?.displayName ?? w.characterId} ${fire}`;
 		} else if (src.type === 'character' && src.trigger === 'stacks') {
 			// Named after what the count IS (the effect's `attribution`, e.g.
@@ -63,7 +65,7 @@ export function projectCharReceivedBuffRows(
 			// holder's (cross-character onHit round, 2026-09-21).
 			const char = getCharacter(w.characterId);
 			const name = char?.displayName ?? w.characterId;
-			sourceLabel = src.hostLabel ? `${name} ${src.hostLabel}` : `${name} hit`;
+			sourceLabel = src.hostLabel ? `${name} ${src.hostLabel}` : m.planner_name_hit({ name });
 		} else if (src.type === 'character' && src.trigger === 'reaction') {
 			// ⚠ A reaction window carries no `abilityClass` — it is not bound to a
 			// cast — so the branch below would render "Varka undefined". Harmless
@@ -71,7 +73,7 @@ export function projectCharReceivedBuffRows(
 			// first character-reaction window on THIS surface; the team surface
 			// has always said "reaction" here.
 			const char = getCharacter(w.characterId);
-			sourceLabel = `${char?.displayName ?? w.characterId} reaction`;
+			sourceLabel = m.planner_characterid_reaction({ name: char?.displayName ?? w.characterId });
 		} else if (src.type === 'character') {
 			const char = getCharacter(w.characterId);
 			sourceLabel = `${char?.displayName ?? w.characterId} ${AB_LABEL[src.abilityClass!]}`;

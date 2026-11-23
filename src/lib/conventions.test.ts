@@ -169,8 +169,7 @@ describe('symbol marks are geometry, not type (.claude/rules/ui.md: sub-pixel la
 		{ file: 'src/lib/components/MoveDialog.svelte', span: 'C{c.from} → C{c.to}' },
 		{ file: 'src/lib/components/RosterTab.svelte', span: `['←', '→', '↑', '↓']` },
 		{ file: 'src/lib/components/CompareControl.svelte', span: '(⌃\\`)' },
-		{ file: 'src/lib/timeline/buffDisplay.ts', span: '` → ${value.cap}%`' },
-		{ file: 'src/lib/timeline/buffDisplay.ts', span: '`${startStr} → ${endStr} over duration`' }
+		{ file: 'src/lib/timeline/buffDisplay.ts', span: '` → ${value.cap}%`' }
 	];
 
 	const scanned = files.filter(

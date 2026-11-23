@@ -84,6 +84,7 @@ import {
 	type ExportBenchCard
 } from '$lib/utils/exportBench';
 import { RIBBON_CHROME, RIBBON_TAIL_H } from '$lib/benchBand.svelte';
+import { m } from '$lib/paraglide/messages';
 export type { ExportBenchCard };
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
@@ -244,6 +245,7 @@ const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-u
  *  spacing from the label before it. Canvas `letterSpacing` is newer than the
  *  rest of the API; where it is missing the text is merely unspaced. */
 function type(c: CanvasRenderingContext2D, weight: number, px: number, ls = 0) {
+	// Canvas font strings, not text.
 	c.font = `${weight} ${px}px ${SANS}`;
 	if ('letterSpacing' in c) c.letterSpacing = `${ls}px`;
 }
@@ -529,6 +531,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	canvas.width = Math.round(w * DPR);
 	canvas.height = Math.round(h * DPR);
 	const base = canvas.getContext('2d');
+	// Thrown errors here are logged, never shown: the player sees the export's toast.
 	if (!base) throw new Error('canvas 2d context unavailable');
 	// ⚓ The stars sit low behind the chart and the lockup — the STAR VEIL's
 	// content boxes ($lib/landing/starVeil.ts, the live tools' rule too): a
@@ -1051,7 +1054,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						snap.buffRowH,
 						BAR_FILL,
 						BAR_LABEL,
-						`${row.label} trigger cooldown`,
+						m.planner_label_trigger_cooldown_7631({ label: row.label }),
 						undefined,
 						next ? x(next.start) : undefined
 					);
@@ -1300,11 +1303,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.fillStyle = '#fff';
 			type(ctx, 600, 10, 0.2);
 			ctx.textAlign = 'left';
-			haloText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3, NB_HALO_TIGHT, NB_HALO_WIDE);
+			haloText(
+				m.planner_nb(),
+				px + 5,
+				laneTop + snap.buffRowH / 2 + 3,
+				NB_HALO_TIGHT,
+				NB_HALO_WIDE
+			);
 			if (pw > 40) {
 				ctx.fillStyle = '#fff';
 				type(ctx, 600, 10);
 				ctx.textAlign = 'center';
+				// A bare number of seconds keeps its unit as written.
 				haloText(
 					`${secondsLabel(ev.cooldown)}s`,
 					px + pw / 2,
@@ -1357,7 +1367,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					tx += 15;
 				}
 				haloText(
-					`${name} · Ascendant Gleam`,
+					m.planner_name_ascendant_gleam({ name }),
 					tx,
 					rowTop + snap.buffRowH / 2 + 3,
 					MOONSIGN_HALO_TIGHT,
@@ -1670,7 +1680,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	base.textAlign = 'left';
 	// ⚓ Nate 2026-10-16: the length LEADS the line, at the left — the trailing
 	// bars make the right end the part a reader crops off.
-	base.fillText(`${secondsLabel(snap.endFrame)}s · ${snap.timingNote}`, ox, fy);
+	base.fillText(
+		m.planner_endframe_s_timingnote({
+			seconds: secondsLabel(snap.endFrame),
+			note: snap.timingNote
+		}),
+		ox,
+		fy
+	);
 
 	return new Promise<Blob>((resolve, reject) => {
 		canvas.toBlob((blob) => {

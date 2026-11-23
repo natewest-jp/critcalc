@@ -61,6 +61,7 @@ import { collectStackThresholds } from '$lib/sim/thresholds';
 import { collectCooldownReduces } from '$lib/sim/cooldownReduce';
 import { deriveResonances } from '$lib/utils/resonance';
 import type { CooldownModifier } from '$lib/types/ability';
+import { m } from '$lib/paraglide/messages';
 
 // ---------------------------------------------------------------------------
 // The published surface. ⛔ Every re-export below exists so a consumer's import
@@ -247,7 +248,15 @@ export function parseNotation(
 			{ requireFullParty: false }
 		);
 		const anemo = active.find((r) => r.element === 'anemo');
-		return anemo ? [{ source: `Anemo Resonance: ${anemo.label}`, type: 'percent', value: -5 }] : [];
+		return anemo
+			? [
+					{
+						source: m.planner_anemo_resonance_label({ name: anemo.label }),
+						type: 'percent',
+						value: -5
+					}
+				]
+			: [];
 	}
 
 	// The sim's mutable state, in one place (`$lib/sim/context.ts`).

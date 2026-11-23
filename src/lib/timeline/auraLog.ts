@@ -29,6 +29,7 @@
  */
 import type { EventLogRow } from '$lib/components/EventLog.svelte';
 import type { AuraLane } from './auraPlot';
+import { m } from '$lib/paraglide/messages';
 import { elementPalette, shiftHue } from '$lib/utils/elementColors';
 
 const FPS = 60;
@@ -149,7 +150,11 @@ export function buildAuraLog(
 			entries.push({
 				time: span.end,
 				order: 2,
-				row: { time: span.end / FPS, text: `${series.label} gone`, tone: 'quiet' }
+				row: {
+					time: span.end / FPS,
+					text: m.planner_label_gone({ label: series.label }),
+					tone: 'quiet'
+				}
 			});
 		}
 	}

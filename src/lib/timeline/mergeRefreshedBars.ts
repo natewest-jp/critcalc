@@ -69,6 +69,7 @@ function sameDisplay(a: MergeableBar, b: MergeableBar): boolean {
 
 /** Frames → seconds for a seamed effect's note, the same rounding the tooltip
  *  footer uses (754f prints 12.57, not 12.566…). */
+// A bare number of seconds keeps its unit as written in every locale.
 const fmtSecs = (frames: number): string => `${Number((frames / 60).toFixed(2))}s`;
 
 /**

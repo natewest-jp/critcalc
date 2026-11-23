@@ -43,6 +43,7 @@
  */
 
 import { framesOf } from '$lib/utils/frames';
+import { m } from '$lib/paraglide/messages';
 import type { Effect } from '$lib/types/ability';
 import type { ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { AuraApplication } from './aura';
@@ -289,7 +290,7 @@ export function deriveFieldWindows(input: {
 		gadgets.push({
 			kind: 'gadget',
 			gadget: 'prism',
-			label: 'Starlight Prism',
+			label: m.planner_starlight_prism(),
 			start: presence.start,
 			end: presence.end
 		});
@@ -315,7 +316,11 @@ export function deriveFieldWindows(input: {
 				characterId: presence.characterId,
 				start: cycle,
 				end,
-				source: { type: 'field' as const, fieldId: 'polestar', fieldName: 'Polestar Field' }
+				source: {
+					type: 'field' as const,
+					fieldId: 'polestar',
+					fieldName: m.planner_polestar_field()
+				}
 			};
 			buffs.push({ ...base, id: nextId++, effects: buffEffects, fieldStacks: recorded });
 			// ⚠️ THE SHRED CARRIES NO LEDGER COUNT, AND THAT IS THE POINT. −40%

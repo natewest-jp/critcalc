@@ -23,7 +23,7 @@
  */
 
 import { registerHooks } from 'node:module';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve as resolvePath } from 'node:path';
 
@@ -34,8 +34,12 @@ const LIB_ROOT = resolvePath(REPO_ROOT, 'src/lib');
  *  checking it first avoids picking up a stale generated `.js` sibling. */
 const EXTENSIONS = ['.ts', '.js', '.mjs', '/index.ts', '/index.js'];
 
+/** A file, never a directory: `$lib/paraglide/messages` names both a
+ *  `messages/` directory and the `messages.js` beside it. */
+const isFile = (p) => existsSync(p) && statSync(p).isFile();
+
 function resolveWithExtension(absPath) {
-	if (existsSync(absPath) && !absPath.endsWith('/')) return absPath;
+	if (isFile(absPath)) return absPath;
 	for (const ext of EXTENSIONS) {
 		const candidate = absPath + ext;
 		if (existsSync(candidate)) return candidate;
