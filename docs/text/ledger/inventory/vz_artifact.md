@@ -9,9 +9,9 @@
   > Drop
 - `vz_artifact_level_up` — ArtifactInstrument.svelte:78 m()
   > Level up
-- `vz_artifact_your_piece` — ArtifactInstrument.svelte:84 m() · ArtifactInstrument.svelte:2349 m()
+- `vz_artifact_your_piece` — ArtifactInstrument.svelte:84 m() · ArtifactInstrument.svelte:2351 m()
   > Your piece
-- `vz_artifact_reshape` — ArtifactInstrument.svelte:90 m() · ArtifactInstrument.svelte:1920 m()
+- `vz_artifact_reshape` — ArtifactInstrument.svelte:90 m() · ArtifactInstrument.svelte:1922 m()
   > Reshape
 - `vz_artifact_standard` — ArtifactInstrument.svelte:110 m()
   > Standard
@@ -93,328 +93,328 @@
 - `vz_artifact_better_than_math_round_compareto` — ArtifactInstrument.svelte:496 m()
   > Better than {pct}% of Standard reshapes | Better than {pct}% of Advanced reshapes | Better than {pct}% of Decreed reshapes
   - vars: `pct` `tier`
-- `vz_artifact_farmed` — ArtifactInstrument.svelte:534 m() · ArtifactInstrument.svelte:1519 m() · ArtifactInstrument.svelte:1907 m() · ArtifactInstrument.svelte:1908 m()
+- `vz_artifact_farmed` — ArtifactInstrument.svelte:534 m() · ArtifactInstrument.svelte:1521 m() · ArtifactInstrument.svelte:1909 m() · ArtifactInstrument.svelte:1910 m()
   > Farmed
 - `vz_artifact_none` — ArtifactInstrument.svelte:582 m()
   > None
-- `vz_artifact_e_dmg_bonus` — ArtifactInstrument.svelte:593 m()
+- `vz_artifact_e_dmg_bonus` — ArtifactInstrument.svelte:594 m()
   > {element} DMG Bonus
   - vars: `element`
   - terms: 🎮 DMG
-- `vz_artifact_1_day` — ArtifactInstrument.svelte:695 m()
+- `vz_artifact_1_day` — ArtifactInstrument.svelte:697 m()
   > 1 day
-- `vz_artifact_d_days` — ArtifactInstrument.svelte:695 m()
+- `vz_artifact_d_days` — ArtifactInstrument.svelte:697 m()
   > {days} day | {days} days
   - vars: `days` `count`
-- `vz_artifact_useful_rolls` — ArtifactInstrument.svelte:697 m()
+- `vz_artifact_useful_rolls` — ArtifactInstrument.svelte:699 m()
   > useful rolls
-- `vz_artifact_slotword_s` — ArtifactInstrument.svelte:701 m()
+- `vz_artifact_slotword_s` — ArtifactInstrument.svelte:703 m()
   > flowers | plumes | sands | goblets | circlets
   - vars: `slot`
-- `vz_artifact_atleast_of_wanted` — ArtifactInstrument.svelte:715 m()
+- `vz_artifact_atleast_of_wanted` — ArtifactInstrument.svelte:717 m()
   > {n} of {stats}
   - vars: `n` `stats`
-- `vz_artifact_both` — ArtifactInstrument.svelte:724 m() · ArtifactInstrument.svelte:1439 m()
+- `vz_artifact_both` — ArtifactInstrument.svelte:726 m() · ArtifactInstrument.svelte:1441 m()
   > Both
-- `vz_artifact_all_n` — ArtifactInstrument.svelte:725 m() · ArtifactInstrument.svelte:1440 m()
+- `vz_artifact_all_n` — ArtifactInstrument.svelte:727 m() · ArtifactInstrument.svelte:1442 m()
   > All {n}
   - vars: `n`
-- `vz_artifact_pick_2` — ArtifactInstrument.svelte:742 m()
+- `vz_artifact_pick_2` — ArtifactInstrument.svelte:744 m()
   > Pick 2
-- `vz_artifact_d_l_x_x` — ArtifactInstrument.svelte:879 script
+- `vz_artifact_d_l_x_x` — ArtifactInstrument.svelte:881 script
   > {d} L{histXOf(histHi).toFixed(1)},{yOf(s).toFixed(1)}
   - vars: `d` `histXOf(histHi).toFixed(1)` `yOf(s).toFixed(1)`
-- `vz_artifact_yours` — ArtifactInstrument.svelte:959 m()
+- `vz_artifact_yours` — ArtifactInstrument.svelte:961 m()
   > yours
-- `vz_artifact_this_roll` — ArtifactInstrument.svelte:968 m()
+- `vz_artifact_this_roll` — ArtifactInstrument.svelte:970 m()
   > this roll
-- `vz_artifact_100_reshapename_reshapes_one_dot_each` — ArtifactInstrument.svelte:983 m()
+- `vz_artifact_100_reshapename_reshapes_one_dot_each` — ArtifactInstrument.svelte:985 m()
   > 100 Standard reshapes, one dot each: {lit} beat your piece | 100 Advanced reshapes, one dot each: {lit} beat your piece | 100 Decreed reshapes, one dot each: {lit} beat your piece
   - vars: `lit` `tier`
-- `vz_artifact_your_tries_length_triesbeat_beat_it` — ArtifactInstrument.svelte:985 m()
+- `vz_artifact_your_tries_length_triesbeat_beat_it` — ArtifactInstrument.svelte:987 m()
   > · your tries: {tries}, {beat} beat it
   - vars: `tries` `beat`
-- `vz_artifact_100_20_slotplural_like_yours_one_dot` — ArtifactInstrument.svelte:988 m()
+- `vz_artifact_100_20_slotplural_like_yours_one_dot` — ArtifactInstrument.svelte:990 m()
   > 100 +20 {slots} like yours, one dot each: {lit} beat it
   - vars: `slots` `lit`
-- `vz_artifact_100_pieces_one_dot_each_lit_end_above` — ArtifactInstrument.svelte:989 m()
+- `vz_artifact_100_pieces_one_dot_each_lit_end_above` — ArtifactInstrument.svelte:991 m()
   > 100 pieces, one dot each: {lit} end above {value}
   - vars: `lit` `value`
-- `vz_artifact_half_by_median` — ArtifactInstrument.svelte:1012 m()
+- `vz_artifact_half_by_median` — ArtifactInstrument.svelte:1014 m()
   > Half by {days}
   - vars: `days`
-- `vz_artifact_half_of_players_have_it_within_this_many` — ArtifactInstrument.svelte:1013 m()
+- `vz_artifact_half_of_players_have_it_within_this_many` — ArtifactInstrument.svelte:1015 m()
   > Half of players have it within this many days.
-- `vz_artifact_unlucky_tenth_p90` — ArtifactInstrument.svelte:1019 m()
+- `vz_artifact_unlucky_tenth_p90` — ArtifactInstrument.svelte:1021 m()
   > Unlucky tenth {days}
   - vars: `days`
-- `vz_artifact_the_unluckiest_10_of_players_need_this` — ArtifactInstrument.svelte:1020 m()
+- `vz_artifact_the_unluckiest_10_of_players_need_this` — ArtifactInstrument.svelte:1022 m()
   > The unluckiest 10% of players need this many days or more.
-- `vz_artifact_typical_median` — ArtifactInstrument.svelte:1029 m()
+- `vz_artifact_typical_median` — ArtifactInstrument.svelte:1031 m()
   > Typical {value}
   - vars: `value`
-- `vz_artifact_half_end_above_this_and_half_at_or_below` — ArtifactInstrument.svelte:1030 m()
+- `vz_artifact_half_end_above_this_and_half_at_or_below` — ArtifactInstrument.svelte:1032 m()
   > Half end above this, and half at or below it.
-- `vz_artifact_unlucky_tenth_p10` — ArtifactInstrument.svelte:1036 m()
+- `vz_artifact_unlucky_tenth_p10` — ArtifactInstrument.svelte:1038 m()
   > Unlucky tenth {value}
   - vars: `value`
-- `vz_artifact_the_unluckiest_10_end_at_or_below_this` — ArtifactInstrument.svelte:1037 m()
+- `vz_artifact_the_unluckiest_10_end_at_or_below_this` — ArtifactInstrument.svelte:1039 m()
   > The unluckiest 10% end at or below this.
-- `vz_artifact_in_an_outbreak_outbreak` — ArtifactInstrument.svelte:1078 m()
+- `vz_artifact_in_an_outbreak_outbreak` — ArtifactInstrument.svelte:1080 m()
   > In an Outbreak {chance}
   - vars: `chance`
-- `vz_artifact_main_stat` — ArtifactInstrument.svelte:1366 m() · ArtifactInstrument.svelte:1647 m()
+- `vz_artifact_main_stat` — ArtifactInstrument.svelte:1368 m() · ArtifactInstrument.svelte:1649 m()
   > Main stat
-- `vz_artifact_chance_each` — ArtifactInstrument.svelte:1381 m()
+- `vz_artifact_chance_each` — ArtifactInstrument.svelte:1383 m()
   > {chance} each
   - vars: `chance`
-- `vz_artifact_pick_every_main_stat_you_d_be_happy_with` — ArtifactInstrument.svelte:1392 m()
+- `vz_artifact_pick_every_main_stat_you_d_be_happy_with` — ArtifactInstrument.svelte:1394 m()
   > Pick every main stat you'd be happy with. The number under each is how often it drops.
-- `vz_artifact_valued_stats` — ArtifactInstrument.svelte:1398 m() · ArtifactInstrument.svelte:1884 m()
+- `vz_artifact_valued_stats` — ArtifactInstrument.svelte:1400 m() · ArtifactInstrument.svelte:1886 m()
   > Valued stats
-- `vz_artifact_main` — ArtifactInstrument.svelte:1413 m()
+- `vz_artifact_main` — ArtifactInstrument.svelte:1415 m()
   > main
-- `vz_artifact_pick_the_substats_you_want_from_this` — ArtifactInstrument.svelte:1422 m()
+- `vz_artifact_pick_the_substats_you_want_from_this` — ArtifactInstrument.svelte:1424 m()
   > Pick the substats you want, from this piece's four.
   - terms: 🏷 substat
-- `vz_artifact_pick_up_to_four_substats_you_want` — ArtifactInstrument.svelte:1423 m()
+- `vz_artifact_pick_up_to_four_substats_you_want` — ArtifactInstrument.svelte:1425 m()
   > Pick up to four substats you want.
   - terms: 🏷 substat
-- `vz_artifact_the_number_under_each_is_its_chance_to` — ArtifactInstrument.svelte:1425 m()
+- `vz_artifact_the_number_under_each_is_its_chance_to` — ArtifactInstrument.svelte:1427 m()
   > The number under each is its chance to be one of the piece's four substats.
   - terms: 🏷 substat
-- `vz_artifact_how_many_of_them` — ArtifactInstrument.svelte:1429 m()
+- `vz_artifact_how_many_of_them` — ArtifactInstrument.svelte:1431 m()
   > How many of them
-- `vz_artifact_at_least_n` — ArtifactInstrument.svelte:1441 m()
+- `vz_artifact_at_least_n` — ArtifactInstrument.svelte:1443 m()
   > At least {n}
   - vars: `n`
-- `vz_artifact_one_set` — ArtifactInstrument.svelte:1456 m()
+- `vz_artifact_one_set` — ArtifactInstrument.svelte:1458 m()
   > One set
-- `vz_artifact_either_set` — ArtifactInstrument.svelte:1464 m()
+- `vz_artifact_either_set` — ArtifactInstrument.svelte:1466 m()
   > Either set
-- `vz_artifact_how_many_of_your_valued_stats_it_has` — ArtifactInstrument.svelte:1470 m()
+- `vz_artifact_how_many_of_your_valued_stats_it_has` — ArtifactInstrument.svelte:1472 m()
   > How many of your valued stats it has
-- `vz_artifact_has_n_wantedsubs_length_n_1_all_n_n` — ArtifactInstrument.svelte:1478 m()
+- `vz_artifact_has_n_wantedsubs_length_n_1_all_n_n` — ArtifactInstrument.svelte:1480 m()
   > Has all {n} | Has {n}
   - vars: `n` `form`
-- `vz_artifact_dropped_with_4_substats` — ArtifactInstrument.svelte:1495 m()
+- `vz_artifact_dropped_with_4_substats` — ArtifactInstrument.svelte:1497 m()
   > Dropped with 4 substats
   - terms: 🏷 substat
-- `vz_artifact_with_3` — ArtifactInstrument.svelte:1503 m()
+- `vz_artifact_with_3` — ArtifactInstrument.svelte:1505 m()
   > With 3
-- `vz_artifact_a_piece_that_drops_with_4_substats_gets` — ArtifactInstrument.svelte:1507 m()
+- `vz_artifact_a_piece_that_drops_with_4_substats_gets` — ArtifactInstrument.svelte:1509 m()
   > A piece that drops with 4 substats gets 5 upgrades by +20. One that drops with 3 spends its first upgrade adding a 4th substat.
   - terms: 🏷 substat
-- `vz_artifact_made_with_elixir` — ArtifactInstrument.svelte:1528 m()
+- `vz_artifact_made_with_elixir` — ArtifactInstrument.svelte:1530 m()
   > Made with Elixir
   - terms: 🎮 Sanctifying Elixir
-- `vz_artifact_a_piece_made_with_sanctifying_elixir` — ArtifactInstrument.svelte:1533 m()
+- `vz_artifact_a_piece_made_with_sanctifying_elixir` — ArtifactInstrument.svelte:1535 m()
   > A piece made with Sanctifying Elixir guarantees at least 2 of its upgrades go to the two substats you chose for it.
   - terms: 🎮 Sanctifying Elixir · 🏷 substat
-- `vz_artifact_defined_substats` — ArtifactInstrument.svelte:1537 m()
+- `vz_artifact_defined_substats` — ArtifactInstrument.svelte:1539 m()
   > Defined substats
   - terms: 🏷 substat
-- `vz_artifact_pick_the_two_substats_you_chose_when` — ArtifactInstrument.svelte:1553 m()
+- `vz_artifact_pick_the_two_substats_you_chose_when` — ArtifactInstrument.svelte:1555 m()
   > Pick the two substats you chose when making it. Together they're guaranteed at least 2 upgrades by +20.
   - terms: 🏷 substat
-- `vz_artifact_substats_to_reshape` — ArtifactInstrument.svelte:1561 m()
+- `vz_artifact_substats_to_reshape` — ArtifactInstrument.svelte:1563 m()
   > Substats to reshape
-- `vz_artifact_your_first_two_valued_stats_on_this` — ArtifactInstrument.svelte:1584 m()
+- `vz_artifact_your_first_two_valued_stats_on_this` — ArtifactInstrument.svelte:1586 m()
   > Your first two valued stats on this piece, until you pick your own.
-- `vz_artifact_pick_2_substats_after_the_reshape_they` — ArtifactInstrument.svelte:1587 m()
+- `vz_artifact_pick_2_substats_after_the_reshape_they` — ArtifactInstrument.svelte:1589 m()
   > Pick 2 substats. After the reshape, they get at least {floor} of the piece's upgrades between them.
   - vars: `floor`
   - terms: 🏷 substat
-- `vz_artifact_kind_of_reshape` — ArtifactInstrument.svelte:1589 m()
+- `vz_artifact_kind_of_reshape` — ArtifactInstrument.svelte:1591 m()
   > Kind of reshape
-- `vz_artifact_every_advanced_exegesis_dust_of` — ArtifactInstrument.svelte:1602 m()
+- `vz_artifact_every_advanced_exegesis_dust_of` — ArtifactInstrument.svelte:1604 m()
   > Every {dust} Dust of Enlightenment you spend makes your next reshape Advanced, and the third Advanced in a row is Decreed. The chart shows all three.
   - vars: `dust`
   - terms: 🎮 Dust of Enlightenment
-- `vz_artifact_clear` — ArtifactInstrument.svelte:1635 m() · ArtifactInstrument.svelte:1636 m() · ArtifactInstrument.svelte:1639 m()
+- `vz_artifact_clear` — ArtifactInstrument.svelte:1637 m() · ArtifactInstrument.svelte:1638 m() · ArtifactInstrument.svelte:1641 m()
   > Clear
-- `vz_artifact_these_values_fit_more_than_one_upgrade` — ArtifactInstrument.svelte:1669 m()
+- `vz_artifact_these_values_fit_more_than_one_upgrade` — ArtifactInstrument.svelte:1671 m()
   > These values fit more than one upgrade count. Pick the one that matches the game under the card.
-- `vz_artifact_substat_x` — ArtifactInstrument.svelte:1679 m()
+- `vz_artifact_substat_x` — ArtifactInstrument.svelte:1681 m()
   > Substat {n}
   - vars: `n`
   - terms: 🏷 substat
-- `vz_artifact_substat` — ArtifactInstrument.svelte:1682 m()
+- `vz_artifact_substat` — ArtifactInstrument.svelte:1684 m()
   > Substat…
   - terms: 🏷 substat
-- `vz_artifact_value_for_substat_x` — ArtifactInstrument.svelte:1690 m()
+- `vz_artifact_value_for_substat_x` — ArtifactInstrument.svelte:1692 m()
   > Value for substat {n}
   - vars: `n`
   - terms: 🏷 substat
-- `vz_artifact_level` — ArtifactInstrument.svelte:1698 m()
+- `vz_artifact_level` — ArtifactInstrument.svelte:1700 m()
   > Level
-- `vz_artifact_the_4th_substat_is_grayed_out` — ArtifactInstrument.svelte:1725 m()
+- `vz_artifact_the_4th_substat_is_grayed_out` — ArtifactInstrument.svelte:1727 m()
   > The 4th substat is grayed out (unactivated)
   - terms: 🏷 substat
-- `vz_artifact_upgrade_counts` — ArtifactInstrument.svelte:1734 m()
+- `vz_artifact_upgrade_counts` — ArtifactInstrument.svelte:1736 m()
   > Upgrade counts
-- `vz_artifact_these_values_fit_length_different` — ArtifactInstrument.svelte:1739 m()
+- `vz_artifact_these_values_fit_length_different` — ArtifactInstrument.svelte:1741 m()
   > These values fit two different upgrade counts. | These values fit {count} different upgrade count. | These values fit {count} different upgrade counts.
   - vars: `count`
-- `vz_artifact_pick_the_one_the_game_shows_when_you` — ArtifactInstrument.svelte:1741 m()
+- `vz_artifact_pick_the_one_the_game_shows_when_you` — ArtifactInstrument.svelte:1743 m()
   > Pick the one the game shows when you reshape the piece:
-- `vz_artifact_pick_the_one_it_got_if_you_know_it` — ArtifactInstrument.svelte:1742 m()
+- `vz_artifact_pick_the_one_it_got_if_you_know_it` — ArtifactInstrument.svelte:1744 m()
   > Pick the one it got, if you know it:
-- `vz_artifact_the_number_beside_each_substat_is_how` — ArtifactInstrument.svelte:1764 m()
+- `vz_artifact_the_number_beside_each_substat_is_how` — ArtifactInstrument.svelte:1766 m()
   > The number beside each substat is how many upgrades it got, the same number the game shows on its reshape screen. Your valued stats are highlighted.
   - terms: 🏷 substat
-- `vz_artifact_pick_your_piece_s_level_levels_these` — ArtifactInstrument.svelte:1766 m()
+- `vz_artifact_pick_your_piece_s_level_levels_these` — ArtifactInstrument.svelte:1768 m()
   > Pick your piece's level. Levels these values can't belong to are dimmed.
-- `vz_artifact_enter_each_substat_and_its_value_exactly` — ArtifactInstrument.svelte:1768 m()
+- `vz_artifact_enter_each_substat_and_its_value_exactly` — ArtifactInstrument.svelte:1770 m()
   > Enter each substat and its value exactly as the game shows them, then pick the piece's level.
   - terms: 🏷 substat
-- `vz_artifact_your_piece_x` — ArtifactInstrument.svelte:1780 m()
+- `vz_artifact_your_piece_x` — ArtifactInstrument.svelte:1782 m()
   > Your piece: {piece}
   - vars: `piece`
-- `vz_artifact_not_entered` — ArtifactInstrument.svelte:1781 m()
+- `vz_artifact_not_entered` — ArtifactInstrument.svelte:1783 m()
   > not entered
-- `vz_artifact_enter_your_piece` — ArtifactInstrument.svelte:1801 m() · ArtifactInstrument.svelte:1985 m()
+- `vz_artifact_enter_your_piece` — ArtifactInstrument.svelte:1803 m() · ArtifactInstrument.svelte:1987 m()
   > Enter your piece
-- `vz_artifact_domain_chance_of_the_piece_within_days` — ArtifactInstrument.svelte:1819 m()
+- `vz_artifact_domain_chance_of_the_piece_within_days` — ArtifactInstrument.svelte:1821 m()
   > {chance}{#span}chance of the piece within {days}{/span}
   - vars: `chance` `days`
-- `vz_artifact_pick_a_substat` — ArtifactInstrument.svelte:1828 m()
+- `vz_artifact_pick_a_substat` — ArtifactInstrument.svelte:1830 m()
   > Pick a substat
   - terms: 🏷 substat
-- `vz_artifact_reshaping_needs_a_20_piece` — ArtifactInstrument.svelte:1830 m()
+- `vz_artifact_reshaping_needs_a_20_piece` — ArtifactInstrument.svelte:1832 m()
   > Reshaping needs a +20 piece
-- `vz_artifact_pick_two_substats_to_reshape` — ArtifactInstrument.svelte:1832 m()
+- `vz_artifact_pick_two_substats_to_reshape` — ArtifactInstrument.svelte:1834 m()
   > Pick two substats to reshape
   - terms: 🏷 substat
-- `vz_artifact_enter_your_piece_to_see_how_it_measures` — ArtifactInstrument.svelte:1833 m()
+- `vz_artifact_enter_your_piece_to_see_how_it_measures` — ArtifactInstrument.svelte:1835 m()
   > Enter your piece to see how it measures up
-- `vz_artifact_beats_chance_a_reshapename_reshape_beats` — ArtifactInstrument.svelte:1837 m()
+- `vz_artifact_beats_chance_a_reshapename_reshape_beats` — ArtifactInstrument.svelte:1839 m()
   > {chance}{#span}chance a Standard reshape beats your piece{/span} | {chance}{#span}chance an Advanced reshape beats your piece{/span} | {chance}{#span}chance a Decreed reshape beats your piece{/span}
   - vars: `chance` `tier`
-- `vz_artifact_better_than_x_of_20_slotplural_with` — ArtifactInstrument.svelte:1845 m()
+- `vz_artifact_better_than_x_of_20_slotplural_with` — ArtifactInstrument.svelte:1847 m()
   > Better than {pct}%{#span}of +20 {slots} with these four substats{/span}
   - vars: `pct` `slots`
   - terms: 🏷 substat
-- `vz_artifact_beats_chance_it_ends_above_reference_x` — ArtifactInstrument.svelte:1853 m()
+- `vz_artifact_beats_chance_it_ends_above_reference_x` — ArtifactInstrument.svelte:1855 m()
   > {chance}{#span}chance it ends above {value}{/span} | {chance}{#span}chance it ends above {value} at +20{/span}
   - vars: `chance` `value` `when`
-- `vz_artifact_view` — ArtifactInstrument.svelte:1865 m()
+- `vz_artifact_view` — ArtifactInstrument.svelte:1867 m()
   > View
-- `vz_artifact_setup` — ArtifactInstrument.svelte:1878 m()
+- `vz_artifact_setup` — ArtifactInstrument.svelte:1880 m()
   > Setup
-- `vz_artifact_piece` — ArtifactInstrument.svelte:1882 m()
+- `vz_artifact_piece` — ArtifactInstrument.svelte:1884 m()
   > Piece
-- `vz_artifact_set` — ArtifactInstrument.svelte:1887 m()
+- `vz_artifact_set` — ArtifactInstrument.svelte:1889 m()
   > Set
-- `vz_artifact_either` — ArtifactInstrument.svelte:1888 m() · ArtifactInstrument.svelte:1889 m()
+- `vz_artifact_either` — ArtifactInstrument.svelte:1890 m() · ArtifactInstrument.svelte:1891 m()
   > Either
-- `vz_artifact_one` — ArtifactInstrument.svelte:1888 m() · ArtifactInstrument.svelte:1889 m()
+- `vz_artifact_one` — ArtifactInstrument.svelte:1890 m() · ArtifactInstrument.svelte:1891 m()
   > One
-- `vz_artifact_has` — ArtifactInstrument.svelte:1895 m()
+- `vz_artifact_has` — ArtifactInstrument.svelte:1897 m()
   > Has
-- `vz_artifact_dropped_with` — ArtifactInstrument.svelte:1898 m()
+- `vz_artifact_dropped_with` — ArtifactInstrument.svelte:1900 m()
   > Dropped with
-- `vz_artifact_4_substats` — ArtifactInstrument.svelte:1899 m() · ArtifactInstrument.svelte:1900 m()
+- `vz_artifact_4_substats` — ArtifactInstrument.svelte:1901 m() · ArtifactInstrument.svelte:1902 m()
   > 4 substats
   - terms: 🏷 substat
-- `vz_artifact_3_substats` — ArtifactInstrument.svelte:1899 m() · ArtifactInstrument.svelte:1900 m()
+- `vz_artifact_3_substats` — ArtifactInstrument.svelte:1901 m() · ArtifactInstrument.svelte:1902 m()
   > 3 substats
   - terms: 🏷 substat
-- `vz_artifact_made` — ArtifactInstrument.svelte:1906 m()
+- `vz_artifact_made` — ArtifactInstrument.svelte:1908 m()
   > Made
-- `vz_artifact_with_elixir` — ArtifactInstrument.svelte:1907 m() · ArtifactInstrument.svelte:1908 m()
+- `vz_artifact_with_elixir` — ArtifactInstrument.svelte:1909 m() · ArtifactInstrument.svelte:1910 m()
   > With Elixir
   - terms: 🎮 Sanctifying Elixir
-- `vz_artifact_reshape_reshapeface` — ArtifactInstrument.svelte:1917 m()
+- `vz_artifact_reshape_reshapeface` — ArtifactInstrument.svelte:1919 m()
   > Reshape: {face}
   - vars: `face`
-- `vz_artifact_try_a_reshape` — ArtifactInstrument.svelte:1933 m()
+- `vz_artifact_try_a_reshape` — ArtifactInstrument.svelte:1935 m()
   > Try a reshape
-- `vz_artifact_element_dmg_bonus` — ArtifactInstrument.svelte:1951 m()
+- `vz_artifact_element_dmg_bonus` — ArtifactInstrument.svelte:1953 m()
   > {element} DMG Bonus
   - vars: `element`
   - terms: 🎮 DMG
-- `vz_artifact_your_only_valued_stat_is_this_piece_s` — ArtifactInstrument.svelte:1975 m()
+- `vz_artifact_your_only_valued_stat_is_this_piece_s` — ArtifactInstrument.svelte:1977 m()
   > Your only valued stat is this piece's main stat. Pick a substat too.
   - terms: 🏷 substat
-- `vz_artifact_enter_all_four_of_its_substats_a_grayed` — ArtifactInstrument.svelte:1979 m()
+- `vz_artifact_enter_all_four_of_its_substats_a_grayed` — ArtifactInstrument.svelte:1981 m()
   > Enter all four of its substats, a grayed-out one too.
   - terms: 🏷 substat
-- `vz_artifact_enter_a_piece_to_see_how_it_measures_up` — ArtifactInstrument.svelte:1980 m()
+- `vz_artifact_enter_a_piece_to_see_how_it_measures_up` — ArtifactInstrument.svelte:1982 m()
   > Enter a piece to see how it measures up.
-- `vz_artifact_finish_your_piece` — ArtifactInstrument.svelte:1984 m()
+- `vz_artifact_finish_your_piece` — ArtifactInstrument.svelte:1986 m()
   > Finish your piece
-- `vz_artifact_one_of_these_values_isn_t_possible_for` — ArtifactInstrument.svelte:1988 m()
+- `vz_artifact_one_of_these_values_isn_t_possible_for` — ArtifactInstrument.svelte:1990 m()
   > One of these values isn't possible for that substat. Check it against the game.
   - terms: 🏷 substat
-- `vz_artifact_edit_your_piece` — ArtifactInstrument.svelte:1990 m() · ArtifactInstrument.svelte:2010 m() · ArtifactInstrument.svelte:2015 m()
+- `vz_artifact_edit_your_piece` — ArtifactInstrument.svelte:1992 m() · ArtifactInstrument.svelte:2012 m() · ArtifactInstrument.svelte:2017 m()
   > Edit your piece
-- `vz_artifact_these_values_add_up_to_x_upgrade_x_but_a` — ArtifactInstrument.svelte:1994 m()
+- `vz_artifact_these_values_add_up_to_x_upgrade_x_but_a` — ArtifactInstrument.svelte:1996 m()
   > These values add up to {totals} upgrade, but a {level} piece has only {low}–{high}. | These values add up to {totals} upgrades, but a {level} piece has only {low}–{high}.
   - vars: `totals` `level` `low` `high` `count`
-- `vz_artifact_recheck_your_values_or_pick_x` — ArtifactInstrument.svelte:2002 m()
+- `vz_artifact_recheck_your_values_or_pick_x` — ArtifactInstrument.svelte:2004 m()
   > Recheck your values, or pick {levels}.
   - vars: `levels`
-- `vz_artifact_recheck_your_values` — ArtifactInstrument.svelte:2006 m()
+- `vz_artifact_recheck_your_values` — ArtifactInstrument.svelte:2008 m()
   > Recheck your values.
-- `vz_artifact_this_piece_is_levellabel_level_it_to_20` — ArtifactInstrument.svelte:2013 m()
+- `vz_artifact_this_piece_is_levellabel_level_it_to_20` — ArtifactInstrument.svelte:2015 m()
   > This piece is {level}. Level it to +20 to reshape it.
   - vars: `level`
-- `vz_artifact_pick_the_two_substats_to_reshape_as_the` — ArtifactInstrument.svelte:2018 m()
+- `vz_artifact_pick_the_two_substats_to_reshape_as_the` — ArtifactInstrument.svelte:2020 m()
   > Pick the two substats to reshape, as the game's reshape screen asks.
   - terms: 🏷 substat
-- `vz_artifact_pick_two_substats` — ArtifactInstrument.svelte:2020 m()
+- `vz_artifact_pick_two_substats` — ArtifactInstrument.svelte:2022 m()
   > Pick two substats
   - terms: 🏷 substat
-- `vz_artifact_none_of_your_valued_stats_are_on_this` — ArtifactInstrument.svelte:2023 m()
+- `vz_artifact_none_of_your_valued_stats_are_on_this` — ArtifactInstrument.svelte:2025 m()
   > None of your valued stats are on this piece.
-- `vz_artifact_chance_of_this_piece_by_days_of_resin` — ArtifactInstrument.svelte:2032 m()
+- `vz_artifact_chance_of_this_piece_by_days_of_resin` — ArtifactInstrument.svelte:2034 m()
   > Chance of this piece by days of resin
-- `vz_artifact_chance_to_end_above_each_x_at_20` — ArtifactInstrument.svelte:2033 m()
+- `vz_artifact_chance_to_end_above_each_x_at_20` — ArtifactInstrument.svelte:2035 m()
   > Chance to end above each {unit} at +20
   - vars: `unit`
-- `vz_artifact_crit_value` — ArtifactInstrument.svelte:2036 m()
+- `vz_artifact_crit_value` — ArtifactInstrument.svelte:2038 m()
   > crit value
   - terms: 🏷 crit value
-- `vz_artifact_count_of_useful_rolls` — ArtifactInstrument.svelte:2037 m()
+- `vz_artifact_count_of_useful_rolls` — ArtifactInstrument.svelte:2039 m()
   > count of useful rolls
-- `vz_artifact_days_of_resin_f956` — ArtifactInstrument.svelte:2100 m()
+- `vz_artifact_days_of_resin_f956` — ArtifactInstrument.svelte:2102 m()
   > days of resin
-- `vz_artifact_crit_value_cv_at_20` — ArtifactInstrument.svelte:2102 m()
+- `vz_artifact_crit_value_cv_at_20` — ArtifactInstrument.svelte:2104 m()
   > crit value (CV) at +20
   - terms: 🏷 crit value · 🏷 CV
-- `vz_artifact_useful_rolls_in_your_valued_stats_at_20` — ArtifactInstrument.svelte:2103 m()
+- `vz_artifact_useful_rolls_in_your_valued_stats_at_20` — ArtifactInstrument.svelte:2105 m()
   > useful rolls in your valued stats at +20
-- `vz_artifact_chance_you_have_it_by_then` — ArtifactInstrument.svelte:2128 m()
+- `vz_artifact_chance_you_have_it_by_then` — ArtifactInstrument.svelte:2130 m()
   > chance you have it by then
-- `vz_artifact_chance_a_reshape_ends_above` — ArtifactInstrument.svelte:2130 m()
+- `vz_artifact_chance_a_reshape_ends_above` — ArtifactInstrument.svelte:2132 m()
   > chance a reshape ends above
-- `vz_artifact_chance_it_ends_above` — ArtifactInstrument.svelte:2131 m()
+- `vz_artifact_chance_it_ends_above` — ArtifactInstrument.svelte:2133 m()
   > chance it ends above
-- `vz_artifact_in_an_outbreak` — ArtifactInstrument.svelte:2157 m()
+- `vz_artifact_in_an_outbreak` — ArtifactInstrument.svelte:2159 m()
   > In an Outbreak
-- `vz_artifact_domain` — ArtifactInstrument.svelte:2168 m()
+- `vz_artifact_domain` — ArtifactInstrument.svelte:2170 m()
   > Domain
-- `vz_artifact_now_nowx` — ArtifactInstrument.svelte:2256 m()
+- `vz_artifact_now_nowx` — ArtifactInstrument.svelte:2258 m()
   > now {value}
   - vars: `value`
-- `vz_artifact_days_of_resin_c765` — ArtifactInstrument.svelte:2337 m()
+- `vz_artifact_days_of_resin_c765` — ArtifactInstrument.svelte:2339 m()
   > Days of resin
-- `vz_artifact_to_beat` — ArtifactInstrument.svelte:2360 m()
+- `vz_artifact_to_beat` — ArtifactInstrument.svelte:2362 m()
   > To beat
-- `vz_artifact_the_value_to_beat` — ArtifactInstrument.svelte:2361 m()
+- `vz_artifact_the_value_to_beat` — ArtifactInstrument.svelte:2363 m()
   > The value to beat
-- `vz_artifact_about_1_in_every_perpiece_five_star` — ArtifactInstrument.svelte:2383 m()
+- `vz_artifact_about_1_in_every_perpiece_five_star` — ArtifactInstrument.svelte:2385 m()
   > About 1 in every {oneIn} five-star drops from this domain is the piece you want. {days} is {resin} resin, at {perDay} a day. During a Stygian Onslaught Disturbance Outbreak, every 120 resin you spend also earns one extra 5★ from the domain.
   - vars: `oneIn` `days` `resin` `perDay`
-- `vz_artifact_useful_rolls_count_every_roll_in_your` — ArtifactInstrument.svelte:2392 m()
+- `vz_artifact_useful_rolls_count_every_roll_in_your` — ArtifactInstrument.svelte:2394 m()
   > Useful rolls count every roll in your valued stats by its size: a max roll counts as 1, the smallest as 0.7. A substat's starting roll counts too.
   - terms: 🏷 substat
-- `vz_artifact_until_you_drag_it_the_value_to_beat_is_a` — ArtifactInstrument.svelte:2396 m()
+- `vz_artifact_until_you_drag_it_the_value_to_beat_is_a` — ArtifactInstrument.svelte:2398 m()
   > Until you drag it, the value to beat is a typical +20 flower with these substats. | Until you drag it, the value to beat is a typical +20 plume with these substats. | Until you drag it, the value to beat is a typical +20 sands with these substats. | Until you drag it, the value to beat is a typical +20 goblet with these substats. | Until you drag it, the value to beat is a typical +20 circlet with these substats.
   - vars: `slot`
   - terms: 🏷 substat
-- `vz_artifact_reshape_this_piece` — ArtifactInstrument.svelte:2401 m()
+- `vz_artifact_reshape_this_piece` — ArtifactInstrument.svelte:2403 m()
   > Reshape this piece
 - `vz_artifact_hp_5200` — artifactOdds.ts:70 m() · artifactOdds.ts:73 m() · artifactOdds.ts:217 m()
   > HP
