@@ -27,6 +27,10 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
+	import Msg from '$lib/components/Msg.svelte';
+	import { labels as messageTable } from '$lib/i18n/labels';
+	import { htmlLang } from '$lib/i18n/locale';
+	import { m } from '$lib/paraglide/messages';
 
 	/** The most pulls the instrument takes, typed or shared. */
 	const MAX_PULLS = 2000;
@@ -36,10 +40,10 @@
 	// the total is the sum of the pulls each goal takes on its own.
 	type Target = 'character' | 'fourStar' | 'weapon' | 'pair';
 	const TARGETS: { id: Target; label: string }[] = [
-		{ id: 'character', label: 'Featured 5★' },
-		{ id: 'fourStar', label: 'Featured 4★' },
-		{ id: 'weapon', label: 'Charted weapon' },
-		{ id: 'pair', label: '5★ and weapon' }
+		{ id: 'character', label: m.vz_wish_featured_5() },
+		{ id: 'fourStar', label: m.vz_wish_featured_4() },
+		{ id: 'weapon', label: m.vz_wish_charted_weapon() },
+		{ id: 'pair', label: m.vz_wish_5_and_weapon() }
 	];
 
 	/**
@@ -74,10 +78,11 @@
 
 	/** C6 is the 7th copy; R5 the 5th. */
 	const maxCopies = (id: BannerId) => (id === 'weapon' ? 5 : 7);
+	// R1–R5 and C0–C6 are notation, English in every locale.
 	const levelName = (id: BannerId, copies: number) =>
 		id === 'weapon' ? `R${copies}` : `C${copies - 1}`;
 	const haveName = (id: BannerId, copies: number) =>
-		copies === 0 ? 'Not owned' : levelName(id, copies);
+		copies === 0 ? m.vz_wish_not_owned() : levelName(id, copies);
 
 	function setHave(id: BannerId, copies: number) {
 		const s = states[id];
@@ -133,7 +138,7 @@
 	// Two sources, one replay (wishHistory.ts): a Paimon.moe export, or the 5★s
 	// the player lists by hand. Either one sets the counter and the guarantee;
 	// the export also sets pity.
-	const dateFmt = new Intl.DateTimeFormat('en-US', {
+	const dateFmt = new Intl.DateTimeFormat(htmlLang(), {
 		month: 'long',
 		day: 'numeric',
 		year: 'numeric',
@@ -237,6 +242,7 @@
 	}
 	function answerFeatured() {
 		if (radianceMatters(answers)) askingRadiance = true;
+		// an Answer value, not text
 		else answer('featured');
 	}
 	function interviewBack() {
@@ -248,20 +254,20 @@
 		askingRadiance = false;
 	}
 
-	const ANSWER_LABEL: Record<Answer, string> = {
-		featured: 'Featured',
-		'featured-radiance': 'Featured, Radiance',
-		'featured-plain': 'Featured',
-		standard: 'Standard',
-		none: 'None since 5.0'
-	};
+	const ANSWER_LABEL: Record<Answer, string> = messageTable({
+		featured: m.vz_wish_featured_ae31,
+		'featured-radiance': m.vz_wish_featured_radiance,
+		'featured-plain': m.vz_wish_featured_ae31,
+		standard: m.vz_wish_standard,
+		none: m.vz_wish_none_since_5_0
+	});
 
-	const STEP_LABEL: Record<ReplayStep['kind'], string> = {
-		lost: 'Lost',
-		guarantee: 'Guarantee',
-		won: 'Won',
-		radiance: 'Radiance'
-	};
+	const STEP_LABEL: Record<ReplayStep['kind'], string> = messageTable({
+		lost: m.vz_wish_lost,
+		guarantee: m.vz_wish_guarantee,
+		won: m.vz_wish_won,
+		radiance: m.vz_wish_radiance
+	});
 
 	// The axis runs to where the goal is 99.9% done, in whole tens — the 4★
 	// chain never strictly ends, and the slider's ceiling follows it — or to
@@ -410,14 +416,14 @@
 			{
 				key: 'half',
 				k: median,
-				text: `Half by ${median}`,
-				title: 'Half of players get there within this many pulls.'
+				text: m.vz_wish_half_by_median({ median }),
+				title: m.vz_wish_half_of_players_get_there_within_this()
 			},
 			{
 				key: 'tenth',
 				k: p90,
-				text: `Unlucky tenth ${p90}`,
-				title: 'The unluckiest 10% of players need this many pulls or more.'
+				text: m.vz_wish_unlucky_tenth_p90({ p90 }),
+				title: m.vz_wish_the_unluckiest_10_of_players_need_this()
 			}
 		]
 			.filter((c) => c.k > 0 && c.k <= domain)
@@ -494,12 +500,17 @@
 		const marks: { key: string; x: number; text: string; anchor: 'middle' | 'end' }[] = [];
 		const mean = Math.round(goalRow.stats.mean);
 		if (mean > 0 && mean <= domain)
-			marks.push({ key: 'mean', x: xOf(mean), text: `average ${mean}`, anchor: 'middle' });
+			marks.push({
+				key: 'mean',
+				x: xOf(mean),
+				text: m.vz_wish_average_mean({ mean }),
+				anchor: 'middle'
+			});
 		if (goalRow.worst !== null && goalRow.worst <= domain)
 			marks.push({
 				key: 'worst',
 				x: xOf(goalRow.worst),
-				text: `at most ${goalRow.worst}`,
+				text: m.vz_wish_at_most_worst({ worst: goalRow.worst }),
 				anchor: 'end'
 			});
 		return marks;
@@ -521,10 +532,11 @@
 			const yk = y(goalPmf[k] ?? 0);
 			d += ` L${x(k - 0.5)},${yk} L${x(k + 0.5)},${yk}`;
 		}
+		// an SVG path, not text
 		return `${d} L${x(domain)},${compY1} Z`;
 	});
 
-	const pullsPhrase = (n: number) => (n === 1 ? '1 pull' : `${n} pulls`);
+	const pullsPhrase = (n: number) => m.vz_wish_n_pulls({ count: n });
 
 	/** `held` is the guarantee chip's word; `guarantee` says in full what it means
 	 *  (its tooltip and accessible name). */
@@ -533,22 +545,22 @@
 		{ kicker: string; pityAria: string; held: string; guarantee: string }
 	> = {
 		character: {
-			kicker: 'Character Event',
-			pityAria: 'Pulls since your last five-star',
-			held: 'Guarantee',
-			guarantee: 'Guarantee held (lost the last 50/50)'
+			kicker: m.vz_wish_character_event(),
+			pityAria: m.vz_wish_pulls_since_your_last_five_star(),
+			held: m.vz_wish_guarantee(),
+			guarantee: m.vz_wish_guarantee_held_lost_the_last_50_50()
 		},
 		fourStar: {
-			kicker: 'Character Event',
-			pityAria: 'Pulls since your last four-star',
-			held: 'Guarantee',
-			guarantee: 'Guarantee held (last 4★ wasn’t featured)'
+			kicker: m.vz_wish_character_event(),
+			pityAria: m.vz_wish_pulls_since_your_last_four_star(),
+			held: m.vz_wish_guarantee(),
+			guarantee: m.vz_wish_guarantee_held_last_4_wasn_t_featured()
 		},
 		weapon: {
-			kicker: 'Weapon Event',
-			pityAria: 'Pulls since your last five-star weapon',
-			held: 'Fate point',
-			guarantee: 'Fate point held'
+			kicker: m.vz_wish_weapon_event(),
+			pityAria: m.vz_wish_pulls_since_your_last_five_star_weapon(),
+			held: m.vz_wish_fate_point(),
+			guarantee: m.vz_wish_fate_point_held()
 		}
 	};
 
@@ -621,7 +633,7 @@
 	{@const s = states.character}
 	<div class="wi-pop">
 		<section class="wi-block">
-			<span class="slider-label" id="wi-counter-label">Radiance counter</span>
+			<span class="slider-label" id="wi-counter-label">{m.vz_wish_radiance_counter()}</span>
 			<div class="chips wi-level-chips" role="group" aria-labelledby="wi-counter-label">
 				{#each COUNTERS as k (k ?? 'unknown')}
 					<button
@@ -630,39 +642,40 @@
 						aria-pressed={s.counter === k}
 						onclick={() => (states.character.counter = k)}
 					>
-						{k === null ? 'Don’t know' : k}
+						{k === null ? m.vz_wish_don_t_know() : k}
 					</button>
 				{/each}
 			</div>
+			<!-- 'character' is a banner id, not text -->
 			{@render bannerNote('character')}
 		</section>
 
 		<section class="wi-block wi-block--ruled" aria-labelledby="wi-find-label">
-			<span class="slider-label" id="wi-find-label">Find mine</span>
+			<span class="slider-label" id="wi-find-label">{m.vz_wish_find_mine()}</span>
 
 			<div class="wi-way">
 				<button class="btn wi-wide" disabled={reading} onclick={() => fileInput?.click()}>
-					<Mark name="upload" size={13} /> Read a Paimon.moe export
+					<Mark name="upload" size={13} />
+					{m.vz_wish_read_a_paimon_moe_export()}
 				</button>
-				<p class="wi-hint">The file stays on your device.</p>
+				<p class="wi-hint">{m.vz_wish_the_file_stays_on_your_device()}</p>
 				{#if importError}
 					<p class="wi-hint wi-error" role="alert">
 						{#if importError === 'not-a-workbook'}
-							That file isn’t a spreadsheet. In Paimon.moe, open the Wish Counter’s Settings and
-							choose Export to Excel.
+							{m.vz_wish_that_file_isn_t_a_spreadsheet_in_paimon()}
 						{:else if importError === 'not-paimon'}
-							That spreadsheet isn’t a Paimon.moe wish history export.
+							{m.vz_wish_that_spreadsheet_isn_t_a_paimon_moe_wish()}
 						{:else}
-							That export has no character banner wishes in it.
+							{m.vz_wish_that_export_has_no_character_banner()}
 						{/if}
 					</p>
 				{/if}
 			</div>
 
 			<div class="wi-way" aria-live="polite">
-				<p class="wi-hint">Or answer a few questions to predict it:</p>
+				<p class="wi-hint">{m.vz_wish_or_answer_a_few_questions_to_predict_it()}</p>
 				{#if answers.length > 0}
-					<ol class="wi-strip" aria-label="Your answers, newest first">
+					<ol class="wi-strip" aria-label={m.vz_wish_your_answers_newest_first()}>
 						{#each answers as a, i (i)}
 							<li class="wi-step">{ANSWER_LABEL[a]}</li>
 						{/each}
@@ -670,33 +683,41 @@
 				{/if}
 
 				{#if answers.length > 0 && told.counters.length === 0}
-					<p class="wi-hint wi-error">Those answers can’t all be right. Check the last one.</p>
+					<p class="wi-hint wi-error">{m.vz_wish_those_answers_can_t_all_be_right_check()}</p>
 				{:else if interviewDone}
 					<p class="wi-hint wi-done">
 						{#if told.guaranteed}
-							That’s enough: your counter is {told.counters[0]}, and you hold a guarantee.
+							{m.vz_wish_that_s_enough_your_counter_is_x_and_you({ counter: told.counters[0] })}
 						{:else}
-							That’s enough: your counter is {told.counters[0]}.
+							{m.vz_wish_that_s_enough_your_counter_is_x({ counter: told.counters[0] })}
 						{/if}
 					</p>
 				{:else if askingRadiance}
-					<p class="wi-question">Did it play the Capturing Radiance animation?</p>
+					<p class="wi-question">{m.vz_wish_did_it_play_the_capturing_radiance()}</p>
 					<div class="wi-answers">
-						<button class="btn" onclick={() => answer('featured-radiance')}>Yes</button>
-						<button class="btn" onclick={() => answer('featured-plain')}>No</button>
-						<button class="btn" onclick={() => answer('featured')}>Not sure</button>
+						<button class="btn" onclick={() => answer('featured-radiance')}
+							>{m.vz_wish_yes()}</button
+						>
+						<button class="btn" onclick={() => answer('featured-plain')}>{m.vz_wish_no()}</button>
+						<button class="btn" onclick={() => answer('featured')}>{m.vz_wish_not_sure()}</button>
 					</div>
 				{:else}
 					<p class="wi-question">
 						{answers.length === 0
-							? 'Your most recent 5★ on the character banners was'
-							: 'And the 5★ before that was'}
+							? m.vz_wish_your_most_recent_5_on_the_character()
+							: m.vz_wish_and_the_5_before_that_was()}
 					</p>
 					<div class="wi-answers">
-						<button class="btn" onclick={answerFeatured}>The featured character</button>
-						<button class="btn" onclick={() => answer('standard')}>A standard 5★</button>
+						<button class="btn" onclick={answerFeatured}
+							>{m.vz_wish_the_featured_character()}</button
+						>
+						<button class="btn" onclick={() => answer('standard')}
+							>{m.vz_wish_a_standard_5()}</button
+						>
 						<button class="btn" onclick={() => answer('none')}>
-							{answers.length === 0 ? 'None yet since 5.0' : 'None before that since 5.0'}
+							{answers.length === 0
+								? m.vz_wish_none_yet_since_5_0()
+								: m.vz_wish_none_before_that_since_5_0()}
 						</button>
 					</div>
 				{/if}
@@ -704,10 +725,12 @@
 				{#if answers.length > 0 || askingRadiance}
 					<div class="wi-actions">
 						<button class="btn btn--sm" onclick={interviewBack}>
-							<Mark name="backSlim" size={11} /> Back
+							<Mark name="backSlim" size={11} />
+							{m.vz_wish_back()}
 						</button>
 						<button class="btn btn--sm" onclick={interviewRestart}>
-							<Mark name="reset" size={11} /> Start over
+							<Mark name="reset" size={11} />
+							{m.vz_wish_start_over()}
 						</button>
 					</div>
 				{/if}
@@ -719,31 +742,38 @@
 			{@const since = sinceRadiance(r.replay.steps)}
 			{@const lastRadiance = r.replay.steps.findLast((st) => st.kind === 'radiance')}
 			<section class="wi-block wi-block--ruled" role="status" aria-labelledby="wi-report-label">
-				<span class="slider-label" id="wi-report-label">Your wish history</span>
+				<span class="slider-label" id="wi-report-label">{m.vz_wish_your_wish_history()}</span>
 				<p class="wi-hint">
-					Read {r.wishes.toLocaleString('en-US')} character banner wishes, {dayOf(r.first)} to
-					{dayOf(r.last)}.
+					{m.vz_wish_read_x_character_banner_wishes_first_to({
+						count: r.wishes.toLocaleString('en-US'),
+						first: dayOf(r.first),
+						last: dayOf(r.last)
+					})}
 				</p>
 				{#if since.length > 0}
-					<span class="wi-subhead">{lastRadiance ? 'Since your last Radiance' : 'Since 5.0'}</span>
+					<span class="wi-subhead"
+						>{lastRadiance ? m.vz_wish_since_your_last_radiance() : m.vz_wish_since_5_0()}</span
+					>
 					{@render strip(since)}
 				{:else if lastRadiance?.time}
-					<p class="wi-hint">No 50/50s since your last Radiance, on {dayOf(lastRadiance.time)}.</p>
+					<p class="wi-hint">
+						{m.vz_wish_no_50_50s_since_your_last_radiance_on({ day: dayOf(lastRadiance.time) })}
+					</p>
 				{/if}
 				{#if r.weaponPity !== null}
 					<p class="wi-hint">
-						Your weapon banner pity is {r.weaponPity}. Whether you hold a fate point isn’t in the
-						export.
+						{m.vz_wish_your_weapon_banner_pity_is_weaponpity({ pity: r.weaponPity })}
 					</p>
 				{/if}
 				{#if r.first.slice(0, 10) > RADIANCE_SINCE}
 					<p class="wi-hint">
-						If you wished on the character banners before {dayOf(r.first)}, the counter may be off.
+						{m.vz_wish_if_you_wished_on_the_character_banners({ day: dayOf(r.first) })}
 					</p>
 				{/if}
 				<div class="wi-actions">
 					<button class="btn btn--sm" onclick={undoImport}>
-						<Mark name="undo" size={11} /> Undo
+						<Mark name="undo" size={11} />
+						{m.vz_wish_undo()}
 					</button>
 				</div>
 			</section>
@@ -758,39 +788,33 @@
 	{#if id === 'character'}
 		{#if s.counter === null}
 			<p class="wi-hint">
-				Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate,
-				including Capturing Radiance).
+				{m.vz_wish_without_a_guarantee_you_ll_win_the_50_50()}
 			</p>
 		{:else if s.counter === 3 && s.guaranteed}
 			<p class="wi-hint">
-				Your next two featured 5★s are certain: the guarantee, then a Capturing Radiance.
+				{m.vz_wish_your_next_two_featured_5_s_are_certain()}
 			</p>
 		{:else if s.counter === 3}
 			<p class="wi-hint">
-				Your next 50/50 is a Capturing Radiance: you’ll get the featured character.
+				{m.vz_wish_your_next_50_50_is_a_capturing_radiance()}
 			</p>
 		{:else if s.counter === 2}
 			<p class="wi-hint">
-				You’ll win your next 50/50 about 55% of the time: half of them, plus a small chance of
-				Capturing Radiance (we estimate {Math.round(RADIANCE_CHANCE[2] * 100)}%).
+				{m.vz_wish_you_ll_win_your_next_50_50_about_55_of({
+					chance: Math.round(RADIANCE_CHANCE[2] * 100)
+				})}
 			</p>
 		{:else}
-			<p class="wi-hint">Your next 50/50 is an even one.</p>
+			<p class="wi-hint">{m.vz_wish_your_next_50_50_is_an_even_one()}</p>
 		{/if}
 	{:else if id === 'fourStar'}
 		<p class="wi-hint">
-			Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character you
-			want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it averages out
-			to about 22%.
-			<span class="wi-fine"
-				>Losing the 50/50 never gives you one of the three, even if they’re already on the standard
-				banner.</span
-			>
+			<Msg parts={m.vz_wish_without_a_guarantee_each_4_you_pull_has.parts()} tags={{ fine }} />
+			{#snippet fine(text: string)}<span class="wi-fine">{text}</span>{/snippet}
 		</p>
 	{:else}
 		<p class="wi-hint">
-			Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted, 37.5%
-			to be the other featured weapon, and 25% to be a standard 5★ weapon.
+			{m.vz_wish_without_a_fate_point_each_5_you_pull_has()}
 		</p>
 	{/if}
 {/snippet}
@@ -798,7 +822,7 @@
 {#snippet viewTabs()}
 	<!-- What you're pulling for picks what the chart draws: the instrument's
 	     view tabs, leading the chart's toolbar. -->
-	<div class="segment stage-tabs" role="radiogroup" aria-label="Pulling for">
+	<div class="segment stage-tabs" role="radiogroup" aria-label={m.vz_wish_pulling_for()}>
 		{#each TARGETS as t (t.id)}
 			<button
 				class="btn"
@@ -837,9 +861,15 @@
 		     stage's top left, the first thing read and the largest type on the
 		     screen. It follows the handle and a drag on the chart. -->
 		<p class="readout-head stage-head">
-			{formatChance(goalRow.chance)}<span class="readout-sentence"
-				>chance of {goalRow.label} within {pullsPhrase(pulls)}</span
-			>
+			<Msg
+				parts={m.vz_wish_chance_chance_of_label_within_pulls.parts({
+					chance: formatChance(goalRow.chance),
+					goal: goalRow.label,
+					pulls: pullsPhrase(pulls)
+				})}
+				tags={{ sentence }}
+			/>
+			{#snippet sentence(text: string)}<span class="readout-sentence">{text}</span>{/snippet}
 		</p>
 
 		<!-- THE CHART'S TOOLBAR, on its top edge (Nate: the bottom edge is the
@@ -870,15 +900,19 @@
 						<span class="setup-bar-name">{RULES[id].kicker}</span>
 					{/if}
 
-					<BandMenu role="dialog" align="start" ariaLabel="Current pity: {clampPity(b, s.pity)}">
+					<BandMenu
+						role="dialog"
+						align="start"
+						ariaLabel={m.vz_wish_current_pity_pity({ pity: clampPity(b, s.pity) })}
+					>
 						{#snippet face()}
-							<span class="setup-key">Pity</span>
+							<span class="setup-key">{m.vz_wish_pity()}</span>
 							<span class="setup-val setup-val--num">{clampPity(b, s.pity)}</span>
 						{/snippet}
 						{#snippet items()}
 							<div class="setup-pop">
 								<InstrumentSlider
-									label="Current pity"
+									label={m.vz_wish_current_pity()}
 									aria={RULES[id].pityAria}
 									bind:value={() => clampPity(b, states[id].pity), (v) => (states[id].pity = v)}
 									min={0}
@@ -892,11 +926,11 @@
 					<BandMenu
 						role="dialog"
 						align="start"
-						ariaLabel="{RULES[id].held}: {s.guaranteed ? 'Held' : 'None'}"
+						ariaLabel="{RULES[id].held}: {s.guaranteed ? m.vz_wish_held() : m.vz_wish_none()}"
 					>
 						{#snippet face()}
 							<span class="setup-key">{RULES[id].held}</span>
-							<span class="setup-val">{s.guaranteed ? 'Held' : 'None'}</span>
+							<span class="setup-val">{s.guaranteed ? m.vz_wish_held() : m.vz_wish_none()}</span>
 						{/snippet}
 						{#snippet items()}
 							<div class="setup-pop">
@@ -915,10 +949,13 @@
 					<BandMenu
 						role="dialog"
 						align="start"
-						ariaLabel="Goal: {haveName(id, s.have)} to {levelName(id, s.goal)}"
+						ariaLabel={m.vz_wish_goal_have_to_goal({
+							have: haveName(id, s.have),
+							goal: levelName(id, s.goal)
+						})}
 					>
 						{#snippet face()}
-							<span class="setup-key">Goal</span>
+							<span class="setup-key">{m.vz_wish_goal()}</span>
 							<span class="setup-val"
 								>{haveName(id, s.have)}<Mark name="forwardSlim" size={11} />{levelName(
 									id,
@@ -929,7 +966,7 @@
 						{#snippet items()}
 							<div class="setup-pop">
 								<div class="wi-pop wi-levels">
-									<span class="slider-label" id="wi-have-{id}">You have</span>
+									<span class="slider-label" id="wi-have-{id}">{m.vz_wish_you_have()}</span>
 									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-have-{id}">
 										{#each Array.from({ length: maxCopies(id) }, (_, i) => i) as copies (copies)}
 											<button
@@ -942,7 +979,7 @@
 											</button>
 										{/each}
 									</div>
-									<span class="slider-label" id="wi-goal-{id}">Aiming for</span>
+									<span class="slider-label" id="wi-goal-{id}">{m.vz_wish_aiming_for()}</span>
 									<div class="chips wi-level-chips" role="group" aria-labelledby="wi-goal-{id}">
 										{#each Array.from({ length: maxCopies(id) }, (_, i) => i + 1) as copies (copies)}
 											<button
@@ -965,11 +1002,13 @@
 						<BandMenu
 							role="dialog"
 							align="start"
-							ariaLabel="Radiance counter: {s.counter === null ? 'Don’t know' : s.counter}"
+							ariaLabel={m.vz_wish_radiance_counter_counter({
+								counter: s.counter ?? m.vz_wish_don_t_know()
+							})}
 						>
 							{#snippet face()}
-								<span class="setup-key">Radiance counter</span>
-								<span class="setup-val">{s.counter === null ? 'Don’t know' : s.counter}</span>
+								<span class="setup-key">{m.vz_wish_radiance_counter()}</span>
+								<span class="setup-val">{s.counter ?? m.vz_wish_don_t_know()}</span>
 							{/snippet}
 							{#snippet items()}
 								<div class="setup-pop">{@render counterPanel()}</div>
@@ -997,7 +1036,7 @@
 				width={graphW}
 				height={H}
 				role="img"
-				aria-label="Chance of reaching each level within a number of pulls"
+				aria-label={m.vz_wish_chance_of_reaching_each_level_within_a()}
 				onpointerdown={onDown}
 				onpointermove={onMove}
 				onpointerup={onUp}
@@ -1025,7 +1064,7 @@
 					font-size="10"
 					text-anchor="end"
 				>
-					pulls from now
+					{m.vz_wish_pulls_from_now()}
 				</text>
 
 				<!-- Y grid: cumulative chance -->
@@ -1048,7 +1087,7 @@
 					</text>
 				{/each}
 				<text x={PADL} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
-					chance by then
+					{m.vz_wish_chance_by_then()}
 				</text>
 
 				{#if softAt > 0 && softAt < domain}
@@ -1075,7 +1114,7 @@
 						fill="var(--chart-dim)"
 						font-size="10"
 					>
-						soft pity
+						{m.vz_wish_soft_pity()}
 					</text>
 				{/if}
 
@@ -1085,26 +1124,26 @@
 					<path d={compPath} fill="var(--chart-ink)" fill-opacity="0.45" />
 				{/if}
 				<text x={PADL} y={compY0 - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start">
-					chance on each pull
+					{m.vz_wish_chance_on_each_pull()}
 				</text>
-				{#each stripMarks as m (m.key)}
+				{#each stripMarks as mk (mk.key)}
 					<line
-						x1={m.x}
+						x1={mk.x}
 						y1={compY0}
-						x2={m.x}
+						x2={mk.x}
 						y2={compY1}
 						stroke="var(--chart-ink)"
 						stroke-dasharray="2 3"
 					/>
 					<text
 						class="stage-word"
-						x={m.x}
+						x={mk.x}
 						y={compY0 - 6}
 						fill="var(--chart-ink)"
 						font-size="11"
-						text-anchor={m.anchor}
+						text-anchor={mk.anchor}
 					>
-						{m.text}
+						{mk.text}
 					</text>
 				{/each}
 
@@ -1207,8 +1246,8 @@
 			style:--stage-handle-r="{PADR - THUMB_R}px"
 		>
 			<InstrumentSlider
-				label="Pulls saved"
-				aria="Pulls you have saved"
+				label={m.vz_wish_pulls_saved()}
+				aria={m.vz_wish_pulls_you_have_saved()}
 				bind:value={pulls}
 				min={0}
 				max={domain}
@@ -1220,7 +1259,7 @@
 		<!-- The fine print: what no part of the chart can show. -->
 		{#if target === 'pair'}
 			<p class="stage-fine">
-				Your character and weapon banners keep separate pity, so the chart adds the pulls for both.
+				{m.vz_wish_your_character_and_weapon_banners_keep()}
 			</p>
 		{/if}
 	</div>

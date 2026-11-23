@@ -16,6 +16,8 @@
 	import Emphasis from '$lib/components/Emphasis.svelte';
 	import { aurasAt, dropMarks, gaugeHead, widestHead } from './gaugeStage';
 	import { tick } from 'svelte';
+	import { labels } from '$lib/i18n/labels';
+	import { m } from '$lib/paraglide/messages';
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
@@ -30,35 +32,35 @@
 	// the distinctions `reactionBridge.ts` collapses on the way to the IR:
 	// forward vs reverse multipliers, a blocked crystallize, a bloom that formed
 	// off Quicken. The planner cannot say any of those.
-	const REACTION_NAME: Record<ReactionKind, string> = {
-		vaporize: 'Vaporize ×2',
-		reverseVaporize: 'Vaporize ×1.5',
-		melt: 'Melt ×2',
-		reverseMelt: 'Melt ×1.5',
-		overload: 'Overloaded',
-		superconduct: 'Superconduct',
-		electroCharged: 'Electro-Charged',
-		freeze: 'Frozen',
-		swirl: 'Swirl',
-		crystallize: 'Crystallize',
-		crystallizeBlocked: 'Crystallize (blocked)',
-		quicken: 'Quicken',
-		aggravate: 'Aggravate',
-		spread: 'Spread',
-		bloom: 'Bloom',
-		quickenBloom: 'Bloom (via Quicken)',
-		burning: 'Burning',
-		hyperbloom: 'Hyperbloom',
-		burgeon: 'Burgeon'
-	};
+	const REACTION_NAME: Record<ReactionKind, string> = labels({
+		vaporize: m.vz_gauge_vaporize_2,
+		reverseVaporize: m.vz_gauge_vaporize_1_5,
+		melt: m.vz_gauge_melt_2,
+		reverseMelt: m.vz_gauge_melt_1_5,
+		overload: m.vz_gauge_overloaded,
+		superconduct: m.vz_gauge_superconduct,
+		electroCharged: m.vz_gauge_electro_charged,
+		freeze: m.vz_gauge_frozen,
+		swirl: m.vz_gauge_swirl,
+		crystallize: m.vz_gauge_crystallize,
+		crystallizeBlocked: m.vz_gauge_crystallize_blocked,
+		quicken: m.vz_gauge_quicken,
+		aggravate: m.vz_gauge_aggravate,
+		spread: m.vz_gauge_spread,
+		bloom: m.vz_gauge_bloom,
+		quickenBloom: m.vz_gauge_bloom_via_quicken,
+		burning: m.vz_gauge_burning,
+		hyperbloom: m.vz_gauge_hyperbloom,
+		burgeon: m.vz_gauge_burgeon
+	});
 
 	/** The word over a pill for what it did to its own element's aura. A fresh
 	 *  aura and a trigger reacted away say nothing: the curve shows both. */
-	const ATTACH_WORD: Partial<Record<AttachMode, string>> = {
-		topUp: 'Topped up',
-		pyroRefresh: 'Refreshed',
-		tooWeak: 'Too weak'
-	};
+	const ATTACH_WORD: Partial<Record<AttachMode, string>> = labels({
+		topUp: m.vz_gauge_topped_up,
+		pyroRefresh: m.vz_gauge_refreshed,
+		tooWeak: m.vz_gauge_too_weak
+	});
 
 	type PresetDef = {
 		id: string;
@@ -113,14 +115,14 @@
 	const PRESETS: PresetDef[] = [
 		{
 			id: 'single',
-			label: 'Single aura',
-			note: '1U application — the size of most hits in the game — lands as 0.8U after the ×0.8 aura tax, then decays out over 2.5 × 1 + 7 = **9.5s**.',
+			label: m.vz_gauge_single_aura(),
+			note: m.vz_gauge_1u_application_the_size_of_most_hits_in(),
 			apps: [[0, 'pyro', 1]]
 		},
 		{
 			id: 'topup',
-			label: 'Top-up',
-			note: 'Re-applying the same element (except Pyro, as of version 3.0) tops the gauge up but keeps the **first** application’s decay rate. 2U onto a 1U aura refills it and still drains at the slow 1U rate.',
+			label: m.vz_gauge_top_up(),
+			note: m.vz_gauge_re_applying_the_same_element_except_pyro(),
 			apps: [
 				[0, 'electro', 1],
 				[3, 'electro', 2]
@@ -134,8 +136,8 @@
 			// 2U at 0 stands at ~1.47U at 1s (beats a 0.8U taxed hit) and ~0.67U
 			// at 7s (loses to one).
 			id: 'pyroRefresh',
-			label: 'Pyro refresh',
-			note: 'Since version 3.0, Pyro doesn’t top up. A hit weaker than the aura left on the target does nothing; one at least as strong replaces it, decay rate included. Here the 1U hit at 1s is too weak, and the one at 7s takes over and drains at the 1U rate.',
+			label: m.vz_gauge_pyro_refresh(),
+			note: m.vz_gauge_since_version_3_0_pyro_doesn_t_top_up_a(),
 			apps: [
 				[0, 'pyro', 2],
 				[1, 'pyro', 1],
@@ -144,8 +146,8 @@
 		},
 		{
 			id: 'vape',
-			label: 'Vaporize',
-			note: 'Hydro on Pyro is the strong direction: the trigger removes twice its own gauge. A single 1U Hydro hit clears a 2U Pyro aura outright — which is why one Vaporize usually leaves nothing behind.',
+			label: m.vz_gauge_vaporize(),
+			note: m.vz_gauge_hydro_on_pyro_is_the_strong_direction(),
 			apps: [
 				[0, 'pyro', 2],
 				[2.5, 'hydro', 1]
@@ -153,8 +155,8 @@
 		},
 		{
 			id: 'melt',
-			label: 'Reverse Melt',
-			note: 'Cryo on Pyro is the weak direction: the trigger removes only **half** its own gauge, so each 1U hit chips 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the **damage** multiplier — a different number from what the reaction costs the aura.)',
+			label: m.vz_gauge_reverse_melt(),
+			note: m.vz_gauge_cryo_on_pyro_is_the_weak_direction_the(),
 			apps: [
 				[0, 'pyro', 2],
 				// ⚓ Two hits (Nate 2026-11-04): two chips leave about 0.07U, so a
@@ -166,8 +168,8 @@
 		},
 		{
 			id: 'ec',
-			label: 'Electro-Charged',
-			note: 'Hydro and Electro coexist, and each tick drains 0.4U from **both** gauges. The smaller aura runs out first, which ends the reaction and leaves the larger one on the target. A 2U Hydro aura outlives a 1U Electro one.',
+			label: m.vz_gauge_electro_charged(),
+			note: m.vz_gauge_hydro_and_electro_coexist_and_each_tick(),
 			apps: [
 				[0, 'hydro', 2],
 				[1, 'electro', 1]
@@ -175,8 +177,8 @@
 		},
 		{
 			id: 'quicken',
-			label: 'Quicken',
-			note: 'Quicken forms 1:1 and lives 5 × gauge + 6s. Aggravate hits on it consume nothing — but the same hit can re-Quicken off leftover Dendro. This example uses a starting 1.5U of Dendro — the strength of Nahida’s Tri-Karma Purification hits.',
+			label: m.vz_gauge_quicken(),
+			note: m.vz_gauge_quicken_forms_1_1_and_lives_5_gauge_6s(),
 			apps: [
 				[0, 'dendro', 1.5],
 				[1, 'electro', 1],
@@ -187,8 +189,8 @@
 			id: 'pyroec',
 			// ⚓ NATE: "Overvape" is the name players use for this interaction; "Pyro
 			// on EC" described the inputs rather than the thing being demonstrated.
-			label: 'Overvape',
-			note: 'One Pyro hit on an Electro-Charged target reacts with the Electro first (Overloaded); whatever gauge it has left then reacts with the Hydro (Vaporize).',
+			label: m.vz_gauge_overvape(),
+			note: m.vz_gauge_one_pyro_hit_on_an_electro_charged(),
 			apps: [
 				[0, 'hydro', 1],
 				[1, 'electro', 1],
@@ -197,8 +199,8 @@
 		},
 		{
 			id: 'freeze',
-			label: 'Frozen',
-			note: 'Frozen forms at 2 × min(aura, trigger) and decays on its own accelerating clock. Any leftover Hydro keeps ticking down underneath it.',
+			label: m.vz_gauge_frozen(),
+			note: m.vz_gauge_frozen_forms_at_2_min_aura_trigger_and(),
 			apps: [
 				[0, 'hydro', 2],
 				[1.5, 'cryo', 1]
@@ -210,8 +212,8 @@
 			// refuses outright while any Frozen remains. So the Hydro under the
 			// ice outlives a hit that would have vaporized it bare.
 			id: 'meltFrozen',
-			label: 'Melt on Frozen',
-			note: 'Pyro melts Frozen at ×2, just as it melts Cryo. The game refuses Vaporize while any Frozen remains, so the Hydro underneath survives a hit that would have cleared it on a bare target.',
+			label: m.vz_gauge_melt_on_frozen(),
+			note: m.vz_gauge_pyro_melts_frozen_at_2_just_as_it_melts(),
 			apps: [
 				[0, 'hydro', 2],
 				[1, 'cryo', 1],
@@ -220,8 +222,8 @@
 		},
 		{
 			id: 'swirl',
-			label: 'Swirl',
-			note: 'Anemo consumes at ×0.5 and can never attach as an aura — it takes half a unit and leaves the rest behind.',
+			label: m.vz_gauge_swirl(),
+			note: m.vz_gauge_anemo_consumes_at_0_5_and_can_never(),
 			apps: [
 				[0, 'pyro', 1],
 				[2, 'anemo', 1]
@@ -229,8 +231,8 @@
 		},
 		{
 			id: 'crystallize',
-			label: 'Crystallize',
-			note: 'Geo consumes at ×0.5 with a 1s reaction cooldown — the attempt inside the window is blocked and takes no gauge at all.',
+			label: m.vz_gauge_crystallize(),
+			note: m.vz_gauge_geo_consumes_at_0_5_with_a_1s_reaction(),
 			// ⚓ Nate's spacing: 0.8 / 1.6 / 2.4 still shows blocked-then-allowed (the
 			// 1.6 attempt falls inside 0.8's 1s window; 2.4 is clear of it) and stops
 			// the three names crowding. ⚠️ The stagger above is the general fix — this
@@ -244,8 +246,8 @@
 		},
 		{
 			id: 'bloom',
-			label: 'Bloom',
-			note: 'Hydro on Dendro is the weak direction of Bloom: a 1U Hydro trigger removes only 0.5U of Dendro and spawns a Dendro Core, leaving the rest of the aura behind.',
+			label: m.vz_gauge_bloom(),
+			note: m.vz_gauge_hydro_on_dendro_is_the_weak_direction_of(),
 			apps: [
 				[0, 'dendro', 1],
 				[2, 'hydro', 1]
@@ -253,8 +255,8 @@
 		},
 		{
 			id: 'burning',
-			label: 'Burning',
-			note: 'Burning = a fixed 2U aura plus a hidden fuel gauge that drains at 0.4U per second or faster. It deals damage every 0.25s and re-applies 1U Pyro about every 2s, until the fuel runs out. Feeding it more Dendro extends the burn.',
+			label: m.vz_gauge_burning(),
+			note: m.vz_gauge_burning_a_fixed_2u_aura_plus_a_hidden(),
 			apps: [
 				[0, 'dendro', 1],
 				[1, 'pyro', 1],
@@ -440,8 +442,7 @@
 		setTime(row, row.time + seconds);
 	}
 
-	const CUSTOM_NOTE =
-		'Your own sequence. Tap a pill to change it, or pick a scenario to load an example.';
+	const CUSTOM_NOTE = m.vz_gauge_your_own_sequence_tap_a_pill_to_change();
 
 	const sim = $derived(simulateGauge(appRows));
 	const lastAppTime = $derived(appRows.reduce((m, a) => Math.max(m, a.time), 0));
@@ -568,7 +569,8 @@
 				const fillD =
 					key === 'burningFuel'
 						? null
-						: `${d} L${xOf(points[points.length - 1].t).toFixed(1)},${plotY1} L${xOf(points[0].t).toFixed(1)},${plotY1} Z`;
+						: // an SVG path, not text
+							`${d} L${xOf(points[points.length - 1].t).toFixed(1)},${plotY1} L${xOf(points[0].t).toFixed(1)},${plotY1} Z`;
 				return { meta: MOD_META[key], d, fillD };
 			})
 			// ⚓ Bookkeeping series (the dashed fuel) paint LAST — see the same note
@@ -635,7 +637,10 @@
 				// ⛔ No "U" suffix — see the pill's note. The axis and the panel below
 				// both say what the unit is; the disc only has room for the number.
 				gauge: `${e.gauge}`,
-				labels: names.length > 2 ? [...names.slice(0, 2), `+${names.length - 2} more`] : names
+				labels:
+					names.length > 2
+						? [...names.slice(0, 2), m.vz_gauge_x_more({ count: names.length - 2 })]
+						: names
 			};
 		})
 	);
@@ -904,8 +909,8 @@
 			{#if ghost || pinT !== null}
 				<button
 					class="btn btn--sm btn--icon gx-unpin"
-					aria-label="Unpin"
-					title="Unpin"
+					aria-label={m.vz_gauge_unpin()}
+					title={m.vz_gauge_unpin()}
 					onclick={() => (pinT = null)}
 				>
 					<Mark name="close" />
@@ -932,19 +937,19 @@
 		     LIST). A plate of actions, not a segment: a segment's track says
 		     "one of these is chosen". -->
 		<div class="stage-toolbar">
-			<div class="gx-adds" role="group" aria-label="Add an application">
+			<div class="gx-adds" role="group" aria-label={m.vz_gauge_add_an_application()}>
 				<span class="gx-add-label" aria-hidden="true">
 					<Mark name="plus" />
-					<span class="gx-add-word">Add</span>
+					<span class="gx-add-word">{m.vz_gauge_add()}</span>
 				</span>
 				{#each ELEMENTS as e (e)}
 					<button
 						class="btn gx-el"
 						style:--chip-color="var(--el-{e}-main)"
-						aria-label="Add {elName(e)}"
+						aria-label={m.vz_gauge_add_e({ element: elName(e) })}
 						title={appRows.length >= MAX_APPS
-							? `${MAX_APPS} applications is the most`
-							: `Add ${elName(e)}`}
+							? m.vz_gauge_max_apps_applications_is_the_most({ count: MAX_APPS })
+							: m.vz_gauge_add_e({ element: elName(e) })}
 						disabled={appRows.length >= MAX_APPS}
 						onclick={() => addElement(e)}
 					>
@@ -954,13 +959,13 @@
 			</div>
 			<button
 				class="btn btn--glass ctx-glass gx-clear"
-				aria-label="Clear"
-				title="Remove every application"
+				aria-label={m.vz_gauge_clear()}
+				title={m.vz_gauge_remove_every_application()}
 				disabled={appRows.length === 0}
 				onclick={clearAll}
 			>
 				<Mark name="clear" />
-				<span class="gx-add-word">Clear</span>
+				<span class="gx-add-word">{m.vz_gauge_clear()}</span>
 			</button>
 		</div>
 		<div
@@ -974,7 +979,7 @@
 				width={graphW}
 				height={svgH}
 				role="img"
-				aria-label="Elemental gauge decay timeline"
+				aria-label={m.vz_gauge_elemental_gauge_decay_timeline()}
 				onpointerdown={onScrubDown}
 				onpointermove={onScrubMove}
 				onpointerup={onScrubUp}
@@ -982,7 +987,7 @@
 				onpointerleave={onPlotLeave}
 				style:cursor="ew-resize"
 			>
-				<!-- Time grid -->
+				<!-- Time grid. The units (s, U) are the same in every locale. -->
 				{#each ticks as s (s)}
 					<line x1={xOf(s)} y1={TOP} x2={xOf(s)} y2={plotY1} stroke="var(--chart-grid)" />
 					<text
@@ -1065,7 +1070,7 @@
 							font-size="10"
 							text-anchor="middle"
 						>
-							Click to add
+							{m.vz_gauge_click_to_add()}
 						</text>
 						<circle
 							cx={xOf(bandT)}
@@ -1098,22 +1103,22 @@
 						font-size="10"
 						text-anchor="middle"
 					>
-						Pick an element above to add an application
+						{m.vz_gauge_pick_an_element_above_to_add_an()}
 					</text>
 				{/if}
 
-				<!-- ⚠ KEYED BY `m.id`, NOT BY POSITION OR BY `m.n`. Dragging one
+				<!-- ⚠ KEYED BY `mk.id`, NOT BY POSITION OR BY `mk.n`. Dragging one
 				     application past another re-sorts the list, which reorders this
 				     array — with a positional key Svelte would recycle nodes between
 				     two markers and the POINTER CAPTURE would go with the node rather
 				     than with the application under the finger. -->
-				{#each markers as m, mi (m.id)}
+				{#each markers as mk, mi (mk.id)}
 					<line
-						x1={m.x}
+						x1={mk.x}
 						y1={MARKER_PILL_CY + MARKER_PILL_R}
-						x2={m.x}
+						x2={mk.x}
 						y2={plotY1}
-						stroke={m.color}
+						stroke={mk.color}
 						stroke-opacity="0.28"
 					/>
 					<!-- ⚠ The stack grows UPWARD from just above the pill, rather than
@@ -1121,14 +1126,14 @@
 					     anchoring to the top left it floating ~38px clear of the mark it
 					     belongs to; anchoring to the pill keeps cause and effect adjacent
 					     whether there are one or three. -->
-					{#each m.labels as label, li (li)}
+					{#each mk.labels as label, li (li)}
 						<text
 							class="gx-word"
-							x={m.x}
+							x={mk.x}
 							y={MARKER_PILL_CY -
 								MARKER_PILL_R -
 								6 -
-								(m.labels.length - 1 - li) * LABEL_TIER_PX -
+								(mk.labels.length - 1 - li) * LABEL_TIER_PX -
 								markerTiers[mi] * LABEL_TIER_PX}
 							fill="var(--chart-ink)"
 							font-size="10"
@@ -1149,39 +1154,47 @@
 					     few px apart. -->
 					<g
 						class="gx-marker"
-						class:gx-marker--held={dragId === m.id}
+						class:gx-marker--held={dragId === mk.id}
 						role="button"
 						tabindex="0"
-						data-app-id={m.id}
-						aria-label="{elName(m.element)} {m.gauge}U at {m.time.toFixed(1)} seconds"
+						data-app-id={mk.id}
+						aria-label={m.vz_gauge_element_gauge_u_at_x_seconds_6584({
+							element: elName(mk.element),
+							gauge: mk.gauge,
+							time: mk.time.toFixed(1)
+						})}
 						aria-haspopup="dialog"
-						aria-expanded={m.id === editId}
-						onpointerdown={(e) => onMarkerDown(e, m)}
+						aria-expanded={mk.id === editId}
+						onpointerdown={(e) => onMarkerDown(e, mk)}
 						onpointermove={onMarkerMove}
 						onpointerup={onMarkerUp}
 						onpointercancel={onMarkerUp}
-						onkeydown={(e) => onMarkerKey(e, m)}
+						onkeydown={(e) => onMarkerKey(e, mk)}
 					>
 						<title
-							>{`${elName(m.element)} ${m.gauge}U at ${m.time.toFixed(1)}s. Click to edit, or drag to move.`}</title
+							>{m.vz_gauge_element_gauge_u_at_x_s_click_to_edit_or({
+								element: elName(mk.element),
+								gauge: mk.gauge,
+								time: mk.time.toFixed(1)
+							})}</title
 						>
 						<!-- The hover ring: the selected ring's shape in the text color,
 						     faint, so the pill reads as a button before it is pressed.
 						     Gold stays the editor's. Shown by CSS on :hover only. -->
 						<circle
 							class="gx-marker-hover"
-							cx={m.x}
+							cx={mk.x}
 							cy={MARKER_PILL_CY}
 							r={MARKER_PILL_R + 3}
 							fill="none"
 							stroke="var(--text)"
 							stroke-width="1.5"
 						/>
-						{#if m.id === editId}
+						{#if mk.id === editId}
 							<!-- GOLD for selected — the site's rule, and what ties the
 							     editor to the pill it is editing. -->
 							<circle
-								cx={m.x}
+								cx={mk.x}
 								cy={MARKER_PILL_CY}
 								r={MARKER_PILL_R + 3}
 								fill="none"
@@ -1189,7 +1202,7 @@
 								stroke-width="1.5"
 							/>
 						{/if}
-						<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.pipColor} />
+						<circle cx={mk.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={mk.pipColor} />
 						<!-- ⚠ THE NUMBER ONLY, and set CONDENSED (2026-08-17). "1.5U" bled
 						     out of the disc on both sides at the regular face; the U was the
 						     part paying rent it did not earn, because the y axis is labelled
@@ -1209,14 +1222,14 @@
 						     match the soft halo everywhere else on the site. -->
 						<text
 							class="gx-pill-num"
-							x={m.x}
+							x={mk.x}
 							y={MARKER_PILL_CY + 3.5}
-							style:--label-halo={m.halo}
+							style:--label-halo={mk.halo}
 							font-size="10"
 							font-weight="600"
 							text-anchor="middle"
 						>
-							{m.gauge}
+							{mk.gauge}
 						</text>
 						<!-- The target, painted last so nothing sits over it, and cut
 						     where it would reach a neighbour's (see `hitCells`). -->
@@ -1359,9 +1372,11 @@
 				<div
 					class="gx-editor ctx-dark"
 					role="dialog"
-					aria-label="{elName(editing.element)} {editing.gauge}U at {editing.time.toFixed(
-						1
-					)} seconds"
+					aria-label={m.vz_gauge_element_gauge_u_at_x_seconds_117b({
+						element: elName(editing.element),
+						gauge: editing.gauge,
+						time: editing.time.toFixed(1)
+					})}
 					tabindex="-1"
 					bind:this={editorEl}
 					bind:offsetWidth={editorW}
@@ -1369,7 +1384,7 @@
 					style:top="{MARKER_PILL_CY + MARKER_PILL_R + EDITOR_GAP}px"
 					onkeydown={onEditorKey}
 				>
-					<div class="gx-elements" role="radiogroup" aria-label="Element">
+					<div class="gx-elements" role="radiogroup" aria-label={m.vz_gauge_element()}>
 						{#each ELEMENTS as e (e)}
 							<button
 								class="chip chip--icon gx-el"
@@ -1392,8 +1407,8 @@
 						<div
 							class="gx-gauges"
 							role="radiogroup"
-							aria-label="Gauge units"
-							title="Gauge units (U): the strength of an elemental application. Most hits are 1U."
+							aria-label={m.vz_gauge_gauge_units()}
+							title={m.vz_gauge_gauge_units_u_the_strength_of_an()}
 						>
 							{#each GAUGE_OPTIONS as g (g)}
 								<button
@@ -1415,8 +1430,8 @@
 						<div class="gx-stepper">
 							<button
 								class="btn btn--sm btn--icon"
-								aria-label="Move earlier"
-								title="Move earlier — hold Shift for 1s"
+								aria-label={m.vz_gauge_move_earlier()}
+								title={m.vz_gauge_move_earlier_hold_shift_for_1s()}
 								disabled={editing.time <= 0}
 								onclick={(e) => nudge(editing, e.shiftKey ? -1 : -0.1)}
 							>
@@ -1425,8 +1440,8 @@
 							<span class="gx-time-value">{editing.time.toFixed(1)}s</span>
 							<button
 								class="btn btn--sm btn--icon"
-								aria-label="Move later"
-								title="Move later — hold Shift for 1s"
+								aria-label={m.vz_gauge_move_later()}
+								title={m.vz_gauge_move_later_hold_shift_for_1s()}
 								disabled={editing.time >= MAX_GAUGE_TIME}
 								onclick={(e) => nudge(editing, e.shiftKey ? 1 : 0.1)}
 							>
@@ -1435,7 +1450,7 @@
 						</div>
 						<button class="btn btn--sm" onclick={removeEditing}>
 							<Mark name="delete" />
-							Remove
+							{m.vz_gauge_remove()}
 						</button>
 					</div>
 				</div>
@@ -1443,8 +1458,7 @@
 		</div>
 
 		<p class="stage-fine gx-hint">
-			Point at the chart to read the aura at that moment, or press it to pin the moment. Tap a pill
-			to edit it, or drag it to move it.
+			{m.vz_gauge_point_at_the_chart_to_read_the_aura_at()}
 		</p>
 
 		<!-- The scenarios, out in the open. ⚠ The notes run one to four lines,
@@ -1452,7 +1466,7 @@
 		     every note is stacked in one cell and the cell is the longest: the
 		     chart's height never follows the note (design §4). -->
 		<div class="gx-scenarios" role="group" aria-labelledby="gx-scenarios-name">
-			<span class="gx-scenarios-name" id="gx-scenarios-name">Example scenarios</span>
+			<span class="gx-scenarios-name" id="gx-scenarios-name">{m.vz_gauge_example_scenarios()}</span>
 			<div class="segment gx-presets" role="radiogroup" aria-labelledby="gx-scenarios-name">
 				{#each PRESETS as p (p.id)}
 					<button
