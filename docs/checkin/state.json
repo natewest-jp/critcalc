@@ -2,10 +2,10 @@
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
 		"audited": "a284a499b",
-		"seenUpstream": "3501915ab",
+		"seenUpstream": "2663bac24",
 		"date": "2026-11-17",
 		"tag": "v2.50.0",
-		"note": "Nothing new upstream since 3501915ab (seen 2026-11-18, a weapon fix); clone not advanced, audit still a284a499b"
+		"note": "2663bac24 (seen 2026-11-23) adds a weapon, Starsealed Edict; nothing under internal/characters moved, clone not advanced, audit still a284a499b"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,7 +13,7 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-19T00:00:00Z"
+		"lastSeen": "2026-11-23T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -26,10 +26,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "4041bf9c"
+		"lastSwept": "24d0789c"
 	},
 	"roles": {
-		"audited": "2026-11-19",
+		"audited": "2026-11-23",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
