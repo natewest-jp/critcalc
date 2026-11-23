@@ -4,6 +4,7 @@
  * the Library and the link notice can raise it without pulling the storage
  * session; the scene layout hosts the dialog while it is set.
  */
+import { m } from '$lib/paraglide/messages';
 export const moveRequest = $state<{ id: string | null }>({ id: null });
 
 /** The one-time "links open in Theorycraft" dialog (design §9.3; to-do,
@@ -15,4 +16,4 @@ export const linksIntro = $state<{ open: boolean; moveId: string | null }>({
 });
 
 /** The notice button's label, beside "Opened in Theorycraft" (§9.3). */
-export const MOVE_TO_PROFILE = 'Move to a profile';
+export const MOVE_TO_PROFILE = m.library_move_to_a_profile;

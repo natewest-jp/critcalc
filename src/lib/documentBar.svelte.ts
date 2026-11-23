@@ -54,7 +54,7 @@ const COPY_FAILED = (what: string): Outcome => ({
 /** ⚓ Move to a profile rides an arrival's notice (design §9.3) whenever
  *  there is a real profile to move it to. */
 function moveAction(id: string, movable: boolean): NoticeAction[] {
-	return movable ? [{ label: MOVE_TO_PROFILE, run: () => (moveRequest.id = id) }] : [];
+	return movable ? [{ label: MOVE_TO_PROFILE(), run: () => (moveRequest.id = id) }] : [];
 }
 
 class DocumentBarState {

@@ -52,6 +52,7 @@
 	import { TEAM_SIZE } from '$lib/utils/notationEdit';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { ownership, type LoadoutEntry } from '$lib/stores';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		team,
@@ -76,7 +77,6 @@
 
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 	const label = (t: Pick<TeamRecord, 'name' | 'slots'>) => t.name || rotationLabel(t.slots);
-	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 	// ── The draft ───────────────────────────────────────────────────────────
 	// Read once: the details are keyed on the team by their host, so a
@@ -175,14 +175,16 @@
 	 * 2026-10-26): the question first stood inline at the top right, far
 	 * from a click on the sidebar, in the place Cancel and Save had been.
 	 */
-	function hold(go: () => void, question = 'Discard your changes?'): boolean {
+	function hold(go: () => void, question = m.teams_discard_your_changes()): boolean {
 		if (released || !unsaved) return false;
 		void notices
 			.ask({
 				title: question,
-				body: `Your changes to ${label({ name: name.trim(), slots })} haven’t been saved.`,
-				confirm: 'Discard',
-				cancel: 'Keep editing',
+				body: m.teams_your_changes_to_label_slots_haven_t_been({
+					name: label({ name: name.trim(), slots })
+				}),
+				confirm: m.teams_discard(),
+				cancel: m.teams_keep_editing(),
 				danger: true
 			})
 			.then((ok) => {
@@ -356,8 +358,20 @@
 
 	/** The Builder's Show toggles: Owned and Wishlist, both off is everyone. */
 	const OWN_TOGGLES = [
-		{ key: 'owned', mark: 'check', label: 'Owned' },
-		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
+		{
+			key: 'owned',
+			mark: 'check',
+			get label() {
+				return m.teams_owned();
+			}
+		},
+		{
+			key: 'wishlist',
+			mark: 'wish',
+			get label() {
+				return m.teams_wishlist();
+			}
+		}
 	] as const;
 	const moreCount = $derived(
 		filters.weapons.size +
@@ -400,9 +414,12 @@
 					<input
 						class="field td-name"
 						bind:value={name}
-						placeholder={full ? rotationLabel(slots) : 'New team'}
-						aria-label="Team name"
-						size={Math.max(8, (name || (full ? rotationLabel(slots) : 'New team')).length + 1)}
+						placeholder={full ? rotationLabel(slots) : m.teams_new_team()}
+						aria-label={m.teams_team_name()}
+						size={Math.max(
+							8,
+							(name || (full ? rotationLabel(slots) : m.teams_new_team())).length + 1
+						)}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' && canSave) void save();
 						}}
@@ -413,15 +430,16 @@
 						{#if start && work?.rotations}<button
 								class="td-link"
 								onclick={() => onShowWork(start, 'rotations')}
-								>{plural(work.rotations, 'rotation', 'rotations')}</button
+								>{m.settings_count_rotations({ count: work.rotations })}</button
 							>{/if}
 						{#if start && work?.rotations && work?.lineups}<span aria-hidden="true">·</span>{/if}
 						{#if start && work?.lineups}<button
 								class="td-link"
 								onclick={() => onShowWork(start, 'lineups')}
-								>{plural(work.lineups, 'lineup', 'lineups')}</button
+								>{m.settings_count_lineups({ count: work.lineups })}</button
 							>{/if}
-						{#if start && !work?.rotations && !work?.lineups}<span>No rotations or lineups yet</span
+						{#if start && !work?.rotations && !work?.lineups}<span
+								>{m.teams_no_rotations_or_lineups_yet()}</span
 							>{/if}
 					</span>
 				{/if}
@@ -431,9 +449,9 @@
 			<span class="td-end">
 				<span class="td-go">
 					<button class="btn btn--sm" disabled={!full} onclick={() => then(onPlan)}
-						>Plan a rotation</button
+						>{m.teams_plan_a_rotation()}</button
 					>
-					<BandMenu label="New lineup" align="end" size="sm" disabled={!full}>
+					<BandMenu label={m.teams_new_lineup()} align="end" size="sm" disabled={!full}>
 						{#snippet items(close)}
 							{#each TEAM_PRESETS as p (p.key)}
 								<button
@@ -455,20 +473,22 @@
 							class="btn btn--sm td-del"
 							class:is-armed={armed}
 							onclick={del}
-							title={armed ? 'Click again to delete' : 'Delete team'}
+							title={armed ? m.teams_click_again_to_delete() : m.teams_delete_team()}
 							><Mark name={armed ? 'warn' : 'delete'} size={13} />
-							<span class="td-del-word">{armed ? 'Delete?' : 'Delete team'}</span></button
+							<span class="td-del-word"
+								>{armed ? m.teams_delete_question() : m.teams_delete_team()}</span
+							></button
 						>
 					{/if}
 				</span>
 				<span class="td-acts">
 					{#if dirty}
-						<button class="btn" onclick={leave}>Cancel</button>
+						<button class="btn" onclick={leave}>{m.teams_cancel()}</button>
 						<button class="btn btn--primary" disabled={!canSave} onclick={save}
-							>{start ? 'Save team' : 'Add team'}</button
+							>{start ? m.teams_save_team() : m.teams_add_team()}</button
 						>
 					{:else}
-						<button class="btn" onclick={leave}>Done</button>
+						<button class="btn" onclick={leave}>{m.teams_done()}</button>
 					{/if}
 				</span>
 			</span>
@@ -477,7 +497,7 @@
 		{#if saveFailed}
 			<p class="td-failed" role="alert">
 				<Mark name="warn" size={14} />
-				<span>Couldn’t save the team. Try again.</span>
+				<span>{m.teams_couldn_t_save_the_team_try_again()}</span>
 			</p>
 		{/if}
 
@@ -519,8 +539,12 @@
 							class="td-slot"
 							draggable={!!id}
 							aria-pressed={at === i}
-							aria-label={id ? `Slot ${i + 1}: ${nameOf(id)}` : `Slot ${i + 1}: empty`}
-							title={id ? `${nameOf(id)} (drag to reorder)` : 'Choose a character'}
+							aria-label={id
+								? m.teams_slot_x_id({ n: i + 1, name: nameOf(id) })
+								: m.teams_slot_x_empty({ n: i + 1 })}
+							title={id
+								? m.teams_id_drag_to_reorder({ name: nameOf(id) })
+								: m.teams_choose_a_character()}
 							onclick={() => (at = i)}
 							ondragstart={(e) => {
 								dragFrom = i;
@@ -539,8 +563,8 @@
 						{#if id}
 							<button
 								class="td-x"
-								aria-label="Take {nameOf(id)} off the team"
-								title="Take off the team"
+								aria-label={m.teams_take_id_off_the_team({ name: nameOf(id) })}
+								title={m.teams_take_off_the_team()}
 								onclick={() => remove(i)}><Mark name="close" size={11} /></button
 							>
 						{/if}
@@ -549,7 +573,11 @@
 					     seat says what to do, and a pick with no seat chosen nudges
 					     the party. -->
 					<span class="td-member-name" class:is-empty={!id}
-						>{id ? nameOf(id) : at === i ? 'Choose a character' : `Slot ${i + 1}`}</span
+						>{id
+							? nameOf(id)
+							: at === i
+								? m.teams_choose_a_character()
+								: m.teams_slot_x({ n: i + 1 })}</span
 					>
 					{#if id}
 						<TeamLoadoutPlates
@@ -565,13 +593,15 @@
 
 		<!-- What the four make: under the four (Nate 2026-10-25). -->
 		{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
-			<span class="td-bonuses" aria-label="Team bonuses">
+			<span class="td-bonuses" aria-label={m.teams_team_bonuses()}>
 				{#each resonances as res (res.key)}
 					<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
 						{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
 						{res.label}
 					</span>
 				{/each}
+				<!-- TODO: data gap — the game's localized names for these two bonuses
+				     (genshin-db), so they stay English until that lookup exists. -->
 				{#if comp.hasAscendantGleam}
 					<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
 				{/if}
@@ -598,8 +628,8 @@
 						<input
 							class="field td-search-field"
 							type="text"
-							placeholder="Search…"
-							aria-label="Search characters"
+							placeholder={m.teams_search()}
+							aria-label={m.teams_search_characters()}
 							bind:value={filters.search}
 							autocomplete="off"
 							autocorrect="off"
@@ -609,7 +639,7 @@
 				{/snippet}
 				{#snippet end()}
 					{#if hasOwned}
-						<span class="segment td-own" role="group" aria-label="Your roster">
+						<span class="segment td-own" role="group" aria-label={m.teams_your_roster()}>
 							{#each OWN_TOGGLES as t (t.key)}
 								{@const on = show === t.key}
 								<button
@@ -617,7 +647,7 @@
 									class:is-active={on}
 									aria-pressed={on}
 									aria-label={t.label}
-									title={on ? 'Show everyone' : t.label}
+									title={on ? m.teams_show_everyone() : t.label}
 									onclick={() => (show = on ? 'all' : t.key)}
 									><Mark name={t.mark} size={14} /></button
 								>
@@ -628,9 +658,11 @@
 						size="sm"
 						role="dialog"
 						mark="filter"
-						label="More"
+						label={m.teams_more()}
 						count={moreCount}
-						ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+						ariaLabel={moreCount > 0
+							? m.teams_more_filters_morecount_set({ count: moreCount })
+							: m.teams_more_filters()}
 					>
 						{#snippet items(close)}
 							<MoreFilters roster={ALL} {filters} ownershipView={show} {close} />
@@ -660,12 +692,12 @@
 							}}
 							aria-pressed={inAt >= 0}
 							title={inAt >= 0
-								? 'Take off the team'
+								? m.teams_take_off_the_team()
 								: at < 0
-									? 'Choose a slot first'
+									? m.teams_choose_a_slot_first()
 									: slots[at]
-										? `Put in slot ${at + 1}, in ${nameOf(slots[at]!)}’s place`
-										: `Put in slot ${at + 1}`}
+										? m.teams_put_in_slot_x_in_x_s_place({ n: at + 1, name: nameOf(slots[at]!) })
+										: m.teams_put_in_slot_x({ n: at + 1 })}
 							onclick={() => pick(c.id)}
 						>
 							<span class="til-head" style:--el={elColor(c.element)}>
@@ -681,7 +713,7 @@
 					</li>
 				{/each}
 			</ul>
-			{#if !shown.length}<p class="td-hint">No character matches.</p>{/if}
+			{#if !shown.length}<p class="td-hint">{m.teams_no_character_matches()}</p>{/if}
 		</div>
 	</div>
 </div>

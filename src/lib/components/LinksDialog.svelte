@@ -50,7 +50,7 @@
 		{/if}
 		<div class="actions">
 			{#if linksIntro.moveId}
-				<button class="btn" onclick={() => close(true)}>{MOVE_TO_PROFILE}</button>
+				<button class="btn" onclick={() => close(true)}>{MOVE_TO_PROFILE()}</button>
 			{/if}
 			<button class="btn btn--primary" bind:this={okEl} onclick={() => close(false)}
 				>{m.notices_got_it()}</button

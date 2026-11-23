@@ -888,7 +888,9 @@ class StorageSession {
 		} else {
 			const seed = this.#blankSeed;
 			this.#blankSeed = null;
-			const board = makeBoard(m.notices_lineup_1(), seed?.preset ?? 'stygian');
+			// ⚠️ A placeholder, never shown as a name: `isMintedLabel` (migrate.ts)
+			// knows it by its English, so it is not a message.
+			const board = makeBoard('Lineup 1', seed?.preset ?? 'stygian');
 			if (seed?.team) {
 				// ⚓ A team placed from Teams arrives selected (design §3).
 				board.teams[0] = {
@@ -2013,7 +2015,8 @@ class StorageSession {
 			id: newId(),
 			updatedAt: now,
 			kind: 'real',
-			name: fields.name.trim() || MIGRATED_PROFILE_NAME,
+			// A profile made here is named in the page's language (the form's placeholder).
+			name: fields.name.trim() || m.profile_my_profile(),
 			color: fields.color,
 			...(fields.picture ? { picture: fields.picture } : {}),
 			// ⚓ An account fact (§13.5), chosen on the new profile's form.

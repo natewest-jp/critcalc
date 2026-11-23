@@ -13,6 +13,8 @@ import { isMintedLabel } from './migrate';
 import type { SavedNotation } from '$lib/stores';
 import type { LineupBody, LineupDocument, RotationBody, RotationDocument } from './records';
 import seasonDates from '$lib/data/endgame/season-dates.json';
+import { m } from '$lib/paraglide/messages';
+import { htmlLang } from '$lib/i18n/locale';
 
 /**
  * ⚓ An unnamed document shows a label derived from its contents (§4.2): the
@@ -23,21 +25,22 @@ export function rotationLabel(slots: readonly (string | null)[]): string {
 	const names = slots
 		.filter((id): id is string => !!id)
 		.map((id) => getCharacterIndexEntry(id)?.displayName ?? id);
-	return names.length ? names.join(' · ') : 'New rotation';
+	return names.length ? names.join(' · ') : m.library_new_rotation();
 }
 
 /** A lineup's derived label: its mode and season (§4.2). */
 export function lineupLabel(body: Pick<LineupBody, 'preset' | 'season' | 'theater'>): string {
-	if (body.preset === 'stygian') return body.season ? `Stygian ${body.season}` : 'Stygian';
+	if (body.preset === 'stygian')
+		return body.season ? m.library_stygian_season({ season: body.season }) : m.library_stygian();
 	if (body.preset === 'abyss') {
 		const moon = body.season ? abyssMoon(body.season) : undefined;
-		return moon ? `Abyss ${moon}` : 'Abyss';
+		return moon ? m.library_abyss_moon({ moon }) : m.library_abyss();
 	}
 	if (body.preset === 'theater') {
 		const month = body.theater?.season ? monthName(body.theater.season) : '';
-		return month ? `Theater ${month}` : 'Theater';
+		return month ? m.library_theater_month({ month }) : m.library_theater();
 	}
-	return 'Custom lineup';
+	return m.library_custom_lineup();
 }
 
 /** An Abyss cycle's Moon ("Stardread Moon"), by its start, from the
@@ -51,8 +54,8 @@ function abyssMoon(start: string): string | undefined {
 
 /** "November" from an ISO day, read as a LOCAL date (never through UTC). */
 function monthName(iso: string): string {
-	const [y, m] = iso.split('-').map(Number);
-	return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long' });
+	const [y, mo] = iso.split('-').map(Number);
+	return new Date(y, mo - 1, 1).toLocaleDateString(htmlLang(), { month: 'long' });
 }
 
 export function rotationToTab(doc: RotationDocument): RotationTab {

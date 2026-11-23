@@ -7,6 +7,8 @@
 import type { Picture, ProfileColor, Twin } from '$lib/storage/records';
 import { PROFILE_PICTURES, THEORYCRAFT_PICTURE } from '$lib/profilePictures.generated';
 import { getAvatar } from '$lib/utils/getAvatar';
+import { m } from '$lib/paraglide/messages';
+import { labels } from '$lib/i18n/labels';
 
 /** The seven a real profile can wear, in the game's element order (§2.3). */
 export const REAL_COLORS: readonly Exclude<ProfileColor, 'theorycraft'>[] = [
@@ -19,16 +21,17 @@ export const REAL_COLORS: readonly Exclude<ProfileColor, 'theorycraft'>[] = [
 	'geo'
 ];
 
-export const COLOR_NAME: Record<ProfileColor, string> = {
-	pyro: 'Pyro',
-	hydro: 'Hydro',
-	anemo: 'Anemo',
-	electro: 'Electro',
-	dendro: 'Dendro',
-	cryo: 'Cryo',
-	geo: 'Geo',
-	theorycraft: 'Theorycraft'
-};
+export const COLOR_NAME: Record<ProfileColor, string> = labels({
+	pyro: m.profile_pyro,
+	hydro: m.profile_hydro,
+	anemo: m.profile_anemo,
+	electro: m.profile_electro,
+	dendro: m.profile_dendro,
+	cryo: m.profile_cryo,
+	geo: m.profile_geo,
+	// The built-in profile's own name, which stays English.
+	theorycraft: () => 'Theorycraft'
+});
 
 export type RealColor = (typeof REAL_COLORS)[number];
 
