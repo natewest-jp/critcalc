@@ -17,6 +17,8 @@
 	import { getWeaponsByType, getAllWeapons, weaponImagePath } from '$lib/data/weaponLookup';
 	import type { WeaponType } from '$lib/types/weapon';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	/** Which pill zone opened the panel. ⚠ The panel no longer RENDERS this —
 	 *  the lead emphasis went (see .lp-hd-key). It survives because SlotPortrait
@@ -75,15 +77,17 @@
 <div class="lp" style:--el={elementColor}>
 	<section class="lp-section">
 		<h3 class="lp-hd">
-			<span class="lp-hd-key">Artifact set:</span>
-			{currentArtifact?.name ?? 'None'}
+			<Msg
+				parts={m.bench_artifact_set_x.parts({ set: currentArtifact?.name ?? m.bench_none() })}
+				tags={{ key }}
+			/>
 		</h3>
 		<div class="lp-grid">
 			<button
 				class="lp-tile lp-tile--none"
 				class:lp-tile--current={!currentArtifact}
-				title="No artifact set"
-				aria-label="No artifact set"
+				title={m.bench_no_artifact_set()}
+				aria-label={m.bench_no_artifact_set()}
 				aria-pressed={!currentArtifact}
 				onclick={() => onSetArtifact(undefined)}
 			>
@@ -106,18 +110,22 @@
 
 	<section class="lp-section">
 		<h3 class="lp-hd">
-			<span class="lp-hd-key">Weapon:</span>
-			{currentWeapon?.name ?? 'None'}
+			<Msg
+				parts={m.bench_weapon_x.parts({ weapon: currentWeapon?.name ?? m.bench_none() })}
+				tags={{ key }}
+			/>
 		</h3>
 		{#if weapons.length === 0}
-			<p class="lp-empty">No {weaponType}-type weapons are curated yet.</p>
+			<p class="lp-empty">
+				{m.bench_no_weapontype_type_weapons_are_curated({ type: weaponType ?? '' })}
+			</p>
 		{:else}
 			<div class="lp-grid">
 				<button
 					class="lp-tile lp-tile--none"
 					class:lp-tile--current={!currentWeapon}
-					title="No weapon"
-					aria-label="No weapon"
+					title={m.bench_no_weapon()}
+					aria-label={m.bench_no_weapon()}
 					aria-pressed={!currentWeapon}
 					onclick={() => onSetWeapon(undefined, currentRef)}
 				>
@@ -148,8 +156,8 @@
 	     explain itself, and an unset one would just be a number about nothing. -->
 	<section class="lp-section" class:lp-section--inert={!currentWeapon}>
 		<h3 class="lp-hd">
-			<span class="lp-hd-key">Refinement</span>
-			{#if !currentWeapon}<span class="lp-hd-note">equip a weapon first</span>{/if}
+			<span class="lp-hd-key">{m.bench_refinement()}</span>
+			{#if !currentWeapon}<span class="lp-hd-note">{m.bench_equip_a_weapon_first()}</span>{/if}
 		</h3>
 		<div class="lp-pips">
 			{#each [1, 2, 3, 4, 5] as r (r)}
@@ -159,7 +167,8 @@
 					class:lp-pip--current={!!currentWeapon && r === currentRef}
 					disabled={!currentWeapon}
 					aria-pressed={!!currentWeapon && r === currentRef}
-					onclick={() => onSetRefinement(r as 1 | 2 | 3 | 4 | 5)}>R{r}</button
+					onclick={() => onSetRefinement(r as 1 | 2 | 3 | 4 | 5)}
+					><!-- Refinement notation (R1–R5) stays English, as C6 does. -->R{r}</button
 				>
 			{/each}
 		</div>
@@ -170,14 +179,16 @@
 	{#if source}
 		<p class="lp-source">
 			{#if source.own}
-				This rotation's own choice.
-				<button class="lp-follow" onclick={source.onFollow}>Use the team's</button>
+				{m.bench_this_rotation_s_own_choice()}
+				<button class="lp-follow" onclick={source.onFollow}>{m.bench_use_the_team_s()}</button>
 			{:else}
-				From the team {source.team}.
+				{m.bench_from_the_team_team({ team: source.team })}
 			{/if}
 		</p>
 	{/if}
 </div>
+
+{#snippet key(text: string)}<span class="lp-hd-key">{text}</span>{/snippet}
 
 <style>
 	.lp-source {

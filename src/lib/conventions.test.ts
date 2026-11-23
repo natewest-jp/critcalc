@@ -168,7 +168,7 @@ describe('symbol marks are geometry, not type (.claude/rules/ui.md: sub-pixel la
 		// → and ← fall back to the system's font; one that looks off becomes a <Mark>.
 		{ file: 'src/lib/components/MoveDialog.svelte', span: 'C{c.from} → C{c.to}' },
 		{ file: 'src/lib/components/RosterTab.svelte', span: `['←', '→', '↑', '↓']` },
-		{ file: 'src/lib/components/CompareControl.svelte', span: '(⌃\\`)' },
+		// (The `⌃` tooltip now lives in messages/en.json, `bench_switch_to_label`.)
 		{ file: 'src/lib/timeline/buffDisplay.ts', span: '` → ${value.cap}%`' },
 		{ file: 'src/lib/timeline/buffDisplay.ts', span: '`${startStr} → ${endStr} over duration`' }
 	];

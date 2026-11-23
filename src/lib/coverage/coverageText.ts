@@ -17,97 +17,96 @@ import type {
 	CoverageSegmentKey,
 	CoverageState
 } from './deriveCoverage';
+import { labels } from '$lib/i18n/labels';
+import { m } from '$lib/paraglide/messages';
 
-export const LINE_TEXT: Record<CoverageLineCode, string> = {
-	'frames.gcsim': 'Timed from gcsim’s frame data.',
-	'frames.gcsimPr':
-		'Timed from a gcsim change that hasn’t been merged yet, so these frames may still move.',
-	'frames.wiki': 'Timed from wiki frame counts rather than gcsim.',
-	'frames.hand': 'Timed from frame counts measured by hand rather than gcsim.',
-	'frames.none': 'There is no frame data for this yet, so the planner uses a generic length.',
-	'frames.someForms': 'Some forms have no frame data and use a generic length.',
-	'charged.generic':
-		'This kit has no charged-attack frames, so C is timed with a generic stand-in.',
-	'plunge.generic': 'This kit has no plunge frames, so P is timed with a generic stand-in.',
-	'app.lands': 'Each hit applies its element when it lands.',
-	'app.atSwingEnd': 'The element is applied at the end of the swing rather than at the hit.',
-	'app.physical': 'These attacks deal Physical DMG, so there is no element to apply.',
-	'app.nonHitting': 'This lands no hit.',
-	'app.measured': 'Element, timing and gauge units are measured from gcsim.',
-	'app.appliesNothing': 'Measured from gcsim: this applies no element.',
-	'app.atCast':
-		'Not measured yet, so the rotation planner applies the element once, at the cast, and marks it on the aura lane.',
-	'app.unitsUnmeasured': 'Timing is measured, but some hits’ gauge units are assumed to be 1U.',
-	'grants.authored': 'Its effects are drawn on the timeline.',
-	'grants.elsewhere': 'Drawn as part of another ability.',
-	'grants.summon': 'Its summon is drawn, with its hits.',
-	'grants.window': 'The state it opens is drawn on the timeline.',
-	'grants.summonSilent': 'Its summon’s window is drawn, but its hits aren’t yet.',
-	'grants.summonDealsNothing': 'Its summon is drawn; it deals no damage of its own.',
-	'grants.noReader':
-		'Part of this waits on healing, energy or HP changes, which the planner doesn’t track, so it isn’t drawn.',
-	'grants.unknownValue': 'Its exact value isn’t known yet, so the bar is drawn without one.',
-	'grants.none': 'This hasn’t been added to the planner yet.',
-	'grants.nothingToModel': 'Nothing here changes what the planner draws.',
-	'grants.notModeled': 'The rotation planner doesn’t show this.',
-	'grants.noHost': 'There’s nothing in this slot.'
-};
+export const LINE_TEXT: Record<CoverageLineCode, string> = labels({
+	'frames.gcsim': m.coverage_timed_from_gcsim_s_frame_data,
+	'frames.gcsimPr': m.coverage_timed_from_a_gcsim_change_that_hasn_t,
+	'frames.wiki': m.coverage_timed_from_wiki_frame_counts_rather_than,
+	'frames.hand': m.coverage_timed_from_frame_counts_measured_by_hand,
+	'frames.none': m.coverage_there_is_no_frame_data_for_this_yet_so,
+	'frames.someForms': m.coverage_some_forms_have_no_frame_data_and_use_a,
+	'charged.generic': m.coverage_this_kit_has_no_charged_attack_frames_so,
+	'plunge.generic': m.coverage_this_kit_has_no_plunge_frames_so_p_is,
+	'app.lands': m.coverage_each_hit_applies_its_element_when_it,
+	'app.atSwingEnd': m.coverage_the_element_is_applied_at_the_end_of_the,
+	'app.physical': m.coverage_these_attacks_deal_physical_dmg_so_there,
+	'app.nonHitting': m.coverage_this_lands_no_hit,
+	'app.measured': m.coverage_element_timing_and_gauge_units_are,
+	'app.appliesNothing': m.coverage_measured_from_gcsim_this_applies_no,
+	'app.atCast': m.coverage_not_measured_yet_so_the_rotation_planner,
+	'app.unitsUnmeasured': m.coverage_timing_is_measured_but_some_hits_gauge,
+	'grants.authored': m.coverage_its_effects_are_drawn_on_the_timeline,
+	'grants.elsewhere': m.coverage_drawn_as_part_of_another_ability,
+	'grants.summon': m.coverage_its_summon_is_drawn_with_its_hits,
+	'grants.window': m.coverage_the_state_it_opens_is_drawn_on_the,
+	'grants.summonSilent': m.coverage_its_summon_s_window_is_drawn_but_its,
+	'grants.summonDealsNothing': m.coverage_its_summon_is_drawn_it_deals_no_damage,
+	'grants.noReader': m.coverage_part_of_this_waits_on_healing_energy_or,
+	'grants.unknownValue': m.coverage_its_exact_value_isn_t_known_yet_so_the,
+	'grants.none': m.coverage_this_hasn_t_been_added_to_the_planner,
+	'grants.nothingToModel': m.coverage_nothing_here_changes_what_the_planner,
+	'grants.notModeled': m.coverage_the_rotation_planner_doesn_t_show_this,
+	'grants.noHost': m.coverage_there_s_nothing_in_this_slot
+});
 
-export const STATE_LABEL: Record<CoverageState, string> = {
-	lit: 'Modeled',
-	provisional: 'Stand-in',
-	missing: 'Missing',
-	notModeled: 'Not modeled',
-	na: 'Nothing to model'
-};
+export const STATE_LABEL: Record<CoverageState, string> = labels({
+	lit: m.coverage_modeled,
+	provisional: m.coverage_stand_in,
+	missing: m.coverage_missing,
+	notModeled: m.coverage_not_modeled,
+	na: m.coverage_nothing_to_model
+});
 
-export const STATE_DESCRIPTION: Record<CoverageState, string> = {
-	lit: 'Drawn by the planner.',
-	provisional: 'Drawn with a stand-in.',
-	missing: 'In the kit, not yet in the planner.',
-	notModeled: 'Outside the planner’s scope; the details say why.',
-	na: 'Nothing of that kind in the kit.'
-};
+export const STATE_DESCRIPTION: Record<CoverageState, string> = labels({
+	lit: m.coverage_drawn_by_the_planner,
+	provisional: m.coverage_drawn_with_a_stand_in,
+	missing: m.coverage_in_the_kit_not_yet_in_the_planner,
+	notModeled: m.coverage_outside_the_planner_s_scope_the_details,
+	na: m.coverage_nothing_of_that_kind_in_the_kit
+});
 
-/** Column headers — the ONLY labels on the strip (rows carry none). */
-export const COLUMN_LABEL: Record<CoverageColumn, string> = {
-	normals: 'Normal',
-	skill: 'Skill',
-	burst: 'Burst',
-	a1: 'A1',
-	a4: 'A4',
-	extra: 'Other',
-	c1: 'C1',
-	c2: 'C2',
-	c4: 'C4',
-	c6: 'C6'
-};
+/** Column headers — the ONLY labels on the strip (rows carry none). A1 to C6
+ *  are notation, left in English as C6 is everywhere. */
+export const COLUMN_LABEL: Record<CoverageColumn, string> = labels({
+	normals: m.coverage_normal,
+	skill: m.coverage_skill,
+	burst: m.coverage_burst,
+	a1: () => 'A1',
+	a4: () => 'A4',
+	extra: m.coverage_other,
+	c1: () => 'C1',
+	c2: () => 'C2',
+	c4: () => 'C4',
+	c6: () => 'C6'
+});
 
-export const FACET_LABEL: Record<CoverageFacet, string> = {
-	timing: 'Timing',
-	application: 'Element',
-	grants: 'Effects'
-};
+export const FACET_LABEL: Record<CoverageFacet, string> = labels({
+	timing: m.coverage_timing,
+	application: m.coverage_element,
+	grants: m.coverage_effects
+});
 
 /** A sub-segment's own title, for the tooltip head and the details list. */
-export const SEGMENT_TITLE: Record<CoverageSegmentKey, string> = {
-	'N.timing': 'Normal attack · timing',
-	'N.application': 'Normal attack · element',
-	'C.timing': 'Charged attack · timing',
-	'C.application': 'Charged attack · element',
-	'P.timing': 'Plunge · timing',
-	'P.application': 'Plunge · element',
-	'E.timing': 'Skill · timing',
-	'E.application': 'Skill · element',
-	'E.grants': 'Skill · effects',
-	'Q.timing': 'Burst · timing',
-	'Q.application': 'Burst · element',
-	'Q.grants': 'Burst · effects',
-	A1: 'First ascension passive',
-	A4: 'Fourth ascension passive',
-	extra: 'Other passives',
-	C1: 'Constellation 1',
-	C2: 'Constellation 2',
-	C4: 'Constellation 4',
-	C6: 'Constellation 6'
-};
+export const SEGMENT_TITLE: Record<CoverageSegmentKey, string> = labels({
+	'N.timing': m.coverage_normal_attack_timing,
+	'N.application': m.coverage_normal_attack_element,
+	'C.timing': m.coverage_charged_attack_timing,
+	'C.application': m.coverage_charged_attack_element,
+	'P.timing': m.coverage_plunge_timing,
+	'P.application': m.coverage_plunge_element,
+	'E.timing': m.coverage_skill_timing,
+	'E.application': m.coverage_skill_element,
+	'E.grants': m.coverage_skill_effects,
+	'Q.timing': m.coverage_burst_timing,
+	'Q.application': m.coverage_burst_element,
+	'Q.grants': m.coverage_burst_effects,
+	A1: m.coverage_first_ascension_passive,
+	A4: m.coverage_fourth_ascension_passive,
+	extra: m.coverage_other_passives,
+	C1: m.coverage_constellation_1,
+	C2: m.coverage_constellation_2,
+	C4: m.coverage_constellation_4,
+	C6: m.coverage_constellation_6
+});

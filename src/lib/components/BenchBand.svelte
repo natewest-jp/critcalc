@@ -81,6 +81,7 @@
 	import { plannerView } from '$lib/plannerView.svelte';
 	import type SaveTeamButtonT from './SaveTeamButton.svelte';
 	import type CompareControlT from './CompareControl.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		mode
@@ -377,10 +378,10 @@
 						)}
 					onPortraitClick={portraitClickFor(char, i)}
 					portraitLabel={char && char.id !== 'blank'
-						? `${char.displayName}'s details`
+						? m.bench_displayname_s_details({ name: char.displayName })
 						: row
-							? 'Empty slot'
-							: 'Choose a character for this slot'}
+							? m.bench_empty_slot()
+							: m.bench_choose_a_character_for_this_slot()}
 					emptyLabel=""
 					resting={mode === 'rp' && !!char && !awake.includes(char.id)}
 					picked={mode === 'rp' && !!char && plannerView.inspectedCharacter === char.id}
@@ -396,8 +397,12 @@
 							class="bb-act"
 							disabled={!live}
 							onclick={() => char && host?.onSwap(i, char.id)}
-							title={live && char ? `Swap ${char.displayName}` : undefined}
-							aria-label={live && char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
+							title={live && char
+								? m.bench_swap_displayname({ name: char.displayName })
+								: undefined}
+							aria-label={live && char
+								? m.bench_swap_displayname({ name: char.displayName })
+								: m.bench_swap_empty_slot()}
 						>
 							<Mark name="swap" />
 						</button>
@@ -405,10 +410,12 @@
 							class="bb-act bb-act--remove"
 							disabled={!live}
 							onclick={() => rt.takeOff(i)}
-							title={live && char ? `Remove ${char.displayName} from team` : undefined}
+							title={live && char
+								? m.bench_remove_displayname_from_team({ name: char.displayName })
+								: undefined}
 							aria-label={live && char
-								? `Remove ${char.displayName} from team`
-								: 'Remove (empty slot)'}
+								? m.bench_remove_displayname_from_team({ name: char.displayName })
+								: m.bench_remove_empty_slot()}
 						>
 							<Mark name="close" />
 						</button>
