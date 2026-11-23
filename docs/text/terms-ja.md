@@ -227,6 +227,48 @@ Wish odds:
 141. pulls → 祈願回数, and N連 in counts · players
 142. Character Event Wish, Weapon Event Wish → イベント祈願・キャラクター, イベント祈願・武器 · game
 
+## F. Added while drafting the interiors
+
+Words the interiors needed that the sections above did not settle. The game's words come from
+genshin-db's Japanese text unless marked otherwise.
+
+Shared and the Planner:
+
+143. Elemental Resonance → 元素共鳴, and each one by its element: 炎元素共鳴 to 岩元素共鳴 · players (Game8; genshin-db does not carry resonances)
+144. Protective Canopy → 元素共鳴（異なる4種） · ours (open question 12)
+145. Refinement → 精錬ランク · game
+146. CRIT Rate, CRIT DMG, Healing Bonus, Interruption Resistance, All Elemental RES, Physical RES → 会心率, 会心ダメージ, 与える治療効果, 中断耐性, 全元素耐性, 物理耐性 · game
+147. the weapon types → 片手剣, 両手剣, 長柄武器, 法器, 弓 · game
+148. Polestar Field, Moondrift, Thundercloud, Dendro Core → 極星フィールド, 月籠, 雷雲, 草原核 · game
+149. Starlight Prism → スターライトプリズム · ours, until genshin-db carries it. Stellar Glimmer stays English for the same reason.
+150. Notes, Total, Share, Playback speed → 注記, 合計, 共有, 再生速度 · ours
+151. Standing, Alongside, Recorded hits → 存在中, 同時存在, 記録されたヒット数 · ours
+152. Original, What-if, Comparing → 比較元, もしも, 比較中 · ours
+153. resting (a slot with nothing to do) → 出番なし · ours, kept apart from 待機中 (off-field)
+154. Not modeled, Nothing to model → 対象外, 該当なし · ours
+
+The Team Builder and Roster:
+
+155. Opponents → 敵情報 · ours
+156. Battlefield N, Chamber N, Floor 12 → 戦場N, 第N間, 第12層 · players
+157. the swap tiers → すべて維持, トレードオフ, 追加, 失うものなし · ours
+158. the fingerprint → チームの能力 · ours
+159. the buff badges → 攻撃力+, 熟知+, 会心+, ダメージ+, HP・防御力+ · ours
+160. Cycle, Stats, Available Characters → 期間, 統計, 選択可能なキャラクター · ours
+
+The Visualizers:
+
+161. the artifact slots → 生の花, 死の羽, 時の砂, 空の杯, 理の冠 · game
+162. ER and CRIT DMG in dense labels → 元チャ, 会心ダメ · players (open question 13). EM stays EM.
+163. DMG Bonus → ダメージバフ, and ダメバフ in the Stats face · players
+164. Base DMG Bonus → 基礎ダメージアップ · game
+165. a farmed piece → 厳選 · players
+166. Shred (the setup segment) → デバフ · players
+167. Applies, Ignored, blocked → 有効, 無視, 付着なし · ours
+168. Example scenarios, Single aura, Even spacing → シナリオ例, 単一オーラ, 等間隔 · ours
+169. Radiance counter → 輝映カウンター · ours, from the game's 輝映
+170. Paimon.moe's Wish Counter, Settings, Export to Excel → 祈願カウンター, 設定, Excelにエクスポート · unchecked against Paimon.moe's Japanese page
+
 ## Open questions for the Japanese community
 
 Each is a real split between two words a player might expect. The draft uses the first.
@@ -242,3 +284,5 @@ Each is a real split between two words a player might expect. The draft uses the
 9. (121) A damage-formula bracket: 乗算枠, or 項?
 10. (126) substat: the game's サブ効果, or the players' サブOP?
 11. (135) soft pity: ソフト天井, or 確率上昇?
+12. (144) The four-element resonance: does the game name it in Japanese? The draft has 元素共鳴（異なる4種）.
+13. (162) Dense stat labels: 元チャ and 会心ダメ, or the Latin ER and CD?
