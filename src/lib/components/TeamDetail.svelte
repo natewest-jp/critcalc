@@ -53,6 +53,7 @@
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { ownership, type LoadoutEntry } from '$lib/stores';
 	import { m } from '$lib/paraglide/messages';
+	import { columns } from '$lib/i18n/columns';
 
 	let {
 		team,
@@ -418,7 +419,7 @@
 						aria-label={m.teams_team_name()}
 						size={Math.max(
 							8,
-							(name || (full ? rotationLabel(slots) : m.teams_new_team())).length + 1
+							columns(name || (full ? rotationLabel(slots) : m.teams_new_team())) + 1
 						)}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' && canSave) void save();
