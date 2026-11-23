@@ -14,6 +14,7 @@
 	import Mark from './Mark.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { motion, T_QUICK } from '$lib/motion';
+	import { m } from '$lib/paraglide/messages';
 
 	let { class: cls = '' }: { class?: string } = $props();
 
@@ -55,8 +56,8 @@
 				{#if b.dismissable}
 					<button
 						class="nb-x"
-						aria-label="Hide this for now"
-						title="Hide this for now"
+						aria-label={m.notices_hide_this_for_now()}
+						title={m.notices_hide_this_for_now()}
 						onclick={() => notices.dismissBanner(b.key)}><Mark name="close" size={14} /></button
 					>
 				{/if}

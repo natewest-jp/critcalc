@@ -35,35 +35,36 @@
 	import { belowQuery, SHORT_QUERY } from '$lib/breakpoints';
 	import { dismissFlipNotice } from '$lib/flipNotice.svelte';
 	import { menu } from '$lib/menuState.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import Msg from './Msg.svelte';
 
 	type Page = { title: string; body: string; clip: string };
 
 	/** The lead-in, under the title on every page (and above the phone's list). */
-	const LEAD =
-		'Everything you had is still here. Your roster, rotations, and lineups are now in a profile called My profile, and a few things work differently.';
+	const LEAD = m.notices_everything_you_had_is_still_here_your();
 
 	/** `clip` names a pair in static/assets/whats-new: `<clip>.mp4` (x264 from
 	 *  Nate's ProRes master, kept in the gitignored assets-src/whats-new) and
 	 *  its still `<clip>.webp`. ⚠ /assets is immutable: a new cut ships as -v2. */
 	const PAGES: Page[] = [
 		{
-			title: 'No more Save buttons',
-			body: 'Your work saves itself as you go. The top bar shows every time it saves.',
+			title: m.notices_no_more_save_buttons(),
+			body: m.notices_your_work_saves_itself_as_you_go_the_top(),
 			clip: 'flip-save-v1'
 		},
 		{
-			title: 'No more tabs',
-			body: 'Each tool holds one rotation or lineup at a time. Its name in the top bar opens the full Library.',
+			title: m.notices_no_more_tabs(),
+			body: m.notices_each_tool_holds_one_rotation_or_lineup(),
 			clip: 'flip-notabs-v1'
 		},
 		{
-			title: 'Set up teams ahead of time',
-			body: 'Teams, the two figures in the top bar, lets you make team presets, like Genshin’s Party Setup.',
+			title: m.notices_set_up_teams_ahead_of_time(),
+			body: m.notices_teams_the_two_figures_in_the_top_bar(),
 			clip: 'flip-teams-v1'
 		},
 		{
-			title: 'Shared links open in Theorycraft',
-			body: 'Theorycraft is a built-in profile with no roster. It’s the place to explore ideas that don’t fit your profiles. Shared links open there so your own profiles stay as you left them.',
+			title: m.notices_shared_links_open_in_theorycraft(),
+			body: m.notices_theorycraft_is_a_built_in_profile_with(),
 			clip: 'flip-theorycraft-v1'
 		}
 	];
@@ -137,6 +138,9 @@
 <svelte:window onkeydowncapture={onKey} />
 
 <!-- `outroInert` is the outro-eats-your-click fix; ⛔ don't drop it. -->
+<!-- The markup in the phone list's message (`Msg.svelte`). -->
+{#snippet strong(text: string)}<strong>{text}</strong>{/snippet}
+
 <div
 	class="fn-backdrop"
 	transition:fade={{ duration: motion(T_QUICK) }}
@@ -151,13 +155,18 @@
 		aria-modal="true"
 		aria-labelledby="fn-title"
 	>
-		<h2 class="title" id="fn-title">critcalc has a new layout</h2>
+		<h2 class="title" id="fn-title">{m.notices_critcalc_has_a_new_layout()}</h2>
 		<p class="note lead">{LEAD}</p>
 
 		{#if phone}
 			<ul class="list">
 				{#each PAGES as p (p.title)}
-					<li><strong>{p.title}:</strong> {p.body}</li>
+					<li>
+						<Msg
+							parts={m.notices_page_in_list.parts({ title: p.title, body: p.body })}
+							tags={{ strong }}
+						/>
+					</li>
 				{/each}
 			</ul>
 		{:else}
@@ -189,7 +198,7 @@
 						<p class="note">{p.body}</p>
 						{#if i === LAST}
 							<button class="link link--quiet more" onclick={() => close(true)}>
-								See everything in What’s new
+								{m.notices_see_everything_in_what_s_new()}
 							</button>
 						{/if}
 					</div>
@@ -204,20 +213,24 @@
 						<button
 							class="dot"
 							class:is-on={i === page}
-							aria-label="{i + 1} of {PAGES.length}: {p.title}"
+							aria-label={m.notices_x_of_length_title({
+								n: i + 1,
+								count: PAGES.length,
+								title: p.title
+							})}
 							aria-current={i === page ? 'step' : undefined}
 							onclick={() => go(i)}
 						></button>
 					{/each}
 				</div>
 				{#if page > 0}
-					<button class="btn" onclick={() => go(page - 1)}>Back</button>
+					<button class="btn" onclick={() => go(page - 1)}>{m.notices_back()}</button>
 				{/if}
 			{:else}
-				<button class="btn" onclick={() => close(true)}>What’s new</button>
+				<button class="btn" onclick={() => close(true)}>{m.notices_what_s_new()}</button>
 			{/if}
 			<button class="btn btn--primary" bind:this={okEl} onclick={primary}>
-				{phone || page === LAST ? 'Got it' : 'Next'}
+				{phone || page === LAST ? m.notices_got_it() : m.notices_next()}
 			</button>
 		</div>
 	</div>

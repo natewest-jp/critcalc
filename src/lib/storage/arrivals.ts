@@ -5,9 +5,11 @@
  * profile's documents — so applied straight away, it would be overwritten a
  * moment later by the session's restore. Arrivals wait for this instead.
  *
- * Kept free of imports so the tool bars can await it without pulling the
- * session (a lazy chunk) into every bundle.
+ * Kept free of the session's imports so the tool bars can await it without
+ * pulling the session (a lazy chunk) into every bundle.
  */
+
+import { m } from '$lib/paraglide/messages';
 
 let settle!: (viaStore: boolean) => void;
 
@@ -44,11 +46,10 @@ export const linkTab = {
 };
 
 /** The notice an arrival shows when it had to leave a real profile. */
-export const OPENED_IN_THEORYCRAFT = 'Opened in Theorycraft · your profiles are untouched';
+export const OPENED_IN_THEORYCRAFT = m.notices_opened_in_theorycraft_your_profiles_are;
 
 /** A `?team=` naming no character we have. */
-export const NO_TEAM_IN_LINK = 'That link names no character this site has, so nothing was added.';
+export const NO_TEAM_IN_LINK = m.notices_that_link_names_no_character_this_site;
 
 /** A `?r=` / `?b=` that didn't decode: the likely reason and what to do. */
-export const INVALID_SHARE_LINK =
-	'That share link couldn’t be read. It may have been cut short when it was copied, so ask for the full link.';
+export const INVALID_SHARE_LINK = m.notices_that_share_link_couldn_t_be_read_it_may;

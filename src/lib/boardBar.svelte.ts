@@ -64,7 +64,7 @@ class BoardBarState {
 				switched = await storageSession.toTheorycraft();
 			}
 			if (this.#placeTeam(ids)) {
-				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
+				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT());
 				else notices.toast('success', 'Team added to the lineup');
 				return;
 			}

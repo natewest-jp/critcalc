@@ -23,6 +23,7 @@
 	import { linear } from 'svelte/easing';
 	import Mark from './Mark.svelte';
 	import { notices, type NoticeKind } from '$lib/notices.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import { motion, outroInert, introLive, riseIn, T_QUICK, T_MOVE } from '$lib/motion';
 
 	const MARK: Record<NoticeKind, 'check' | 'about' | 'warn'> = {
@@ -92,8 +93,8 @@
 				{/if}
 				<button
 					class="nt-x"
-					aria-label="Dismiss"
-					title="Dismiss"
+					aria-label={m.notices_dismiss()}
+					title={m.notices_dismiss()}
 					onclick={() => notices.dismiss(t.id)}
 				>
 					{#if t.ms !== null}
@@ -142,7 +143,7 @@
 					onclick={() => notices.answer(true)}>{q.confirm}</button
 				>
 				<button class="btn btn--primary" bind:this={safeEl} onclick={() => notices.answer(false)}
-					>{q.cancel ?? 'Cancel'}</button
+					>{q.cancel ?? m.notices_cancel()}</button
 				>
 			</div>
 		</div>

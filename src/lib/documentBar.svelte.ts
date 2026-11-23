@@ -27,6 +27,7 @@ import { rotationTabs as rt, newTabId, type RotationTab } from './rotationTabs.s
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import { renameCharacterInNotation, seatingOfSaved } from './utils/notationEdit';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
+import { m } from '$lib/paraglide/messages';
 import { resolveEntry } from './storage/teamLoadout';
 
 /**
@@ -46,8 +47,8 @@ export type DocumentExporters = {
 /** A copy that didn't happen, in both forms (controlAnswer.ts). */
 const COPY_FAILED = (what: string): Outcome => ({
 	ok: false,
-	short: 'Couldn’t copy',
-	long: `Couldn’t copy ${what}. The browser may have blocked the clipboard.`
+	short: m.notices_couldn_t_copy(),
+	long: m.notices_couldn_t_copy_what_the_browser_may_have({ what })
 });
 
 /** ⚓ Move to a profile rides an arrival's notice (design §9.3) whenever
@@ -74,7 +75,7 @@ class DocumentBarState {
 			linksIntro.open = true;
 			return;
 		}
-		notices.toast('info', switched ? OPENED_IN_THEORYCRAFT : notice, {
+		notices.toast('info', switched ? OPENED_IN_THEORYCRAFT() : notice, {
 			actions: id ? moveAction(id, movable) : []
 		});
 	}
@@ -144,9 +145,9 @@ class DocumentBarState {
 			const url = await this.shareUrl();
 			if (!url) return null;
 			await navigator.clipboard.writeText(url);
-			return { ok: true, short: 'Copied', long: 'Link copied' };
+			return { ok: true, short: m.notices_copied(), long: m.notices_link_copied() };
 		} catch {
-			return COPY_FAILED('the link');
+			return COPY_FAILED(m.notices_the_link());
 		}
 	}
 
@@ -192,8 +193,8 @@ class DocumentBarState {
 		const ex = this.exporters;
 		if (!ex) return null;
 		return (await ex.kqm())
-			? { ok: true, short: 'Copied', long: 'KQM notation copied' }
-			: COPY_FAILED('the notation');
+			? { ok: true, short: m.notices_copied(), long: m.notices_kqm_notation_copied() }
+			: COPY_FAILED(m.notices_the_notation());
 	}
 
 	async sharePng(mode: 'copy' | 'download'): Promise<Outcome | null> {

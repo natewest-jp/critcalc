@@ -163,14 +163,14 @@
 			if (ids.length > 0) {
 				boardBar.receiveTeam(ids);
 				showLineup();
-			} else notices.toast('warning', NO_TEAM_IN_LINK);
+			} else notices.toast('warning', NO_TEAM_IN_LINK());
 		}
 		if (boardParam) {
 			// A shared lineup (`?b=`). Async decode, then a new document in
 			// Theorycraft (boardBar.receive).
 			void decodeBoard(boardParam).then((shared) => {
 				if (!shared) {
-					notices.toast('error', INVALID_SHARE_LINK);
+					notices.toast('error', INVALID_SHARE_LINK());
 					return;
 				}
 				boardBar.receive(shared, (id) => rosterIds.has(id));

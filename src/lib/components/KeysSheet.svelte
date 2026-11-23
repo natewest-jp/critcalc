@@ -10,6 +10,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import type { MarkName } from '$lib/marks.generated';
 	import { keysSheet, currentKeyArea, orderedKeyAreas, type Key } from '$lib/keysSheet.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	// Read once as it opens: the sheet describes where you pressed `?`.
 	const areas = orderedKeyAreas(currentKeyArea());
@@ -24,15 +25,15 @@
 		down: 'arrowDown'
 	};
 	const ARROW_NAMES: Partial<Record<Key, string>> = {
-		left: 'Left arrow',
-		right: 'Right arrow',
-		up: 'Up arrow',
-		down: 'Down arrow'
+		left: m.keys_left_arrow(),
+		right: m.keys_right_arrow(),
+		up: m.keys_up_arrow(),
+		down: m.keys_down_arrow()
 	};
 	function cap(k: Key): string {
-		if (k === 'mod') return mac ? '⌘' : 'Ctrl';
-		if (k === 'shift') return mac ? '⇧' : 'Shift';
-		if (k === 'ctrl') return 'Ctrl';
+		if (k === 'mod') return mac ? '⌘' : m.keys_ctrl();
+		if (k === 'shift') return mac ? '⇧' : m.keys_shift();
+		if (k === 'ctrl') return m.keys_ctrl();
 		return k;
 	}
 
@@ -65,8 +66,8 @@
 >
 	<div class="ks-panel ctx-dark" role="dialog" aria-modal="true" aria-labelledby="ks-title">
 		<header class="ks-head">
-			<h2 class="ks-title" id="ks-title">Keyboard shortcuts</h2>
-			<button class="btn btn--icon" bind:this={closeEl} aria-label="Close" onclick={close}
+			<h2 class="ks-title" id="ks-title">{m.keys_keyboard_shortcuts()}</h2>
+			<button class="btn btn--icon" bind:this={closeEl} aria-label={m.keys_close()} onclick={close}
 				><Mark name="close" /></button
 			>
 		</header>
@@ -79,7 +80,7 @@
 						{#each area.rows as row, i (i)}
 							<dt class="ks-keys">
 								{#each row.keys as combo, ci (ci)}
-									{#if ci > 0}<span class="ks-or">or</span>{/if}
+									{#if ci > 0}<span class="ks-or">{m.keys_or()}</span>{/if}
 									<span class="ks-combo">
 										{#each combo as k, ki (ki)}
 											{@const arrow = ARROWS[k]}

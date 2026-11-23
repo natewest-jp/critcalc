@@ -3,6 +3,7 @@
 	import { localizeHref } from '$lib/paraglide/runtime';
 	import { isIndexed, ogLocale } from '$lib/i18n/locale';
 	import { routeOf } from '$lib/i18n/paths';
+	import { m } from '$lib/paraglide/messages';
 	import {
 		metaFor,
 		titleFor,
@@ -33,7 +34,7 @@
 	const isError = $derived(page.status >= 400);
 	const title = $derived(
 		isError
-			? `${page.status === 404 ? 'Page not found' : 'Something went wrong'} · ${SITE_NAME}`
+			? `${page.status === 404 ? m.seo_page_not_found() : m.seo_something_went_wrong()} · ${SITE_NAME}`
 			: titleFor(pathname)
 	);
 </script>
@@ -64,7 +65,7 @@
 	     that reflows. -->
 	<meta property="og:image:width" content={String(OG_IMAGE_W)} />
 	<meta property="og:image:height" content={String(OG_IMAGE_H)} />
-	<meta property="og:image:alt" content={OG_IMAGE_ALT} />
+	<meta property="og:image:alt" content={OG_IMAGE_ALT()} />
 
 	<!-- Twitter/X reads og:* for most fields but needs its own card type, and
 	     honours twitter:* over og:* when both are present. -->
@@ -72,5 +73,5 @@
 	<meta name="twitter:title" content={title} />
 	<meta name="twitter:description" content={meta.description} />
 	<meta name="twitter:image" content={`${SITE_URL}${OG_IMAGE}`} />
-	<meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
+	<meta name="twitter:image:alt" content={OG_IMAGE_ALT()} />
 </svelte:head>
