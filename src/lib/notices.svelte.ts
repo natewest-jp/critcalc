@@ -48,6 +48,37 @@ export function named(strings: TemplateStringsArray, ...values: NoticeText[]): N
 	return out;
 }
 
+/**
+ * A translated toast text with names in it: `named` for a message. Each
+ * STRING value is a name, as in `named`; a NoticeText value is spliced in as
+ * it is. The message places the values, so a translation can move them:
+ * namedMessage(m.notices_restored_name, { name: p.name }).
+ */
+export function namedMessage<K extends string>(
+	message: (inputs: Record<K, string>) => string,
+	values: Record<K, NoticeText>
+): NoticeText {
+	const keys = Object.keys(values) as K[];
+	// A private-use mark per value, found again in the formatted text.
+	const marks = Object.fromEntries(keys.map((k, i) => [k, `\uE000${i}\uE001`])) as Record<
+		K,
+		string
+	>;
+	const out: (string | { name: string })[] = [];
+	message(marks)
+		.split(/\uE000(\d+)\uE001/)
+		.forEach((piece, i) => {
+			if (i % 2 === 0) {
+				if (piece) out.push(piece);
+				return;
+			}
+			const v = values[keys[Number(piece)]];
+			if (typeof v === 'string') out.push({ name: v });
+			else out.push(...v);
+		});
+	return out;
+}
+
 /** Its words alone (for anything that wants a string). */
 export const plainText = (t: NoticeText): string =>
 	typeof t === 'string' ? t : t.map((p) => (typeof p === 'string' ? p : p.name)).join('');

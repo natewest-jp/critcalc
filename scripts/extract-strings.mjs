@@ -526,7 +526,8 @@ function extractFile(file) {
 			return candidate(node.value, node, ctx, []);
 		}
 		if (t === 'TemplateLiteral') {
-			if (parent?.type === 'TaggedTemplateExpression') return 0;
+			// A notice's `named` template is a message whose values are names; other tags are code.
+			if (parent?.type === 'TaggedTemplateExpression' && parent.tag?.name !== 'named') return 0;
 			let text = '';
 			const vars = [];
 			let nested = 0;

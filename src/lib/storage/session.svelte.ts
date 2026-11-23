@@ -38,7 +38,7 @@ import {
 	notices,
 	heldKey,
 	announceAfterReload,
-	named,
+	namedMessage,
 	type NoticeKind,
 	type NoticeText
 } from '$lib/notices.svelte';
@@ -73,6 +73,7 @@ import {
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
 import { LocalDb } from './localDb';
 import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
+import { m } from '$lib/paraglide/messages';
 import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
 import { linkTab, settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
@@ -146,7 +147,9 @@ function toastLook(p: ProfileRecord): { swatch: string; picture: string | null }
 	};
 }
 
-const MIGRATED_NOTICE = `Your roster, rotations, and lineups are now in a profile, ${MIGRATED_PROFILE_NAME}`;
+/** ⚓ The stored name stays English (data, like the profile itself). */
+const MIGRATED_NOTICE = () =>
+	m.notices_your_roster_rotations_and_lineups_are({ name: MIGRATED_PROFILE_NAME });
 
 /** How long typing must pause before a save (ms). `visibilitychange` flushes
  *  early, and what an unloading page could not write waits in its journal
@@ -159,7 +162,7 @@ const RETRY_MS = [1000, 30_000] as const;
 /** Approved by Nate 2026-10-23. */
 /** The save-failure banner's key (notices §3.3). */
 const SAVE_FAILED_KEY = 'save-failed';
-const SAVE_FAILED_NOTICE = 'Couldn’t save your changes.';
+const SAVE_FAILED_NOTICE = m.notices_couldn_t_save_your_changes;
 /** A store in memory (`boot.ts`): the work lasts as long as the tab.
  *  Approved by Nate 2026-10-30. */
 const MEMORY_STORE_KEY = 'memory-store';
@@ -340,13 +343,13 @@ class StorageSession {
 		notices.toast(
 			'info',
 			readLastBackup()
-				? 'It’s been a while since your last backup'
-				: 'You haven’t backed up your work yet',
+				? m.notices_it_s_been_a_while_since_your_last_backup()
+				: m.notices_you_haven_t_backed_up_your_work_yet(),
 			{
 				actions: [
-					{ label: 'Download a backup', run: () => void this.#downloadBackup() },
+					{ label: m.notices_download_a_backup(), run: () => void this.#downloadBackup() },
 					{
-						label: 'Settings',
+						label: m.notices_settings(),
 						run: () => {
 							menu.show('settings');
 							// ⚠ Once the section has SETTLED, not just rendered: its
@@ -373,8 +376,8 @@ class StorageSession {
 		const download = () => this.#downloadBackup();
 		// Once ever, with a button that matters: it stays until dismissed, and
 		// is marked seen only once it has gone (notices §3.2).
-		notices.toast('info', MIGRATED_NOTICE, {
-			actions: [{ label: 'Download a backup', run: () => void download() }],
+		notices.toast('info', MIGRATED_NOTICE(), {
+			actions: [{ label: m.notices_download_a_backup(), run: () => void download() }],
 			ms: null,
 			onGone: () => void setMeta(db, { backupOffer: false })
 		});
@@ -393,8 +396,8 @@ class StorageSession {
 				this.#freeze();
 				announceAfterReload(
 					msg.wiped
-						? 'Everything was deleted in another tab, so this tab reloaded'
-						: 'A backup was restored in another tab, so this tab reloaded'
+						? m.notices_everything_was_deleted_in_another_tab_so()
+						: m.notices_a_backup_was_restored_in_another_tab_so()
 				);
 				location.reload();
 				return;
@@ -492,9 +495,9 @@ class StorageSession {
 			notices.banner({
 				key: SAVE_FAILED_KEY,
 				kind: 'error',
-				lead: SAVE_FAILED_NOTICE,
-				body: 'Trying again… Your work stays in this tab until it saves.',
-				actions: [{ label: 'Download a backup', run: () => void this.#downloadBackup() }]
+				lead: SAVE_FAILED_NOTICE(),
+				body: m.notices_trying_again_your_work_stays_in_this_tab(),
+				actions: [{ label: m.notices_download_a_backup(), run: () => void this.#downloadBackup() }]
 			});
 		}
 		const old = this.#db;
@@ -526,17 +529,19 @@ class StorageSession {
 				? {
 						key: MEMORY_STORE_KEY,
 						kind: 'warning',
-						lead: 'This tab can’t save.',
-						body: 'Your browser isn’t letting critcalc store anything, so your work here lasts until you close the tab.',
-						actions: [{ label: 'Download a backup', run: () => void this.#downloadBackup() }],
+						lead: m.notices_this_tab_can_t_save(),
+						body: m.notices_your_browser_isn_t_letting_critcalc(),
+						actions: [
+							{ label: m.notices_download_a_backup(), run: () => void this.#downloadBackup() }
+						],
 						dismissable: true
 					}
 				: {
 						key: MEMORY_STORE_KEY,
 						kind: 'warning',
-						lead: 'Your saved work couldn’t be opened in this tab.',
-						body: 'Reload to try again. Changes made here last until you close the tab.',
-						actions: [{ label: 'Reload', run: () => location.reload() }],
+						lead: m.notices_your_saved_work_couldn_t_be_opened_in(),
+						body: m.notices_reload_to_try_again_changes_made_here(),
+						actions: [{ label: m.notices_reload(), run: () => location.reload() }],
 						dismissable: true
 					}
 		);
@@ -552,7 +557,7 @@ class StorageSession {
 		const at = Date.now();
 		const file = await this.backup(at).catch(() => null);
 		if (file) downloadEnvelope(file, at);
-		else notices.toast('error', 'Couldn’t make a backup file from this browser’s data.');
+		else notices.toast('error', m.notices_couldn_t_make_a_backup_file_from_this());
 	}
 
 	// ── The Library (phase 2c, §4.2 + §6.3) ─────────────────────────────────
@@ -700,10 +705,10 @@ class StorageSession {
 		// Nothing left to show is a blank, never the first visit's sample.
 		if (this.profile?.current[tool] === id) await this.#setCurrent(db, tool, null);
 		if (showing) await this.#showNext(tool, doc.type);
-		notices.toast('success', 'Moved to Trash', {
+		notices.toast('success', m.notices_moved_to_trash(), {
 			actions: [
 				{
-					label: 'Undo',
+					label: m.notices_undo(),
 					run: () =>
 						void this.untrash('documents', id, false).then(async (ok) => {
 							// Back on screen if it was, while its profile still is.
@@ -741,8 +746,10 @@ class StorageSession {
 			notices.toast(
 				'info',
 				name
-					? named`${name} was deleted in another tab, so this tab moved on`
-					: `This ${rec.type} was deleted in another tab, so this tab moved on`
+					? namedMessage(m.notices_name_deleted_elsewhere_moved_on, { name })
+					: rec.type === 'rotation'
+						? m.notices_this_rotation_was_deleted_in_another_tab()
+						: m.notices_this_lineup_was_deleted_in_another_tab()
 			);
 		}
 	}
@@ -881,7 +888,7 @@ class StorageSession {
 		} else {
 			const seed = this.#blankSeed;
 			this.#blankSeed = null;
-			const board = makeBoard('Lineup 1', seed?.preset ?? 'stygian');
+			const board = makeBoard(m.notices_lineup_1(), seed?.preset ?? 'stygian');
 			if (seed?.team) {
 				// ⚓ A team placed from Teams arrives selected (design §3).
 				board.teams[0] = {
@@ -1041,7 +1048,7 @@ class StorageSession {
 		if (p.deleted)
 			return void this.switchTo(THEORYCRAFT_ID, () => ({
 				kind: 'warning',
-				text: named`${p.name} was deleted in another tab, so this tab is in Theorycraft now`
+				text: namedMessage(m.notices_profile_deleted_elsewhere, { name: p.name })
 			}));
 		this.#useProfile(p);
 	}
@@ -1483,8 +1490,11 @@ class StorageSession {
 		notices.toast(
 			'info',
 			change.twin
-				? named`Saved to Theorycraft · ${profile.name} plays ${twinLabel(profile.twin)}`
-				: named`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`
+				? namedMessage(m.notices_saved_to_theorycraft_name_plays_twin, {
+						name: profile.name,
+						twin: twinLabel(profile.twin)
+					})
+				: namedMessage(m.notices_saved_to_theorycraft_it_doesn_t_match, { name: profile.name })
 		);
 	}
 
@@ -1556,17 +1566,20 @@ class StorageSession {
 		const owner = this.profiles.find((p) => p.id === awayProfile)?.name;
 		const where: NoticeText =
 			awayProfile === this.profile?.id
-				? ['the Library']
+				? [m.notices_the_library()]
 				: awayProfile === THEORYCRAFT_ID
-					? ['Theorycraft’s Library']
+					? [m.notices_theorycraft_s_library()]
 					: owner
-						? named`${owner}’s Library`
-						: ['its profile’s Library'];
+						? namedMessage(m.notices_name_s_library, { name: owner })
+						: [m.notices_its_profile_s_library()];
 		notices.toast(
 			'info',
 			awayLabel
-				? named`Comparison closed · ${awayLabel} is in ${where}`
-				: named`Comparison closed · the other rotation is in ${where}`
+				? namedMessage(m.notices_comparison_closed_awaylabel_is_in_where, {
+						label: awayLabel,
+						where
+					})
+				: namedMessage(m.notices_comparison_closed_the_other_rotation_is, { where })
 		);
 	}
 
@@ -1846,8 +1859,8 @@ class StorageSession {
 		this.#channel?.post({ kind: 'deleted', store: 'teams', id, profileId: this.profile?.id });
 		this.#teamsChanged();
 		this.version++;
-		notices.toast('success', 'Moved to Trash', {
-			actions: [{ label: 'Undo', run: () => void this.untrash('teams', id, false) }]
+		notices.toast('success', m.notices_moved_to_trash(), {
+			actions: [{ label: m.notices_undo(), run: () => void this.untrash('teams', id, false) }]
 		});
 	}
 
@@ -1966,7 +1979,10 @@ class StorageSession {
 			p.current[tool] === id ? { ...p, current: { ...p.current, [tool]: null } } : p
 		);
 		this.version++;
-		await this.switchTo(profileId, (p) => ({ kind: 'success', text: named`Moved to ${p.name}` }));
+		await this.switchTo(profileId, (p) => ({
+			kind: 'success',
+			text: namedMessage(m.notices_moved_to_name, { name: p.name })
+		}));
 		await this.open(id);
 	}
 
@@ -2009,7 +2025,10 @@ class StorageSession {
 		await put(db, 'profiles', $state.snapshot(rec) as ProfileRecord);
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
 		await this.#loadProfiles();
-		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: named`Added ${p.name}` }));
+		await this.switchTo(rec.id, (p) => ({
+			kind: 'success',
+			text: namedMessage(m.notices_added_name, { name: p.name })
+		}));
 		return true;
 	}
 
@@ -2056,13 +2075,13 @@ class StorageSession {
 		notices.toast(
 			'success',
 			wasActive
-				? named`Moved ${name} to Trash. You’re in Theorycraft now.`
-				: named`Moved ${name} to Trash`,
+				? namedMessage(m.notices_moved_name_to_trash_you_re_in, { name })
+				: namedMessage(m.notices_moved_name_to_trash, { name }),
 			{
 				...toastLook(gone),
 				actions: [
 					{
-						label: 'Undo',
+						label: m.notices_undo(),
 						run: () =>
 							void this.untrash('profiles', id, false).then(async (ok) => {
 								if (ok && wasActive && this.profile?.id === THEORYCRAFT_ID)
@@ -2129,7 +2148,12 @@ class StorageSession {
 		if (!back) return false;
 		if (say) {
 			const p = this.profiles.find((x) => x.id === rec.profileId);
-			if (p) notices.toast('success', named`Restored to ${p.name}`, toastLook(p));
+			if (p)
+				notices.toast(
+					'success',
+					namedMessage(m.notices_restored_to_name, { name: p.name }),
+					toastLook(p)
+				);
 		}
 		return true;
 	}
@@ -2164,7 +2188,12 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id });
 		await this.#loadProfiles();
 		this.version++;
-		if (say) notices.toast('success', named`Restored ${p.name}`, toastLook(p));
+		if (say)
+			notices.toast(
+				'success',
+				namedMessage(m.notices_restored_name, { name: p.name }),
+				toastLook(p)
+			);
 		return true;
 	}
 
@@ -2224,7 +2253,10 @@ class StorageSession {
 		this.version++;
 		this.switchedAt = Date.now();
 		if (say !== null) {
-			const { kind, text } = say?.(next) ?? { kind: 'info', text: named`Switched to ${next.name}` };
+			const { kind, text } = say?.(next) ?? {
+				kind: 'info',
+				text: namedMessage(m.notices_switched_to_name, { name: next.name })
+			};
 			notices.toast(kind, text, toastLook(next));
 		}
 	}

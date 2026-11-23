@@ -5,26 +5,26 @@
 
 **20 messages** · `RenderCrash.svelte` · `ToolColumns.svelte` · `+layout.svelte` · `+error.svelte`
 
-- `errors_try_again` — RenderCrash.svelte:46 <button>
+- `errors_try_again` — RenderCrash.svelte:47 m()
   > Try again
-- `errors_report_this` — RenderCrash.svelte:49 <div> · +error.svelte:77 m()
+- `errors_report_this` — RenderCrash.svelte:50 m() · +error.svelte:77 m()
   > Report this
-- `errors_close` — ToolColumns.svelte:140 aria-label=
+- `errors_close` — ToolColumns.svelte:141 m()
   > Close
-- `errors_open_in_another_tab` — +layout.svelte:70 lead:
+- `errors_open_in_another_tab` — +layout.svelte:71 m()
   > Open in another tab.
-- `errors_this_tab_can_view_but_not_change` — +layout.svelte:71 body:
+- `errors_this_tab_can_view_but_not_change` — +layout.svelte:72 m()
   > This tab can view but not change anything.
-- `errors_edit_here` — +layout.svelte:72 label:
+- `errors_edit_here` — +layout.svelte:73 m()
   > Edit here
-- `errors_page_at_opacity_x_current_route_path` — +layout.svelte:746 last:
+- `errors_page_at_opacity_x_current_route_path` — +layout.svelte:747 last:
   > {p.dataset.page} at opacity {o.toFixed(3)} (current route {path})
   - vars: `p.dataset.page` `o.toFixed(3)` `path`
-- `errors_transform_opacity` — +layout.svelte:850 willChange: · +layout.svelte:880 willChange:
+- `errors_transform_opacity` — +layout.svelte:851 willChange: · +layout.svelte:881 willChange:
   > transform, opacity
-- `errors_this_tool_ran_into_a_problem` — +layout.svelte:1005 title=
+- `errors_this_tool_ran_into_a_problem` — +layout.svelte:1006 m()
   > This tool ran into a problem.
-- `errors_the_rest_of_the_site_is_fine_and_your` — +layout.svelte:1006 body=
+- `errors_the_rest_of_the_site_is_fine_and_your` — +layout.svelte:1007 m()
   > The rest of the site is fine, and your saved rotations and lineups are untouched.
   - terms: 📖 rotation
 - `errors_critcalc_app_home` — +error.svelte:52 m()

@@ -12,6 +12,7 @@
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { linksIntro, moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 	import { siteSettings } from '$lib/stores';
+	import { m } from '$lib/paraglide/messages';
 
 	function close(move: boolean): void {
 		siteSettings.markSeen('seenLinksNotice');
@@ -42,19 +43,18 @@
 	role="presentation"
 >
 	<div class="ld-panel ctx-dark" role="alertdialog" aria-modal="true" aria-labelledby="ld-title">
-		<h2 class="title" id="ld-title">Opened in Theorycraft</h2>
-		<p class="note">
-			Shared links open in Theorycraft, the place to explore things outside your profiles. Opening
-			linked content never changes your profiles or your roster.
-		</p>
+		<h2 class="title" id="ld-title">{m.notices_opened_in_theorycraft()}</h2>
+		<p class="note">{m.notices_shared_links_open_in_theorycraft_the()}</p>
 		{#if linksIntro.moveId}
-			<p class="note note--quiet">To keep it in one of your profiles, move it there.</p>
+			<p class="note note--quiet">{m.notices_to_keep_it_in_one_of_your_profiles_move()}</p>
 		{/if}
 		<div class="actions">
 			{#if linksIntro.moveId}
 				<button class="btn" onclick={() => close(true)}>{MOVE_TO_PROFILE}</button>
 			{/if}
-			<button class="btn btn--primary" bind:this={okEl} onclick={() => close(false)}>Got it</button>
+			<button class="btn btn--primary" bind:this={okEl} onclick={() => close(false)}
+				>{m.notices_got_it()}</button
+			>
 		</div>
 	</div>
 </div>

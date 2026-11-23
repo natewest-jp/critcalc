@@ -14,6 +14,7 @@
 import { page } from '$app/state';
 import { menu } from '$lib/menuState.svelte';
 import { routeOf } from '$lib/i18n/paths';
+import { m } from '$lib/paraglide/messages';
 
 export const keysSheet = $state<{ open: boolean }>({ open: false });
 
@@ -30,92 +31,93 @@ export type KeyAreaId = 'everywhere' | 'planner' | 'builder' | 'roster' | 'teams
 export type KeyArea = { id: KeyAreaId; title: string; note?: string; rows: Shortcut[] };
 
 // Wording approved by Nate 2026-11-13; changes are proposed first.
-export const KEY_AREAS: KeyArea[] = [
+/** Built at each opening, so the sheet reads the page's language. */
+export const keyAreas = (): KeyArea[] => [
 	{
 		id: 'everywhere',
-		title: 'Everywhere',
+		title: m.keys_everywhere(),
 		rows: [
 			// The scene layout (`+layout.svelte`).
-			{ keys: [['?']], does: 'Show these shortcuts' },
+			{ keys: [['?']], does: m.keys_show_these_shortcuts() },
 			// Each dialog, menu and the menu state (`MenuState.svelte`).
-			{ keys: [['Esc']], does: 'Close a menu, a dialog, or Help' },
+			{ keys: [['Esc']], does: m.keys_close_a_menu_a_dialog_or_help() },
 			// The storage session's `#onKey`.
-			{ keys: [['mod', 'S']], does: 'Check that your work is saved (it saves as you go)' }
+			{ keys: [['mod', 'S']], does: m.keys_check_that_your_work_is_saved_it_saves() }
 		]
 	},
 	{
 		id: 'planner',
-		title: 'Rotation Planner',
+		title: m.keys_rotation_planner(),
 		rows: [
 			// `planner/+page.svelte` `onTransportKey`.
-			{ keys: [['Space']], does: 'Play or pause' },
-			{ keys: [['Home']], does: 'Back to the start' },
+			{ keys: [['Space']], does: m.keys_play_or_pause() },
+			{ keys: [['Home']], does: m.keys_back_to_the_start() },
 			// CodeMirror's own keymap, and the Undo and Redo buttons.
-			{ keys: [['mod', 'Z']], does: 'Undo a notation change' },
-			{ keys: [['mod', 'shift', 'Z']], does: 'Redo' },
+			{ keys: [['mod', 'Z']], does: m.keys_undo_a_notation_change() },
+			{ keys: [['mod', 'shift', 'Z']], does: m.keys_redo() },
 			// The storage session's `#onFlipKey` → `other('planner')`.
 			{
 				keys: [['ctrl', '`']],
-				does: 'Switch to the other rotation of a pair, or back to the last one you had open'
+				does: m.keys_switch_to_the_other_rotation_of_a_pair()
 			},
 			// `EventLog.svelte`.
-			{ keys: [['up'], ['down']], does: 'Step through the event log' },
-			{ keys: [['Home'], ['End']], does: 'Jump to the first or last event' }
+			{ keys: [['up'], ['down']], does: m.keys_step_through_the_event_log() },
+			{ keys: [['Home'], ['End']], does: m.keys_jump_to_the_first_or_last_event() }
 		]
 	},
 	{
 		id: 'builder',
-		title: 'Team Builder',
+		title: m.keys_team_builder(),
 		rows: [
 			// The storage session's `#onFlipKey` → `other('builder')`.
-			{ keys: [['ctrl', '`']], does: 'Back to the last lineup you had open' },
+			{ keys: [['ctrl', '`']], does: m.keys_back_to_the_last_lineup_you_had_open() },
 			// `builder/+page.svelte`.
-			{ keys: [['Esc']], does: 'Cancel a swap' }
+			{ keys: [['Esc']], does: m.keys_cancel_a_swap() }
 		]
 	},
 	{
 		id: 'roster',
-		title: 'Roster',
-		note: 'While the roster is unlocked for editing.',
+		title: m.keys_roster(),
+		note: m.keys_while_the_roster_is_unlocked_for_editing(),
 		rows: [
 			// `RosterTab.svelte` `onItemKey` and `onWindowKey`.
-			{ keys: [['left', 'right', 'up', 'down']], does: 'Move between characters' },
-			{ keys: [['O']], does: 'Owned' },
-			{ keys: [['X'], ['Delete']], does: 'Not owned' },
-			{ keys: [['Enter'], ['Space']], does: 'Toggle owned' },
-			{ keys: [['W']], does: 'Add to or remove from the wishlist' },
-			{ keys: [['T']], does: 'Leave out of Imaginarium Theater, or put back' },
-			{ keys: [['0–6']], does: 'Set the constellation' },
-			{ keys: [['mod', 'Z']], does: 'Undo' },
-			{ keys: [['mod', 'shift', 'Z']], does: 'Redo' }
+			{ keys: [['left', 'right', 'up', 'down']], does: m.keys_move_between_characters() },
+			{ keys: [['O']], does: m.keys_owned() },
+			{ keys: [['X'], ['Delete']], does: m.keys_not_owned() },
+			{ keys: [['Enter'], ['Space']], does: m.keys_toggle_owned() },
+			{ keys: [['W']], does: m.keys_add_to_or_remove_from_the_wishlist() },
+			{ keys: [['T']], does: m.keys_leave_out_of_imaginarium_theater_or_put() },
+			{ keys: [['0–6']], does: m.keys_set_the_constellation() },
+			{ keys: [['mod', 'Z']], does: m.keys_undo() },
+			{ keys: [['mod', 'shift', 'Z']], does: m.keys_redo() }
 		]
 	},
 	{
 		id: 'teams',
-		title: 'Teams',
-		note: 'While a team is open.',
+		title: m.keys_teams(),
+		note: m.keys_while_a_team_is_open(),
 		rows: [
 			// `TeamDetail.svelte` `onKey`.
-			{ keys: [['1–4']], does: 'Choose a slot' },
-			{ keys: [['Esc']], does: 'Leave the team (asks first if it has changes)' }
+			{ keys: [['1–4']], does: m.keys_choose_a_slot() },
+			{ keys: [['Esc']], does: m.keys_leave_the_team_asks_first_if_it_has() }
 		]
 	},
 	{
 		id: 'visualizers',
-		title: 'Visualizers',
-		note: 'In the Gauge Explorer, with an application selected.',
+		title: m.keys_visualizers(),
+		note: m.keys_in_the_gauge_explorer_with_an(),
 		rows: [
 			// `GaugeInstrument.svelte` `onMarkerKey`.
-			{ keys: [['left'], ['right']], does: 'Move it by 0.1s' },
+			{ keys: [['left'], ['right']], does: m.keys_move_it_by_0_1s() },
 			{
 				keys: [
 					['shift', 'left'],
 					['shift', 'right']
 				],
-				does: 'Move it by 1s'
+				does: m.keys_move_it_by_1s()
 			},
-			{ keys: [['Enter']], does: 'Edit it' },
-			{ keys: [['Delete']], does: 'Remove it' }
+			{ keys: [['Enter']], does: m.keys_edit_it() },
+			{ keys: [['Delete']], does: m.keys_remove_it() }
 		]
 	}
 ];
@@ -137,11 +139,8 @@ export function currentKeyArea(): KeyAreaId {
 /** The areas in the order the sheet shows them: yours, then everywhere,
  *  then the rest in list order. */
 export function orderedKeyAreas(first: KeyAreaId): KeyArea[] {
-	const lead = KEY_AREAS.filter((a) => a.id === first);
-	const everywhere = KEY_AREAS.filter((a) => a.id === 'everywhere' && a.id !== first);
-	return [
-		...lead,
-		...everywhere,
-		...KEY_AREAS.filter((a) => a.id !== first && a.id !== 'everywhere')
-	];
+	const all = keyAreas();
+	const lead = all.filter((a) => a.id === first);
+	const everywhere = all.filter((a) => a.id === 'everywhere' && a.id !== first);
+	return [...lead, ...everywhere, ...all.filter((a) => a.id !== first && a.id !== 'everywhere')];
 }

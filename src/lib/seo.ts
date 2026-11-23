@@ -13,9 +13,10 @@
  * ⚠️ A NEW ROUTE NEEDS AN ENTRY HERE, and a matching line in static/sitemap.xml.
  * An unlisted path falls back to the site defaults rather than breaking.
  *
- * ⚓ Also the i18n staging ground: when the extraction pass runs, this file is
- * already the whole of the site's meta strings in one place, grouped by route.
+ * The words themselves are messages (`messages/*.json`, keys `seo_*`).
  */
+
+import { m } from '$lib/paraglide/messages';
 
 export const SITE_NAME = 'critcalc.app';
 
@@ -52,10 +53,10 @@ export const SITE_URL = 'https://critcalc.app';
 export const OG_IMAGE = '/assets/og/critcalc-og-v2.jpg';
 export const OG_IMAGE_W = 1200;
 export const OG_IMAGE_H = 630;
-export const OG_IMAGE_ALT = 'critcalc.app — tools for Genshin Impact';
+export const OG_IMAGE_ALT = m.seo_critcalc_app_tools_for_genshin_impact;
 
 /** Shown for any route with no entry below. */
-export const DEFAULT_DESCRIPTION = 'Genshin Impact tools for planning and theorycrafting.';
+export const DEFAULT_DESCRIPTION = m.seo_genshin_impact_tools_for_planning_and;
 
 export type PageMeta = {
 	/** Bare page name. The site name is appended by `titleFor`, never here. */
@@ -68,6 +69,21 @@ export type PageMeta = {
 	noindex?: true;
 };
 
+/** An entry whose words are read at each use, in the page's language: the map
+ *  is built at module load, where a called message would freeze one locale
+ *  for the whole prerender. */
+function entry(title: () => string, description: () => string, noindex?: true): PageMeta {
+	return {
+		get title() {
+			return title();
+		},
+		get description() {
+			return description();
+		},
+		...(noindex && { noindex })
+	};
+}
+
 /**
  * Path → meta. Keys are pathnames without a trailing slash.
  *
@@ -77,133 +93,37 @@ export type PageMeta = {
  * Nate's wording pass.
  */
 export const PAGE_META: Record<string, PageMeta> = {
-	'/': {
-		title: 'Genshin Impact tools',
-		description:
-			'Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a team builder that shows what each team can provide, and eight graph instruments.'
-	},
-
-	'/planner': {
-		title: 'Rotation planner',
-		description:
-			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, buff windows, auras, and who is on field when.'
-	},
-	'/builder': {
-		title: 'Team builder',
-		description:
-			'Build lineups for Stygian Onslaught and the Spiral Abyss: See what each team brings (healing, shields, RES shred, buffs) at your constellations, and what a swap would change.'
-	},
-	'/visualizers': {
-		title: 'Visualizers',
-		description:
-			'Eight instruments for the mechanics behind the numbers: crit distribution, elemental gauge and ICD, reaction curves, artifact odds, enemy defense and more.'
-	},
-
-	'/help': {
-		title: 'Help & FAQ',
-		description:
-			"How to use critcalc's tools, plus answers to common questions about the site and its data."
-	},
-	'/help/planner': {
-		title: 'Rotation planner help',
-		description:
-			'How the critcalc rotation planner works: KQM-style notation, the team, reading the timeline, playback, and the enemy’s aura.'
-	},
-	'/help/builder': {
-		title: 'Team builder help',
-		description:
-			'How the critcalc team builder works: capability filters, constellations, lineups, and swapping a character.'
-	},
-	'/help/visualizers': {
-		title: 'Visualizers help',
-		description:
-			'The critcalc visualizers: the workspace, and what each of the eight graph instruments shows.'
-	},
-
-	'/coverage': {
-		title: 'Character coverage',
-		description:
-			'Which parts of each Genshin character’s kit the critcalc rotation planner draws, ability by ability, and what is missing or left out.'
-	},
-
-	'/about': {
-		title: 'About',
-		description:
-			'What critcalc is: three Genshin Impact theorycrafting tools, where their data comes from, and who makes them.'
-	},
-	'/changelog': {
-		title: 'What’s new',
-		description:
-			'The noticeable changes to critcalc’s Genshin Impact tools, newest first, and the known gaps the tools don’t model yet.'
-	},
-	'/contribute': {
-		title: 'Contribute',
-		description:
-			'How to report a problem with critcalc, and the community projects its data is built on.'
-	},
-	'/beta': {
-		title: 'Beta',
-		description:
-			'What the beta tag on critcalc means: the tools are still changing; the character data is curated against gcsim.'
-	},
-	'/library': {
-		title: 'Library',
-		description:
-			'Your saved teams, rotations, and lineups, and the roster of characters you own. All of it is kept in this browser.',
-		noindex: true
-	},
+	'/': entry(m.seo_genshin_impact_tools, m.seo_three_tools_for_seeing_how_genshin_works),
+	'/planner': entry(m.seo_rotation_planner, m.seo_write_a_rotation_in_kqm_notation_and),
+	'/builder': entry(m.seo_team_builder, m.seo_build_lineups_for_stygian_onslaught_and),
+	'/visualizers': entry(m.seo_visualizers, m.seo_eight_instruments_for_the_mechanics),
+	'/help': entry(m.seo_help_faq, m.seo_how_to_use_critcalc_s_tools_plus_answers),
+	'/help/planner': entry(
+		m.seo_rotation_planner_help,
+		m.seo_how_the_critcalc_rotation_planner_works
+	),
+	'/help/builder': entry(m.seo_team_builder_help, m.seo_how_the_critcalc_team_builder_works),
+	'/help/visualizers': entry(m.seo_visualizers_help, m.seo_the_critcalc_visualizers_the_workspace),
+	'/coverage': entry(m.seo_character_coverage, m.seo_which_parts_of_each_genshin_character_s),
+	'/about': entry(m.seo_about, m.seo_what_critcalc_is_three_genshin_impact),
+	'/changelog': entry(m.seo_what_s_new, m.seo_the_noticeable_changes_to_critcalc_s),
+	'/contribute': entry(m.seo_contribute, m.seo_how_to_report_a_problem_with_critcalc),
+	'/beta': entry(m.seo_beta, m.seo_what_the_beta_tag_on_critcalc_means_the),
+	'/library': entry(m.seo_library, m.seo_your_saved_teams_rotations_and_lineups, true),
 	// The menu state's addresses (build plan §13.4). Each prerenders an empty,
 	// generic page (a profile's data lives in this browser and never reaches a
 	// crawler), so each is noindex (⚓ Nate 2026-11-11, after Search Console
 	// reported them as not indexed). Settings and Privacy have text of their own
 	// and stay indexable.
-	'/library/rotations': {
-		title: 'Rotations',
-		description: 'Your saved rotations. All of them are kept in this browser.',
-		noindex: true
-	},
-	'/library/lineups': {
-		title: 'Lineups',
-		description: 'Your saved lineups. All of them are kept in this browser.',
-		noindex: true
-	},
-	'/profile': {
-		title: 'Profile',
-		description: 'Your profile in this browser: its name, picture, and color.',
-		noindex: true
-	},
-	'/profile/new': {
-		title: 'Add a profile',
-		description: 'Add a profile for your Genshin account, kept in this browser.',
-		noindex: true
-	},
-	'/roster': {
-		title: 'Roster',
-		description: 'The characters you own and their constellations, kept in this browser.',
-		noindex: true
-	},
-	'/teams': {
-		title: 'Teams',
-		description:
-			'Your named teams, ready to plan a rotation or add to a lineup. Kept in this browser.',
-		noindex: true
-	},
-	'/privacy': {
-		title: 'Privacy',
-		description:
-			'What critcalc keeps in your browser, and what leaves it: share links, reports, and visit counts. No accounts, no cookies.'
-	},
-	'/trash': {
-		title: 'Trash',
-		description:
-			'Deleted rotations, lineups, teams, and profiles, kept for 30 days in this browser.',
-		noindex: true
-	},
-	'/settings': {
-		title: 'Settings',
-		description:
-			'Display, Human timing, playback sound, and your saved data. All of it is stored in this browser.'
-	}
+	'/library/rotations': entry(m.seo_rotations, m.seo_your_saved_rotations_all_of_them_are, true),
+	'/library/lineups': entry(m.seo_lineups, m.seo_your_saved_lineups_all_of_them_are_kept, true),
+	'/profile': entry(m.seo_profile, m.seo_your_profile_in_this_browser_its_name, true),
+	'/profile/new': entry(m.seo_add_a_profile, m.seo_add_a_profile_for_your_genshin_account, true),
+	'/roster': entry(m.seo_roster, m.seo_the_characters_you_own_and_their, true),
+	'/teams': entry(m.seo_teams, m.seo_your_named_teams_ready_to_plan_a, true),
+	'/privacy': entry(m.seo_privacy, m.seo_what_critcalc_keeps_in_your_browser_and),
+	'/trash': entry(m.seo_trash, m.seo_deleted_rotations_lineups_teams_and, true),
+	'/settings': entry(m.seo_settings, m.seo_display_human_timing_playback_sound_and)
 };
 
 /** Trailing slashes are stripped so `/about/` and `/about` resolve alike. */
@@ -213,7 +133,7 @@ function normalize(pathname: string): string {
 }
 
 export function metaFor(pathname: string): PageMeta {
-	return PAGE_META[normalize(pathname)] ?? { title: '', description: DEFAULT_DESCRIPTION };
+	return PAGE_META[normalize(pathname)] ?? { title: '', description: DEFAULT_DESCRIPTION() };
 }
 
 /**

@@ -143,7 +143,7 @@
 		if (param) {
 			const shared = await decodeRotation(param);
 			if (!shared) {
-				notices.toast('error', INVALID_SHARE_LINK);
+				notices.toast('error', INVALID_SHARE_LINK());
 				return;
 			}
 			importShared(shared);
@@ -162,7 +162,7 @@
 			// identical clobber-the-active-tab bug, and two answers to "where does
 			// an incoming document go" is how they drift.
 			db.receive(rt.teamDocument(ids), 'Team loaded');
-		} else notices.toast('warning', NO_TEAM_IN_LINK);
+		} else notices.toast('warning', NO_TEAM_IN_LINK());
 	});
 
 	// ---------------------------------------------------------------------------
