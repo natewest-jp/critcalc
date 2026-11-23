@@ -151,6 +151,7 @@ class Playback {
 	/** The console knob (`__playback`): what is reported, and an extra delay
 	 *  in ms by ear. No argument prints the current reading. */
 	debugDelay(extraMs?: number): string {
+		// Console-only (a developer's knob, never on a page), so not messages.
 		if (typeof extraMs === 'number' && isFinite(extraMs)) this.#extraDelay = extraMs / 1000;
 		const ms = (v: number) => `${Math.round(v * 1000)} ms`;
 		const ctx = this.#sounder?.ctx;

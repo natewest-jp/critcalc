@@ -14,6 +14,8 @@
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementPalette } from '$lib/utils/elementColors';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	/**
 	 * THE PLANNER'S INSPECTOR (inspector round, 2026-10-23; design §7). The
@@ -77,6 +79,8 @@
 	{/each}
 {/snippet}
 
+{#snippet token(text: string)}<span class="pi-token">{text}</span>{/snippet}
+
 {#snippet face(id: string, size: number)}
 	{@const src = avatarFor(id)}
 	<span
@@ -97,7 +101,8 @@
 	{#if pv.target}
 		<!-- One step back: every page but the team's leads with the way to it. -->
 		<button class="pi-crumb" type="button" onclick={() => pv.inspectTeam()}>
-			<Mark name="back" size={13} /> Team
+			<Mark name="back" size={13} />
+			{m.planner_team()}
 		</button>
 	{/if}
 
@@ -115,7 +120,8 @@
 		</header>
 		{#if onRemove && team.includes(charId)}
 			<button class="btn btn--sm pi-remove" type="button" onclick={() => onRemove(charId)}>
-				<Mark name="close" size={12} /> Remove from team
+				<Mark name="close" size={12} />
+				{m.planner_remove_from_team()}
 			</button>
 		{/if}
 		<!-- ⚓ The level the TIMELINE draws, not the roster's (Nate 2026-10-27):
@@ -133,7 +139,7 @@
 			{#snippet afterRoster()}
 				{#if notesFor(charId).length > 0}
 					<section class="pi-section">
-						<p class="kicker">Notes</p>
+						<p class="kicker">{m.planner_notes()}</p>
 						{@render notes(charId)}
 					</section>
 				{/if}
@@ -156,44 +162,51 @@
 						onclick={() => pv.inspect({ kind: 'character', id: cast.characterId })}
 						>{cast.displayName}</button
 					>
-					· <span class="pi-token">{cast.label}</span> at {fmtSecs(cast.time)}s
+					<Msg
+						parts={m.planner_label_at_time_s.parts({
+							label: cast.label,
+							seconds: fmtSecs(cast.time)
+						})}
+						tags={{ token }}
+					/>
 				</p>
 			</div>
 		</header>
 		{#if cast.standIn}
 			<p class="pi-flag">{cast.standIn}</p>
 		{:else if cast.uncurated}
-			<p class="pi-flag">
-				This character’s frames aren’t curated yet, so these timings are generic.
-			</p>
+			<p class="pi-flag">{m.planner_this_character_s_frames_aren_t_curated()}</p>
 		{/if}
+		<!-- A bare number of seconds keeps its unit as written in every locale. -->
 		<dl class="pi-facts">
-			<dt>Cast animation</dt>
+			<dt>{m.planner_cast_animation()}</dt>
 			<dd>{fmtSecs(cast.castTime)}s</dd>
 			{#if cast.uptime > 0}
-				<dt>Lasts</dt>
+				<dt>{m.planner_lasts()}</dt>
 				<dd>{fmtSecs(cast.uptime)}s</dd>
 			{/if}
 			{#if cast.cooldown > 0}
-				<dt>Cooldown</dt>
+				<dt>{m.planner_cooldown()}</dt>
 				<dd>
 					{fmtSecs(cast.cooldown)}s{#if cast.charges && cast.charges > 1}
-						· {cast.charges} charges{/if}
+						{m.planner_charges_charges({ count: cast.charges })}{/if}
 				</dd>
-				<dt>Ready again</dt>
+				<dt>{m.planner_ready_again()}</dt>
 				<dd>
 					{fmtSecs(cast.readyAt)}s{#if cast.cdReduced}
-						<span class="pi-quiet">({fmtSecs(cast.cdReduced)}s sooner)</span>{/if}
+						<span class="pi-quiet"
+							>{m.planner_cdreduced_s_sooner({ seconds: fmtSecs(cast.cdReduced) })}</span
+						>{/if}
 				</dd>
 			{/if}
 			{#if cast.ability === 'burst' && cast.energyCost}
-				<dt>Energy</dt>
+				<dt>{m.planner_energy()}</dt>
 				<dd>{cast.energyCost}</dd>
 			{/if}
 		</dl>
 		{#if cast.raised.length > 0}
 			<section class="pi-section">
-				<p class="kicker">On the field</p>
+				<p class="kicker">{m.planner_on_the_field()}</p>
 				{#each cast.raised as label (label)}
 					<p class="pi-raised">{label}</p>
 				{/each}
@@ -203,7 +216,7 @@
 		<!-- ── AN ALWAYS-ON CHIP ──────────────────────────────────────────── -->
 		<header class="pi-head pi-head--bar">
 			<h2 class="pi-title">{bonus.sourceLabel}</h2>
-			<p class="pi-sub">Always on, for the whole rotation</p>
+			<p class="pi-sub">{m.planner_always_on_for_the_whole_rotation()}</p>
 		</header>
 		<div class="pi-rows"><BuffDetailRows effects={bonus.effects} /></div>
 	{:else if tip}
@@ -211,7 +224,12 @@
 		<header class="pi-head pi-head--bar">
 			<h2 class="pi-title">{tip.sourceLabel}</h2>
 			<p class="pi-sub">
-				{tip.on ? `On ${tip.on}` : 'On the team'} · {fmtSecs(tip.start)}s to {fmtSecs(tip.end)}s
+				{m.planner_tip_on_on_on_on_the_team_start_s_to_end({
+					who: tip.on ? 'character' : 'team',
+					name: tip.on ?? '',
+					start: fmtSecs(tip.start),
+					end: fmtSecs(tip.end)
+				})}
 			</p>
 		</header>
 		<div class="pi-rows">
@@ -227,22 +245,27 @@
 		{#if sample}
 			<p class="pi-credit">
 				{#if !sample.source}
-					A sample rotation, written for critcalc.
-				{:else if sample.adapted}
-					A sample rotation, adapted from
-					<a class="link" href={sample.source.url} target="_blank" rel="noopener noreferrer"
-						>{sample.source.name}</a
-					>.
+					{m.planner_a_sample_rotation_written_for_critcalc()}
 				{:else}
-					A sample rotation, from
-					<a class="link" href={sample.source.url} target="_blank" rel="noopener noreferrer"
-						>{sample.source.name}</a
-					>.
+					{@const url = sample.source.url}
+					{#snippet a(text: string)}<a
+							class="link"
+							href={url}
+							target="_blank"
+							rel="noopener noreferrer">{text}</a
+						>{/snippet}
+					<Msg
+						parts={(sample.adapted
+							? m.planner_a_sample_rotation_adapted_from_name
+							: m.planner_a_sample_rotation_from_name
+						).parts({ name: sample.source.name })}
+						tags={{ a }}
+					/>
 				{/if}
 			</p>
 		{/if}
 		{#if team.length === 0}
-			<p class="pi-empty">Put a character on the team, and their details show here.</p>
+			<p class="pi-empty">{m.planner_put_a_character_on_the_team_and_their()}</p>
 		{/if}
 		{#each team as id (id)}
 			<div class="pi-member">
@@ -263,13 +286,11 @@
 				<a
 					class="link"
 					href="{hrefTo('/coverage')}?c={team.join(',')}"
-					onclick={(e) => openCoverage(e, team)}>Coverage for this team</a
+					onclick={(e) => openCoverage(e, team)}>{m.planner_coverage_for_this_team()}</a
 				>
 			</div>
 		{/if}
-		<p class="pi-hint">
-			Click an ability or a buff on the timeline, or a portrait on the bench, to see it here.
-		</p>
+		<p class="pi-hint">{m.planner_click_an_ability_or_a_buff_on_the()}</p>
 	{/if}
 </div>
 

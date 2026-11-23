@@ -83,16 +83,18 @@
 	 *  planner's events land on FRAMES (1/60s), so a single decimal would print
 	 *  three consecutive casts as the same instant. The column is tabular, so the
 	 *  extra digit costs the same width on every row and nothing on any of them. */
+	// A bare number of seconds: the unit stays as written in every locale.
 	export const fmtLogTime = (seconds: number) => `${seconds.toFixed(2)}s`;
 </script>
 
 <script lang="ts">
 	import { tick, untrack, type Snippet } from 'svelte';
 	import { scrollBehavior } from '$lib/motion';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		rows,
-		empty = 'Nothing to report.',
+		empty = m.planner_nothing_to_report(),
 		lead,
 		hover = null,
 		onHover,

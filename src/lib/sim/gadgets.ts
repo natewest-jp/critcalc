@@ -33,6 +33,7 @@
  */
 
 import { framesOf } from '$lib/utils/frames';
+import { m } from '$lib/paraglide/messages';
 import type { Reaction } from '$lib/types/ability';
 import type { ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 
@@ -122,7 +123,7 @@ function deriveMoondrifts(events: readonly ReactionEvent[]): GadgetWindow[] {
 		(l): GadgetWindow => ({
 			kind: 'gadget',
 			gadget: 'moondrift',
-			label: 'Moondrift',
+			label: m.planner_moondrift(),
 			start: l.start,
 			end: l.end
 		})
@@ -187,7 +188,7 @@ export function deriveGadgetWindows(events: readonly ReactionEvent[]): GadgetWin
 		(p): GadgetWindow => ({
 			kind: 'gadget',
 			gadget: 'thundercloud',
-			label: 'Thundercloud',
+			label: m.planner_thundercloud(),
 			start: p.start,
 			end: p.end
 		})

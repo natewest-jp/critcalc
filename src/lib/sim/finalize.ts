@@ -24,6 +24,7 @@ import type { Element, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { stackLaneWindows } from './stackLanes';
 import { framesOf } from '$lib/utils/frames';
+import { m } from '$lib/paraglide/messages';
 import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type {
 	CastEvent,
@@ -830,7 +831,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			windows.push({
 				kind: 'gadget',
 				gadget: rec.kind,
-				label: 'Dendro Core',
+				label: m.planner_dendro_core(),
 				start: rec.start,
 				// ⛔ NOT the nominal end when something took it: a core eaten by a
 				// Hyperbloom at 2s is not on the field for the remaining 4.

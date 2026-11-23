@@ -10,6 +10,7 @@ import type { LoadoutEntry } from '$lib/stores';
 import type { TimelineWindow } from '$lib/utils/rotationEvents';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { WeaponProcSubrow } from './types';
+import { m } from '$lib/paraglide/messages';
 
 /**
  * Groups the parser's `weaponProc` IR windows into per-character labeled
@@ -38,7 +39,7 @@ export function computeWeaponProcRows(
 		const weapon = weaponId ? getWeaponById(weaponId) : null;
 		// Full weapon name (shortName retired for display 2026-07-31 — the JSONs
 		// keep the field for future use; truncating bars fade instead of slicing).
-		const label = weapon ? weapon.name : 'E reset';
+		const label = weapon ? weapon.name : m.planner_e_reset();
 		rows.push({ characterId: charId, label, bars });
 	}
 	return rows;

@@ -15,6 +15,7 @@
 	import type { TimelineEvent } from '$lib/utils/rotationEvents';
 	import { hrefTo } from '$lib/i18n/paths';
 	import CoverageStrip from './CoverageStrip.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		ids,
@@ -60,7 +61,7 @@
 				states={row.states}
 				dim={row.dim}
 				titles
-				label="{row.name}’s coverage, with the parts this rotation doesn’t reach dimmed"
+				label={m.planner_name_s_coverage_with_the_parts_this({ name: row.name })}
 			/>
 		{/each}
 	</div>

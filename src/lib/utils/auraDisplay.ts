@@ -23,6 +23,8 @@
  * it has become something with a different decay curve.
  */
 
+import { m } from '$lib/paraglide/messages';
+import { labels } from '$lib/i18n/labels';
 import type { AuraKey, ElementId, SeriesInterval } from '$lib/utils/gauge';
 import type { Reaction } from '$lib/types/ability';
 
@@ -61,23 +63,38 @@ export type AuraModMeta = {
  * aura, so that map has no row for them, and a caller that fell back to the
  * raw id printed "anemo" (the Gauge Explorer's log, 2026-10-02).
  */
-export const ELEMENT_LABEL: Record<ElementId, string> = {
-	pyro: 'Pyro',
-	hydro: 'Hydro',
-	anemo: 'Anemo',
-	electro: 'Electro',
-	dendro: 'Dendro',
-	cryo: 'Cryo',
-	geo: 'Geo'
-};
+export const ELEMENT_LABEL: Record<ElementId, string> = labels({
+	pyro: m.planner_pyro,
+	hydro: m.planner_hydro,
+	anemo: m.planner_anemo,
+	electro: m.planner_electro,
+	dendro: m.planner_dendro,
+	cryo: m.planner_cryo,
+	geo: m.planner_geo
+});
 
 export const AURA_MOD_META: Record<AuraKey, AuraModMeta> = {
-	pyro: { label: 'Pyro', icon: 'pyro', color: 'var(--el-pyro-main)' },
-	burning: { label: 'Burning', icon: 'pyro', color: 'var(--rx-burning)', compound: true },
+	pyro: {
+		get label() {
+			return m.planner_pyro();
+		},
+		icon: 'pyro',
+		color: 'var(--el-pyro-main)'
+	},
+	burning: {
+		get label() {
+			return m.planner_burning();
+		},
+		icon: 'pyro',
+		color: 'var(--rx-burning)',
+		compound: true
+	},
 	// ⚠️ The fuel is the DENDRO being consumed, not an aura the target carries —
 	// dashed everywhere it is drawn so it reads as bookkeeping.
 	burningFuel: {
-		label: 'Fuel',
+		get label() {
+			return m.planner_fuel();
+		},
 		icon: 'dendro',
 		color: 'var(--rx-burning-fuel)',
 		// ↻ '5 4' → '9 5' (⚓ NATE 2026-08-17): at 5px on / 4px off, drawn with the
@@ -90,12 +107,50 @@ export const AURA_MOD_META: Record<AuraKey, AuraModMeta> = {
 		dash: '9 5',
 		compound: true
 	},
-	hydro: { label: 'Hydro', icon: 'hydro', color: 'var(--el-hydro-main)' },
-	cryo: { label: 'Cryo', icon: 'cryo', color: 'var(--el-cryo-main)' },
-	frozen: { label: 'Frozen', icon: 'cryo', color: 'var(--rx-frozen)', compound: true },
-	electro: { label: 'Electro', icon: 'electro', color: 'var(--el-electro-main)' },
-	dendro: { label: 'Dendro', icon: 'dendro', color: 'var(--el-dendro-main)' },
-	quicken: { label: 'Quicken', icon: 'dendro', color: 'var(--rx-quicken)', compound: true }
+	hydro: {
+		get label() {
+			return m.planner_hydro();
+		},
+		icon: 'hydro',
+		color: 'var(--el-hydro-main)'
+	},
+	cryo: {
+		get label() {
+			return m.planner_cryo();
+		},
+		icon: 'cryo',
+		color: 'var(--el-cryo-main)'
+	},
+	frozen: {
+		get label() {
+			return m.planner_frozen();
+		},
+		icon: 'cryo',
+		color: 'var(--rx-frozen)',
+		compound: true
+	},
+	electro: {
+		get label() {
+			return m.planner_electro();
+		},
+		icon: 'electro',
+		color: 'var(--el-electro-main)'
+	},
+	dendro: {
+		get label() {
+			return m.planner_dendro();
+		},
+		icon: 'dendro',
+		color: 'var(--el-dendro-main)'
+	},
+	quicken: {
+		get label() {
+			return m.planner_quicken();
+		},
+		icon: 'dendro',
+		color: 'var(--rx-quicken)',
+		compound: true
+	}
 };
 
 /**
@@ -171,35 +226,37 @@ export const AURA_MOD_ORDER: AuraKey[] = [
  * Carrying it would mean a multiplier field on `ReactionEvent`, which is a
  * schema question, not a label one.
  */
-export const REACTION_LABEL: Record<Reaction, string> = {
-	vaporize: 'Vaporize',
-	melt: 'Melt',
-	overloaded: 'Overloaded',
-	superConduct: 'Superconduct',
-	stellarConduct: 'Stellar-Conduct',
-	electroCharged: 'Electro-Charged',
-	frozen: 'Frozen',
-	shatter: 'Shatter',
-	burning: 'Burning',
-	bloom: 'Bloom',
-	hyperbloom: 'Hyperbloom',
-	burgeon: 'Burgeon',
-	quicken: 'Quicken',
-	aggravate: 'Aggravate',
-	spread: 'Spread',
-	pyroSwirl: 'Swirl (Pyro)',
-	hydroSwirl: 'Swirl (Hydro)',
-	cryoSwirl: 'Swirl (Cryo)',
-	electroSwirl: 'Swirl (Electro)',
-	stellarSwirl: 'Stellar Swirl',
-	pyroCrystallize: 'Crystallize (Pyro)',
-	hydroCrystallize: 'Crystallize (Hydro)',
-	cryoCrystallize: 'Crystallize (Cryo)',
-	electroCrystallize: 'Crystallize (Electro)',
-	lunarCrystallize: 'Lunar-Crystallize',
-	lunarBloom: 'Lunar-Bloom',
-	lunarCharged: 'Lunar-Charged'
-};
+// Melt and the hyphenated names are not listed by the extractor, so they
+// stay as written for now.
+export const REACTION_LABEL: Record<Reaction, string> = labels({
+	vaporize: m.planner_vaporize,
+	melt: () => 'Melt',
+	overloaded: m.planner_overloaded,
+	superConduct: m.planner_superconduct,
+	stellarConduct: () => 'Stellar-Conduct',
+	electroCharged: () => 'Electro-Charged',
+	frozen: m.planner_frozen,
+	shatter: m.planner_shatter,
+	burning: m.planner_burning,
+	bloom: m.planner_bloom,
+	hyperbloom: m.planner_hyperbloom,
+	burgeon: m.planner_burgeon,
+	quicken: m.planner_quicken,
+	aggravate: m.planner_aggravate,
+	spread: m.planner_spread,
+	pyroSwirl: m.planner_swirl_pyro,
+	hydroSwirl: m.planner_swirl_hydro,
+	cryoSwirl: m.planner_swirl_cryo,
+	electroSwirl: m.planner_swirl_electro,
+	stellarSwirl: m.planner_stellar_swirl,
+	pyroCrystallize: m.planner_crystallize_pyro,
+	hydroCrystallize: m.planner_crystallize_hydro,
+	cryoCrystallize: m.planner_crystallize_cryo,
+	electroCrystallize: m.planner_crystallize_electro,
+	lunarCrystallize: () => 'Lunar-Crystallize',
+	lunarBloom: () => 'Lunar-Bloom',
+	lunarCharged: () => 'Lunar-Charged'
+});
 
 /**
  * The reaction FAMILY — what a marker says when it has a few characters, which
@@ -211,35 +268,37 @@ export const REACTION_LABEL: Record<Reaction, string> = {
  * so a new `Reaction` is a typecheck failure here instead of a blank marker
  * nobody notices.
  */
-export const REACTION_FAMILY: Record<Reaction, string> = {
-	vaporize: 'Vaporize',
-	melt: 'Melt',
-	overloaded: 'Overloaded',
-	superConduct: 'Superconduct',
-	stellarConduct: 'Stellar-Conduct',
-	electroCharged: 'Electro-Charged',
-	frozen: 'Frozen',
-	shatter: 'Shatter',
-	burning: 'Burning',
-	bloom: 'Bloom',
-	hyperbloom: 'Hyperbloom',
-	burgeon: 'Burgeon',
-	quicken: 'Quicken',
-	aggravate: 'Aggravate',
-	spread: 'Spread',
-	pyroSwirl: 'Swirl',
-	hydroSwirl: 'Swirl',
-	cryoSwirl: 'Swirl',
-	electroSwirl: 'Swirl',
-	stellarSwirl: 'Swirl',
-	pyroCrystallize: 'Crystallize',
-	hydroCrystallize: 'Crystallize',
-	cryoCrystallize: 'Crystallize',
-	electroCrystallize: 'Crystallize',
-	lunarCrystallize: 'Lunar-Cryst.',
-	lunarBloom: 'Lunar-Bloom',
-	lunarCharged: 'Lunar-Charged'
-};
+// Melt and the hyphenated names are not listed by the extractor, so they
+// stay as written for now.
+export const REACTION_FAMILY: Record<Reaction, string> = labels({
+	vaporize: m.planner_vaporize,
+	melt: () => 'Melt',
+	overloaded: m.planner_overloaded,
+	superConduct: m.planner_superconduct,
+	stellarConduct: () => 'Stellar-Conduct',
+	electroCharged: () => 'Electro-Charged',
+	frozen: m.planner_frozen,
+	shatter: m.planner_shatter,
+	burning: m.planner_burning,
+	bloom: m.planner_bloom,
+	hyperbloom: m.planner_hyperbloom,
+	burgeon: m.planner_burgeon,
+	quicken: m.planner_quicken,
+	aggravate: m.planner_aggravate,
+	spread: m.planner_spread,
+	pyroSwirl: m.planner_swirl,
+	hydroSwirl: m.planner_swirl,
+	cryoSwirl: m.planner_swirl,
+	electroSwirl: m.planner_swirl,
+	stellarSwirl: m.planner_swirl,
+	pyroCrystallize: m.planner_crystallize,
+	hydroCrystallize: m.planner_crystallize,
+	cryoCrystallize: m.planner_crystallize,
+	electroCrystallize: m.planner_crystallize,
+	lunarCrystallize: () => 'Lunar-Cryst.',
+	lunarBloom: () => 'Lunar-Bloom',
+	lunarCharged: () => 'Lunar-Charged'
+});
 
 /**
  * The y ceiling a gauge chart draws to, in units: the peak rounded UP to a half

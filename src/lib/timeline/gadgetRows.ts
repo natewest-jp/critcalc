@@ -66,6 +66,7 @@
  */
 
 import type { TimelineWindow } from '$lib/utils/notationParser';
+import { m } from '$lib/paraglide/messages';
 
 export type GadgetBar = {
 	start: number;
@@ -112,13 +113,17 @@ const ROW_ORDER = [
 	// their own: a dendro core and a thundercloud are their own objects.
 	{
 		kind: 'prism' as const,
-		label: 'Starlight Prism',
+		get label() {
+			return m.planner_starlight_prism();
+		},
 		color: 'var(--el-cryo-main)',
 		capacity: 1
 	},
 	{
 		kind: 'thundercloud' as const,
-		label: 'Thundercloud',
+		get label() {
+			return m.planner_thundercloud();
+		},
 		color: 'var(--rx-thundercloud)',
 		// ⚠️ ONE cloud, ever — gcsim keeps it as a STATUS, not a count, so a second
 		// Lunar-Charged restarts its clock rather than adding a second cloud.
@@ -130,12 +135,26 @@ const ROW_ORDER = [
 	// unreachable. A three-deep axis therefore drew one number forever, spending
 	// 8px of strip on a count that never varies. The three lives stay in `bars`,
 	// so the disc's tooltip still says "3 at once".
-	{ kind: 'moondrift' as const, label: 'Moondrift', color: 'var(--el-geo-main)', capacity: 1 },
+	{
+		kind: 'moondrift' as const,
+		get label() {
+			return m.planner_moondrift();
+		},
+		color: 'var(--el-geo-main)',
+		capacity: 1
+	},
 	// ⚓ 5 is `MAX_CORES` in gauge.ts (KQM: a sixth Bloom pops the oldest). ⚠️ Not
 	// imported — this module is a pure projection with no runtime imports, and
 	// the number is a stated game fact rather than an implementation detail. If
 	// the gauge's cap ever moves, this is the second place.
-	{ kind: 'core' as const, label: 'Dendro Core', color: 'var(--rx-dendro-core)', capacity: 5 }
+	{
+		kind: 'core' as const,
+		get label() {
+			return m.planner_dendro_core();
+		},
+		color: 'var(--rx-dendro-core)',
+		capacity: 5
+	}
 ];
 
 /** One run of CONSTANT live count — the area's unit, and what the cursor reads.

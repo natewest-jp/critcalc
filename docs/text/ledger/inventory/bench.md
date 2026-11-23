@@ -12,15 +12,15 @@
   > Empty slot
 - `bench_choose_a_character_for_this_slot` — BenchBand.svelte:384 m()
   > Choose a character for this slot
-- `bench_swap_displayname` — BenchBand.svelte:400 m() · BenchBand.svelte:402 m()
+- `bench_swap_displayname` — BenchBand.svelte:401 m() · BenchBand.svelte:404 m()
   > Swap {name}
   - vars: `name`
-- `bench_swap_empty_slot` — BenchBand.svelte:403 m()
+- `bench_swap_empty_slot` — BenchBand.svelte:405 m()
   > Swap (empty slot)
-- `bench_remove_displayname_from_team` — BenchBand.svelte:412 m() · BenchBand.svelte:415 m()
+- `bench_remove_displayname_from_team` — BenchBand.svelte:414 m() · BenchBand.svelte:417 m()
   > Remove {name} from team
   - vars: `name`
-- `bench_remove_empty_slot` — BenchBand.svelte:416 m()
+- `bench_remove_empty_slot` — BenchBand.svelte:418 m()
   > Remove (empty slot)
 - `bench_theorycraft` — CompareControl.svelte:51 nameOfProfile:
   > Theorycraft
@@ -102,49 +102,49 @@
   > This rotation uses C{con} · you own C{owned}
   - vars: `con` `owned`
   - terms: 📖 rotation
-- `bench_traveler` — SlotPortrait.svelte:180 m()
+- `bench_traveler` — SlotPortrait.svelte:183 m()
   > Traveler
   - terms: 🎮 Traveler
-- `bench_displayname_is_resting_not_in_the` — SlotPortrait.svelte:310 m()
+- `bench_displayname_is_resting_not_in_the` — SlotPortrait.svelte:313 m()
   > {name} is resting: not in the rotation yet
   - vars: `name`
   - terms: 📖 rotation
-- `bench_constellations_can_t_be_unlocked_for` — SlotPortrait.svelte:349 m()
+- `bench_constellations_can_t_be_unlocked_for` — SlotPortrait.svelte:351 m()
   > Constellations can’t be unlocked for this character
   - terms: 🎮 Constellation
-- `bench_displayname_has_no_constellations` — SlotPortrait.svelte:351 m()
+- `bench_displayname_has_no_constellations` — SlotPortrait.svelte:353 m()
   > {name} has no constellations
   - vars: `name`
   - terms: 🎮 Constellation
-- `bench_set_constellation_for_displayname` — SlotPortrait.svelte:352 m()
+- `bench_set_constellation_for_displayname` — SlotPortrait.svelte:354 m()
   > Set constellation for {name}, currently C{con}
   - vars: `name` `con`
   - terms: 🎮 Constellation
-- `bench_frame_timing_not_curated_yet_the` — SlotPortrait.svelte:373 m()
+- `bench_frame_timing_not_curated_yet_the` — SlotPortrait.svelte:375 m()
   > Frame timing not curated yet — the rotation planner draws this character’s actions with generic timing
   - terms: 📖 rotation
-- `bench_frame_timing_not_curated_yet` — SlotPortrait.svelte:374 m()
+- `bench_frame_timing_not_curated_yet` — SlotPortrait.svelte:376 m()
   > Frame timing not curated yet
-- `bench_artifact_set_and_weapon` — SlotPortrait.svelte:393 m()
+- `bench_artifact_set_and_weapon` — SlotPortrait.svelte:396 m()
   > Artifact set and weapon
-- `bench_choose_artifact_set_and_weapon` — SlotPortrait.svelte:394 m()
+- `bench_choose_artifact_set_and_weapon` — SlotPortrait.svelte:397 m()
   > Choose artifact set and weapon
-- `bench_artifact_set` — SlotPortrait.svelte:413 m()
+- `bench_artifact_set` — SlotPortrait.svelte:416 m()
   > Artifact set
-- `bench_choose_artifact_set` — SlotPortrait.svelte:414 m()
+- `bench_choose_artifact_set` — SlotPortrait.svelte:417 m()
   > Choose artifact set
-- `bench_weapon_refinement_currentref` — SlotPortrait.svelte:425 m()
+- `bench_weapon_refinement_currentref` — SlotPortrait.svelte:428 m()
   > Weapon · refinement {r}
   - vars: `r`
   - terms: 🎮 Refinement
-- `bench_weapon` — SlotPortrait.svelte:426 m()
+- `bench_weapon` — SlotPortrait.svelte:429 m()
   > Weapon
-- `bench_choose_weapon_and_refinement` — SlotPortrait.svelte:428 m()
+- `bench_choose_weapon_and_refinement` — SlotPortrait.svelte:431 m()
   > Choose weapon and refinement
   - terms: 🎮 Refinement
-- `bench_close_picker` — SlotPortrait.svelte:464 m()
+- `bench_close_picker` — SlotPortrait.svelte:467 m()
   > Close picker
-- `bench_twin` — SlotPortrait.svelte:488 m()
+- `bench_twin` — SlotPortrait.svelte:491 m()
   > Twin
 - `bench_label_resonance` — TeamBonusesBlock.svelte:172 m() · TeamBonusesBlock.svelte:219 m()
   > {label} — Resonance
@@ -193,59 +193,59 @@
 - `bench_electro_reactions_generate_an_elemental` — resonance.ts:70 m()
   > Electro reactions generate an elemental particle (5s cooldown); Hydro aura duration −40%
   - terms: 🎮 Elemental Particle · 🎮 cooldown · 🎮 Electro · 🎮 Hydro · 🏷 aura
-- `bench_electro_particles` — resonance.ts:72 m()
+- `bench_electro_particles` — resonance.ts:73 m()
   > Electro particles
   - terms: 🎮 Elemental Particle · 🎮 Electro
-- `bench_1_per_electro_reaction_5s_cooldown` — resonance.ts:72 m()
+- `bench_1_per_electro_reaction_5s_cooldown` — resonance.ts:74 m()
   > 1 per Electro reaction · 5s cooldown
   - terms: 🎮 cooldown · 🎮 Electro
-- `bench_hydro_aura_duration` — resonance.ts:73 m()
+- `bench_hydro_aura_duration` — resonance.ts:76 m()
   > Hydro aura duration
   - terms: 🎮 Hydro · 🏷 aura
-- `bench_shattering_ice` — resonance.ts:77 m()
+- `bench_shattering_ice` — resonance.ts:80 m()
   > Shattering Ice
   - terms: 🎮 Shattering Ice
-- `bench_crit_rate_15_vs_frozen_or_cryo_affected` — resonance.ts:78 m()
+- `bench_crit_rate_15_vs_frozen_or_cryo_affected` — resonance.ts:81 m()
   > CRIT Rate +15% vs Frozen or Cryo-affected enemies; Electro aura duration −40%
   - terms: 🎮 CRIT Rate · 🎮 Electro · 🎮 Frozen · 🏷 aura
-- `bench_15_frozen_cryo` — resonance.ts:80 m()
+- `bench_15_frozen_cryo` — resonance.ts:83 m()
   > +15% (Frozen/Cryo)
   - terms: 🎮 Frozen · 🎮 Cryo
-- `bench_electro_aura_duration` — resonance.ts:81 m()
+- `bench_electro_aura_duration` — resonance.ts:84 m()
   > Electro aura duration
   - terms: 🎮 Electro · 🏷 aura
-- `bench_enduring_rock` — resonance.ts:85 m()
+- `bench_enduring_rock` — resonance.ts:88 m()
   > Enduring Rock
   - terms: 🎮 Enduring Rock
-- `bench_shield_strength_15_shielded_dmg_15_20` — resonance.ts:86 m()
+- `bench_shield_strength_15_shielded_dmg_15_20` — resonance.ts:89 m()
   > Shield strength +15%; shielded: DMG +15%, −20% enemy Geo RES (15s)
   - terms: 🎮 Geo · 🎮 RES · 🎮 DMG
-- `bench_shield_strength` — resonance.ts:88 m()
+- `bench_shield_strength` — resonance.ts:91 m()
   > Shield strength
-- `bench_15_shielded` — resonance.ts:89 m()
+- `bench_15_shielded` — resonance.ts:92 m()
   > +15% (shielded)
-- `bench_enemy_geo_res` — resonance.ts:90 m()
+- `bench_enemy_geo_res` — resonance.ts:93 m()
   > Enemy Geo RES
   - terms: 🎮 Geo · 🎮 RES
-- `bench_20_15s` — resonance.ts:90 m()
+- `bench_20_15s` — resonance.ts:93 m()
   > −20% · 15s
-- `bench_sprawling_greenery` — resonance.ts:94 m()
+- `bench_sprawling_greenery` — resonance.ts:97 m()
   > Sprawling Greenery
   - terms: 🎮 Sprawling Greenery
-- `bench_em_50_reaction_triggered_em_boosts_30_20` — resonance.ts:95 m()
+- `bench_em_50_reaction_triggered_em_boosts_30_20` — resonance.ts:98 m()
   > EM +50; reaction-triggered EM boosts (+30/+20, 6s)
   - terms: 🏷 EM
-- `bench_em_after_reactions` — resonance.ts:98 m()
+- `bench_em_after_reactions` — resonance.ts:101 m()
   > EM after reactions
   - terms: 🏷 EM
-- `bench_30_20_6s` — resonance.ts:98 m()
+- `bench_30_20_6s` — resonance.ts:101 m()
   > +30 / +20 · 6s
-- `bench_protective_canopy` — resonance.ts:139 m()
+- `bench_protective_canopy` — resonance.ts:142 m()
   > Protective Canopy
   - terms: 🎮 Protective Canopy
-- `bench_all_elemental_and_physical_res_15` — resonance.ts:140 m()
+- `bench_all_elemental_and_physical_res_15` — resonance.ts:143 m()
   > All elemental and physical RES +15%
   - terms: 🎮 RES
-- `bench_all_res` — resonance.ts:141 m()
+- `bench_all_res` — resonance.ts:144 m()
   > All RES
   - terms: 🎮 RES

@@ -25,21 +25,21 @@
   > By name
 - `coverage_least_covered_first` — CoverageList.svelte:284 m()
   > Least covered first
-- `coverage_showing_length_characters_from_the` — CoverageList.svelte:302 m()
+- `coverage_showing_length_characters_from_the` — CoverageList.svelte:301 m()
   > Showing {count} character from the rotation planner. | Showing {count} characters from the rotation planner.
   - vars: `count`
   - terms: 📖 rotation
-- `coverage_show_all_characters` — CoverageList.svelte:304 m()
+- `coverage_show_all_characters` — CoverageList.svelte:302 m()
   > Show all characters
-- `coverage_lit_of_of` — CoverageList.svelte:352 m()
+- `coverage_lit_of_of` — CoverageList.svelte:350 m()
   > {lit} of {of}
   - vars: `lit` `of`
-- `coverage_lit_of_of_parts_modeled` — CoverageList.svelte:358 m()
+- `coverage_lit_of_of_parts_modeled` — CoverageList.svelte:356 m()
   > {lit} of {of} parts modeled
   - vars: `lit` `of`
-- `coverage_loading` — CoverageList.svelte:368 m() · CoverageList.svelte:410 m()
+- `coverage_loading` — CoverageList.svelte:366 m() · CoverageList.svelte:408 m()
   > Loading…
-- `coverage_no_characters_match_these_filters` — CoverageList.svelte:399 m()
+- `coverage_no_characters_match_these_filters` — CoverageList.svelte:397 m()
   > No characters match these filters.
 - `coverage_timed_from_gcsim_s_frame_data` — coverageText.ts:24 m()
   > Timed from gcsim’s frame data.
@@ -211,5 +211,5 @@
 
 A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
 
-- `{cav}` — CoverageList.svelte:388, each over `caveatsOf(d.data, c.hosts)`
-- `{cav}` — CoverageList.svelte:426, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:386, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:424, each over `caveatsOf(d.data, c.hosts)`
