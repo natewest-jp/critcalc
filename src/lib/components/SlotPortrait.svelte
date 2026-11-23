@@ -5,6 +5,7 @@
 	import { rotationTwin } from '$lib/travelerTwin.svelte';
 	import type { Twin } from '$lib/storage/records';
 	import { twinLabel } from '$lib/data/characterLookup';
+	import { m } from '$lib/paraglide/messages';
 	/**
 	 * SlotPortrait — the slot card of the Planner's bench ribbon, labelling a
 	 * timeline track group.
@@ -88,9 +89,9 @@
 		onSetRefinement,
 		loadoutSource,
 		onPortraitClick,
-		portraitLabel = 'Open character selector',
+		portraitLabel = m.bench_open_character_selector(),
 		actions,
-		emptyLabel = 'Empty',
+		emptyLabel = m.bench_empty(),
 		resting = false,
 		picked = false
 	}: {
@@ -150,8 +151,11 @@
 		!char || !conShort
 			? undefined
 			: ownedCon === null
-				? `You don't own ${char.displayName}`
-				: `This rotation uses C${conLevel} · you own C${ownedCon}`
+				? m.bench_you_don_t_own_displayname({ name: char.displayName })
+				: m.bench_this_rotation_uses_c_conlevel_you_own_c({
+						con: conLevel,
+						owned: String(ownedCon)
+					})
 	);
 
 	const p = $derived(elementPalette(char?.element));
@@ -176,7 +180,7 @@
 	const noCons = $derived(!!char && getCharacterIndexEntry(char.id)?.noConstellations === true);
 
 	function slotLabel(c: NonNullable<SlotChar>): string {
-		return c.id.startsWith('traveler') ? 'Traveler' : c.displayName;
+		return c.id.startsWith('traveler') ? m.bench_traveler() : c.displayName;
 	}
 	// ── Loadout pill state ───────────────────────────────────────────────────
 	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);
@@ -305,7 +309,9 @@
 	class="sp-card"
 	class:sp-card--compact={compact}
 	class:sp-card--resting={resting && !!char}
-	title={resting && char ? `${char.displayName} is resting: not in the rotation yet` : undefined}
+	title={resting && char
+		? m.bench_displayname_is_resting_not_in_the({ name: char.displayName })
+		: undefined}
 	style:--el={p.main}
 	style:--sp-band="{compact ? compactDisc : CARD_PORTRAIT}px"
 >
@@ -342,11 +348,13 @@
 					class:sp-disc-con--zero={conLevel === 0 && !conShort}
 					disabled={noCons}
 					onclick={openConstellation}
-					title={conTitle ??
-						(noCons ? 'Constellations can’t be unlocked for this character' : undefined)}
+					title={conTitle ?? (noCons ? m.bench_constellations_can_t_be_unlocked_for() : undefined)}
 					aria-label={noCons
-						? `${char.displayName} has no constellations`
-						: `Set constellation for ${char.displayName}, currently C${conLevel}`}
+						? m.bench_displayname_has_no_constellations({ name: char.displayName })
+						: m.bench_set_constellation_for_displayname({
+								name: char.displayName,
+								con: conLevel
+							})}
 				>
 					<ConMark level={conLevel} height={7} />
 				</button>
@@ -364,8 +372,9 @@
 					{#if uncurated}
 						<span
 							class="sp-namemark"
-							title="Frame timing not curated yet — the rotation planner draws this character’s actions with generic timing"
-							aria-label="Frame timing not curated yet"><Mark name="uncurated" size={12} /></span
+							title={m.bench_frame_timing_not_curated_yet_the()}
+							aria-label={m.bench_frame_timing_not_curated_yet()}
+							><Mark name="uncurated" size={12} /></span
 						>
 					{/if}
 				</div>
@@ -384,8 +393,8 @@
 						class:sp-loadout--disabled={!char}
 						disabled={!char}
 						onclick={(e) => openLoadout(e, 'artifact')}
-						title={char ? 'Artifact set and weapon' : undefined}
-						aria-label="Choose artifact set and weapon"
+						title={char ? m.bench_artifact_set_and_weapon() : undefined}
+						aria-label={m.bench_choose_artifact_set_and_weapon()}
 					>
 						<span class="sp-lo-zone" class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}>
 							<img class="sp-lo-icon" src={artifactIcon} alt="" />
@@ -404,8 +413,8 @@
 							class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}
 							disabled={!char}
 							onclick={(e) => openLoadout(e, 'artifact')}
-							title={char ? 'Artifact set' : undefined}
-							aria-label="Choose artifact set"
+							title={char ? m.bench_artifact_set() : undefined}
+							aria-label={m.bench_choose_artifact_set()}
 						>
 							<img class="sp-lo-icon" src={artifactIcon} alt="" />
 						</button>
@@ -416,10 +425,10 @@
 							onclick={(e) => openLoadout(e, 'weapon')}
 							title={char
 								? hasWeapon
-									? `Weapon · refinement ${currentRef}`
-									: 'Weapon'
+									? m.bench_weapon_refinement_currentref({ r: currentRef })
+									: m.bench_weapon()
 								: undefined}
-							aria-label="Choose weapon and refinement"
+							aria-label={m.bench_choose_weapon_and_refinement()}
 						>
 							<img class="sp-lo-icon" src={weaponIcon} alt="" />
 							<!-- The refinement, as the in-game weapon card draws it: a digit
@@ -455,7 +464,7 @@
 		class="sp-popover-backdrop"
 		role="button"
 		tabindex="-1"
-		aria-label="Close picker"
+		aria-label={m.bench_close_picker()}
 		use:portal
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
@@ -479,7 +488,7 @@
 	>
 		{#if onSetTwin}
 			<!-- The Traveler's twin: Aether and Lumine are timed apart. -->
-			<div class="sp-twins" role="group" aria-label="Twin">
+			<div class="sp-twins" role="group" aria-label={m.bench_twin()}>
 				{#each ['aether', 'lumine'] as const as twin (twin)}
 					<button
 						class="sp-twin"

@@ -18,6 +18,7 @@
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 	import { replaceState } from '$app/navigation';
 	import { hrefTo, routeOf } from '$lib/i18n/paths';
+	import { m } from '$lib/paraglide/messages';
 	import { characterIndex } from '$lib/data/characterIndex.generated';
 	import { loadCharacter } from '$lib/data/characterData';
 	import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
@@ -233,10 +234,9 @@
 
 <div class="coverage">
 	<header class="cov-head">
-		<h1>Coverage</h1>
+		<h1>{m.coverage_coverage()}</h1>
 		<p class="cov-intro">
-			How much of each character’s kit the rotation planner draws, ability by ability. Hover a
-			segment for its details, or select a character to see all of them.
+			{m.coverage_how_much_of_each_character_s_kit_the()}
 		</p>
 
 		<!-- The wrapper is the legend's size container (never the page's): five
@@ -265,23 +265,23 @@
 					<input
 						class="field cov-search"
 						type="search"
-						placeholder="Search characters"
-						aria-label="Search characters"
+						placeholder={m.coverage_search_characters()}
+						aria-label={m.coverage_search_characters()}
 						bind:value={search}
 					/>
 				</label>
-				<div class="chips" role="group" aria-label="Show">
+				<div class="chips" role="group" aria-label={m.coverage_show()}>
 					<!-- A phrase, so it opts out of the chip's capitalize (app.css .chip). -->
 					<button
 						type="button"
 						class="chip cov-phrase"
 						class:active={rosterOnly}
 						aria-pressed={rosterOnly}
-						onclick={() => (rosterOnly = !rosterOnly)}>My constellations</button
+						onclick={() => (rosterOnly = !rosterOnly)}>{m.coverage_my_constellations()}</button
 					>
 				</div>
-				<div class="segment cov-sort" role="radiogroup" aria-label="Sort">
-					{#each [['newest', 'Newest first'], ['name', 'By name'], ['least', 'Least covered first']] as const as [value, label] (value)}
+				<div class="segment cov-sort" role="radiogroup" aria-label={m.coverage_sort()}>
+					{#each [['newest', m.coverage_newest_first()], ['name', m.coverage_by_name()], ['least', m.coverage_least_covered_first()]] as const as [value, label] (value)}
 						<button
 							type="button"
 							class="btn"
@@ -298,12 +298,9 @@
 
 	{#if pinned.length > 0}
 		<p class="cov-pinned">
-			<span
-				>{pinned.length === 1
-					? 'Showing 1 character from the rotation planner.'
-					: `Showing ${pinned.length} characters from the rotation planner.`}</span
+			<span>{m.coverage_showing_length_characters_from_the({ count: pinned.length })}</span>
+			<button type="button" class="btn" onclick={showAll}>{m.coverage_show_all_characters()}</button
 			>
-			<button type="button" class="btn" onclick={showAll}>Show all characters</button>
 		</p>
 	{/if}
 
@@ -350,13 +347,13 @@
 							{/if}
 							<span class="who-text">
 								<span class="name">{row.entry.displayName}</span>
-								<span class="count">{row.lit} of {row.of}</span>
+								<span class="count">{m.coverage_lit_of_of({ lit: row.lit, of: row.of })}</span>
 							</span>
 						</span>
 						<CoverageStrip
 							states={row.states}
 							dim={dimmedFor(id)}
-							label="{row.lit} of {row.of} parts modeled"
+							label={m.coverage_lit_of_of_parts_modeled({ lit: row.lit, of: row.of })}
 							onEnter={(e, key) => onSegmentEnter(e, id, key)}
 							onLeave={() => (tip = null)}
 						/>
@@ -366,7 +363,7 @@
 						{@const d = details.get(id)}
 						<div class="row-details">
 							{#if !d}
-								<p class="loading">Loading…</p>
+								<p class="loading">{m.coverage_loading()}</p>
 							{:else}
 								<dl class="detail-list">
 									{#each COVERAGE_SEGMENTS as seg (seg.key)}
@@ -397,7 +394,7 @@
 					{/if}
 				</li>
 			{:else}
-				<li class="empty">No characters match these filters.</li>
+				<li class="empty">{m.coverage_no_characters_match_these_filters()}</li>
 			{/each}
 		</ul>
 	</div>
@@ -408,7 +405,7 @@
 	<div class="cov-tip" use:portal style:left="{tip.x}px" style:top="{tip.y}px" role="tooltip">
 		<p class="tip-title">{SEGMENT_TITLE[tip.key]}</p>
 		{#if !d}
-			<p>Loading…</p>
+			<p>{m.coverage_loading()}</p>
 		{:else}
 			{@const c = d.cov[tip.key]}
 			<p class="tip-state">

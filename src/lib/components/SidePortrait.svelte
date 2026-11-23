@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import type { Twin } from '$lib/storage/records';
 	/**
@@ -137,8 +138,8 @@
 			title={!short
 				? `C${con}`
 				: ownedCon === null
-					? `You don't own ${name}`
-					: `This team uses C${con} · you own C${ownedCon}`}
+					? m.bench_you_don_t_own_name({ name })
+					: m.bench_this_team_uses_c_con_you_own_c_ownedcon({ con, owned: String(ownedCon) })}
 		>
 			<ConMark level={con} height={Math.max(6, Math.round(size * 0.11))} />
 		</span>
