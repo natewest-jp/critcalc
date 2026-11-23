@@ -53,6 +53,10 @@
 	import ReshapeRoll from './ReshapeRoll.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
+	import Msg from '$lib/components/Msg.svelte';
+	import { labels } from '$lib/i18n/labels';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	// ⚓ Four views, a piece's life (Nate, 2026-10-06; Reshape 2026-11-03): it
 	// DROPS, it is LEVELLED, it is YOUR piece (entered and ranked), and it is
@@ -62,10 +66,30 @@
 	// ⚓ "What counts as good" is the player's set of stats (1–4), not a pair.
 	type View = 'drop' | 'level' | 'piece' | 'reshape';
 	const VIEWS: { id: View; label: string }[] = [
-		{ id: 'drop', label: 'Drop' },
-		{ id: 'level', label: 'Level up' },
-		{ id: 'piece', label: 'Your piece' },
-		{ id: 'reshape', label: 'Reshape' }
+		{
+			id: 'drop',
+			get label() {
+				return m.vz_artifact_drop();
+			}
+		},
+		{
+			id: 'level',
+			get label() {
+				return m.vz_artifact_level_up();
+			}
+		},
+		{
+			id: 'piece',
+			get label() {
+				return m.vz_artifact_your_piece();
+			}
+		},
+		{
+			id: 'reshape',
+			get label() {
+				return m.vz_artifact_reshape();
+			}
+		}
 	];
 	/** Levels by the upgrade they have reached: +0–3 has none, +20 all five */
 	const LEVELS = [
@@ -76,10 +100,39 @@
 		{ at: 16, label: '+16–19' },
 		{ at: 20, label: '+20' }
 	];
+	/** The game's three kinds of reshape. `tier` picks each one's own wording
+	 *  in a message; the label and hint are getters, read in the page's language. */
 	const RESHAPES = [
-		{ floor: 2, label: 'Standard', hint: 'at least 2' },
-		{ floor: 3, label: 'Advanced', hint: 'at least 3' },
-		{ floor: 4, label: 'Decreed', hint: 'at least 4' }
+		{
+			floor: 2,
+			tier: 'standard',
+			get label() {
+				return m.vz_artifact_standard();
+			},
+			get hint() {
+				return m.vz_artifact_at_least_2();
+			}
+		},
+		{
+			floor: 3,
+			tier: 'advanced',
+			get label() {
+				return m.vz_artifact_advanced();
+			},
+			get hint() {
+				return m.vz_artifact_at_least_3();
+			}
+		},
+		{
+			floor: 4,
+			tier: 'decreed',
+			get label() {
+				return m.vz_artifact_decreed();
+			},
+			get hint() {
+				return m.vz_artifact_at_least_4();
+			}
+		}
 	] as const;
 	type Floor = (typeof RESHAPES)[number]['floor'];
 	const MAX_WANTED = 4;
@@ -92,7 +145,9 @@
 	const DEFAULT_DAYS = 7;
 	/** The most days the field takes, typed or shared: past the axis, the head answers. */
 	const MAX_DAYS = 1000;
-	/** What a substat answers to, typed on the card, besides its name and its words. */
+	/** What a substat answers to, typed on the card, besides its name and its
+	 *  words. Search terms matched against what the player types, so they stay
+	 *  as they are in every language. */
 	const TERMS: Record<SubstatId, string[]> = {
 		hp: ['flat hp'],
 		atk: ['flat atk'],
@@ -110,20 +165,31 @@
 	 * (each is 5%), so the element is only how the piece is named ("+20 Pyro
 	 * Goblet") and what the main stat field answers to ("pyro").
 	 */
+	// Ids, kept in a share link and in the field's values (`elemDmg:Pyro`), so
+	// they stay English; ELEMENT_NAMES is what the page shows.
 	const ELEMENTS = ['Pyro', 'Hydro', 'Electro', 'Cryo', 'Anemo', 'Geo', 'Dendro'] as const;
 	type Element = (typeof ELEMENTS)[number];
+	const ELEMENT_NAMES: Record<Element, string> = labels({
+		Pyro: m.vz_artifact_pyro,
+		Hydro: m.vz_artifact_hydro,
+		Electro: m.vz_artifact_electro,
+		Cryo: m.vz_artifact_cryo,
+		Anemo: m.vz_artifact_anemo,
+		Geo: m.vz_artifact_geo,
+		Dendro: m.vz_artifact_dendro
+	});
 	/** A main stat at its shortest, for the piece's summary (⚓ Nate: "+20 EM Circlet"). */
-	const MAIN_SHORT: Partial<Record<MainStatId, string>> = {
-		hpPct: 'HP%',
-		atkPct: 'ATK%',
-		defPct: 'DEF%',
-		er: 'ER',
-		em: 'EM',
-		cr: 'CR',
-		cd: 'CD',
-		physDmg: 'Physical',
-		healing: 'Healing'
-	};
+	const MAIN_SHORT: Partial<Record<MainStatId, string>> = labels({
+		hpPct: m.vz_artifact_hp_b294,
+		atkPct: m.vz_artifact_atk_0f0a,
+		defPct: m.vz_artifact_def_7253,
+		er: m.vz_artifact_er,
+		em: m.vz_artifact_em,
+		cr: m.vz_artifact_cr,
+		cd: m.vz_artifact_cd,
+		physDmg: m.vz_artifact_physical,
+		healing: m.vz_artifact_healing
+	});
 
 	type Line = { id: SubstatId | ''; raw: string };
 	/** The demo piece: a +20 flower with double crit, so the view teaches itself. */
@@ -352,7 +418,9 @@
 				})
 			: []
 	);
-	const reshapeName = $derived(RESHAPES.find((r) => r.floor === reshapeFloor)!.label);
+	const reshapeKind = $derived(RESHAPES.find((r) => r.floor === reshapeFloor)!);
+	const reshapeName = $derived(reshapeKind.label);
+	const reshapeTier = $derived(reshapeKind.tier);
 
 	// ── Try a reshape ──────────────────────────────────────────────────────
 	// One roll, played as the game plays it (ReshapeRoll.svelte), then lit on
@@ -400,10 +468,10 @@
 		const at = resolutions.findIndex((res) => res.counts.every((c, i) => c === r.counts[i]));
 		resolutionPick = Math.max(0, at);
 		readingPicked = resolutions.length > 1;
-		notices.toast('success', 'Your piece is now the reshaped result', {
+		notices.toast('success', m.vz_artifact_your_piece_is_now_the_reshaped_result(), {
 			actions: [
 				{
-					label: 'Undo',
+					label: m.vz_artifact_undo(),
 					run: () => {
 						if (storageSession.profile?.id === pid) applyShareState(before);
 					}
@@ -419,13 +487,16 @@
 	/** The roll's meaning, said under the two cards (the values are on them) */
 	const rollVerdict = (r: Roll) =>
 		r.x > nowX + 1e-6
-			? 'The reshaped result is better.'
+			? m.vz_artifact_the_reshaped_result_is_better()
 			: r.x < nowX - 1e-6
-				? 'Your piece is still better.'
-				: 'They come out the same.';
+				? m.vz_artifact_your_piece_is_still_better()
+				: m.vz_artifact_they_come_out_the_same();
 	/** A card's place among this kind's reshapes, said under that card */
 	const reshapeRank = (x: number) =>
-		`Better than ${Math.round(compareTo(primaryDist, [{ x, p: 1 }]).below * 100)}% of ${reshapeName} reshapes`;
+		m.vz_artifact_better_than_math_round_compareto({
+			tier: reshapeTier,
+			pct: Math.round(compareTo(primaryDist, [{ x, p: 1 }]).below * 100)
+		});
 
 	// ── The readings: values that fit more than one upgrade count ──────────
 	// ⚓ The streamer took the old tap-to-cycle badge for an "invalid value"
@@ -460,7 +531,7 @@
 		if (view === 'level')
 			return [
 				{ key: 'piece', dist: levelDist, name: '' },
-				...(levelGhost ? [{ key: 'farmed', dist: levelGhost, name: 'Farmed' }] : [])
+				...(levelGhost ? [{ key: 'farmed', dist: levelGhost, name: m.vz_artifact_farmed() }] : [])
 			];
 		if (view === 'piece') return [{ key: 'piece', dist: finished ? population : future, name: '' }];
 		if (view === 'reshape') {
@@ -508,25 +579,27 @@
 	);
 	/** A line's name field: the substats it can be (not the main, not another line's). */
 	const nameOptions = (i: number): FieldOption[] => [
-		{ value: '', label: 'None' },
+		{ value: '', label: m.vz_artifact_none() },
 		...SUBSTATS.filter(
 			(s) => s.id !== main.id && (s.id === lines[i].id || !lines.some((l) => l.id === s.id))
 		).map((s) => ({ value: s.id, label: s.name, terms: [s.short.toLowerCase(), ...TERMS[s.id]] }))
 	];
 	/** The main stat field: a goblet's elemental DMG is one option per element. */
 	const mainOptions = $derived<FieldOption[]>(
-		slot.mains.flatMap((m) =>
-			m.id === 'elemDmg'
-				? ELEMENTS.map((e) => ({
-						value: `elemDmg:${e}`,
-						label: `${e} DMG Bonus`,
-						terms: [e.toLowerCase()]
-					}))
+		slot.mains.flatMap((ms) =>
+			ms.id === 'elemDmg'
+				? ELEMENTS.map(
+						(e): FieldOption => ({
+							value: `elemDmg:${e}`,
+							label: m.vz_artifact_e_dmg_bonus({ element: ELEMENT_NAMES[e] }),
+							terms: [e.toLowerCase()]
+						})
+					)
 				: [
 						{
-							value: m.id,
-							label: m.name,
-							terms: MAIN_SHORT[m.id] ? [MAIN_SHORT[m.id]!.toLowerCase()] : []
+							value: ms.id,
+							label: ms.name,
+							terms: MAIN_SHORT[ms.id] ? [MAIN_SHORT[ms.id]!.toLowerCase()] : []
 						}
 					]
 		)
@@ -620,33 +693,39 @@
 		const d = resin / RESIN_PER_DAY;
 		return d < 10 ? d.toFixed(1) : fmtNum(d);
 	};
-	const daysPhrase = (d: number) => (d === 1 ? '1 day' : `${fmtNum(d)} days`);
+	const daysPhrase = (d: number) =>
+		d === 1 ? m.vz_artifact_1_day() : m.vz_artifact_d_days({ count: d, days: fmtNum(d) });
 	const fmtValue = (x: number) => x.toFixed(1);
-	const unitWord = $derived(unit === 'cv' ? 'CV' : 'useful rolls');
+	const unitWord = $derived(unit === 'cv' ? 'CV' : m.vz_artifact_useful_rolls());
 	const valueOf = (x: number) => `${fmtValue(x)} ${unitWord}`;
-	const slotWord = $derived(slot.name.toLowerCase());
-	/** ⚠️ Sands is its own plural */
-	const slotPlural = $derived(slotId === 'sands' ? 'sands' : `${slotWord}s`);
+	/** The slot's name in the plural, inside a sentence (⚠️ sands is its own
+	 *  plural): a message of its own per slot, never a lowercased name. */
+	const slotPlural = $derived(m.vz_artifact_slotword_s({ slot: slotId }));
 	const levelLabel = $derived(LEVELS.find((l) => l.at === level)!.label);
-	/** "CR", "CR and CD", "CR, CD and ER" */
-	const andList = (ids: SubstatId[]) => {
-		const names = ids.map((id) => substatById(id).short);
-		return names.length < 2
-			? (names[0] ?? '')
-			: `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
-	};
+	/** "CR", "CR and CD", "CR, CD, and ER", in the page's language */
+	const andList = (ids: SubstatId[]) =>
+		new Intl.ListFormat(getLocale(), { type: 'conjunction' }).format(
+			ids.map((id) => substatById(id).short)
+		);
+	/** "+16–19 or +20", in the page's language */
+	const orList = (items: string[]) =>
+		new Intl.ListFormat(getLocale(), { type: 'disjunction' }).format(items);
 	const statList = (ids: SubstatId[]) => ids.map((id) => substatById(id).short).join(', ');
 	/** The Valued stats segment's value: in Drop, how many of them it needs too */
 	const wantedFace = $derived(
 		view === 'drop' && atLeast < wanted.length
-			? `${atLeast} of ${statList(wanted)}`
+			? m.vz_artifact_atleast_of_wanted({ n: atLeast, stats: statList(wanted) })
 			: andList(wanted)
 	);
 	const pieceFace = $derived(
 		`${slot.name} · ${(view === 'drop' ? mainStats : [main]).map((m) => m.name).join(', ')}`
 	);
 	const hasWord = (n: number) =>
-		n === wantedSubs.length && n > 1 ? (n === 2 ? 'Both' : `All ${n}`) : String(n);
+		n === wantedSubs.length && n > 1
+			? n === 2
+				? m.vz_artifact_both()
+				: m.vz_artifact_all_n({ n })
+			: String(n);
 	/**
 	 * THE PIECE AT A GLANCE (⚓ Nate 2026-11-03): its level, its main stat at
 	 * its shortest (not on a flower or plume, whose main never varies) and its
@@ -657,12 +736,12 @@
 			slotId === 'flower' || slotId === 'plume'
 				? ''
 				: main.id === 'elemDmg'
-					? element
+					? ELEMENT_NAMES[element]
 					: (MAIN_SHORT[main.id] ?? main.name);
 		return [levelLabel, mainWord, slot.name].filter(Boolean).join(' ');
 	});
 	const reshapeFace = $derived(
-		`${rshSel.length === 2 ? andList(rshSel) : 'Pick 2'} · ${reshapeName}`
+		`${rshSel.length === 2 ? andList(rshSel) : m.vz_artifact_pick_2()} · ${reshapeName}`
 	);
 
 	// ── Geometry ───────────────────────────────────────────────────────────
@@ -798,6 +877,7 @@
 			s = Math.max(0, s - pt.p);
 			d += ` L${x},${yOf(s).toFixed(1)}`;
 		}
+		// SVG path data, not text
 		return `${d} L${histXOf(histHi).toFixed(1)},${yOf(s).toFixed(1)}`;
 	}
 
@@ -878,7 +958,7 @@
 			Math.min(...strip.dots.filter((d) => d.cx === strip.dots[i].cx).map((d) => d.cy)) -
 			strip.dots[i].r;
 		const rings: { key: string; i: number; kind: 'yours' | 'try' | 'last'; label: string }[] = [
-			{ key: 'yours', i: dotIndex(primaryDist, nowX), kind: 'yours', label: 'yours' }
+			{ key: 'yours', i: dotIndex(primaryDist, nowX), kind: 'yours', label: m.vz_artifact_yours() }
 		];
 		if (view === 'reshape')
 			shownTries.forEach((t, k) => {
@@ -887,7 +967,7 @@
 					key: `try${k}`,
 					i: dotIndex(primaryDist, t.x),
 					kind: last ? 'last' : 'try',
-					label: last ? 'this roll' : ''
+					label: last ? m.vz_artifact_this_roll() : ''
 				});
 			});
 		// labels on one dot stack upward
@@ -902,11 +982,16 @@
 	const triesBeat = $derived(shownTries.filter((t) => t.x > nowX + 1e-6).length);
 	const stripLabel = $derived(
 		view === 'reshape'
-			? `100 ${reshapeName} reshapes, one dot each: ${strip.lit} beat your piece` +
-					(shownTries.length ? ` · your tries: ${shownTries.length}, ${triesBeat} beat it` : '')
+			? m.vz_artifact_100_reshapename_reshapes_one_dot_each({ tier: reshapeTier, lit: strip.lit }) +
+					(shownTries.length
+						? ` ${m.vz_artifact_your_tries_length_triesbeat_beat_it({ tries: shownTries.length, beat: triesBeat })}`
+						: '')
 			: view === 'piece' && finished
-				? `100 +20 ${slotPlural} like yours, one dot each: ${strip.lit} beat it`
-				: `100 pieces, one dot each: ${strip.lit} end above ${fmtValue(reference)}`
+				? m.vz_artifact_100_20_slotplural_like_yours_one_dot({ slots: slotPlural, lit: strip.lit })
+				: m.vz_artifact_100_pieces_one_dot_each_lit_end_above({
+						lit: strip.lit,
+						value: fmtValue(reference)
+					})
 	);
 
 	// ── The answer as geometry (design §6, §7: the chance-curve family) ────
@@ -926,15 +1011,15 @@
 						key: 'half',
 						p: 0.5,
 						x: farm.domain.median / RESIN_PER_DAY,
-						text: `Half by ${fmtDays(farm.domain.median)}`,
-						title: 'Half of players have it within this many days.'
+						text: m.vz_artifact_half_by_median({ days: fmtDays(farm.domain.median) }),
+						title: m.vz_artifact_half_of_players_have_it_within_this_many()
 					},
 					{
 						key: 'tenth',
 						p: 0.9,
 						x: farm.domain.p90 / RESIN_PER_DAY,
-						text: `Unlucky tenth ${fmtDays(farm.domain.p90)}`,
-						title: 'The unluckiest 10% of players need this many days or more.'
+						text: m.vz_artifact_unlucky_tenth_p90({ days: fmtDays(farm.domain.p90) }),
+						title: m.vz_artifact_the_unluckiest_10_of_players_need_this()
 					}
 				]
 			: primaryDist.length
@@ -943,15 +1028,15 @@
 							key: 'half',
 							p: 0.5,
 							x: primaryStats.median,
-							text: `Typical ${fmtValue(primaryStats.median)}`,
-							title: 'Half end above this, and half at or below it.'
+							text: m.vz_artifact_typical_median({ value: fmtValue(primaryStats.median) }),
+							title: m.vz_artifact_half_end_above_this_and_half_at_or_below()
 						},
 						{
 							key: 'tenth',
 							p: 0.9,
 							x: primaryStats.p10,
-							text: `Unlucky tenth ${fmtValue(primaryStats.p10)}`,
-							title: 'The unluckiest 10% end at or below this.'
+							text: m.vz_artifact_unlucky_tenth_p10({ value: fmtValue(primaryStats.p10) }),
+							title: m.vz_artifact_the_unluckiest_10_end_at_or_below_this()
 						}
 					]
 				: [];
@@ -992,7 +1077,7 @@
 					key: 'outbreak',
 					p: chanceBy.outbreak,
 					primary: false,
-					label: `In an Outbreak ${formatChance(chanceBy.outbreak)}`
+					label: m.vz_artifact_in_an_outbreak_outbreak({ chance: formatChance(chanceBy.outbreak) })
 				}
 			];
 		if (view === 'reshape')
@@ -1191,8 +1276,8 @@
 		if (typeof s.slot === 'string' && SLOTS.some((x) => x.id === s.slot)) slotId = s.slot as SlotId;
 		const sl = SLOTS.find((x) => x.id === slotId)!;
 		if (Array.isArray(s.mains)) {
-			const m = s.mains.filter((x) => sl.mains.some((mm) => mm.id === x)) as MainStatId[];
-			mains = m.length ? [...new Set(m)] : [sl.mains[0].id];
+			const picked = s.mains.filter((x) => sl.mains.some((mm) => mm.id === x)) as MainStatId[];
+			mains = picked.length ? [...new Set(picked)] : [sl.mains[0].id];
 		} else mains = [sl.mains[0].id];
 		if (typeof s.el === 'string' && (ELEMENTS as readonly string[]).includes(s.el))
 			element = s.el as Element;
@@ -1246,6 +1331,8 @@
 	}
 </script>
 
+{#snippet sentence(text: string)}<span class="readout-sentence">{text}</span>{/snippet}
+
 {#snippet segment(key: string, value: string, aria: string, body: Snippet)}
 	<!-- A setting on the setup bar: its name and value, opening the setting. -->
 	<BandMenu role="dialog" align="start" ariaLabel="{key}: {aria}">
@@ -1278,21 +1365,25 @@
 
 {#snippet pieceBody()}
 	{@render slotPicker(false)}
-	<div class="chips" role="group" aria-label="Main stat">
-		{#each slot.mains as m (m.id)}
-			{@const on = view === 'drop' ? mains.includes(m.id) : m.id === main.id}
+	<div class="chips" role="group" aria-label={m.vz_artifact_main_stat()}>
+		{#each slot.mains as ms (ms.id)}
+			{@const on = view === 'drop' ? mains.includes(ms.id) : ms.id === main.id}
 			{@const chance = view === 'drop' && slot.mains.length > 1}
 			<button
 				class="chip chip--control"
 				class:ao-chance-chip={chance}
 				class:active={on}
 				aria-pressed={on}
-				onclick={() => pickMain(m.id)}
+				onclick={() => pickMain(ms.id)}
 			>
-				<span>{m.name}</span>
+				<span>{ms.name}</span>
 				{#if chance}
 					<span class="ao-chance"
-						>{formatChance(m.chance).replace(/\.0%$/, '%')}{m.each ? ' each' : ''}</span
+						>{ms.each
+							? m.vz_artifact_chance_each({
+									chance: formatChance(ms.chance).replace(/\.0%$/, '%')
+								})
+							: formatChance(ms.chance).replace(/\.0%$/, '%')}</span
 					>
 				{/if}
 			</button>
@@ -1300,13 +1391,13 @@
 	</div>
 	{#if view === 'drop' && slot.mains.length > 1}
 		<p class="inst-hint">
-			Pick every main stat you'd be happy with. The number under each is how often it drops.
+			{m.vz_artifact_pick_every_main_stat_you_d_be_happy_with()}
 		</p>
 	{/if}
 {/snippet}
 
 {#snippet wantedBody()}
-	<div class="chips ao-dense" role="group" aria-label="Valued stats">
+	<div class="chips ao-dense" role="group" aria-label={m.vz_artifact_valued_stats()}>
 		{#each pieceOnly ? SUBSTATS.filter( (s) => pieceLines.some((l) => l.id === s.id) ) : SUBSTATS as s (s.id)}
 			{@const on = wanted.includes(s.id)}
 			<button
@@ -1320,7 +1411,9 @@
 				<span>{s.short}</span>
 				{#if view === 'drop'}
 					<span class="ao-chance"
-						>{s.id === main.id ? 'main' : `${Math.round(lineChance[s.id] * 100)}%`}</span
+						>{s.id === main.id
+							? m.vz_artifact_main()
+							: `${Math.round(lineChance[s.id] * 100)}%`}</span
 					>
 				{/if}
 			</button>
@@ -1328,14 +1421,14 @@
 	</div>
 	<p class="inst-hint">
 		{pieceOnly
-			? "Pick the substats you want, from this piece's four."
-			: 'Pick up to four substats you want.'}
+			? m.vz_artifact_pick_the_substats_you_want_from_this()
+			: m.vz_artifact_pick_up_to_four_substats_you_want()}
 		{#if view === 'drop'}
-			The number under each is its chance to be one of the piece's four substats.
+			{m.vz_artifact_the_number_under_each_is_its_chance_to()}
 		{/if}
 	</p>
 	{#if view === 'drop' && wanted.length > 1}
-		<div class="chips" role="group" aria-label="How many of them">
+		<div class="chips" role="group" aria-label={m.vz_artifact_how_many_of_them()}>
 			{#each Array.from({ length: wanted.length }, (_, i) => i + 1) as n (n)}
 				<button
 					class="chip chip--control"
@@ -1343,7 +1436,11 @@
 					aria-pressed={atLeast === n}
 					onclick={() => (atLeast = n)}
 				>
-					{n === wanted.length ? (n === 2 ? 'Both' : `All ${n}`) : `At least ${n}`}
+					{n === wanted.length
+						? n === 2
+							? m.vz_artifact_both()
+							: m.vz_artifact_all_n({ n })
+						: m.vz_artifact_at_least_n({ n })}
 				</button>
 			{/each}
 		</div>
@@ -1358,7 +1455,7 @@
 			aria-pressed={!eitherSet}
 			onclick={() => (eitherSet = false)}
 		>
-			One set
+			{m.vz_artifact_one_set()}
 		</button>
 		<button
 			class="chip chip--control"
@@ -1366,13 +1463,13 @@
 			aria-pressed={eitherSet}
 			onclick={() => (eitherSet = true)}
 		>
-			Either set
+			{m.vz_artifact_either_set()}
 		</button>
 	</div>
 {/snippet}
 
 {#snippet hasBody()}
-	<div class="chips" role="group" aria-label="How many of your valued stats it has">
+	<div class="chips" role="group" aria-label={m.vz_artifact_how_many_of_your_valued_stats_it_has()}>
 		{#each Array.from({ length: wantedSubs.length }, (_, i) => i + 1) as n (n)}
 			<button
 				class="chip chip--control"
@@ -1380,7 +1477,10 @@
 				aria-pressed={levelK === n}
 				onclick={() => (levelHas = n)}
 			>
-				Has {n === wantedSubs.length && n > 1 ? `all ${n}` : n}
+				{m.vz_artifact_has_n_wantedsubs_length_n_1_all_n_n({
+					form: n === wantedSubs.length && n > 1 ? 'all' : 'count',
+					n
+				})}
 			</button>
 		{/each}
 	</div>
@@ -1394,7 +1494,7 @@
 			aria-pressed={fourLine}
 			onclick={() => (fourLine = true)}
 		>
-			Dropped with 4 substats
+			{m.vz_artifact_dropped_with_4_substats()}
 		</button>
 		<button
 			class="chip chip--control"
@@ -1402,12 +1502,11 @@
 			aria-pressed={!fourLine}
 			onclick={() => (fourLine = false)}
 		>
-			With 3
+			{m.vz_artifact_with_3()}
 		</button>
 	</div>
 	<p class="note">
-		A piece that drops with 4 substats gets 5 upgrades by +20. One that drops with 3 spends its
-		first upgrade adding a 4th substat.
+		{m.vz_artifact_a_piece_that_drops_with_4_substats_gets()}
 	</p>
 {/snippet}
 
@@ -1419,7 +1518,7 @@
 			aria-pressed={!defined}
 			onclick={() => (defined = false)}
 		>
-			Farmed
+			{m.vz_artifact_farmed()}
 		</button>
 		<button
 			class="chip chip--control"
@@ -1428,17 +1527,16 @@
 			disabled={view === 'level' && levelK < 2}
 			onclick={() => (defined = true)}
 		>
-			Made with Elixir
+			{m.vz_artifact_made_with_elixir()}
 		</button>
 	</div>
 	{#if view === 'level'}
 		<p class="note">
-			A piece made with Sanctifying Elixir guarantees at least 2 of its upgrades go to the two
-			substats you chose for it.
+			{m.vz_artifact_a_piece_made_with_sanctifying_elixir()}
 		</p>
 	{:else if defined}
 		<!-- The Elixir's own screen: Define Minor Affixes, two of the piece's lines. -->
-		<span class="slider-label" id="ao-defined-label">Defined substats</span>
+		<span class="slider-label" id="ao-defined-label">{m.vz_artifact_defined_substats()}</span>
 		<div class="chips" role="group" aria-labelledby="ao-defined-label">
 			{#each pieceLines as l (l.id)}
 				{@const on = defSel.includes(l.id)}
@@ -1454,8 +1552,7 @@
 			{/each}
 		</div>
 		<p class="note">
-			Pick the two substats you chose when making it. Together they're guaranteed at least 2
-			upgrades by +20.
+			{m.vz_artifact_pick_the_two_substats_you_chose_when()}
 		</p>
 	{/if}
 {/snippet}
@@ -1463,7 +1560,7 @@
 {#snippet reshapeBody()}
 	<!-- The game's reshape screen: the piece's lines with their upgrades, a
 	     radial on each, then the kind of reshape. -->
-	<div class="ao-rs-lines" role="group" aria-label="Substats to reshape">
+	<div class="ao-rs-lines" role="group" aria-label={m.vz_artifact_substats_to_reshape()}>
 		{#each pieceLines as l, i (l.id)}
 			{@const on = rshSel.includes(l.id)}
 			{@const count = resolution ? resolution.counts[i] - 1 : null}
@@ -1486,13 +1583,12 @@
 		{/each}
 	</div>
 	{#if reshapeAuto && rshSel.length === 2}
-		<p class="note">Your first two valued stats on this piece, until you pick your own.</p>
+		<p class="note">{m.vz_artifact_your_first_two_valued_stats_on_this()}</p>
 	{/if}
 	<p class="note">
-		Pick 2 substats. After the reshape, they get at least {reshapeFloor} of the piece's upgrades between
-		them.
+		{m.vz_artifact_pick_2_substats_after_the_reshape_they({ floor: reshapeFloor })}
 	</p>
-	<div class="chips" role="group" aria-label="Kind of reshape">
+	<div class="chips" role="group" aria-label={m.vz_artifact_kind_of_reshape()}>
 		{#each RESHAPES as r (r.floor)}
 			<button
 				class="chip chip--control"
@@ -1505,8 +1601,7 @@
 		{/each}
 	</div>
 	<p class="note">
-		Every {ADVANCED_EXEGESIS} Dust of Enlightenment you spend makes your next reshape Advanced, and the
-		third Advanced in a row is Decreed. The chart shows all three.
+		{m.vz_artifact_every_advanced_exegesis_dust_of({ dust: ADVANCED_EXEGESIS })}
 	</p>
 {/snippet}
 
@@ -1539,11 +1634,11 @@
 			<button
 				class="chip chip--control ao-clear"
 				onclick={clearPiece}
-				aria-label="Clear"
-				title={tightCard ? 'Clear' : undefined}
+				aria-label={m.vz_artifact_clear()}
+				title={tightCard ? m.vz_artifact_clear() : undefined}
 			>
 				<Mark name="reset" size={12} />
-				{#if !tightCard}<span>Clear</span>{/if}
+				{#if !tightCard}<span>{m.vz_artifact_clear()}</span>{/if}
 			</button>
 		</div>
 		<div class="ao-main-row">
@@ -1551,7 +1646,7 @@
 			{#if slot.mains.length > 1}
 				<StatField
 					kind="name"
-					label="Main stat"
+					label={m.vz_artifact_main_stat()}
 					options={mainOptions}
 					value={mainValue}
 					onpick={pickMainField}
@@ -1573,9 +1668,7 @@
 						class="ao-badge"
 						class:is-zero={resolution.counts[at] === 1 && !open}
 						class:is-open={open}
-						title={open
-							? 'These values fit more than one upgrade count. Pick the one that matches the game under the card.'
-							: undefined}
+						title={open ? m.vz_artifact_these_values_fit_more_than_one_upgrade() : undefined}
 					>
 						{resolution.counts[at] > 1 || open ? resolution.counts[at] - 1 : ''}
 						{#if open}{@render warnMark()}{/if}
@@ -1585,10 +1678,10 @@
 				{/if}
 				<StatField
 					kind="name"
-					label="Substat {i + 1}"
+					label={m.vz_artifact_substat_x({ n: i + 1 })}
 					options={nameOptions(i)}
 					value={line.id}
-					placeholder="Substat…"
+					placeholder={m.vz_artifact_substat()}
 					display={line.id !== '' && tightCard ? substatById(line.id).short : undefined}
 					onpick={(v) => setLineStat(i, v as SubstatId | '')}
 				/>
@@ -1596,7 +1689,7 @@
 				     name lands on it once the name is set. -->
 				<StatField
 					kind="value"
-					label="Value for substat {i + 1}"
+					label={m.vz_artifact_value_for_substat_x({ n: i + 1 })}
 					options={valueOptions[i]}
 					value={line.raw}
 					placeholder="—"
@@ -1604,7 +1697,7 @@
 				/>
 			</div>
 		{/each}
-		<div class="chips ao-dense ao-levels" role="group" aria-label="Level">
+		<div class="chips ao-dense ao-levels" role="group" aria-label={m.vz_artifact_level()}>
 			{#each LEVELS as l (l.at)}
 				<button
 					class="chip chip--control"
@@ -1631,7 +1724,7 @@
 					}
 				/>
 				<span class="check-box"></span>
-				The 4th substat is grayed out (unactivated)
+				{m.vz_artifact_the_4th_substat_is_grayed_out()}
 			</label>
 		{/if}
 		{#if unsettled.length}
@@ -1640,16 +1733,15 @@
 				class="ao-reading"
 				class:is-open={!readingPicked}
 				role="group"
-				aria-label="Upgrade counts"
+				aria-label={m.vz_artifact_upgrade_counts()}
 			>
 				<p class="ao-reading-ask">
 					{#if !readingPicked}{@render warnMark()}{/if}
 					<span>
-						These values fit {resolutions.length === 2 ? 'two' : resolutions.length} different upgrade
-						counts.
+						{m.vz_artifact_these_values_fit_length_different({ count: resolutions.length })}
 						{finished
-							? 'Pick the one the game shows when you reshape the piece:'
-							: 'Pick the one it got, if you know it:'}
+							? m.vz_artifact_pick_the_one_the_game_shows_when_you()
+							: m.vz_artifact_pick_the_one_it_got_if_you_know_it()}
 					</span>
 				</p>
 				<div class="chips">
@@ -1671,13 +1763,11 @@
 		{/if}
 		<p class="note ao-card-note">
 			{#if resolution}
-				The number beside each substat is how many upgrades it got, the same number the game shows
-				on its reshape screen. Your valued stats are highlighted.
+				{m.vz_artifact_the_number_beside_each_substat_is_how()}
 			{:else if pieceComplete}
-				Pick your piece's level. Levels these values can't belong to are dimmed.
+				{m.vz_artifact_pick_your_piece_s_level_levels_these()}
 			{:else}
-				Enter each substat and its value exactly as the game shows them, then pick the piece's
-				level.
+				{m.vz_artifact_enter_each_substat_and_its_value_exactly()}
 			{/if}
 		</p>
 	</div>
@@ -1689,7 +1779,9 @@
 		bind:this={pieceMenu}
 		role="dialog"
 		align="start"
-		ariaLabel="Your piece: {pieceLines.length ? pieceName : 'not entered'}"
+		ariaLabel={m.vz_artifact_your_piece_x({
+			piece: pieceLines.length ? pieceName : m.vz_artifact_not_entered()
+		})}
 	>
 		{#snippet face()}
 			{#if pieceLines.length}
@@ -1708,7 +1800,7 @@
 					{/each}
 				</span>
 			{:else}
-				<span class="setup-val">Enter your piece</span>
+				<span class="setup-val">{m.vz_artifact_enter_your_piece()}</span>
 			{/if}
 		{/snippet}
 		{#snippet items()}
@@ -1725,37 +1817,54 @@
 		<!-- THE CHART HEAD: the view's answer, at the stage's top left. -->
 		<p class="readout-head stage-head">
 			{#if view === 'drop'}
-				{formatChance(chanceBy.domain)}<span class="readout-sentence"
-					>chance of the piece within {daysPhrase(days)}</span
-				>
+				<Msg
+					parts={m.vz_artifact_domain_chance_of_the_piece_within_days.parts({
+						chance: formatChance(chanceBy.domain),
+						days: daysPhrase(days)
+					})}
+					tags={{ span: sentence }}
+				/>
 			{:else if emptyReason}
 				—<span class="readout-sentence"
 					>{emptyReason === 'main'
-						? 'Pick a substat'
+						? m.vz_artifact_pick_a_substat()
 						: emptyReason === 'unfinished'
-							? 'Reshaping needs a +20 piece'
+							? m.vz_artifact_reshaping_needs_a_20_piece()
 							: emptyReason === 'pick'
-								? 'Pick two substats to reshape'
-								: 'Enter your piece to see how it measures up'}</span
+								? m.vz_artifact_pick_two_substats_to_reshape()
+								: m.vz_artifact_enter_your_piece_to_see_how_it_measures()}</span
 				>
 			{:else if view === 'reshape'}
-				{formatChance(beats)}<span class="readout-sentence"
-					>chance a {reshapeName} reshape beats your piece</span
-				>
+				<Msg
+					parts={m.vz_artifact_beats_chance_a_reshapename_reshape_beats.parts({
+						tier: reshapeTier,
+						chance: formatChance(beats)
+					})}
+					tags={{ span: sentence }}
+				/>
 			{:else if view === 'piece' && finished}
-				Better than {Math.round(percentile * 100)}%<span class="readout-sentence"
-					>of +20 {slotPlural} with these four substats</span
-				>
+				<Msg
+					parts={m.vz_artifact_better_than_x_of_20_slotplural_with.parts({
+						pct: Math.round(percentile * 100),
+						slots: slotPlural
+					})}
+					tags={{ span: sentence }}
+				/>
 			{:else}
-				{formatChance(beats)}<span class="readout-sentence"
-					>chance it ends above {valueOf(reference)}{view === 'piece' ? ' at +20' : ''}</span
-				>
+				<Msg
+					parts={m.vz_artifact_beats_chance_it_ends_above_reference_x.parts({
+						when: view === 'piece' ? 'end' : 'now',
+						chance: formatChance(beats),
+						value: valueOf(reference)
+					})}
+					tags={{ span: sentence }}
+				/>
 			{/if}
 		</p>
 
 		<!-- THE CHART'S TOOLBAR: the view tabs, then the setup bar. -->
 		<div class="stage-toolbar">
-			<div class="segment stage-tabs" role="radiogroup" aria-label="View">
+			<div class="segment stage-tabs" role="radiogroup" aria-label={m.vz_artifact_view()}>
 				{#each VIEWS as v (v.id)}
 					<button
 						class="btn"
@@ -1768,37 +1877,37 @@
 					</button>
 				{/each}
 			</div>
-			<div class="setup-bar" role="group" aria-label="Setup">
+			<div class="setup-bar" role="group" aria-label={m.vz_artifact_setup()}>
 				{#if view === 'piece' || view === 'reshape'}
 					{@render pieceSegment()}
 				{:else}
-					{@render segment('Piece', pieceFace, pieceFace, pieceBody)}
+					{@render segment(m.vz_artifact_piece(), pieceFace, pieceFace, pieceBody)}
 				{/if}
-				{@render segment('Valued stats', wantedFace, wantedFace, wantedBody)}
+				{@render segment(m.vz_artifact_valued_stats(), wantedFace, wantedFace, wantedBody)}
 				{#if view === 'drop'}
 					{@render segment(
-						'Set',
-						eitherSet ? 'Either' : 'One',
-						eitherSet ? 'Either' : 'One',
+						m.vz_artifact_set(),
+						eitherSet ? m.vz_artifact_either() : m.vz_artifact_one(),
+						eitherSet ? m.vz_artifact_either() : m.vz_artifact_one(),
 						setBody
 					)}
 				{/if}
 				{#if view === 'level'}
 					{#if wantedSubs.length > 1}
-						{@render segment('Has', hasWord(levelK), hasWord(levelK), hasBody)}
+						{@render segment(m.vz_artifact_has(), hasWord(levelK), hasWord(levelK), hasBody)}
 					{/if}
 					{@render segment(
-						'Dropped with',
-						fourLine ? '4 substats' : '3 substats',
-						fourLine ? '4 substats' : '3 substats',
+						m.vz_artifact_dropped_with(),
+						fourLine ? m.vz_artifact_4_substats() : m.vz_artifact_3_substats(),
+						fourLine ? m.vz_artifact_4_substats() : m.vz_artifact_3_substats(),
 						startBody
 					)}
 				{/if}
 				{#if view === 'level' || view === 'piece'}
 					{@render segment(
-						'Made',
-						defined ? 'With Elixir' : 'Farmed',
-						defined ? 'With Elixir' : 'Farmed',
+						m.vz_artifact_made(),
+						defined ? m.vz_artifact_with_elixir() : m.vz_artifact_farmed(),
+						defined ? m.vz_artifact_with_elixir() : m.vz_artifact_farmed(),
 						madeBody
 					)}
 				{/if}
@@ -1807,10 +1916,10 @@
 						bind:this={reshapeMenu}
 						role="dialog"
 						align="start"
-						ariaLabel="Reshape: {reshapeFace}"
+						ariaLabel={m.vz_artifact_reshape_reshapeface({ face: reshapeFace })}
 					>
 						{#snippet face()}
-							<span class="setup-key">Reshape</span>
+							<span class="setup-key">{m.vz_artifact_reshape()}</span>
 							<span class="setup-val">{reshapeFace}</span>
 						{/snippet}
 						{#snippet items()}
@@ -1822,7 +1931,8 @@
 			<!-- A chart tool, at the toolbar's far end (design §6). -->
 			{#if view === 'reshape' && !emptyReason}
 				<button class="btn ao-tool" onclick={tryReshape}>
-					<Mark name="dice" size={14} /> Try a reshape
+					<Mark name="dice" size={14} />
+					{m.vz_artifact_try_a_reshape()}
 				</button>
 			{/if}
 		</div>
@@ -1839,8 +1949,10 @@
 				original={pieceLines.map((l) => l.raw)}
 				originalCounts={resolution?.counts ?? []}
 				roll={rolling}
-				mainName={main.id === 'elemDmg' ? `${element} DMG Bonus` : main.name}
-				kind={reshapeName}
+				mainName={main.id === 'elemDmg'
+					? m.vz_artifact_element_dmg_bonus({ element: ELEMENT_NAMES[element] })
+					: main.name}
+				kind={reshapeTier}
 				originalValue={valueOf(nowX)}
 				resultValue={valueOf(rolling.x)}
 				originalRank={reshapeRank(nowX)}
@@ -1862,44 +1974,55 @@
 				{#if emptyReason}
 					<div class="ao-empty">
 						{#if emptyReason === 'main'}
-							<p>Your only valued stat is this piece's main stat. Pick a substat too.</p>
+							<p>{m.vz_artifact_your_only_valued_stat_is_this_piece_s()}</p>
 						{:else if emptyReason === 'incomplete'}
 							<p>
 								{pieceLines.length
-									? 'Enter all four of its substats, a grayed-out one too.'
-									: 'Enter a piece to see how it measures up.'}
+									? m.vz_artifact_enter_all_four_of_its_substats_a_grayed()
+									: m.vz_artifact_enter_a_piece_to_see_how_it_measures_up()}
 							</p>
 							<button class="btn" onclick={() => pieceMenu?.show()}>
-								{pieceLines.length ? 'Finish your piece' : 'Enter your piece'}
+								{pieceLines.length
+									? m.vz_artifact_finish_your_piece()
+									: m.vz_artifact_enter_your_piece()}
 							</button>
 						{:else if emptyReason === 'impossible'}
-							<p>One of these values isn't possible for that substat. Check it against the game.</p>
-							<button class="btn" onclick={() => pieceMenu?.show()}>Edit your piece</button>
+							<p>{m.vz_artifact_one_of_these_values_isn_t_possible_for()}</p>
+							<button class="btn" onclick={() => pieceMenu?.show()}
+								>{m.vz_artifact_edit_your_piece()}</button
+							>
 						{:else if emptyReason === 'misfit'}
 							<p>
-								These values add up to {totals.join(' or ')} upgrade{totals.at(-1) === 1
-									? ''
-									: 's'}, but a {levelLabel} piece has only {Math.max(
-									0,
-									upgradesAt(level) - 1
-								)}–{upgradesAt(level)}.
+								{m.vz_artifact_these_values_add_up_to_x_upgrade_x_but_a({
+									count: totals.at(-1) ?? 0,
+									totals: orList(totals.map(String)),
+									level: levelLabel,
+									low: Math.max(0, upgradesAt(level) - 1),
+									high: upgradesAt(level)
+								})}
 								{#if LEVELS.some((l) => fitsLevel[l.at])}
-									Recheck your values, or pick {LEVELS.filter((l) => fitsLevel[l.at])
-										.map((l) => l.label)
-										.join(' or ')}.
+									{m.vz_artifact_recheck_your_values_or_pick_x({
+										levels: orList(LEVELS.filter((l) => fitsLevel[l.at]).map((l) => l.label))
+									})}
 								{:else}
-									Recheck your values.
+									{m.vz_artifact_recheck_your_values()}
 								{/if}
 							</p>
-							<button class="btn" onclick={() => pieceMenu?.show()}>Edit your piece</button>
+							<button class="btn" onclick={() => pieceMenu?.show()}
+								>{m.vz_artifact_edit_your_piece()}</button
+							>
 						{:else if emptyReason === 'unfinished'}
-							<p>This piece is {levelLabel}. Level it to +20 to reshape it.</p>
-							<button class="btn" onclick={() => pieceMenu?.show()}>Edit your piece</button>
+							<p>{m.vz_artifact_this_piece_is_levellabel_level_it_to_20({ level: levelLabel })}</p>
+							<button class="btn" onclick={() => pieceMenu?.show()}
+								>{m.vz_artifact_edit_your_piece()}</button
+							>
 						{:else if emptyReason === 'pick'}
-							<p>Pick the two substats to reshape, as the game's reshape screen asks.</p>
-							<button class="btn" onclick={() => reshapeMenu?.show()}>Pick two substats</button>
+							<p>{m.vz_artifact_pick_the_two_substats_to_reshape_as_the()}</p>
+							<button class="btn" onclick={() => reshapeMenu?.show()}
+								>{m.vz_artifact_pick_two_substats()}</button
+							>
 						{:else}
-							<p>None of your valued stats are on this piece.</p>
+							<p>{m.vz_artifact_none_of_your_valued_stats_are_on_this()}</p>
 						{/if}
 					</div>
 				{:else}
@@ -1908,8 +2031,13 @@
 						height={H}
 						role="img"
 						aria-label={view === 'drop'
-							? 'Chance of this piece by days of resin'
-							: `Chance to end above each ${unit === 'cv' ? 'crit value' : 'count of useful rolls'} at +20`}
+							? m.vz_artifact_chance_of_this_piece_by_days_of_resin()
+							: m.vz_artifact_chance_to_end_above_each_x_at_20({
+									unit:
+										unit === 'cv'
+											? m.vz_artifact_crit_value()
+											: m.vz_artifact_count_of_useful_rolls()
+								})}
 						onpointerdown={onDown}
 						onpointermove={onMove}
 						onpointerup={onUp}
@@ -1971,10 +2099,10 @@
 							text-anchor="end"
 						>
 							{view === 'drop'
-								? 'days of resin'
+								? m.vz_artifact_days_of_resin_f956()
 								: unit === 'cv'
-									? 'crit value (CV) at +20'
-									: 'useful rolls in your valued stats at +20'}
+									? m.vz_artifact_crit_value_cv_at_20()
+									: m.vz_artifact_useful_rolls_in_your_valued_stats_at_20()}
 						</text>
 
 						<!-- Y grid: the chance -->
@@ -1999,10 +2127,10 @@
 						<line x1={PADL} y1={plotY1} x2={graphW - PADR} y2={plotY1} stroke="var(--chart-rule)" />
 						<text x={PADL} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 							{view === 'drop'
-								? 'chance you have it by then'
+								? m.vz_artifact_chance_you_have_it_by_then()
 								: view === 'reshape'
-									? 'chance a reshape ends above'
-									: 'chance it ends above'}
+									? m.vz_artifact_chance_a_reshape_ends_above()
+									: m.vz_artifact_chance_it_ends_above()}
 						</text>
 
 						{#if view === 'drop'}
@@ -2028,7 +2156,7 @@
 								font-size="11"
 								text-anchor={farmLabels.outbreak.anchor}
 							>
-								In an Outbreak
+								{m.vz_artifact_in_an_outbreak()}
 							</text>
 							<text
 								class="stage-word"
@@ -2039,7 +2167,7 @@
 								font-weight="600"
 								text-anchor={farmLabels.domain.anchor}
 							>
-								Domain
+								{m.vz_artifact_domain()}
 							</text>
 						{:else}
 							<!-- The companion: 100 pieces, one dot each, on the same x axis -->
@@ -2127,7 +2255,7 @@
 									fill="var(--chart-dim)"
 									font-size="10"
 								>
-									now {fmtValue(nowX)}
+									{m.vz_artifact_now_nowx({ value: fmtValue(nowX) })}
 								</text>
 							{/if}
 						{/if}
@@ -2208,7 +2336,7 @@
 				>
 					{#if view === 'drop'}
 						<InstrumentSlider
-							label="Days of resin"
+							label={m.vz_artifact_days_of_resin_c765()}
 							bind:value={() => days, (v) => (days = v)}
 							min={0}
 							max={farmDomain}
@@ -2220,7 +2348,7 @@
 						/>
 					{:else if markIsPiece}
 						<InstrumentSlider
-							label="Your piece"
+							label={m.vz_artifact_your_piece()}
 							value={nowX}
 							min={histLo}
 							max={histHi}
@@ -2231,8 +2359,8 @@
 						/>
 					{:else}
 						<InstrumentSlider
-							label="To beat"
-							aria="The value to beat"
+							label={m.vz_artifact_to_beat()}
+							aria={m.vz_artifact_the_value_to_beat()}
 							bind:value={
 								() => reference,
 								(v) => {
@@ -2254,23 +2382,26 @@
 			<!-- The fine print: what no part of the chart can show. -->
 			{#if view === 'drop'}
 				<p class="stage-fine">
-					About 1 in every {oneIn(perPiece)} five-star drops from this domain is the piece you want.
-					{daysPhrase(days)} is {fmtNum(resinOf(days))} resin, at {RESIN_PER_DAY} a day. During a Stygian
-					Onslaught Disturbance Outbreak, every 120 resin you spend also earns one extra 5★ from the domain.
+					{m.vz_artifact_about_1_in_every_perpiece_five_star({
+						oneIn: oneIn(perPiece),
+						days: daysPhrase(days),
+						resin: fmtNum(resinOf(days)),
+						perDay: RESIN_PER_DAY
+					})}
 				</p>
 			{:else if !emptyReason && view === 'level' && unit === 'rolls'}
 				<p class="stage-fine">
-					Useful rolls count every roll in your valued stats by its size: a max roll counts as 1,
-					the smallest as 0.7. A substat's starting roll counts too.
+					{m.vz_artifact_useful_rolls_count_every_roll_in_your()}
 				</p>
 			{:else if !emptyReason && view === 'piece' && !finished && refPiece === null}
 				<p class="stage-fine">
-					Until you drag it, the value to beat is a typical +20 {slotWord} with these substats.
+					{m.vz_artifact_until_you_drag_it_the_value_to_beat_is_a({ slot: slotId })}
 				</p>
 			{:else if !emptyReason && view === 'piece' && finished}
 				<p class="stage-fine">
 					<button class="btn btn--sm ao-next" onclick={() => (view = 'reshape')}>
-						Reshape this piece <Mark name="forwardSlim" size={11} />
+						{m.vz_artifact_reshape_this_piece()}
+						<Mark name="forwardSlim" size={11} />
 					</button>
 				</p>
 			{/if}

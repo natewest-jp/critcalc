@@ -8,6 +8,7 @@
 
 import type { Application, ElementId } from '$lib/utils/gauge';
 import type { IcdHit } from '$lib/utils/icd';
+import { m } from '$lib/paraglide/messages';
 
 // ---------------------------------------------------------------------------
 // Registry
@@ -19,14 +20,63 @@ export const INSTRUMENTS = [
 	// two dice (artifacts, wishes) last.
 	// `help` is the instrument's section id in Help's Visualizers chapter
 	// (`$lib/help/chapters/Visualizers.svelte`), which the tile's ⋯ links to.
-	{ id: 'crit', name: 'Crit heatmap', help: 'crit-heatmap' },
-	{ id: 'gauge', name: 'Gauge explorer', help: 'gauge-explorer' },
-	{ id: 'icd', name: 'ICD timeline', help: 'icd-timeline' },
-	{ id: 'curves', name: 'Reaction curves', help: 'reaction-curves' },
-	{ id: 'breakdown', name: 'Damage breakdown', help: 'damage-breakdown' },
-	{ id: 'defres', name: 'Enemy RES & DEF', help: 'enemy-res-def' },
-	{ id: 'artifact', name: 'Artifact odds', help: 'artifact-odds' },
-	{ id: 'wish', name: 'Wish odds', help: 'wish-odds' }
+	// `name` is a getter, so each read follows the page's language.
+	{
+		id: 'crit',
+		get name() {
+			return m.vz_crit_heatmap();
+		},
+		help: 'crit-heatmap'
+	},
+	{
+		id: 'gauge',
+		get name() {
+			return m.vz_gauge_explorer();
+		},
+		help: 'gauge-explorer'
+	},
+	{
+		id: 'icd',
+		get name() {
+			return m.vz_icd_timeline();
+		},
+		help: 'icd-timeline'
+	},
+	{
+		id: 'curves',
+		get name() {
+			return m.vz_reaction_curves();
+		},
+		help: 'reaction-curves'
+	},
+	{
+		id: 'breakdown',
+		get name() {
+			return m.vz_damage_breakdown();
+		},
+		help: 'damage-breakdown'
+	},
+	{
+		id: 'defres',
+		get name() {
+			return m.vz_enemy_res_def();
+		},
+		help: 'enemy-res-def'
+	},
+	{
+		id: 'artifact',
+		get name() {
+			return m.vz_artifact_odds();
+		},
+		help: 'artifact-odds'
+	},
+	{
+		id: 'wish',
+		get name() {
+			return m.vz_wish_odds();
+		},
+		help: 'wish-odds'
+	}
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];

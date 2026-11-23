@@ -29,6 +29,7 @@
 		type FieldRect
 	} from './crit';
 	import { buildRampLut, RAMP_LUT_SIZE, type RGB } from './critRamp';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		critRate = $bindable(0.7),
@@ -377,7 +378,7 @@
 		{width}
 		{height}
 		role="img"
-		aria-label="Crit rate and crit damage heatmap"
+		aria-label={m.vz_crit_crit_rate_and_crit_damage_heatmap()}
 		onpointerdown={onDown}
 		onpointermove={(e) => {
 			onMove(e);
@@ -405,7 +406,7 @@
 				fill="var(--chart-ink)"
 				font-size="10"
 			>
-				below the base 5% CRIT Rate
+				{m.vz_crit_below_the_base_5_crit_rate()}
 			</text>
 		{/if}
 
@@ -442,7 +443,7 @@
 			font-size="10"
 			font-weight="600"
 		>
-			{Math.round(cv * 100)} CV
+			{m.vz_crit_x_cv({ cv: Math.round(cv * 100) })}
 		</text>
 		{#if !atBest}
 			<circle
@@ -460,7 +461,7 @@
 				fill={ink(0.8)}
 				font-size="10"
 			>
-				best split of this budget
+				{m.vz_crit_best_split_of_this_budget()}
 			</text>
 		{/if}
 
@@ -492,7 +493,7 @@
 		<!-- THE AVERAGE'S AXIS, the field's right edge: the contours' values
 		     where they meet it, the ends, and yours, in the headline's ink -->
 		<text x={width - 2} y={rect.y0 - 8} fill="var(--chart-dim)" font-size="10" text-anchor="end">
-			average damage
+			{m.vz_crit_average_damage()}
 		</text>
 		{#each AVG_ENDS as m (m)}
 			{#if Math.abs(avgY(m) - yourY) >= AVG_CLEAR}
@@ -549,8 +550,7 @@
 				font-size="10"
 				text-anchor="end"
 			>
-				crits in {n}
-				{n === 1 ? 'hit' : 'hits'}
+				{m.vz_crit_crits_in_n_x({ count: n })}
 			</text>
 		{/if}
 
@@ -582,7 +582,7 @@
 					font-size="11"
 					font-weight="600"
 				>
-					{deltaFormat.format(pinnedDelta)} vs pinned
+					{m.vz_crit_pinneddelta_vs_pinned({ delta: deltaFormat.format(pinnedDelta) })}
 				</text>
 			{/if}
 		{/if}
@@ -613,7 +613,7 @@
 				fill="transparent"
 				role="button"
 				tabindex="0"
-				aria-label="Move to the best split of this budget"
+				aria-label={m.vz_crit_move_to_the_best_split_of_this_budget()}
 				onpointerdown={(e) => e.stopPropagation()}
 				onclick={toBest}
 				onkeydown={(e) => {
@@ -623,7 +623,7 @@
 					}
 				}}
 			>
-				<title>Move to the best split of this budget</title>
+				<title>{m.vz_crit_move_to_the_best_split_of_this_budget()}</title>
 			</circle>
 		{/if}
 	</svg>

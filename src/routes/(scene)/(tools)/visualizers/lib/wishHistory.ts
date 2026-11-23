@@ -198,6 +198,8 @@ export type ImportResult = {
 
 export type ImportError = 'not-a-workbook' | 'not-paimon' | 'no-wishes';
 
+// Matched against the exported file's own text (its title, sheet names and
+// column headers), so these stay as the file writes them, in English.
 const PAIMON_TITLE = 'Paimon.moe Wish History Export';
 const PAIMON_SHEET = 'Character Event';
 const PAIMON_WEAPON_SHEET = 'Weapon Event';

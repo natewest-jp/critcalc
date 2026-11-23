@@ -151,7 +151,3 @@ rotations." ×2.05 is that rotation's average multiplier.
 
 The slot after a roll, e.g. "4 of 8 hits crit: ×1.70 this time." ⚓ Nate 2026-10-02: no
 "(average …)", since the headline already says it.
-
-### `vz_crit_hit` · `vz_crit_hits`
-
-⛔ Not words to translate: see the assembled plural above.

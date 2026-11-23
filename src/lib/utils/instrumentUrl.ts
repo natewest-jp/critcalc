@@ -50,6 +50,7 @@ export type DecodedInstrumentParam = {
 
 /** Encode a `?i=` value. Omitting `state` yields the bare human-typeable id. */
 export async function encodeInstrumentParam(id: string, state?: unknown): Promise<string> {
+	// A developer's guard, never shown to a player: it stays in English.
 	if (!ID_RE.test(id)) throw new Error(`instrument id not url-plain: ${id}`);
 	if (state === undefined) return id;
 	const blob = await deflateToBase64Url(JSON.stringify(state));

@@ -2150,5 +2150,630 @@
 	"tb_wishlist_10b4": "⟦ŵîšĥļîšţ ōñé⟧",
 	"tb_constellation_7af5": "⟦çöñšţéļļåţîöñ ōñé ţŵö⟧",
 	"tb_undo_5c6f": "⟦ûñðö ōñé⟧",
-	"tb_summon_b52a": "⟦šûɱɱöñ ōñé⟧"
+	"tb_summon_b52a": "⟦šûɱɱöñ ōñé⟧",
+	"vz_name_is_back_to_its_defaults": "⟦{name} îš ƀåçķ ţö îţš ðéƒåûļţš ōñé ţŵö⟧",
+	"vz_undo": "⟦Ûñðö ōñé⟧",
+	"vz_that_instrument_link_couldn_t_be_read_it": "⟦Ţĥåţ îñšţŕûɱéñţ ļîñķ çöûļðñ’ţ ƀé ŕéåð. Îţ ɱåý ĥåṽé ƀééñ çûţ šĥöŕţ ŵĥéñ îţ ŵåš çöþîéð. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_instruments_shown": "⟦Îñšţŕûɱéñţš šĥöŵñ ōñé ţŵö⟧",
+	"vz_the_window_is_too_narrow_for_opt": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦Ţĥé ŵîñðöŵ îš ţöö ñåŕŕöŵ ƒöŕ {count} îñšţŕûɱéñţ šîðé ƀý šîðé ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"countPlural=other": "⟦Ţĥé ŵîñðöŵ îš ţöö ñåŕŕöŵ ƒöŕ {count} îñšţŕûɱéñţš šîðé ƀý šîðé ōñé ţŵö ţĥŕéé ƒöûŕ⟧"
+			}
+		}
+	],
+	"vz_show_as_many_instruments_as_the_window": "⟦Šĥöŵ åš ɱåñý îñšţŕûɱéñţš åš ţĥé ŵîñðöŵ ƒîţš ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_show_opt_instrument_x_at_a_time": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦Šĥöŵ {count} îñšţŕûɱéñţ åţ å ţîɱé ōñé ţŵö ţĥŕéé⟧",
+				"countPlural=other": "⟦Šĥöŵ {count} îñšţŕûɱéñţš åţ å ţîɱé ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_auto": "⟦Åûţö ōñé⟧",
+	"vz_reset_layout": "⟦Ŕéšéţ ļåýöûţ ōñé⟧",
+	"vz_put_this_instrument_s_controls_back_to": "⟦Þûţ ţĥîš îñšţŕûɱéñţ’š çöñţŕöļš ƀåçķ ţö ţĥéîŕ ðéƒåûļţš ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_defaults": "⟦Ðéƒåûļţš ōñé⟧",
+	"vz_copy_a_link_that_reopens_this_instrument": "⟦Çöþý å ļîñķ ţĥåţ ŕéöþéñš ţĥîš îñšţŕûɱéñţ åš îţ ļööķš ñöŵ ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_copy_failed": "⟦Çöþý ƒåîļéð ōñé⟧",
+	"vz_copied": "⟦Çöþîéð ōñé⟧",
+	"vz_copy_link": "⟦Çöþý ļîñķ ōñé⟧",
+	"vz_more_instrument_actions": "⟦Ṁöŕé îñšţŕûɱéñţ åçţîöñš ōñé ţŵö⟧",
+	"vz_how_it_works": "⟦Ĥöŵ îţ ŵöŕķš ōñé⟧",
+	"vz_report_a_problem": "⟦Ŕéþöŕţ å þŕöƀļéɱ ōñé ţŵö⟧",
+	"vz_layout": "⟦Ļåýöûţ ōñé⟧",
+	"vz_no_aura": "⟦Ñö åûŕå ōñé⟧",
+	"vz_on_the_target": "⟦öñ ţĥé ţåŕĝéţ ōñé ţŵö⟧",
+	"vz_from_end": "⟦ƒŕöɱ {time} ōñé⟧",
+	"vz_with_x_at_t": "⟦ŵîţĥ {auras} åţ {time} ōñé⟧",
+	"vz_at_t": "⟦åţ {time} ōñé⟧",
+	"vz_fischl_s_oz": "⟦Ƒîšçĥļ'š Öž ōñé⟧",
+	"vz_oz_strikes_about_once_a_second_for_10": "⟦Öž šţŕîķéš åƀöûţ öñçé å šéçöñð ƒöŕ 10 šéçöñðš. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_hu_tao_s_charged_attacks": "⟦Ĥû Ţåö'š çĥåŕĝéð åţţåçķš ōñé ţŵö⟧",
+	"vz_n1_then_a_charged_attack_repeated": "⟦Ñ1 ţĥéñ å çĥåŕĝéð åţţåçķ, ŕéþéåţéð ţĥŕöûĝĥ ĥéŕ Šķîļļ: öñé çĥåŕĝéð åţţåçķ éṽéŕý 1.03 šéçöñðš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_chevreuse_s_burst": "⟦Çĥéṽŕéûšé'š Ɓûŕšţ ōñé ţŵö⟧",
+	"vz_eight_shells_burst_within_0_6_seconds": "⟦Éîĝĥţ šĥéļļš ƀûŕšţ ŵîţĥîñ 0.6 šéçöñðš, ţŵö åţ å ţîɱé. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_layla_s_shooting_stars": "⟦Ļåýļå'š Šĥööţîñĝ Šţåŕš ōñé ţŵö⟧",
+	"vz_stars_fly_in_volleys_of_four_about_8": "⟦Šţåŕš ƒļý îñ ṽöļļéýš öƒ ƒöûŕ, åƀöûţ 8 šéçöñðš åþåŕţ ŵĥîļé ĥéŕ šĥîéļð ĥöļðš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_choose_instrument": "⟦Çĥööšé îñšţŕûɱéñţ ōñé ţŵö⟧",
+	"vz_tile_x": "⟦Ţîļé {n} ōñé⟧",
+	"vz_label_type_a_value": "⟦{label}, ţýþé å ṽåļûé ōñé ţŵö⟧",
+	"vz_kind_reshape": [
+		{
+			"declarations": ["input tier"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "⟦Šţåñðåŕð ŕéšĥåþé ōñé ţŵö⟧",
+				"tier=advanced": "⟦Åðṽåñçéð ŕéšĥåþé ōñé ţŵö⟧",
+				"tier=decreed": "⟦Ðéçŕééð ŕéšĥåþé ōñé ţŵö⟧"
+			}
+		}
+	],
+	"vz_select_a_result_to_keep": "⟦Šéļéçţ å ŕéšûļţ ţö ķééþ ōñé ţŵö⟧",
+	"vz_keep_the_original": "⟦Ķééþ ţĥé öŕîĝîñåļ ōñé ţŵö⟧",
+	"vz_keep_the_reshaped_result": "⟦Ķééþ ţĥé ŕéšĥåþéð ŕéšûļţ ōñé ţŵö⟧",
+	"vz_skip": "⟦Šķîþ ōñé⟧",
+	"vz_try_again": "⟦Ţŕý åĝåîñ ōñé⟧",
+	"vz_confirm": "⟦Çöñƒîŕɱ ōñé⟧",
+	"vz_not_a_value_the_game_shows_nearest": "⟦Ñöţ å ṽåļûé ţĥé ĝåɱé šĥöŵš. Ñéåŕéšţ: ōñé ţŵö ţĥŕéé⟧",
+	"vz_no_substat_by_that_name": "⟦Ñö šûƀšţåţ ƀý ţĥåţ ñåɱé ōñé ţŵö⟧",
+	"vz_not_a_value": "⟦Ñöţ å ṽåļûé ōñé⟧",
+	"vz_pick_the_substat_first": "⟦Þîçķ ţĥé šûƀšţåţ ƒîŕšţ ōñé ţŵö⟧",
+	"vz_crit_heatmap": "⟦Çŕîţ ĥéåţɱåþ ōñé⟧",
+	"vz_gauge_explorer": "⟦Ĝåûĝé éẋþļöŕéŕ ōñé ţŵö⟧",
+	"vz_icd_timeline": "⟦ÎÇÐ ţîɱéļîñé ōñé⟧",
+	"vz_reaction_curves": "⟦Ŕéåçţîöñ çûŕṽéš ōñé ţŵö⟧",
+	"vz_damage_breakdown": "⟦Ðåɱåĝé ƀŕéåķðöŵñ ōñé ţŵö⟧",
+	"vz_enemy_res_def": "⟦Éñéɱý ŔÉŠ & ÐÉƑ ōñé ţŵö⟧",
+	"vz_artifact_odds": "⟦Åŕţîƒåçţ öððš ōñé ţŵö⟧",
+	"vz_wish_odds": "⟦Ŵîšĥ öððš ōñé⟧",
+	"vz_artifact_drop": "⟦Ðŕöþ ōñé⟧",
+	"vz_artifact_level_up": "⟦Ļéṽéļ ûþ ōñé⟧",
+	"vz_artifact_your_piece": "⟦Ýöûŕ þîéçé ōñé⟧",
+	"vz_artifact_reshape": "⟦Ŕéšĥåþé ōñé⟧",
+	"vz_artifact_standard": "⟦Šţåñðåŕð ōñé⟧",
+	"vz_artifact_advanced": "⟦Åðṽåñçéð ōñé⟧",
+	"vz_artifact_decreed": "⟦Ðéçŕééð ōñé⟧",
+	"vz_artifact_at_least_2": "⟦åţ ļéåšţ 2 ōñé⟧",
+	"vz_artifact_at_least_3": "⟦åţ ļéåšţ 3 ōñé⟧",
+	"vz_artifact_at_least_4": "⟦åţ ļéåšţ 4 ōñé⟧",
+	"vz_artifact_pyro": "⟦Þýŕö ōñé⟧",
+	"vz_artifact_hydro": "⟦Ĥýðŕö ōñé⟧",
+	"vz_artifact_electro": "⟦Éļéçţŕö ōñé⟧",
+	"vz_artifact_cryo": "⟦Çŕýö ōñé⟧",
+	"vz_artifact_anemo": "⟦Åñéɱö ōñé⟧",
+	"vz_artifact_geo": "⟦Ĝéö ōñé⟧",
+	"vz_artifact_dendro": "⟦Ðéñðŕö ōñé⟧",
+	"vz_artifact_er": "⟦ÉŔ ōñé⟧",
+	"vz_artifact_em": "⟦ÉṀ ōñé⟧",
+	"vz_artifact_cr": "⟦ÇŔ ōñé⟧",
+	"vz_artifact_cd": "⟦ÇÐ ōñé⟧",
+	"vz_artifact_physical": "⟦Þĥýšîçåļ ōñé⟧",
+	"vz_artifact_healing": "⟦Ĥéåļîñĝ ōñé⟧",
+	"vz_artifact_your_piece_is_now_the_reshaped_result": "⟦Ýöûŕ þîéçé îš ñöŵ ţĥé ŕéšĥåþéð ŕéšûļţ ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_undo": "⟦Ûñðö ōñé⟧",
+	"vz_artifact_the_reshaped_result_is_better": "⟦Ţĥé ŕéšĥåþéð ŕéšûļţ îš ƀéţţéŕ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_your_piece_is_still_better": "⟦Ýöûŕ þîéçé îš šţîļļ ƀéţţéŕ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_they_come_out_the_same": "⟦Ţĥéý çöɱé öûţ ţĥé šåɱé. ōñé ţŵö⟧",
+	"vz_artifact_better_than_math_round_compareto": [
+		{
+			"declarations": ["input tier", "input pct"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "⟦Ɓéţţéŕ ţĥåñ {pct}% öƒ Šţåñðåŕð ŕéšĥåþéš ōñé ţŵö ţĥŕéé⟧",
+				"tier=advanced": "⟦Ɓéţţéŕ ţĥåñ {pct}% öƒ Åðṽåñçéð ŕéšĥåþéš ōñé ţŵö ţĥŕéé⟧",
+				"tier=decreed": "⟦Ɓéţţéŕ ţĥåñ {pct}% öƒ Ðéçŕééð ŕéšĥåþéš ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_artifact_farmed": "⟦Ƒåŕɱéð ōñé⟧",
+	"vz_artifact_none": "⟦Ñöñé ōñé⟧",
+	"vz_artifact_e_dmg_bonus": "⟦{element} ÐṀĜ Ɓöñûš ōñé⟧",
+	"vz_artifact_1_day": "⟦1 ðåý ōñé⟧",
+	"vz_artifact_d_days": [
+		{
+			"declarations": ["input count", "input days", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦{days} ðåý ōñé⟧",
+				"countPlural=other": "⟦{days} ðåýš ōñé⟧"
+			}
+		}
+	],
+	"vz_artifact_useful_rolls": "⟦ûšéƒûļ ŕöļļš ōñé⟧",
+	"vz_artifact_slotword_s": [
+		{
+			"declarations": ["input slot"],
+			"selectors": ["slot"],
+			"match": {
+				"slot=flower": "⟦ƒļöŵéŕš ōñé⟧",
+				"slot=plume": "⟦þļûɱéš ōñé⟧",
+				"slot=sands": "⟦šåñðš ōñé⟧",
+				"slot=goblet": "⟦ĝöƀļéţš ōñé⟧",
+				"slot=circlet": "⟦çîŕçļéţš ōñé⟧"
+			}
+		}
+	],
+	"vz_artifact_atleast_of_wanted": "⟦{n} öƒ {stats} ōñé⟧",
+	"vz_artifact_both": "⟦Ɓöţĥ ōñé⟧",
+	"vz_artifact_all_n": "⟦Åļļ {n} ōñé⟧",
+	"vz_artifact_at_least_n": "⟦Åţ ļéåšţ {n} ōñé⟧",
+	"vz_artifact_pick_2": "⟦Þîçķ 2 ōñé⟧",
+	"vz_artifact_yours": "⟦ýöûŕš ōñé⟧",
+	"vz_artifact_this_roll": "⟦ţĥîš ŕöļļ ōñé⟧",
+	"vz_artifact_100_reshapename_reshapes_one_dot_each": [
+		{
+			"declarations": ["input tier", "input lit"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "⟦100 Šţåñðåŕð ŕéšĥåþéš, öñé ðöţ éåçĥ: {lit} ƀéåţ ýöûŕ þîéçé ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"tier=advanced": "⟦100 Åðṽåñçéð ŕéšĥåþéš, öñé ðöţ éåçĥ: {lit} ƀéåţ ýöûŕ þîéçé ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"tier=decreed": "⟦100 Ðéçŕééð ŕéšĥåþéš, öñé ðöţ éåçĥ: {lit} ƀéåţ ýöûŕ þîéçé ōñé ţŵö ţĥŕéé ƒöûŕ⟧"
+			}
+		}
+	],
+	"vz_artifact_your_tries_length_triesbeat_beat_it": "⟦· ýöûŕ ţŕîéš: {tries}, {beat} ƀéåţ îţ ōñé ţŵö⟧",
+	"vz_artifact_100_20_slotplural_like_yours_one_dot": "⟦100 +20 {slots} ļîķé ýöûŕš, öñé ðöţ éåçĥ: {lit} ƀéåţ îţ ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_100_pieces_one_dot_each_lit_end_above": "⟦100 þîéçéš, öñé ðöţ éåçĥ: {lit} éñð åƀöṽé {value} ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_half_by_median": "⟦Ĥåļƒ ƀý {days} ōñé⟧",
+	"vz_artifact_half_of_players_have_it_within_this_many": "⟦Ĥåļƒ öƒ þļåýéŕš ĥåṽé îţ ŵîţĥîñ ţĥîš ɱåñý ðåýš. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_unlucky_tenth_p90": "⟦Ûñļûçķý ţéñţĥ {days} ōñé ţŵö⟧",
+	"vz_artifact_the_unluckiest_10_of_players_need_this": "⟦Ţĥé ûñļûçķîéšţ 10% öƒ þļåýéŕš ñééð ţĥîš ɱåñý ðåýš öŕ ɱöŕé. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_artifact_typical_median": "⟦Ţýþîçåļ {value} ōñé⟧",
+	"vz_artifact_half_end_above_this_and_half_at_or_below": "⟦Ĥåļƒ éñð åƀöṽé ţĥîš, åñð ĥåļƒ åţ öŕ ƀéļöŵ îţ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_unlucky_tenth_p10": "⟦Ûñļûçķý ţéñţĥ {value} ōñé ţŵö⟧",
+	"vz_artifact_the_unluckiest_10_end_at_or_below_this": "⟦Ţĥé ûñļûçķîéšţ 10% éñð åţ öŕ ƀéļöŵ ţĥîš. ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_in_an_outbreak_outbreak": "⟦Îñ åñ Öûţƀŕéåķ {chance} ōñé ţŵö⟧",
+	"vz_artifact_main_stat": "⟦Ṁåîñ šţåţ ōñé⟧",
+	"vz_artifact_chance_each": "⟦{chance} éåçĥ ōñé⟧",
+	"vz_artifact_pick_every_main_stat_you_d_be_happy_with": "⟦Þîçķ éṽéŕý ɱåîñ šţåţ ýöû'ð ƀé ĥåþþý ŵîţĥ. Ţĥé ñûɱƀéŕ ûñðéŕ éåçĥ îš ĥöŵ öƒţéñ îţ ðŕöþš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_artifact_valued_stats": "⟦Ṽåļûéð šţåţš ōñé⟧",
+	"vz_artifact_main": "⟦ɱåîñ ōñé⟧",
+	"vz_artifact_pick_the_substats_you_want_from_this": "⟦Þîçķ ţĥé šûƀšţåţš ýöû ŵåñţ, ƒŕöɱ ţĥîš þîéçé'š ƒöûŕ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_pick_up_to_four_substats_you_want": "⟦Þîçķ ûþ ţö ƒöûŕ šûƀšţåţš ýöû ŵåñţ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_the_number_under_each_is_its_chance_to": "⟦Ţĥé ñûɱƀéŕ ûñðéŕ éåçĥ îš îţš çĥåñçé ţö ƀé öñé öƒ ţĥé þîéçé'š ƒöûŕ šûƀšţåţš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_artifact_how_many_of_them": "⟦Ĥöŵ ɱåñý öƒ ţĥéɱ ōñé ţŵö⟧",
+	"vz_artifact_one_set": "⟦Öñé šéţ ōñé⟧",
+	"vz_artifact_either_set": "⟦Éîţĥéŕ šéţ ōñé⟧",
+	"vz_artifact_how_many_of_your_valued_stats_it_has": "⟦Ĥöŵ ɱåñý öƒ ýöûŕ ṽåļûéð šţåţš îţ ĥåš ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_has_n_wantedsubs_length_n_1_all_n_n": [
+		{
+			"declarations": ["input form", "input n"],
+			"selectors": ["form"],
+			"match": {
+				"form=all": "⟦Ĥåš åļļ {n} ōñé⟧",
+				"form=count": "⟦Ĥåš {n} ōñé⟧"
+			}
+		}
+	],
+	"vz_artifact_dropped_with_4_substats": "⟦Ðŕöþþéð ŵîţĥ 4 šûƀšţåţš ōñé ţŵö⟧",
+	"vz_artifact_with_3": "⟦Ŵîţĥ 3 ōñé⟧",
+	"vz_artifact_a_piece_that_drops_with_4_substats_gets": "⟦Å þîéçé ţĥåţ ðŕöþš ŵîţĥ 4 šûƀšţåţš ĝéţš 5 ûþĝŕåðéš ƀý +20. Öñé ţĥåţ ðŕöþš ŵîţĥ 3 šþéñðš îţš ƒîŕšţ ûþĝŕåðé åððîñĝ å 4ţĥ šûƀšţåţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé⟧",
+	"vz_artifact_made_with_elixir": "⟦Ṁåðé ŵîţĥ Éļîẋîŕ ōñé ţŵö⟧",
+	"vz_artifact_a_piece_made_with_sanctifying_elixir": "⟦Å þîéçé ɱåðé ŵîţĥ Šåñçţîƒýîñĝ Éļîẋîŕ ĝûåŕåñţééš åţ ļéåšţ 2 öƒ îţš ûþĝŕåðéš ĝö ţö ţĥé ţŵö šûƀšţåţš ýöû çĥöšé ƒöŕ îţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ⟧",
+	"vz_artifact_defined_substats": "⟦Ðéƒîñéð šûƀšţåţš ōñé ţŵö⟧",
+	"vz_artifact_pick_the_two_substats_you_chose_when": "⟦Þîçķ ţĥé ţŵö šûƀšţåţš ýöû çĥöšé ŵĥéñ ɱåķîñĝ îţ. Ţöĝéţĥéŕ ţĥéý'ŕé ĝûåŕåñţééð åţ ļéåšţ 2 ûþĝŕåðéš ƀý +20. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ⟧",
+	"vz_artifact_substats_to_reshape": "⟦Šûƀšţåţš ţö ŕéšĥåþé ōñé ţŵö⟧",
+	"vz_artifact_your_first_two_valued_stats_on_this": "⟦Ýöûŕ ƒîŕšţ ţŵö ṽåļûéð šţåţš öñ ţĥîš þîéçé, ûñţîļ ýöû þîçķ ýöûŕ öŵñ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_artifact_pick_2_substats_after_the_reshape_they": "⟦Þîçķ 2 šûƀšţåţš. Åƒţéŕ ţĥé ŕéšĥåþé, ţĥéý ĝéţ åţ ļéåšţ {floor} öƒ ţĥé þîéçé'š ûþĝŕåðéš ƀéţŵééñ ţĥéɱ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_artifact_kind_of_reshape": "⟦Ķîñð öƒ ŕéšĥåþé ōñé ţŵö⟧",
+	"vz_artifact_every_advanced_exegesis_dust_of": "⟦Éṽéŕý {dust} Ðûšţ öƒ Éñļîĝĥţéñɱéñţ ýöû šþéñð ɱåķéš ýöûŕ ñéẋţ ŕéšĥåþé Åðṽåñçéð, åñð ţĥé ţĥîŕð Åðṽåñçéð îñ å ŕöŵ îš Ðéçŕééð. Ţĥé çĥåŕţ šĥöŵš åļļ ţĥŕéé. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé⟧",
+	"vz_artifact_clear": "⟦Çļéåŕ ōñé⟧",
+	"vz_artifact_these_values_fit_more_than_one_upgrade": "⟦Ţĥéšé ṽåļûéš ƒîţ ɱöŕé ţĥåñ öñé ûþĝŕåðé çöûñţ. Þîçķ ţĥé öñé ţĥåţ ɱåţçĥéš ţĥé ĝåɱé ûñðéŕ ţĥé çåŕð. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_artifact_substat_x": "⟦Šûƀšţåţ {n} ōñé⟧",
+	"vz_artifact_substat": "⟦Šûƀšţåţ… ōñé⟧",
+	"vz_artifact_value_for_substat_x": "⟦Ṽåļûé ƒöŕ šûƀšţåţ {n} ōñé ţŵö⟧",
+	"vz_artifact_level": "⟦Ļéṽéļ ōñé⟧",
+	"vz_artifact_the_4th_substat_is_grayed_out": "⟦Ţĥé 4ţĥ šûƀšţåţ îš ĝŕåýéð öûţ (ûñåçţîṽåţéð) ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_upgrade_counts": "⟦Ûþĝŕåðé çöûñţš ōñé ţŵö⟧",
+	"vz_artifact_these_values_fit_length_different": [
+		{
+			"declarations": [
+				"input count",
+				"local countExact = count",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countExact", "countPlural"],
+			"match": {
+				"countExact=2, countPlural=*": "⟦Ţĥéšé ṽåļûéš ƒîţ ţŵö ðîƒƒéŕéñţ ûþĝŕåðé çöûñţš. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"countExact=*, countPlural=one": "⟦Ţĥéšé ṽåļûéš ƒîţ {count} ðîƒƒéŕéñţ ûþĝŕåðé çöûñţ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"countExact=*, countPlural=other": "⟦Ţĥéšé ṽåļûéš ƒîţ {count} ðîƒƒéŕéñţ ûþĝŕåðé çöûñţš. ōñé ţŵö ţĥŕéé ƒöûŕ⟧"
+			}
+		}
+	],
+	"vz_artifact_pick_the_one_the_game_shows_when_you": "⟦Þîçķ ţĥé öñé ţĥé ĝåɱé šĥöŵš ŵĥéñ ýöû ŕéšĥåþé ţĥé þîéçé: ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_pick_the_one_it_got_if_you_know_it": "⟦Þîçķ ţĥé öñé îţ ĝöţ, îƒ ýöû ķñöŵ îţ: ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_the_number_beside_each_substat_is_how": "⟦Ţĥé ñûɱƀéŕ ƀéšîðé éåçĥ šûƀšţåţ îš ĥöŵ ɱåñý ûþĝŕåðéš îţ ĝöţ, ţĥé šåɱé ñûɱƀéŕ ţĥé ĝåɱé šĥöŵš öñ îţš ŕéšĥåþé šçŕééñ. Ýöûŕ ṽåļûéð šţåţš åŕé ĥîĝĥļîĝĥţéð. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé⟧",
+	"vz_artifact_pick_your_piece_s_level_levels_these": "⟦Þîçķ ýöûŕ þîéçé'š ļéṽéļ. Ļéṽéļš ţĥéšé ṽåļûéš çåñ'ţ ƀéļöñĝ ţö åŕé ðîɱɱéð. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_artifact_enter_each_substat_and_its_value_exactly": "⟦Éñţéŕ éåçĥ šûƀšţåţ åñð îţš ṽåļûé éẋåçţļý åš ţĥé ĝåɱé šĥöŵš ţĥéɱ, ţĥéñ þîçķ ţĥé þîéçé'š ļéṽéļ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_artifact_not_entered": "⟦ñöţ éñţéŕéð ōñé⟧",
+	"vz_artifact_your_piece_x": "⟦Ýöûŕ þîéçé: {piece} ōñé⟧",
+	"vz_artifact_enter_your_piece": "⟦Éñţéŕ ýöûŕ þîéçé ōñé ţŵö⟧",
+	"vz_artifact_domain_chance_of_the_piece_within_days": "⟦{chance}{#span}çĥåñçé öƒ ţĥé þîéçé ŵîţĥîñ {days}{/span} ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_pick_a_substat": "⟦Þîçķ å šûƀšţåţ ōñé ţŵö⟧",
+	"vz_artifact_reshaping_needs_a_20_piece": "⟦Ŕéšĥåþîñĝ ñééðš å +20 þîéçé ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_pick_two_substats_to_reshape": "⟦Þîçķ ţŵö šûƀšţåţš ţö ŕéšĥåþé ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_enter_your_piece_to_see_how_it_measures": "⟦Éñţéŕ ýöûŕ þîéçé ţö šéé ĥöŵ îţ ɱéåšûŕéš ûþ ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_beats_chance_a_reshapename_reshape_beats": [
+		{
+			"declarations": ["input tier", "input chance"],
+			"selectors": ["tier"],
+			"match": {
+				"tier=standard": "⟦{chance}{#span}çĥåñçé å Šţåñðåŕð ŕéšĥåþé ƀéåţš ýöûŕ þîéçé{/span} ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"tier=advanced": "⟦{chance}{#span}çĥåñçé åñ Åðṽåñçéð ŕéšĥåþé ƀéåţš ýöûŕ þîéçé{/span} ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"tier=decreed": "⟦{chance}{#span}çĥåñçé å Ðéçŕééð ŕéšĥåþé ƀéåţš ýöûŕ þîéçé{/span} ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_artifact_better_than_x_of_20_slotplural_with": "⟦Ɓéţţéŕ ţĥåñ {pct}%{#span}öƒ +20 {slots} ŵîţĥ ţĥéšé ƒöûŕ šûƀšţåţš{/span} ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_beats_chance_it_ends_above_reference_x": [
+		{
+			"declarations": ["input when", "input chance", "input value"],
+			"selectors": ["when"],
+			"match": {
+				"when=now": "⟦{chance}{#span}çĥåñçé îţ éñðš åƀöṽé {value}{/span} ōñé ţŵö⟧",
+				"when=end": "⟦{chance}{#span}çĥåñçé îţ éñðš åƀöṽé {value} åţ +20{/span} ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_artifact_view": "⟦Ṽîéŵ ōñé⟧",
+	"vz_artifact_setup": "⟦Šéţûþ ōñé⟧",
+	"vz_artifact_piece": "⟦Þîéçé ōñé⟧",
+	"vz_artifact_set": "⟦Šéţ ōñé⟧",
+	"vz_artifact_either": "⟦Éîţĥéŕ ōñé⟧",
+	"vz_artifact_one": "⟦Öñé ōñé⟧",
+	"vz_artifact_has": "⟦Ĥåš ōñé⟧",
+	"vz_artifact_dropped_with": "⟦Ðŕöþþéð ŵîţĥ ōñé⟧",
+	"vz_artifact_4_substats": "⟦4 šûƀšţåţš ōñé⟧",
+	"vz_artifact_3_substats": "⟦3 šûƀšţåţš ōñé⟧",
+	"vz_artifact_made": "⟦Ṁåðé ōñé⟧",
+	"vz_artifact_with_elixir": "⟦Ŵîţĥ Éļîẋîŕ ōñé⟧",
+	"vz_artifact_reshape_reshapeface": "⟦Ŕéšĥåþé: {face} ōñé⟧",
+	"vz_artifact_try_a_reshape": "⟦Ţŕý å ŕéšĥåþé ōñé ţŵö⟧",
+	"vz_artifact_element_dmg_bonus": "⟦{element} ÐṀĜ Ɓöñûš ōñé⟧",
+	"vz_artifact_your_only_valued_stat_is_this_piece_s": "⟦Ýöûŕ öñļý ṽåļûéð šţåţ îš ţĥîš þîéçé'š ɱåîñ šţåţ. Þîçķ å šûƀšţåţ ţöö. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_artifact_enter_all_four_of_its_substats_a_grayed": "⟦Éñţéŕ åļļ ƒöûŕ öƒ îţš šûƀšţåţš, å ĝŕåýéð-öûţ öñé ţöö. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_enter_a_piece_to_see_how_it_measures_up": "⟦Éñţéŕ å þîéçé ţö šéé ĥöŵ îţ ɱéåšûŕéš ûþ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_finish_your_piece": "⟦Ƒîñîšĥ ýöûŕ þîéçé ōñé ţŵö⟧",
+	"vz_artifact_one_of_these_values_isn_t_possible_for": "⟦Öñé öƒ ţĥéšé ṽåļûéš îšñ'ţ þöššîƀļé ƒöŕ ţĥåţ šûƀšţåţ. Çĥéçķ îţ åĝåîñšţ ţĥé ĝåɱé. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_artifact_edit_your_piece": "⟦Éðîţ ýöûŕ þîéçé ōñé ţŵö⟧",
+	"vz_artifact_these_values_add_up_to_x_upgrade_x_but_a": [
+		{
+			"declarations": [
+				"input count",
+				"input totals",
+				"input level",
+				"input low",
+				"input high",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦Ţĥéšé ṽåļûéš åðð ûþ ţö {totals} ûþĝŕåðé, ƀûţ å {level} þîéçé ĥåš öñļý {low}–{high}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+				"countPlural=other": "⟦Ţĥéšé ṽåļûéš åðð ûþ ţö {totals} ûþĝŕåðéš, ƀûţ å {level} þîéçé ĥåš öñļý {low}–{high}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧"
+			}
+		}
+	],
+	"vz_artifact_recheck_your_values_or_pick_x": "⟦Ŕéçĥéçķ ýöûŕ ṽåļûéš, öŕ þîçķ {levels}. ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_recheck_your_values": "⟦Ŕéçĥéçķ ýöûŕ ṽåļûéš. ōñé ţŵö⟧",
+	"vz_artifact_this_piece_is_levellabel_level_it_to_20": "⟦Ţĥîš þîéçé îš {level}. Ļéṽéļ îţ ţö +20 ţö ŕéšĥåþé îţ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_pick_the_two_substats_to_reshape_as_the": "⟦Þîçķ ţĥé ţŵö šûƀšţåţš ţö ŕéšĥåþé, åš ţĥé ĝåɱé'š ŕéšĥåþé šçŕééñ åšķš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_artifact_pick_two_substats": "⟦Þîçķ ţŵö šûƀšţåţš ōñé ţŵö⟧",
+	"vz_artifact_none_of_your_valued_stats_are_on_this": "⟦Ñöñé öƒ ýöûŕ ṽåļûéð šţåţš åŕé öñ ţĥîš þîéçé. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_artifact_chance_of_this_piece_by_days_of_resin": "⟦Çĥåñçé öƒ ţĥîš þîéçé ƀý ðåýš öƒ ŕéšîñ ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_crit_value": "⟦çŕîţ ṽåļûé ōñé⟧",
+	"vz_artifact_count_of_useful_rolls": "⟦çöûñţ öƒ ûšéƒûļ ŕöļļš ōñé ţŵö⟧",
+	"vz_artifact_chance_to_end_above_each_x_at_20": "⟦Çĥåñçé ţö éñð åƀöṽé éåçĥ {unit} åţ +20 ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_days_of_resin_f956": "⟦ðåýš öƒ ŕéšîñ ōñé ţŵö⟧",
+	"vz_artifact_crit_value_cv_at_20": "⟦çŕîţ ṽåļûé (ÇṼ) åţ +20 ōñé ţŵö⟧",
+	"vz_artifact_useful_rolls_in_your_valued_stats_at_20": "⟦ûšéƒûļ ŕöļļš îñ ýöûŕ ṽåļûéð šţåţš åţ +20 ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_chance_you_have_it_by_then": "⟦çĥåñçé ýöû ĥåṽé îţ ƀý ţĥéñ ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_chance_a_reshape_ends_above": "⟦çĥåñçé å ŕéšĥåþé éñðš åƀöṽé ōñé ţŵö ţĥŕéé⟧",
+	"vz_artifact_chance_it_ends_above": "⟦çĥåñçé îţ éñðš åƀöṽé ōñé ţŵö⟧",
+	"vz_artifact_in_an_outbreak": "⟦Îñ åñ Öûţƀŕéåķ ōñé ţŵö⟧",
+	"vz_artifact_domain": "⟦Ðöɱåîñ ōñé⟧",
+	"vz_artifact_now_nowx": "⟦ñöŵ {value} ōñé⟧",
+	"vz_artifact_days_of_resin_c765": "⟦Ðåýš öƒ ŕéšîñ ōñé ţŵö⟧",
+	"vz_artifact_to_beat": "⟦Ţö ƀéåţ ōñé⟧",
+	"vz_artifact_the_value_to_beat": "⟦Ţĥé ṽåļûé ţö ƀéåţ ōñé ţŵö⟧",
+	"vz_artifact_about_1_in_every_perpiece_five_star": "⟦Åƀöûţ 1 îñ éṽéŕý {oneIn} ƒîṽé-šţåŕ ðŕöþš ƒŕöɱ ţĥîš ðöɱåîñ îš ţĥé þîéçé ýöû ŵåñţ. {days} îš {resin} ŕéšîñ, åţ {perDay} å ðåý. Ðûŕîñĝ å Šţýĝîåñ Öñšļåûĝĥţ Ðîšţûŕƀåñçé Öûţƀŕéåķ, éṽéŕý 120 ŕéšîñ ýöû šþéñð åļšö éåŕñš öñé éẋţŕå 5★ ƒŕöɱ ţĥé ðöɱåîñ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_artifact_useful_rolls_count_every_roll_in_your": "⟦Ûšéƒûļ ŕöļļš çöûñţ éṽéŕý ŕöļļ îñ ýöûŕ ṽåļûéð šţåţš ƀý îţš šîžé: å ɱåẋ ŕöļļ çöûñţš åš 1, ţĥé šɱåļļéšţ åš 0.7. Å šûƀšţåţ'š šţåŕţîñĝ ŕöļļ çöûñţš ţöö. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé⟧",
+	"vz_artifact_until_you_drag_it_the_value_to_beat_is_a": [
+		{
+			"declarations": ["input slot"],
+			"selectors": ["slot"],
+			"match": {
+				"slot=flower": "⟦Ûñţîļ ýöû ðŕåĝ îţ, ţĥé ṽåļûé ţö ƀéåţ îš å ţýþîçåļ +20 ƒļöŵéŕ ŵîţĥ ţĥéšé šûƀšţåţš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+				"slot=plume": "⟦Ûñţîļ ýöû ðŕåĝ îţ, ţĥé ṽåļûé ţö ƀéåţ îš å ţýþîçåļ +20 þļûɱé ŵîţĥ ţĥéšé šûƀšţåţš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+				"slot=sands": "⟦Ûñţîļ ýöû ðŕåĝ îţ, ţĥé ṽåļûé ţö ƀéåţ îš å ţýþîçåļ +20 šåñðš ŵîţĥ ţĥéšé šûƀšţåţš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+				"slot=goblet": "⟦Ûñţîļ ýöû ðŕåĝ îţ, ţĥé ṽåļûé ţö ƀéåţ îš å ţýþîçåļ +20 ĝöƀļéţ ŵîţĥ ţĥéšé šûƀšţåţš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+				"slot=circlet": "⟦Ûñţîļ ýöû ðŕåĝ îţ, ţĥé ṽåļûé ţö ƀéåţ îš å ţýþîçåļ +20 çîŕçļéţ ŵîţĥ ţĥéšé šûƀšţåţš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧"
+			}
+		}
+	],
+	"vz_artifact_reshape_this_piece": "⟦Ŕéšĥåþé ţĥîš þîéçé ōñé ţŵö⟧",
+	"vz_artifact_hp_5200": "⟦ĤÞ ōñé⟧",
+	"vz_artifact_atk_1fa8": "⟦ÅŢĶ ōñé⟧",
+	"vz_artifact_def_6dae": "⟦ÐÉƑ ōñé⟧",
+	"vz_artifact_hp_b294": "⟦ĤÞ% ōñé⟧",
+	"vz_artifact_atk_0f0a": "⟦ÅŢĶ% ōñé⟧",
+	"vz_artifact_def_7253": "⟦ÐÉƑ% ōñé⟧",
+	"vz_artifact_energy_recharge": "⟦Éñéŕĝý Ŕéçĥåŕĝé ōñé ţŵö⟧",
+	"vz_artifact_elemental_mastery": "⟦Éļéɱéñţåļ Ṁåšţéŕý ōñé ţŵö⟧",
+	"vz_artifact_crit_rate": "⟦ÇŔÎŢ Ŕåţé ōñé⟧",
+	"vz_artifact_crit_dmg": "⟦ÇŔÎŢ ÐṀĜ ōñé⟧",
+	"vz_artifact_flower": "⟦Ƒļöŵéŕ ōñé⟧",
+	"vz_artifact_plume": "⟦Þļûɱé ōñé⟧",
+	"vz_artifact_sands": "⟦Šåñðš ōñé⟧",
+	"vz_artifact_goblet": "⟦Ĝöƀļéţ ōñé⟧",
+	"vz_artifact_elemental_dmg": "⟦Éļéɱéñţåļ ÐṀĜ ōñé ţŵö⟧",
+	"vz_artifact_physical_dmg": "⟦Þĥýšîçåļ ÐṀĜ ōñé⟧",
+	"vz_artifact_circlet": "⟦Çîŕçļéţ ōñé⟧",
+	"vz_artifact_healing_bonus": "⟦Ĥéåļîñĝ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_no_reaction": "⟦Ñö ŕéåçţîöñ ōñé⟧",
+	"vz_breakdown_vaporize": "⟦Ṽåþöŕîžé ōñé⟧",
+	"vz_breakdown_melt": "⟦Ṁéļţ ōñé⟧",
+	"vz_breakdown_spread": "⟦Šþŕéåð ōñé⟧",
+	"vz_breakdown_aggravate": "⟦Åĝĝŕåṽåţé ōñé⟧",
+	"vz_breakdown_hyperbloom": "⟦Ĥýþéŕƀļööɱ ōñé⟧",
+	"vz_breakdown_burgeon": "⟦Ɓûŕĝéöñ ōñé⟧",
+	"vz_breakdown_shatter": "⟦Šĥåţţéŕ ōñé⟧",
+	"vz_breakdown_overloaded": "⟦Öṽéŕļöåðéð ōñé⟧",
+	"vz_breakdown_electro_charged": "⟦Éļéçţŕö-Çĥåŕĝéð ōñé ţŵö⟧",
+	"vz_breakdown_bloom": "⟦Ɓļööɱ ōñé⟧",
+	"vz_breakdown_superconduct": "⟦Šûþéŕçöñðûçţ ōñé⟧",
+	"vz_breakdown_swirl": "⟦Šŵîŕļ ōñé⟧",
+	"vz_breakdown_burning": "⟦Ɓûŕñîñĝ ōñé⟧",
+	"vz_breakdown_lunar_charged": "⟦Ļûñåŕ-Çĥåŕĝéð ōñé ţŵö⟧",
+	"vz_breakdown_lunar_crystallize": "⟦Ļûñåŕ-Çŕýšţåļļîžé ōñé ţŵö⟧",
+	"vz_breakdown_stellar_swirl": "⟦Šţéļļåŕ Šŵîŕļ ōñé ţŵö⟧",
+	"vz_breakdown_stellar_swirl_blast_1_2_swirls": "⟦Šţéļļåŕ Šŵîŕļ ƀļåšţ, 1–2 šŵîŕļš ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_stellar_swirl_blast_after_1_2_swirls": "⟦Šţéļļåŕ Šŵîŕļ ƀļåšţ åƒţéŕ 1–2 šŵîŕļš ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_stellar_swirl_blast_3_swirls": "⟦Šţéļļåŕ Šŵîŕļ ƀļåšţ, 3+ šŵîŕļš ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_stellar_swirl_blast_after_3_swirls": "⟦Šţéļļåŕ Šŵîŕļ ƀļåšţ åƒţéŕ 3+ šŵîŕļš ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_atk": "⟦ÅŢĶ ōñé⟧",
+	"vz_breakdown_hp": "⟦ĤÞ ōñé⟧",
+	"vz_breakdown_def": "⟦ÐÉƑ ōñé⟧",
+	"vz_breakdown_flat_name": "⟦Ƒļåţ {name} ōñé⟧",
+	"vz_breakdown_direct_hit": "⟦Ðîŕéçţ ĥîţ ōñé⟧",
+	"vz_breakdown_additive": "⟦Åððîţîṽé ōñé⟧",
+	"vz_breakdown_transformative": "⟦Ţŕåñšƒöŕɱåţîṽé ōñé ţŵö⟧",
+	"vz_breakdown_lunar_stellar": "⟦Ļûñåŕ & Šţéļļåŕ ōñé ţŵö⟧",
+	"vz_breakdown_reaction_bonus_2e6f": "⟦+ Ŕéåçţîöñ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_em_em_rb": "⟦{em} ÉṀ · +{rb}% ōñé⟧",
+	"vz_breakdown_em_em_d939": "⟦{em} ÉṀ ōñé⟧",
+	"vz_breakdown_elemental_mastery": "⟦Éļéɱéñţåļ Ṁåšţéŕý ōñé ţŵö⟧",
+	"vz_breakdown_crit_on_average": "⟦Çŕîţ, öñ åṽéŕåĝé ōñé ţŵö⟧",
+	"vz_breakdown_1_crit_rate_crit_dmg": "⟦1 + ÇŔÎŢ Ŕåţé × ÇŔÎŢ ÐṀĜ ōñé ţŵö⟧",
+	"vz_breakdown_with_cr_crit_rate_and_cd_crit_dmg_the": "⟦Ŵîţĥ {cr} ÇŔÎŢ Ŕåţé åñð {cd} ÇŔÎŢ ÐṀĜ, ţĥé ĥîţ ŵöûļð åṽéŕåĝé {factor} å ñöñ-çŕîţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_breakdown_dmg_bonus": "⟦ÐṀĜ Ɓöñûš ōñé⟧",
+	"vz_breakdown_1_dmg_bonus": "⟦1 + ÐṀĜ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_a_x_dmg_bonus_would_make_the_hit_sheet": "⟦Å {bonus}% ÐṀĜ Ɓöñûš ŵöûļð ɱåķé ţĥé ĥîţ {factor} åš šţŕöñĝ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_breakdown_enemy_def": "⟦Éñéɱý ÐÉƑ ōñé⟧",
+	"vz_breakdown_lv_charlevel_vs_enemylevel_defshredpct": "⟦Ļṽ {level} ṽš {enemy} · −{shred}% · −{ignore}% ōñé ţŵö⟧",
+	"vz_breakdown_lv_charlevel_vs_enemylevel": "⟦Ļṽ {level} ṽš {enemy} ōñé⟧",
+	"vz_breakdown_at_level_charlevel_against_a_level_2510": "⟦Åţ ļéṽéļ {level} åĝåîñšţ å ļéṽéļ {enemy} éñéɱý, îţš ÐÉƑ åƒţéŕ {shred}% šĥŕéð åñð {ignore}% îĝñöŕé ŵöûļð ļéţ {share} öƒ ţĥé ĥîţ ţĥŕöûĝĥ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ⟧",
+	"vz_breakdown_at_level_charlevel_against_a_level_89c8": "⟦Åţ ļéṽéļ {level} åĝåîñšţ å ļéṽéļ {enemy} éñéɱý, îţš ÐÉƑ ŵöûļð ļéţ {share} öƒ ţĥé ĥîţ ţĥŕöûĝĥ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_breakdown_enemy_res": "⟦Éñéɱý ŔÉŠ ōñé⟧",
+	"vz_breakdown_below_0_res_only_half_the_shred_counts": "⟦Ɓéļöŵ 0% ŔÉŠ öñļý ĥåļƒ ţĥé šĥŕéð çöûñţš, šö ţĥé éñéɱý ŵöûļð ţåķé {share} öƒ ţĥé ĥîţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_breakdown_at_enemyres_res_the_enemy_would_take": "⟦Åţ {res}% ŔÉŠ, ţĥé éñéɱý ŵöûļð ţåķé {share} öƒ ţĥé ĥîţ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_breakdown_from_75_res_the_formula_changes_to_a": "⟦Ƒŕöɱ 75% ŔÉŠ ţĥé ƒöŕɱûļå çĥåñĝéš ţö å çûŕṽé, åñð ţĥé éñéɱý ŵöûļð ţåķé {share} öƒ ţĥé ĥîţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_breakdown_level_base": "⟦Ļéṽéļ ƀåšé ōñé⟧",
+	"vz_breakdown_from_the_level_table": "⟦ƒŕöɱ ţĥé ļéṽéļ ţåƀļé ōñé ţŵö⟧",
+	"vz_breakdown_lv_charlevel": "⟦Ļṽ {level} ōñé⟧",
+	"vz_breakdown_every_level_charlevel_character_starts_a": "⟦Éṽéŕý ļéṽéļ {level} çĥåŕåçţéŕ šţåŕţš å ŕéåçţîöñ ƒŕöɱ ţĥé šåɱé ƀåšé: {base}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_breakdown_mult_60_top_contributor_share": "⟦{mult} × 60% ţöþ-çöñţŕîƀûţöŕ šĥåŕé ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_reaction_phrase_a_phrase_reaction_name": [
+		{
+			"declarations": ["input form", "input name", "input mult", "input shown"],
+			"selectors": ["form"],
+			"match": {
+				"form=name": "⟦{name} ɱûļţîþļîéš ţĥé ƀåšé ƀý {mult}, åñð ţĥé ţöþ çöñţŕîƀûţöŕ ðéåļš 60% öƒ îţ: ×{shown}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+				"form=phrase": "⟦Å {name} ɱûļţîþļîéš ţĥé ƀåšé ƀý {mult}, åñð ţĥé ţöþ çöñţŕîƀûţöŕ ðéåļš 60% öƒ îţ: ×{shown}. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧"
+			}
+		}
+	],
+	"vz_breakdown_name_multiplies_the_base_by_mult": "⟦{name} ɱûļţîþļîéš ţĥé ƀåšé ƀý {mult}. ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_1_5_em_em_1200_bonusword": "⟦1 + 5 × ÉṀ ÷ (ÉṀ + 1200){bonus} ōñé ţŵö⟧",
+	"vz_breakdown_1_6_em_em_2000_bonusword": "⟦1 + 6 × ÉṀ ÷ (ÉṀ + 2000){bonus} ōñé ţŵö⟧",
+	"vz_breakdown_1_16_em_em_2000_bonusword": "⟦1 + 16 × ÉṀ ÷ (ÉṀ + 2000){bonus} ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_em_reaction_bonus": "⟦ÉṀ + Ŕéåçţîöñ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_em": "⟦ÉṀ ōñé⟧",
+	"vz_breakdown_em_and_the_rb_reaction_bonus_together": "⟦ÉṀ åñð ţĥé +{rb}% Ŕéåçţîöñ Ɓöñûš ţöĝéţĥéŕ ŵöûļð ŕåîšé îţ {factor}. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_breakdown_em_would_raise_it_value": "⟦ÉṀ ŵöûļð ŕåîšé îţ {factor}. ōñé ţŵö⟧",
+	"vz_breakdown_scaling_stat_4658": "⟦Šçåļîñĝ {stat} ōñé⟧",
+	"vz_breakdown_1_stat_flat_stat_base_stat": "⟦1 + {stat}% + ƒļåţ {stat} ÷ ƀåšé {stat} ōñé ţŵö⟧",
+	"vz_breakdown_sheet_stat": "⟦{total} {stat} ōñé⟧",
+	"vz_breakdown_your_sheet_stat_would_make_the_hit_sheet": "⟦Ýöûŕ {total} {stat} ŵöûļð ɱåķé ţĥé ĥîţ {factor} ŵĥåţ ƀåšé {stat} åļöñé ðéåļš. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_breakdown_mult_1_2_78_em_em_1400_bonusword": "⟦{mult} × (1 + 2.78 × ÉṀ ÷ (ÉṀ + 1400){bonus}) ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_a_x_name_would_multiply_the_hit_by_f": [
+		{
+			"declarations": ["input direction", "input name", "input factor"],
+			"selectors": ["direction"],
+			"match": {
+				"direction=forward": "⟦Å ƒöŕŵåŕð {name} ŵöûļð ɱûļţîþļý ţĥé ĥîţ ƀý {factor}. ōñé ţŵö ţĥŕéé⟧",
+				"direction=reverse": "⟦Å ŕéṽéŕšé {name} ŵöûļð ɱûļţîþļý ţĥé ĥîţ ƀý {factor}. ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_breakdown_your_hit": "⟦Ýöûŕ ĥîţ ōñé⟧",
+	"vz_breakdown_vs_base_stat_alone": "⟦ṽš ƀåšé {stat} åļöñé ōñé ţŵö⟧",
+	"vz_breakdown_together_these_would_make_the_hit_mult": "⟦Ţöĝéţĥéŕ, ţĥéšé ŵöûļð ɱåķé ţĥé ĥîţ {factor} ŵĥåţ ƀåšé {stat} åļöñé ðéåļš, ƀéƒöŕé îţš ţåļéñţ ɱûļţîþļîéŕ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_breakdown_the_chunk": "⟦Ţĥé çĥûñķ ōñé⟧",
+	"vz_breakdown_added_to_the_hit_s_base_damage": "⟦åððéð ţö ţĥé ĥîţ’š ƀåšé ðåɱåĝé ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_name_would_add_achunk_to_the_hit_s_base": "⟦{name} ŵöûļð åðð {chunk} ţö ţĥé ĥîţ’š ƀåšé ðåɱåĝé. Ƒŕöɱ ĥéŕé îţ ŕîðéš ţĥé ŕéšţ öƒ ţĥé ĥîţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_breakdown_damage_added": "⟦Ðåɱåĝé åððéð ōñé⟧",
+	"vz_breakdown_on_average": "⟦öñ åṽéŕåĝé ōñé⟧",
+	"vz_breakdown_on_average_name_would_add_mult_damage_to": "⟦Öñ åṽéŕåĝé, {name} ŵöûļð åðð {damage} ðåɱåĝé ţö éåçĥ ĥîţ îţ ţŕîĝĝéŕš öñ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_breakdown_base_dmg_bonus": "⟦Ɓåšé ÐṀĜ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_1_base_dmg_bonus": "⟦1 + Ɓåšé ÐṀĜ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_a_basedmgpct_base_dmg_bonus_would_raise": "⟦Å {bonus}% Ɓåšé ÐṀĜ Ɓöñûš ŵöûļð ŕåîšé îţ {factor}. ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_elevation": "⟦Éļéṽåţîöñ ōñé⟧",
+	"vz_breakdown_1_elevation_after_every_other_bracket": "⟦1 + Éļéṽåţîöñ, åƒţéŕ éṽéŕý öţĥéŕ ƀŕåçķéţ ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_a_elevationpct_elevation_would_raise_it": "⟦Å {bonus}% Éļéṽåţîöñ ŵöûļð ŕåîšé îţ {factor}. ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_damage_7bf6": "⟦Ðåɱåĝé ōñé⟧",
+	"vz_breakdown_name_hit": "⟦{name} ĥîţ ōñé⟧",
+	"vz_breakdown_on_average_one_reaction_phrase_name_hit": "⟦Öñ åṽéŕåĝé, öñé {hit} ŵöûļð ðéåļ {damage} ðåɱåĝé åš ţĥé ţöþ çöñţŕîƀûţöŕ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧",
+	"vz_breakdown_one_name_hit_would_deal_mult_damage": "⟦Öñé {name} ĥîţ ŵöûļð ðéåļ {damage} ðåɱåĝé. ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_one_more_label_roll_stat_would_raise_the": "⟦Öñé ɱöŕé {stat} ŕöļļ ({step}) ŵöûļð ŕåîšé ţĥé ðåɱåĝé ƀý {gain}%. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_breakdown_stellar_swirl_blast_damage": "⟦Šţéļļåŕ Šŵîŕļ ƀļåšţ ðåɱåĝé ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_name_damage": "⟦{name} ðåɱåĝé ōñé⟧",
+	"vz_breakdown_read_it_supplies_x_of_the_boost": "⟦{read} Îţ šûþþļîéš {share}% öƒ ţĥé ƀööšţ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_read_it_takes_back_x_of_the_boost": "⟦{read} Îţ ţåķéš ƀåçķ {share}% öƒ ţĥé ƀööšţ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_each_bar_multiplies_the_hit_and_each": "⟦Éåçĥ ƀåŕ ɱûļţîþļîéš ţĥé ĥîţ, åñð éåçĥ ĝŕîðļîñé ðöûƀļéš îţ, šö å ×2 îš ţĥé šåɱé šîžé ŵĥéŕéṽéŕ îţ šîţš åñð å çûţ ŕûñš ţĥé öţĥéŕ ŵåý. Ţĥé ŕéšûļţ çöɱþåŕéš åĝåîñšţ å ĥîţ ƒŕöɱ ƀåšé {stat} åļöñé, ƀéçåûšé ţĥé ţåļéñţ ɱûļţîþļîéŕ ðéþéñðš öñ ţĥé åţţåçķ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_breakdown_spread_and_aggravate_add_a_flat_chunk": "⟦Šþŕéåð åñð Åĝĝŕåṽåţé åðð å ƒļåţ çĥûñķ ƒŕöɱ ļéṽéļ åñð ÉṀ åļöñé. Ţĥé çĥûñķ ţĥéñ ŕîðéš ţĥé ŕéšţ öƒ ţĥé ĥîţ, šö îţ çŕîţš åñð ţåķéš ÐṀĜ Ɓöñûš ļîķé ţĥé ĥîţ ðöéš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé ţŵö⟧",
+	"vz_breakdown_damage_from_level_and_em_alone_so_the": "⟦Ðåɱåĝé ƒŕöɱ ļéṽéļ åñð ÉṀ åļöñé, šö ţĥé ŕéšûļţ îš å ñûɱƀéŕ. Ƒöŕ ɱöšţ çĥåŕåçţéŕš, çŕîţ, ÅŢĶ, åñð ÐṀĜ% ðö ñöţĥîñĝ, åñð éñéɱý ÐÉƑ ðöéšñ’ţ åþþļý. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ⟧",
+	"vz_breakdown_damage_from_level_and_em_with_two": "⟦Ðåɱåĝé ƒŕöɱ ļéṽéļ åñð ÉṀ, ŵîţĥ ţŵö ƀŕåçķéţš öƒ îţš öŵñ: Ɓåšé ÐṀĜ Ɓöñûš åñð Éļéṽåţîöñ. Îţ çåñ çŕîţ, åñð éñéɱý ÐÉƑ ðöéšñ’ţ åþþļý. Ţĥéšé ƒîĝûŕéš åŕé ţĥé ţöþ çöñţŕîƀûţöŕ’š 60% šĥåŕé. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_stat_percent_bonus": "⟦{stat} þéŕçéñţ ƀöñûš ōñé ţŵö⟧",
+	"vz_breakdown_dmg_bonus_percent": "⟦ÐṀĜ Ɓöñûš þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_crit_rate": "⟦ÇŔÎŢ Ŕåţé ōñé⟧",
+	"vz_breakdown_crit_rate_percent": "⟦ÇŔÎŢ Ŕåţé þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_crit_dmg": "⟦ÇŔÎŢ ÐṀĜ ōñé⟧",
+	"vz_breakdown_crit_dmg_percent": "⟦ÇŔÎŢ ÐṀĜ þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_reaction_bonus_b017": "⟦Ŕéåçţîöñ Ɓöñûš ōñé ţŵö⟧",
+	"vz_breakdown_reaction_bonus_percent": "⟦Ŕéåçţîöñ Ɓöñûš þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_base_dmg_bonus_percent": "⟦Ɓåšé ÐṀĜ Ɓöñûš þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_elevation_percent": "⟦Éļéṽåţîöñ þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_enemy_level": "⟦Éñéɱý ļéṽéļ ōñé⟧",
+	"vz_breakdown_enemy_res_after_shred": "⟦Éñéɱý ŔÉŠ åƒţéŕ šĥŕéð ōñé ţŵö⟧",
+	"vz_breakdown_enemy_res_after_shred_percent": "⟦Éñéɱý ŔÉŠ åƒţéŕ šĥŕéð, þéŕçéñţ ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_def_shred": "⟦ÐÉƑ šĥŕéð ōñé⟧",
+	"vz_breakdown_def_shred_percent": "⟦ÐÉƑ šĥŕéð þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_def_ignore": "⟦ÐÉƑ îĝñöŕé ōñé⟧",
+	"vz_breakdown_def_ignore_percent": "⟦ÐÉƑ îĝñöŕé þéŕçéñţ ōñé ţŵö⟧",
+	"vz_breakdown_cr_cr_cd_cd": "⟦ÇŔ {cr} · ÇÐ {cd} ōñé⟧",
+	"vz_breakdown_em_em_050d": "⟦ÉṀ {em} ōñé⟧",
+	"vz_breakdown_stat_sheet_dmg_dmgpct_crit_amp_em": "⟦{stat} {total} · ÐṀĜ {dmg} · {crit} ōñé⟧",
+	"vz_breakdown_em_crit_dmg_dmgpct": "⟦{em} · {crit} · ÐṀĜ {dmg} ōñé⟧",
+	"vz_breakdown_def_defremoved": "⟦· ÐÉƑ −{removed}% ōñé⟧",
+	"vz_breakdown_lv_enemylevel_res_enemyres_defmods_def": "⟦Ļṽ {level} · ŔÉŠ {res}% ōñé⟧",
+	"vz_breakdown_res_enemyres": "⟦ŔÉŠ {res}% ōñé⟧",
+	"vz_breakdown_none": "⟦Ñöñé ōñé⟧",
+	"vz_breakdown_x_headnoun_from_one_more_x_roll": "⟦{gain}{#span}{noun} ƒŕöɱ öñé ɱöŕé {stats} ŕöļļ{/span} ōñé ţŵö⟧",
+	"vz_breakdown_substat": "⟦šûƀšţåţ ōñé⟧",
+	"vz_breakdown_damage_family": "⟦Ðåɱåĝé ƒåɱîļý ōñé ţŵö⟧",
+	"vz_breakdown_setup": "⟦Šéţûþ ōñé⟧",
+	"vz_breakdown_reaction": "⟦Ŕéåçţîöñ ōñé⟧",
+	"vz_breakdown_reaction_reaction": "⟦Ŕéåçţîöñ: {face} ōñé⟧",
+	"vz_breakdown_stats": "⟦Šţåţš ōñé⟧",
+	"vz_breakdown_stats_statsface": "⟦Šţåţš: {face} ōñé⟧",
+	"vz_breakdown_scaling_stat_1266": "⟦Šçåļîñĝ šţåţ ōñé⟧",
+	"vz_breakdown_base_stat": "⟦Ɓåšé {stat} ōñé⟧",
+	"vz_breakdown_flat_stat": "⟦Ƒļåţ {stat} ōñé⟧",
+	"vz_breakdown_your_level_charlevel": "⟦Ýöûŕ ļéṽéļ: {level} ōñé⟧",
+	"vz_breakdown_your_level": "⟦Ýöûŕ ļéṽéļ ōñé⟧",
+	"vz_breakdown_level": "⟦Ļéṽéļ ōñé⟧",
+	"vz_breakdown_character_level": "⟦Çĥåŕåçţéŕ ļéṽéļ ōñé ţŵö⟧",
+	"vz_breakdown_enemy": "⟦Éñéɱý ōñé⟧",
+	"vz_breakdown_enemy_enemyface": "⟦Éñéɱý: {face} ōñé⟧",
+	"vz_breakdown_the_hit_s_damage_formula_one_column_per": "⟦Ţĥé ĥîţ'š ðåɱåĝé ƒöŕɱûļå, öñé çöļûɱñ þéŕ ƀŕåçķéţ ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+	"vz_breakdown_damage_5419": "⟦ðåɱåĝé ōñé⟧",
+	"vz_breakdown_times_a_hit_from_base_stat_alone": "⟦ţîɱéš å ĥîţ ƒŕöɱ ƀåšé {stat} åļöñé ōñé ţŵö ţĥŕéé⟧",
+	"vz_breakdown_family_the_marks_at_the_end_of_a_bar_are": "⟦Ţĥé ɱåŕķš åţ ţĥé éñð öƒ å ƀåŕ åŕé öñé ɱöŕé åṽéŕåĝé 5★ ŕöļļ öƒ ţĥåţ šûƀšţåţ, åððéð ţö ýöûŕ šĥééţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ⟧",
+	"vz_breakdown_hover_or_tap_a_column_to_read_it_and": "⟦Ĥöṽéŕ öŕ ţåþ å çöļûɱñ ţö ŕéåð îţ, åñð ðŕåĝ öñé ŵîţĥ å ĝŕîþ ţö çĥåñĝé îţš šţåţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_breakdown_hover_or_tap_a_row_to_read_it": "⟦Ĥöṽéŕ öŕ ţåþ å ŕöŵ ţö ŕéåð îţ. ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_crit_rate_and_crit_damage_heatmap": "⟦Çŕîţ ŕåţé åñð çŕîţ ðåɱåĝé ĥéåţɱåþ ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_below_the_base_5_crit_rate": "⟦ƀéļöŵ ţĥé ƀåšé 5% ÇŔÎŢ Ŕåţé ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_x_cv": "⟦{cv} ÇṼ ōñé⟧",
+	"vz_crit_best_split_of_this_budget": "⟦ƀéšţ šþļîţ öƒ ţĥîš ƀûðĝéţ ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_average_damage": "⟦åṽéŕåĝé ðåɱåĝé ōñé ţŵö⟧",
+	"vz_crit_crits_in_n_x": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦çŕîţš îñ {count} ĥîţ ōñé ţŵö⟧",
+				"countPlural=other": "⟦çŕîţš îñ {count} ĥîţš ōñé ţŵö⟧"
+			}
+		}
+	],
+	"vz_crit_pinneddelta_vs_pinned": "⟦{delta} ṽš þîññéð ōñé⟧",
+	"vz_crit_move_to_the_best_split_of_this_budget": "⟦Ṁöṽé ţö ţĥé ƀéšţ šþļîţ öƒ ţĥîš ƀûðĝéţ ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_k_of_hitsperrotation_hitsperrotation": [
+		{
+			"declarations": [
+				"input count",
+				"input k",
+				"input multiplier",
+				"input chance",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦{k} öƒ {count} ĥîţ çŕîţ: {#strong}{multiplier}{/strong}, îñ {chance} öƒ ŕöţåţîöñš. ōñé ţŵö ţĥŕéé⟧",
+				"countPlural=other": "⟦{k} öƒ {count} ĥîţš çŕîţ: {#strong}{multiplier}{/strong}, îñ {chance} öƒ ŕöţåţîöñš. ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_crit_crit_rate_d37f": "⟦ÇŔÎŢ Ŕåţé ōñé⟧",
+	"vz_crit_crit_rate_9bbd": "⟦Çŕîţ ŕåţé ōñé⟧",
+	"vz_crit_mymultiplier_average_damage_per_hit": "⟦{multiplier}{#span}åṽéŕåĝé ðåɱåĝé þéŕ ĥîţ{/span} ōñé ţŵö⟧",
+	"vz_crit_hits_per_rotation": "⟦Ĥîţš þéŕ ŕöţåţîöñ ōñé ţŵö⟧",
+	"vz_crit_darkens_each_crit_rate_by_its_chance_of": "⟦Ðåŕķéñš éåçĥ ÇŔÎŢ Ŕåţé ƀý îţš çĥåñçé öƒ å ŵĥöļé ŕöţåţîöñ ŵîţĥöûţ å šîñĝļé çŕîţ ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_crit_no_crit_shading": "⟦Ñö-çŕîţ šĥåðîñĝ ōñé ţŵö⟧",
+	"vz_crit_clear_pin": "⟦Çļéåŕ þîñ ōñé⟧",
+	"vz_crit_pin_this_build": "⟦Þîñ ţĥîš ƀûîļð ōñé ţŵö⟧",
+	"vz_crit_crit_dmg": "⟦ÇŔÎŢ ÐṀĜ ōñé⟧",
+	"vz_crit_crit_damage": "⟦Çŕîţ ðåɱåĝé ōñé⟧",
+	"vz_crit_crits_in_hitsperrotation_hitsperrotation": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦çŕîţš îñ {count} ĥîţ ōñé ţŵö⟧",
+				"countPlural=other": "⟦çŕîţš îñ {count} ĥîţš ōñé ţŵö⟧"
+			}
+		}
+	],
+	"vz_crit_a_hit_that_doesn_t_crit_is_1": "⟦Å ĥîţ ţĥåţ ðöéšñ’ţ çŕîţ îš ×1. ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_the_curving_bands_show_how_much_your": "⟦Ţĥé çûŕṽîñĝ ƀåñðš šĥöŵ ĥöŵ ɱûçĥ ýöûŕ ðåɱåĝé ŵöûļð îñçŕéåšé öṽéŕ ɱåñý ŕöţåţîöñš. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_crit_the_solid_line_is_every_build_with_your": "⟦Ţĥé šöļîð ļîñé îš éṽéŕý ƀûîļð ŵîţĥ ýöûŕ {cv} ţöţåļ çŕîţ ṽåļûé (ÇṼ): 2 × ÇŔÎŢ Ŕåţé + ÇŔÎŢ ÐṀĜ, ƀåšé çŕîţ šţåţš îñçļûðéð. Îţš ŕîñĝ ɱåŕķš ţĥåţ ƀûðĝéţ’š ƀéšţ šþļîţ; þŕéšš îţ ţö ɱöṽé ţĥéŕé. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ šéṽéñ éîĝĥţ ñîñé ţéñ ōñé ţŵö ţĥŕéé⟧",
+	"vz_crit_each_bar_is_a_number_of_crits_in_one": "⟦Éåçĥ ƀåŕ îš å ñûɱƀéŕ öƒ çŕîţš îñ öñé ŕöţåţîöñ. Ĥöṽéŕ öŕ ţåþ öñé ţö ŕéåð îţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé šîẋ⟧",
+	"vz_crit_roll_hitsperrotation_hitsperrotation": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦Ŕöļļ {count} ĥîţ ōñé⟧",
+				"countPlural=other": "⟦Ŕöļļ {count} ĥîţš ōñé⟧"
+			}
+		}
+	],
+	"vz_crit_rollcrits_of_length_length_crit_mycd": [
+		{
+			"declarations": [
+				"input count",
+				"input k",
+				"input multiplier",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦{k} öƒ {count} ĥîţ çŕîţ: {#strong}{multiplier}{/strong} ţĥîš ţîɱé. ōñé ţŵö ţĥŕéé⟧",
+				"countPlural=other": "⟦{k} öƒ {count} ĥîţš çŕîţ: {#strong}{multiplier}{/strong} ţĥîš ţîɱé. ōñé ţŵö ţĥŕéé⟧"
+			}
+		}
+	],
+	"vz_crit_on_average_x_of_hitsperrotation": [
+		{
+			"declarations": [
+				"input count",
+				"input average",
+				"input chance",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "⟦Öñ åṽéŕåĝé {average} öƒ {count} ĥîţ çŕîţ, åñð {chance} öƒ ŕöţåţîöñš ñéṽéŕ çŕîţ. ōñé ţŵö ţĥŕéé ƒöûŕ⟧",
+				"countPlural=other": "⟦Öñ åṽéŕåĝé {average} öƒ {count} ĥîţš çŕîţ, åñð {chance} öƒ ŕöţåţîöñš ñéṽéŕ çŕîţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧"
+			}
+		}
+	],
+	"vz_crit_on_average_59_4_of_60_hits_crit_and_0_1": "⟦Öñ åṽéŕåĝé 59.4 öƒ 60 ĥîţš çŕîţ, åñð <0.1% öƒ ŕöţåţîöñš ñéṽéŕ çŕîţ. ōñé ţŵö ţĥŕéé ƒöûŕ ƒîṽé⟧"
 }

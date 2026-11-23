@@ -19,6 +19,8 @@ import {
 	TOP_CONTRIBUTOR_SHARE
 } from './reactionCurves';
 import { substatById, type SubstatId } from './artifactOdds';
+import { labels } from '$lib/i18n/labels';
+import { m } from '$lib/paraglide/messages';
 
 export type FamilyId = 'direct' | 'additive' | 'transformative' | 'lunar';
 
@@ -100,51 +102,72 @@ export type ReactionDef = {
 	phrase?: string;
 };
 
-const r = (id: string, name: string, mult: number): ReactionDef => ({
+// The names are message functions behind getters, so each read follows the
+// page's language.
+const r = (id: string, name: () => string, mult: number): ReactionDef => ({
 	id,
-	name,
+	get name() {
+		return name();
+	},
 	mult,
 	shown: mult
 });
-const lunarR = (id: string, name: string, mult: number, phrase?: string): ReactionDef => ({
+const lunarR = (
+	id: string,
+	name: () => string,
+	mult: number,
+	phrase?: () => string
+): ReactionDef => ({
 	id,
-	name,
+	get name() {
+		return name();
+	},
 	mult,
 	shown: Math.round(mult * TOP_CONTRIBUTOR_SHARE * 100) / 100,
-	phrase
+	get phrase() {
+		return phrase?.();
+	}
 });
 
 export const REACTIONS: Record<FamilyId, ReactionDef[]> = {
 	direct: [
-		r('none', 'No reaction', 1),
-		r('vape2', 'Vaporize', 2),
-		r('vape15', 'Vaporize', 1.5),
-		r('melt2', 'Melt', 2),
-		r('melt15', 'Melt', 1.5)
+		r('none', m.vz_breakdown_no_reaction, 1),
+		r('vape2', m.vz_breakdown_vaporize, 2),
+		r('vape15', m.vz_breakdown_vaporize, 1.5),
+		r('melt2', m.vz_breakdown_melt, 2),
+		r('melt15', m.vz_breakdown_melt, 1.5)
 	],
-	additive: [r('spread', 'Spread', 1.25), r('aggravate', 'Aggravate', 1.15)],
+	additive: [
+		r('spread', m.vz_breakdown_spread, 1.25),
+		r('aggravate', m.vz_breakdown_aggravate, 1.15)
+	],
 	transformative: [
-		r('hyperbloom', 'Hyperbloom', 3),
-		r('burgeon', 'Burgeon', 3),
-		r('shatter', 'Shatter', 3),
-		r('overload', 'Overloaded', 2.75),
-		r('ec', 'Electro-Charged', 2),
-		r('bloom', 'Bloom', 2),
-		r('superconduct', 'Superconduct', 1.5),
-		r('swirl', 'Swirl', 0.6),
-		r('burning', 'Burning', 0.25)
+		r('hyperbloom', m.vz_breakdown_hyperbloom, 3),
+		r('burgeon', m.vz_breakdown_burgeon, 3),
+		r('shatter', m.vz_breakdown_shatter, 3),
+		r('overload', m.vz_breakdown_overloaded, 2.75),
+		r('ec', m.vz_breakdown_electro_charged, 2),
+		r('bloom', m.vz_breakdown_bloom, 2),
+		r('superconduct', m.vz_breakdown_superconduct, 1.5),
+		r('swirl', m.vz_breakdown_swirl, 0.6),
+		r('burning', m.vz_breakdown_burning, 0.25)
 	],
 	lunar: [
-		lunarR('lc', 'Lunar-Charged', 3),
-		lunarR('lcrys', 'Lunar-Crystallize', 1.6),
-		lunarR('ssw', 'Stellar Swirl', 0.75),
+		lunarR('lc', m.vz_breakdown_lunar_charged, 3),
+		lunarR('lcrys', m.vz_breakdown_lunar_crystallize, 1.6),
+		lunarR('ssw', m.vz_breakdown_stellar_swirl, 0.75),
 		lunarR(
 			'sswBlast12',
-			'Stellar Swirl blast, 1–2 swirls',
+			m.vz_breakdown_stellar_swirl_blast_1_2_swirls,
 			2,
-			'Stellar Swirl blast after 1–2 swirls'
+			m.vz_breakdown_stellar_swirl_blast_after_1_2_swirls
 		),
-		lunarR('sswBlast3', 'Stellar Swirl blast, 3+ swirls', 3, 'Stellar Swirl blast after 3+ swirls')
+		lunarR(
+			'sswBlast3',
+			m.vz_breakdown_stellar_swirl_blast_3_swirls,
+			3,
+			m.vz_breakdown_stellar_swirl_blast_after_3_swirls
+		)
 	]
 };
 
@@ -253,7 +276,11 @@ export type LabStat = {
 	isPct: boolean;
 };
 
-const STAT_NAMES: Record<ScalingStat, string> = { atk: 'ATK', hp: 'HP', def: 'DEF' };
+const STAT_NAMES: Record<ScalingStat, string> = labels({
+	atk: m.vz_breakdown_atk,
+	hp: m.vz_breakdown_hp,
+	def: m.vz_breakdown_def
+});
 const PCT_ROLL: Record<ScalingStat, SubstatId> = { atk: 'atkPct', hp: 'hpPct', def: 'defPct' };
 
 export const statName = (s: ScalingStat) => STAT_NAMES[s];
@@ -275,10 +302,10 @@ export function labStats(
 	});
 	const name = STAT_NAMES[scaling];
 	const statPct = roll('statPct', `${name}%`, PCT_ROLL[scaling]);
-	const statFlat = roll('statFlat', `Flat ${name}`, scaling);
-	const cr = roll('cr', 'CRIT Rate', 'cr');
-	const cd = roll('cd', 'CRIT DMG', 'cd');
-	const em = roll('em', 'Elemental Mastery', 'em');
+	const statFlat = roll('statFlat', m.vz_breakdown_flat_name({ name }), scaling);
+	const cr = roll('cr', m.vz_breakdown_crit_rate(), 'cr');
+	const cd = roll('cd', m.vz_breakdown_crit_dmg(), 'cd');
+	const em = roll('em', m.vz_breakdown_elemental_mastery(), 'em');
 	if (family === 'direct') {
 		const base = [statPct, statFlat, cr, cd];
 		return reactionMult > 1 ? [...base, em] : base;
