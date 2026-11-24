@@ -10,6 +10,7 @@
 </script>
 
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import { matchesIdentity, type GridFilters, type IdentityFilters } from '$lib/characterFilters';
@@ -36,7 +37,7 @@
 		roster,
 		filters,
 		extraFilter,
-		emptyMessage = 'No characters match these filters.',
+		emptyMessage = m.tb_no_characters_match_these_filters(),
 		tile,
 		aboveGrid,
 		belowGrid,

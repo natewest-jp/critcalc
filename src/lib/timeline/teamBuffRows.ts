@@ -27,6 +27,7 @@ import {
 } from './buffDisplay';
 import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 import { barStepsOf } from './barSteps';
+import { m } from '$lib/paraglide/messages';
 
 // Re-exported for renderer convenience (the template types against these).
 export type { TeamBuffBar, TeamBuffSubrow };
@@ -99,12 +100,13 @@ export function projectTeamBuffRows(
 				sourceLabel = attribution ? `${displayName} ${attribution}` : `${displayName} ${lbl} (end)`;
 			} else if (src.trigger === 'nightsoulBurst') {
 				rowKey = `${w.characterId}::char::NB`;
-				sourceLabel = `${displayName} NB`;
+				sourceLabel = m.planner_displayname_nb({ name: displayName });
 			} else if (src.trigger === 'stackThreshold') {
 				// ⚓ Named after the FIRE (stack-threshold round, 2026-09-18): the
 				// bar's claim is "when the threshold fired", and a cast-pool row
 				// under the same E would fuse two anchors the merge law keeps apart.
-				const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
+				const fire =
+					src.fireLabel ?? m.planner_x_threshold({ token: AB_LABEL[src.abilityClass ?? 'skill'] });
 				rowKey = `${w.characterId}::char::stackThreshold::${fire}${w.debuff ? '::resShred' : ''}`;
 				sourceLabel = `${displayName} ${fire}`;
 			} else if (src.trigger === 'stacks') {
@@ -129,7 +131,7 @@ export function projectTeamBuffRows(
 			} else {
 				// 'reaction' — one row per effect, keyed by its display stat.
 				rowKey = `${w.characterId}::char::onReaction::${effects[0].stat}`;
-				sourceLabel = `${displayName} reaction`;
+				sourceLabel = m.planner_displayname_reaction({ name: displayName });
 				explicitKind = w.debuff ? 'debuff' : 'buff';
 			}
 		} else if (src.type === 'faction') {

@@ -5,6 +5,7 @@
 	import { portal } from '$lib/actions/portal';
 	import Mark from '$lib/components/Mark.svelte';
 	import { matchName, matchValue, type FieldOption } from './statEntry';
+	import { m } from '$lib/paraglide/messages';
 
 	/**
 	 * A FIELD ON THE PIECE CARD: a substat's name or its value, typed or
@@ -278,14 +279,14 @@
 		onfocusout={onListFocusOut}
 	>
 		{#if match.nearest}
-			<p class="sf-note">Not a value the game shows. Nearest:</p>
+			<p class="sf-note">{m.vz_not_a_value_the_game_shows_nearest()}</p>
 		{:else if !shown.length}
 			<p class="sf-note">
 				{kind === 'name'
-					? 'No substat by that name'
+					? m.vz_no_substat_by_that_name()
 					: options.length
-						? 'Not a value'
-						: 'Pick the substat first'}
+						? m.vz_not_a_value()
+						: m.vz_pick_the_substat_first()}
 			</p>
 		{/if}
 		{#each shown as o, i (o.value)}

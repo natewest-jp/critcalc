@@ -36,6 +36,8 @@
 //   distribution of "the 4 lines" is identical whether the 4th arrives at
 //   drop or at +4.
 
+import { m } from '$lib/paraglide/messages';
+
 // ── Substats ────────────────────────────────────────────────────────────────
 
 export type SubstatId =
@@ -60,83 +62,124 @@ export type Substat = {
 	isPct: boolean;
 };
 
+// Names are getters, so each read follows the page's language.
 export const SUBSTATS: Substat[] = [
 	{
 		id: 'hp',
-		name: 'HP',
-		short: 'HP',
+		get name() {
+			return m.vz_artifact_hp_5200();
+		},
+		get short() {
+			return m.vz_artifact_hp_5200();
+		},
 		weight: 6,
 		tiers: [209.13, 239.0, 268.88, 298.75],
 		isPct: false
 	},
 	{
 		id: 'atk',
-		name: 'ATK',
-		short: 'ATK',
+		get name() {
+			return m.vz_artifact_atk_1fa8();
+		},
+		get short() {
+			return m.vz_artifact_atk_1fa8();
+		},
 		weight: 6,
 		tiers: [13.62, 15.56, 17.51, 19.45],
 		isPct: false
 	},
 	{
 		id: 'def',
-		name: 'DEF',
-		short: 'DEF',
+		get name() {
+			return m.vz_artifact_def_6dae();
+		},
+		get short() {
+			return m.vz_artifact_def_6dae();
+		},
 		weight: 6,
 		tiers: [16.2, 18.52, 20.83, 23.15],
 		isPct: false
 	},
 	{
 		id: 'hpPct',
-		name: 'HP%',
-		short: 'HP%',
+		get name() {
+			return m.vz_artifact_hp_b294();
+		},
+		get short() {
+			return m.vz_artifact_hp_b294();
+		},
 		weight: 4,
 		tiers: [0.0408, 0.0466, 0.0525, 0.0583],
 		isPct: true
 	},
 	{
 		id: 'atkPct',
-		name: 'ATK%',
-		short: 'ATK%',
+		get name() {
+			return m.vz_artifact_atk_0f0a();
+		},
+		get short() {
+			return m.vz_artifact_atk_0f0a();
+		},
 		weight: 4,
 		tiers: [0.0408, 0.0466, 0.0525, 0.0583],
 		isPct: true
 	},
 	{
 		id: 'defPct',
-		name: 'DEF%',
-		short: 'DEF%',
+		get name() {
+			return m.vz_artifact_def_7253();
+		},
+		get short() {
+			return m.vz_artifact_def_7253();
+		},
 		weight: 4,
 		tiers: [0.051, 0.0583, 0.0656, 0.0729],
 		isPct: true
 	},
 	{
 		id: 'er',
-		name: 'Energy Recharge',
-		short: 'ER',
+		get name() {
+			return m.vz_artifact_energy_recharge();
+		},
+		get short() {
+			return m.vz_artifact_er();
+		},
 		weight: 4,
 		tiers: [0.0453, 0.0518, 0.0583, 0.0648],
 		isPct: true
 	},
 	{
 		id: 'em',
-		name: 'Elemental Mastery',
-		short: 'EM',
+		get name() {
+			return m.vz_artifact_elemental_mastery();
+		},
+		get short() {
+			return m.vz_artifact_em();
+		},
 		weight: 4,
 		tiers: [16.32, 18.65, 20.98, 23.31],
 		isPct: false
 	},
 	{
 		id: 'cr',
-		name: 'CRIT Rate',
-		short: 'CR',
+		get name() {
+			return m.vz_artifact_crit_rate();
+		},
+		get short() {
+			return m.vz_artifact_cr();
+		},
 		weight: 3,
 		tiers: [0.0272, 0.0311, 0.035, 0.0389],
 		isPct: true
 	},
 	{
 		id: 'cd',
-		name: 'CRIT DMG',
-		short: 'CD',
+		get name() {
+			return m.vz_artifact_crit_dmg();
+		},
+		get short() {
+			return m.vz_artifact_cd();
+		},
 		weight: 3,
 		tiers: [0.0544, 0.0622, 0.0699, 0.0777],
 		isPct: true
@@ -162,44 +205,187 @@ export type MainStat = {
 };
 
 export const SLOTS: { id: SlotId; name: string; mains: MainStat[] }[] = [
-	{ id: 'flower', name: 'Flower', mains: [{ id: 'hp', name: 'HP', chance: 1 }] },
-	{ id: 'plume', name: 'Plume', mains: [{ id: 'atk', name: 'ATK', chance: 1 }] },
+	{
+		id: 'flower',
+		get name() {
+			return m.vz_artifact_flower();
+		},
+		mains: [
+			{
+				id: 'hp',
+				get name() {
+					return m.vz_artifact_hp_5200();
+				},
+				chance: 1
+			}
+		]
+	},
+	{
+		id: 'plume',
+		get name() {
+			return m.vz_artifact_plume();
+		},
+		mains: [
+			{
+				id: 'atk',
+				get name() {
+					return m.vz_artifact_atk_1fa8();
+				},
+				chance: 1
+			}
+		]
+	},
 	{
 		id: 'sands',
-		name: 'Sands',
+		get name() {
+			return m.vz_artifact_sands();
+		},
 		mains: [
-			{ id: 'hpPct', name: 'HP%', chance: 0.2668 },
-			{ id: 'atkPct', name: 'ATK%', chance: 0.2666 },
-			{ id: 'defPct', name: 'DEF%', chance: 0.2666 },
-			{ id: 'er', name: 'Energy Recharge', chance: 0.1 },
-			{ id: 'em', name: 'Elemental Mastery', chance: 0.1 }
+			{
+				id: 'hpPct',
+				get name() {
+					return m.vz_artifact_hp_b294();
+				},
+				chance: 0.2668
+			},
+			{
+				id: 'atkPct',
+				get name() {
+					return m.vz_artifact_atk_0f0a();
+				},
+				chance: 0.2666
+			},
+			{
+				id: 'defPct',
+				get name() {
+					return m.vz_artifact_def_7253();
+				},
+				chance: 0.2666
+			},
+			{
+				id: 'er',
+				get name() {
+					return m.vz_artifact_energy_recharge();
+				},
+				chance: 0.1
+			},
+			{
+				id: 'em',
+				get name() {
+					return m.vz_artifact_elemental_mastery();
+				},
+				chance: 0.1
+			}
 		]
 	},
 	{
 		id: 'goblet',
-		name: 'Goblet',
+		get name() {
+			return m.vz_artifact_goblet();
+		},
 		mains: [
-			{ id: 'hpPct', name: 'HP%', chance: 0.1925 },
-			{ id: 'atkPct', name: 'ATK%', chance: 0.1925 },
-			{ id: 'defPct', name: 'DEF%', chance: 0.19 },
+			{
+				id: 'hpPct',
+				get name() {
+					return m.vz_artifact_hp_b294();
+				},
+				chance: 0.1925
+			},
+			{
+				id: 'atkPct',
+				get name() {
+					return m.vz_artifact_atk_0f0a();
+				},
+				chance: 0.1925
+			},
+			{
+				id: 'defPct',
+				get name() {
+					return m.vz_artifact_def_7253();
+				},
+				chance: 0.19
+			},
 			// ⚠️ ONE element: each of the seven is 5% (35% together), so the
 			// chance is per element and the chip says so (`each`)
-			{ id: 'elemDmg', name: 'Elemental DMG', chance: 0.05, each: true },
-			{ id: 'physDmg', name: 'Physical DMG', chance: 0.05 },
-			{ id: 'em', name: 'Elemental Mastery', chance: 0.025 }
+			{
+				id: 'elemDmg',
+				get name() {
+					return m.vz_artifact_elemental_dmg();
+				},
+				chance: 0.05,
+				each: true
+			},
+			{
+				id: 'physDmg',
+				get name() {
+					return m.vz_artifact_physical_dmg();
+				},
+				chance: 0.05
+			},
+			{
+				id: 'em',
+				get name() {
+					return m.vz_artifact_elemental_mastery();
+				},
+				chance: 0.025
+			}
 		]
 	},
 	{
 		id: 'circlet',
-		name: 'Circlet',
+		get name() {
+			return m.vz_artifact_circlet();
+		},
 		mains: [
-			{ id: 'hpPct', name: 'HP%', chance: 0.22 },
-			{ id: 'atkPct', name: 'ATK%', chance: 0.22 },
-			{ id: 'defPct', name: 'DEF%', chance: 0.22 },
-			{ id: 'cr', name: 'CRIT Rate', chance: 0.1 },
-			{ id: 'cd', name: 'CRIT DMG', chance: 0.1 },
-			{ id: 'healing', name: 'Healing Bonus', chance: 0.1 },
-			{ id: 'em', name: 'Elemental Mastery', chance: 0.04 }
+			{
+				id: 'hpPct',
+				get name() {
+					return m.vz_artifact_hp_b294();
+				},
+				chance: 0.22
+			},
+			{
+				id: 'atkPct',
+				get name() {
+					return m.vz_artifact_atk_0f0a();
+				},
+				chance: 0.22
+			},
+			{
+				id: 'defPct',
+				get name() {
+					return m.vz_artifact_def_7253();
+				},
+				chance: 0.22
+			},
+			{
+				id: 'cr',
+				get name() {
+					return m.vz_artifact_crit_rate();
+				},
+				chance: 0.1
+			},
+			{
+				id: 'cd',
+				get name() {
+					return m.vz_artifact_crit_dmg();
+				},
+				chance: 0.1
+			},
+			{
+				id: 'healing',
+				get name() {
+					return m.vz_artifact_healing_bonus();
+				},
+				chance: 0.1
+			},
+			{
+				id: 'em',
+				get name() {
+					return m.vz_artifact_elemental_mastery();
+				},
+				chance: 0.04
+			}
 		]
 	}
 ];

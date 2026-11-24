@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { routeOf } from '$lib/i18n/paths';
-	import { named, notices } from '$lib/notices.svelte';
+	import { namedMessage, notices } from '$lib/notices.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import { chapterSection, menu } from '$lib/menuState.svelte';
 	import { onMount, tick, untrack } from 'svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
@@ -179,12 +180,12 @@
 		const apply = h.applyShareState;
 		notices.toast(
 			'success',
-			named`${name} is back to its defaults`,
+			namedMessage(m.vz_name_is_back_to_its_defaults, { name }),
 			before !== undefined && apply
 				? {
 						actions: [
 							{
-								label: 'Undo',
+								label: m.vz_undo(),
 								run: () => {
 									if (storageSession.profile?.id === pid) apply(before);
 								}
@@ -266,10 +267,7 @@
 		stripDeepLinkParams(url);
 		const decoded = await decodeInstrumentParam(param);
 		if (!decoded || !INSTRUMENTS.some((i) => i.id === decoded.id)) {
-			notices.toast(
-				'error',
-				'That instrument link couldn’t be read. It may have been cut short when it was copied.'
-			);
+			notices.toast('error', m.vz_that_instrument_link_couldn_t_be_read_it());
 			return;
 		}
 		const id = decoded.id as InstrumentId;
@@ -365,7 +363,7 @@
 	     silently clamping — a control that accepts a press and does nothing
 	     reads as broken. "Auto" is the resting state and the pre-control
 	     behavior. -->
-	<div class="segment ws-slots" role="radiogroup" aria-label="Instruments shown">
+	<div class="segment ws-slots" role="radiogroup" aria-label={m.vz_instruments_shown()}>
 		{#each SLOT_OPTIONS as opt (opt)}
 			{@const tooWide = opt !== 'auto' && opt > capacity}
 			<button
@@ -375,13 +373,13 @@
 				aria-checked={slotPref === opt}
 				disabled={tooWide}
 				title={tooWide
-					? `The window is too narrow for ${opt} instruments side by side`
+					? m.vz_the_window_is_too_narrow_for_opt({ count: opt })
 					: opt === 'auto'
-						? 'Show as many instruments as the window fits'
-						: `Show ${opt} instrument${opt === 1 ? '' : 's'} at a time`}
+						? m.vz_show_as_many_instruments_as_the_window()
+						: m.vz_show_opt_instrument_x_at_a_time({ count: opt })}
 				onclick={() => (slotPref = opt)}
 			>
-				{opt === 'auto' ? 'Auto' : opt}
+				{opt === 'auto' ? m.vz_auto() : opt}
 			</button>
 		{/each}
 	</div>
@@ -393,7 +391,7 @@
 	     rotate-back for a tile's own defaults. -->
 	<button class="btn ws-reset" onclick={resetWorkspace}>
 		<Mark name="layout" />
-		Reset layout
+		{m.vz_reset_layout()}
 	</button>
 {/snippet}
 
@@ -432,10 +430,10 @@
 								class="btn btn--sm btn--glass"
 								disabled={atDefaults(id)}
 								onclick={() => restoreDefaults(id)}
-								title="Put this instrument’s controls back to their defaults"
+								title={m.vz_put_this_instrument_s_controls_back_to()}
 							>
 								<Mark name="reset" size={12} />
-								<span class="ws-band-word">Defaults</span>
+								<span class="ws-band-word">{m.vz_defaults()}</span>
 							</button>
 						{/if}
 						{#if handles[id]?.getShareState}
@@ -443,21 +441,27 @@
 								class="btn btn--sm btn--glass"
 								class:ws-share-copied={copiedTile === id}
 								onclick={() => shareTile(id)}
-								title="Copy a link that reopens this instrument as it looks now"
+								title={m.vz_copy_a_link_that_reopens_this_instrument()}
 							>
 								<Mark name={copiedTile === id ? 'check' : 'link'} size={12} />
 								<!-- ⚓ The tile's button says what it does (§5.3). -->
 								<span class="ws-band-word" class:ws-band-word--keep={failedTile === id}
 									>{failedTile === id
-										? 'Copy failed'
+										? m.vz_copy_failed()
 										: copiedTile === id
-											? 'Copied'
-											: 'Copy link'}</span
+											? m.vz_copied()
+											: m.vz_copy_link()}</span
 								>
 							</button>
 						{/if}
 						<!-- Per TILE, so the report carries this instrument's link. -->
-						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
+						<BandMenu
+							compact
+							glass
+							size="sm"
+							mark="more"
+							ariaLabel={m.vz_more_instrument_actions()}
+						>
 							{#snippet items(close)}
 								<button
 									class="band-menu-item"
@@ -465,7 +469,7 @@
 									onclick={() => {
 										close();
 										openHelp(id);
-									}}><Mark name="help" /> How it works</button
+									}}><Mark name="help" /> {m.vz_how_it_works()}</button
 								>
 								<ReportLink
 									class="band-menu-item"
@@ -475,14 +479,21 @@
 									onclick={close}
 								>
 									<Mark name="report" />
-									Report a problem
+									{m.vz_report_a_problem()}
 								</ReportLink>
 							{/snippet}
 						</BandMenu>
 						{#if slot === slotCount - 1}
 							<!-- The workspace's own control (§5.3): how many instruments,
 							     and Reset layout, as one plate at the toolbar's right. -->
-							<BandMenu glass size="sm" mark="layout" label="Layout" role="dialog" align="end">
+							<BandMenu
+								glass
+								size="sm"
+								mark="layout"
+								label={m.vz_layout()}
+								role="dialog"
+								align="end"
+							>
 								{#snippet items()}
 									<div class="ws-layout">{@render layoutControls()}</div>
 								{/snippet}

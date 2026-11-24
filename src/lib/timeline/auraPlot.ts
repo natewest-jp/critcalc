@@ -414,6 +414,7 @@ export function auraPathD(points: Array<[number, number]>, baseY?: number): stri
 	if (baseY === undefined) return d;
 	const first = points[0];
 	const last = points[points.length - 1];
+	// SVG path data, not text.
 	return `${d} L${last[0].toFixed(1)},${baseY.toFixed(1)} L${first[0].toFixed(1)},${baseY.toFixed(1)} Z`;
 }
 

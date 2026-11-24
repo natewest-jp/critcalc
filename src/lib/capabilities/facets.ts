@@ -23,6 +23,8 @@
 import type { CapabilitySummary, FacetKey } from '$lib/capabilities/deriveCapabilities';
 import { capMatchesFacet, providesFacet } from '$lib/capabilities/deriveCapabilities';
 import type { CharacterIndexEntry } from '$lib/types/character';
+import { labels } from '$lib/i18n/labels';
+import { m } from '$lib/paraglide/messages';
 
 // ---------------------------------------------------------------------------
 // Constellation mode
@@ -43,38 +45,36 @@ export function conCapFor(mode: ConMode, myConstellation: number | undefined): n
 // Facets
 // ---------------------------------------------------------------------------
 
-export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
-	{ key: 'heal', label: 'Healing', hint: 'Restores teammates’ HP.' },
-	{ key: 'shield', label: 'Shield', hint: 'Shields the active character.' },
-	{
-		key: 'interruptionRes',
-		label: 'Interruption RES',
-		hint: 'Makes teammates harder to interrupt.'
-	},
-	{
-		key: 'offFieldDamage',
-		label: 'Off-field DMG',
-		hint: 'Coordinated attacks or damaging summons'
-	},
-	{ key: 'resShred', label: 'RES shred', hint: 'Lowers enemy elemental/physical RES' },
-	{ key: 'cleanse', label: 'Cleanse', hint: 'Removes elemental auras from party members' },
-	{ key: 'grouping', label: 'Grouping', hint: 'Pulls or gathers enemies' },
-	{ key: 'buff:atk', label: 'ATK buff', hint: 'Buffs allies’ ATK' },
-	{ key: 'buff:em', label: 'EM buff', hint: 'Buffs allies’ Elemental Mastery' },
-	{ key: 'buff:crit', label: 'CRIT buff', hint: 'Buffs allies’ CRIT Rate / CRIT DMG' },
-	{ key: 'buff:dmg', label: 'DMG% buff', hint: 'Buffs allies’ damage bonuses' },
-	{ key: 'buff:hpdef', label: 'HP/DEF buff', hint: 'Buffs allies’ HP or DEF' },
-	{
-		key: 'infuse',
-		label: 'Infusion',
-		hint: 'Infuses the active character’s attacks with an element.'
-	},
-	{
-		key: 'energy',
-		label: 'Energy',
-		hint: 'Gives teammates flat Energy (particles aren’t counted).'
-	},
-	{ key: 'taunt', label: 'Taunt', hint: 'Draws opponents’ attacks away from you.' }
+/** A facet whose label and hint are read at each use, so they follow the locale. */
+function facet(key: FacetKey, label: () => string, hint: () => string) {
+	return {
+		key,
+		get label() {
+			return label();
+		},
+		get hint() {
+			return hint();
+		}
+	};
+}
+
+// The `key`s are facet ids (filter state, URL params); only the label and hint are shown.
+export const FACETS: { readonly key: FacetKey; readonly label: string; readonly hint: string }[] = [
+	facet('heal', m.tb_healing, m.tb_restores_teammates_hp),
+	facet('shield', m.tb_shield, m.tb_shields_the_active_character),
+	facet('interruptionRes', m.tb_interruption_res, m.tb_makes_teammates_harder_to_interrupt),
+	facet('offFieldDamage', m.tb_off_field_dmg, m.tb_coordinated_attacks_or_damaging_summons),
+	facet('resShred', m.tb_res_shred, m.tb_lowers_enemy_elemental_physical_res),
+	facet('cleanse', m.tb_cleanse, m.tb_removes_elemental_auras_from_party),
+	facet('grouping', m.tb_grouping, m.tb_pulls_or_gathers_enemies),
+	facet('buff:atk', m.tb_atk_buff, m.tb_buffs_allies_atk),
+	facet('buff:em', m.tb_em_buff, m.tb_buffs_allies_elemental_mastery),
+	facet('buff:crit', m.tb_crit_buff, m.tb_buffs_allies_crit_rate_crit_dmg),
+	facet('buff:dmg', m.tb_dmg_buff, m.tb_buffs_allies_damage_bonuses),
+	facet('buff:hpdef', m.tb_hp_def_buff, m.tb_buffs_allies_hp_or_def),
+	facet('infuse', m.tb_infusion, m.tb_infuses_the_active_character_s_attacks),
+	facet('energy', m.tb_energy, m.tb_gives_teammates_flat_energy_particles),
+	facet('taunt', m.tb_taunt, m.tb_draws_opponents_attacks_away_from_you)
 ];
 
 /**
@@ -119,23 +119,23 @@ export type Badge = {
 	conditional: boolean;
 };
 
-const BADGE_LABELS: Record<FacetKey, string> = {
-	heal: 'Heal',
-	shield: 'Shield',
-	offFieldDamage: 'Off-field',
-	resShred: 'Shred',
-	cleanse: 'Cleanse',
-	grouping: 'Group',
-	taunt: 'Taunt',
-	energy: 'Energy',
-	infuse: 'Infuse',
-	interruptionRes: 'Int-Res',
-	'buff:atk': 'ATK+',
-	'buff:em': 'EM+',
-	'buff:crit': 'CRIT+',
-	'buff:dmg': 'DMG+',
-	'buff:hpdef': 'HP/DEF+'
-};
+const BADGE_LABELS: Record<FacetKey, string> = labels({
+	heal: m.tb_heal,
+	shield: m.tb_shield,
+	offFieldDamage: m.tb_off_field_cc62,
+	resShred: m.tb_shred,
+	cleanse: m.tb_cleanse,
+	grouping: m.tb_group,
+	taunt: m.tb_taunt,
+	energy: m.tb_energy,
+	infuse: m.tb_infuse,
+	interruptionRes: m.tb_int_res,
+	'buff:atk': m.tb_atk,
+	'buff:em': m.tb_em,
+	'buff:crit': m.tb_crit,
+	'buff:dmg': m.tb_dmg,
+	'buff:hpdef': m.tb_hp_def
+});
 
 /** Folds capability summaries into per-facet badges, FACETS order. */
 export function facetBadges(caps: CapabilitySummary[]): Badge[] {

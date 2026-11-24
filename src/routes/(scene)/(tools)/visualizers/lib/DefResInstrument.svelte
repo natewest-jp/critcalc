@@ -19,17 +19,20 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
+	import Msg from '$lib/components/Msg.svelte';
+	import { labels } from '$lib/i18n/labels';
+	import { m } from '$lib/paraglide/messages';
 
-	const ELEMENT_NAME: Record<ShredElement, string> = {
-		pyro: 'Pyro',
-		hydro: 'Hydro',
-		anemo: 'Anemo',
-		electro: 'Electro',
-		dendro: 'Dendro',
-		cryo: 'Cryo',
-		geo: 'Geo',
-		physical: 'Physical'
-	};
+	const ELEMENT_NAME: Record<ShredElement, string> = labels({
+		pyro: m.vz_defres_pyro,
+		hydro: m.vz_defres_hydro,
+		anemo: m.vz_defres_anemo,
+		electro: m.vz_defres_electro,
+		dendro: m.vz_defres_dendro,
+		cryo: m.vz_defres_cryo,
+		geo: m.vz_defres_geo,
+		physical: m.vz_defres_physical
+	});
 
 	const GROUPS = groupSources(shredSources);
 	/** ⚓ Nate (the headline round): the defaults pick Viridescent Venerer, so
@@ -130,7 +133,7 @@
 	const defNow = $derived(ignoresDef ? 1 : defMultiplier(charLevel, enemyLevel, defRemoved / 100));
 	const total = $derived(resNow * defNow);
 	const totalBase = $derived(resBase * defBase);
-	const fmtX = (m: number) => `×${m.toFixed(3)}`;
+	const fmtX = (x: number) => `×${x.toFixed(3)}`;
 	const minus = (v: number) => (v ? `−${v}%` : '0%');
 
 	// ── The headline: what your shred adds (⚓ Nate) ─────────────────────
@@ -139,20 +142,20 @@
 	const headFigure = $derived(immune ? '×0' : anyPick ? `+${gainPct.toFixed(1)}%` : '+0%');
 	const headSentence = $derived(
 		immune
-			? `the enemy is immune to ${ELEMENT_NAME[element]}`
+			? m.vz_defres_the_enemy_is_immune_to_element({ element: ELEMENT_NAME[element] })
 			: !anyPick
-				? 'damage from shred, with none picked'
+				? m.vz_defres_damage_from_shred_with_none_picked()
 				: defIgnore > 0
-					? 'damage from your shred and DEF ignore'
-					: 'damage from your shred'
+					? m.vz_defres_damage_from_your_shred_and_def_ignore()
+					: m.vz_defres_damage_from_your_shred()
 	);
 
 	// ── Sources ───────────────────────────────────────────────────────────
 	const visible = $derived(GROUPS.filter((g) => appliesTo(g, element)));
 	const SECTIONS: { stat: SourceGroup['stat']; label: string }[] = [
-		{ stat: 'res', label: 'RES shred' },
-		{ stat: 'def', label: 'DEF shred' },
-		{ stat: 'ignore', label: 'DEF ignore' }
+		{ stat: 'res', label: m.vz_defres_res_shred() },
+		{ stat: 'def', label: m.vz_defres_def_shred() },
+		{ stat: 'ignore', label: m.vz_defres_def_ignore() }
 	];
 	// characters before sets, then by name
 	const ofStat = (stat: SourceGroup['stat']) =>
@@ -182,12 +185,12 @@
 		g.stat !== 'ignore'
 			? null
 			: g.scope === 'skill'
-				? 'own Skill DMG only'
+				? m.vz_defres_own_skill_dmg_only()
 				: g.scope === 'burst'
-					? 'own Burst DMG only'
+					? m.vz_defres_own_burst_dmg_only()
 					: g.target === 'team'
-						? 'whole party'
-						: 'own hits';
+						? m.vz_defres_whole_party()
+						: m.vz_defres_own_hits();
 	const abilityOf = (g: SourceGroup) =>
 		g.options.find((o) => o.amount === picks[g.key])?.ability ?? g.options[0].ability;
 
@@ -195,9 +198,9 @@
 	const shredFace = $derived.by(() => {
 		const on = [
 			...SECTIONS.flatMap((s) => onOf(s.stat)).map((g) => `${g.ownerName} ${picks[g.key]}%`),
-			...(otherRes || otherDef || otherIgnore ? ['Other sources'] : [])
+			...(otherRes || otherDef || otherIgnore ? [m.vz_defres_other_sources()] : [])
 		];
-		if (!on.length) return 'None';
+		if (!on.length) return m.vz_defres_none();
 		return on.length <= 2 ? on.join(', ') : `${on.slice(0, 2).join(', ')} +${on.length - 2}`;
 	});
 
@@ -307,8 +310,8 @@
 			segs.push({
 				from: cur,
 				to: cur - otherRes,
-				label: `Other ${otherRes}%`,
-				title: 'Other sources'
+				label: m.vz_defres_other_otherres({ otherRes }),
+				title: m.vz_defres_other_sources()
 			});
 		return {
 			id: 'res',
@@ -316,7 +319,7 @@
 			xMin: RES_X0,
 			xMax: RES_X1,
 			xTicks: [-100, -50, 0, 50, 100, 150, 200],
-			xTitle: `Enemy ${ELEMENT_NAME[element]} RES`,
+			xTitle: m.vz_defres_enemy_element_res({ element: ELEMENT_NAME[element] }),
 			curve: resAt,
 			span: !immune && resShred ? [f, b] : null,
 			dots: immune
@@ -329,7 +332,10 @@
 										m: resAt(b),
 										hollow: true,
 										label: fmtX(resAt(b)),
-										title: `At ${baseRes}% RES, before shred, ${fmtX(resAt(b))} of the hit gets through.`
+										title: m.vz_defres_at_baseres_res_before_shred_b_of_the_hit({
+											baseRes,
+											factor: fmtX(resAt(b))
+										})
 									}
 								]
 							: []),
@@ -337,16 +343,19 @@
 							x: f,
 							m: resAt(f),
 							label: fmtX(resNow),
-							title: `At ${finalRes}% RES, ${fmtX(resNow)} of the hit gets through.`
+							title: m.vz_defres_at_finalres_res_resnow_of_the_hit_gets({
+								finalRes,
+								factor: fmtX(resNow)
+							})
 						}
 					],
 			segs: immune ? [] : segs,
 			guides: [
-				{ x: 0, label: 'below 0%, shred counts half', side: 'left' },
-				{ x: 75, label: 'diminishing returns', side: 'right' }
+				{ x: 0, label: m.vz_defres_below_0_shred_counts_half(), side: 'left' },
+				{ x: 75, label: m.vz_defres_diminishing_returns(), side: 'right' }
 			],
 			dim: immune,
-			message: immune ? 'Immune: this element deals no damage' : undefined,
+			message: immune ? m.vz_defres_immune_this_element_deals_no_damage() : undefined,
 			// over the flat tail, where the curve has fallen away
 			messageAt: { x: 125, m: 1.2 }
 		};
@@ -362,7 +371,12 @@
 		}
 		if (otherDef) {
 			const to = Math.min(100, cur + otherDef);
-			segs.push({ from: cur, to, label: `Other ${otherDef}%`, title: 'Other sources' });
+			segs.push({
+				from: cur,
+				to,
+				label: m.vz_defres_other_otherdef({ otherDef }),
+				title: m.vz_defres_other_sources()
+			});
 			cur = to;
 		}
 		// An ignore removes its share of the DEF the shred left.
@@ -372,14 +386,19 @@
 			segs.push({
 				from: cur,
 				to,
-				label: `${g.ownerName} ${picks[g.key]}% ignored`,
+				label: m.vz_defres_ownername_key_ignored({ name: g.ownerName, amount: picks[g.key] }),
 				title: `${abilityOf(g)} (${whoOf(g)})`
 			});
 			cur = to;
 		}
 		if (otherIgnore) {
 			const to = Math.min(100, cur + left * otherIgnore);
-			segs.push({ from: cur, to, label: `Other ${otherIgnore}% ignored`, title: 'Other sources' });
+			segs.push({
+				from: cur,
+				to,
+				label: m.vz_defres_other_otherignore_ignored({ otherIgnore }),
+				title: m.vz_defres_other_sources()
+			});
 		}
 		return {
 			id: 'def',
@@ -387,7 +406,7 @@
 			xMin: 0,
 			xMax: 100,
 			xTicks: [0, 25, 50, 75, 100],
-			xTitle: 'Enemy DEF removed',
+			xTitle: m.vz_defres_enemy_def_removed(),
 			curve: defAt,
 			span: !ignoresDef && defRemoved > 0 ? [0, defRemoved] : null,
 			dots: ignoresDef
@@ -400,7 +419,11 @@
 										m: defBase,
 										hollow: true,
 										label: fmtX(defBase),
-										title: `Level ${charLevel} against level ${enemyLevel}, before shred, ${fmtX(defBase)} of the hit gets through.`
+										title: m.vz_defres_level_charlevel_against_level_enemylevel_1331({
+											charLevel,
+											enemyLevel,
+											factor: fmtX(defBase)
+										})
 									}
 								]
 							: []),
@@ -408,13 +431,18 @@
 							x: defRemoved,
 							m: defNow,
 							label: fmtX(defNow),
-							title: `Level ${charLevel} against level ${enemyLevel}, with ${Math.round(defRemoved)}% of its DEF removed, ${fmtX(defNow)} of the hit gets through.`
+							title: m.vz_defres_level_charlevel_against_level_enemylevel_ca71({
+								charLevel,
+								enemyLevel,
+								removed: Math.round(defRemoved),
+								factor: fmtX(defNow)
+							})
 						}
 					],
 			segs: ignoresDef ? [] : segs,
 			guides: [],
 			dim: ignoresDef,
-			message: ignoresDef ? 'Transformative, Lunar, and Stellar reactions ignore DEF' : undefined,
+			message: ignoresDef ? m.vz_defres_transformative_lunar_and_stellar_ccd3() : undefined,
 			// under the line, which is ×1 throughout when DEF is ignored
 			messageAt: { x: 50, m: 0.6 }
 		};
@@ -521,12 +549,12 @@
 
 	const regime = $derived(
 		immune
-			? 'An immune enemy takes no damage of this element, whatever the shred.'
+			? m.vz_defres_an_immune_enemy_takes_no_damage_of_this()
 			: finalRes < 0
-				? 'Below 0% RES, shred works at half strength.'
+				? m.vz_defres_below_0_res_shred_works_at_half_strength()
 				: finalRes >= 75
-					? 'Above 75% RES, shred works at less than full strength, until RES drops back under 75%.'
-					: 'Between 0% and 75% RES, shred works at full strength.'
+					? m.vz_defres_above_75_res_shred_works_at_less_than()
+					: m.vz_defres_between_0_and_75_res_shred_works_at_full()
 	);
 </script>
 
@@ -691,7 +719,11 @@
 		</p>
 
 		<div class="stage-toolbar">
-			<div class="segment stage-tabs dr-elements" role="radiogroup" aria-label="The hit's element">
+			<div
+				class="segment stage-tabs dr-elements"
+				role="radiogroup"
+				aria-label={m.vz_defres_the_hit_s_element()}
+			>
 				{#each SHRED_ELEMENTS as e (e)}
 					<button
 						class="btn seg-el"
@@ -704,7 +736,7 @@
 						onclick={() => (element = e)}
 					>
 						{#if e === 'physical'}
-							Physical
+							{m.vz_defres_physical()}
 						{:else}
 							<img src={elementIcon(e)} alt="" width="16" height="16" />
 						{/if}
@@ -712,10 +744,10 @@
 				{/each}
 			</div>
 
-			<div class="setup-bar" role="group" aria-label="Setup">
-				<BandMenu role="dialog" align="start" ariaLabel="Shred: {shredFace}">
+			<div class="setup-bar" role="group" aria-label={m.vz_defres_setup()}>
+				<BandMenu role="dialog" align="start" ariaLabel="{m.vz_defres_shred()}: {shredFace}">
 					{#snippet face()}
-						<span class="setup-key">Shred</span>
+						<span class="setup-key">{m.vz_defres_shred()}</span>
 						<span class="setup-val">{shredFace}</span>
 					{/snippet}
 					{#snippet items()}
@@ -743,6 +775,8 @@
 													<input type="checkbox" checked={on} onchange={() => toggle(g)} />
 													<span class="check-box"></span>
 													<span class="dr-name">{g.ownerName}</span>
+													<!-- A constellation badge is notation (C1–C6), English in
+													     every locale, as the planner's is. -->
 													{#if conOf(g) > 0}<span class="dr-con">C{conOf(g)}</span>{/if}
 													{#if who}<span class="dr-who">{who}</span>{/if}
 												</label>
@@ -750,7 +784,7 @@
 													<span
 														class="dr-options"
 														role="radiogroup"
-														aria-label="{g.ownerName}'s amount"
+														aria-label={m.vz_defres_ownername_s_amount({ name: g.ownerName })}
 													>
 														{#each g.options as o (o.amount)}
 															<button
@@ -771,14 +805,16 @@
 											</li>
 										{:else}
 											<li class="dr-none">
-												No character or set in the data shreds {ELEMENT_NAME[element]} RES.
+												{m.vz_defres_no_character_or_set_in_the_data_shreds({
+													element: ELEMENT_NAME[element]
+												})}
 											</li>
 										{/each}
 									</ul>
 									{#if sec.stat === 'res'}
 										<InstrumentSlider
-											label="Other sources"
-											aria="Other resistance shred percent"
+											label={m.vz_defres_other_sources()}
+											aria={m.vz_defres_other_resistance_shred_percent()}
 											bind:value={otherRes}
 											min={0}
 											max={100}
@@ -787,8 +823,8 @@
 										/>
 									{:else if sec.stat === 'def'}
 										<InstrumentSlider
-											label="Other sources"
-											aria="Other defense shred percent"
+											label={m.vz_defres_other_sources()}
+											aria={m.vz_defres_other_defense_shred_percent()}
 											bind:value={otherDef}
 											min={0}
 											max={100}
@@ -797,8 +833,8 @@
 										/>
 									{:else}
 										<InstrumentSlider
-											label="Other sources"
-											aria="Other defense ignore percent"
+											label={m.vz_defres_other_sources()}
+											aria={m.vz_defres_other_defense_ignore_percent()}
 											bind:value={otherIgnore}
 											min={0}
 											max={100}
@@ -812,16 +848,20 @@
 					{/snippet}
 				</BandMenu>
 
-				<BandMenu role="dialog" align="start" ariaLabel="Enemy level: {enemyLevel}">
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel={m.vz_defres_enemy_level_enemylevel({ enemyLevel })}
+				>
 					{#snippet face()}
-						<span class="setup-key">Enemy level</span>
+						<span class="setup-key">{m.vz_defres_enemy_level()}</span>
 						<span class="setup-val setup-val--num">{enemyLevel}</span>
 					{/snippet}
 					{#snippet items()}
 						<div class="setup-pop">
 							<InstrumentSlider
-								label="Enemy level"
-								aria="Enemy level"
+								label={m.vz_defres_enemy_level()}
+								aria={m.vz_defres_enemy_level()}
 								bind:value={enemyLevel}
 								min={1}
 								max={ENEMY_LEVEL_MAX}
@@ -831,16 +871,20 @@
 					{/snippet}
 				</BandMenu>
 
-				<BandMenu role="dialog" align="start" ariaLabel="Your level: {charLevel}">
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel={m.vz_defres_your_level_charlevel({ charLevel })}
+				>
 					{#snippet face()}
-						<span class="setup-key">Your level</span>
+						<span class="setup-key">{m.vz_defres_your_level()}</span>
 						<span class="setup-val setup-val--num">{charLevel}</span>
 					{/snippet}
 					{#snippet items()}
 						<div class="setup-pop">
 							<InstrumentSlider
-								label="Your level"
-								aria="Character level"
+								label={m.vz_defres_your_level()}
+								aria={m.vz_defres_character_level()}
 								bind:value={charLevel}
 								{...LEVEL_SLIDER}
 							/>
@@ -848,14 +892,22 @@
 					{/snippet}
 				</BandMenu>
 
-				<BandMenu role="dialog" align="start" ariaLabel="DEF: {ignoresDef ? 'Ignored' : 'Applies'}">
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel="{m.vz_defres_def()}: {ignoresDef
+						? m.vz_defres_ignored()
+						: m.vz_defres_applies()}"
+				>
 					{#snippet face()}
-						<span class="setup-key">DEF</span>
-						<span class="setup-val">{ignoresDef ? 'Ignored' : 'Applies'}</span>
+						<span class="setup-key">{m.vz_defres_def()}</span>
+						<span class="setup-val"
+							>{ignoresDef ? m.vz_defres_ignored() : m.vz_defres_applies()}</span
+						>
 					{/snippet}
 					{#snippet items()}
 						<div class="setup-pop">
-							<div class="dr-hits" role="radiogroup" aria-label="DEF">
+							<div class="dr-hits" role="radiogroup" aria-label={m.vz_defres_def()}>
 								{#each [false, true] as ign (ign)}
 									<button
 										class="dr-hit"
@@ -864,11 +916,13 @@
 										aria-checked={ignoresDef === ign}
 										onclick={() => (ignoresDef = ign)}
 									>
-										<span class="dr-hit-name">{ign ? 'Ignored' : 'Applies'}</span>
+										<span class="dr-hit-name"
+											>{ign ? m.vz_defres_ignored() : m.vz_defres_applies()}</span
+										>
 										<span class="dr-hit-detail">
 											{ign
-												? 'Transformative, Lunar, and Stellar reactions'
-												: 'Talents and attacks, with or without an Amplifying or Additive reaction'}
+												? m.vz_defres_transformative_lunar_and_stellar_d5e9()
+												: m.vz_defres_talents_and_attacks_with_or_without_an()}
 										</span>
 									</button>
 								{/each}
@@ -889,7 +943,7 @@
 				width={graphW}
 				height={rects.h}
 				role="img"
-				aria-label="Damage kept against the enemy's RES and against the share of its DEF removed"
+				aria-label={m.vz_defres_damage_kept_against_the_enemy_s_res_and()}
 			>
 				<text
 					x={PADL}
@@ -898,7 +952,7 @@
 					font-size="10"
 					text-anchor="start"
 				>
-					damage kept
+					{m.vz_defres_damage_kept()}
 				</text>
 				{@render panel(defPanel)}
 				{@render panel(resPanel)}
@@ -932,8 +986,8 @@
 			     writes its value back when you tab through it or press Escape, and
 			     that must not quietly drop Immune. -->
 			<InstrumentSlider
-				label="Enemy {ELEMENT_NAME[element]} RES"
-				aria="Enemy base resistance percent"
+				label={m.vz_defres_enemy_element_res({ element: ELEMENT_NAME[element] })}
+				aria={m.vz_defres_enemy_base_resistance_percent()}
 				bind:value={
 					() => baseRes,
 					(v) => {
@@ -945,9 +999,9 @@
 				max={BASE_RES_MAX}
 				step={5}
 				unit={immune ? '' : '%'}
-				text={immune ? 'Immune' : null}
+				text={immune ? m.vz_defres_immune() : null}
 			/>
-			<div class="chips dr-rungs" role="group" aria-label="Common RES values">
+			<div class="chips dr-rungs" role="group" aria-label={m.vz_defres_common_res_values()}>
 				{#each RES_RUNGS as r (r)}
 					<button
 						class="chip chip--sm"
@@ -961,7 +1015,7 @@
 					</button>
 				{/each}
 				<button class="chip chip--sm" class:active={immune} onclick={() => (immune = !immune)}>
-					Immune
+					{m.vz_defres_immune()}
 				</button>
 			</div>
 		</div>
@@ -969,16 +1023,22 @@
 		<!-- The fine print: the product, and the regime the shred works in. -->
 		<p class="stage-fine">
 			{#if !immune}
-				RES {fmtX(resNow)} and DEF {fmtX(defNow)}: {fmtX(total)} of your hit’s damage gets through.
+				{m.vz_defres_res_resnow_and_def_defnow_total_of_your({
+					res: fmtX(resNow),
+					def: fmtX(defNow),
+					total: fmtX(total)
+				})}
 				<!-- ⚓ The DEF caption's fact, kept: it surprises people, so it led
 				     (docs/text/ledger/notes/vz_defres.md). -->
-				{#if !ignoresDef}Equal levels already cost you half your damage.{/if}
+				{#if !ignoresDef}{m.vz_defres_equal_levels_already_cost_you_half_your()}{/if}
 			{/if}
-			{regime}
-			<span class="dr-formula"
-				>RES: below 0%, 1−res/2; 0–75%, 1−res; from 75%, 1/(4·res+1). DEF: (100+yours) /
-				((100+yours) + (100+enemy)·(1−shred)·(1−ignore)).</span
-			>
+			<!-- The formulas' variable names (res, yours, enemy, shred, ignore) stay
+			     English in every locale (docs/text/ledger/notes/vz_defres.md). -->
+			<Msg
+				parts={m.vz_defres_regime_res_below_0_1_res_2_0_75_1_res.parts({ regime })}
+				tags={{ formula }}
+			/>
+			{#snippet formula(text: string)}<span class="dr-formula">{text}</span>{/snippet}
 		</p>
 	</div>
 </div>

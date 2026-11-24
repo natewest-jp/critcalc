@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import Msg from '$lib/components/Msg.svelte';
 	/**
 	 * AN IMAGINARIUM THEATER LINEUP — the right pane (⚓ Nate 2026-11-11): the
 	 * game's Party Setup screen, in the board's own grammar. ↻ The game's is
@@ -71,6 +73,7 @@
 	/** The game's element order on this row: the season's own three. */
 	const elements = $derived(season.elements.filter((e) => stats.elements[e as Element]));
 	const fmt = (n: number) => n.toLocaleString('en-US');
+	// The game numbers the Arcana challenges in Roman numerals in every language.
 	const ROMAN = ['I', 'II', 'III'];
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 
@@ -85,12 +88,14 @@
 
 <div class="th" style:--th-disc="{DISC}px" style:--th-overhang="{overhang}px">
 	<section class="th-sec">
-		<header class="th-head ctx-glass"><h3 class="th-title">Primary Antagonists</h3></header>
+		<header class="th-head ctx-glass">
+			<h3 class="th-title">{m.tb_primary_antagonists()}</h3>
+		</header>
 		<div class="th-body th-foes">
 			{#each rules.bosses as b (b.act)}
 				<figure class="th-foe" title={inLang(b.name)}>
 					<img class="th-foe-disc" src={monsterImage(b.icons[0])} alt={inLang(b.name)} />
-					<figcaption>Lv. {b.level}</figcaption>
+					<figcaption>{m.tb_lv_level({ level: b.level })}</figcaption>
 				</figure>
 			{/each}
 			{#if rules.arcana.length}
@@ -111,17 +116,17 @@
 
 	<section class="th-sec">
 		<header class="th-head ctx-glass">
-			<h3 class="th-title">Opening and Alternate Cast members selected</h3>
+			<h3 class="th-title">{m.tb_opening_and_alternate_cast_members()}</h3>
 			<button
 				class="btn btn--sm th-invite"
 				class:is-active={invite}
 				class:is-nudged={nudged}
 				aria-pressed={invite}
 				title={invite
-					? 'Counting one Supporting Cast character from a friend'
-					: 'Count one Supporting Cast character from a friend'}
+					? m.tb_counting_one_supporting_cast_character()
+					: m.tb_count_one_supporting_cast_character_from()}
 				onanimationend={() => (nudged = false)}
-				onclick={invitePress}>+1 Supporting Cast</button
+				onclick={invitePress}>{m.tb_1_supporting_cast()}</button
 			>
 			{#if tools}<span class="th-tools">{@render tools(false)}</span>{/if}
 		</header>
@@ -130,7 +135,7 @@
 			     rises over it), so the six read as the game's own. -->
 			<span class="th-opening">
 				{#each season.opening as id (id)}
-					<span class="th-member" title="{nameOf(id)} · Opening Character"
+					<span class="th-member" title={m.tb_id_opening_character({ name: nameOf(id) })}
 						><SidePortrait {id} size={DISC} /></span
 					>
 				{/each}
@@ -142,16 +147,16 @@
 			{#if invite}
 				<span class="th-plus" aria-hidden="true"><Mark name="plus" size={12} /></span>
 				<!-- The game's blank side portrait, tagged as the game tags it. -->
-				<span class="th-member th-guest" title="Supporting Cast">
+				<span class="th-member th-guest" title={m.tb_supporting_cast()}>
 					<SidePortrait id={null} size={DISC} />
-					<span class="th-tag">Supporting Cast</span>
+					<span class="th-tag">{m.tb_supporting_cast()}</span>
 				</span>
 			{/if}
 		</div>
 	</section>
 
 	<section class="th-sec">
-		<header class="th-head ctx-glass"><h3 class="th-title">Stats</h3></header>
+		<header class="th-head ctx-glass"><h3 class="th-title">{m.tb_stats()}</h3></header>
 		<div class="th-body th-stats">
 			{#each elements as e (e)}
 				<span class="th-chip"
@@ -159,18 +164,18 @@
 				>
 			{/each}
 			<span class="th-rule th-rule--short" aria-hidden="true"></span>
-			<span class="th-chip" title="On-Field"
-				><img src={positionIcon('onField')} alt="On-Field" /> ×{stats.onField}</span
+			<span class="th-chip" title={m.tb_on_field()}
+				><img src={positionIcon('onField')} alt={m.tb_on_field()} /> ×{stats.onField}</span
 			>
-			<span class="th-chip" title="Off-Field"
-				><img src={positionIcon('offField')} alt="Off-Field" /> ×{stats.offField}</span
+			<span class="th-chip" title={m.tb_off_field()}
+				><img src={positionIcon('offField')} alt={m.tb_off_field()} /> ×{stats.offField}</span
 			>
 			<span class="th-rule th-rule--short" aria-hidden="true"></span>
-			<span class="th-chip" title="Support"
-				><img src={functionIcon('support')} alt="Support" /> ×{stats.support}</span
+			<span class="th-chip" title={m.tb_support()}
+				><img src={functionIcon('support')} alt={m.tb_support()} /> ×{stats.support}</span
 			>
-			<span class="th-chip" title="Survivability"
-				><img src={functionIcon('survivability')} alt="Survivability" />
+			<span class="th-chip" title={m.tb_survivability()}
+				><img src={functionIcon('survivability')} alt={m.tb_survivability()} />
 				×{stats.survivability}</span
 			>
 		</div>
@@ -180,23 +185,37 @@
 		<p class="th-line ctx-glass" class:is-short={!verdict.open}>
 			<span>
 				{#if verdict.open}
-					{verdict.extras}/{rules.extra} extra Alternate Cast members have been added. Buffs based on
-					the number of extra members added are obtained
+					{m.tb_extras_extra_extra_alternate_cast({ extras: verdict.extras, extra: rules.extra })}
 				{:else}
-					Add at least {OPENING_CAST + verdict.need} characters to start the show
+					{m.tb_add_at_least_need_characters_to_start({ count: OPENING_CAST + verdict.need })}
 				{/if}
 			</span>
-			<span class="th-count" title="Alternate Cast"
+			<span class="th-count" title={m.tb_alternate_cast()}
 				><Mark name="person" size={13} /> {verdict.have}</span
 			>
 		</p>
 		{#if verdict.extras > 0}
 			<ul class="th-gains">
-				<li>Gain <b>{verdict.extras * FLOWERS_PER_EXTRA}</b> Fantasia Flowers</li>
+				{#snippet b(text: string)}<b>{text}</b>{/snippet}
 				<li>
-					Gain <b>{verdict.blessingLevels}</b> Blessing Level(s): Increases Max HP by
-					<b>{fmt(blessing.hp)}</b>, ATK by <b>{fmt(blessing.atk)}</b>, DEF by
-					<b>{fmt(blessing.def)}</b>, and Elemental Mastery by <b>{fmt(blessing.em)}</b>.
+					<Msg
+						parts={m.tb_gain_flowers_per_extra_fantasia_flowers.parts({
+							flowers: verdict.extras * FLOWERS_PER_EXTRA
+						})}
+						tags={{ b }}
+					/>
+				</li>
+				<li>
+					<Msg
+						parts={m.tb_gain_blessinglevels_blessing_level_s.parts({
+							levels: verdict.blessingLevels,
+							hp: fmt(blessing.hp),
+							atk: fmt(blessing.atk),
+							def: fmt(blessing.def),
+							em: fmt(blessing.em)
+						})}
+						tags={{ b }}
+					/>
 				</li>
 			</ul>
 		{/if}

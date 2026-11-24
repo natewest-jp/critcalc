@@ -18,98 +18,98 @@
   > Save as a new team
 - `teams_save_as_team` — SaveTeamButton.svelte:122 m() · SaveTeamButton.svelte:123 m() · SaveTeamButton.svelte:126 m()
   > Save as team
-- `teams_discard_your_changes` — TeamDetail.svelte:178 m()
+- `teams_discard_your_changes` — TeamDetail.svelte:179 m()
   > Discard your changes?
-- `teams_your_changes_to_label_slots_haven_t_been` — TeamDetail.svelte:183 m()
+- `teams_your_changes_to_label_slots_haven_t_been` — TeamDetail.svelte:184 m()
   > Your changes to {name} haven’t been saved.
   - vars: `name`
-- `teams_discard` — TeamDetail.svelte:186 m()
+- `teams_discard` — TeamDetail.svelte:187 m()
   > Discard
-- `teams_keep_editing` — TeamDetail.svelte:187 m()
+- `teams_keep_editing` — TeamDetail.svelte:188 m()
   > Keep editing
-- `teams_owned` — TeamDetail.svelte:365 m()
+- `teams_owned` — TeamDetail.svelte:366 m()
   > Owned
-- `teams_wishlist` — TeamDetail.svelte:372 m()
+- `teams_wishlist` — TeamDetail.svelte:373 m()
   > Wishlist
-- `teams_new_team` — TeamDetail.svelte:417 m() · TeamDetail.svelte:421 m() · TeamsPlace.svelte:164 m()
+- `teams_new_team` — TeamDetail.svelte:418 m() · TeamDetail.svelte:422 m() · TeamsPlace.svelte:164 m()
   > New team
-- `teams_team_name` — TeamDetail.svelte:418 m()
+- `teams_team_name` — TeamDetail.svelte:419 m()
   > Team name
-- `teams_no_rotations_or_lineups_yet` — TeamDetail.svelte:442 m() · TeamsPlace.svelte:226 m()
+- `teams_no_rotations_or_lineups_yet` — TeamDetail.svelte:443 m() · TeamsPlace.svelte:226 m()
   > No rotations or lineups yet
   - terms: 📖 rotation
-- `teams_plan_a_rotation` — TeamDetail.svelte:452 m() · TeamsPlace.svelte:230 m()
+- `teams_plan_a_rotation` — TeamDetail.svelte:453 m() · TeamsPlace.svelte:230 m()
   > Plan a rotation
   - terms: 📖 rotation
-- `teams_new_lineup` — TeamDetail.svelte:454 m() · TeamsPlace.svelte:232 m()
+- `teams_new_lineup` — TeamDetail.svelte:455 m() · TeamsPlace.svelte:232 m()
   > New lineup
-- `teams_click_again_to_delete` — TeamDetail.svelte:476 m() · TeamsPlace.svelte:191 m()
+- `teams_click_again_to_delete` — TeamDetail.svelte:477 m() · TeamsPlace.svelte:191 m()
   > Click again to delete
-- `teams_delete_team` — TeamDetail.svelte:476 m() · TeamDetail.svelte:479 m()
+- `teams_delete_team` — TeamDetail.svelte:477 m() · TeamDetail.svelte:480 m()
   > Delete team
-- `teams_delete_question` — TeamDetail.svelte:479 m() · TeamsPlace.svelte:194 m()
+- `teams_delete_question` — TeamDetail.svelte:480 m() · TeamsPlace.svelte:194 m()
   > Delete?
-- `teams_cancel` — TeamDetail.svelte:486 m()
+- `teams_cancel` — TeamDetail.svelte:487 m()
   > Cancel
-- `teams_save_team` — TeamDetail.svelte:488 m()
+- `teams_save_team` — TeamDetail.svelte:489 m()
   > Save team
-- `teams_add_team` — TeamDetail.svelte:488 m()
+- `teams_add_team` — TeamDetail.svelte:489 m()
   > Add team
-- `teams_done` — TeamDetail.svelte:491 m()
+- `teams_done` — TeamDetail.svelte:492 m()
   > Done
-- `teams_couldn_t_save_the_team_try_again` — TeamDetail.svelte:500 m()
+- `teams_couldn_t_save_the_team_try_again` — TeamDetail.svelte:501 m()
   > Couldn’t save the team. Try again.
-- `teams_slot_x_id` — TeamDetail.svelte:543 m()
+- `teams_slot_x_id` — TeamDetail.svelte:544 m()
   > Slot {n}: {name}
   - vars: `n` `name`
-- `teams_slot_x_empty` — TeamDetail.svelte:544 m()
+- `teams_slot_x_empty` — TeamDetail.svelte:545 m()
   > Slot {n}: empty
   - vars: `n`
-- `teams_id_drag_to_reorder` — TeamDetail.svelte:546 m()
+- `teams_id_drag_to_reorder` — TeamDetail.svelte:547 m()
   > {name} (drag to reorder)
   - vars: `name`
-- `teams_choose_a_character` — TeamDetail.svelte:547 m() · TeamDetail.svelte:579 m()
+- `teams_choose_a_character` — TeamDetail.svelte:548 m() · TeamDetail.svelte:580 m()
   > Choose a character
-- `teams_take_id_off_the_team` — TeamDetail.svelte:566 m()
+- `teams_take_id_off_the_team` — TeamDetail.svelte:567 m()
   > Take {name} off the team
   - vars: `name`
-- `teams_take_off_the_team` — TeamDetail.svelte:567 m() · TeamDetail.svelte:693 m()
+- `teams_take_off_the_team` — TeamDetail.svelte:568 m() · TeamDetail.svelte:696 m()
   > Take off the team
-- `teams_slot_x` — TeamDetail.svelte:580 m() · TeamsPlace.svelte:206 m()
+- `teams_slot_x` — TeamDetail.svelte:581 m() · TeamsPlace.svelte:206 m()
   > Slot {n}
   - vars: `n`
-- `teams_team_bonuses` — TeamDetail.svelte:596 m()
+- `teams_team_bonuses` — TeamDetail.svelte:597 m()
   > Team bonuses
-- `teams_moonsign_ascendant_gleam` — TeamDetail.svelte:604 <span>
+- `teams_moonsign_ascendant_gleam` — TeamDetail.svelte:607 <span>
   > Moonsign: Ascendant Gleam
   - terms: 🎮 Ascendant Gleam · 🎮 Moonsign
-- `teams_hexerei_secret_rite` — TeamDetail.svelte:607 <span>
+- `teams_hexerei_secret_rite` — TeamDetail.svelte:610 <span>
   > Hexerei: Secret Rite
   - terms: 🎮 Secret Rite · 🎮 Hexerei
-- `teams_search` — TeamDetail.svelte:629 m()
+- `teams_search` — TeamDetail.svelte:632 m()
   > Search…
-- `teams_search_characters` — TeamDetail.svelte:630 m()
+- `teams_search_characters` — TeamDetail.svelte:633 m()
   > Search characters
-- `teams_your_roster` — TeamDetail.svelte:640 m()
+- `teams_your_roster` — TeamDetail.svelte:643 m()
   > Your roster
-- `teams_show_everyone` — TeamDetail.svelte:648 m()
+- `teams_show_everyone` — TeamDetail.svelte:651 m()
   > Show everyone
-- `teams_more` — TeamDetail.svelte:659 m()
+- `teams_more` — TeamDetail.svelte:662 m()
   > More
-- `teams_more_filters_morecount_set` — TeamDetail.svelte:662 m()
+- `teams_more_filters_morecount_set` — TeamDetail.svelte:665 m()
   > More filters, {count} set
   - vars: `count`
-- `teams_more_filters` — TeamDetail.svelte:663 m()
+- `teams_more_filters` — TeamDetail.svelte:666 m()
   > More filters
-- `teams_choose_a_slot_first` — TeamDetail.svelte:695 m()
+- `teams_choose_a_slot_first` — TeamDetail.svelte:698 m()
   > Choose a slot first
-- `teams_put_in_slot_x_in_x_s_place` — TeamDetail.svelte:697 m()
+- `teams_put_in_slot_x_in_x_s_place` — TeamDetail.svelte:700 m()
   > Put in slot {n}, in {name}’s place
   - vars: `n` `name`
-- `teams_put_in_slot_x` — TeamDetail.svelte:698 m()
+- `teams_put_in_slot_x` — TeamDetail.svelte:701 m()
   > Put in slot {n}
   - vars: `n`
-- `teams_no_character_matches` — TeamDetail.svelte:714 m()
+- `teams_no_character_matches` — TeamDetail.svelte:717 m()
   > No character matches.
 - `teams_artifact_set` — TeamLoadoutPlates.svelte:99 m() · TeamLoadoutPlates.svelte:113 m()
   > Artifact set

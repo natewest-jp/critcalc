@@ -38,15 +38,10 @@ target chip.
 
 "You have" row, first chip: zero copies. ⚠️ Length-capped (see the surface note).
 
-### `vz_wish_1_pull`
-
-⚠️⚠️ **ASSEMBLED**: `pullsPhrase()` returns `1 pull` / `{n} pulls`, spliced into
-`vz_wish_chance_chance_of_label_within_pulls`. ⏭ At i18n: ONE ICU message for the host
-sentence with `{n, plural, …}`, and both fragments are deleted.
-
 ### `vz_wish_n_pulls`
 
-See `vz_wish_1_pull`.
+A plural message (`1 pull` / `{count} pulls`) placed inside
+`vz_wish_chance_chance_of_label_within_pulls`.
 
 ### `vz_wish_guarantee_held_lost_the_last_50_50`
 
@@ -88,7 +83,7 @@ not the banner's name.
 ### `vz_wish_chance_chance_of_label_within_pulls`
 
 Readout headline: the big percentage, then the phrase on its own line. ⚠️ ASSEMBLED
-(`pullsPhrase`), see `vz_wish_1_pull`; `{label}` is a level name (🔒).
+(`pullsPhrase`), see `vz_wish_n_pulls`; `{label}` is a level name (🔒).
 
 ### `vz_wish_half_by_median`
 

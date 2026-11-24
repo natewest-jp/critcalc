@@ -30,7 +30,9 @@
 	import { rotationLabel } from '$lib/storage/convert';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import type { TeamRecord } from '$lib/storage/records';
-	import { notices, named, type NoticeAction, type NoticeText } from '$lib/notices.svelte';
+	import { notices, namedMessage, type NoticeAction, type NoticeText } from '$lib/notices.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import Msg from '$lib/components/Msg.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
 	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
 	import {
@@ -184,7 +186,7 @@
 			if (Number.isInteger(n) && n >= 0 && n < 4) {
 				pendingSwapSlot = n;
 				tab = 'characters';
-			} else notices.toast('warning', 'That link asks for a team slot that doesn’t exist.');
+			} else notices.toast('warning', m.tb_that_link_asks_for_a_team_slot_that());
 		}
 	});
 
@@ -299,8 +301,8 @@
 	 *  Search. */
 	const ownershipInBand = $derived(!below('compact') && !theorycraft);
 	const OWN_TOGGLES = [
-		{ key: 'owned', mark: 'check', label: 'Owned' },
-		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
+		{ key: 'owned', mark: 'check', label: m.tb_owned_b62f() },
+		{ key: 'wishlist', mark: 'wish', label: m.tb_wishlist() }
 	] as const;
 
 	// ── The board ─────────────────────────────────────────────────────────────
@@ -376,7 +378,7 @@
 	/** The selected team's name and hue — the Planner's row is neither a
 	 *  battlefield nor a numbered team, and wears the gold of an errand. */
 	const selectedLabel = $derived(
-		selectedTeam?.id === ERRAND_ID ? 'the Planner’s team' : teamLabel(board, selectedIndex)
+		selectedTeam?.id === ERRAND_ID ? m.tb_the_planner_s_team() : teamLabel(board, selectedIndex)
 	);
 	const selectedHue = $derived(
 		selectedTeam?.id === ERRAND_ID ? 'var(--accent)' : teamHue(selectedIndex)
@@ -440,9 +442,12 @@
 		boards.setSlot(boardId, from.id, i, null);
 		notices.toast(
 			'success',
-			named`${[nameOf(left)]} left ${teamLabel(board, indexOfTeam(from.id))}`,
+			namedMessage(m.tb_left_left_id, {
+				name: [nameOf(left)],
+				team: teamLabel(board, indexOfTeam(from.id))
+			}),
 			{
-				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+				actions: [{ label: m.tb_undo(), run: () => boards.restoreTeams(boardId, snapshot) }]
 			}
 		);
 	}
@@ -454,8 +459,8 @@
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
 		boards.clearTeams(boardId);
-		notices.toast('success', 'Lineup cleared', {
-			actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+		notices.toast('success', m.tb_lineup_cleared(), {
+			actions: [{ label: m.tb_undo(), run: () => boards.restoreTeams(boardId, snapshot) }]
 		});
 	}
 
@@ -471,8 +476,8 @@
 		const label = teamLabel(board, i);
 		boards.removeTeam(boardId, teamId);
 		if (team.slots.some((x) => x !== null))
-			notices.toast('success', named`Removed ${label}`, {
-				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+			notices.toast('success', namedMessage(m.tb_removed_label, { team: label }), {
+				actions: [{ label: m.tb_undo(), run: () => boards.restoreTeams(boardId, snapshot) }]
 			});
 	}
 
@@ -488,21 +493,17 @@
 		boards.setNoRepeats(boardId, true, teamRecency);
 		const left = before - count(board.teams);
 		if (left > 0)
-			notices.toast(
-				'success',
-				`No repeats: ${left === 1 ? 'a repeated character' : `${left} repeated characters`} left their other team`,
-				{
-					actions: [
-						{
-							label: 'Undo',
-							run: () => {
-								boards.restoreTeams(boardId, snapshot);
-								boards.setNoRepeats(boardId, false);
-							}
+			notices.toast('success', m.tb_no_repeats_count_repeated_characters({ count: left }), {
+				actions: [
+					{
+						label: m.tb_undo(),
+						run: () => {
+							boards.restoreTeams(boardId, snapshot);
+							boards.setNoRepeats(boardId, false);
 						}
-					]
-				}
-			);
+					}
+				]
+			});
 	}
 
 	/** Out of the SELECTED team, leaving its slot empty — the others keep
@@ -528,9 +529,13 @@
 		boards.setTeam(boardId, rowId, saved.slots, saved.id);
 		chosenTeamId = rowId;
 		if (moved)
-			notices.toast('success', named`Placed ${saved.name || rotationLabel(saved.slots)}`, {
-				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
-			});
+			notices.toast(
+				'success',
+				namedMessage(m.tb_placed_slots, { team: saved.name || rotationLabel(saved.slots) }),
+				{
+					actions: [{ label: m.tb_undo(), run: () => boards.restoreTeams(boardId, snapshot) }]
+				}
+			);
 	}
 
 	/** Open a team in the Planner: its pinned rotation, else the team itself,
@@ -716,8 +721,8 @@
 		const boardId = board.id;
 		const before = [...plan.cast];
 		boards.setTheater(boardId, { cast: [] });
-		notices.toast('success', 'Cast cleared', {
-			actions: [{ label: 'Undo', run: () => boards.setTheater(boardId, { cast: before }) }]
+		notices.toast('success', m.tb_cast_cleared(), {
+			actions: [{ label: m.tb_undo(), run: () => boards.setTheater(boardId, { cast: before }) }]
 		});
 	}
 
@@ -818,26 +823,33 @@
 		const pin = pinnedRotation(team, bank);
 		const left = boards.setSlot(boardId, team.id, s.slot, id);
 		const name = nameOf(id);
-		// Plain words (a NoticeText), the team's label in it a name.
-		const from: NoticeText = left.length
-			? named` (from ${teamLabel(board, indexOfTeam(left[0]))})`
-			: [];
-		const who: NoticeText = [`${name} replaced ${nameOf(incumbent)}`];
+		// One whole sentence per case: the characters are plain words, the
+		// team's label and the rotation's name are names.
+		const from = left.length ? teamLabel(board, indexOfTeam(left[0])) : null;
+		const people = { name: [name], old: [nameOf(incumbent)] };
+		const said: NoticeText = pin
+			? from
+				? namedMessage(m.tb_name_replaced_old_from_team_pin_is_no, {
+						...people,
+						team: from,
+						pin: pin.name
+					})
+				: namedMessage(m.tb_name_replaced_old_pin_is_no_longer, { ...people, pin: pin.name })
+			: from
+				? namedMessage(m.tb_name_replaced_old_from_team, { ...people, team: from })
+				: namedMessage(m.tb_name_replaced_incumbent, people);
 		const actions: NoticeAction[] = [];
 		if (pin)
 			actions.push({
-				label: `Try it with ${name} in the Planner`,
+				label: m.tb_try_it_with_name_in_the_planner({ name }),
 				run: () => {
+					// A document's name, saved: it stays as the notation spells it.
 					documentBar.tryWithSwap(pin, incumbent, id, `${pin.name} · ${name}`);
 					void goto(hrefTo('/planner'));
 				}
 			});
-		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
-		notices.toast(
-			'success',
-			pin ? named`${who}${from}. ${pin.name} is no longer pinned.` : named`${who}${from}`,
-			{ actions }
-		);
+		actions.push({ label: m.tb_undo(), run: () => boards.restoreTeams(boardId, snapshot) });
+		notices.toast('success', said, { actions });
 		if (tabbed) tab = 'lineup';
 	}
 
@@ -961,9 +973,9 @@
 	const rosterEmptyMessage = $derived(
 		conMode === 'c0' && activeFacets.size > 0
 			? theorycraft
-				? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “C6”.'
-				: 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My constellations” or “C6”.'
-			: 'No curated character matches.'
+				? m.tb_no_curated_character_matches_some_kits_62ce()
+				: m.tb_no_curated_character_matches_some_kits_80e5()
+			: m.tb_no_curated_character_matches()
 	);
 
 	/** Under an active role card the grid is SECTIONED — the old drill-down,
@@ -1000,18 +1012,19 @@
 				thAvailable(e.id)
 		);
 		return [
-			{ key: 'th-guests', label: 'Special Guest Stars', entries: takeable(guests) },
-			{ key: 'th-available', label: 'Available Characters', entries: available }
+			{ key: 'th-guests', label: m.tb_special_guest_stars(), entries: takeable(guests) },
+			{ key: 'th-available', label: m.tb_available_characters(), entries: available }
 		].filter((sec) => sec.entries.length > 0);
 	});
 
 	function theaterPickLabel(entry: CharacterIndexEntry): string {
-		if (!thOwned(entry.id)) return `${entry.displayName}: not owned`;
-		if (thOff(entry.id)) return `${entry.displayName}: marked can’t enter Theater`;
+		const name = entry.displayName;
+		if (!thOwned(entry.id)) return m.tb_displayname_not_owned({ name });
+		if (thOff(entry.id)) return m.tb_displayname_marked_can_t_enter_theater({ name });
 		const at = thCast.indexOf(entry.id);
 		return at >= 0
-			? `Remove ${entry.displayName} from the cast (${at + 1})`
-			: `Add ${entry.displayName} to the cast`;
+			? m.tb_remove_displayname_from_the_cast_x({ name, n: at + 1 })
+			: m.tb_add_displayname_to_the_cast({ name });
 	}
 
 	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
@@ -1052,35 +1065,36 @@
 		activeFacets.size === 0
 			? undefined
 			: conMode === 'mine'
-				? 'at your constellations'
+				? m.tb_at_your_constellations()
 				: conMode !== 'c0'
-					? `at ${conMode.toUpperCase()}`
+					? m.tb_at_level({ level: conMode.toUpperCase() })
 					: undefined
 	);
 
 	// The full stepper (Nate 2026-07-30): every fixed step so "who can do this
 	// at exactly C2" is answerable, with the roster mode alongside.
+	// The labels C0–C6 are notation, the same in every language.
 	const CON_MODES: { key: ConMode; label: string; hint: string }[] = [
-		{ key: 'c0', label: 'C0', hint: 'Base kits only — what every copy of the character can do' },
+		{ key: 'c0', label: 'C0', hint: m.tb_base_kits_only_what_every_copy_of_the() },
 		...([1, 2, 3, 4, 5] as const).map((n) => ({
 			key: `c${n}` as ConMode,
 			label: `C${n}`,
-			hint: `Everything a kit unlocks through C${n}`
+			hint: m.tb_everything_a_kit_unlocks_through_c_n({ n })
 		})),
-		{ key: 'c6', label: 'C6', hint: 'Everything the kit can ever do' },
+		{ key: 'c6', label: 'C6', hint: m.tb_everything_the_kit_can_ever_do() },
 		{
 			key: 'mine',
-			label: 'My constellations',
-			hint: 'Uses the constellations in your Roster'
+			label: m.tb_my_constellations(),
+			hint: m.tb_uses_the_constellations_in_your_roster()
 		}
 	];
 
 	/** The lens's current reading — band B's menu states it on the trigger, so
 	 *  the setting stays visible now that its eight segments are gone. */
-	const activeConMode = $derived(CON_MODES.find((m) => m.key === conMode) ?? CON_MODES[0]);
+	const activeConMode = $derived(CON_MODES.find((c) => c.key === conMode) ?? CON_MODES[0]);
 	/** The lens's choices on THIS profile: Theorycraft has no constellations
 	 *  of its own to read. */
-	const conModes = $derived(theorycraft ? CON_MODES.filter((m) => m.key !== 'mine') : CON_MODES);
+	const conModes = $derived(theorycraft ? CON_MODES.filter((c) => c.key !== 'mine') : CON_MODES);
 	/** Arriving in Theorycraft, the roster's readings fall back to what any
 	 *  copy can do: C0, and everyone shown. Leaving it, they come back as the
 	 *  roster had them, whatever the lens was set to in between. */
@@ -1196,7 +1210,11 @@
 					facet: b.facet,
 					lit,
 					gain,
-					title: gain ? `${label} · new to the team` : lit ? label : `${label} · from C${b.minCon}`
+					title: gain
+						? m.tb_label_new_to_the_team({ label })
+						: lit
+							? label
+							: m.tb_label_from_c_mincon({ label, n: b.minCon })
 				};
 			});
 	}
@@ -1205,15 +1223,18 @@
 	function pickLabel(entry: CharacterIndexEntry): string {
 		if (swapping)
 			return swapping.incumbent
-				? `Swap ${entry.displayName} in for ${nameOf(swapping.incumbent)}`
-				: `Add ${entry.displayName} to ${selectedLabel}`;
+				? m.tb_swap_displayname_in_for_incumbent({
+						name: entry.displayName,
+						old: nameOf(swapping.incumbent)
+					})
+				: m.tb_add_displayname_to_selectedlabel({ name: entry.displayName, team: selectedLabel });
 		const team = selectedLabel;
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
 		const from = slot < 0 ? leavingLabel(entry.id) : undefined;
-		if (from) return `Remove ${entry.displayName} from ${from}`;
+		if (from) return m.tb_remove_displayname_from_from({ name: entry.displayName, team: from });
 		return slot >= 0
-			? `Remove ${entry.displayName} from ${team} (slot ${slot + 1})`
-			: `Add ${entry.displayName} to ${team}`;
+			? m.tb_remove_displayname_from_team_slot_x({ name: entry.displayName, team, n: slot + 1 })
+			: m.tb_add_displayname_to_team({ name: entry.displayName, team });
 	}
 
 	// ── SWAP MODE'S GRID (§11.6 item 20) ─────────────────────────────────────
@@ -1261,15 +1282,15 @@
 	});
 
 	const SWAP_TIER_LABEL: Record<SwapTier, string> = {
-		keeps: 'Keeps everything',
-		trades: 'Trades',
-		reactions: 'Changes the reactions',
-		uncurated: 'Not yet curated'
+		keeps: m.tb_keeps_everything(),
+		trades: m.tb_trades(),
+		reactions: m.tb_changes_the_reactions(),
+		uncurated: m.tb_not_yet_curated()
 	};
 	/** ⚓ Nate 2026-10-14: ADDING to a free slot loses nothing by construction,
 	 *  so its first tier says what it does — "Adds", not "Keeps everything". */
 	const swapTierLabel = (t: SwapTier): string =>
-		t === 'keeps' && !swapping?.incumbent ? 'Adds' : SWAP_TIER_LABEL[t];
+		t === 'keeps' && !swapping?.incumbent ? m.tb_adds() : SWAP_TIER_LABEL[t];
 
 	/** The grid's sections while swapping: one per specific change, each
 	 *  tier's name above its first. The filters still narrow who is offered. */
@@ -1285,8 +1306,8 @@
 		swapOtherShown = false;
 	});
 	const POSITION_LABEL: Record<RolePosition, string> = {
-		onField: 'On-field',
-		offField: 'Off-field'
+		onField: m.tb_on_field_4cbe(),
+		offField: m.tb_off_field_cc62()
 	};
 	/** Adding has no position to respect — everyone is offered. */
 	const swapPosition = $derived(
@@ -1349,7 +1370,14 @@
 		add(same, '', swapTierLabel);
 		const otherLabel = swapOtherPosition ? POSITION_LABEL[swapOtherPosition] : '';
 		if (swapOtherShown) add(other, 'other:', (t) => `${otherLabel} · ${swapTierLabel(t)}`);
-		return { sections, meta, gains, otherCount: other.length, otherLabel };
+		return {
+			sections,
+			meta,
+			gains,
+			otherCount: other.length,
+			otherLabel,
+			otherPosition: swapOtherPosition
+		};
 	});
 
 	/** Escape leaves swap mode — unless a modal or a menu took it first. */
@@ -1412,20 +1440,21 @@
 		class="btn"
 		class:btn--glass={glass}
 		class:btn--sm={!glass}
-		aria-label="Auto-select the cast"
-		title="Pick everyone eligible, up to this mode’s room"
+		aria-label={m.tb_auto_select_the_cast()}
+		title={m.tb_pick_everyone_eligible_up_to_this_mode_s()}
 		disabled={thEligible.length === 0}
 		onclick={autoSelectTheater}
-		><Mark name="theater" /> <span class="tb-band-label">Auto-select</span></button
+		><Mark name="theater" /> <span class="tb-band-label">{m.tb_auto_select()}</span></button
 	>
 	<button
 		class="btn tb-clear"
 		class:btn--glass={glass}
 		class:btn--sm={!glass}
-		aria-label="Clear the cast"
-		title="Clear the cast"
+		aria-label={m.tb_clear_the_cast()}
+		title={m.tb_clear_the_cast()}
 		disabled={plan.cast.length === 0}
-		onclick={clearTheater}><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+		onclick={clearTheater}
+		><Mark name="clear" /> <span class="tb-band-label">{m.tb_clear()}</span></button
 	>
 {/snippet}
 
@@ -1433,10 +1462,10 @@
 	<header class="tb-slotrow-head ctx-glass">
 		<span class="tb-slotrow-name">{section.label}</span>
 		{#if section.key === 'th-guests'}
-			<span class="tb-th-note">Blessing Level buff effects increased by 100%</span>
+			<span class="tb-th-note">{m.tb_blessing_level_buff_effects_increased_by()}</span>
 		{/if}
 		<span class="tb-slotrow-count"
-			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
+			>{m.tb_length_character_x({ count: section.entries.length })}</span
 		>
 	</header>
 {/snippet}
@@ -1452,19 +1481,18 @@
 {#snippet rosterStubs()}
 	{#if split.uncurated.length > 0}
 		<section class="tb-stubs">
-			<p class="kicker">Not yet curated</p>
-			<p class="note tb-note">
-				These kits have no capability data yet — they may well do what you’re filtering for. A card
-				with no capabilities here means “unknown”, not “no”.
-				<a
+			<p class="kicker">{m.tb_not_yet_curated()}</p>
+			{#snippet link(text: string)}<a
 					class="link tb-stubs-link"
 					href="{hrefTo('/coverage')}?c={split.uncurated.map((e) => e.id).join(',')}"
 					onclick={(e) =>
 						openCoverage(
 							e,
 							split.uncurated.map((u) => u.id)
-						)}>See their coverage</a
-				>
+						)}>{text}</a
+				>{/snippet}
+			<p class="note tb-note">
+				<Msg parts={m.tb_these_kits_have_no_capability_data_yet.parts()} tags={{ link }} />
 			</p>
 			<div class="tb-grid">
 				{#each split.uncurated as entry (entry.id)}
@@ -1485,7 +1513,7 @@
 			<span class="tb-slotrow-name">{section.label}</span>
 		{/if}
 		<span class="tb-slotrow-count"
-			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
+			>{m.tb_length_character_x({ count: section.entries.length })}</span
 		>
 	</header>
 {/snippet}
@@ -1493,18 +1521,18 @@
 <!-- SWAP MODE'S section head (§11.6 item 20): the tier's name over its
      first section, then what this section's swap does, as signed items. -->
 {#snippet swapSectionHead(section: GridSection)}
-	{@const m = swapGrid?.meta[section.key]}
-	{#if m?.tierStart}<p class="kicker tb-swap-tier">{m.kicker}</p>{/if}
+	{@const meta = swapGrid?.meta[section.key]}
+	{#if meta?.tierStart}<p class="kicker tb-swap-tier">{meta.kicker}</p>{/if}
 	<header class="tb-slotrow-head tb-swap-head ctx-glass">
-		{#if m?.section.items.length}
-			<SwapDelta items={m.section.items} />
-		{:else if m?.section.tier === 'uncurated'}
-			<span class="tb-swap-quiet">No capability data yet, so this swap can’t be read.</span>
+		{#if meta?.section.items.length}
+			<SwapDelta items={meta.section.items} />
+		{:else if meta?.section.tier === 'uncurated'}
+			<span class="tb-swap-quiet">{m.tb_no_capability_data_yet_so_this_swap_can()}</span>
 		{:else}
-			<span class="tb-swap-quiet">Loses nothing</span>
+			<span class="tb-swap-quiet">{m.tb_loses_nothing()}</span>
 		{/if}
 		<span class="tb-slotrow-count"
-			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
+			>{m.tb_length_character_x({ count: section.entries.length })}</span
 		>
 	</header>
 {/snippet}
@@ -1517,7 +1545,7 @@
 		? swapGrid.sections.reduce((sum, s) => sum + s.entries.length, 0)
 		: split.matches.length}
 	<span class="tb-dest-count"
-		>{n} character{n === 1 ? '' : 's'}{#if countNote}<span class="tb-dest-note">{countNote}</span
+		>{m.tb_n_character_x({ count: n })}{#if countNote}<span class="tb-dest-note">{countNote}</span
 			>{/if}</span
 	>
 {/snippet}
@@ -1527,9 +1555,15 @@
 	{#if swapGrid?.otherCount}
 		<p class="tb-swap-foot">
 			<button class="btn btn--glass" onclick={() => (swapOtherShown = !swapOtherShown)}>
-				{swapOtherShown
-					? `Hide the ${swapGrid.otherLabel.toLowerCase()} character${swapGrid.otherCount === 1 ? '' : 's'}`
-					: `Show ${swapGrid.otherCount} ${swapGrid.otherLabel.toLowerCase()} character${swapGrid.otherCount === 1 ? '' : 's'} too`}
+				{#if swapGrid.otherPosition === 'onField'}
+					{swapOtherShown
+						? m.tb_hide_the_on_field_characters({ count: swapGrid.otherCount })
+						: m.tb_show_count_on_field_characters_too({ count: swapGrid.otherCount })}
+				{:else}
+					{swapOtherShown
+						? m.tb_hide_the_off_field_characters({ count: swapGrid.otherCount })
+						: m.tb_show_count_off_field_characters_too({ count: swapGrid.otherCount })}
+				{/if}
 			</button>
 		</p>
 	{/if}
@@ -1548,36 +1582,36 @@
 {#snippet paneSwitch()}
 	<button
 		class="btn btn--glass tb-pane-switch"
-		aria-label={tab === 'characters' ? 'Lineup' : 'Characters'}
+		aria-label={tab === 'characters' ? m.tb_lineup() : m.tb_characters()}
 		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
 	>
 		{#if tab === 'characters'}
 			<!-- ⚓ Nate 2026-10-20: the mark AFTER the word, on the side its pane
 			     opens from. -->
-			<span class="tb-band-label tb-pane-word">Lineup</span>
+			<span class="tb-band-label tb-pane-word">{m.tb_lineup()}</span>
 			<Mark name="panelRight" />
 		{:else}
-			<Mark name="panelLeft" /> <span class="tb-band-label tb-pane-word">Characters</span>
+			<Mark name="panelLeft" /> <span class="tb-band-label tb-pane-word">{m.tb_characters()}</span>
 		{/if}
 	</button>
 {/snippet}
 
 {#snippet conModeItems(close: () => void)}
-	{#each conModes as m (m.key)}
+	{#each conModes as c (c.key)}
 		<button
 			class="band-menu-item"
 			role="menuitemradio"
-			aria-checked={conMode === m.key}
+			aria-checked={conMode === c.key}
 			onclick={() => {
 				close();
-				conMode = m.key;
+				conMode = c.key;
 			}}
 		>
 			<span class="tb-conmode-mark">
-				{#if conMode === m.key}<Mark name="check" size={12} />{/if}
+				{#if conMode === c.key}<Mark name="check" size={12} />{/if}
 			</span>
-			<span class="tb-conmode-label">{m.label}</span>
-			<span class="tb-conmode-hint">{m.hint}</span>
+			<span class="tb-conmode-label">{c.label}</span>
+			<span class="tb-conmode-hint">{c.hint}</span>
 		</button>
 	{/each}
 {/snippet}
@@ -1602,8 +1636,8 @@
 						<input
 							class="field tb-search-field"
 							type="text"
-							placeholder="Search…"
-							aria-label="Search characters"
+							placeholder={m.tb_search()}
+							aria-label={m.tb_search_characters()}
 							bind:value={filters.search}
 							autocomplete="off"
 							autocorrect="off"
@@ -1611,7 +1645,7 @@
 						/>
 					</div>
 					{#if ownershipInBand}
-						<div class="segment tb-show tb-own" role="group" aria-label="Your roster">
+						<div class="segment tb-show tb-own" role="group" aria-label={m.tb_your_roster_7d53()}>
 							{#each OWN_TOGGLES as t (t.key)}
 								{@const on = ownershipView === t.key}
 								<button
@@ -1619,7 +1653,7 @@
 									class:is-active={on}
 									aria-pressed={on}
 									aria-label={t.label}
-									title={on ? 'Show everyone again' : t.label}
+									title={on ? m.tb_show_everyone_again() : t.label}
 									onclick={() => (ownershipView = on ? 'all' : t.key)}
 									><Mark name={t.mark} size={15} /></button
 								>
@@ -1633,9 +1667,11 @@
 							glass
 							role="dialog"
 							mark="filter"
-							label="More"
+							label={m.tb_more()}
 							count={moreCount}
-							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+							ariaLabel={moreCount > 0
+								? m.tb_more_filters_morecount_set({ count: moreCount })
+								: m.tb_more_filters()}
 						>
 							{#snippet items(close)}
 								<MoreFilters
@@ -1653,7 +1689,7 @@
 						<!-- The constellation LENS — what the grid's capabilities are read at.
 							     A menu states the reading in one plate and gives each option room
 							     for the sentence that explains it. -->
-						<BandMenu glass label={activeConMode.label} ariaLabel="Read capabilities at">
+						<BandMenu glass label={activeConMode.label} ariaLabel={m.tb_read_capabilities_at()}>
 							{#snippet items(close)}
 								{@render conModeItems(close)}
 							{/snippet}
@@ -1664,11 +1700,11 @@
 					     took a row of its own when it came. -->
 					<button
 						class="btn btn--glass tb-clear"
-						aria-label="Clear every filter"
-						title="Clear every filter"
+						aria-label={m.tb_clear_every_filter()}
+						title={m.tb_clear_every_filter()}
 						disabled={!anyFilterActive}
 						onclick={clearAllFilters}
-						><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+						><Mark name="clear" /> <span class="tb-band-label">{m.tb_clear()}</span></button
 					>
 					<!-- TRIAL (responsive sweep 2026-10-15 item 26, D2): "Lineup" ends
 					     the band, beside the edge its pane docks on (panelRight);
@@ -1715,9 +1751,9 @@
 						     on a Custom board only (with ✕, §11.6 item 13). -->
 						<button
 							class="btn btn--glass"
-							aria-label="Add team"
+							aria-label={m.tb_add_team()}
 							onclick={() => boards.addTeam(board.id)}
-							><Mark name="plus" /> <span class="tb-band-label">Add team</span></button
+							><Mark name="plus" /> <span class="tb-band-label">{m.tb_add_team()}</span></button
 						>
 					{/if}
 					{#if theaterOn}
@@ -1732,11 +1768,11 @@
 						     kept; its Undo lands on this rail, beside it. -->
 						<button
 							class="btn btn--glass tb-clear"
-							aria-label="Clear every team in this lineup"
-							title="Clear every team in this lineup"
+							aria-label={m.tb_clear_every_team_in_this_lineup()}
+							title={m.tb_clear_every_team_in_this_lineup()}
 							disabled={!boardHasAnyone}
 							onclick={clearLineup}
-							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+							><Mark name="clear" /> <span class="tb-band-label">{m.tb_clear()}</span></button
 						>
 						<!-- ↻ 2026-10-20 (⚓ Nate): a PLATE whose mark is its state —
 						     repeat / repeat-off — in place of the toggle switch, which
@@ -1745,14 +1781,15 @@
 						<button
 							class="btn btn--glass tb-norepeat"
 							aria-pressed={board.noRepeats}
-							aria-label="No repeats"
+							aria-label={m.tb_no_repeats()}
 							title={board.noRepeats
-								? 'Each character joins only one team.'
-								: 'A character can join more than one team.'}
+								? m.tb_each_character_joins_only_one_team()
+								: m.tb_a_character_can_join_more_than_one_team()}
 							onclick={toggleNoRepeats}
 						>
 							<Mark name={board.noRepeats ? 'repeatOff' : 'repeat'} />
-							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
+							<span class="tb-band-label"
+								>{board.noRepeats ? m.tb_no_repeats() : m.tb_repeats_allowed()}</span
 							>
 						</button>
 						<!-- ⚓ SHARE, at the toolbar's end over the lineup it shares (Nate
@@ -1761,12 +1798,12 @@
 						     `compact`, like every band control. -->
 						<button
 							class="btn btn--glass tb-share"
-							aria-label="Share this lineup"
-							title="Copy a link to this lineup"
+							aria-label={m.tb_share_this_lineup()}
+							title={m.tb_copy_a_link_to_this_lineup()}
 							disabled={!boardHasAnyone}
 							onclick={() => void boardBar.shareLink().then((o) => sayOutcome(o, shareAnswer))}
 							><Mark name={shareAnswer.now ? (shareAnswer.now.ok ? 'check' : 'warn') : 'share'} />
-							<span class="tb-band-label">{shareAnswer.now?.short ?? 'Share'}</span></button
+							<span class="tb-band-label">{shareAnswer.now?.short ?? m.tb_share()}</span></button
 						>
 					{/if}
 				</div>
@@ -1822,7 +1859,7 @@
 						errand={errandTeam
 							? {
 									team: errandTeam,
-									label: `From the Planner: ${plannerDocName}`,
+									label: m.tb_from_the_planner_plannerdocname({ name: plannerDocName }),
 									onCancel: cancelErrand
 								}
 							: null}
@@ -1854,36 +1891,39 @@
 	     nothing until it has something in it. -->
 	{#if mounted && !ownsAny && !theorycraft}
 		<p class="tb-roster-hint">
-			The Owned filter and “My constellations” read your roster, which is empty.
-			<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
+			{m.tb_the_owned_filter_and_my_constellations()}
+			<button class="link" onclick={() => library.openRoster()}>{m.tb_open_the_roster()}</button>
 		</p>
 	{/if}
 	<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
 	     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
 	{#if swapping}
-		{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
 		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 			{#if swapping.incumbent}
-				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+				{m.tb_replacing_incumbent_selectedlabel({
+					name: nameOf(swapping.incumbent),
+					team: selectedLabel
+				})}
 			{:else}
-				Adding to {selectedLabel}
+				{m.tb_adding_to_selectedlabel({ team: selectedLabel })}
 			{/if}
 			{@render destCount()}
 			<button
 				class="btn btn--icon tb-dest-close"
 				onclick={stopSwap}
 				aria-label={swapping.incumbent
-					? `Stop replacing ${nameOf(swapping.incumbent)}`
-					: `Stop adding to ${selectedLabel}`}
-				title="Stop {verb} (Esc)"><Mark name="close" size={12} /></button
+					? m.tb_stop_replacing_incumbent({ name: nameOf(swapping.incumbent) })
+					: m.tb_stop_adding_to_selectedlabel({ team: selectedLabel })}
+				title={swapping.incumbent ? m.tb_stop_replacing_esc() : m.tb_stop_adding_esc()}
+				><Mark name="close" size={12} /></button
 			>
 		</p>
 	{:else if selectedTeam}
 		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 			{#if destFilled === 4}
-				{selectedLabel} is full. Pick a member again to remove them.
+				{m.tb_selectedlabel_is_full_pick_a_member({ team: selectedLabel })}
 			{:else}
-				Adding to {selectedLabel} · {destFilled}/4
+				{m.tb_adding_to_selectedlabel_destfilled_4({ team: selectedLabel, n: destFilled })}
 			{/if}
 			{@render destCount()}
 		</p>
@@ -1922,7 +1962,7 @@
 							sections={theaterSections}
 							sectionHead={theaterSectionHead}
 							aboveGrid={headScrolls ? rosterHead : undefined}
-							emptyMessage="No character of this season matches."
+							emptyMessage={m.tb_no_character_of_this_season_matches()}
 						/>
 					{:else}
 						<CharacterGrid
@@ -1962,14 +2002,16 @@
 	{#if detailDelta}
 		<div class="tb-detail-delta">
 			<span class="tb-detail-delta-key" style:color={selectedHue}
-				>{detailDelta.inTeam ? 'Brings to' : 'Adds to'} {selectedLabel}</span
+				>{detailDelta.inTeam
+					? m.tb_brings_to_selectedlabel({ team: selectedLabel })
+					: m.tb_adds_to_selectedlabel({ team: selectedLabel })}</span
 			>
 			{#if detailDelta.delta.items.length}
 				<SwapDelta items={detailDelta.delta.items} />
 			{:else if detailDelta.delta.tier === 'uncurated'}
-				<span class="tb-swap-quiet">No capability data yet, so this can’t be read.</span>
+				<span class="tb-swap-quiet">{m.tb_no_capability_data_yet_so_this_can_t_be()}</span>
 			{:else}
-				<span class="tb-swap-quiet">Nothing the fingerprint shows</span>
+				<span class="tb-swap-quiet">{m.tb_nothing_the_fingerprint_shows()}</span>
 			{/if}
 		</div>
 	{/if}

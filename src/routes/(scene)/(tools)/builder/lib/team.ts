@@ -15,6 +15,7 @@ import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 import { FINGERPRINT, teamFingerprint } from '$lib/fingerprint';
 import { characterKey, getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { reactionPairs, type ReactionPair } from '$lib/utils/reactionPairs';
+import { m } from '$lib/paraglide/messages';
 
 export const TEAM_SIZE = 4;
 
@@ -301,10 +302,11 @@ export function swapSections(
 export function teamLabel(board: Pick<Board, 'preset' | 'season'>, index: number): string {
 	if (board.preset === 'stygian') {
 		const season = SEASONS.find((s) => s.version === board.season) ?? liveSeasons()[0];
-		if (season?.battlefields[index]) return `Battlefield ${index + 1}`;
+		if (season?.battlefields[index]) return m.tb_battlefield_x({ n: index + 1 });
 	}
-	if (board.preset === 'abyss' && index < 2) return index === 0 ? 'First half' : 'Second half';
-	return `Team ${index + 1}`;
+	if (board.preset === 'abyss' && index < 2)
+		return index === 0 ? m.tb_first_half() : m.tb_second_half();
+	return m.tb_team_x({ n: index + 1 });
 }
 
 const TEAM_HUES = ['first', 'second', 'third', 'fourth'] as const;

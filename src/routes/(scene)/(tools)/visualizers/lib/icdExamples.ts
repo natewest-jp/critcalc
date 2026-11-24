@@ -14,6 +14,7 @@
 
 import type { IcdParams } from '$lib/utils/icd';
 import { FPS } from '$lib/utils/frames';
+import { m } from '$lib/paraglide/messages';
 
 export type IcdExampleId = 'oz' | 'hutao' | 'chevreuse' | 'layla';
 
@@ -47,17 +48,22 @@ const series = (n: number, every: number) => Array.from({ length: n }, (_, i) =>
  */
 const LAYLA_LANDINGS = [251, 276, 300, 325, 728, 753, 777, 802];
 
+// `label` and `note` are getters, so each read follows the page's language.
 export const ICD_EXAMPLES: IcdExample[] = [
 	{
 		// gcsim `fischl/skill.go`: first tick 64f after Oz appears, then every
 		// 59f until he leaves 600f after appearing → 10 ticks. Oz's arrival hit
 		// is `ICDTagNone` (on no counter) and is left out.
 		id: 'oz',
-		label: "Fischl's Oz",
+		get label() {
+			return m.vz_fischl_s_oz();
+		},
 		element: 'electro',
 		hits: sec(series(10, 59)),
 		rule: { timer: 5, hits: 4, cap: 8 },
-		note: 'Oz strikes about once a second for 10 seconds.'
+		get note() {
+			return m.vz_oz_strikes_about_once_a_second_for_10();
+		}
 	},
 	{
 		// gcsim `hutao/attack.go` + `charge.go`, in Paramita Papilio: N1 cancels
@@ -65,28 +71,40 @@ export const ICD_EXAMPLES: IcdExample[] = [
 		// N1 at 42f — a charged attack every 62f. The N1s are on another counter
 		// and are left out.
 		id: 'hutao',
-		label: "Hu Tao's charged attacks",
+		get label() {
+			return m.vz_hu_tao_s_charged_attacks();
+		},
 		element: 'pyro',
 		hits: sec(series(9, 62)),
 		rule: { timer: 0.5, hits: Infinity },
-		note: 'N1 then a charged attack, repeated through her Skill: one charged attack every 1.03 seconds.'
+		get note() {
+			return m.vz_n1_then_a_charged_attack_repeated();
+		}
 	},
 	{
 		// gcsim `chevreuse/burst.go`: 8 shells in 5 groups, landing 24, 33, 33,
 		// 42, 42, 51, 51, 60f after the Burst's first hit — pairs in the same frame.
 		id: 'chevreuse',
-		label: "Chevreuse's Burst",
+		get label() {
+			return m.vz_chevreuse_s_burst();
+		},
 		element: 'pyro',
 		hits: sec([0, 9, 9, 18, 18, 27, 27, 36]),
 		rule: { timer: 3, hits: 3, cap: 2 },
-		note: 'Eight shells burst within 0.6 seconds, two at a time.'
+		get note() {
+			return m.vz_eight_shells_burst_within_0_6_seconds();
+		}
 	},
 	{
 		id: 'layla',
-		label: "Layla's Shooting Stars",
+		get label() {
+			return m.vz_layla_s_shooting_stars();
+		},
 		element: 'cryo',
 		hits: sec(LAYLA_LANDINGS.map((f) => f - LAYLA_LANDINGS[0])),
 		rule: { timer: 3, hits: 7, cap: 2 },
-		note: 'Stars fly in volleys of four, about 8 seconds apart while her shield holds.'
+		get note() {
+			return m.vz_stars_fly_in_volleys_of_four_about_8();
+		}
 	}
 ];

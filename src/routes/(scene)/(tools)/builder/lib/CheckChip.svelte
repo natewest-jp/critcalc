@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	/**
 	 * One battlefield check, drawn as the game draws it (lineups design §2.6):
 	 * a thumb (favoured / disfavoured), then its alternatives — game icons and
@@ -45,13 +46,13 @@
 	const flag = $derived(verdict === 'met' ? (good ? 'met' : 'warn') : null);
 	const title = $derived(
 		flag === 'met'
-			? 'This team brings it'
+			? m.tb_this_team_brings_it()
 			: flag === 'warn'
-				? 'This team does what this boss resists'
+				? m.tb_this_team_does_what_this_boss_resists()
 				: verdict === 'unmet'
 					? good
-						? 'This team does not bring it'
-						: 'This team avoids it'
+						? m.tb_this_team_does_not_bring_it()
+						: m.tb_this_team_avoids_it()
 					: undefined
 	);
 </script>

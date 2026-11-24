@@ -24,6 +24,8 @@ import { characterRoles } from './data/characterRoles.generated';
 import type { Element } from './types/ability';
 import type { Localized } from './endgame';
 import { newestFirst } from './utils/release';
+import { labels } from './i18n/labels';
+import { m } from './paraglide/messages';
 
 export type TheaterMode = 'easy' | 'normal' | 'hard' | 'visionary' | 'lunar';
 
@@ -118,13 +120,13 @@ export function liveTheaterSeasons(
 }
 
 /** The game's names for the modes. */
-export const MODE_NAME: Record<TheaterMode, string> = {
-	easy: 'Easy',
-	normal: 'Normal',
-	hard: 'Hard',
-	visionary: 'Visionary',
-	lunar: 'Lunar'
-};
+export const MODE_NAME: Record<TheaterMode, string> = labels({
+	easy: m.tb_easy,
+	normal: m.tb_normal,
+	hard: m.tb_hard,
+	visionary: m.tb_visionary,
+	lunar: m.tb_lunar
+});
 
 /** What the roster says about a character. */
 export type TheaterRoster = {

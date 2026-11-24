@@ -5,11 +5,11 @@
 
 **116 messages** · `ProfileForm.svelte` · `SettingsPanel.svelte` · `TeamDetail.svelte` · `TeamsPlace.svelte` · `tones.ts` · `backup.ts` · `settingsBackup.ts` · `+page.svelte`
 
-- `settings_count_rotations` — ProfileForm.svelte:264 m() · SettingsPanel.svelte:224 m() · TeamDetail.svelte:433 m() · TeamsPlace.svelte:220 m()
+- `settings_count_rotations` — ProfileForm.svelte:264 m() · SettingsPanel.svelte:224 m() · TeamDetail.svelte:434 m() · TeamsPlace.svelte:220 m()
   > {count} rotation | {count} rotations
   - vars: `count`
   - terms: 📖 rotation
-- `settings_count_lineups` — ProfileForm.svelte:265 m() · SettingsPanel.svelte:225 m() · TeamDetail.svelte:439 m() · TeamsPlace.svelte:224 m()
+- `settings_count_lineups` — ProfileForm.svelte:265 m() · SettingsPanel.svelte:225 m() · TeamDetail.svelte:440 m() · TeamsPlace.svelte:224 m()
   > {count} lineup | {count} lineups
   - vars: `count`
 - `settings_count_teams` — ProfileForm.svelte:266 m() · SettingsPanel.svelte:226 m()

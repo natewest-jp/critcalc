@@ -1131,10 +1131,16 @@ const unusedMessages = [];
 			literal.where.push(...where);
 			continue;
 		}
+		// The surface of the file that calls it, when the key carries that prefix:
+		// `vz_crit_heatmap` is the workspace's (vz) name for the Crit instrument, not
+		// a string of the vz_crit surface. Otherwise, the longest prefix the key names.
+		const called = where.map((w) => surfaceOf(w.file)).find((s) => key.startsWith(s + '_'));
 		const surface =
+			called ??
 			[...surfaceIds]
 				.filter((id) => key.startsWith(id + '_'))
-				.sort((a, b) => b.length - a.length)[0] ?? 'unassigned';
+				.sort((a, b) => b.length - a.length)[0] ??
+			'unassigned';
 		const vars = new Set([...value.matchAll(/\{([A-Za-z_$][\w$]*)\}/g)].map((v) => v[1]));
 		if (Array.isArray(raw))
 			for (const v of raw)

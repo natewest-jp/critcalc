@@ -35,14 +35,37 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import { LEVEL_SLIDER } from './kit/level';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	const uid = $props.id();
 
 	const FAMILIES: { id: FamilyId; label: string }[] = [
-		{ id: 'direct', label: 'Direct hit' },
-		{ id: 'additive', label: 'Additive' },
-		{ id: 'transformative', label: 'Transformative' },
-		{ id: 'lunar', label: 'Lunar & Stellar' }
+		{
+			id: 'direct',
+			get label() {
+				return m.vz_breakdown_direct_hit();
+			}
+		},
+		{
+			id: 'additive',
+			get label() {
+				return m.vz_breakdown_additive();
+			}
+		},
+		{
+			id: 'transformative',
+			get label() {
+				return m.vz_breakdown_transformative();
+			}
+		},
+		{
+			id: 'lunar',
+			get label() {
+				return m.vz_breakdown_lunar_stellar();
+			}
+		}
 	];
 
 	let family = $state<FamilyId>('direct');
@@ -141,39 +164,61 @@
 	const pct = (v: number) => `${Math.round(v * 100)}%`;
 	/** A stat as the sheet shows it: whole, or to one decimal. */
 	const pctS = (v: number) => `${Number.isInteger(v) ? v : v.toFixed(1)}%`;
-	const bonusWord = $derived(rb > 0 ? ' + Reaction Bonus' : '');
-	const emReal = $derived(rb > 0 ? `${sheet.em} EM · +${rb}%` : `${sheet.em} EM`);
+	const bonusWord = $derived(rb > 0 ? ` ${m.vz_breakdown_reaction_bonus_2e6f()}` : '');
+	const emReal = $derived(
+		rb > 0
+			? m.vz_breakdown_em_em_rb({ em: sheet.em, rb })
+			: m.vz_breakdown_em_em_d939({ em: sheet.em })
+	);
 
-	/** Enemy RES has three formulas, and the column shows the one in force */
+	/** Enemy RES has three formulas, and the column shows the one in force.
+	 *  The RES and DEF formulas stay in English in every language: they are
+	 *  notation (the ledger's note on vz_breakdown says not to localize them). */
 	const resFormula = $derived(
 		sheet.enemyRes < 0 ? '1 − RES ÷ 2' : sheet.enemyRes < 75 ? '1 − RES' : '1 ÷ (1 + 4 × RES)'
 	);
 	const defMods = $derived(sheet.defShredPct > 0 || sheet.defIgnorePct > 0);
 
-	const EM_DRAG = { key: 'em', label: 'Elemental Mastery', unit: '', min: 0, max: 1200, step: 5 };
+	const EM_DRAG = {
+		key: 'em',
+		get label() {
+			return m.vz_breakdown_elemental_mastery();
+		},
+		unit: '',
+		min: 0,
+		max: 1200,
+		step: 5
+	};
 
 	const critRow = $derived<Row>({
 		id: 'crit',
 		kind: 'mult',
-		name: 'Crit, on average',
-		formula: '1 + CRIT Rate × CRIT DMG',
+		name: m.vz_breakdown_crit_on_average(),
+		formula: m.vz_breakdown_1_crit_rate_crit_dmg(),
 		real: `${pctS(sheet.cr)} · ${pctS(sheet.cd)}`,
 		value: critFactor(sheet),
 		color: null,
-		read: `With ${pctS(sheet.cr)} CRIT Rate and ${pctS(sheet.cd)} CRIT DMG, the hit would average ${fmtX(critFactor(sheet))} a non-crit.`
+		read: m.vz_breakdown_with_cr_crit_rate_and_cd_crit_dmg_the({
+			cr: pctS(sheet.cr),
+			cd: pctS(sheet.cd),
+			factor: fmtX(critFactor(sheet))
+		})
 	});
 	const dmgRow = $derived<Row>({
 		id: 'dmg',
 		kind: 'mult',
-		name: 'DMG Bonus',
-		formula: '1 + DMG Bonus',
+		name: m.vz_breakdown_dmg_bonus(),
+		formula: m.vz_breakdown_1_dmg_bonus(),
 		real: `${sheet.dmgPct.toFixed(1)}%`,
 		value: dmgFactor(sheet),
 		color: null,
-		read: `A ${sheet.dmgPct.toFixed(1)}% DMG Bonus would make the hit ${fmtX(dmgFactor(sheet))} as strong.`,
+		read: m.vz_breakdown_a_x_dmg_bonus_would_make_the_hit_sheet({
+			bonus: sheet.dmgPct.toFixed(1),
+			factor: fmtX(dmgFactor(sheet))
+		}),
 		drag: {
 			key: 'dmgPct',
-			label: 'DMG Bonus',
+			label: m.vz_breakdown_dmg_bonus(),
 			unit: '%',
 			min: 0,
 			max: 200,
@@ -186,79 +231,113 @@
 	const defRow = $derived<Row>({
 		id: 'def',
 		kind: 'mult',
-		name: 'Enemy DEF',
+		name: m.vz_breakdown_enemy_def(),
 		formula: defMods
 			? '(100 + yours) ÷ (100 + yours + (100 + theirs) × (1 − shred) × (1 − ignore))'
 			: '(100 + your level) ÷ (both levels + 200)',
 		real: defMods
-			? `Lv ${sheet.charLevel} vs ${sheet.enemyLevel} · −${sheet.defShredPct}% · −${sheet.defIgnorePct}%`
-			: `Lv ${sheet.charLevel} vs ${sheet.enemyLevel}`,
+			? m.vz_breakdown_lv_charlevel_vs_enemylevel_defshredpct({
+					level: sheet.charLevel,
+					enemy: sheet.enemyLevel,
+					shred: sheet.defShredPct,
+					ignore: sheet.defIgnorePct
+				})
+			: m.vz_breakdown_lv_charlevel_vs_enemylevel({
+					level: sheet.charLevel,
+					enemy: sheet.enemyLevel
+				}),
 		value: defFactor(sheet),
 		color: null,
 		read: defMods
-			? `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF after ${sheet.defShredPct}% shred and ${sheet.defIgnorePct}% ignore would let ${pct(defFactor(sheet))} of the hit through.`
-			: `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF would let ${pct(defFactor(sheet))} of the hit through.`
+			? m.vz_breakdown_at_level_charlevel_against_a_level_2510({
+					level: sheet.charLevel,
+					enemy: sheet.enemyLevel,
+					shred: sheet.defShredPct,
+					ignore: sheet.defIgnorePct,
+					share: pct(defFactor(sheet))
+				})
+			: m.vz_breakdown_at_level_charlevel_against_a_level_89c8({
+					level: sheet.charLevel,
+					enemy: sheet.enemyLevel,
+					share: pct(defFactor(sheet))
+				})
 	});
 	const resRow = $derived<Row>({
 		id: 'res',
 		kind: 'mult',
-		name: 'Enemy RES',
+		name: m.vz_breakdown_enemy_res(),
 		formula: resFormula,
 		real: `${sheet.enemyRes}%`,
 		value: resFactor(sheet),
 		color: null,
 		read:
 			sheet.enemyRes < 0
-				? `Below 0% RES only half the shred counts, so the enemy would take ${pct(resFactor(sheet))} of the hit.`
+				? m.vz_breakdown_below_0_res_only_half_the_shred_counts({ share: pct(resFactor(sheet)) })
 				: sheet.enemyRes < 75
-					? `At ${sheet.enemyRes}% RES, the enemy would take ${pct(resFactor(sheet))} of the hit.`
-					: `From 75% RES the formula changes to a curve, and the enemy would take ${pct(resFactor(sheet))} of the hit.`
+					? m.vz_breakdown_at_enemyres_res_the_enemy_would_take({
+							res: sheet.enemyRes,
+							share: pct(resFactor(sheet))
+						})
+					: m.vz_breakdown_from_75_res_the_formula_changes_to_a({ share: pct(resFactor(sheet)) })
 	});
 	const levelRow = $derived<Row>({
 		id: 'level',
 		kind: 'start',
-		name: 'Level base',
-		formula: 'from the level table',
-		real: `Lv ${sheet.charLevel}`,
+		name: m.vz_breakdown_level_base(),
+		formula: m.vz_breakdown_from_the_level_table(),
+		real: m.vz_breakdown_lv_charlevel({ level: sheet.charLevel }),
 		value: levelMult(sheet.charLevel),
 		color: null,
-		read: `Every level ${sheet.charLevel} character starts a reaction from the same base: ${fmtInt(levelMult(sheet.charLevel))}.`
+		read: m.vz_breakdown_every_level_charlevel_character_starts_a({
+			level: sheet.charLevel,
+			base: fmtInt(levelMult(sheet.charLevel))
+		})
 	});
 	const reactionRow = $derived<Row>({
 		id: 'reaction',
 		kind: 'mult',
 		name: reaction.name,
 		formula:
-			family === 'lunar' ? `${reaction.mult} × 60% top-contributor share` : `× ${reaction.mult}`,
+			family === 'lunar'
+				? m.vz_breakdown_mult_60_top_contributor_share({ mult: reaction.mult })
+				: `× ${reaction.mult}`,
 		real: '',
 		value: reaction.shown,
 		color: rxColor,
 		read:
 			family === 'lunar'
-				? `${reaction.phrase ? `A ${reaction.phrase}` : reaction.name} multiplies the base by ${reaction.mult}, and the top contributor deals 60% of it: ×${reaction.shown}.`
-				: `${reaction.name} multiplies the base by ${reaction.mult}.`
+				? m.vz_breakdown_reaction_phrase_a_phrase_reaction_name({
+						form: reaction.phrase ? 'phrase' : 'name',
+						name: reaction.phrase ?? reaction.name,
+						mult: reaction.mult,
+						shown: reaction.shown
+					})
+				: m.vz_breakdown_name_multiplies_the_base_by_mult({
+						name: reaction.name,
+						mult: reaction.mult
+					})
 	});
 	const emRow = $derived.by<Row>(() => {
 		const fam = family === 'direct' ? 'transformative' : family;
 		const value = emBracket(fam, sheet);
 		const formula =
 			fam === 'additive'
-				? `1 + 5 × EM ÷ (EM + 1200)${bonusWord}`
+				? m.vz_breakdown_1_5_em_em_1200_bonusword({ bonus: bonusWord })
 				: fam === 'lunar'
-					? `1 + 6 × EM ÷ (EM + 2000)${bonusWord}`
-					: `1 + 16 × EM ÷ (EM + 2000)${bonusWord}`;
+					? m.vz_breakdown_1_6_em_em_2000_bonusword({ bonus: bonusWord })
+					: m.vz_breakdown_1_16_em_em_2000_bonusword({ bonus: bonusWord });
 		return {
 			id: 'em',
 			kind: 'mult',
-			name: rb > 0 ? 'EM + Reaction Bonus' : 'EM',
+			name: rb > 0 ? m.vz_breakdown_em_reaction_bonus() : m.vz_breakdown_em(),
 			formula,
 			real: emReal,
 			value,
 			color: null,
 			read:
 				rb > 0
-					? `EM and the +${rb}% Reaction Bonus together would raise it ${fmtX(value)}.`
-					: `EM would raise it ${fmtX(value)}.`,
+					? m.vz_breakdown_em_and_the_rb_reaction_bonus_together({ rb, factor: fmtX(value) })
+					: m.vz_breakdown_em_would_raise_it_value({ factor: fmtX(value) }),
 			drag: { ...EM_DRAG, key: 'em', factor: (s) => emBracket(fam, s) }
 		};
 	});
@@ -272,12 +351,16 @@
 				{
 					id: 'scaling',
 					kind: 'mult',
-					name: `Scaling ${stat}`,
-					formula: `1 + ${stat}% + flat ${stat} ÷ base ${stat}`,
-					real: `${fmtInt(scalingTotal(sheet))} ${stat}`,
+					name: m.vz_breakdown_scaling_stat_4658({ stat }),
+					formula: m.vz_breakdown_1_stat_flat_stat_base_stat({ stat }),
+					real: m.vz_breakdown_sheet_stat({ total: fmtInt(scalingTotal(sheet)), stat }),
 					value: scalingFactor(sheet),
 					color: null,
-					read: `Your ${fmtInt(scalingTotal(sheet))} ${stat} would make the hit ${fmtX(scalingFactor(sheet))} what base ${stat} alone deals.`,
+					read: m.vz_breakdown_your_sheet_stat_would_make_the_hit_sheet({
+						total: fmtInt(scalingTotal(sheet)),
+						stat,
+						factor: fmtX(scalingFactor(sheet))
+					}),
 					drag: {
 						key: 'statPct',
 						label: `${stat}%`,
@@ -298,23 +381,30 @@
 					id: 'amp',
 					kind: 'mult',
 					name: reaction.name,
-					formula: `${mult} × (1 + 2.78 × EM ÷ (EM + 1400)${bonusWord})`,
+					formula: m.vz_breakdown_mult_1_2_78_em_em_1400_bonusword({ mult, bonus: bonusWord }),
 					real: emReal,
 					value: f,
 					color: rxColor,
-					read: `A ${mult === 2 ? 'forward' : 'reverse'} ${reaction.name} would multiply the hit by ${fmtX(f)}.`,
+					read: m.vz_breakdown_a_x_name_would_multiply_the_hit_by_f({
+						direction: mult === 2 ? 'forward' : 'reverse',
+						name: reaction.name,
+						factor: fmtX(f)
+					}),
 					drag: { ...EM_DRAG, key: 'em', factor: (s) => ampFactor(s, mult) }
 				});
 			}
 			out.push(defRow, resRow, {
 				id: 'total',
 				kind: 'total',
-				name: 'Your hit',
-				formula: `vs base ${stat} alone`,
+				name: m.vz_breakdown_your_hit(),
+				formula: m.vz_breakdown_vs_base_stat_alone({ stat }),
 				real: '',
 				value: directTotal(sheet, reaction.mult),
 				color: null,
-				read: `Together, these would make the hit ${fmtX(directTotal(sheet, reaction.mult))} what base ${stat} alone deals, before its talent multiplier.`
+				read: m.vz_breakdown_together_these_would_make_the_hit_mult({
+					factor: fmtX(directTotal(sheet, reaction.mult)),
+					stat
+				})
 			});
 			return out;
 		}
@@ -326,12 +416,15 @@
 				{
 					id: 'chunk',
 					kind: 'subtotal',
-					name: 'The chunk',
-					formula: 'added to the hit’s base damage',
+					name: m.vz_breakdown_the_chunk(),
+					formula: m.vz_breakdown_added_to_the_hit_s_base_damage(),
 					real: '',
 					value: aChunk,
 					color: null,
-					read: `${reaction.name} would add ${fmtInt(aChunk)} to the hit’s base damage. From here it rides the rest of the hit.`
+					read: m.vz_breakdown_name_would_add_achunk_to_the_hit_s_base({
+						name: reaction.name,
+						chunk: fmtInt(aChunk)
+					})
 				},
 				dmgRow,
 				critRow,
@@ -340,12 +433,15 @@
 				{
 					id: 'total',
 					kind: 'total',
-					name: 'Damage added',
-					formula: 'on average',
+					name: m.vz_breakdown_damage_added(),
+					formula: m.vz_breakdown_on_average(),
 					real: '',
 					value: additiveEffective(sheet, reaction.mult),
 					color: null,
-					read: `On average, ${reaction.name} would add ${fmtInt(additiveEffective(sheet, reaction.mult))} damage to each hit it triggers on.`
+					read: m.vz_breakdown_on_average_name_would_add_mult_damage_to({
+						name: reaction.name,
+						damage: fmtInt(additiveEffective(sheet, reaction.mult))
+					})
 				}
 			];
 		if (family === 'lunar')
@@ -356,15 +452,18 @@
 				{
 					id: 'base',
 					kind: 'mult',
-					name: 'Base DMG Bonus',
-					formula: '1 + Base DMG Bonus',
+					name: m.vz_breakdown_base_dmg_bonus(),
+					formula: m.vz_breakdown_1_base_dmg_bonus(),
 					real: `${sheet.baseDmgPct}%`,
 					value: baseDmgFactor(sheet),
 					color: null,
-					read: `A ${sheet.baseDmgPct}% Base DMG Bonus would raise it ${fmtX(baseDmgFactor(sheet))}.`,
+					read: m.vz_breakdown_a_basedmgpct_base_dmg_bonus_would_raise({
+						bonus: sheet.baseDmgPct,
+						factor: fmtX(baseDmgFactor(sheet))
+					}),
 					drag: {
 						key: 'baseDmgPct',
-						label: 'Base DMG Bonus',
+						label: m.vz_breakdown_base_dmg_bonus(),
 						unit: '%',
 						min: 0,
 						max: BASE_DMG_MAX,
@@ -375,15 +474,18 @@
 				{
 					id: 'elevation',
 					kind: 'mult',
-					name: 'Elevation',
-					formula: '1 + Elevation, after every other bracket',
+					name: m.vz_breakdown_elevation(),
+					formula: m.vz_breakdown_1_elevation_after_every_other_bracket(),
 					real: `${sheet.elevationPct}%`,
 					value: elevationFactor(sheet),
 					color: null,
-					read: `A ${sheet.elevationPct}% Elevation would raise it ${fmtX(elevationFactor(sheet))}.`,
+					read: m.vz_breakdown_a_elevationpct_elevation_would_raise_it({
+						bonus: sheet.elevationPct,
+						factor: fmtX(elevationFactor(sheet))
+					}),
 					drag: {
 						key: 'elevationPct',
-						label: 'Elevation',
+						label: m.vz_breakdown_elevation(),
 						unit: '%',
 						min: 0,
 						max: ELEVATION_MAX,
@@ -396,12 +498,15 @@
 				{
 					id: 'total',
 					kind: 'total',
-					name: 'Damage',
-					formula: 'on average',
+					name: m.vz_breakdown_damage_7bf6(),
+					formula: m.vz_breakdown_on_average(),
 					real: '',
 					value: lunarTotal(sheet, reaction.mult),
 					color: null,
-					read: `On average, one ${reaction.phrase ?? `${reaction.name} hit`} would deal ${fmtInt(lunarTotal(sheet, reaction.mult))} damage as the top contributor.`
+					read: m.vz_breakdown_on_average_one_reaction_phrase_name_hit({
+						hit: reaction.phrase ?? m.vz_breakdown_name_hit({ name: reaction.name }),
+						damage: fmtInt(lunarTotal(sheet, reaction.mult))
+					})
 				}
 			];
 		return [
@@ -412,12 +517,15 @@
 			{
 				id: 'total',
 				kind: 'total',
-				name: 'Damage',
+				name: m.vz_breakdown_damage_7bf6(),
 				formula: '',
 				real: '',
 				value: transformativeTotal(sheet, reaction.mult),
 				color: null,
-				read: `One ${reaction.name} hit would deal ${fmtInt(transformativeTotal(sheet, reaction.mult))} damage.`
+				read: m.vz_breakdown_one_name_hit_would_deal_mult_damage({
+					name: reaction.name,
+					damage: fmtInt(transformativeTotal(sheet, reaction.mult))
+				})
 			}
 		];
 	});
@@ -455,24 +563,26 @@
 	const bests = $derived(best ? gains.filter((g) => fmtGain(g.gain) === fmtGain(best.gain)) : []);
 	const bestNames = $derived.by(() => {
 		const names = bests.map((g) => g.stat.label);
-		return names.length < 3
-			? names.join(' or ')
-			: `${names.slice(0, -1).join(', ')}, or ${names[names.length - 1]}`;
+		return new Intl.ListFormat(getLocale(), { type: 'disjunction' }).format(names);
 	});
 	const capsOf = (id: ColumnId) => gains.filter((g) => rollColumn(family, g.stat.key) === id);
 	const fmtStep = (s: { step: number; isPct: boolean }) =>
 		s.isPct ? `+${s.step.toFixed(1)}%` : `+${s.step.toFixed(1)}`;
 	const rollSentence = (g: (typeof gains)[number]) =>
-		`One more ${g.stat.label} roll (${fmtStep(g.stat)}) would raise the damage by ${(g.gain * 100).toFixed(1)}%.`;
+		m.vz_breakdown_one_more_label_roll_stat_would_raise_the({
+			stat: g.stat.label,
+			step: fmtStep(g.stat),
+			gain: (g.gain * 100).toFixed(1)
+		});
 
 	/** What the headline's gain is a gain in. An additive reaction's is the
 	 *  damage it adds, not the whole hit. */
 	const headNoun = $derived(
 		family === 'direct'
-			? 'damage'
+			? m.vz_breakdown_damage_5419()
 			: reaction.id === 'sswBlast12' || reaction.id === 'sswBlast3'
-				? 'Stellar Swirl blast damage'
-				: `${reaction.name} damage`
+				? m.vz_breakdown_stellar_swirl_blast_damage()
+				: m.vz_breakdown_name_damage({ name: reaction.name })
 	);
 
 	/** A column's share of the total swing: how much of the boost it supplies,
@@ -488,20 +598,23 @@
 			r.kind !== 'mult' || share < 0.005
 				? r.read
 				: r.value >= 1
-					? `${r.read} It supplies ${Math.round(share * 100)}% of the boost.`
-					: `${r.read} It takes back ${Math.round(share * 100)}% of the boost.`;
+					? m.vz_breakdown_read_it_supplies_x_of_the_boost({
+							read: r.read,
+							share: Math.round(share * 100)
+						})
+					: m.vz_breakdown_read_it_takes_back_x_of_the_boost({
+							read: r.read,
+							share: Math.round(share * 100)
+						});
 		const rolls = capsOf(r.id).map(rollSentence);
 		return [lead, ...rolls].join(' ');
 	};
 
 	const CAPTIONS: Record<FamilyId, string> = $derived({
-		direct: `Each bar multiplies the hit, and each gridline doubles it, so a ×2 is the same size wherever it sits and a cut runs the other way. The result compares against a hit from base ${stat} alone, because the talent multiplier depends on the attack.`,
-		additive:
-			'Spread and Aggravate add a flat chunk from level and EM alone. The chunk then rides the rest of the hit, so it crits and takes DMG Bonus like the hit does.',
-		transformative:
-			'Damage from level and EM alone, so the result is a number. For most characters, crit, ATK, and DMG% do nothing, and enemy DEF doesn’t apply.',
-		lunar:
-			'Damage from level and EM, with two brackets of its own: Base DMG Bonus and Elevation. It can crit, and enemy DEF doesn’t apply. These figures are the top contributor’s 60% share.'
+		direct: m.vz_breakdown_each_bar_multiplies_the_hit_and_each({ stat }),
+		additive: m.vz_breakdown_spread_and_aggravate_add_a_flat_chunk(),
+		transformative: m.vz_breakdown_damage_from_level_and_em_alone_so_the(),
+		lunar: m.vz_breakdown_damage_from_level_and_em_with_two()
 	});
 
 	/** The column being read, by index; null reads the caption */
@@ -582,6 +695,7 @@
 		const every = upright ? (room < 22 ? 2 : 1) : all.length > 8 ? 2 : 1;
 		return all.filter((k) => k % every === 0).map((k) => unit * 2 ** k);
 	});
+	/** The "k" is a number's abbreviation, left as it is with number formatting. */
 	const fmtTick = (v: number) =>
 		family === 'direct'
 			? `×${v < 1 ? v.toFixed(2).replace(/0+$/, '') : v}`
@@ -792,7 +906,7 @@
 		statPct: {
 			key: 'statPct',
 			label: `${stat}%`,
-			aria: `${stat} percent bonus`,
+			aria: m.vz_breakdown_stat_percent_bonus({ stat }),
 			min: 0,
 			max: 300,
 			step: 0.5,
@@ -800,8 +914,12 @@
 		},
 		dmgPct: {
 			key: 'dmgPct',
-			label: 'DMG Bonus',
-			aria: 'DMG Bonus percent',
+			get label() {
+				return m.vz_breakdown_dmg_bonus();
+			},
+			get aria() {
+				return m.vz_breakdown_dmg_bonus_percent();
+			},
 			min: 0,
 			max: 200,
 			step: 0.1,
@@ -809,8 +927,12 @@
 		},
 		cr: {
 			key: 'cr',
-			label: 'CRIT Rate',
-			aria: 'CRIT Rate percent',
+			get label() {
+				return m.vz_breakdown_crit_rate();
+			},
+			get aria() {
+				return m.vz_breakdown_crit_rate_percent();
+			},
 			min: 0,
 			max: 100,
 			step: 1,
@@ -818,8 +940,12 @@
 		},
 		cd: {
 			key: 'cd',
-			label: 'CRIT DMG',
-			aria: 'CRIT DMG percent',
+			get label() {
+				return m.vz_breakdown_crit_dmg();
+			},
+			get aria() {
+				return m.vz_breakdown_crit_dmg_percent();
+			},
 			min: 0,
 			max: 300,
 			step: 1,
@@ -827,8 +953,12 @@
 		},
 		em: {
 			key: 'em',
-			label: 'Elemental Mastery',
-			aria: 'Elemental Mastery',
+			get label() {
+				return m.vz_breakdown_elemental_mastery();
+			},
+			get aria() {
+				return m.vz_breakdown_elemental_mastery();
+			},
 			min: 0,
 			max: 1200,
 			step: 5,
@@ -836,8 +966,12 @@
 		},
 		rbPct: {
 			key: 'rbPct',
-			label: 'Reaction Bonus',
-			aria: 'Reaction Bonus percent',
+			get label() {
+				return m.vz_breakdown_reaction_bonus_b017();
+			},
+			get aria() {
+				return m.vz_breakdown_reaction_bonus_percent();
+			},
 			min: 0,
 			max: RB_MAX,
 			step: 5,
@@ -845,8 +979,12 @@
 		},
 		baseDmgPct: {
 			key: 'baseDmgPct',
-			label: 'Base DMG Bonus',
-			aria: 'Base DMG Bonus percent',
+			get label() {
+				return m.vz_breakdown_base_dmg_bonus();
+			},
+			get aria() {
+				return m.vz_breakdown_base_dmg_bonus_percent();
+			},
 			min: 0,
 			max: BASE_DMG_MAX,
 			step: 1,
@@ -854,8 +992,12 @@
 		},
 		elevationPct: {
 			key: 'elevationPct',
-			label: 'Elevation',
-			aria: 'Elevation percent',
+			get label() {
+				return m.vz_breakdown_elevation();
+			},
+			get aria() {
+				return m.vz_breakdown_elevation_percent();
+			},
 			min: 0,
 			max: ELEVATION_MAX,
 			step: 1,
@@ -863,8 +1005,12 @@
 		},
 		enemyLevel: {
 			key: 'enemyLevel',
-			label: 'Enemy level',
-			aria: 'Enemy level',
+			get label() {
+				return m.vz_breakdown_enemy_level();
+			},
+			get aria() {
+				return m.vz_breakdown_enemy_level();
+			},
 			min: 1,
 			max: 110,
 			step: 1,
@@ -872,8 +1018,12 @@
 		},
 		enemyRes: {
 			key: 'enemyRes',
-			label: 'Enemy RES after shred',
-			aria: 'Enemy RES after shred, percent',
+			get label() {
+				return m.vz_breakdown_enemy_res_after_shred();
+			},
+			get aria() {
+				return m.vz_breakdown_enemy_res_after_shred_percent();
+			},
 			min: -50,
 			max: 100,
 			step: 5,
@@ -881,8 +1031,12 @@
 		},
 		defShredPct: {
 			key: 'defShredPct',
-			label: 'DEF shred',
-			aria: 'DEF shred percent',
+			get label() {
+				return m.vz_breakdown_def_shred();
+			},
+			get aria() {
+				return m.vz_breakdown_def_shred_percent();
+			},
 			min: 0,
 			max: 100,
 			step: 1,
@@ -890,8 +1044,12 @@
 		},
 		defIgnorePct: {
 			key: 'defIgnorePct',
-			label: 'DEF ignore',
-			aria: 'DEF ignore percent',
+			get label() {
+				return m.vz_breakdown_def_ignore();
+			},
+			get aria() {
+				return m.vz_breakdown_def_ignore_percent();
+			},
 			min: 0,
 			max: 100,
 			step: 1,
@@ -919,11 +1077,19 @@
 	/** The Stats segment's face: the sheet at a glance (design §6: an input
 	 *  is a segment at a glance), the artifact card's short names. */
 	const statsFace = $derived.by(() => {
-		const crit = `CR ${pctS(sheet.cr)} · CD ${pctS(sheet.cd)}`;
-		const em = `EM ${fmtInt(sheet.em)}`;
-		if (family === 'direct')
-			return `${stat} ${fmtInt(scalingTotal(sheet))} · DMG ${pctS(sheet.dmgPct)} · ${crit}${amp ? ` · ${em}` : ''}`;
-		if (family === 'additive') return `${em} · ${crit} · DMG ${pctS(sheet.dmgPct)}`;
+		const crit = m.vz_breakdown_cr_cr_cd_cd({ cr: pctS(sheet.cr), cd: pctS(sheet.cd) });
+		const em = m.vz_breakdown_em_em_050d({ em: fmtInt(sheet.em) });
+		if (family === 'direct') {
+			const face = m.vz_breakdown_stat_sheet_dmg_dmgpct_crit_amp_em({
+				stat,
+				total: fmtInt(scalingTotal(sheet)),
+				dmg: pctS(sheet.dmgPct),
+				crit
+			});
+			return amp ? `${face} · ${em}` : face;
+		}
+		if (family === 'additive')
+			return m.vz_breakdown_em_crit_dmg_dmgpct({ em, crit, dmg: pctS(sheet.dmgPct) });
 		if (family === 'lunar') return `${em} · ${crit}`;
 		return em;
 	});
@@ -932,11 +1098,14 @@
 	);
 	const enemyFace = $derived(
 		usesDef
-			? `Lv ${sheet.enemyLevel} · RES ${sheet.enemyRes}%${defMods ? ` · DEF −${defRemoved}%` : ''}`
-			: `RES ${sheet.enemyRes}%`
+			? m.vz_breakdown_lv_enemylevel_res_enemyres_defmods_def({
+					level: sheet.enemyLevel,
+					res: sheet.enemyRes
+				}) + (defMods ? ` ${m.vz_breakdown_def_defremoved({ removed: defRemoved })}` : '')
+			: m.vz_breakdown_res_enemyres({ res: sheet.enemyRes })
 	);
 	const reactionFace = (r: (typeof REACTIONS)[FamilyId][number]) =>
-		r.id === 'none' ? 'None' : `${r.name} ×${r.shown}`;
+		r.id === 'none' ? m.vz_breakdown_none() : `${r.name} ×${r.shown}`;
 
 	function commitNumber(raw: string, apply: (v: number) => void, max = 100000) {
 		const v = Number(raw);
@@ -999,6 +1168,8 @@
 <!-- One slider for every SliderDef. A percent stat types to one decimal, as
      the game's own sheet shows it (CRIT Rate 55.5%); the track keeps its
      coarser step. -->
+{#snippet sentence(text: string)}<span class="readout-sentence">{text}</span>{/snippet}
+
 {#snippet slider(d: SliderDef)}
 	<InstrumentSlider
 		label={d.label}
@@ -1028,13 +1199,18 @@
 <div class="stage-root">
 	<div class="stage ctx-dark" bind:clientWidth={stageW}>
 		<p class="readout-head stage-head">
-			{fmtGain(best?.gain ?? 0)}<span class="readout-sentence"
-				>{headNoun} from one more {bestNames || 'substat'} roll</span
-			>
+			<Msg
+				parts={m.vz_breakdown_x_headnoun_from_one_more_x_roll.parts({
+					gain: fmtGain(best?.gain ?? 0),
+					noun: headNoun,
+					stats: bestNames || m.vz_breakdown_substat()
+				})}
+				tags={{ span: sentence }}
+			/>
 		</p>
 
 		<div class="stage-toolbar">
-			<div class="segment stage-tabs" role="radiogroup" aria-label="Damage family">
+			<div class="segment stage-tabs" role="radiogroup" aria-label={m.vz_breakdown_damage_family()}>
 				{#each FAMILIES as f (f.id)}
 					<button
 						class="btn"
@@ -1048,15 +1224,19 @@
 				{/each}
 			</div>
 
-			<div class="setup-bar" role="group" aria-label="Setup">
-				<BandMenu role="dialog" align="start" ariaLabel="Reaction: {reactionFace(reaction)}">
+			<div class="setup-bar" role="group" aria-label={m.vz_breakdown_setup()}>
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel={m.vz_breakdown_reaction_reaction({ face: reactionFace(reaction) })}
+				>
 					{#snippet face()}
-						<span class="setup-key">Reaction</span>
+						<span class="setup-key">{m.vz_breakdown_reaction()}</span>
 						<span class="setup-val">{reactionFace(reaction)}</span>
 					{/snippet}
 					{#snippet items()}
 						<div class="setup-pop">
-							<div class="bd-picks" role="radiogroup" aria-label="Reaction">
+							<div class="bd-picks" role="radiogroup" aria-label={m.vz_breakdown_reaction()}>
 								{#each REACTIONS[family] as r (r.id)}
 									<button
 										class="bd-pick"
@@ -1076,16 +1256,24 @@
 					{/snippet}
 				</BandMenu>
 
-				<BandMenu role="dialog" align="start" ariaLabel="Stats: {statsFace}">
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel={m.vz_breakdown_stats_statsface({ face: statsFace })}
+				>
 					{#snippet face()}
-						<span class="setup-key">Stats</span>
+						<span class="setup-key">{m.vz_breakdown_stats()}</span>
 						<span class="setup-val bd-glance">{statsFace}</span>
 					{/snippet}
 					{#snippet items()}
 						<div class="setup-pop bd-stats-pop">
 							{#if family === 'direct'}
 								<div class="bd-sheet-row">
-									<div class="segment" role="radiogroup" aria-label="Scaling stat">
+									<div
+										class="segment"
+										role="radiogroup"
+										aria-label={m.vz_breakdown_scaling_stat_1266()}
+									>
 										{#each ['atk', 'hp', 'def'] as const as s (s)}
 											<button
 												class="btn"
@@ -1099,7 +1287,7 @@
 										{/each}
 									</div>
 									<label class="bd-field">
-										<span class="bd-field-label">Base {stat}</span>
+										<span class="bd-field-label">{m.vz_breakdown_base_stat({ stat })}</span>
 										<input
 											class="bd-input"
 											type="number"
@@ -1109,7 +1297,7 @@
 										/>
 									</label>
 									<label class="bd-field">
-										<span class="bd-field-label">Flat {stat}</span>
+										<span class="bd-field-label">{m.vz_breakdown_flat_stat({ stat })}</span>
 										<input
 											class="bd-input"
 											type="number"
@@ -1129,17 +1317,21 @@
 					{/snippet}
 				</BandMenu>
 
-				<BandMenu role="dialog" align="start" ariaLabel="Your level: {sheet.charLevel}">
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel={m.vz_breakdown_your_level_charlevel({ level: sheet.charLevel })}
+				>
 					{#snippet face()}
-						<span class="setup-key">Your level</span>
+						<span class="setup-key">{m.vz_breakdown_your_level()}</span>
 						<span class="setup-val setup-val--num">{sheet.charLevel}</span>
 					{/snippet}
 					{#snippet items()}
 						<div class="setup-pop">
 							<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
 							<InstrumentSlider
-								label="Level"
-								aria="Character level"
+								label={m.vz_breakdown_level()}
+								aria={m.vz_breakdown_character_level()}
 								bind:value={sheet.charLevel}
 								{...LEVEL_SLIDER}
 							/>
@@ -1147,9 +1339,13 @@
 					{/snippet}
 				</BandMenu>
 
-				<BandMenu role="dialog" align="start" ariaLabel="Enemy: {enemyFace}">
+				<BandMenu
+					role="dialog"
+					align="start"
+					ariaLabel={m.vz_breakdown_enemy_enemyface({ face: enemyFace })}
+				>
 					{#snippet face()}
-						<span class="setup-key">Enemy</span>
+						<span class="setup-key">{m.vz_breakdown_enemy()}</span>
 						<span class="setup-val bd-glance">{enemyFace}</span>
 					{/snippet}
 					{#snippet items()}
@@ -1176,7 +1372,7 @@
 					width={graphW}
 					height={svgH}
 					role="group"
-					aria-label="The hit's damage formula, one column per bracket"
+					aria-label={m.vz_breakdown_the_hit_s_damage_formula_one_column_per()}
 					onpointerdown={onDown}
 					onpointermove={onMove}
 					onpointerup={onUp}
@@ -1232,7 +1428,9 @@
 						>
 					{/each}
 					<text x={PADL} y={TOP - 6} fill="var(--chart-dim)" font-size="10" text-anchor="start"
-						>{family === 'direct' ? `times a hit from base ${stat} alone` : 'damage'}</text
+						>{family === 'direct'
+							? m.vz_breakdown_times_a_hit_from_base_stat_alone({ stat })
+							: m.vz_breakdown_damage_5419()}</text
 					>
 
 					<!-- A sum's column starts past a rule -->
@@ -1545,10 +1743,10 @@
 			<p class:is-read={readIdx === null}>
 				{CAPTIONS[family]}
 				<span class="bd-hint"
-					>The marks at the end of a bar are one more average 5★ roll of that substat, added to your
-					sheet. {upright
-						? 'Hover or tap a column to read it, and drag one with a grip to change its stat.'
-						: 'Hover or tap a row to read it.'}</span
+					>{m.vz_breakdown_family_the_marks_at_the_end_of_a_bar_are()}
+					{upright
+						? m.vz_breakdown_hover_or_tap_a_column_to_read_it_and()
+						: m.vz_breakdown_hover_or_tap_a_row_to_read_it()}</span
 				>
 			</p>
 			{#each rows as r, i (r.id)}

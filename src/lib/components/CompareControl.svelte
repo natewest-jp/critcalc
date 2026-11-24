@@ -31,6 +31,7 @@
 	import { menu } from '$lib/menuState.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { THEORYCRAFT_ID } from '$lib/storage/records';
+	import { m } from '$lib/paraglide/messages';
 
 	let {
 		form,
@@ -45,6 +46,7 @@
 	} = $props();
 
 	const pair = $derived(storageSession.plannerPair);
+	// The built-in profile's stored name, which stays English everywhere.
 	const nameOfProfile = (id: string) =>
 		storageSession.profiles.find((p) => p.id === id)?.name ?? 'Theorycraft';
 
@@ -79,10 +81,11 @@
 			label: cross
 				? form === 'rail'
 					? s.profileId === THEORYCRAFT_ID
-						? 'What-if'
-						: 'Original'
+						? m.bench_what_if()
+						: m.bench_original()
 					: nameOfProfile(s.profileId)
-				: i === 0
+				: // The A and B pair tags are notation-like marks, left in English.
+					i === 0
 					? 'A'
 					: 'B',
 			guest: cross && s.profileId === THEORYCRAFT_ID,
@@ -108,10 +111,12 @@
 
 {#snippet pairControl()}
 	<div class="cmp-pair">
-		<div class="segment cmp-seg" role="group" aria-label="Comparing">
+		<div class="segment cmp-seg" role="group" aria-label={m.bench_comparing()}>
 			{#each sides ?? [] as s (s.which)}
 				{@const pick = () => !s.current && flip()}
-				{@const pickTitle = s.current ? `${s.label}: on screen` : `Switch to ${s.label} (⌃\`)`}
+				{@const pickTitle = s.current
+					? m.bench_label_on_screen({ label: s.label })
+					: m.bench_switch_to_label({ label: s.label })}
 				{#if s.home}
 					<button
 						class="btn btn--sm"
@@ -138,8 +143,10 @@
 						<button
 							class="btn btn--sm btn--icon cmp-away-end"
 							type="button"
-							aria-label="End the comparison"
-							title={`End the comparison and return to ${sides?.[0].label ?? 'the original'} (both rotations stay)`}
+							aria-label={m.bench_end_the_comparison()}
+							title={m.bench_end_the_comparison_and_return_to_x_both({
+								label: sides?.[0].label ?? m.bench_the_original()
+							})}
 							onclick={() => void storageSession.endPair(sides?.[0].which ?? 'self')}
 							><Mark name="close" size={12} /></button
 						>
@@ -158,7 +165,7 @@
 		onclick={() => {
 			done();
 			void storageSession.duplicateAndCompare();
-		}}>Duplicate and compare</button
+		}}>{m.bench_duplicate_and_compare()}</button
 	>
 	<button
 		class="band-menu-item"
@@ -166,7 +173,7 @@
 		onclick={() => {
 			done();
 			pick();
-		}}>Compare with…</button
+		}}>{m.bench_compare_with()}</button
 	>
 {/snippet}
 
@@ -174,7 +181,7 @@
 	{#if sides}
 		<!-- No room for the kicker: the swap mark says it, as on the plate it
 		     replaces. -->
-		<div class="cmp-rail" title="Comparing">
+		<div class="cmp-rail" title={m.bench_comparing()}>
 			<!-- Folded, the faces need the room, and the pair with its ✕ reads
 			     as one without it. -->
 			{#if !compact}<span class="cmp-rail-mark" aria-hidden="true"><Mark name="swap" /></span>{/if}
@@ -183,8 +190,8 @@
 	{:else if storageSession.active}
 		<BandMenu
 			mark="swap"
-			label={compact ? undefined : 'Compare'}
-			ariaLabel="Compare"
+			label={compact ? undefined : m.bench_compare()}
+			ariaLabel={m.bench_compare()}
 			size="sm"
 			{compact}
 			align="end"
@@ -194,12 +201,18 @@
 	{/if}
 {:else if sides}
 	<div class="cmp-foot">
-		<span class="cmp-kicker">Comparing</span>
+		<span class="cmp-kicker">{m.bench_comparing()}</span>
 		{@render pairControl()}
 	</div>
 {:else if storageSession.active}
 	<span class="cmp-start">
-		<BandMenu mark="swap" label="Compare" ariaLabel="Compare" size="sm" align="start">
+		<BandMenu
+			mark="swap"
+			label={m.bench_compare()}
+			ariaLabel={m.bench_compare()}
+			size="sm"
+			align="start"
+		>
 			{#snippet items(done)}{@render ways(done)}{/snippet}
 		</BandMenu>
 	</span>

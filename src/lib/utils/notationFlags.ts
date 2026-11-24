@@ -44,6 +44,7 @@ import { tokenizeNotation, tokenizeActionRun, type Token } from './tokenizer';
 import { TEAM_SIZE } from './notationEdit';
 import { getIndexEntryByDisplayName, twinLabel, twinOfName } from '$lib/data/characterLookup';
 import type { Twin } from '$lib/storage/records';
+import { m } from '$lib/paraglide/messages';
 
 export type NotationFlagReason =
 	/** The leading name of a segment resolves to nobody — the segment is skipped. */
@@ -83,20 +84,20 @@ const HOLD_TOKEN_RE = /^h[12]?E$/;
 /** Why a particular cast token is a stand-in, in the player's words. */
 function approximateCastMessage(name: string, token: string, casts: readonly string[]): string {
 	if (casts.length === 0) {
-		return `${name}'s kit isn't curated yet — this cast is drawn with generic timing.`;
+		return m.planner_name_s_kit_isn_t_curated_yet_this_cast({ name });
 	}
 	if (HOLD_TOKEN_RE.test(token)) {
-		return `${name} has no ${token} (hold) variant — timed as a plain E.`;
+		return m.planner_name_has_no_token_hold_variant_timed_as({ name, token });
 	}
 	// The parser finds no special skill and casts the BASE skill's frames, so
 	// "generic timing" would be untrue here.
 	if (token === 'sE' && casts.includes('E')) {
-		return `${name} has no sE variant — timed as a plain E.`;
+		return m.planner_name_has_no_se_variant_timed_as_a_plain({ name });
 	}
 	if (token === 'sQ') {
-		return `${name} has no short-burst variant — timed as a full Q.`;
+		return m.planner_name_has_no_short_burst_variant_timed_as({ name });
 	}
-	return `${name} can't perform ${token} — this cast is drawn with generic timing.`;
+	return m.planner_name_can_t_perform_token_this_cast_is({ name, token });
 }
 
 /** Tokens the linter has an opinion about: the E/Q casts, the `label` tokens
@@ -180,7 +181,7 @@ export function flagNotation(
 				to: head.to,
 				text: head.text,
 				reason: 'unknown-character',
-				message: `No character called “${head.text}” — this segment is skipped.`
+				message: m.planner_no_character_called_text_this_segment_is({ name: head.text })
 			});
 			// The segment never parses, so its casts approximate nothing.
 			continue;
@@ -193,7 +194,10 @@ export function flagNotation(
 				to: head.to,
 				text: head.text,
 				reason: 'other-twin',
-				message: `Your profile’s Traveler is ${twinLabel(profileTwin)}. This rotation is timed as ${twinLabel(twin)}.`
+				message: m.planner_your_profile_s_traveler_is_profiletwin({
+					profileTwin: twinLabel(profileTwin),
+					twin: twinLabel(twin)
+				})
 			});
 
 		if (!distinct.includes(entry.id)) {
@@ -204,7 +208,11 @@ export function flagNotation(
 					to: head.to,
 					text: head.text,
 					reason: 'no-slot',
-					message: `No slot for ${entry.displayName} — a team holds ${TEAM_SIZE}, and this is character ${distinct.length}.`
+					message: m.planner_no_slot_for_displayname_a_team_holds({
+						name: entry.displayName,
+						size: TEAM_SIZE,
+						n: distinct.length
+					})
 				});
 			}
 		}
@@ -224,8 +232,8 @@ export function flagNotation(
 				reason: 'unsupported-token',
 				message:
 					entry.id === 'blank'
-						? `A bar length goes right after Blank's E or Q.`
-						: `Only Blank takes a bar length. ${entry.displayName}'s bars follow the kit.`
+						? m.planner_a_bar_length_goes_right_after_blank_s_e()
+						: m.planner_only_blank_takes_a_bar_length({ name: entry.displayName })
 			});
 		}
 
@@ -241,7 +249,7 @@ export function flagNotation(
 					to: tok.to,
 					text: tok.text,
 					reason: 'unsupported-token',
-					message: `F is the finisher of a spinning Charged Attack — ${entry.displayName}'s doesn't spin.`
+					message: m.planner_f_is_the_finisher_of_a_spinning_charged({ name: entry.displayName })
 				});
 				continue;
 			}
@@ -255,7 +263,11 @@ export function flagNotation(
 					to: tok.to,
 					text: tok.text,
 					reason: 'unsupported-token',
-					message: `Only a bow can take an aimed shot — ${entry.displayName} wields a ${entry.weapon ?? 'melee weapon'}.`
+					// One whole sentence per weapon type (`weapon` selects it).
+					message: m.planner_only_a_bow_can_take_an_aimed_shot({
+						name: entry.displayName,
+						weapon: entry.weapon ?? 'unknown'
+					})
 				});
 				continue;
 			}
@@ -270,7 +282,7 @@ export function flagNotation(
 					to: tok.to,
 					text: tok.text,
 					reason: 'approximate-cast',
-					message: `${entry.displayName}'s plunge isn't measured yet — drawn with generic timing.`
+					message: m.planner_displayname_s_plunge_isn_t_measured_yet({ name: entry.displayName })
 				});
 				continue;
 			}
@@ -294,7 +306,7 @@ export function flagNotation(
 						to: tok.to,
 						text: tok.text,
 						reason: 'approximate-cast',
-						message: `${entry.displayName}'s charged attack isn't measured yet — drawn with generic timing.`
+						message: m.planner_displayname_s_charged_attack_isn_t({ name: entry.displayName })
 					});
 				} else if (tok.text.startsWith('s') && !entry.specialCharge) {
 					flags.push({
@@ -302,7 +314,7 @@ export function flagNotation(
 						to: tok.to,
 						text: tok.text,
 						reason: 'approximate-cast',
-						message: `${entry.displayName} has no special charged attack — timed as a plain C.`
+						message: m.planner_displayname_has_no_special_charged({ name: entry.displayName })
 					});
 				}
 				continue;

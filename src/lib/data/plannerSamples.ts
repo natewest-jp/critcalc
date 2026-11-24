@@ -38,6 +38,9 @@ export type PlannerSample = {
 	adapted?: boolean;
 };
 
+// Not messages: the sources' names are proper names, a sample's notation is
+// notation, and its name is stored in the tab's label ("Sample: …", which
+// `isMintedLabel` knows by its English).
 const PRYDWEN = (char: string): SampleSource => ({
 	name: 'Prydwen',
 	url: `https://www.prydwen.gg/genshin-impact/characters/${char}`

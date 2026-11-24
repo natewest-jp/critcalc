@@ -26,6 +26,7 @@
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveResonances, type Resonance } from '$lib/utils/resonance';
+	import { m } from '$lib/paraglide/messages';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import type { CharacterData } from '$lib/types/character';
@@ -168,7 +169,7 @@
 		if (t?.kind !== 'bonus') return null;
 		for (const res of resonance.active)
 			if (resKey(res) === t.key)
-				return { sourceLabel: `${res.label} — Resonance`, effects: res.rows };
+				return { sourceLabel: m.bench_label_resonance({ label: res.label }), effects: res.rows };
 		for (const [ci, bonuses] of permanentByChar.entries()) {
 			const owner = chars[ci];
 			if (!owner) continue;
@@ -215,7 +216,7 @@
 	function showResonanceTooltip(e: MouseEvent, res: Resonance) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		tooltip = {
-			sourceLabel: `${res.label} — Resonance`,
+			sourceLabel: m.bench_label_resonance({ label: res.label }),
 			effects: res.rows,
 			x: rect.left + rect.width / 2,
 			anchorTop: rect.top,
@@ -249,7 +250,7 @@
 
 {#if visible}
 	<div class="team-bonuses">
-		<span class="tb-key">Always-on buffs</span>
+		<span class="tb-key">{m.bench_always_on_buffs()}</span>
 		<div class="tb-flow">
 			{#each resonance.active as res (res.key)}
 				<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
@@ -266,6 +267,8 @@
 					{/if}{res.label}</span
 				>
 			{/each}
+			<!-- TODO: data gap — the game's localized names for these two bonuses
+			     (genshin-db), so they stay English until that lookup exists. -->
 			{#if comp.hasAscendantGleam}
 				<span class="faction-badge faction-badge--moonsign">Moonsign: Ascendant Gleam</span>
 			{/if}

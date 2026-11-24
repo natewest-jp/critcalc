@@ -45,6 +45,7 @@
 		measureCtx ??= document.createElement('canvas').getContext('2d');
 		if (!measureCtx) return 0;
 		const cs = getComputedStyle(el);
+		// A CSS font shorthand, not text.
 		measureCtx.font = `${cs.fontWeight} ${CC_NAME_FS}px ${cs.fontFamily}`;
 		const w = Math.ceil(measureCtx.measureText(name).width);
 		nameWidths[name] = w;
@@ -63,6 +64,7 @@
 </script>
 
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	/**
 	 * THE CHARACTER CARD — the Team Builder's grid tile (lineups design §11.6,
 	 * the card round 2026-10-11; designed on /lab/cards, concept E, ⚓ Nate).
@@ -224,7 +226,9 @@
 				>
 			{/if}
 			{#if chip !== null}
-				<span class="cc-chip" title={`You own C${chip}`}><ConMark level={chip} height={8} /></span>
+				<span class="cc-chip" title={m.tb_you_own_c_chip({ chip })}
+					><ConMark level={chip} height={8} /></span
+				>
 			{/if}
 		</span>
 		<span class="cc-glyphs ctx-glass">
@@ -235,10 +239,7 @@
 			{/each}
 			{#if hidden > 0}
 				<!-- The rest are in the character's details (the magnifier). -->
-				<span
-					class="cc-g cc-more"
-					title={`${hidden} more ${hidden === 1 ? 'capability' : 'capabilities'}`}>+{hidden}</span
-				>
+				<span class="cc-g cc-more" title={m.tb_hidden_more_x({ count: hidden })}>+{hidden}</span>
 			{/if}
 		</span>
 		<span class="cc-name ctx-light" bind:this={nameEl} style:--cc-name-w={nameW || undefined}
@@ -247,8 +248,8 @@
 	</button>
 	<button
 		class="cc-mag"
-		aria-label={`${entry.displayName}'s details`}
-		title={`${entry.displayName}'s details`}
+		aria-label={m.tb_displayname_s_details({ name: entry.displayName })}
+		title={m.tb_displayname_s_details({ name: entry.displayName })}
 		onclick={() => onDetails(entry.id)}><Mark name="search" size={14} /></button
 	>
 	{#if frame}

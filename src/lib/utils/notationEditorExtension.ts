@@ -49,6 +49,7 @@ import { resolveActionElement, type NormalActionKind } from './actionElement';
 import type { Element } from '$lib/types/ability';
 import type { WeaponType } from '$lib/types/weapon';
 import type { NotationTint } from '$lib/timeline/notationTints';
+import { m } from '$lib/paraglide/messages';
 
 // ---------------------------------------------------------------------------
 // Token → CSS class map
@@ -631,7 +632,7 @@ export function buildNotationExtensions(
 	onChange: (value: string) => void,
 	/** The empty-state hint; `null` when the caller draws its own (the
 	 *  planner's names the seated team — notationSeats.seatHint). */
-	hint: string | null = 'Type a rotation in KQM notation'
+	hint: string | null = m.planner_type_a_rotation_in_kqm_notation()
 ): Extension[] {
 	return [
 		history(),
@@ -664,7 +665,7 @@ export function buildNotationExtensions(
 		// ↻ Said, not silent (notices round): a refused paste did nothing at all.
 		EditorState.changeFilter.of((tr) => {
 			if (tr.newDoc.length <= MAX_NOTATION_CHARS) return true;
-			notices.toast('warning', 'That’s longer than a rotation can be, so it wasn’t added.');
+			notices.toast('warning', m.planner_that_s_longer_than_a_rotation_can_be_so());
 			return false;
 		}),
 		EditorView.updateListener.of((update) => {

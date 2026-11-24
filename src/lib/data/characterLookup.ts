@@ -20,7 +20,8 @@ import { characterIndex } from './characterIndex.generated';
 const indexById = new Map<string, CharacterIndexEntry>();
 const idByDisplayName = new Map<string, string>(); // lowercase displayName -> id
 
-/** A twin's name as the game writes it. */
+/** A twin's name as the game writes it. Stays English: `travelerName` builds
+ *  notation from it (`Anemo Lumine`), which the parser reads back. */
 export const twinLabel = (twin: Twin): string => (twin === 'aether' ? 'Aether' : 'Lumine');
 
 /** A Traveler's notation name for a twin (`Anemo Lumine`), or the bare

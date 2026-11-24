@@ -39,6 +39,8 @@
 		ZOOM_STEP
 	} from '$lib/plannerView.svelte';
 	import { PLAYBACK_RATES, playback, rateLabel } from '$lib/playback/playback.svelte';
+	import Msg from '$lib/components/Msg.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to a shared module (bench-band round) so the bench
@@ -68,6 +70,7 @@
 		// roster — the planner never writes Layer 1, so a shared link can't stomp
 		// the recipient's own constellations. Loadout is likewise tab-scoped.
 		const importedCon = { ...shared.constellations };
+		// ⚠️ `isMintedLabel` (migrate.ts) knows this placeholder by its English: not a message.
 		const label = 'Shared rotation';
 		const doc = {
 			label,
@@ -79,7 +82,7 @@
 			tabCon: importedCon
 		};
 		// ⚓ A new document in Theorycraft (documentBar.receive).
-		db.receive(doc, 'Loaded shared rotation');
+		db.receive(doc, m.planner_loaded_shared_rotation());
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
@@ -161,7 +164,7 @@
 			// ⚠ Same rule as a shared link, one line away — `importTeam` had the
 			// identical clobber-the-active-tab bug, and two answers to "where does
 			// an incoming document go" is how they drift.
-			db.receive(rt.teamDocument(ids), 'Team loaded');
+			db.receive(rt.teamDocument(ids), m.planner_team_loaded());
 		} else notices.toast('warning', NO_TEAM_IN_LINK());
 	});
 
@@ -277,8 +280,8 @@
 	/** The aura's standing modelling limits — see the `auraLimits` snippet below
 	 *  for the sourcing rule that governs every line. */
 	const AURA_NOTES = [
-		'Target is one enemy with no permanent aura, and it never applies an element back at you.',
-		'A pip with a yellow ring has no measured gauge strength, so the rotation planner uses 1U for that hit.'
+		m.planner_target_is_one_enemy_with_no_permanent(),
+		m.planner_a_pip_with_a_yellow_ring_has_no_measured()
 	];
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
@@ -338,6 +341,8 @@
 	const shareAnswer = new ControlAnswer();
 </script>
 
+{#snippet totalKey(text: string)}<span class="rp-total-key">{text}</span>{/snippet}
+
 <!-- The Share actions, ONE list for the desktop plate and the phone ⋯. -->
 {#snippet shareItems(close: () => void, on: ControlAnswer | null)}
 	<button
@@ -347,7 +352,7 @@
 		onclick={() => {
 			close();
 			void db.shareLink().then((o) => sayOutcome(o, on));
-		}}><Mark name="link" /><span class="rp-fold-label">Copy link</span></button
+		}}><Mark name="link" /><span class="rp-fold-label">{m.planner_copy_link()}</span></button
 	>
 	{#if db.exporters}
 		<button
@@ -356,7 +361,9 @@
 			onclick={() => {
 				close();
 				void db.shareKqm().then((o) => sayOutcome(o, on));
-			}}><Mark name="copy" /><span class="rp-fold-label">Copy KQM notation</span></button
+			}}
+			><Mark name="copy" /><span class="rp-fold-label">{m.planner_copy_kqm_notation()}</span
+			></button
 		>
 		<button
 			class="band-menu-item"
@@ -364,7 +371,9 @@
 			onclick={() => {
 				close();
 				void db.sharePng('copy').then((o) => sayOutcome(o, on));
-			}}><Mark name="image" /><span class="rp-fold-label">Copy timeline image</span></button
+			}}
+			><Mark name="image" /><span class="rp-fold-label">{m.planner_copy_timeline_image()}</span
+			></button
 		>
 		<button
 			class="band-menu-item"
@@ -372,7 +381,9 @@
 			onclick={() => {
 				close();
 				void db.sharePng('download').then((o) => sayOutcome(o, on));
-			}}><Mark name="image" /><span class="rp-fold-label">Download timeline image</span></button
+			}}
+			><Mark name="image" /><span class="rp-fold-label">{m.planner_download_timeline_image()}</span
+			></button
 		>
 	{/if}
 {/snippet}
@@ -390,8 +401,8 @@
 			class:is-folded={benchFolded}
 			type="button"
 			aria-expanded={!benchFolded}
-			aria-label={benchFolded ? 'Show the bench' : 'Fold the bench'}
-			title={benchFolded ? 'Show the bench' : 'Fold the bench'}
+			aria-label={benchFolded ? m.planner_show_the_bench() : m.planner_fold_the_bench()}
+			title={benchFolded ? m.planner_show_the_bench() : m.planner_fold_the_bench()}
 			onclick={() => siteSettings.setShowBenchRow(benchFolded)}
 			><Mark name="chevron" size={12} /></button
 		>
@@ -456,7 +467,7 @@
 			     keeps its glass at full, same rule as its neighbours below.
 			     Loop and Laps: the cursor wraps at the end here (a rhythm aid);
 			     the Laps STREAM is Round B (docs/rounds/playback-round-plan.md §3). -->
-			<div class="rp-transport" role="group" aria-label="Playback">
+			<div class="rp-transport" role="group" aria-label={m.planner_playback()}>
 				<!-- REWIND (2026-09-30): back to the start — and while playing, go
 				     again from the top with the count-in, which is the only way to
 				     hear the beats again after a pause. Inert at the start, the
@@ -467,8 +478,8 @@
 					<button
 						class="btn btn--sm btn--icon rp-rewind"
 						type="button"
-						aria-label="Back to the start"
-						title="Back to the start (Home)"
+						aria-label={m.planner_back_to_the_start()}
+						title={m.planner_back_to_the_start_home()}
 						disabled={!playback.canRewind}
 						onclick={() => playback.rewind()}
 					>
@@ -479,8 +490,10 @@
 					class="btn btn--sm btn--icon rp-play"
 					type="button"
 					aria-pressed={playback.playing}
-					aria-label={playback.playing ? 'Pause' : 'Play the rotation'}
-					title={playback.playing ? 'Pause (Space)' : 'Play the rotation at game speed (Space)'}
+					aria-label={playback.playing ? m.planner_pause() : m.planner_play_the_rotation()}
+					title={playback.playing
+						? m.planner_pause_space()
+						: m.planner_play_the_rotation_at_game_speed_space()}
 					disabled={!playback.canPlay}
 					onclick={() => playback.toggle()}
 				>
@@ -503,10 +516,10 @@
 						class="btn btn--sm rp-speed"
 						class:is-active={playback.rate !== 1}
 						type="button"
-						aria-label="Playback speed {rateLabel(playback.rate)}"
-						title="Playback speed: {rateLabel(
-							playback.rate
-						)}. Slow down to learn a rotation; the count-in keeps its pace"
+						aria-label={m.planner_playback_speed_rate({ rate: rateLabel(playback.rate) })}
+						title={m.planner_playback_speed_rate_slow_down_to_learn_a({
+							rate: rateLabel(playback.rate)
+						})}
 						onclick={() => playback.cycleRate()}
 					>
 						{rateLabel(playback.rate)}
@@ -532,11 +545,11 @@
 						class:is-active={pv.repeat}
 						type="button"
 						aria-pressed={pv.repeat}
-						title="Draw the laps that follow: the rotation runs on past its end, cooldowns and buffs carried"
+						title={m.planner_draw_the_laps_that_follow_the_rotation()}
 						onclick={() => (pv.repeat = !pv.repeat)}
 					>
 						<Mark name="laps" />
-						<span class="rp-band-label">Laps</span>
+						<span class="rp-band-label">{m.planner_laps()}</span>
 					</button>
 				{/if}
 			</div>
@@ -557,14 +570,20 @@
 			     start zone, so the default `end` grew the panel leftward past
 			     the band and over the bench ribbon (864–1136, 2026-10-15). -->
 			<span class="rp-zoom-menu">
-				<BandMenu mark="zoomIn" label="Zoom" ariaLabel="Zoom" role="dialog" align="start">
+				<BandMenu
+					mark="zoomIn"
+					label={m.planner_zoom()}
+					ariaLabel={m.planner_zoom()}
+					role="dialog"
+					align="start"
+				>
 					{#snippet items()}
 						<div class="rp-zoom-panel">
 							<div class="rp-zoom-row">
 								<button
 									class="btn btn--sm btn--icon"
 									type="button"
-									aria-label="Zoom out"
+									aria-label={m.planner_zoom_out()}
 									disabled={pv.scale <= ZOOM_MIN}
 									onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" size={18} /></button
 								>
@@ -575,12 +594,12 @@
 									step={ZOOM_STEP}
 									bind:value={pv.scale}
 									class="slider rp-zoom-slider"
-									aria-label="Zoom"
+									aria-label={m.planner_zoom()}
 								/>
 								<button
 									class="btn btn--sm btn--icon"
 									type="button"
-									aria-label="Zoom in"
+									aria-label={m.planner_zoom_in()}
 									disabled={pv.scale >= ZOOM_MAX}
 									onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" size={18} /></button
 								>
@@ -591,7 +610,7 @@
 									class="btn btn--sm"
 									type="button"
 									disabled={pv.scale === restingZoom}
-									onclick={() => pv.reset()}>Reset</button
+									onclick={() => pv.reset()}>{m.planner_reset()}</button
 								>
 							</div>
 						</div>
@@ -628,8 +647,12 @@
 			<span class="rp-total-group">
 				{#if pv.totalDuration > 0}
 					<span class="rp-total">
-						<span class="rp-total-key">Total</span>
-						{Math.round(pv.totalDuration * 10) / 10}s
+						<Msg
+							parts={m.planner_total_x_s.parts({
+								seconds: Math.round(pv.totalDuration * 10) / 10
+							})}
+							tags={{ key: totalKey }}
+						/>
 					</span>
 				{/if}
 				<!-- ⚓ Phase 2e (§5.3, §12 Q20; Nate 2026-10-22): Human timing left the
@@ -643,10 +666,10 @@
 					class:is-on={$siteSettings.humanTiming}
 					type="button"
 					aria-pressed={$siteSettings.humanTiming}
-					aria-label="Human timing"
+					aria-label={m.planner_human_timing()}
 					title={$siteSettings.humanTiming
-						? 'Human timing is on: the Total includes the pauses a person takes. Turn it off for frame-perfect timing.'
-						: 'Frame-perfect timing. Turn Human timing on to include the pauses a person takes (set it up in Settings).'}
+						? m.planner_human_timing_is_on_the_total_includes()
+						: m.planner_frame_perfect_timing_turn_human_timing()}
 					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
 					><Mark name={$siteSettings.humanTiming ? 'hand' : 'handOff'} size={14} /></button
 				>
@@ -692,32 +715,32 @@
 			     ignored (`benchRowHidden`). Not rendered before hydration either:
 			     the flags attach in onMount, so first paint is the default. -->
 			<div class="rp-layers">
-				<div class="rp-layers" role="group" aria-label="Timeline layers">
+				<div class="rp-layers" role="group" aria-label={m.planner_timeline_layers()}>
 					<button
 						class="btn btn--sm"
 						class:is-active={$siteSettings.showTimelineBuffs}
 						type="button"
 						aria-pressed={$siteSettings.showTimelineBuffs}
-						title="Draw buff bars, weapon procs, always-on buffs, Nightsoul bursts and Ascendant Gleam"
+						title={m.planner_draw_buff_bars_weapon_procs_always_on()}
 						onclick={() =>
 							siteSettings.setTimelineLayers({
 								showTimelineBuffs: !$siteSettings.showTimelineBuffs
 							})}
 					>
 						<Mark name="buff" />
-						<span class="rp-band-label">Buffs</span>
+						<span class="rp-band-label">{m.planner_buffs()}</span>
 					</button>
 					<button
 						class="btn btn--sm"
 						class:is-active={$siteSettings.showAuraLane}
 						type="button"
 						aria-pressed={$siteSettings.showAuraLane}
-						title="Draw the target's elemental gauge, with applications and reactions"
+						title={m.planner_draw_the_target_s_elemental_gauge_with()}
 						onclick={() =>
 							siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
 					>
 						<Mark name="aura" />
-						<span class="rp-band-label">Auras</span>
+						<span class="rp-band-label">{m.planner_auras()}</span>
 					</button>
 				</div>
 			</div>
@@ -727,7 +750,7 @@
 				<BandMenu
 					compact
 					mark="more"
-					ariaLabel="Playback, timing and panels"
+					ariaLabel={m.planner_playback_timing_and_panels()}
 					dot={playback.rate !== 1 || pv.repeat || pv.showLog || pv.showInspector}
 				>
 					{#snippet items(close)}
@@ -741,10 +764,10 @@
 							}}
 						>
 							<Mark name="rewind" filled />
-							<span class="rp-fold-label">Back to the start</span>
+							<span class="rp-fold-label">{m.planner_back_to_the_start()}</span>
 						</button>
 						<div class="band-menu-rule"></div>
-						<div class="rp-fold-head" aria-hidden="true">Speed</div>
+						<div class="rp-fold-head" aria-hidden="true">{m.planner_speed()}</div>
 						{#each PLAYBACK_RATES as rate (rate)}
 							<button
 								class="band-menu-item"
@@ -772,7 +795,7 @@
 							}}
 						>
 							<Mark name="laps" />
-							<span class="rp-fold-label">Laps</span>
+							<span class="rp-fold-label">{m.planner_laps()}</span>
 							<span class="rp-fold-check"
 								>{#if pv.repeat}<Mark name="check" size={12} />{/if}</span
 							>
@@ -788,7 +811,7 @@
 							}}
 						>
 							<Mark name="hand" />
-							<span class="rp-fold-label">Human timing</span>
+							<span class="rp-fold-label">{m.planner_human_timing()}</span>
 							<span class="rp-fold-check"
 								>{#if $siteSettings.humanTiming}<Mark name="check" size={12} />{/if}</span
 							>
@@ -804,7 +827,7 @@
 							}}
 						>
 							<Mark name="log" />
-							<span class="rp-fold-label">Log</span>
+							<span class="rp-fold-label">{m.planner_log()}</span>
 							<span class="rp-fold-check"
 								>{#if pv.showLog}<Mark name="check" size={12} />{/if}</span
 							>
@@ -818,13 +841,13 @@
 							}}
 						>
 							<Mark name="search" />
-							<span class="rp-fold-label">Inspector</span>
+							<span class="rp-fold-label">{m.planner_inspector()}</span>
 							<span class="rp-fold-check"
 								>{#if pv.showInspector}<Mark name="check" size={12} />{/if}</span
 							>
 						</button>
 						<div class="band-menu-rule"></div>
-						<div class="rp-fold-head" aria-hidden="true">Share</div>
+						<div class="rp-fold-head" aria-hidden="true">{m.planner_share()}</div>
 						{@render shareItems(close, null)}
 					{/snippet}
 				</BandMenu>
@@ -842,13 +865,13 @@
 					class="btn btn--sm rp-notes-btn"
 					class:is-active={pv.showLog}
 					type="button"
-					aria-label="Toggle the aura log"
-					title="The target's aura, application by application"
+					aria-label={m.planner_toggle_the_aura_log()}
+					title={m.planner_the_target_s_aura_application_by()}
 					disabled={!pv.hasAuraLog}
 					onclick={() => pv.togglePanel('log')}
 				>
 					<Mark name="log" />
-					<span class="rp-band-label">Log</span>
+					<span class="rp-band-label">{m.planner_log()}</span>
 				</button>
 				<!-- ⚓ THE INSPECTOR (inspector round, 2026-10-23): what Notes became.
 				     ⛔ Never disabled — its team page always has the team, which is
@@ -859,11 +882,11 @@
 					class:is-active={pv.showInspector}
 					type="button"
 					aria-pressed={pv.showInspector}
-					title="The team, and anything you click on the timeline or the bench"
+					title={m.planner_the_team_and_anything_you_click_on_the()}
 					onclick={() => pv.togglePanel('inspector')}
 				>
 					<Mark name="search" />
-					<span class="rp-band-label">Inspector</span>
+					<span class="rp-band-label">{m.planner_inspector()}</span>
 				</button>
 			{/if}
 			{#if !bandFolded}
@@ -875,8 +898,8 @@
 				<BandMenu
 					size="sm"
 					mark={shareAnswer.now ? (shareAnswer.now.ok ? 'check' : 'warn') : 'share'}
-					label={shareAnswer.now?.short ?? 'Share'}
-					ariaLabel="Share this rotation"
+					label={shareAnswer.now?.short ?? m.planner_share()}
+					ariaLabel={m.planner_share_this_rotation()}
 					disabled={!db.hasContent}
 				>
 					{#snippet items(close)}
@@ -903,7 +926,7 @@
 				aside={showAside ? asideColumn : undefined}
 				asideSticky
 				sheet={below('toolMin')}
-				asideTitle={pv.showLog ? 'Aura log' : 'Inspector'}
+				asideTitle={pv.showLog ? m.planner_aura_log() : m.planner_inspector()}
 				asideWidth={pv.showInspector ? 'var(--rp-inspector-w)' : undefined}
 				onCloseAside={() => (pv.aside = null)}
 			/>
@@ -945,14 +968,14 @@
 		     column is one continuous reading and a 22px sticky bar over a
 		     several-hundred-row transcript costs more than it explains. -->
 		<div class="rp-log-panel">
-			<div class="rp-log-head">Aura log</div>
+			<div class="rp-log-head">{m.planner_aura_log()}</div>
 			<!-- ⚓ THE TWO CHANNELS ARE SCALARS IN SECONDS, both brokered by
 			     plannerView — see its note. `hover` lights the rows the chart's
 			     cursor stands on; `onHover` drives the chart's own crosshair from
 			     here; `onSeek` scrolls the timeline to the instant a row names. -->
 			<EventLog
 				rows={pv.auraLog}
-				empty="This rotation puts nothing on the target."
+				empty={m.planner_this_rotation_puts_nothing_on_the_target()}
 				lead={auraLimits}
 				hover={pv.auraHover}
 				onHover={(seconds) => (pv.logHover = seconds)}

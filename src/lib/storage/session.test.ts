@@ -192,7 +192,10 @@ beforeEach(async () => {
 	db = await seed();
 });
 
-describe('two tabs, one store', () => {
+// Each `tab()` re-imports the session's module graph (`vi.resetModules`), and that
+// graph includes the message catalog, so a test here can take seconds under a full
+// parallel run. A timed-out test keeps writing to the shared store into the next one.
+describe('two tabs, one store', { timeout: 20_000 }, () => {
 	it('a delete in tab B is not undone by tab A; A moves off it', async () => {
 		const A = await tab();
 		const B = await tab();

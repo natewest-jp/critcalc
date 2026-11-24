@@ -15,40 +15,46 @@ import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
 import type { Reaction, Stat, State } from '$lib/types/ability';
 import { BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
 import { REACTION_LABEL } from '$lib/utils/auraDisplay';
+import { labels } from '$lib/i18n/labels';
+import { m } from '$lib/paraglide/messages';
 
-export const KIND_LABEL: Record<CapabilityKind, string> = {
-	heal: 'Heal',
-	shield: 'Shield',
-	offFieldDamage: 'Off-field DMG',
-	resShred: 'RES shred',
-	cleanse: 'Cleanse',
-	grouping: 'Grouping',
-	buff: 'Buff',
-	energy: 'Energy',
-	infuse: 'Infusion',
-	summon: 'Summon',
-	taunt: 'Taunt'
-};
+export const KIND_LABEL: Record<CapabilityKind, string> = labels({
+	heal: m.tb_heal,
+	shield: m.tb_shield,
+	offFieldDamage: m.tb_off_field_dmg,
+	resShred: m.tb_res_shred,
+	cleanse: m.tb_cleanse,
+	grouping: m.tb_grouping,
+	buff: m.tb_buff,
+	energy: m.tb_energy,
+	infuse: m.tb_infusion,
+	summon: m.tb_summon,
+	taunt: m.tb_taunt
+});
 
 export const KIND_ORDER = Object.keys(KIND_LABEL) as CapabilityKind[];
 
-export const TARGET_LABEL: Record<string, string> = {
-	team: 'team-wide',
-	active: 'active character',
-	self: 'self only',
-	enemy: 'on enemies'
-};
+export const TARGET_LABEL: Record<string, string> = labels({
+	team: m.tb_team_wide,
+	active: m.tb_active_character,
+	self: m.tb_self_only,
+	enemy: m.tb_on_enemies
+});
 
 /** Shred-stat / element detail words that aren't plain capitalizations. */
-const DETAIL_WORD: Record<string, string> = {
-	def: 'DEF',
-	all: 'all elements'
-};
+const DETAIL_WORD: Record<string, string> = labels({
+	def: m.tb_def,
+	all: m.tb_all_elements
+});
 
 /** How off-field damage is delivered. */
 const OFF_FIELD_WORD: Record<string, string> = {
-	coordinatedAttack: 'coordinated attack',
-	summon: 'summon'
+	get coordinatedAttack() {
+		return m.tb_coordinated_attack();
+	},
+	get summon() {
+		return m.tb_summon_b52a();
+	}
 };
 
 /** Human label for a capability's `detail` — buff stats via the planner's
@@ -67,78 +73,78 @@ export function capDetailText(kind: CapabilityKind, detail: string): string {
  *  page — "during duringSummon" did, on Columbina's C6, until 2026-10-16.
  *  Keyed by the whole `State` union so a new member fails the type check
  *  rather than leaking. Each entry is a whole phrase (style guide §3.1). */
-const STATE_PHRASE: Record<State, string> = {
-	afterNormalAttack: 'after a Normal Attack',
-	afterSkill: 'after an Elemental Skill',
-	afterBurst: 'after an Elemental Burst',
-	afterDurationEnds: 'after the effect ends',
-	shielded: 'while shielded',
-	onField: 'while on field',
-	offField: 'while off-field',
-	duringSummon: 'while the summon is present',
-	nightsoulBlessing: "during Nightsoul's Blessing",
-	inStance: 'during the stance',
-	symphonyWindow: 'while Thunderous Symphony is ready',
-	apexDrive: 'during Apex Drive',
-	transmuting: 'during Essential Transmutation',
-	whiteForm: 'during Confirmation of Purity',
-	darkForm: 'during Denial of Darkness',
-	whiteDragon: 'while the Dragon of White Flame is present',
-	darkDragon: 'while the Dragon of Dark Decay is present',
-	codaWindow: "while Adagio: Coda at Dawn's Tolling is ready",
-	soloDanceDouble: 'while the Solo Dance Double is present',
-	searingRing: 'while the Ring of Searing Radiance is present',
-	charmAbsorbed: 'after an Elemental Absorption',
-	pneuma: 'in Pneuma alignment',
-	spiritEnvoy: 'during Spirit Envoy Metamorphosis',
-	envoyCooldown: 'while Spirit Envoy is on cooldown',
-	followUpStrike: 'during Follow-Up Strike',
-	orioleSong: "during Haunted Night's Oriole-Song",
-	flamestrider: 'while on the Flamestrider'
-};
+const STATE_PHRASE: Record<State, string> = labels({
+	afterNormalAttack: m.tb_after_a_normal_attack,
+	afterSkill: m.tb_after_an_elemental_skill,
+	afterBurst: m.tb_after_an_elemental_burst,
+	afterDurationEnds: m.tb_after_the_effect_ends,
+	shielded: m.tb_while_shielded,
+	onField: m.tb_while_on_field,
+	offField: m.tb_while_off_field,
+	duringSummon: m.tb_while_the_summon_is_present,
+	nightsoulBlessing: m.tb_during_nightsoul_s_blessing,
+	inStance: m.tb_during_the_stance,
+	symphonyWindow: m.tb_while_thunderous_symphony_is_ready,
+	apexDrive: m.tb_during_apex_drive,
+	transmuting: m.tb_during_essential_transmutation,
+	whiteForm: m.tb_during_confirmation_of_purity,
+	darkForm: m.tb_during_denial_of_darkness,
+	whiteDragon: m.tb_while_the_dragon_of_white_flame_is,
+	darkDragon: m.tb_while_the_dragon_of_dark_decay_is,
+	codaWindow: m.tb_while_adagio_coda_at_dawn_s_tolling_is_3465,
+	soloDanceDouble: m.tb_while_the_solo_dance_double_is_present,
+	searingRing: m.tb_while_the_ring_of_searing_radiance_is,
+	charmAbsorbed: m.tb_after_an_elemental_absorption,
+	pneuma: m.tb_in_pneuma_alignment,
+	spiritEnvoy: m.tb_during_spirit_envoy_metamorphosis,
+	envoyCooldown: m.tb_while_spirit_envoy_is_on_cooldown,
+	followUpStrike: m.tb_during_follow_up_strike,
+	orioleSong: m.tb_during_haunted_night_s_oriole_song,
+	flamestrider: m.tb_while_on_the_flamestrider
+});
 
 /** The negated forms the data actually authors (`not` around a state). A
  *  state with no entry falls back to a phrase that is vague but never wrong —
  *  ⛔ never the positive phrase, which says the opposite. */
-const NOT_STATE_PHRASE: Partial<Record<State, string>> = {
-	inStance: 'outside the stance',
-	nightsoulBlessing: "outside Nightsoul's Blessing",
-	codaWindow: "while Adagio: Coda at Dawn's Tolling is not ready",
-	soloDanceDouble: 'while no Solo Dance Double is present'
-};
+const NOT_STATE_PHRASE: Partial<Record<State, string>> = labels({
+	inStance: m.tb_outside_the_stance,
+	nightsoulBlessing: m.tb_outside_nightsoul_s_blessing,
+	codaWindow: m.tb_while_adagio_coda_at_dawn_s_tolling_is_c9ba,
+	soloDanceDouble: m.tb_while_no_solo_dance_double_is_present
+});
 
 export function caveatText(caveat: string): string {
 	const [key, arg] = caveat.split(':');
 	switch (key) {
 		case 'state':
-			return STATE_PHRASE[arg as State] ?? 'depends on a character state';
+			return STATE_PHRASE[arg as State] ?? m.tb_depends_on_a_character_state();
 		case 'notState':
-			return NOT_STATE_PHRASE[arg as State] ?? 'depends on a character state';
+			return NOT_STATE_PHRASE[arg as State] ?? m.tb_depends_on_a_character_state();
 		case 'needsEnabler':
-			return `needs a ${REACTION_LABEL[arg as Reaction] ?? arg} enabler`;
+			return m.tb_needs_a_arg_enabler({ reaction: REACTION_LABEL[arg as Reaction] ?? arg });
 		case 'needsField':
-			return 'inside the Polestar Field';
+			return m.tb_inside_the_polestar_field();
 		case 'stacks':
-			return `needs ${arg} stacks`;
+			return m.tb_needs_arg_stacks({ stack: arg });
 		case 'teamFaction':
-			return `needs ${arg} teammates`;
+			return m.tb_needs_arg_teammates({ faction: arg });
 		case 'teamElements':
-			return 'depends on team elements';
+			return m.tb_depends_on_team_elements();
 		case 'activeIs':
-			return `when active character is ${arg}`;
+			return m.tb_when_active_character_is_arg({ faction: arg });
 		case 'enemyHp':
-			return 'depends on enemy HP';
+			return m.tb_depends_on_enemy_hp();
 		case 'selfHp':
-			return 'depends on own HP';
+			return m.tb_depends_on_own_hp();
 		case 'recipientHp':
-			return 'depends on recipient HP';
+			return m.tb_depends_on_recipient_hp();
 		case 'enemyAura':
-			return `vs ${arg}-affected enemies`;
+			return m.tb_vs_arg_affected_enemies({ element: arg });
 		case 'chainStage':
-			return 'at a specific cast in the chain';
+			return m.tb_at_a_specific_cast_in_the_chain();
 		case 'weaponType':
-			return 'weapon-type dependent';
+			return m.tb_weapon_type_dependent();
 		default:
-			return 'depends on the situation';
+			return m.tb_depends_on_the_situation();
 	}
 }

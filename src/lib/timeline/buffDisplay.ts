@@ -7,6 +7,8 @@
  * stay component-side with the rest of the presentation layer.
  */
 
+import { m } from '$lib/paraglide/messages';
+import { labels } from '$lib/i18n/labels';
 import type { Stat, BuffValue, Element } from '$lib/types/ability';
 
 export function isPctStat(stat: Stat): boolean {
@@ -43,13 +45,18 @@ export function formatBuffDisplayValue(
 	if (value.type === 'unknown') return value.description;
 	if (value.type === 'ramping') {
 		const capStr = value.cap != null ? ` → ${value.cap}%` : '';
-		return `+${value.startValue}%${capStr} (+${value.stepValue}%/${value.stepInterval}s)`;
+		return m.planner_startvalue_capstr_stepvalue_stepinterval({
+			start: value.startValue,
+			cap: capStr,
+			step: value.stepValue,
+			interval: value.stepInterval
+		});
 	}
 	if (value.type === 'decaying') {
 		const end = value.endValue ?? 0;
 		const startStr = pct ? `+${value.startValue}%` : `+${value.startValue}`;
 		const endStr = pct ? `${end}%` : `${end}`;
-		return `${startStr} → ${endStr} over duration`;
+		return m.planner_startstr_endstr_over_duration({ start: startStr, end: endStr });
 	}
 	if (value.type === 'perStack') {
 		const stacks = stackContext?.get(value.key);
@@ -58,7 +65,7 @@ export function formatBuffDisplayValue(
 			const adjusted = Math.max(0, raw - threshold);
 			return value.maxStacks != null ? Math.min(adjusted, value.maxStacks) : adjusted;
 		};
-		const overSuffix = threshold > 0 ? ` over ${threshold}` : '';
+		const overSuffix = threshold > 0 ? ` ${m.planner_over_threshold({ threshold })}` : '';
 		const capSuffix = value.cap != null ? ` (cap ${value.cap})` : '';
 		if (typeof value.per === 'object') {
 			const scalingLabel = scalingStatLabel(value.per.stat);
@@ -66,7 +73,12 @@ export function formatBuffDisplayValue(
 				const totalRatio = effectiveStacks(stacks) * value.per.ratio;
 				return `~${totalRatio}% ${scalingLabel}${capSuffix}`;
 			}
-			return `~${value.per.ratio}% ${scalingLabel}/stack${overSuffix}${capSuffix}`;
+			return m.planner_ratio_scalinglabel_stack_oversuffix({
+				ratio: value.per.ratio,
+				stat: scalingLabel,
+				over: overSuffix,
+				cap: capSuffix
+			});
 		}
 		if (stacks != null && stacks > threshold) {
 			const rawTotal = effectiveStacks(stacks) * value.per;
@@ -79,8 +91,8 @@ export function formatBuffDisplayValue(
 	if (value.type === 'perTeamCount') {
 		const unit =
 			'elements' in value.count
-				? `${value.count.elements.join('/')} ally`
-				: `${value.count.faction} member`;
+				? m.planner_x_ally({ elements: value.count.elements.join('/') })
+				: m.planner_faction_member({ faction: value.count.faction });
 		const capSuffix = value.cap != null ? ` (cap ${value.cap}${pct ? '%' : ''})` : '';
 		const perStr = pct ? `+${value.per}%` : `+${value.per}`;
 		return `${perStr}/${unit}${capSuffix}`;
@@ -93,7 +105,8 @@ export function formatBuffDisplayValue(
 	// see "above 1000" will read a buff the character does not have at low ATK —
 	// which is the whole reason these kits went unauthored before the field
 	// existed. It sits before the cap so the phrase reads as the kit states it.
-	const scalingOver = value.offset != null ? ` above ${value.offset}` : '';
+	const scalingOver =
+		value.offset != null ? ` ${m.planner_above_offset({ offset: value.offset })}` : '';
 	// ratio is in percentage points (see BuffValue.scaling JSDoc) — display
 	// directly as `~{ratio}% {stat}` without further scaling.
 	return `~${ratioNum}% ${scalingLabel}${scalingOver}${scalingCap}`;
@@ -116,25 +129,25 @@ export function formatBuffDisplayValue(
  *  Accepts the broader `Stat` union (the schema's `BuffValue.scaling.stat`
  *  is the generic Stat, not the narrower ScalingStat) so this can be used
  *  in both places. */
-const SCALING_STAT_LABEL: Partial<Record<Stat, string>> = {
-	atk: 'ATK',
-	'atk%': 'ATK',
-	baseAtk: 'base ATK',
-	hp: 'HP',
-	'hp%': 'HP',
-	def: 'DEF',
-	'def%': 'DEF',
-	em: 'EM',
+const SCALING_STAT_LABEL: Partial<Record<Stat, string>> = labels({
+	atk: m.planner_atk,
+	'atk%': m.planner_atk,
+	baseAtk: m.planner_base_atk,
+	hp: m.planner_hp,
+	'hp%': m.planner_hp,
+	def: m.planner_def,
+	'def%': m.planner_def,
+	em: m.planner_em,
 	// ⚠️ A MISSING ENTRY LEAKS THE RAW KEY. `scalingStatLabel` falls through to
 	// the Stat name, so an unlabelled stat renders "~40% energyRecharge above
 	// 100" instead of "~40% ER". Both of these were caught that way on their
 	// first render. ⚓ The invariant: EVERY stat the corpus scales on needs a
 	// row here. Census 2026-08-31 — atk, baseAtk, critRate, def, em,
 	// energyRecharge, healingBonus, hp — all eight are now present.
-	energyRecharge: 'ER',
-	critRate: 'CRIT Rate',
-	healingBonus: 'Healing Bonus'
-};
+	energyRecharge: m.planner_er,
+	critRate: m.planner_crit_rate,
+	healingBonus: m.planner_healing_bonus
+});
 
 export function scalingStatLabel(stat: Stat): string {
 	return SCALING_STAT_LABEL[stat] ?? stat;
@@ -149,6 +162,7 @@ export function scalingStatLabel(stat: Stat): string {
 export function resShredDisplayStat(element: Element | undefined, shredStat?: 'res' | 'def'): Stat {
 	if (shredStat === 'def') return 'def%';
 	if (element === 'physical') return 'physicalRes';
+	// A Stat key, not text.
 	if (element) return `${element}Res` as Stat;
 	return 'allElementalRes';
 }

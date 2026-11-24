@@ -4,6 +4,9 @@
 // spreadsheet export needs: stored and deflated entries, shared and inline
 // strings, numbers. No ZIP64, no encryption, no formulas evaluated.
 
+/** Why a file isn't a workbook we can read. Its message is for a developer:
+ *  the importer shows the player its own words (`readPaimonExport`), so the
+ *  messages stay in English. */
 export class XlsxError extends Error {}
 
 const EOCD = 0x06054b50;

@@ -126,6 +126,7 @@
 	import { playback } from '$lib/playback/playback.svelte';
 	import { cuesFor } from '$lib/playback/cues';
 	import { REPEAT_LAPS, repeatNotation } from '$lib/playback/repeat';
+	import { m } from '$lib/paraglide/messages';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -507,7 +508,7 @@
 	// element-qualified ("Anemo Traveler") so typed rotations can address a
 	// specific variant; only this label diverges. (Cryo landed 2026-08-31.)
 	function slotLabel(char: { id: string; displayName: string }): string {
-		return char.id.startsWith('traveler') ? 'Traveler' : char.displayName;
+		return char.id.startsWith('traveler') ? m.planner_traveler() : char.displayName;
 	}
 
 	/** Character id → the name a reader sees, for the aura log and the marker
@@ -1118,17 +1119,27 @@
 			(b) => b.end === run.start && b.endReason === 'consumed'
 		).length;
 		showTooltip(e, {
-			sourceLabel: `${row.label} · ${secondsLabel(run.start)}–${secondsLabel(run.end)}s`,
+			sourceLabel: m.planner_label_start_end_s({
+				label: row.label,
+				start: secondsLabel(run.start),
+				end: secondsLabel(run.end)
+			}),
 			effects: [
 				{
-					stat: row.capacity > 1 ? 'On the field' : 'Standing',
+					stat: row.capacity > 1 ? m.planner_on_the_field() : m.planner_standing(),
+					// A bare number of seconds keeps its unit as written in every locale.
 					displayValue:
 						row.capacity > 1
 							? `${run.count} ${run.count === 1 ? 'core' : 'cores'}`
 							: `${((run.end - run.start) / FPS).toFixed(2)}s`
 				},
 				...(consumedHere > 0
-					? [{ stat: 'Just now', displayValue: `${consumedHere} consumed by a reaction` }]
+					? [
+							{
+								stat: m.planner_just_now(),
+								displayValue: m.planner_consumedhere_consumed_by_a_reaction({ count: consumedHere })
+							}
+						]
 					: [])
 			],
 			isMutuallyExclusive: false
@@ -1142,7 +1153,7 @@
 		const first = spawn.bars[0];
 		const ends = new Set(spawn.bars.map((b) => b.end));
 		showTooltip(e, {
-			sourceLabel: `${row.label} · ${secondsLabel(spawn.time)}s`,
+			sourceLabel: m.planner_label_time_s({ label: row.label, seconds: secondsLabel(spawn.time) }),
 			effects: [
 				// ⚠ A group's lives can END at different instants even though they
 				// began together (one eaten, the rest expiring), so the duration is
@@ -1150,28 +1161,34 @@
 				...(ends.size === 1
 					? [
 							{
-								stat: 'On the field',
+								stat: m.planner_on_the_field(),
+								// A bare number of seconds keeps its unit as written in every locale.
 								displayValue: `${((first.end - spawn.time) / FPS).toFixed(2)}s`
 							}
 						]
 					: []),
 				...(spawn.bars.length > 1
-					? [{ stat: 'Spawned', displayValue: `${spawn.bars.length} at once` }]
+					? [
+							{
+								stat: m.planner_spawned(),
+								displayValue: m.planner_length_at_once({ count: spawn.bars.length })
+							}
+						]
 					: []),
 				...(row.capacity > 1
 					? [
 							{
-								stat: 'Alongside',
-								displayValue: `${
-									row.bars.filter((b) => b.start <= spawn.time && b.end > spawn.time).length
-								} live`
+								stat: m.planner_alongside(),
+								displayValue: m.planner_length_live({
+									count: row.bars.filter((b) => b.start <= spawn.time && b.end > spawn.time).length
+								})
 							}
 						]
 					: []),
 				...(spawn.bars.some((b) => b.endReason === 'consumed')
-					? [{ stat: 'Ends', displayValue: 'consumed by a reaction' }]
+					? [{ stat: m.planner_ends(), displayValue: m.planner_consumed_by_a_reaction() }]
 					: spawn.bars.some((b) => b.endReason === 'popped')
-						? [{ stat: 'Ends', displayValue: 'pushed out by a newer core' }]
+						? [{ stat: m.planner_ends(), displayValue: m.planner_pushed_out_by_a_newer_core() }]
 						: [])
 			],
 			isMutuallyExclusive: false
@@ -1277,22 +1294,17 @@
 	/** The padding sliver's tooltip — names the pixel: how long, and what it
 	 *  followed. A swap's pad is the wait for the incoming character to appear. */
 	function padTitle(block: InputBlock): string {
-		const f = block.duration;
-		const s = (f / FPS).toFixed(2);
-		const after: Record<NonNullable<InputBlock['padAfter']>, string> = {
-			normal: 'a normal attack',
-			charged: 'a charged attack',
-			plunge: 'a plunge',
-			skill: 'a skill',
-			burst: 'a burst',
-			dash: 'a dash',
-			jump: 'a jump',
-			swap: 'the swap'
-		};
-		const what = block.padAfter ? after[block.padAfter] : 'an action';
+		const frames = block.duration;
+		const seconds = (frames / FPS).toFixed(2);
+		// One whole sentence per action (`after` selects it), so a locale can
+		// put the action anywhere in its sentence.
 		return block.padAfter === 'swap'
-			? `Human timing: ${f} frames (${s}s) after the swap — nothing buffers until the new character appears.`
-			: `Human timing: ${f} frames (${s}s) after ${what}, before an input the game does not buffer.`;
+			? m.planner_human_timing_f_frames_s_s_after_the_swap({ frames, seconds })
+			: m.planner_human_timing_f_frames_s_s_after_what({
+					frames,
+					seconds,
+					after: block.padAfter ?? 'action'
+				});
 	}
 
 	// Group tracks by slot index for rendering character blocks
@@ -1621,15 +1633,15 @@
 		// ⚓ The footer says how the reader is timing it, in words (Nate 2026-10-16:
 		// the export is what the reader has set, no checkboxes) — so a padded
 		// rotation is never taken for a frame-perfect one.
-		const ping = `${$siteSettings.swapPing} ms swap ping`;
-		const pad = `${$siteSettings.humanTimingPadFrames}-frame padding`;
+		const ms = $siteSettings.swapPing;
+		const frames = $siteSettings.humanTimingPadFrames;
 		const timingNote = !$siteSettings.humanTiming
-			? `Frame-perfect · ${ping}`
+			? m.planner_frame_perfect_ping({ ms })
 			: $siteSettings.humanTimingMode === 'animations'
-				? `Human timing · full animations · ${ping}`
+				? m.planner_human_timing_full_animations_ping({ ms })
 				: $siteSettings.humanTimingMode === 'both'
-					? `Human timing · full animations and ${pad} · ${ping}`
-					: `Human timing · ${pad} · ${ping}`;
+					? m.planner_human_timing_full_animations_and_pad({ frames, ms })
+					: m.planner_human_timing_pad_ping({ frames, ms });
 		// The document's name as the top bar shows it: the player's, else the
 		// team's (§4.2), so an unnamed export still carries a title. An empty
 		// team has nothing to name.
@@ -1750,7 +1762,11 @@
 	async function runPng(mode: 'copy' | 'download'): Promise<Outcome> {
 		// A second click while one renders: said, rather than swallowed.
 		if (pngBusy)
-			return { ok: false, short: 'Still working', long: 'The image is still being made' };
+			return {
+				ok: false,
+				short: m.planner_still_working(),
+				long: m.planner_the_image_is_still_being_made()
+			};
 		pngBusy = true;
 		try {
 			// ⚓ THE EXPORT IS THE DOCUMENT (plan §3.3), never the Repeat stream.
@@ -1769,22 +1785,20 @@
 			const blob = await renderTimelinePng(snapshot);
 			const result = await deliverPng(blob, 'critcalc-rotation.png', mode);
 			pngBusy = false;
-			if (result === 'copied') return { ok: true, short: 'Copied', long: 'Image copied' };
+			if (result === 'copied')
+				return { ok: true, short: m.planner_copied(), long: m.planner_image_copied() };
 			// A refused clipboard (Safari) falls back to a download, which must
 			// not read as the copy having worked: a warning that stays to be read.
 			if (mode === 'copy') {
-				notices.toast('warning', 'Couldn’t copy the image, so it was downloaded instead');
-				return { ok: false, short: 'Downloaded', long: '' };
+				notices.toast('warning', m.planner_couldn_t_copy_the_image_so_it_was());
+				return { ok: false, short: m.planner_downloaded(), long: '' };
 			}
-			return { ok: true, short: 'Downloaded', long: 'Image downloaded' };
+			return { ok: true, short: m.planner_downloaded(), long: m.planner_image_downloaded() };
 		} catch (e) {
 			console.error('PNG export failed:', e);
 			pngBusy = false;
-			notices.toast(
-				'error',
-				'Couldn’t make the image. Try again, or report this if it keeps happening.'
-			);
-			return { ok: false, short: 'Failed', long: '' };
+			notices.toast('error', m.planner_couldn_t_make_the_image_try_again_or());
+			return { ok: false, short: m.planner_failed(), long: '' };
 		}
 	}
 
@@ -2521,7 +2535,10 @@
 					? bar.effects
 					: [
 							...bar.effects,
-							{ stat: 'Recorded hits', displayValue: `${bar.stacks} in the previous 4s` }
+							{
+								stat: m.planner_recorded_hits(),
+								displayValue: m.planner_stacks_in_the_previous_4s({ count: bar.stacks })
+							}
 						],
 			isMutuallyExclusive: false,
 			duration: bar.end - bar.start
@@ -2531,7 +2548,7 @@
 	function moonPayload(row: MoonRow, win: MoonRow['windows'][number]): TooltipPayload {
 		const msChar = slotCharacters[row.slotIdx];
 		return {
-			sourceLabel: `Ascendant Gleam — ${msChar?.displayName ?? '?'}`,
+			sourceLabel: m.planner_ascendant_gleam_x({ name: msChar?.displayName ?? '?' }),
 			effects: [moonsignScaling(msChar?.element)],
 			isMutuallyExclusive: false,
 			duration: win.duration
@@ -2636,7 +2653,8 @@
 			element: char?.element ?? '',
 			ability: ev.ability,
 			abilityName:
-				ability?.name ?? (ev.ability === 'skill' ? 'Elemental Skill' : 'Elemental Burst'),
+				ability?.name ??
+				(ev.ability === 'skill' ? m.planner_elemental_skill() : m.planner_elemental_burst()),
 			variantLabel: ev.variantLabel,
 			label: ev.label,
 			time: ev.time,
@@ -2745,8 +2763,11 @@
 		return {
 			sourceLabel:
 				marker.count > 1
-					? `Reaction · ${secondsLabel(marker.time)}–${secondsLabel(marker.endTime)}s`
-					: `Reaction · ${secondsLabel(marker.time)}s`,
+					? m.planner_reaction_time_endtime_s({
+							start: secondsLabel(marker.time),
+							end: secondsLabel(marker.endTime)
+						})
+					: m.planner_reaction_time_s({ seconds: secondsLabel(marker.time) }),
 			// ⚠ ONE ROW PER REACTION, built in the projection so the uniqueness is
 			// testable — see `auraMarkerRows` for the duplicate-key crash it closes.
 			effects: auraMarkerRows(
@@ -2775,6 +2796,7 @@
 		const rows: TooltipEffectRow[] = AURA_MOD_ORDER.filter((mod) => (present[mod] ?? 0) > 0.01).map(
 			(mod) => ({
 				stat: AURA_MOD_META[mod].label,
+				// A bare gauge in units: the U stays as written in every locale.
 				displayValue: `${(present[mod] ?? 0).toFixed(2)}U`
 			})
 		);
@@ -2804,11 +2826,12 @@
 		showTooltip(
 			e,
 			{
+				// A bare number of seconds keeps its unit as written in every locale.
 				sourceLabel: `${secondsLabel(frames)}s`,
 				// ⚠ An empty aura is a REAL answer here and the one the lane exists to
 				// show — a gap is where the next trigger has nothing to react with. It
 				// says so rather than showing an empty card.
-				effects: rows.length > 0 ? rows : [{ stat: 'No aura', displayValue: '—' }],
+				effects: rows.length > 0 ? rows : [{ stat: m.planner_no_aura(), displayValue: '—' }],
 				isMutuallyExclusive: false
 			},
 			true
@@ -2897,16 +2920,16 @@
 
 	function moonsignScaling(element: string | undefined): MergedEffectDisplay {
 		if (element === 'hydro') {
-			return { stat: 'lunarDmgBonus', displayValue: '+0.6% / 1,000 Max HP (cap 36%)' };
+			return { stat: 'lunarDmgBonus', displayValue: m.planner_0_6_1_000_max_hp_cap_36() };
 		}
 		if (element === 'geo') {
-			return { stat: 'lunarDmgBonus', displayValue: '+1% / 100 DEF (cap 36%)' };
+			return { stat: 'lunarDmgBonus', displayValue: m.planner_1_100_def_cap_36() };
 		}
 		if (element === 'anemo' || element === 'dendro') {
-			return { stat: 'lunarDmgBonus', displayValue: '+2.25% / 100 EM (cap 36%)' };
+			return { stat: 'lunarDmgBonus', displayValue: m.planner_2_25_100_em_cap_36() };
 		}
 		// pyro / electro / cryo
-		return { stat: 'lunarDmgBonus', displayValue: '+0.9% / 100 ATK (cap 36%)' };
+		return { stat: 'lunarDmgBonus', displayValue: m.planner_0_9_100_atk_cap_36() };
 	}
 
 	// Dismiss the tooltip whenever the bar-generating inputs change: a reactive
@@ -2965,6 +2988,7 @@
 					style:height="{AURA_PLOT_H}px"
 					aria-hidden="true"
 				>
+					<!-- A bare gauge in units: the U stays as written in every locale. -->
 					{#each auraUnitRules as u (u)}
 						<span class="rp-aura-unit-label" style:top="{auraYOf(u)}px">{u}U</span>
 					{/each}
@@ -3019,7 +3043,7 @@
 							     IR since P4 and drawn NOWHERE — the player saw the buff
 							     bars a reaction caused but never the reaction itself. -->
 								<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
-									<span class="rp-lane-name">Target aura</span>
+									<span class="rp-lane-name">{m.planner_target_aura()}</span>
 									{#each auraLane.markers as marker (marker.time)}
 										<!-- ⚓ A RUN IS ONE MARKER. A ticking reaction (Electro-Charged,
 										     Lunar-Charged, Burning) collapses into a single marker whose
@@ -3081,10 +3105,19 @@
 											onmouseenter={(e) => {
 												onAuraMarkEnter(tick.time);
 												showTooltip(e, {
-													sourceLabel: `${getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId} · ${secondsLabel(tick.time)}s`,
+													sourceLabel: m.planner_characterid_time_s({
+														name:
+															getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId,
+														seconds: secondsLabel(tick.time)
+													}),
 													effects: [
 														{
-															stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
+															// One whole label per element (`element` selects it).
+															stat: m.planner_x_x_applied({
+																element: tick.element,
+																name: `${tick.element[0].toUpperCase()}${tick.element.slice(1)}`
+															}),
+															// A bare gauge in units: the U stays as written.
 															displayValue: `${tick.units}U`
 														},
 														// ⚠️⚠️ WHAT THIS PILL IS STANDING IN FOR. Applications on
@@ -3097,8 +3130,10 @@
 														...(tick.sameFrame
 															? [
 																	{
-																		stat: 'On this frame',
-																		displayValue: `${tick.sameFrame} applications`
+																		stat: m.planner_on_this_frame(),
+																		displayValue: m.planner_sameframe_applications({
+																			count: tick.sameFrame
+																		})
 																	}
 																]
 															: []),
@@ -3109,8 +3144,8 @@
 														...(tick.provisional
 															? [
 																	{
-																		stat: 'Gauge strength',
-																		displayValue: 'not measured — 1U assumed'
+																		stat: m.planner_gauge_strength(),
+																		displayValue: m.planner_not_measured_1u_assumed()
 																	}
 																]
 															: [])
@@ -3267,6 +3302,7 @@
 														fill-opacity={GADGET_FILL_ALPHA}
 														stroke="none"
 													/>
+													<!-- (`r…` and `d…` below are each keys, not text.) -->
 													<!-- Hit areas for the state, one per run — the count is what a
 													     reader cannot get off a 3px step, so every run can be asked. -->
 													{#each row.runs as run, ri (`r${ri}`)}
@@ -3316,6 +3352,7 @@
 						<div class="rp-ruler" style:height="{RULER_H}px" onclick={seekFromRuler}>
 							{#each ticks as tick (tick.t)}
 								<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
+									<!-- A bare number of seconds keeps its unit as written. -->
 									{#if tick.major && tick.t > 0}
 										<span class="rp-tick-label">{tick.t}s</span>
 									{/if}
@@ -3482,6 +3519,7 @@
 														)}
 														{GHOST_FILL_MIX}%, transparent)"
 													>
+														<!-- A bare number of seconds keeps its unit as written. -->
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label">{secondsLabel(seg.cooldown ?? 0)}s</span
 															>
@@ -3672,6 +3710,7 @@
 														)}
 														{GHOST_FILL_MIX}%, transparent)"
 													>
+														<!-- A bare number of seconds keeps its unit as written. -->
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label">{secondsLabel(seg.cooldown ?? 0)}s</span
 															>
@@ -3723,7 +3762,7 @@
 												title={block.kind === 'pad'
 													? padTitle(block)
 													: isApprox && block.kind !== 'skill' && block.kind !== 'burst'
-														? 'No frame data yet — cast animations and normal attacks use generic timings.'
+														? m.planner_no_frame_data_yet_cast_animations_and()
 														: undefined}
 											>
 												{#each block.parts as part (part)}
@@ -3761,7 +3800,7 @@
 												<span
 													class="rp-buff-label"
 													style:max-width={labelCapPx(g, procRow.bars[bi + 1], false)}
-													>{procRow.label} trigger cooldown</span
+													>{m.planner_label_trigger_cooldown_169b({ label: procRow.label })}</span
 												>
 											</div>
 										{/each}
@@ -3831,7 +3870,7 @@
 						{#if showTeamBuffsLane}
 							<div class="rp-team-buffs" style:height="{teamBuffsH}px">
 								{#if teamBuffRows.length > 0}
-									<span class="rp-lane-name">Team buffs</span>
+									<span class="rp-lane-name">{m.planner_team_buffs()}</span>
 									<div class="rp-team-buff-rows">
 										{#each teamBuffRows as subrow (subrow.key)}
 											<div class="rp-team-buff-subrow">
@@ -3881,13 +3920,14 @@
 						<!-- NB (Nightsoul Burst) lane -->
 						{#if showNbLane}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
-								<span class="rp-lane-name">Nightsoul bursts</span>
+								<span class="rp-lane-name">{m.planner_nightsoul_bursts()}</span>
 								<div class="rp-nb-rows">
 									<div class="rp-nb-subrow">
 										{#each nbBars as ev, i (i)}
 											{@const cd = barGeom(ev.start, ev.cooldown)}
 											<div class="rp-nb-bar" style:left="{cd.left}px" style:width="{cd.width}px">
-												<span class="rp-bar-cast-label">NB</span>
+												<span class="rp-bar-cast-label">{m.planner_nb()}</span>
+												<!-- A bare number of seconds keeps its unit as written. -->
 												{#if cd.width > 40}
 													<span class="rp-bar-cd-label">{secondsLabel(ev.cooldown)}s</span>
 												{/if}
@@ -3901,7 +3941,7 @@
 						<!-- Moonsign lane -->
 						{#if showMoonsignLane}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
-								<span class="rp-lane-name">Ascendant Gleam</span>
+								<span class="rp-lane-name">{m.planner_ascendant_gleam()}</span>
 								<div class="rp-moonsign-rows">
 									{#each moonsignRows as row (row.slotIdx)}
 										{@const msChar = slotCharacters[row.slotIdx]}
@@ -3938,7 +3978,9 @@
 													<span
 														class="rp-buff-label"
 														style:max-width={labelCapPx(g, row.windows[wi + 1], !!LUNAR_ICON)}
-														>{msChar?.displayName} · Ascendant Gleam</span
+														>{m.planner_displayname_ascendant_gleam({
+															name: msChar?.displayName ?? ''
+														})}</span
 													>
 												</div>
 											{/each}
@@ -4076,15 +4118,22 @@
 			{@const held = rotationTabs.held}
 			<div class="rp-held" role="status">
 				<Mark name="locked" size={14} />
-				<span class="rp-held-text">Open in another tab, so this tab’s contents are locked</span>
-				<button class="btn btn--sm btn--primary" onclick={held.editHere}>Edit here</button>
+				<span class="rp-held-text">{m.planner_open_in_another_tab_so_this_tab_s()}</span>
+				<button class="btn btn--sm btn--primary" onclick={held.editHere}
+					>{m.planner_edit_here()}</button
+				>
 			</div>
 		{/if}
 		{#if dockOn && !dockOpen}
-			<button class="rp-dock-strip" type="button" aria-label="Edit the notation" onclick={openDock}>
+			<button
+				class="rp-dock-strip"
+				type="button"
+				aria-label={m.planner_edit_the_notation()}
+				onclick={openDock}
+			>
 				<span class="rp-dock-tail" class:rp-dock-tail--empty={!tailSpans.length}>
 					<!-- prettier-ignore -->
-					<bdi>{#if tailSpans.length}{#each tailSpans as sp, i (i)}<span class="rp-dock-{sp.kind}" style:color={sp.color}>{sp.text}</span>{/each}{:else}Type a rotation in KQM notation{/if}</bdi>
+					<bdi>{#if tailSpans.length}{#each tailSpans as sp, i (i)}<span class="rp-dock-{sp.kind}" style:color={sp.color}>{sp.text}</span>{/each}{:else}{m.planner_type_a_rotation_in_kqm_notation()}{/if}</bdi>
 				</span>
 				<Mark name="edit" />
 			</button>
@@ -4125,48 +4174,52 @@
 		     is the only thing tying the box to the instrument above it; controls
 		     in front of the box would indent the notation away from the tracks it
 		     describes. -->
-			<div class="rp-history rp-history--clear" role="group" aria-label="Notation history">
+			<div
+				class="rp-history rp-history--clear"
+				role="group"
+				aria-label={m.planner_notation_history()}
+			>
 				<button
 					class="btn btn--sm"
 					type="button"
-					aria-label="Undo the last notation change"
-					title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
+					aria-label={m.planner_undo_the_last_notation_change()}
+					title={isMac ? m.planner_undo_z() : m.planner_undo_ctrl_z()}
 					disabled={!canUndo}
 					onclick={() => {
 						editorApi?.undo();
 						historyTick++;
-					}}><Mark name="undo" /><span class="rp-history-word">Undo</span></button
+					}}><Mark name="undo" /><span class="rp-history-word">{m.planner_undo()}</span></button
 				>
 				<button
 					class="btn btn--sm"
 					type="button"
-					aria-label="Redo the last undone notation change"
-					title={isMac ? 'Redo (⌘⇧Z)' : 'Redo (Ctrl+Shift+Z)'}
+					aria-label={m.planner_redo_the_last_undone_notation_change()}
+					title={isMac ? m.planner_redo_z() : m.planner_redo_ctrl_shift_z()}
 					disabled={!canRedo}
 					onclick={() => {
 						editorApi?.redo();
 						historyTick++;
-					}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
+					}}><Mark name="redo" /><span class="rp-history-word">{m.planner_redo()}</span></button
 				>
 				<!-- ⚓ Phase 2e (Nate 2026-10-22): Clear beside its own undo, so a
 				     mistaken clear is one click back. -->
 				<button
 					class="btn btn--sm"
 					type="button"
-					aria-label="Clear this rotation"
-					title="Clear this rotation (Undo brings it back)"
+					aria-label={m.planner_clear_this_rotation()}
+					title={m.planner_clear_this_rotation_undo_brings_it_back()}
 					disabled={!rotationTabs.notation.trim() && rotationTabs.seats.every((s) => !s)}
 					onclick={() => {
 						rotationTabs.clearWithUndo();
 						historyTick++;
-					}}><Mark name="clear" /><span class="rp-history-word">Clear</span></button
+					}}><Mark name="clear" /><span class="rp-history-word">{m.planner_clear()}</span></button
 				>
 			</div>
 		</div>
 		{#if dockOn && dockOpen && dockKeys.length}
 			<!-- The key row. pointerdown is cancelled so a press never takes focus
 			     from the editor — the keyboard stays up. -->
-			<div class="rp-dock-keys" role="toolbar" aria-label="Notation keys">
+			<div class="rp-dock-keys" role="toolbar" aria-label={m.planner_notation_keys()}>
 				{#each dockKeys as key (key.label)}
 					<button
 						class="btn btn--sm rp-dock-key"

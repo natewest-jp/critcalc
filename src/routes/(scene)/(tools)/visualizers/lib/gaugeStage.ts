@@ -6,6 +6,7 @@
  */
 import { gaugesAt, type AuraKey, type SeriesInterval, type SimEvent } from '$lib/utils/gauge';
 import { AURA_MOD_META, AURA_MOD_ORDER } from '$lib/utils/auraDisplay';
+import { m } from '$lib/paraglide/messages';
 
 /** The auras on the target at `t`, in the display order. The dashed fuel is
  *  bookkeeping, not an aura, so it is left out. */
@@ -30,7 +31,8 @@ export function bareFrom(series: SeriesInterval[]): number | null {
 
 export type GaugeHead = { figure: string; sentence: string };
 
-/** Units at two places, so a figure keeps its width while you scrub. */
+/** Units at two places, so a figure keeps its width while you scrub. The
+ *  units (U, s) stay as they are in every language. */
 const fmtU = (u: number) => `${u.toFixed(2)}U`;
 const fmtT = (t: number) => `${t.toFixed(1)}s`;
 
@@ -48,14 +50,23 @@ export function gaugeHead(series: SeriesInterval[], t: number | null): GaugeHead
 	if (t === null) {
 		const end = bareFrom(series);
 		return end === null
-			? { figure: 'No aura', sentence: 'on the target' }
-			: { figure: 'No aura', sentence: `from ${fmtT(end)}` };
+			? { figure: m.vz_no_aura(), sentence: m.vz_on_the_target() }
+			: { figure: m.vz_no_aura(), sentence: m.vz_from_end({ time: fmtT(end) }) };
 	}
+	return headAt(series, t, t);
+}
+
+/** The headline at a moment, its time written as `shown`: the moment itself,
+ *  or for `widestHead` the latest time, where the sentence is widest. */
+function headAt(series: SeriesInterval[], t: number, shown: number): GaugeHead {
+	const time = fmtT(shown);
 	const [lead, ...rest] = aurasAt(series, t).sort((a, b) => b.u - a.u);
-	if (!lead) return { figure: 'No aura', sentence: `at ${fmtT(t)}` };
+	if (!lead) return { figure: m.vz_no_aura(), sentence: m.vz_at_t({ time }) };
 	return {
 		figure: auraText(lead),
-		sentence: rest.length ? `with ${rest.map(auraText).join(' · ')} at ${fmtT(t)}` : `at ${fmtT(t)}`
+		sentence: rest.length
+			? m.vz_with_x_at_t({ auras: rest.map(auraText).join(' · '), time })
+			: m.vz_at_t({ time })
 	};
 }
 
@@ -71,17 +82,16 @@ const SAMPLE_S = 0.05;
  * longer string is a wider one, near enough.
  */
 export function widestHead(series: SeriesInterval[], duration: number): GaugeHead {
-	let figure = 'No aura';
+	let figure: string = m.vz_no_aura();
 	let sentence = '';
 	const last = Math.max(duration, 10);
 	for (let t = 0; t <= duration; t += SAMPLE_S) {
 		// Read at the latest time, so the sentence's time is its widest.
-		const h = gaugeHead(series, t);
-		const s = h.sentence.replace(/at [\d.]+s$/, `at ${fmtT(last)}`);
+		const h = headAt(series, t, last);
 		if (h.figure.length > figure.length) figure = h.figure;
-		if (s.length > sentence.length) sentence = s;
+		if (h.sentence.length > sentence.length) sentence = h.sentence;
 	}
-	return { figure, sentence: sentence || `at ${fmtT(last)}` };
+	return { figure, sentence: sentence || m.vz_at_t({ time: fmtT(last) }) };
 }
 
 /** What a reaction took off each aura, for a label beside the curve's drop:

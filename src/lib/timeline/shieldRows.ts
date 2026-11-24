@@ -30,6 +30,7 @@
 
 import type { TimelineWindow } from '$lib/utils/notationParser';
 import type { SummonSubrow } from './types';
+import { m } from '$lib/paraglide/messages';
 
 type ShieldWindow = Extract<TimelineWindow, { kind: 'shield' }>;
 
@@ -39,7 +40,7 @@ type ShieldWindow = Extract<TimelineWindow, { kind: 'shield' }>;
  *  than the rule it started as. ⛔ Never invent a name to avoid it — a wrong
  *  one reads as fact, and the row's position already says whose shield it is
  *  and which cast raised it. */
-const SHIELD_LABEL = 'Shield';
+const shieldLabel = () => m.planner_shield();
 
 export function computeShieldSubrows(
 	windows: readonly TimelineWindow[],
@@ -62,7 +63,7 @@ export function computeShieldSubrows(
 		// own rule. A character shielding off both E and Q under one name keeps
 		// one row (the point of the original per-character grouping); two
 		// differently-named shields are two different things and get a row each.
-		const label = sw.label ?? SHIELD_LABEL;
+		const label = sw.label ?? shieldLabel();
 		const key = `${sw.characterId}::${label}`;
 		let row = rowMap.get(key);
 		if (!row) {

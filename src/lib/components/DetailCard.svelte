@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { siteSettings } from '$lib/stores';
@@ -81,16 +82,18 @@
 							class:is-active={teamState === 'in'}
 							disabled={teamState === 'full'}
 							onclick={() => onToggleTeam(id)}
-							title={teamState === 'full' ? 'All four team slots are filled' : undefined}
+							title={teamState === 'full' ? m.tb_all_four_team_slots_are_filled() : undefined}
 						>
 							<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
 							{teamState === 'in'
-								? 'In team — remove'
+								? m.tb_in_team_remove()
 								: teamState === 'elsewhere'
-									? `In ${elsewhereLabel ?? 'another team'} — remove`
+									? elsewhereLabel
+										? m.tb_in_elsewherelabel_remove({ team: elsewhereLabel })
+										: m.tb_in_another_team_remove()
 									: teamState === 'full'
-										? 'Team full'
-										: 'Add to team'}
+										? m.tb_team_full()
+										: m.tb_add_to_team()}
 						</button>
 					</div>
 				{/if}
@@ -124,7 +127,7 @@
 
 <!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): one
      shell for the Builder's three, a margin that closes it. -->
-<InspectModal label="{entry?.displayName ?? id} details" width="38rem" {onClose}>
+<InspectModal label={m.tb_id_details({ name: entry?.displayName ?? id })} width="38rem" {onClose}>
 	<div class="dc-im" style:--el-color={color}>{@render hero()}</div>
 </InspectModal>
 
