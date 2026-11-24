@@ -284,7 +284,7 @@ Both live in `src/lib/i18n/messages.test.ts`:
   line lunaris serves (`scripts/localize-endgame.mjs`). The text maps also settle a term
   genshin-db's Japanese lacks.
 - Ability, passive, and constellation names, and the kit notes in the character data, are still
-  English in every locale; they need their own pass (`docs/todo.md`).
+  English in every locale; they need their own pass (`docs/rounds/i18n-finishing-2026-11-24.md`).
 
 ---
 
