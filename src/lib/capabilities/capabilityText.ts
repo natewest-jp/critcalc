@@ -126,7 +126,7 @@ export function caveatText(caveat: string): string {
 		case 'needsField':
 			return m.tb_inside_the_polestar_field();
 		case 'stacks':
-			return m.tb_needs_arg_stacks({ stack: arg });
+			return m.tb_depends_on_stacks();
 		case 'teamFaction':
 			return m.tb_needs_arg_teammates({ faction: factionName(arg) });
 		case 'teamElements':
