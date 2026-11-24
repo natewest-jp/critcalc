@@ -5,119 +5,90 @@
 	 the project says what it is FOR — once, as a description (style guide
 	 §1.3). Credits name every source a help chapter cites. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
+	import Msg from '$lib/components/Msg.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
 
-<h1>About critcalc</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet builder(t: string)}<a href={hrefTo('/help/builder')}>{t}</a>{/snippet}
+{#snippet planner(t: string)}<a href={hrefTo('/help/planner')}>{t}</a>{/snippet}
+{#snippet visualizers(t: string)}<a href={hrefTo('/help/visualizers')}>{t}</a>{/snippet}
+{#snippet contribute(t: string)}<a href={hrefTo('/contribute')}>{t}</a>{/snippet}
+{#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
+	>{/snippet}
+{#snippet out(href: string, t: string)}<a {href} target="_blank" rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet gcsim(t: string)}{@render out('https://gcsim.app', t)}{/snippet}
+{#snippet kqm(t: string)}{@render out('https://keqingmains.com', t)}{/snippet}
+{#snippet genshindb(t: string)}{@render out('https://github.com/theBowja/genshin-db', t)}{/snippet}
+{#snippet fandom(t: string)}{@render out('https://genshin-impact.fandom.com', t)}{/snippet}
+{#snippet lunaris(t: string)}{@render out('https://lunaris.moe', t)}{/snippet}
+{#snippet stygian(t: string)}{@render out('https://www.stygian.moe', t)}{/snippet}
+{#snippet gganalysis(t: string)}{@render out('https://github.com/OneBST/GGanalysis', t)}{/snippet}
+{#snippet eodgamer(t: string)}{@render out('https://www.hoyolab.com/article/622264', t)}{/snippet}
+{#snippet github(t: string)}{@render out('https://github.com/natewest-jp/critcalc', t)}{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg
+		{parts}
+		tags={{
+			strong,
+			builder,
+			planner,
+			visualizers,
+			contribute,
+			coverage,
+			gcsim,
+			kqm,
+			genshindb,
+			fandom,
+			lunaris,
+			stygian,
+			gganalysis,
+			eodgamer,
+			github
+		}}
+	/>{/snippet}
 
-<p class="lede">
-	critcalc.app is three tools for Genshin Impact theorycrafting. Many of Genshin’s mechanics are
-	hard to picture in your head. critcalc’s tools were built by a player who wanted to see them drawn
-	out.
-</p>
+<h1>{m.about_about_critcalc()}</h1>
+
+<p class="lede">{m.about_critcalc_app_is_three_tools_for_genshin()}</p>
 
 <section>
-	<h2 id="tools">The tools</h2>
-	<p>
-		<strong>The team builder</strong> is a party setup screen for Stygian Onslaught, the Spiral
-		Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred,
-		buffs, and more), sourced from the kits at the constellations you own, and what switching out a
-		team member would cost or gain.
-		<a href={hrefTo('/help/builder')}>How it works</a>
-	</p>
-	<p>
-		<strong>The rotation planner</strong> turns a rotation written in KQM notation into a timeline
-		of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can
-		also practice a rotation by playing it back at game speed with audio cues.
-		<a href={hrefTo('/help/planner')}>How it works</a>
-	</p>
-	<p>
-		<strong>The visualizers</strong> are eight small instruments, each about one mechanic: crit,
-		elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds,
-		and wish odds. <a href={hrefTo('/help/visualizers')}>How they work</a>
-	</p>
+	<h2 id="tools">{m.about_the_tools()}</h2>
+	<p>{@render p(m.about_the_team_builder_is_a_party_setup_screen.parts())}</p>
+	<p>{@render p(m.about_the_rotation_planner_turns_a_rotation.parts())}</p>
+	<p>{@render p(m.about_the_visualizers_are_eight_small.parts())}</p>
 </section>
 
 <section>
-	<h2 id="data">Where the data comes from</h2>
-	<p>
-		Each character starts from genshin-db’s datamined kit and is then curated by hand. The effects,
-		their conditions, and their constellation gates are written from the kit text, and frame counts
-		are measured against gcsim wherever it has the character.
-	</p>
-	<p>
-		Curation is uneven, because some kits are much harder to model than others. Where a character
-		isn’t finished, the tools say so rather than guess, and the
-		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what the rotation
-		planner draws and what it leaves out.
-	</p>
+	<h2 id="data">{m.about_where_the_data_comes_from()}</h2>
+	<p>{m.about_each_character_starts_from_genshin_db_s()}</p>
+	<p>{@render p(m.about_curation_is_uneven_because_some_kits_are.parts())}</p>
 </section>
 
 <section>
-	<h2 id="who">Who makes it</h2>
-	<p>
-		critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans
-		heavily on what the community has measured. Corrections are welcome! The
-		<a href={hrefTo('/contribute')}>Contribute</a> page says how to help.
-	</p>
+	<h2 id="who">{m.about_who_makes_it()}</h2>
+	<p>{@render p(m.about_critcalc_is_nate_west_s_project_it_is.parts())}</p>
 </section>
 
 <section>
-	<h2 id="credits">Credits</h2>
+	<h2 id="credits">{m.about_credits()}</h2>
 	<ul>
-		<li>
-			<a href="https://gcsim.app" target="_blank" rel="noopener noreferrer">gcsim</a>, the
-			open-source combat simulator: frame data, tick cadences, ICD groups, targeting, and the
-			reference for the gauge model.
-		</li>
-		<li>
-			<a href="https://keqingmains.com" target="_blank" rel="noopener noreferrer">Keqing Mains</a>:
-			the notation the rotation planner reads, and the theorycrafting conventions the tools follow.
-		</li>
-		<li>
-			<a href="https://github.com/theBowja/genshin-db" target="_blank" rel="noopener noreferrer"
-				>genshin-db</a
-			>: the datamined kits every character starts from.
-		</li>
-		<li>
-			<a href="https://genshin-impact.fandom.com" target="_blank" rel="noopener noreferrer"
-				>The Genshin Impact Fandom wiki</a
-			>: kit details for newer characters, capability lists, and the artifact and wish rates.
-		</li>
-		<li>
-			<a href="https://lunaris.moe" target="_blank" rel="noopener noreferrer">Lunaris.moe</a> for
-			Stygian Onslaught and Spiral Abyss data, and
-			<a href="https://www.stygian.moe" target="_blank" rel="noopener noreferrer">Stygian.moe</a>
-			for cross-checking season dates.
-		</li>
-		<li>
-			<a href="https://github.com/OneBST/GGanalysis" target="_blank" rel="noopener noreferrer"
-				>GGanalysis</a
-			>, which the wish odds visualizer is tested against; and Genshin Optimizer and SiriYu’s
-			reshape solver, the two models behind the artifact odds visualizer’s reading of a reshape.
-		</li>
-		<li>
-			<a href="https://www.hoyolab.com/article/622264" target="_blank" rel="noopener noreferrer"
-				>EODGamer’s crit heatmap</a
-			>, the spreadsheet the crit heatmap grew out of.
-		</li>
-		<li>Type is IBM Plex and Bitter; the interface icons are Lucide’s. Both are open-licensed.</li>
+		<li>{@render p(m.about_gcsim_the_open_source_combat_simulator.parts())}</li>
+		<li>{@render p(m.about_keqing_mains_the_notation_the_rotation.parts())}</li>
+		<li>{@render p(m.about_genshin_db_the_datamined_kits_every.parts())}</li>
+		<li>{@render p(m.about_the_genshin_impact_fandom_wiki_kit.parts())}</li>
+		<li>{@render p(m.about_lunaris_moe_for_stygian_onslaught_and.parts())}</li>
+		<li>{@render p(m.about_gganalysis_which_the_wish_odds.parts())}</li>
+		<li>{@render p(m.about_eodgamer_s_crit_heatmap_the_spreadsheet.parts())}</li>
+		<li>{m.about_type_is_ibm_plex_and_bitter_the()}</li>
 	</ul>
 </section>
 
 <section>
-	<h2 id="fan-project">A fan project</h2>
-	<p>
-		critcalc is an unofficial fan project, not affiliated with or endorsed by HoYoverse. Genshin
-		Impact, its characters, and its artwork belong to HoYoverse. critcalc takes no money and shows
-		no ads.
-	</p>
-	<p>
-		The code is licensed under the AGPL-3.0, and its
-		<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
-			>source is on GitHub</a
-		>. The curated data is licensed under CC BY-SA 4.0. critcalc’s own artwork (the logo, the
-		landing silhouettes, some icons, and the scene) is not covered by either.
-	</p>
+	<h2 id="fan-project">{m.about_a_fan_project()}</h2>
+	<p>{m.about_critcalc_is_an_unofficial_fan_project()}</p>
+	<p>{@render p(m.about_the_code_is_licensed_under_the_agpl_3_0.parts())}</p>
 </section>

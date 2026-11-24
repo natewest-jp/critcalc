@@ -5,63 +5,63 @@
 
 **23 messages** · `About.svelte`
 
-- `about_about_critcalc` — About.svelte:12 <h1>
+- `about_about_critcalc` — About.svelte:54 m()
   > About critcalc
   - terms: 🔒 critcalc
-- `about_critcalc_app_is_three_tools_for_genshin` — About.svelte:14 <p>
+- `about_critcalc_app_is_three_tools_for_genshin` — About.svelte:56 m()
   > critcalc.app is three tools for Genshin Impact theorycrafting. Many of Genshin’s mechanics are hard to picture in your head. critcalc’s tools were built by a player who wanted to see them drawn out.
   - terms: 🎮 Genshin Impact · 🔒 critcalc.app · 🔒 critcalc
-- `about_the_tools` — About.svelte:21 <h2>
+- `about_the_tools` — About.svelte:59 m()
   > The tools
-- `about_the_team_builder_is_a_party_setup_screen` — About.svelte:23 <p>
-  > <strong>The team builder</strong> is a party setup screen for Stygian Onslaught, the Spiral Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred, buffs, and more), sourced from the kits at the constellations you own, and what switching out a team member would cost or gain. <a>How it works</a>
+- `about_the_team_builder_is_a_party_setup_screen` — About.svelte:60 m()
+  > {#strong}The team builder{/strong} is a party setup screen for Stygian Onslaught, the Spiral Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred, buffs, and more), sourced from the kits at the constellations you own, and what switching out a team member would cost or gain. {#builder}How it works{/builder}
   - terms: 🎮 Constellation · 🏷 RES shred
-- `about_the_rotation_planner_turns_a_rotation` — About.svelte:30 <p>
-  > <strong>The rotation planner</strong> turns a rotation written in KQM notation into a timeline of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can also practice a rotation by playing it back at game speed with audio cues. <a>How it works</a>
+- `about_the_rotation_planner_turns_a_rotation` — About.svelte:61 m()
+  > {#strong}The rotation planner{/strong} turns a rotation written in KQM notation into a timeline of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can also practice a rotation by playing it back at game speed with audio cues. {#planner}How it works{/planner}
   - terms: 🎮 cooldown · 📖 notation · 📖 rotation · 📖 timeline · 🏷 aura · 🔒 KQM
-- `about_the_visualizers_are_eight_small` — About.svelte:36 <p>
-  > <strong>The visualizers</strong> are eight small instruments, each about one mechanic: crit, elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds, and wish odds. <a>How they work</a>
+- `about_the_visualizers_are_eight_small` — About.svelte:62 m()
+  > {#strong}The visualizers{/strong} are eight small instruments, each about one mechanic: crit, elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds, and wish odds. {#visualizers}How they work{/visualizers}
   - terms: 🏷 gauge · 🎮 DEF · 🎮 RES · 🏷 ICD
-- `about_where_the_data_comes_from` — About.svelte:43 <h2>
+- `about_where_the_data_comes_from` — About.svelte:66 m()
   > Where the data comes from
-- `about_each_character_starts_from_genshin_db_s` — About.svelte:44 <p>
+- `about_each_character_starts_from_genshin_db_s` — About.svelte:67 m()
   > Each character starts from genshin-db’s datamined kit and is then curated by hand. The effects, their conditions, and their constellation gates are written from the kit text, and frame counts are measured against gcsim wherever it has the character.
   - terms: 🎮 Constellation · 🔒 gcsim
-- `about_curation_is_uneven_because_some_kits_are` — About.svelte:49 <p>
-  > Curation is uneven, because some kits are much harder to model than others. Where a character isn’t finished, the tools say so rather than guess, and the <a>coverage page</a> shows what the rotation planner draws and what it leaves out.
+- `about_curation_is_uneven_because_some_kits_are` — About.svelte:68 m()
+  > Curation is uneven, because some kits are much harder to model than others. Where a character isn’t finished, the tools say so rather than guess, and the {#coverage}coverage page{/coverage} shows what the rotation planner draws and what it leaves out.
   - terms: 📖 rotation
-- `about_who_makes_it` — About.svelte:58 <h2>
+- `about_who_makes_it` — About.svelte:72 m()
   > Who makes it
-- `about_critcalc_is_nate_west_s_project_it_is` — About.svelte:59 <p>
-  > critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans heavily on what the community has measured. Corrections are welcome! The <a>Contribute</a> page says how to help.
+- `about_critcalc_is_nate_west_s_project_it_is` — About.svelte:73 m()
+  > critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans heavily on what the community has measured. Corrections are welcome! The {#contribute}Contribute{/contribute} page says how to help.
   - terms: 🔒 critcalc
-- `about_credits` — About.svelte:67 <h2>
+- `about_credits` — About.svelte:77 m()
   > Credits
-- `about_gcsim_the_open_source_combat_simulator` — About.svelte:70 <li>
-  > <a>gcsim</a>, the open-source combat simulator: frame data, tick cadences, ICD groups, targeting, and the reference for the gauge model.
+- `about_gcsim_the_open_source_combat_simulator` — About.svelte:79 m()
+  > {#gcsim}gcsim{/gcsim}, the open-source combat simulator: frame data, tick cadences, ICD groups, targeting, and the reference for the gauge model.
   - terms: 🔒 gcsim · 🏷 gauge · 🏷 ICD
-- `about_keqing_mains_the_notation_the_rotation` — About.svelte:75 <li>
-  > <a>Keqing Mains</a>: the notation the rotation planner reads, and the theorycrafting conventions the tools follow.
+- `about_keqing_mains_the_notation_the_rotation` — About.svelte:80 m()
+  > {#kqm}Keqing Mains{/kqm}: the notation the rotation planner reads, and the theorycrafting conventions the tools follow.
   - terms: 🔒 Keqing Mains · 📖 notation · 📖 rotation
-- `about_genshin_db_the_datamined_kits_every` — About.svelte:79 <li>
-  > <a>genshin-db</a>: the datamined kits every character starts from.
-- `about_the_genshin_impact_fandom_wiki_kit` — About.svelte:84 <li>
-  > <a>The Genshin Impact Fandom wiki</a>: kit details for newer characters, capability lists, and the artifact and wish rates.
+- `about_genshin_db_the_datamined_kits_every` — About.svelte:81 m()
+  > {#genshindb}genshin-db{/genshindb}: the datamined kits every character starts from.
+- `about_the_genshin_impact_fandom_wiki_kit` — About.svelte:82 m()
+  > {#fandom}The Genshin Impact Fandom wiki{/fandom}: kit details for newer characters, capability lists, and the artifact and wish rates.
   - terms: 🎮 Genshin Impact
-- `about_lunaris_moe_for_stygian_onslaught_and` — About.svelte:89 <li>
-  > <a>Lunaris.moe</a> for Stygian Onslaught and Spiral Abyss data, and <a>Stygian.moe</a> for cross-checking season dates.
-- `about_gganalysis_which_the_wish_odds` — About.svelte:95 <li>
-  > <a>GGanalysis</a>, which the wish odds visualizer is tested against; and Genshin Optimizer and SiriYu’s reshape solver, the two models behind the artifact odds visualizer’s reading of a reshape.
+- `about_lunaris_moe_for_stygian_onslaught_and` — About.svelte:83 m()
+  > {#lunaris}Lunaris.moe{/lunaris} for Stygian Onslaught and Spiral Abyss data, and {#stygian}Stygian.moe{/stygian} for cross-checking season dates.
+- `about_gganalysis_which_the_wish_odds` — About.svelte:84 m()
+  > {#gganalysis}GGanalysis{/gganalysis}, which the wish odds visualizer is tested against; and Genshin Optimizer and SiriYu’s reshape solver, the two models behind the artifact odds visualizer’s reading of a reshape.
   - terms: 🔒 Genshin Optimizer
-- `about_eodgamer_s_crit_heatmap_the_spreadsheet` — About.svelte:101 <li>
-  > <a>EODGamer’s crit heatmap</a>, the spreadsheet the crit heatmap grew out of.
-- `about_type_is_ibm_plex_and_bitter_the` — About.svelte:105 <li>
+- `about_eodgamer_s_crit_heatmap_the_spreadsheet` — About.svelte:85 m()
+  > {#eodgamer}EODGamer’s crit heatmap{/eodgamer}, the spreadsheet the crit heatmap grew out of.
+- `about_type_is_ibm_plex_and_bitter_the` — About.svelte:86 m()
   > Type is IBM Plex and Bitter; the interface icons are Lucide’s. Both are open-licensed.
-- `about_a_fan_project` — About.svelte:110 <h2>
+- `about_a_fan_project` — About.svelte:91 m()
   > A fan project
-- `about_critcalc_is_an_unofficial_fan_project` — About.svelte:111 <p>
+- `about_critcalc_is_an_unofficial_fan_project` — About.svelte:92 m()
   > critcalc is an unofficial fan project, not affiliated with or endorsed by HoYoverse. Genshin Impact, its characters, and its artwork belong to HoYoverse. critcalc takes no money and shows no ads.
   - terms: 🎮 Genshin Impact · 🔒 HoYoverse · 🔒 critcalc
-- `about_the_code_is_licensed_under_the_agpl_3_0` — About.svelte:116 <p>
-  > The code is licensed under the AGPL-3.0, and its <a>source is on GitHub</a>. The curated data is licensed under CC BY-SA 4.0. critcalc’s own artwork (the logo, the landing silhouettes, some icons, and the scene) is not covered by either.
+- `about_the_code_is_licensed_under_the_agpl_3_0` — About.svelte:93 m()
+  > The code is licensed under the AGPL-3.0, and its {#github}source is on GitHub{/github}. The curated data is licensed under CC BY-SA 4.0. critcalc’s own artwork (the logo, the landing silhouettes, some icons, and the scene) is not covered by either.
   - terms: 🔒 critcalc

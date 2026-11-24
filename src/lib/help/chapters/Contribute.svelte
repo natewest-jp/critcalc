@@ -6,62 +6,56 @@
 	 link belongs in "Financial support": not promised until it exists.
 	 ↻ 2026-10-18 (Nate's review): reports reach Nate, so "me" (style guide
 	 §1.4); genshin-db left the upstream list — a datamine library takes
-	 feature requests, not player corrections — and stays in About's credits. -->
+	 feature requests, not player corrections — and stays in About's credits.
+
+	 The text is in messages/*.json (`contribute_*`). A paragraph is one message,
+	 its bold words and links as markup, so a translation can move them; `p`
+	 below says what each tag renders as. -->
 
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
+	import Msg from '$lib/components/Msg.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 </script>
 
-<h1>Contribute</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
+	>{/snippet}
+{#snippet out(href: string, t: string)}<a {href} target="_blank" rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet feedback(t: string)}{@render out(FEEDBACK_FORM_URL, t)}{/snippet}
+{#snippet gcsim(t: string)}{@render out('https://gcsim.app', t)}{/snippet}
+{#snippet kqm(t: string)}{@render out('https://keqingmains.com', t)}{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg
+		{parts}
+		tags={{ strong, coverage, feedback, gcsim, kqm }}
+	/>{/snippet}
 
-<p class="lede">How to tell me something is wrong, and where else help goes furthest.</p>
+<h1>{m.contribute_contribute()}</h1>
+
+<p class="lede">{m.contribute_how_to_tell_me_something_is_wrong_and()}</p>
 
 <section>
-	<h2 id="report">Report a problem</h2>
-	<p>
-		Reports go through the
-		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>, which
-		takes bugs, characters that behave differently from the game, ideas, and anything else.
-	</p>
-	<p>
-		The quickest route is <strong>Report a problem</strong> in the top bar’s
-		<strong>?</strong> menu, which opens the form with a link to what you’re looking at, so I see
-		the same rotation, lineup, or instrument you did. A character’s details card has its own link,
-		<strong>Something not right with this character?</strong> It fills in the character and their constellation.
-	</p>
-	<p>
-		What helps most is what you expected and what you got instead. For a character, the source helps
-		too: the kit text, a gcsim config, or a combat log from the training dummy.
-	</p>
-	<p>
-		Before reporting a missing mechanic, check the
-		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>. A part of a
-		kit the rotation planner leaves out on purpose is listed there with the reason.
-	</p>
+	<h2 id="report">{m.contribute_report_a_problem()}</h2>
+	<p>{@render p(m.contribute_reports_go_through_the_feedback_form.parts())}</p>
+	<p>{@render p(m.contribute_the_quickest_route_is_report_a_problem.parts())}</p>
+	<p>{m.contribute_what_helps_most_is_what_you_expected_and()}</p>
+	<p>{@render p(m.contribute_before_reporting_a_missing_mechanic.parts())}</p>
 </section>
 
 <section>
-	<h2 id="upstream">Help the projects critcalc is built on</h2>
-	<p>
-		Most of what the tools show was measured by someone else and given to the community. A
-		correction made in one of these projects reaches every tool built on it, critcalc included:
-	</p>
+	<h2 id="upstream">{m.contribute_help_the_projects_critcalc_is_built_on()}</h2>
+	<p>{m.contribute_most_of_what_the_tools_show_was_measured()}</p>
 	<ul>
-		<li>
-			<a href="https://gcsim.app" target="_blank" rel="noopener noreferrer">gcsim</a>, whose frame
-			data and tick cadences the rotation planner is timed from. A character implementation or a bug
-			report there helps directly.
-		</li>
-		<li>
-			<a href="https://keqingmains.com" target="_blank" rel="noopener noreferrer">Keqing Mains</a>,
-			which keeps the notation, the theorycrafting conventions, and the testing behind them.
-		</li>
+		<li>{@render p(m.contribute_gcsim_whose_frame_data_and_tick_cadences.parts())}</li>
+		<li>{@render p(m.contribute_keqing_mains_which_keeps_the_notation.parts())}</li>
 	</ul>
 </section>
 
 <section>
-	<h2 id="money">Financial support</h2>
-	<p>Thank you for checking! critcalc isn’t in need of financial support right now.</p>
+	<h2 id="money">{m.contribute_financial_support()}</h2>
+	<p>{m.contribute_thank_you_for_checking_critcalc_isn_t_in()}</p>
 </section>

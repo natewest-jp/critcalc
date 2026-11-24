@@ -5,26 +5,26 @@
 
 **10 messages** · `Beta.svelte`
 
-- `beta_beta` — Beta.svelte:14 <h1>
+- `beta_beta` — Beta.svelte:27 m()
   > Beta
-- `beta_critcalc_may_be_rough_around_the_edges` — Beta.svelte:16 <p>
+- `beta_critcalc_may_be_rough_around_the_edges` — Beta.svelte:29 m()
   > critcalc may be rough around the edges for a bit. It’s a solo project, and while most things have been worked through, new problems still turn up.
   - terms: 🔒 critcalc
-- `beta_if_something_looks_wrong` — Beta.svelte:22 <h2>
+- `beta_if_something_looks_wrong` — Beta.svelte:32 m()
   > If something looks wrong
-- `beta_i_ve_only_been_able_to_test_the_site_on` — Beta.svelte:23 <p>
-  > I’ve only been able to test the site on the few devices I own, so if something doesn’t look right on yours, <a>I’d like to hear about it</a>.
-- `beta_the_character_data_is_where_i_could_use` — Beta.svelte:27 <p>
-  > The character data is where I could use the most help. Every kit is curated by hand from the kit text and timed against gcsim’s measured frames wherever gcsim has the character, and where a kit isn’t finished the tools say so instead of guessing. The <a>coverage page</a> shows how far each character has gotten.
+- `beta_i_ve_only_been_able_to_test_the_site_on` — Beta.svelte:33 m()
+  > I’ve only been able to test the site on the few devices I own, so if something doesn’t look right on yours, {#contribute}I’d like to hear about it{/contribute}.
+- `beta_the_character_data_is_where_i_could_use` — Beta.svelte:34 m()
+  > The character data is where I could use the most help. Every kit is curated by hand from the kit text and timed against gcsim’s measured frames wherever gcsim has the character, and where a kit isn’t finished the tools say so instead of guessing. The {#coverage}coverage page{/coverage} shows how far each character has gotten.
   - terms: 🔒 gcsim
-- `beta_that_said_i_don_t_have_all_characters_or` — Beta.svelte:34 <p>
-  > That said, I don’t have all characters or constellations. Calling all mains! If you see something wrong with a character you know, <a>Contribute</a> says how to report it. <strong>Report a problem</strong> in the top bar’s <strong>?</strong> menu is the fastest way, because it sends a link to exactly what you were looking at.
+- `beta_that_said_i_don_t_have_all_characters_or` — Beta.svelte:35 m()
+  > That said, I don’t have all characters or constellations. Calling all mains! If you see something wrong with a character you know, {#contribute}Contribute{/contribute} says how to report it. {#strong}Report a problem{/strong} in the top bar’s {#strong}?{/strong} menu is the fastest way, because it sends a link to exactly what you were looking at.
   - terms: 🎮 Constellation
-- `beta_any_and_all_help_is_appreciated` — Beta.svelte:42 <p>
+- `beta_any_and_all_help_is_appreciated` — Beta.svelte:36 m()
   > Any and all help is appreciated!
-- `beta_what_changes_and_what_stays_the_same` — Beta.svelte:46 <h2>
+- `beta_what_changes_and_what_stays_the_same` — Beta.svelte:40 m()
   > What changes and what stays the same
-- `beta_the_interface_will_keep_changing_for_a` — Beta.svelte:47 <p>
+- `beta_the_interface_will_keep_changing_for_a` — Beta.svelte:41 m()
   > The interface will keep changing for a while, and more features are on the way. Coverage of kits will improve as reports get filed and data gaps are uncovered.
-- `beta_while_that_happens_your_saved_data_won_t` — Beta.svelte:51 <p>
-  > While that happens, your saved data won’t be lost. Everything in your Library stays in your browser through every update. It’s still worth downloading a backup now and then (<strong>Export…</strong> in Settings), because clearing your browser’s site data erases it. Settings shows when you last did.
+- `beta_while_that_happens_your_saved_data_won_t` — Beta.svelte:42 m()
+  > While that happens, your saved data won’t be lost. Everything in your Library stays in your browser through every update. It’s still worth downloading a backup now and then ({#strong}Export…{/strong} in Settings), because clearing your browser’s site data erases it. Settings shows when you last did.

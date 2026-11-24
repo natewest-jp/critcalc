@@ -9,98 +9,77 @@
 	 Backup is settingsBackup.ts BACKUP_KEYS; Clear data is ProfileForm's
 	 clearData and Delete everything is storageSession.wipe. What Cloudflare collects is stated AS CLOUDFLARE STATES
 	 IT (its Web Analytics FAQ) — we have not measured the beacon. Update
-	 "Last updated" with any change. -->
+	 "Last updated" (LAST_UPDATED below) with any change.
+
+	 The text is in messages/*.json (`privacy_*`). A paragraph is one message,
+	 its bold words and links as markup, so a translation can move them; `p`
+	 below says what each tag renders as. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
+	import Msg from '$lib/components/Msg.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
+	import { formatDay } from '$lib/i18n/dates';
+
+	/** The day this page last changed. */
+	const LAST_UPDATED = '2026-10-26';
 </script>
 
-<h1>Privacy</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet settings(t: string)}<a href={hrefTo('/settings')}>{t}</a>{/snippet}
+{#snippet out(href: string, t: string)}<a {href} target="_blank" rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet google(t: string)}{@render out('https://policies.google.com/privacy', t)}{/snippet}
+{#snippet cfaq(t: string)}{@render out(
+		'https://developers.cloudflare.com/web-analytics/faq/',
+		t
+	)}{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg
+		{parts}
+		tags={{ strong, settings, google, cfaq }}
+	/>{/snippet}
 
-<p class="lede">
-	critcalc has no accounts and no server of its own. What you set up stays in your browser. What
-	leaves your browser is listed below.
-</p>
+<h1>{m.privacy_privacy()}</h1>
+
+<p class="lede">{m.privacy_critcalc_has_no_accounts_and_no_server()}</p>
 
 <section>
-	<h2 id="in-your-browser">What stays in your browser</h2>
-	<p>Everything you create is kept in this browser, on this device only:</p>
+	<h2 id="in-your-browser">{m.privacy_what_stays_in_your_browser()}</h2>
+	<p>{m.privacy_everything_you_create_is_kept_in_this()}</p>
 	<ul>
-		<li>Your settings: display, Human timing, playback sound, and swap ping.</li>
-		<li>
-			Your profiles, each with its name, picture, and color, its roster (which characters you own or
-			have wishlisted, and at what constellation), its teams and their loadouts, its rotations and
-			lineups, and which of them is open.
-		</li>
-		<li>The visualizers’ layout.</li>
-		<li>When you last downloaded a backup, so Settings can tell you.</li>
-		<li>Whether critcalc has already asked your browser to keep its data.</li>
+		<li>{m.privacy_your_settings_display_human_timing()}</li>
+		<li>{m.privacy_your_profiles_each_with_its_name_picture()}</li>
+		<li>{m.privacy_the_visualizers_layout()}</li>
+		<li>{m.privacy_when_you_last_downloaded_a_backup_so()}</li>
+		<li>{m.privacy_whether_critcalc_has_already_asked_your()}</li>
 	</ul>
-	<p>
-		critcalc sets no cookies. A backup file from <a href={hrefTo('/settings')}>Settings</a>
-		carries all of it. <strong>Clear data</strong> on a profile’s own page clears what it holds: its
-		roster, teams, rotations, and lineups. <strong>Delete everything</strong> in Settings removes every
-		profile, the Trash, and your settings from this browser.
-	</p>
-	<p>
-		Browsers can clear a site’s storage on their own, for example after a while without a visit. The
-		first time you change a rotation or lineup, critcalc asks your browser to keep this site’s data
-		instead. Firefox shows you a prompt for this; other browsers decide by themselves. Settings
-		shows what your browser answered.
-	</p>
+	<p>{@render p(m.privacy_critcalc_sets_no_cookies_a_backup_file.parts())}</p>
+	<p>{m.privacy_browsers_can_clear_a_site_s_storage_on()}</p>
 </section>
 
 <section>
-	<h2 id="what-leaves">What leaves it</h2>
+	<h2 id="what-leaves">{m.privacy_what_leaves_it()}</h2>
 
-	<h3>Share links, when you send one</h3>
-	<p>
-		A share link carries what you’re sharing inside the link itself: a rotation’s notation with its
-		constellations and loadouts, a lineup’s teams, or one instrument’s settings. Nothing about you
-		is added, and nothing is sent anywhere until you paste the link somewhere.
-	</p>
+	<h3>{m.privacy_share_links_when_you_send_one()}</h3>
+	<p>{m.privacy_a_share_link_carries_what_you_re_sharing()}</p>
 
-	<h3>Reports, when you send one</h3>
-	<p>
-		The feedback form is a Google Form. <strong>Report a problem</strong> opens it with some answers
-		already filled in: which tool you were in, a share link to what you were looking at, critcalc’s
-		build, and your browser’s user-agent string, plus the error message if something crashed. Those
-		reach Google when the form opens, and become a report only if you submit it.
-		<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer"
-			>Google’s privacy policy</a
-		> covers the form.
-	</p>
+	<h3>{m.privacy_reports_when_you_send_one()}</h3>
+	<p>{@render p(m.privacy_the_feedback_form_is_a_google_form.parts())}</p>
 
-	<h3>Visit counts</h3>
-	<p>
-		critcalc uses Cloudflare Web Analytics to count visits: which pages are viewed, the referring
-		site, the browser and device type, and the country. Cloudflare says it uses no cookies or local
-		storage for this and doesn’t record the query string, so the rotation inside a share link isn’t
-		part of it. Its
-		<a
-			href="https://developers.cloudflare.com/web-analytics/faq/"
-			target="_blank"
-			rel="noopener noreferrer">Web Analytics FAQ</a
-		> has the details.
-	</p>
+	<h3>{m.privacy_visit_counts()}</h3>
+	<p>{@render p(m.privacy_critcalc_uses_cloudflare_web_analytics.parts())}</p>
 
-	<h3>The host</h3>
-	<p>
-		critcalc is served by Cloudflare Pages. Like any web host, Cloudflare handles each request, your
-		IP address included, to deliver the page.
-	</p>
+	<h3>{m.privacy_the_host()}</h3>
+	<p>{m.privacy_critcalc_is_served_by_cloudflare_pages()}</p>
 </section>
 
 <section>
-	<h2 id="not-here">What critcalc doesn’t have</h2>
-	<p>
-		No accounts, no ads, no third-party scripts beyond the analytics above, and no fonts or images
-		loaded from anywhere else. Links to other sites open in a new tab, and those sites’ own policies
-		apply there.
-	</p>
+	<h2 id="not-here">{m.privacy_what_critcalc_doesn_t_have()}</h2>
+	<p>{m.privacy_no_accounts_no_ads_no_third_party()}</p>
 </section>
 
 <section>
-	<h2 id="changes">Changes</h2>
-	<p>If any of this changes, this page changes first.</p>
-	<p>Last updated October 26, 2026.</p>
+	<h2 id="changes">{m.privacy_changes()}</h2>
+	<p>{m.privacy_if_any_of_this_changes_this_page_changes()}</p>
+	<p>{m.privacy_last_updated_date({ date: formatDay(LAST_UPDATED, { dateStyle: 'long' }) })}</p>
 </section>
