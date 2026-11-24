@@ -284,9 +284,31 @@ Both live in `src/lib/i18n/messages.test.ts`:
   line lunaris serves (`scripts/localize-endgame.mjs`). The text maps also settle a term
   genshin-db's Japanese lacks.
 - Ability, passive, and constellation names, and the kit notes in the character data, are still
-  English in every locale; they need their own pass (`docs/rounds/i18n-finishing-2026-11-24.md`).
+  English in every locale; they need their own pass (§7).
 
 ---
+
+## 7. Ability names and kit notes (⚓ Nate 2026-11-24, Claude's plan)
+
+Before the community request, so reviewers see the whole tool at once. Stacked rounds:
+
+1. **Ability, passive, constellation, summon, and field names** from the game's data:
+   genshin-db first, then the game's English text map matched to the Japanese one by hash. Of
+   1,518 names, 1,385 resolve to one Japanese name and 70 to two that differ only in the middle
+   dot (prefer ・, as the endgame text has it). The text maps are about 300 MB and absent where
+   the site deploys, so the generator runs by hand and its table is committed, with a test that
+   fails on a missing name. Display only: the planner's row keys stay English, and a test holds
+   that no two of a character's names collide in a locale. The riskiest round: these names run
+   through the buff-row labels.
+2. **Composed labels** ("Name (Variant)", "A1: X", "X (C4)", "Hold Lv.2", "Aimed Shot"; 63
+   names and most labels and attributions) split into the game name and our words, which
+   become messages. Notation (N1, C4) stays as players write it.
+3. **Kit notes** (152, about 22,000 characters, our own prose): a per-locale sidecar beside the
+   character data, keyed by ability id, each line carrying a hash of the English it translates,
+   so a test fails when the English moves and the translation hasn't. Curation keeps writing
+   English where it does today. Claude drafts Japanese from `docs/text/terms-ja.md`.
+4. **Close-out:** re-shoot the planner's Japanese Help shots, rescan `/ja` with every panel
+   open (closed panels hid the kit notes last time), and the record.
 
 ## Open questions
 
