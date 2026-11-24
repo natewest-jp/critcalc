@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { hrefTo } from '$lib/i18n/paths';
 	/**
 	 * About | Help — the static pages as ONE place (⚓ Nate 2026-09-23). The
@@ -16,7 +17,7 @@
 	const ORDER: ChromeAreaId[] = ['about', 'help'];
 </script>
 
-<nav class="area-tabs" aria-label="Help and About">
+<nav class="area-tabs" aria-label={m.help_help_and_about()}>
 	{#each ORDER as id (id)}
 		{@const area = AREAS[id]}
 		<a

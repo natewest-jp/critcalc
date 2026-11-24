@@ -684,96 +684,96 @@
   - vars: `name`
 - `planner_e_reset` — weaponProcRows.ts:42 m()
   > E reset
-- `planner_pyro` — auraDisplay.ts:67 m() · auraDisplay.ts:79 m()
+- `planner_pyro` — auraDisplay.ts:67 m() · auraDisplay.ts:83 m()
   > Pyro
   - terms: 🎮 Pyro
-- `planner_hydro` — auraDisplay.ts:68 m() · auraDisplay.ts:112 m()
+- `planner_hydro` — auraDisplay.ts:68 m() · auraDisplay.ts:116 m()
   > Hydro
   - terms: 🎮 Hydro
 - `planner_anemo` — auraDisplay.ts:69 m()
   > Anemo
   - terms: 🎮 Anemo
-- `planner_electro` — auraDisplay.ts:70 m() · auraDisplay.ts:134 m()
+- `planner_electro` — auraDisplay.ts:70 m() · auraDisplay.ts:138 m()
   > Electro
   - terms: 🎮 Electro
-- `planner_dendro` — auraDisplay.ts:71 m() · auraDisplay.ts:141 m()
+- `planner_dendro` — auraDisplay.ts:71 m() · auraDisplay.ts:145 m()
   > Dendro
   - terms: 🎮 Dendro
-- `planner_cryo` — auraDisplay.ts:72 m() · auraDisplay.ts:119 m()
+- `planner_cryo` — auraDisplay.ts:72 m() · auraDisplay.ts:123 m()
   > Cryo
   - terms: 🎮 Cryo
 - `planner_geo` — auraDisplay.ts:73 m()
   > Geo
   - terms: 🎮 Geo
-- `planner_burning` — auraDisplay.ts:86 m() · auraDisplay.ts:240 m() · auraDisplay.ts:282 m()
+- `planner_burning` — auraDisplay.ts:90 m() · auraDisplay.ts:244 m() · auraDisplay.ts:286 m()
   > Burning
   - terms: 🎮 Burning
-- `planner_fuel` — auraDisplay.ts:96 m()
+- `planner_fuel` — auraDisplay.ts:100 m()
   > Fuel
-- `planner_frozen` — auraDisplay.ts:126 m() · auraDisplay.ts:238 m() · auraDisplay.ts:280 m()
+- `planner_frozen` — auraDisplay.ts:130 m() · auraDisplay.ts:242 m() · auraDisplay.ts:284 m()
   > Frozen
   - terms: 🎮 Frozen
-- `planner_quicken` — auraDisplay.ts:148 m() · auraDisplay.ts:244 m() · auraDisplay.ts:286 m()
+- `planner_quicken` — auraDisplay.ts:152 m() · auraDisplay.ts:248 m() · auraDisplay.ts:290 m()
   > Quicken
   - terms: 🎮 Quicken
-- `planner_vaporize` — auraDisplay.ts:232 m() · auraDisplay.ts:274 m()
+- `planner_vaporize` — auraDisplay.ts:236 m() · auraDisplay.ts:278 m()
   > Vaporize
   - terms: 🎮 Vaporize
-- `planner_overloaded` — auraDisplay.ts:234 m() · auraDisplay.ts:276 m()
+- `planner_overloaded` — auraDisplay.ts:238 m() · auraDisplay.ts:280 m()
   > Overloaded
   - terms: 🎮 Overloaded
-- `planner_superconduct` — auraDisplay.ts:235 m() · auraDisplay.ts:277 m()
+- `planner_superconduct` — auraDisplay.ts:239 m() · auraDisplay.ts:281 m()
   > Superconduct
   - terms: 🎮 Superconduct
-- `planner_shatter` — auraDisplay.ts:239 m() · auraDisplay.ts:281 m()
+- `planner_shatter` — auraDisplay.ts:243 m() · auraDisplay.ts:285 m()
   > Shatter
   - terms: 🎮 Shatter
-- `planner_bloom` — auraDisplay.ts:241 m() · auraDisplay.ts:283 m()
+- `planner_bloom` — auraDisplay.ts:245 m() · auraDisplay.ts:287 m()
   > Bloom
   - terms: 🎮 Bloom
-- `planner_hyperbloom` — auraDisplay.ts:242 m() · auraDisplay.ts:284 m()
+- `planner_hyperbloom` — auraDisplay.ts:246 m() · auraDisplay.ts:288 m()
   > Hyperbloom
   - terms: 🎮 Hyperbloom
-- `planner_burgeon` — auraDisplay.ts:243 m() · auraDisplay.ts:285 m()
+- `planner_burgeon` — auraDisplay.ts:247 m() · auraDisplay.ts:289 m()
   > Burgeon
   - terms: 🎮 Burgeon
-- `planner_aggravate` — auraDisplay.ts:245 m() · auraDisplay.ts:287 m()
+- `planner_aggravate` — auraDisplay.ts:249 m() · auraDisplay.ts:291 m()
   > Aggravate
   - terms: 🎮 Aggravate
-- `planner_spread` — auraDisplay.ts:246 m() · auraDisplay.ts:288 m()
+- `planner_spread` — auraDisplay.ts:250 m() · auraDisplay.ts:292 m()
   > Spread
   - terms: 🎮 Spread
-- `planner_swirl_pyro` — auraDisplay.ts:247 m()
+- `planner_swirl_pyro` — auraDisplay.ts:251 m()
   > Swirl (Pyro)
   - terms: 🎮 Swirl · 🎮 Pyro
-- `planner_swirl_hydro` — auraDisplay.ts:248 m()
+- `planner_swirl_hydro` — auraDisplay.ts:252 m()
   > Swirl (Hydro)
   - terms: 🎮 Hydro · 🎮 Swirl
-- `planner_swirl_cryo` — auraDisplay.ts:249 m()
+- `planner_swirl_cryo` — auraDisplay.ts:253 m()
   > Swirl (Cryo)
   - terms: 🎮 Swirl · 🎮 Cryo
-- `planner_swirl_electro` — auraDisplay.ts:250 m()
+- `planner_swirl_electro` — auraDisplay.ts:254 m()
   > Swirl (Electro)
   - terms: 🎮 Electro · 🎮 Swirl
-- `planner_stellar_swirl` — auraDisplay.ts:251 m()
+- `planner_stellar_swirl` — auraDisplay.ts:255 m()
   > Stellar Swirl
   - terms: 🎮 Stellar Swirl
-- `planner_crystallize_pyro` — auraDisplay.ts:252 m()
+- `planner_crystallize_pyro` — auraDisplay.ts:256 m()
   > Crystallize (Pyro)
   - terms: 🎮 Crystallize · 🎮 Pyro
-- `planner_crystallize_hydro` — auraDisplay.ts:253 m()
+- `planner_crystallize_hydro` — auraDisplay.ts:257 m()
   > Crystallize (Hydro)
   - terms: 🎮 Crystallize · 🎮 Hydro
-- `planner_crystallize_cryo` — auraDisplay.ts:254 m()
+- `planner_crystallize_cryo` — auraDisplay.ts:258 m()
   > Crystallize (Cryo)
   - terms: 🎮 Crystallize · 🎮 Cryo
-- `planner_crystallize_electro` — auraDisplay.ts:255 m()
+- `planner_crystallize_electro` — auraDisplay.ts:259 m()
   > Crystallize (Electro)
   - terms: 🎮 Crystallize · 🎮 Electro
-- `planner_swirl` — auraDisplay.ts:289 m() · auraDisplay.ts:290 m() · auraDisplay.ts:291 m() · auraDisplay.ts:292 m() · auraDisplay.ts:293 m()
+- `planner_swirl` — auraDisplay.ts:293 m() · auraDisplay.ts:294 m() · auraDisplay.ts:295 m() · auraDisplay.ts:296 m() · auraDisplay.ts:297 m()
   > Swirl
   - terms: 🎮 Swirl
-- `planner_crystallize` — auraDisplay.ts:294 m() · auraDisplay.ts:295 m() · auraDisplay.ts:296 m() · auraDisplay.ts:297 m()
+- `planner_crystallize` — auraDisplay.ts:298 m() · auraDisplay.ts:299 m() · auraDisplay.ts:300 m() · auraDisplay.ts:301 m()
   > Crystallize
   - terms: 🎮 Crystallize
 - `planner_that_s_longer_than_a_rotation_can_be_so` — notationEditorExtension.ts:668 m()

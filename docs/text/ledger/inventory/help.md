@@ -5,32 +5,32 @@
 
 **13 messages** · `AreaTabs.svelte` · `HelpAreaShell.svelte` · `areas.ts`
 
-- `help_help_and_about` — AreaTabs.svelte:19 aria-label=
+- `help_help_and_about` — AreaTabs.svelte:20 m()
   > Help and About
-- `help_title_sections` — HelpAreaShell.svelte:70 aria-label=
-  > {area.title} sections
-  - vars: `area.title`
-- `help_help` — areas.ts:47 title:
+- `help_area_sections` — HelpAreaShell.svelte:71 m()
+  > {area} sections
+  - vars: `area`
+- `help_help` — areas.ts:52 m()
   > Help
-- `help_faq` — areas.ts:51 title:
+- `help_faq` — areas.ts:58 m()
   > FAQ
-- `help_team_builder` — areas.ts:57 title:
+- `help_team_builder` — areas.ts:66 m()
   > Team builder
-- `help_rotation_planner` — areas.ts:63 title:
+- `help_rotation_planner` — areas.ts:74 m()
   > Rotation planner
   - terms: 📖 rotation
-- `help_visualizers` — areas.ts:69 title:
+- `help_visualizers` — areas.ts:82 m()
   > Visualizers
   - terms: 📖 Visualizers
-- `help_about` — areas.ts:82 title: · areas.ts:86 title:
+- `help_about` — areas.ts:97 m() · areas.ts:103 m()
   > About
-- `help_what_s_new` — areas.ts:93 title:
+- `help_what_s_new` — areas.ts:112 m()
   > What’s new
-- `help_contribute` — areas.ts:99 title:
+- `help_contribute` — areas.ts:120 m()
   > Contribute
-- `help_beta` — areas.ts:105 title:
+- `help_beta` — areas.ts:128 m()
   > Beta
-- `help_privacy` — areas.ts:111 title:
+- `help_privacy` — areas.ts:136 m()
   > Privacy
-- `help_coverage` — areas.ts:118 title:
+- `help_coverage` — areas.ts:145 m()
   > Coverage

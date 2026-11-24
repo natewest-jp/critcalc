@@ -5,91 +5,91 @@
 
 **35 messages** · `Faq.svelte`
 
-- `faq_help_faq` — Faq.svelte:16 <h1> — ⚑ entity
+- `faq_help_faq` — Faq.svelte:51 m()
   > Help & FAQ
-- `faq_questions_about_the_site_as_a_whole_each` — Faq.svelte:18 <p>
+- `faq_questions_about_the_site_as_a_whole_each` — Faq.svelte:53 m()
   > Questions about the site as a whole. Each tool has its own chapter alongside this one.
-- `faq_what_critcalc_is` — Faq.svelte:23 <h2>
+- `faq_what_critcalc_is` — Faq.svelte:56 m()
   > What critcalc is
   - terms: 🔒 critcalc
-- `faq_is_critcalc_official` — Faq.svelte:25 <h3>
+- `faq_is_critcalc_official` — Faq.svelte:58 m()
   > Is critcalc official?
   - terms: 🔒 critcalc
-- `faq_no_it_s_an_unofficial_fan_project_not` — Faq.svelte:26 <p>
+- `faq_no_it_s_an_unofficial_fan_project_not` — Faq.svelte:59 m()
   > No. It’s an unofficial fan project, not affiliated with or endorsed by HoYoverse. It’s also not created or backed by any company. This is a solo dev project.
   - terms: 🔒 HoYoverse
-- `faq_what_does_the_beta_tag_mean` — Faq.svelte:31 <h3>
+- `faq_what_does_the_beta_tag_mean` — Faq.svelte:61 m()
   > What does the beta tag mean?
-- `faq_that_the_site_is_still_in_its_early` — Faq.svelte:32 <p>
-  > That the site is still in its early stages and could use some help. The <a>Beta</a> page goes into a little more detail.
-- `faq_your_data` — Faq.svelte:39 <h2>
+- `faq_that_the_site_is_still_in_its_early` — Faq.svelte:62 m()
+  > That the site is still in its early stages and could use some help. The {#beta}Beta{/beta} page goes into a little more detail.
+- `faq_your_data` — Faq.svelte:66 m()
   > Your data
-- `faq_do_i_need_an_account` — Faq.svelte:41 <h3>
+- `faq_do_i_need_an_account` — Faq.svelte:68 m()
   > Do I need an account?
-- `faq_no_everything_you_set_up_your_profiles` — Faq.svelte:42 <p>
-  > No. Everything you set up (your profiles with their rosters, teams, rotations, and lineups, and your settings) is stored in this browser and nowhere else. <a>Privacy</a> lists exactly what is kept in your browser and what leaves it. Because nothing is kept anywhere else, clearing this site’s data in your browser erases it, so it’s worth downloading a backup now and then.
+- `faq_no_everything_you_set_up_your_profiles` — Faq.svelte:69 m()
+  > No. Everything you set up (your profiles with their rosters, teams, rotations, and lineups, and your settings) is stored in this browser and nowhere else. {#privacy}Privacy{/privacy} lists exactly what is kept in your browser and what leaves it. Because nothing is kept anywhere else, clearing this site’s data in your browser erases it, so it’s worth downloading a backup now and then.
   - terms: 📖 rotation
-- `faq_how_do_i_move_my_data_to_another_device` — Faq.svelte:51 <h3>
+- `faq_how_do_i_move_my_data_to_another_device` — Faq.svelte:71 m()
   > How do I move my data to another device?
-- `faq_in_settings_under_backup_click_export_to` — Faq.svelte:52 <p>
-  > In <a>Settings</a> under <strong>Backup</strong>, click <strong>Export…</strong> to download all your data as one file. Move that file to the other device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that file’s data. The file carries every profile in this browser, each with its roster, teams, rotations, and lineups, plus your settings and the visualizers’ layout.
+- `faq_in_settings_under_backup_click_export_to` — Faq.svelte:72 m()
+  > In {#settings}Settings{/settings} under {#strong}Backup{/strong}, click {#strong}Export…{/strong} to download all your data as one file. Move that file to the other device, then look for {#strong}Restore{/strong} and the {#strong}Import…{/strong} button to load that file’s data. The file carries every profile in this browser, each with its roster, teams, rotations, and lineups, plus your settings and the visualizers’ layout.
   - terms: 📖 rotation
-- `faq_what_does_a_share_link_carry` — Faq.svelte:60 <h3>
+- `faq_what_does_a_share_link_carry` — Faq.svelte:74 m()
   > What does a share link carry?
-- `faq_only_the_thing_you_re_sharing_written` — Faq.svelte:61 <p>
+- `faq_only_the_thing_you_re_sharing_written` — Faq.svelte:75 m()
   > Only the thing you’re sharing, written into the link itself. A rotation planner link holds the notation and each character’s constellation and loadout; a team builder link holds the lineup’s teams and their constellations, but not their pinned rotations; a visualizers link holds that one instrument’s settings.
   - terms: 🎮 Constellation · 📖 instrument · 📖 rotation · 📖 notation · 📖 loadout
-- `faq_a_link_opens_at_the_reader_s_own` — Faq.svelte:67 <p>
+- `faq_a_link_opens_at_the_reader_s_own` — Faq.svelte:76 m()
   > A link opens at the reader’s own settings, not yours. If you share a rotation with Human timing on and they have it off, they see the frame-perfect version. Links can get long, and some chat apps cut them short; if one won’t open, that’s the usual cause.
   - terms: 📖 Human timing · 📖 rotation
-- `faq_the_data_behind_it` — Faq.svelte:75 <h2>
+- `faq_the_data_behind_it` — Faq.svelte:80 m()
   > The data behind it
-- `faq_where_does_the_character_data_come_from` — Faq.svelte:77 <h3>
+- `faq_where_does_the_character_data_come_from` — Faq.svelte:82 m()
   > Where does the character data come from?
-- `faq_each_kit_starts_from_genshin_db_s` — Faq.svelte:78 <p>
-  > Each kit starts from genshin-db’s datamine and is curated by hand: effects and conditions from the kit text, frame counts measured against gcsim wherever it has the character. Kits newer than genshin-db’s text are read from the Fandom wiki’s tooltips. <a>About</a> gives the full list of sources behind this project.
+- `faq_each_kit_starts_from_genshin_db_s` — Faq.svelte:83 m()
+  > Each kit starts from genshin-db’s datamine and is curated by hand: effects and conditions from the kit text, frame counts measured against gcsim wherever it has the character. Kits newer than genshin-db’s text are read from the Fandom wiki’s tooltips. {#about}About{/about} gives the full list of sources behind this project.
   - terms: 🔒 gcsim
-- `faq_is_my_character_fully_in` — Faq.svelte:85 <h3>
+- `faq_is_my_character_fully_in` — Faq.svelte:85 m()
   > Is my character fully in?
-- `faq_the_coverage_page_answers_that_for_every` — Faq.svelte:86 <p>
-  > The <a>coverage page</a> answers that for every character, ability by ability, and gives the reason for anything the rotation planner leaves out. A character without curated frames still appears everywhere, marked “Not yet curated”, with generic frame timings as a stand-in.
+- `faq_the_coverage_page_answers_that_for_every` — Faq.svelte:86 m()
+  > The {#coverage}coverage page{/coverage} answers that for every character, ability by ability, and gives the reason for anything the rotation planner leaves out. A character without curated frames still appears everywhere, marked “Not yet curated”, with generic frame timings as a stand-in.
   - terms: 📖 rotation
-- `faq_something_looks_wrong` — Faq.svelte:93 <h3>
+- `faq_something_looks_wrong` — Faq.svelte:88 m()
   > Something looks wrong.
-- `faq_please_report_it_through_the_feedback` — Faq.svelte:94 <p>
-  > Please report it through the <a>feedback form</a>. <strong>Report a problem</strong> in the top bar’s <strong>?</strong> menu opens the same form with a link to what you’re looking at already filled in. A character’s details card has its own link: <strong>Something not right with this character?</strong>
-- `faq_timing` — Faq.svelte:105 <h2>
+- `faq_please_report_it_through_the_feedback` — Faq.svelte:89 m()
+  > Please report it through the {#feedback}feedback form{/feedback}. {#strong}Report a problem{/strong} in the top bar’s {#strong}?{/strong} menu opens the same form with a link to what you’re looking at already filled in. A character’s details card has its own link: {#strong}Something not right with this character?{/strong}
+- `faq_timing` — Faq.svelte:93 m()
   > Timing
-- `faq_why_is_the_timeline_faster_or_slower` — Faq.svelte:107 <h3>
+- `faq_why_is_the_timeline_faster_or_slower` — Faq.svelte:95 m()
   > Why is the timeline faster or slower than the timing I know?
   - terms: 📖 timeline
-- `faq_check_human_timing_it_s_on_by_default` — Faq.svelte:108 <p>
-  > Check <strong>Human timing</strong> (it’s on by default). This pads every input the game doesn’t buffer with a few frames of reaction time — 10 to start with, which is the KQM starting point. Normal attack into normal attack is queued up by the game, so no padding is added there. Turn it off in <a>Settings</a> to see the frame-perfect rotation, or tune it there.
+- `faq_check_human_timing_it_s_on_by_default` — Faq.svelte:96 m()
+  > Check {#strong}Human timing{/strong} (it’s on by default). This pads every input the game doesn’t buffer with a few frames of reaction time — 10 to start with, which is the KQM starting point. Normal attack into normal attack is queued up by the game, so no padding is added there. Turn it off in {#settings}Settings{/settings} to see the frame-perfect rotation, or tune it there.
   - terms: 🎮 Normal Attack · 📖 Human timing · 📖 rotation · 🔒 KQM
-- `faq_swapping_characters_costs_time_either` — Faq.svelte:114 <p>
-  > Swapping characters costs time either way. Swaps are calculated as your ping plus about 90 ms. At critcalc’s default ping setting (60 ms), that results in nine frames for every swap. Set your own ping under <strong>Swap ping</strong> in Settings.
+- `faq_swapping_characters_costs_time_either` — Faq.svelte:97 m()
+  > Swapping characters costs time either way. Swaps are calculated as your ping plus about 90 ms. At critcalc’s default ping setting (60 ms), that results in nine frames for every swap. Set your own ping under {#strong}Swap ping{/strong} in Settings.
   - terms: 🔒 critcalc
-- `faq_why_does_a_skill_come_back_later_than` — Faq.svelte:120 <h3>
+- `faq_why_does_a_skill_come_back_later_than` — Faq.svelte:99 m()
   > Why does a skill come back later than its cooldown says?
   - terms: 🎮 cooldown · 🎮 Elemental Skill
-- `faq_because_for_most_skills_the_cooldown` — Faq.svelte:121 <p>
+- `faq_because_for_most_skills_the_cooldown` — Faq.svelte:100 m()
   > Because for most skills the cooldown doesn’t start on the button press. It starts a few frames into the cast (eleven frames for Nahida’s skill, for example), and the timeline draws it from there. A few skills start even later: Xilonen’s cooldown timer only begins once her Nightsoul state ends, so it runs after the stance rather than from the cast.
   - terms: 🎮 Nightsoul · 🎮 cooldown · 📖 timeline · 🎮 Elemental Skill
-- `faq_odds_and_ends` — Faq.svelte:130 <h2>
+- `faq_odds_and_ends` — Faq.svelte:104 m()
   > Odds and ends
-- `faq_which_terminology_does_critcalc_follow` — Faq.svelte:132 <h3>
+- `faq_which_terminology_does_critcalc_follow` — Faq.svelte:106 m()
   > Which terminology does critcalc follow?
   - terms: 🔒 critcalc
-- `faq_keqing_mains_its_notation_for_rotations` — Faq.svelte:134 <p>
-  > <a>Keqing Mains</a>: its notation for rotations, its names for mechanics, and the game’s own names for reactions — Frozen and Overloaded, for instance.
+- `faq_keqing_mains_its_notation_for_rotations` — Faq.svelte:107 m()
+  > {#kqm}Keqing Mains{/kqm}: its notation for rotations, its names for mechanics, and the game’s own names for reactions — Frozen and Overloaded, for instance.
   - terms: 🔒 Keqing Mains · 🎮 Overloaded · 📖 rotation · 📖 notation · 🎮 Frozen
-- `faq_does_it_work_on_a_phone` — Faq.svelte:139 <h3>
+- `faq_does_it_work_on_a_phone` — Faq.svelte:109 m()
   > Does it work on a phone?
-- `faq_yes_down_to_320px_wide_though_the` — Faq.svelte:140 <p>
+- `faq_yes_down_to_320px_wide_though_the` — Faq.svelte:110 m()
   > Yes, down to 320px wide, though the rotation planner and team builder are easier with more room. On a phone the rotation planner starts with the Buffs and Auras layers off, and you can hide the bench.
   - terms: 📖 rotation · 📖 bench
-- `faq_if_you_use_critcalc_on_your_phone_often` — Faq.svelte:145 <p>
+- `faq_if_you_use_critcalc_on_your_phone_often` — Faq.svelte:111 m()
   > If you use critcalc on your phone often, I’d suggest adding it to your home screen, which opens the site without your browser’s bars. On an iPhone, it also stops Safari from clearing your data when you haven’t visited in a while. It still needs a connection: Character data loads as you use it, so going offline partway through can leave a character half-loaded.
   - terms: 🔒 critcalc
-- `faq_here_s_how_to_add_it_to_your_home_screen` — Faq.svelte:151 <p>
-  > Here’s how to add it to your home screen on an <a>Android phone (Chrome)</a> and on an <a>iPhone (Safari)</a>.
+- `faq_here_s_how_to_add_it_to_your_home_screen` — Faq.svelte:112 m()
+  > Here’s how to add it to your home screen on an {#android}Android phone (Chrome){/android} and on an {#iphone}iPhone (Safari){/iphone}.
