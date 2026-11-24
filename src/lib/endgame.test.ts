@@ -11,6 +11,7 @@ import {
 	SPRITES,
 	bossImage,
 	bossRuns,
+	bossTitleParts,
 	checkAlternatives,
 	currentSeason,
 	liveSeasons,
@@ -153,5 +154,54 @@ describe('the hand-kept dates follow the release calendar', () => {
 
 	it('every Theater season starts on the 1st', () => {
 		for (const date of seasonDates.theater) expect(date.slice(8), date).toBe('01');
+	});
+});
+
+describe('the game text in other languages', () => {
+	/** A check's chip draws the page language's alternatives beside verdicts
+	 *  read from the English, matched by position, so a translation must keep
+	 *  English's alternatives and the sprites in each. */
+	const sprites = (text: string) =>
+		checkAlternatives(text).map((alt) =>
+			alt.flatMap((p) => ('sprite' in p ? [p.sprite] : [])).join(',')
+		);
+	it("every translated check keeps English's alternatives and sprites", () => {
+		for (const season of SEASONS)
+			for (const field of season.battlefields)
+				for (const check of field.checks) {
+					const lines = check.text as Record<string, string | undefined>;
+					for (const [lang, text] of Object.entries(lines)) {
+						if (lang === 'en' || !text) continue;
+						expect(sprites(text), `${lang}: ${text}`).toEqual(sprites(check.text.en));
+					}
+				}
+	});
+
+	it('splits a boss title in English and in Japanese', () => {
+		expect(bossTitleParts('Battle-Hardened Domovoy Sculptor: Gale Hewing')).toEqual({
+			name: 'Battle-Hardened Domovoy Sculptor',
+			variant: 'Gale Hewing'
+		});
+		expect(bossTitleParts('百戦錬磨のドモヴォーイの彫刻師（百風）')).toEqual({
+			name: '百戦錬磨のドモヴォーイの彫刻師',
+			variant: '百風'
+		});
+		expect(
+			bossTitleParts("Lord of the Hidden Depths: Whisperer of Nightmares — Ravager's Edge")
+		).toEqual({
+			name: 'Lord of the Hidden Depths',
+			variant: "Whisperer of Nightmares — Ravager's Edge"
+		});
+		expect(bossTitleParts('Wavebinder')).toEqual({ name: 'Wavebinder', variant: null });
+	});
+
+	it('names every boss in Japanese but the one the game has no title for', () => {
+		const missing = Object.entries(BOSSES)
+			.filter(([, b]) => !b.name.ja)
+			.map(([slug]) => slug);
+		// The text map has this boss only as another mode's variant (…の影).
+		expect(missing).toEqual([
+			'battle-hardened-pioneer-secret-source-control-array-will-of-the-hive'
+		]);
 	});
 });

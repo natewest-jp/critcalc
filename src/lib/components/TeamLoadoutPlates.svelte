@@ -12,6 +12,7 @@
   The rotations of this team inherit what is chosen here, live.
 -->
 <script lang="ts">
+	import { artifactName, characterName, weaponName } from '$lib/i18n/gameNames';
 	import { fade } from 'svelte/transition';
 	import LoadoutPanel from './LoadoutPanel.svelte';
 	import { portal } from '$lib/actions/portal';
@@ -96,11 +97,11 @@
 	<button
 		class="tlp-plate"
 		class:is-unset={!artifact}
-		title={artifact?.name ?? m.teams_artifact_set()}
+		title={artifact ? artifactName(artifact.id, artifact.name) : m.teams_artifact_set()}
 		aria-expanded={open}
 		aria-label={m.teams_charid_artifact_set_x({
-			name: char?.displayName ?? charId,
-			set: artifact?.name ?? m.teams_none()
+			name: characterName(charId),
+			set: artifact ? artifactName(artifact.id, artifact.name) : m.teams_none()
 		})}
 		onclick={toggle}
 	>
@@ -110,16 +111,18 @@
 				: GENERIC_ARTIFACT_ICON}
 			alt=""
 		/>
-		<span class="tlp-name">{artifact?.name ?? m.teams_artifact_set()}</span>
+		<span class="tlp-name"
+			>{artifact ? artifactName(artifact.id, artifact.name) : m.teams_artifact_set()}</span
+		>
 	</button>
 	<button
 		class="tlp-plate"
 		class:is-unset={!weapon}
-		title={weapon ? `${weapon.name} R${ref}` : m.teams_weapon()}
+		title={weapon ? `${weaponName(weapon.id, weapon.name)} R${ref}` : m.teams_weapon()}
 		aria-expanded={open}
 		aria-label={m.teams_charid_weapon_x({
-			name: char?.displayName ?? charId,
-			weapon: weapon ? `${weapon.name} R${ref}` : m.teams_none()
+			name: characterName(charId),
+			weapon: weapon ? `${weaponName(weapon.id, weapon.name)} R${ref}` : m.teams_none()
 		})}
 		onclick={toggle}
 	>
@@ -129,7 +132,7 @@
 				: weaponTypeIcon(char?.weapon)}
 			alt=""
 		/>
-		<span class="tlp-name">{weapon?.name ?? m.teams_weapon()}</span>
+		<span class="tlp-name">{weapon ? weaponName(weapon.id, weapon.name) : m.teams_weapon()}</span>
 		{#if weapon}<span class="tlp-ref">R{ref}</span>{/if}
 	</button>
 </div>

@@ -17,9 +17,18 @@
 
 import data from './data/endgame/stygian.json';
 import abyssData from './data/endgame/abyss.json';
+import { getLocale } from '$lib/i18n/locale';
 
-/** One string in every language the source carries ('' is dropped). */
-export type Localized = { en: string; zh?: string; pt?: string; ru?: string; fr?: string };
+/** One string in every language the source carries ('' is dropped). `ja`
+ *  comes from the game's text maps (`scripts/localize-endgame.mjs`). */
+export type Localized = {
+	en: string;
+	zh?: string;
+	ja?: string;
+	pt?: string;
+	ru?: string;
+	fr?: string;
+};
 
 export type Boss = {
 	name: Localized;
@@ -140,9 +149,25 @@ export function bossImage(boss: string, kind: 'art' | 'icon'): string {
 
 export const spriteImage = (id: number) => `/assets/endgame/sprites/${id}.webp`;
 
-/** A localized field in `lang`, falling back to English. */
-export const inLang = (l: Localized, lang = 'en') =>
+/** A localized field in `lang` (the page's language unless given), falling
+ *  back to English. ⚠️ Anything that reads the game's English to decide
+ *  something (a check's verdict) reads `.en` directly. */
+export const inLang = (l: Localized, lang: string = getLocale()) =>
 	(l as Record<string, string | undefined>)[lang] ?? l.en;
+
+/**
+ * A boss's title in its two parts: the name, and the variant it fights as.
+ * English writes "Battle-Hardened Domovoy Sculptor: Gale Hewing"; Japanese
+ * brackets the variant, 百戦錬磨のドモヴォーイの彫刻師（百風）. A title with
+ * neither form is all name.
+ */
+export function bossTitleParts(full: string): { name: string; variant: string | null } {
+	const colon = full.indexOf(': ');
+	if (colon > 0) return { name: full.slice(0, colon), variant: full.slice(colon + 2) };
+	const bracket = full.match(/^(.+?)（(.+)）$/);
+	if (bracket) return { name: bracket[1], variant: bracket[2] };
+	return { name: full, variant: null };
+}
 
 // ---------------------------------------------------------------------------
 // The Abyss — its blessing only (Nate 2026-10-09)

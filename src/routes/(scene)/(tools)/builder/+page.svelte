@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
-	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { newestFirst } from '$lib/utils/release';
 	import {
 		constellations,
@@ -778,7 +779,7 @@
 		swapping = null;
 	}
 
-	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+	const nameOf = (id: string) => characterName(id);
 
 	// ⚓ A swap's suggestions are read from the TOP (Nate 2026-10-13): the
 	// grid's scroller is the roster's too, so entering swap mode — or moving
@@ -1018,7 +1019,7 @@
 	});
 
 	function theaterPickLabel(entry: CharacterIndexEntry): string {
-		const name = entry.displayName;
+		const name = characterName(entry.id);
 		if (!thOwned(entry.id)) return m.tb_displayname_not_owned({ name });
 		if (thOff(entry.id)) return m.tb_displayname_marked_can_t_enter_theater({ name });
 		const at = thCast.indexOf(entry.id);
@@ -1224,17 +1225,25 @@
 		if (swapping)
 			return swapping.incumbent
 				? m.tb_swap_displayname_in_for_incumbent({
-						name: entry.displayName,
+						name: characterName(entry.id),
 						old: nameOf(swapping.incumbent)
 					})
-				: m.tb_add_displayname_to_selectedlabel({ name: entry.displayName, team: selectedLabel });
+				: m.tb_add_displayname_to_selectedlabel({
+						name: characterName(entry.id),
+						team: selectedLabel
+					});
 		const team = selectedLabel;
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
 		const from = slot < 0 ? leavingLabel(entry.id) : undefined;
-		if (from) return m.tb_remove_displayname_from_from({ name: entry.displayName, team: from });
+		if (from)
+			return m.tb_remove_displayname_from_from({ name: characterName(entry.id), team: from });
 		return slot >= 0
-			? m.tb_remove_displayname_from_team_slot_x({ name: entry.displayName, team, n: slot + 1 })
-			: m.tb_add_displayname_to_team({ name: entry.displayName, team });
+			? m.tb_remove_displayname_from_team_slot_x({
+					name: characterName(entry.id),
+					team,
+					n: slot + 1
+				})
+			: m.tb_add_displayname_to_team({ name: characterName(entry.id), team });
 	}
 
 	// ── SWAP MODE'S GRID (§11.6 item 20) ─────────────────────────────────────

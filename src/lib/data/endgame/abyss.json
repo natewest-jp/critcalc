@@ -11,14 +11,16 @@
 				"zh": "辉卷之月",
 				"pt": "Lua em Cascata",
 				"ru": "Каскадная луна",
-				"fr": "Lune cascadante"
+				"fr": "Lune cascadante",
+				"ja": "輝巻の月"
 			},
 			"text": {
 				"en": "When a character deals Swirl or Stellar Swirl DMG to an opponent, **a shockwave will be unleashed** at the opponent's position, dealing True DMG. This effect can be triggered once every 4s.",
 				"zh": "角色对敌人造成扩散反应伤害或星扩散伤害时，将在敌人的位置**释放冲击波**，造成真实伤害，此效果每4秒至多触发一次。",
 				"pt": "Quando um personagem causar Dano de Redemoinho ou Redemoinho Estelar a um oponente, **uma Onda de Choque será liberada** na posição do oponente, causando Dano Real. Este efeito pode ser desencadeado uma vez a cada 4s.",
 				"ru": "Когда персонаж наносит противнику урон реакцией Рассеивание или Звёздное рассеивание, в месте нахождения врага **высвобождается ударная волна**, наносящая истинный урон. Этот эффект может срабатывать не чаще одного раза в 4 сек.",
-				"fr": "Lorsqu'un personnage inflige des DGT de réaction de Dispersion ou de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 4 s."
+				"fr": "Lorsqu'un personnage inflige des DGT de réaction de Dispersion ou de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 4 s.",
+				"ja": "キャラクターが敵に拡散反応ダメージまたは星拡散ダメージを与えた時、敵の位置に**衝撃波を発生させ**、確定ダメージを与える。この効果は4秒毎に1回のみ発動可能。"
 			},
 			"halves": [
 				{
@@ -26,14 +28,16 @@
 					"zh": "角色的扩散反应造成的伤害提升200%，角色造成的星扩散伤害提升75%。",
 					"pt": "O Dano causado por reações de Redemoinho dos personagens aumenta em 200%, e o Dano de Redemoinho Estelar causado pelos personagens aumenta em 75%.",
 					"ru": "Урон от реакции Рассеивание персонажа увеличивается на 200%, а урон от реакции Звёздное рассеивание персонажа увеличивается на 75%.",
-					"fr": "Les DGT infligés par les réactions de Dispersion des personnages augmentent de 200 % et ceux des réactions d'Astrodispersion de 75 %."
+					"fr": "Les DGT infligés par les réactions de Dispersion des personnages augmentent de 200 % et ceux des réactions d'Astrodispersion de 75 %.",
+					"ja": "キャラクターの拡散反応ダメージ+200%、星拡散ダメージ+75%。"
 				},
 				{
 					"en": "Characters' Electro-Charged DMG increased by 200% and Lunar-Charged DMG increased by 75%.",
 					"zh": "角色的感电反应造成的伤害提升200%，角色造成的月感电伤害提升75%。",
 					"pt": "Dano de Eletricamente Carregado dos personagens aumentado em 200% e Dano de Carga Lunar aumentado em 75%.",
 					"ru": "Урон от реакции Заряжен персонажа увеличен на 200%, урон от реакции Лунный заряд увеличен на 75%.",
-					"fr": "Les DGT infligés par les réactions d'Électrocution des personnages augmentent de 200 % et ceux des réactions de Sélénocution de 75 %."
+					"fr": "Les DGT infligés par les réactions d'Électrocution des personnages augmentent de 200 % et ceux des réactions de Sélénocution de 75 %.",
+					"ja": "キャラクターの感電反応ダメージ+200%、月感電ダメージ+75%。"
 				}
 			],
 			"chambers": [
@@ -49,7 +53,8 @@
 									"zh": "历经百战的嵌合梭地兽",
 									"pt": "Besta Quimérica Enterrada Veterana",
 									"ru": "Бывалая химера-землерой",
-									"fr": "Bête-fouisse chimérique vétérane"
+									"fr": "Bête-fouisse chimérique vétérane",
+									"ja": "百戦錬磨の合成獣・バロウビースト"
 								}
 							}
 						],
@@ -62,7 +67,8 @@
 									"zh": "荒野幽徒",
 									"pt": "Exilado Selvagem",
 									"ru": "Изгнанник пустошей",
-									"fr": "Exilé des terres sauvages"
+									"fr": "Exilé des terres sauvages",
+									"ja": "ワイルド・ワンダラー"
 								}
 							},
 							{
@@ -73,7 +79,8 @@
 									"zh": "历经百战的火刃突击队员",
 									"pt": "Tropa de Choque Lâmina Flamejante Veterana",
 									"ru": "Бывалый Штурмовик огненного клинка",
-									"fr": "Troupier lame-de-feu vétéran"
+									"fr": "Troupier lame-de-feu vétéran",
+									"ja": "百戦錬磨の突撃兵・ファイアーブレイド"
 								}
 							}
 						]
@@ -91,7 +98,8 @@
 									"zh": "不灭衍生造物",
 									"pt": "Criação Derivada Imortal",
 									"ru": "Бессмертный конструкт",
-									"fr": "Structure immortelle"
+									"fr": "Structure immortelle",
+									"ja": "不滅の副産物"
 								}
 							}
 						],
@@ -104,7 +112,8 @@
 									"zh": "深黯钓客",
 									"pt": "Pescador das Profundezas Desconhecidas",
 									"ru": "Рыболов скрытых глубин",
-									"fr": "Pêcheur des fonds cachés"
+									"fr": "Pêcheur des fonds cachés",
+									"ja": "闇の漁師"
 								}
 							},
 							{
@@ -115,7 +124,8 @@
 									"zh": "深黯魇语之主",
 									"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos",
 									"ru": "Повелитель скрытых глубин: Шёпот кошмаров",
-									"fr": "Seigneur chuchoteur de cauchemars des fonds cachés"
+									"fr": "Seigneur chuchoteur de cauchemars des fonds cachés",
+									"ja": "昏き魘夢の主"
 								}
 							}
 						]
@@ -133,7 +143,8 @@
 									"zh": "历经百战的矮灵雕刻师",
 									"pt": "Escultor Domovoy Veterano",
 									"ru": "Бывалый домовой-ваятель",
-									"fr": "Sculpteur domovoy vétéran"
+									"fr": "Sculpteur domovoy vétéran",
+									"ja": "百戦錬磨のドモヴォーイの彫刻師"
 								}
 							}
 						],
@@ -146,7 +157,8 @@
 									"zh": "历经百战的执灯人",
 									"pt": "Portador da Lâmpada Veterano",
 									"ru": "Бывалый светоносец",
-									"fr": "Gardien de lumière vétéran"
+									"fr": "Gardien de lumière vétéran",
+									"ja": "百戦錬磨のライトキーパー"
 								}
 							}
 						]
@@ -163,14 +175,16 @@
 				"zh": "骇星之月",
 				"pt": "Lua Estelar Aterrorizante",
 				"ru": "Луна зловещих звёзд",
-				"fr": "Lune stellaire"
+				"fr": "Lune stellaire",
+				"ja": "恐星の月"
 			},
 			"text": {
 				"en": "When a character triggers a Superconduct, Stellar-Conduct, Cryo Swirl, Stellar Swirl, Frozen, or Shatter reaction on an opponent, or deals Stellar-Conduct or Stellar Swirl DMG to an opponent, **a shockwave will be unleashed** at the opponent's position, dealing True DMG. This effect can be triggered once every 2s.",
 				"zh": "角色对敌人触发超导、星超导、冰扩散、星扩散、冻结与碎冰反应，以及对敌人造成星超导、星扩散反应伤害时，将在敌人的位置**释放冲击波**，造成真实伤害，该效果每2秒至多触发一次。",
 				"pt": "Quando um personagem desencadeia as reações de Supercondutor, Supercondutor Estelar, Redemoinho Cryo, Redemoinho Estelar, Congelado ou Quebrar Gelo, ou causa dano de Supercondutor ou Supercondutor Estelar a um oponente, **uma onda de choque será lançada** na posição do oponente, causando Dano Real. Esse efeito pode ser ativado uma vez a cada 2s.",
 				"ru": "Когда персонаж вызывает на противнике реакции Сверхпроводник, Звёздный проводник, Крио рассеивание, Звёздное рассеивание, Заморозка или Разбит, а также наносит урон реакциями Звёздный проводник или Звёздное рассеивание, в месте нахождения противника **высвобождается ударная волна**, наносящая истинный урон. Этот эффект может срабатывать не чаще одного раза в 2 сек.",
-				"fr": "Lorsqu'un personnage déclenche une réaction de Supraconduction, d'Astroconduction, de Dispersion Cryo, d'Astrodispersion, de Gel ou de Brise-glace sur un ennemi ou inflige des DGT de réaction d'Astroconduction ou des DGT de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 2 s."
+				"fr": "Lorsqu'un personnage déclenche une réaction de Supraconduction, d'Astroconduction, de Dispersion Cryo, d'Astrodispersion, de Gel ou de Brise-glace sur un ennemi ou inflige des DGT de réaction d'Astroconduction ou des DGT de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 2 s.",
+				"ja": "キャラクターが敵に超電導、星電導、氷拡散、星拡散、凍結または氷砕き反応を起こした時、または敵に星電導、星拡散ダメージを与えた時、敵の位置に**衝撃波を発生させ**、確定ダメージを与える。この効果は2秒毎に1回のみ発動可能。"
 			},
 			"halves": [
 				{
@@ -178,14 +192,16 @@
 					"zh": "角色的星烁反应造成的伤害提升75%。",
 					"pt": "Dano de Brilho Estelar dos Personagens aumentado em 75%.",
 					"ru": "Урон от реакции Звёздного блеска персонажа увеличен на 75%.",
-					"fr": "Les DGT infligés par les réactions astrales des personnages augmentent de 75 %."
+					"fr": "Les DGT infligés par les réactions astrales des personnages augmentent de 75 %.",
+					"ja": "キャラクターの星反応ダメージ+75%。"
 				},
 				{
 					"en": "All party members gain a 75% Cryo DMG Bonus.",
 					"zh": "队伍中所有角色获得75%冰元素伤害加成。",
 					"pt": "Todos os Personagens da Equipe obterão 75% de Bônus de Dano Cryo.",
 					"ru": "Все члены отряда получают 75% бонус Крио урона.",
-					"fr": "Tous les personnages de l'équipe bénéficient d'un bonus de DGT Cryo de 75 %."
+					"fr": "Tous les personnages de l'équipe bénéficient d'un bonus de DGT Cryo de 75 %.",
+					"ja": "チーム全員の氷元素ダメージ+75%。"
 				}
 			],
 			"chambers": [
@@ -201,7 +217,8 @@
 									"zh": "历经百战的嵌合兽怪箭士",
 									"pt": "Arqueiro Volkodlak Quimérico Veterano",
 									"ru": "Бывалый волкодлак-химера лучник",
-									"fr": "Archer volkodlak chimérique vétéran"
+									"fr": "Archer volkodlak chimérique vétéran",
+									"ja": "百戦錬磨の合成獣・ヴァルコドラクの射手"
 								}
 							}
 						],
@@ -214,7 +231,8 @@
 									"zh": "深罪浸礼者·水火雷驱役者",
 									"pt": "Batizador Iníquo: Invocador do Dilúvio, Fogo e Raios",
 									"ru": "Чудовищный креститель: Заклинатель потопа, пламени и молний",
-									"fr": "Lustrateur inique : Invocateur de l'eau, du feu et de la fulmination"
+									"fr": "Lustrateur inique : Invocateur de l'eau, du feu et de la fulmination",
+									"ja": "深罪の浸礼者·水炎雷の命じ手"
 								}
 							},
 							{
@@ -225,7 +243,8 @@
 									"zh": "黯色空壳·旗令",
 									"pt": "Armadura do Vazio: Porta-estandarte",
 									"ru": "Чёрный доспех: Знаменосец",
-									"fr": "Carapace sombre - Porte-étendard"
+									"fr": "Carapace sombre - Porte-étendard",
+									"ja": "シャドウハスク·旗令"
 								}
 							},
 							{
@@ -236,7 +255,8 @@
 									"zh": "黯色空壳·近卫",
 									"pt": "Armadura do Vazio: Defensor",
 									"ru": "Чёрный доспех: Гвардеец",
-									"fr": "Carapace sombre - Défenseur"
+									"fr": "Carapace sombre - Défenseur",
+									"ja": "シャドウハスク·守衛"
 								}
 							}
 						]
@@ -254,7 +274,8 @@
 									"zh": "蕴光月幻蝶",
 									"pt": "Borboleta Fantasmagórica do Véu Lunar",
 									"ru": "Лучезарный мотылёк-призрак",
-									"fr": "Lunillon radieux"
+									"fr": "Lunillon radieux",
+									"ja": "集光の幻月蝶"
 								}
 							}
 						],
@@ -267,7 +288,8 @@
 									"zh": "历经百战的盗宝团精锐",
 									"pt": "Ladrões de Tesouro de Elite Veterano",
 									"ru": "Бывалый элитный Похититель сокровищ",
-									"fr": "Élite vétérane des Pilleurs de trésors"
+									"fr": "Élite vétérane des Pilleurs de trésors",
+									"ja": "百戦錬磨の宝盗団精鋭"
 								}
 							}
 						]
@@ -285,7 +307,8 @@
 									"zh": "嵌合翼骏狮",
 									"pt": "Leão Alado Quimérico",
 									"ru": "Крылатая химера-лев",
-									"fr": "Lion ailé chimérique"
+									"fr": "Lion ailé chimérique",
+									"ja": "合成獣・フリューゲルレーヴェ"
 								}
 							}
 						],
@@ -298,7 +321,8 @@
 									"zh": "秘源机兵·统御械",
 									"pt": "Autômato da Fonte Secreta: Dispositivo Supervisor",
 									"ru": "Автоматон таинственного источника: Надсмотрщик",
-									"fr": "Automate de source secrète : Surveillant"
+									"fr": "Automate de source secrète : Surveillant",
+									"ja": "秘源機兵・統御デバイス"
 								}
 							}
 						]
@@ -315,14 +339,16 @@
 				"zh": "凌振之月",
 				"pt": "Lua Ressonante",
 				"ru": "Луна вознесения",
-				"fr": "Lune retentissante"
+				"fr": "Lune retentissante",
+				"ja": "鳴震の月"
 			},
 			"text": {
 				"en": "When a character triggers Superconduct or Stellar-Conduct reaction on an opponent, they gain 1 stack count, and when the stack count reaches 3, **a shockwave is unleashed** at the opponent's position, dealing True DMG and consuming all stack counts at the same time. Up to 1 stack count can be gained every 0.1s. A shockwave can be unleashed this way every 4s.",
 				"zh": "角色对敌人触发超导、星超导反应时，将获得1层计数，计数达到3层时，将在敌人的位置**释放冲击波**，造成真实伤害，并清除所有计数。每0.1秒至多获得1层计数，每4秒至多通过这种方式释放一次冲击波。",
 				"pt": "Quando um personagem desencadeia uma reação de Supercondutor ou Supercondutor Estelar em um oponente, obtém 1 acúmulo e, quando essa contagem chegar a 3, **uma Onda de Choque é desencadeada** na posição do oponente, causando Dano Real e consumindo todos os acúmulos ao mesmo tempo. Até 1 acúmulo pode ser ganho a cada 0.1s. Uma Onda de Choque pode ser desencadeada dessa forma a cada 4s.",
 				"ru": "Когда персонаж вызывает реакцию Сверхпроводник или Звёздный проводник на противнике, он получает 1 уровень счётчика. При накоплении 3 уровней счётчика на позиции противника **высвобождается ударная волна**, наносящая истинный урон и сбрасывающая все уровни счётчика. Можно получить не более 1 уровня раз в 0,1 сек. и высвободить ударную волну таким образом не чаще 1 раза в 4 сек.",
-				"fr": "Lorsqu'un personnage déclenche une réaction de Supraconduction ou d'Astroconduction sur un ennemi, il obtient 1 cumul. Avec 3 cumuls, **une onde de choc est libérée** à l'emplacement de l'ennemi, infligeant des DGT réels et consommant tous les cumuls. Les personnages peuvent obtenir 1 cumul toutes les 0,1 s et une onde de choc peut être libérée une fois toutes les 4 s."
+				"fr": "Lorsqu'un personnage déclenche une réaction de Supraconduction ou d'Astroconduction sur un ennemi, il obtient 1 cumul. Avec 3 cumuls, **une onde de choc est libérée** à l'emplacement de l'ennemi, infligeant des DGT réels et consommant tous les cumuls. Les personnages peuvent obtenir 1 cumul toutes les 0,1 s et une onde de choc peut être libérée une fois toutes les 4 s.",
+				"ja": "キャラクターが敵に超電導または星電導反応を起こした時、カウントを1層獲得する。カウントが3層に達すると、敵の位置に**衝撃波を放ち**、確定ダメージを与え、すべてのカウントを消費する。カウントは0.1秒毎に最大1層獲得でき、この方法による衝撃波は4秒毎に1回のみ発動可能。"
 			},
 			"halves": [
 				{
@@ -330,14 +356,16 @@
 					"zh": "月结晶伤害提升75%。",
 					"pt": "Dano de Cristalização Lunar é aumentado em 75%.",
 					"ru": "Урон от реакции Лунный кристалл увеличен на 75%.",
-					"fr": "#Les DGT de Sélénocristallisation augmentent de 75{NON_BREAK_SPACE}%."
+					"fr": "#Les DGT de Sélénocristallisation augmentent de 75{NON_BREAK_SPACE}%.",
+					"ja": "月結晶ダメージ+75%。"
 				},
 				{
 					"en": "All party members have their Elemental Mastery increased by 200.",
 					"zh": "队伍中所有角色的元素精通提升200点。",
 					"pt": "Aumenta a Proficiência Elemental de todos os Personagens da Equipe em 200.",
 					"ru": "Мастерство стихий всех членов отряда увеличено на 200 ед.",
-					"fr": "Augmente la maîtrise élémentaire de tous les personnages de l'équipe de 200 pts."
+					"fr": "Augmente la maîtrise élémentaire de tous les personnages de l'équipe de 200 pts.",
+					"ja": "チーム全員の元素熟知+200。"
 				}
 			],
 			"chambers": [
@@ -353,7 +381,8 @@
 									"zh": "历经百战的虹彩史莱姆",
 									"pt": "Slime Prismático Veterano",
 									"ru": "Бывалый призматический слайм",
-									"fr": "Blob prismatique vétéran"
+									"fr": "Blob prismatique vétéran",
+									"ja": "百戦錬磨のプリズムスライム"
 								}
 							}
 						],
@@ -366,7 +395,8 @@
 									"zh": "浪涛锚定者",
 									"pt": "Controlador das Ondas",
 									"ru": "Удерживающий волны",
-									"fr": "Ancravague"
+									"fr": "Ancravague",
+									"ja": "波濤の投錨者"
 								}
 							}
 						]
@@ -384,7 +414,8 @@
 									"zh": "霜夜巡天灵主",
 									"pt": "Nobre da Noite Gelada",
 									"ru": "Повелитель морозной ночи",
-									"fr": "Herra de la nuit glaciale"
+									"fr": "Herra de la nuit glaciale",
+									"ja": "霜夜の空を巡る霊主"
 								}
 							}
 						],
@@ -397,7 +428,8 @@
 									"zh": "游雪的护刃",
 									"pt": "Guarda-Lâmina da Neve Errante",
 									"ru": "Разящая вьюга",
-									"fr": "Lame gardienne de la neige flottante"
+									"fr": "Lame gardienne de la neige flottante",
+									"ja": "游雪のブレードガーディアン"
 								}
 							}
 						]
@@ -415,7 +447,8 @@
 									"zh": "蕴光月守宫",
 									"pt": "Lagartixa Radiante",
 									"ru": "Лучезарный лунный геккон",
-									"fr": "Lunigecko radieux"
+									"fr": "Lunigecko radieux",
+									"ja": "集光の月ヤモリ"
 								}
 							}
 						],
@@ -428,7 +461,8 @@
 									"zh": "恒常机关阵列",
 									"pt": "Formação Mecânica Perpétua",
 									"ru": "Бесконечный механический массив",
-									"fr": "Matrice mécanique perpétuelle"
+									"fr": "Matrice mécanique perpétuelle",
+									"ja": "恒常からくり陣形"
 								}
 							}
 						]

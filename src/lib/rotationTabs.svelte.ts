@@ -64,6 +64,7 @@
  * prerendering.
  */
 
+import { characterName } from '$lib/i18n/gameNames';
 import { browser } from '$app/environment';
 import {
 	deleteCharacterFromNotation,
@@ -84,7 +85,6 @@ import { type LoadoutEntry } from '$lib/stores';
 import type { TeamRecord } from '$lib/storage/records';
 import { teamOfWork } from '$lib/storage/teamLoadout';
 import { pickSample } from '$lib/data/plannerSamples';
-import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { untrack } from 'svelte';
 import { namedMessage, notices } from '$lib/notices.svelte';
 import { m } from '$lib/paraglide/messages';
@@ -468,7 +468,7 @@ class RotationTabsState {
 		if (!id || !this.canEdit()) return;
 		const undo = this.#snapshot();
 		this.setSlot(index, null);
-		const name = getCharacterIndexEntry(id)?.displayName ?? id;
+		const name = characterName(id);
 		notices.toast('success', namedMessage(m.library_name_is_off_the_team, { name: [name] }), {
 			actions: [{ label: m.notices_undo(), run: undo }]
 		});

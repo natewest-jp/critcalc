@@ -22,6 +22,7 @@
 	which is exactly what it did on 2026-08-06.
 -->
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
@@ -176,7 +177,7 @@
 			for (const bonus of bonuses)
 				if (chipKey(owner, bonus) === t.key)
 					return {
-						sourceLabel: `${owner.displayName} · ${bonus.name}`,
+						sourceLabel: `${characterName(owner.id)} · ${bonus.name}`,
 						effects: chipEffects(owner, bonus)
 					};
 		}
@@ -284,10 +285,11 @@
 						class:tb-inspectable={!!owner}
 						class:tb-inspected={!!owner && pv.inspectedBonusKey === chipKey(owner, bonus)}
 						style:border-left-color={elementPalette(owner?.element).main}
-						onmouseenter={(e) => owner && showChipTooltip(e, owner, bonus, owner.displayName)}
+						onmouseenter={(e) => owner && showChipTooltip(e, owner, bonus, characterName(owner.id))}
 						onmouseleave={hideChipTooltip}
 						onclick={() => owner && inspectChip(chipKey(owner, bonus))}
-						>{#if owner?.displayName}<span class="bonus-chip-owner">{owner.displayName}:&nbsp;</span
+						>{#if owner?.displayName}<span class="bonus-chip-owner"
+								>{characterName(owner.id)}:&nbsp;</span
 							>{/if}{bonus.name}</span
 					>
 				{/each}

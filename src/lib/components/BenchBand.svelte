@@ -42,6 +42,7 @@
 	 *   generated SVG — see the tail block in benchBand.svelte.ts for both, and
 	 *   for why neither could stay a CSS box.
 	 */
+	import { characterName } from '$lib/i18n/gameNames';
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
@@ -378,7 +379,7 @@
 						)}
 					onPortraitClick={portraitClickFor(char, i)}
 					portraitLabel={char && char.id !== 'blank'
-						? m.bench_displayname_s_details({ name: char.displayName })
+						? m.bench_displayname_s_details({ name: characterName(char.id) })
 						: row
 							? m.bench_empty_slot()
 							: m.bench_choose_a_character_for_this_slot()}
@@ -398,10 +399,10 @@
 							disabled={!live}
 							onclick={() => char && host?.onSwap(i, char.id)}
 							title={live && char
-								? m.bench_swap_displayname({ name: char.displayName })
+								? m.bench_swap_displayname({ name: characterName(char.id) })
 								: undefined}
 							aria-label={live && char
-								? m.bench_swap_displayname({ name: char.displayName })
+								? m.bench_swap_displayname({ name: characterName(char.id) })
 								: m.bench_swap_empty_slot()}
 						>
 							<Mark name="swap" />
@@ -411,10 +412,10 @@
 							disabled={!live}
 							onclick={() => rt.takeOff(i)}
 							title={live && char
-								? m.bench_remove_displayname_from_team({ name: char.displayName })
+								? m.bench_remove_displayname_from_team({ name: characterName(char.id) })
 								: undefined}
 							aria-label={live && char
-								? m.bench_remove_displayname_from_team({ name: char.displayName })
+								? m.bench_remove_displayname_from_team({ name: characterName(char.id) })
 								: m.bench_remove_empty_slot()}
 						>
 							<Mark name="close" />

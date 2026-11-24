@@ -1,4 +1,5 @@
 <script lang="ts" module>
+	import { characterName } from '$lib/i18n/gameNames';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 
 	/** One glyph of the card's fingerprint. The consumer supplies them ALREADY
@@ -151,7 +152,7 @@
 	let cardW = $state(0);
 	let nameEl = $state<HTMLElement>();
 	/** The name's width at 12px (unitless px), for the strip's fit. */
-	const nameW = $derived(nameEl ? nameWidth(entry.displayName, nameEl) : 0);
+	const nameW = $derived(nameEl ? nameWidth(characterName(entry.id), nameEl) : 0);
 	const fit = $derived(glyphFit(cardW || 108));
 	/** Past the fit, the first fit−1 glyphs and a "+K" in the last row. The
 	 *  consumer orders them (a filtered capability first), so what is hidden
@@ -209,7 +210,7 @@
 						draggable="false"
 					/>
 				{:else}
-					<span class="cc-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
+					<span class="cc-initials">{characterName(entry.id).slice(0, 2).toUpperCase()}</span>
 				{/if}
 				{#if entry.element}
 					<img
@@ -244,13 +245,13 @@
 			{/if}
 		</span>
 		<span class="cc-name ctx-light" bind:this={nameEl} style:--cc-name-w={nameW || undefined}
-			>{entry.displayName}</span
+			>{characterName(entry.id)}</span
 		>
 	</button>
 	<button
 		class="cc-mag"
-		aria-label={m.tb_displayname_s_details({ name: entry.displayName })}
-		title={m.tb_displayname_s_details({ name: entry.displayName })}
+		aria-label={m.tb_displayname_s_details({ name: characterName(entry.id) })}
+		title={m.tb_displayname_s_details({ name: characterName(entry.id) })}
 		onclick={() => onDetails(entry.id)}><Mark name="search" size={14} /></button
 	>
 	{#if frame}

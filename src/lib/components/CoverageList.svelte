@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName, characterMatches } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
 	 * The /coverage page's body (docs/rounds/coverage-round.md §7): every character, a
@@ -134,9 +135,7 @@
 		if (pinned.length > 0) return pinned.map((id) => byId[id]);
 		const q = search.trim().toLowerCase();
 		const out = rows.filter(
-			(r) =>
-				(!q || r.entry.displayName.toLowerCase().includes(q)) &&
-				(!rosterOnly || owned.has(r.entry.id))
+			(r) => (!q || characterMatches(r.entry, q)) && (!rosterOnly || owned.has(r.entry.id))
 		);
 		const byName = (a: Row, b: Row) => a.entry.displayName.localeCompare(b.entry.displayName);
 		if (sort === 'name') return out.sort(byName);
@@ -346,7 +345,7 @@
 								<span class="avatar avatar--blank"></span>
 							{/if}
 							<span class="who-text">
-								<span class="name">{row.entry.displayName}</span>
+								<span class="name">{characterName(row.entry.id)}</span>
 								<span class="count">{m.coverage_lit_of_of({ lit: row.lit, of: row.of })}</span>
 							</span>
 						</span>

@@ -21,6 +21,7 @@
 		bossImage,
 		bossRuns,
 		inLang,
+		bossTitleParts,
 		loadBossText,
 		type Battlefield,
 		type BossText,
@@ -70,7 +71,7 @@
 	const fullName = $derived(inLang(boss.name));
 	/** The game writes "Name: Title" — "Battle-Hardened Domovoy Sculptor: Gale
 	 *  Hewing". The NAME leads (Nate 2026-10-09); the title is its epithet. */
-	const cut = $derived(fullName.indexOf(': '));
+	const parts = $derived(bossTitleParts(fullName));
 
 	let closeBtn = $state<HTMLButtonElement>();
 	onMount(() => closeBtn?.focus());
@@ -91,8 +92,8 @@
 			<p class="kicker bd-kicker">
 				{m.tb_battlefield_x_stygian_onslaught_version({ n: index + 1, version: season.version })}
 			</p>
-			<h2 class="bd-title">{cut > 0 ? fullName.slice(0, cut) : fullName}</h2>
-			{#if cut > 0}<p class="bd-family">{fullName.slice(cut + 2)}</p>{/if}
+			<h2 class="bd-title">{parts.name}</h2>
+			{#if parts.variant}<p class="bd-family">{parts.variant}</p>{/if}
 			{#if battlefield.checks.length}
 				<div class="bd-checks">
 					{#each battlefield.checks as c, i (i)}<CheckChip

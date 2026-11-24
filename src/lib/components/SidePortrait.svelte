@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { m } from '$lib/paraglide/messages';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import type { Twin } from '$lib/storage/records';
@@ -38,7 +39,6 @@
 	 * empty, or marks are off) — the chip then only states the level.
 	 */
 	import ConMark from './ConMark.svelte';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { siteSettings } from '$lib/stores';
 	import { SIDE_GEOMETRY, sideLayout } from '$lib/sidePortrait';
@@ -82,7 +82,7 @@
 	// The lab's tuning sliders retired 2026-10-14; every surface takes the default.
 	const geometry = SIDE_GEOMETRY;
 	const lay = $derived(sideLayout(size, geometry));
-	const name = $derived(id ? (getCharacterIndexEntry(id)?.displayName ?? id) : '');
+	const name = $derived(id ? characterName(id) : '');
 
 	function handleError(e: Event) {
 		const img = e.currentTarget as HTMLImageElement;

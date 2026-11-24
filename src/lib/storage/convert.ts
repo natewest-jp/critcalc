@@ -6,9 +6,9 @@
  * directions.
  */
 
+import { characterName } from '$lib/i18n/gameNames';
 import type { Board } from '$lib/boards.svelte';
 import type { RotationTab } from '$lib/rotationTabs.svelte';
-import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { isMintedLabel } from './migrate';
 import type { SavedNotation } from '$lib/stores';
 import type { LineupBody, LineupDocument, RotationBody, RotationDocument } from './records';
@@ -22,9 +22,7 @@ import { htmlLang } from '$lib/i18n/locale';
  * saved team's name comes first once Teams exist (phase 3).
  */
 export function rotationLabel(slots: readonly (string | null)[]): string {
-	const names = slots
-		.filter((id): id is string => !!id)
-		.map((id) => getCharacterIndexEntry(id)?.displayName ?? id);
+	const names = slots.filter((id): id is string => !!id).map((id) => characterName(id));
 	return names.length ? names.join(' · ') : m.library_new_rotation();
 }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { m } from '$lib/paraglide/messages';
 	import { elementLabel } from '$lib/utils/auraDisplay';
 	import Msg from '$lib/components/Msg.svelte';
@@ -28,7 +29,6 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { functionIcon, positionIcon } from '$lib/utils/roleIcons';
 	import { inLang, monsterImage } from '$lib/endgame';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { sideLayout } from '$lib/sidePortrait';
 	import {
 		FLOWERS_PER_EXTRA,
@@ -76,7 +76,7 @@
 	const fmt = (n: number) => n.toLocaleString('en-US');
 	// The game numbers the Arcana challenges in Roman numerals in every language.
 	const ROMAN = ['I', 'II', 'III'];
-	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+	const nameOf = (id: string) => characterName(id);
 
 	/** A refused invite nudges its button, as a full team's card does. */
 	let nudged = $state(false);

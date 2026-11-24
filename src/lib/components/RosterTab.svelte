@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
 	 * THE ROSTER — the Library's second tab (lineups design §11.6 items 1, 2, 7,
@@ -707,8 +708,8 @@
 								class="til-face"
 								aria-pressed={mk === 'owned'}
 								aria-label={mk === 'owned'
-									? m.tb_displayname_owned({ name: c.displayName })
-									: m.tb_displayname_not_owned({ name: c.displayName })}
+									? m.tb_displayname_owned({ name: characterName(c.id) })
+									: m.tb_displayname_not_owned({ name: characterName(c.id) })}
 								tabindex="-1"
 								title={editing
 									? mk === 'owned'
@@ -758,7 +759,7 @@
 								<span class="til-con">C{con}</span>
 							{/if}
 						</div>
-						<span class="til-name">{c.displayName}</span>
+						<span class="til-name">{characterName(c.id)}</span>
 						{#if editing && !c.noConstellations}
 							<!-- C1–C6 and their keys are notation, the same in every language. -->
 							<div class="til-pips" role="group" aria-label={m.tb_constellation()}>

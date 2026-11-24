@@ -17,6 +17,7 @@
   team already holds a set. Strings are working copy.
 -->
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
@@ -29,7 +30,6 @@
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
 	import type { DocumentRecord, TeamRecord } from '$lib/storage/records';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
 	import { belongsToTeam } from '$lib/storage/teamLoadout';
 	import { ownership, siteSettings } from '$lib/stores';
@@ -39,7 +39,7 @@
 	const twin = $derived(storageSession.profile?.twin ?? 'aether');
 	const avatar = (id: string) =>
 		hasAvatar(id) ? getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin) : null;
-	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+	const nameOf = (id: string) => characterName(id);
 	/** ⚓ An unnamed team shows its members, as an unnamed document does (§4.2). */
 	const label = (t: Pick<TeamRecord, 'name' | 'slots'>) => t.name || rotationLabel(t.slots);
 

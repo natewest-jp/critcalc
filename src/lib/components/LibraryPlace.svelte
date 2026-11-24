@@ -10,6 +10,7 @@
   Strings are working copy.
 -->
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { onDestroy } from 'svelte';
 	import { routeOf } from '$lib/i18n/paths';
 	import { page } from '$app/state';
@@ -32,7 +33,6 @@
 		type TeamRecord
 	} from '$lib/storage/records';
 	import { belongsToTeam, teamOfWork } from '$lib/storage/teamLoadout';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { MODE_NAME, THEATER_SEASONS } from '$lib/theater';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
@@ -212,7 +212,7 @@
 				roster?.ownership[id] === 'owned'
 					? (roster.constellations[id] ?? 0)
 					: (d.body.con?.[id] ?? 0);
-			if (lv !== own) out.push(`${getCharacterIndexEntry(id)?.displayName ?? id} C${lv}`);
+			if (lv !== own) out.push(`${characterName(id)} C${lv}`);
 		}
 		return out.join(' · ');
 	}

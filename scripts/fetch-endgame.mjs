@@ -31,6 +31,7 @@
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { localizeEndgame } from './localize-endgame.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DATES = join(ROOT, 'src/lib/data/endgame/season-dates.json');
@@ -549,6 +550,8 @@ async function main() {
 	);
 	await abyss(table.abyss ?? {});
 	await theater(table.theater ?? []);
+	// lunaris serves no Japanese; the game's text maps do, keyed by the Chinese.
+	await localizeEndgame();
 }
 
 // Run only when invoked directly — build-endgame-art imports `bossSlug`.

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { m } from '$lib/paraglide/messages';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -74,7 +75,7 @@
 						? ` · ${entry.region}`
 						: ''}
 				</p>
-				<h2 class="dc-hero-title">{entry?.displayName ?? id}</h2>
+				<h2 class="dc-hero-title">{characterName(id)}</h2>
 				{#if onToggleTeam && teamState}
 					<div class="dc-actions">
 						<button
@@ -127,7 +128,7 @@
 
 <!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): one
      shell for the Builder's three, a margin that closes it. -->
-<InspectModal label={m.tb_id_details({ name: entry?.displayName ?? id })} width="38rem" {onClose}>
+<InspectModal label={m.tb_id_details({ name: characterName(id) })} width="38rem" {onClose}>
 	<div class="dc-im" style:--el-color={color}>{@render hero()}</div>
 </InspectModal>
 
