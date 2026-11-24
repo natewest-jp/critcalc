@@ -206,9 +206,77 @@ Fonts (4.1) and dense-table layout (4.2) are where time will actually be lost.
 
 ---
 
+## 6. Lessons from Japanese, the first locale
+
+Japanese was drafted in nine rounds (the records are `docs/rounds/i18n-*.md`), about 2,500
+messages, with no unintended change to English. What it taught, for every locale after it.
+
+### Keep doing
+
+- **Extract, then draft, then record,** each on its own stacked branch. Each extraction proves
+  English unchanged by diffing the prerendered pages against `main`'s build, tag by tag and
+  text node by text node, with whitespace collapsed as the browser collapses it. For pages
+  rendered on the client, walk them in headless Chrome on both builds and diff the text.
+- **The term list before the strings.** `docs/text/terms-ja.md` numbers each entry and marks
+  its source (game, players, ours, kept). The calls with a real alternative become numbered
+  open questions, which are then the request to that language's community.
+- **A paragraph is one message,** with its bold words, code, and links as markup, so a
+  translation can reorder anything.
+- **The pseudo-locale (`/en-XA`) first,** to find clipping and assembled strings before any
+  real translation exists.
+- **Read translation as an English review.** Japanese found "1 frames", "1th", missing Oxford
+  commas, "a Advanced", and lowercase element names in screen-reader labels.
+
+### Traps it found (each is now a rule or a comment at its site)
+
+- Paraglide's compile reports success when its plugin fails to load, and SvelteKit's
+  `resolve()` is relative while prerendering. Grep `build/` after a platform change.
+- A message read at module load freezes one locale for the whole prerender. It recurred
+  surface by surface, including a table that copied another table's getters.
+- Text that doubles as an identity: a placeholder the code recognizes by its English can't be
+  translated.
+- Sizes counted in characters: a CJK character is two columns wide (`$lib/i18n/columns.ts`).
+- Dates written as text; they format from the ISO day now (`$lib/i18n/dates.ts`).
+- Terms drafted from memory were wrong (the resonance names). Every game term comes from
+  genshin-db's text or a named community source, never memory.
+- One English word for two game concepts forks in another language: "Radiance" is both the
+  Stellar reactions' 輝映 and Capturing Radiance's 明光, and the term list had merged them.
+  Check each concept against its own game text.
+- The extractor can't see game data (character, weapon, artifact, and boss names), lone
+  lowercase words, buff-value fragments ("/stack"), or labels looked up by id. Plan a pass for
+  them; game names need genshin-db lookups.
+- A larger message catalog slows tests that re-import it (the two-tab storage tests).
+
+### For Chinese
+
+- No extraction remains, so Chinese is a term list and then the draft, in a few large rounds
+  rather than nine. The surfaces' records list what each one holds.
+- Chinese is the game's original language, so genshin-db's Chinese text is the source text
+  itself, and the Chinese theorycrafting community has its own words, which may replace some
+  house terms (rotation and team building especially). Check them in the community's own
+  wikis and guides before using them.
+- Start `terms-zh.md` from Japanese's open questions: most are the same splits.
+- Decide Simplified only, or Traditional too, before the term list (open question below).
+
+### For Spanish, French, Russian, and other alphabetic locales
+
+- Length is the main layout risk; the pseudo-locale's growth factor is the early check.
+- Russian has more plural forms than English: check every plural message against
+  `Intl.PluralRules` for the locale.
+- A name dropped into a sentence (`{name}`) may need gender or case agreement; reword such
+  messages so the name stands alone, or give the translator variants.
+
+### Checks to add
+
+- **A completeness test per open locale:** every English message has a line in that locale, so
+  a new What's new entry can't show English on a translated page.
+- **A per-locale avoided-forms check,** like the English termbase's: for Japanese, 凸 and CD.
+
+---
+
 ## Open questions
 
 - Which Chinese — Simplified only, or both Simplified and Traditional?
   (genshin-db supports both at no extra cost beyond bundle size.)
-- Does the Tier C term list need to be enumerated up front, or discovered during
-  the audit pass?
+- ~~Does the Tier C term list need to be enumerated up front, or discovered during the audit
+  pass?~~ Up front: Japanese drafted the interiors from a term list made first (§6).
