@@ -27,6 +27,8 @@
 	import type { Snippet } from 'svelte';
 	import Msg from '$lib/components/Msg.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { abilityName } from '$lib/i18n/abilityNames';
+	import { factionBonusName } from '$lib/i18n/gameNames';
 
 	/**
 	 * A CHARACTER'S DETAILS, the body without a shell (inspector round,
@@ -107,10 +109,12 @@
 	const locked = (cap: DerivedCapability) => cap.minConstellation > viewCon;
 
 	function sectionLabel(cap: DerivedCapability): string {
-		const { section, abilityName, variant } = cap.source;
-		const name = variant ? `${abilityName} (${variant})` : abilityName;
+		const { section, abilityName: english, variant } = cap.source;
+		if (section === 'factionBonus')
+			return m.tb_name_team_bonus({ name: factionBonusName(english) });
+		const shown = data ? abilityName(data.id, english) : english;
+		const name = variant ? `${shown} (${variant})` : shown;
 		if (section === 'passive') return m.tb_name_passive({ name });
-		if (section === 'factionBonus') return m.tb_name_team_bonus({ name });
 		return name;
 	}
 
@@ -292,7 +296,7 @@
 					{#each castAbilities as ability (ability.id)}
 						<tr>
 							<td class="dc-timing-slot">{ability.abilityType === 'skill' ? 'E' : 'Q'}</td>
-							<td class="dc-timing-name">{ability.name}</td>
+							<td class="dc-timing-name">{abilityName(data.id, ability.name)}</td>
 							<td class="dc-timing-val">
 								{#if 'cooldown' in ability && ability.cooldown}<span class="dc-timing-part"
 										>{m.tb_cooldown_s_cooldown({ seconds: ability.cooldown })}</span

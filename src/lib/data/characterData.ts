@@ -13,6 +13,7 @@
 
 import { SvelteMap } from 'svelte/reactivity';
 import type { CharacterData } from '$lib/types/character';
+import { loadAbilityNames } from '$lib/i18n/abilityNames';
 
 type JsonModule = { default?: CharacterData } | CharacterData;
 
@@ -44,8 +45,10 @@ export function loadCharacter(id: string): Promise<CharacterData | null> {
 	const loader = loaders[`./characters/${id}.json`];
 	if (!loader) return Promise.resolve(null);
 
-	const promise = loader()
-		.then((mod) => {
+	// The page's ability names land with the payload, so a name never shows
+	// in English first (a no-op in English).
+	const promise = Promise.all([loader(), loadAbilityNames()])
+		.then(([mod]) => {
 			const data = ('default' in mod ? mod.default : mod) as CharacterData | undefined;
 			if (!data?.id) return null;
 			loaded.set(data.id, data);

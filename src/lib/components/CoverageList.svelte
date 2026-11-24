@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { abilityName } from '$lib/i18n/abilityNames';
+	import { factionBonusName } from '$lib/i18n/gameNames';
 	import { characterName, characterMatches } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
@@ -229,6 +231,10 @@
 			}
 		};
 	}
+
+	/** A line's form (an ability, a variant, or a team bonus) in the page's
+	 *  language. */
+	const formName = (id: string, english: string) => abilityName(id, factionBonusName(english));
 </script>
 
 <div class="coverage">
@@ -376,7 +382,8 @@
 												</dt>
 												{#each c.lines as line, li (li)}
 													<dd>
-														{#if line.form}<span class="form">{line.form}</span>{/if}
+														{#if line.form}<span class="form">{formName(d.data.id, line.form)}</span
+															>{/if}
 														{LINE_TEXT[line.code]}
 													</dd>
 												{/each}
@@ -413,7 +420,7 @@
 			<ul>
 				{#each c.lines as line, li (li)}
 					<li>
-						{#if line.form}<span class="form">{line.form}</span>{/if}
+						{#if line.form}<span class="form">{formName(d.data.id, line.form)}</span>{/if}
 						{LINE_TEXT[line.code]}
 					</li>
 				{/each}

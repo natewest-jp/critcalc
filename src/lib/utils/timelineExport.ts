@@ -39,6 +39,7 @@
  * color changes there, change it here.
  */
 
+import { abilityName } from '$lib/i18n/abilityNames';
 import { FPS } from '$lib/utils/frames';
 import { envelopeDensities } from '$lib/timeline/buffEnvelope';
 import {
@@ -1004,7 +1005,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					type(ctx!, 500, 10, 0.2);
 					ctx!.textAlign = 'left';
 					haloText(
-						srow.label,
+						abilityName(srow.characterId, srow.label),
 						px + 4,
 						rowTop + snap.summonRowH / 2 + 3,
 						...elementHalo(p.bar),

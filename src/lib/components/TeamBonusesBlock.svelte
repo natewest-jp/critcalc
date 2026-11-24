@@ -22,6 +22,7 @@
 	which is exactly what it did on 2026-08-06.
 -->
 <script lang="ts">
+	import { abilityName } from '$lib/i18n/abilityNames';
 	import { characterName } from '$lib/i18n/gameNames';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -177,7 +178,7 @@
 			for (const bonus of bonuses)
 				if (chipKey(owner, bonus) === t.key)
 					return {
-						sourceLabel: `${characterName(owner.id)} · ${bonus.name}`,
+						sourceLabel: `${characterName(owner.id)} · ${abilityName(owner.id, bonus.name)}`,
 						effects: chipEffects(owner, bonus)
 					};
 		}
@@ -202,7 +203,9 @@
 		if (effects.length === 0) return;
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		tooltip = {
-			sourceLabel: ownerName ? `${ownerName} · ${bonus.name}` : bonus.name,
+			sourceLabel: ownerName
+				? `${ownerName} · ${abilityName(holder.id, bonus.name)}`
+				: abilityName(holder.id, bonus.name),
 			effects,
 			x: rect.left + rect.width / 2,
 			anchorTop: rect.top,
@@ -290,7 +293,7 @@
 						onclick={() => owner && inspectChip(chipKey(owner, bonus))}
 						>{#if owner?.displayName}<span class="bonus-chip-owner"
 								>{characterName(owner.id)}:&nbsp;</span
-							>{/if}{bonus.name}</span
+							>{/if}{owner ? abilityName(owner.id, bonus.name) : bonus.name}</span
 					>
 				{/each}
 			{/each}

@@ -29,6 +29,7 @@ import {
 import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 import { barStepsOf } from './barSteps';
 import { m } from '$lib/paraglide/messages';
+import { abilityName } from '$lib/i18n/abilityNames';
 
 // Re-exported for renderer convenience (the template types against these).
 export type { TeamBuffBar, TeamBuffSubrow };
@@ -58,6 +59,8 @@ export function projectTeamBuffRows(
 		const src = w.source;
 		if (src.type === 'weapon') continue; // weapon windows are received-surface only
 		const displayName = characterName(w.characterId, getCharacter(w.characterId)?.displayName);
+		// ⚠ Keys stay English; only the label is the page's language.
+		const named = (english: string) => abilityName(w.characterId, english);
 
 		// Display formatting — same buffDisplay calls the legacy bars made,
 		// with the window's carried trigger-time context.
@@ -98,7 +101,7 @@ export function projectTeamBuffRows(
 					? undefined
 					: (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
 				sourceLabel = attribution
-					? `${displayName} ${attribution}`
+					? `${displayName} ${named(attribution)}`
 					: m.planner_name_label_end({ name: displayName, label: lbl });
 			} else if (src.trigger === 'nightsoulBurst') {
 				rowKey = `${w.characterId}::char::NB`;
@@ -110,14 +113,14 @@ export function projectTeamBuffRows(
 				const fire =
 					src.fireLabel ?? m.planner_x_threshold({ token: AB_LABEL[src.abilityClass ?? 'skill'] });
 				rowKey = `${w.characterId}::char::stackThreshold::${fire}${w.debuff ? '::resShred' : ''}`;
-				sourceLabel = `${displayName} ${fire}`;
+				sourceLabel = `${displayName} ${src.fireLabel ? named(fire) : fire}`;
 			} else if (src.trigger === 'stacks') {
 				// ⚓ Named after what the COUNT is (its `attribution`), else the
 				// hosting entry — the bar is the span the count was held, not a cast.
 				// Keyed by stat: one key feeds several stats (Odette's A1/C2/C6).
 				const what = (w.effects[0] as BuffEffect).attribution ?? src.hostLabel ?? 'stacks';
 				rowKey = `${w.characterId}::char::stacks::${what}::${effects[0].stat}`;
-				sourceLabel = `${displayName} ${what}`;
+				sourceLabel = `${displayName} ${named(what)}`;
 			} else if (src.trigger === 'state') {
 				// ⚓ Named after the CONDITION, not a cast — the bar's whole claim is
 				// "while this state holds", and its span already says when. Keyed by
@@ -128,7 +131,7 @@ export function projectTeamBuffRows(
 				const attribution = w.debuff
 					? undefined
 					: (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
-				sourceLabel = attribution ? `${displayName} ${attribution}` : displayName;
+				sourceLabel = attribution ? `${displayName} ${named(attribution)}` : displayName;
 				if (w.debuff) explicitKind = 'debuff';
 			} else {
 				// 'reaction' — one row per effect, keyed by its display stat.
