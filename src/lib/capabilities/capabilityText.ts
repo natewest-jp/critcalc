@@ -45,7 +45,8 @@ export const TARGET_LABEL: Record<string, string> = labels({
 /** Shred-stat / element detail words that aren't plain capitalizations. */
 const DETAIL_WORD: Record<string, string> = labels({
 	def: m.tb_def,
-	all: m.tb_all_elements
+	all: m.tb_all_elements,
+	physical: m.tb_physical
 });
 
 /** How off-field damage is delivered. */
@@ -59,11 +60,11 @@ const OFF_FIELD_WORD: Record<string, string> = {
 };
 
 /** Human label for a capability's `detail` — buff stats via the planner's
- *  shared stat map, shred/infuse elements capitalized. */
+ *  shared stat map, shred/infuse elements by their name in the page's
+ *  language. */
 export function capDetailText(kind: CapabilityKind, detail: string): string {
 	if (kind === 'buff') return BUFF_STAT_LABEL[detail as Stat] ?? detail;
-	if (kind === 'resShred' || kind === 'infuse')
-		return DETAIL_WORD[detail] ?? detail.charAt(0).toUpperCase() + detail.slice(1);
+	if (kind === 'resShred' || kind === 'infuse') return DETAIL_WORD[detail] ?? elementLabel(detail);
 	// ⛔ A raw id must never reach the page — "coordinatedAttack" did, in
 	// Compare's table, until 2026-10-07.
 	if (kind === 'offFieldDamage') return OFF_FIELD_WORD[detail] ?? detail;

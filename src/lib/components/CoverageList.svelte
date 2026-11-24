@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { abilityName } from '$lib/i18n/abilityNames';
+	import { kitNote } from '$lib/i18n/kitNotes';
+	import { factionBonusName } from '$lib/i18n/gameNames';
 	import { characterName, characterMatches } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
@@ -174,13 +177,29 @@
 
 	/** Caveats of a cell's hosts, deduped — a caveat's host IS its column. */
 	function caveatsOf(data: CharacterData, hosts: string[]): string[] {
-		const all = [...data.abilities, ...(data.passives ?? []), ...(data.constellations ?? [])];
 		const out: string[] = [];
 		for (const id of hosts) {
-			const c = all.find((a) => a.id === id)?.caveat;
-			if (c && !out.includes(c)) out.push(c);
+			const c = entriesOf(data).find((a) => a.id === id)?.caveat;
+			if (!c) continue;
+			const shown = kitNote(data.id, id, 'caveat', c);
+			if (!out.includes(shown)) out.push(shown);
 		}
 		return out;
+	}
+
+	const entriesOf = (data: CharacterData) => [
+		...data.abilities,
+		...(data.passives ?? []),
+		...(data.constellations ?? [])
+	];
+
+	/** A cell's `notModeled` reason in the page's language: the cell carries
+	 *  the English, and the host among its hosts that rules it gives the id. */
+	function reasonOf(data: CharacterData, hosts: string[], english: string): string {
+		const host = entriesOf(data).find(
+			(a) => hosts.includes(a.id) && a.notModeled?.reason === english
+		);
+		return host ? kitNote(data.id, host.id, 'reason', english) : english;
 	}
 
 	const open = new SvelteSet<string>();
@@ -229,6 +248,10 @@
 			}
 		};
 	}
+
+	/** A line's form (an ability, a variant, or a team bonus) in the page's
+	 *  language. */
+	const formName = (id: string, english: string) => abilityName(id, factionBonusName(english));
 </script>
 
 <div class="coverage">
@@ -376,11 +399,14 @@
 												</dt>
 												{#each c.lines as line, li (li)}
 													<dd>
-														{#if line.form}<span class="form">{line.form}</span>{/if}
+														{#if line.form}<span class="form">{formName(d.data.id, line.form)}</span
+															>{/if}
 														{LINE_TEXT[line.code]}
 													</dd>
 												{/each}
-												{#if c.reason}<dd class="reason">{c.reason}</dd>{/if}
+												{#if c.reason}<dd class="reason">
+														{reasonOf(d.data, c.hosts, c.reason)}
+													</dd>{/if}
 												{#each caveatsOf(d.data, c.hosts) as cav (cav)}
 													<dd class="caveat">{cav}</dd>
 												{/each}
@@ -413,12 +439,12 @@
 			<ul>
 				{#each c.lines as line, li (li)}
 					<li>
-						{#if line.form}<span class="form">{line.form}</span>{/if}
+						{#if line.form}<span class="form">{formName(d.data.id, line.form)}</span>{/if}
 						{LINE_TEXT[line.code]}
 					</li>
 				{/each}
 			</ul>
-			{#if c.reason}<p class="reason">{c.reason}</p>{/if}
+			{#if c.reason}<p class="reason">{reasonOf(d.data, c.hosts, c.reason)}</p>{/if}
 			{#each caveatsOf(d.data, c.hosts) as cav (cav)}
 				<p class="caveat">{cav}</p>
 			{/each}

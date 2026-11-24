@@ -217,7 +217,11 @@ const browser = await chromium.launch();
 try {
 	for (const shot of SHOTS)
 		for (const lang of LANGS) {
-			const kept = lang === 'en' ? previous[shot.id] : previous[shot.id]?.locales?.[lang];
+			// ⚠️ English's entry is the manifest's own and carries `locales`; kept
+			// whole, a language that has since matched English (and lost its
+			// file) would ride along in it and come back on a later run.
+			const { locales: _stale, ...keptEn } = previous[shot.id] ?? {};
+			const kept = lang === 'en' ? previous[shot.id] && keptEn : previous[shot.id]?.locales?.[lang];
 			if ((only && !only.has(shot.id)) || (onlyLang && !onlyLang.has(lang))) {
 				if (kept) (entries[shot.id] ??= {})[lang] = kept;
 				continue;

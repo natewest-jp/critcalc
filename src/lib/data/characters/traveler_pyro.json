@@ -11,7 +11,7 @@
 	"abilities": [
 		{
 			"id": "traveler_pyro__normal__foreign_emberblade",
-			"name": "Foreign Emberblade",
+			"name": "Foreign Blaze",
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"tags": [],

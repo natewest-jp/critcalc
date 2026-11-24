@@ -50,6 +50,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 ## Caveats
 
 - `caveat` is player-facing; `_curatorNotes` is curator-only and technical. Caveats follow `docs/curation/caveat-style-guide.md` (lint E.26).
+- English is written here; each other language's ability names and kit notes are files beside it (`src/lib/data/abilityNames/`, `src/lib/data/kitNotes/`). A new or reworded name, caveat, or `notModeled` reason fails `abilityNames.test.ts` or `kitNotes.test.ts` until its line exists (the `ingest-character` skill, Stage 3).
 - The test is "name the pixel": a caveat exists only to repair confusion on screen. If you can't point at a bar, marker, tick or printed value that is wrong, approximate or conspicuously missing, there is no caveat. A general fact about the game is never a caveat; an under-claim is an omission, not a divergence; and no window means no row, which means no blank to explain.
 - ⚠️ A caveat may live only on an ability-shaped host (an ability, passive or constellation entry; lint E.28). On an effect it renders to nobody, and `orphanedSchema.test.ts` can't see that, because the defect is positional.
 - Never write "add it manually": manual triggers don't exist.

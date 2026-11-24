@@ -283,14 +283,16 @@ Both live in `src/lib/i18n/messages.test.ts`:
   bosses, mechanics, checks, and blessings from the game's text maps, matched by the Chinese
   line lunaris serves (`scripts/localize-endgame.mjs`). The text maps also settle a term
   genshin-db's Japanese lacks.
-- Ability, passive, and constellation names, and the kit notes in the character data, are still
-  English in every locale; they need their own pass (§7).
+- Ability, passive, constellation, summon, and shield names come from the game's data too, and
+  a label composed from one (A1: X, X (E1)) is split and put back together in the page's
+  language. The kit notes are ours, drafted per locale with a fingerprint of their English (§7).
 
 ---
 
 ## 7. Ability names and kit notes (⚓ Nate 2026-11-24, Claude's plan)
 
-Before the community request, so reviewers see the whole tool at once. Stacked rounds:
+Done: `docs/rounds/i18n-names-notes-2026-11-24.md`. Before the community request, so reviewers
+see the whole tool at once. Stacked rounds:
 
 1. **Ability, passive, constellation, summon, and field names** from the game's data:
    genshin-db first, then the game's English text map matched to the Japanese one by hash. Of

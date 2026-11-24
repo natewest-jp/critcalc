@@ -250,6 +250,12 @@ node scripts/audit-genshin-db-diff.mjs          # ⚠️ SCALARS ONLY — see th
 
 3. Regenerate the index (`npm run generate-character-index`) and commit the
    refreshed `docs/curation/capability-audit.md` with the work.
+4. The other languages: `node scripts/generate-ability-names.mjs` (needs the
+   text maps in `assets-src/textmap/`; a part it lists as missing gets a
+   `BY_HAND` line citing the game's text), then
+   `node scripts/kit-notes.mjs todo ja` and `merge` for every new caveat and
+   `notModeled` reason, drafted from `docs/text/terms-ja.md`.
+   `abilityNames.test.ts` and `kitNotes.test.ts` fail until both are done.
    ⚠️ A char-JSON edit that changes identity or derived capabilities needs the
    index regen or the drift test fails.
 

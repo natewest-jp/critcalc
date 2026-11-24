@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { abilityName } from '$lib/i18n/abilityNames';
 	import { artifactName, characterName } from '$lib/i18n/gameNames';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { shredSources } from '$lib/data/shredSources.generated';
@@ -199,8 +200,14 @@
 					: g.target === 'team'
 						? m.vz_defres_whole_party()
 						: m.vz_defres_own_hits();
-	const abilityOf = (g: SourceGroup) =>
-		g.options.find((o) => o.amount === picks[g.key])?.ability ?? g.options[0].ability;
+	/** A source's ability in the page's language (an artifact's is its set's). */
+	const optionName = (g: SourceGroup, english: string) =>
+		g.ownerKind === 'character' ? abilityName(g.owner, english) : english;
+	const abilityOf = (g: SourceGroup) => {
+		const english =
+			g.options.find((o) => o.amount === picks[g.key])?.ability ?? g.options[0].ability;
+		return optionName(g, english);
+	};
 
 	/** The Shred segment's face: what is on, the first two by name. */
 	const shredFace = $derived.by(() => {
@@ -779,7 +786,10 @@
 											{@const on = g.key in picks}
 											{@const who = whoOf(g)}
 											<li class="dr-source" class:is-on={on}>
-												<label class="check" title={g.options.map((o) => o.ability).join(' / ')}>
+												<label
+													class="check"
+													title={g.options.map((o) => optionName(g, o.ability)).join(' / ')}
+												>
 													<input type="checkbox" checked={on} onchange={() => toggle(g)} />
 													<span class="check-box"></span>
 													<span class="dr-name">{ownerLabel(g)}</span>
@@ -800,7 +810,7 @@
 																class:active={on && picks[g.key] === o.amount}
 																role="radio"
 																aria-checked={on && picks[g.key] === o.amount}
-																title={o.ability}
+																title={optionName(g, o.ability)}
 																onclick={() => pickAmount(g, o.amount)}
 															>
 																{o.amount}%

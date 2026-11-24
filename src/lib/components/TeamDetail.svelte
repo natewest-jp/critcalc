@@ -605,10 +605,10 @@
 				<!-- TODO: data gap — the game's localized names for these two bonuses
 				     (genshin-db), so they stay English until that lookup exists. -->
 				{#if comp.hasAscendantGleam}
-					<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
+					<span class="td-res td-res--faction">{m.planner_moonsign_ascendant_gleam()}</span>
 				{/if}
 				{#if comp.hasSecretRite}
-					<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
+					<span class="td-res td-res--faction">{m.planner_hexerei_secret_rite()}</span>
 				{/if}
 			</span>
 		{/if}

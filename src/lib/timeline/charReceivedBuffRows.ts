@@ -23,6 +23,7 @@ import type {
 import { formatBuffDisplayValue } from './buffDisplay';
 import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 import { barStepsOf } from './barSteps';
+import { abilityName } from '$lib/i18n/abilityNames';
 import { m } from '$lib/paraglide/messages';
 
 export type { CharReceivedBuffBar, CharReceivedBuffSubrow };
@@ -54,17 +55,20 @@ export function projectCharReceivedBuffRows(
 			// Named after the fire — the team surface's rule (stack-threshold round).
 			const fire =
 				src.fireLabel ?? m.planner_x_threshold({ token: AB_LABEL[src.abilityClass ?? 'skill'] });
-			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${fire}`;
+			const shown = src.fireLabel ? abilityName(w.characterId, fire) : fire;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${shown}`;
 		} else if (src.type === 'character' && src.trigger === 'stacks') {
 			// Named after what the count IS (the effect's `attribution`, e.g.
 			// Marvelous Splendor), else its hosting entry — never a cast.
 			const what = (w.effects[0] as BuffEffect).attribution ?? src.hostLabel ?? 'stacks';
-			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${what}`;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${abilityName(w.characterId, what)}`;
 		} else if (src.type === 'character' && src.trigger === 'teamHit') {
 			// Named after the hosting passive — the bar belongs to no cast of the
 			// holder's (cross-character onHit round, 2026-09-21).
 			const name = characterName(w.characterId, getCharacter(w.characterId)?.displayName);
-			sourceLabel = src.hostLabel ? `${name} ${src.hostLabel}` : m.planner_name_hit({ name });
+			sourceLabel = src.hostLabel
+				? `${name} ${abilityName(w.characterId, src.hostLabel)}`
+				: m.planner_name_hit({ name });
 		} else if (src.type === 'character' && src.trigger === 'reaction') {
 			// ⚠ A reaction window carries no `abilityClass` — it is not bound to a
 			// cast — so the branch below would render "Varka undefined". Harmless

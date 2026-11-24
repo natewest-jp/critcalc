@@ -16,6 +16,8 @@ import type { CharacterData } from '$lib/types/character';
 import type { Element } from '$lib/types/ability';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 import { m } from '$lib/paraglide/messages';
+import { abilityName } from '$lib/i18n/abilityNames';
+import { kitNote } from '$lib/i18n/kitNotes';
 
 /** An entry's kind in the game's words (通常攻撃, 固有天賦). A constellation
  *  is "C4" in every language, as players write it. Read at each use, so it
@@ -72,8 +74,8 @@ export function collectSlotCaveats(
 		const caveats = effectSourcesAtConstellation(char, constellationLevels[char.id] ?? 0)
 			.filter((a) => a.caveat)
 			.map((a) => ({
-				name: a.name,
-				caveat: a.caveat!,
+				name: abilityName(char.id, a.name),
+				caveat: a.id ? kitNote(char.id, a.id, 'caveat', a.caveat!) : a.caveat!,
 				kind:
 					a.abilityType === 'constellation'
 						? `C${a.constellationLevel}`

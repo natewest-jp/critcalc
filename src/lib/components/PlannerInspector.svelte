@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { characterName } from '$lib/i18n/gameNames';
+	import { abilityName } from '$lib/i18n/abilityNames';
 	import { rotationTwin } from '$lib/travelerTwin.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
 	import CharacterDetails from '$lib/components/CharacterDetails.svelte';
@@ -149,8 +150,10 @@
 			{@render face(cast.characterId, 32)}
 			<div class="pi-head-text">
 				<h2 class="pi-title">
-					{cast.abilityName}{#if cast.variantLabel}<span class="pi-variant">
-							· {cast.variantLabel}</span
+					{abilityName(cast.characterId, cast.abilityName)}{#if cast.variantLabel}<span
+							class="pi-variant"
+						>
+							· {abilityName(cast.characterId, cast.variantLabel)}</span
 						>{/if}
 				</h2>
 				<p class="pi-sub">

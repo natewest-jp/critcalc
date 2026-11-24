@@ -11,7 +11,7 @@
 	"abilities": [
 		{
 			"id": "traveler_dendro__normal__foreign_thunderwood",
-			"name": "Foreign Thunderwood",
+			"name": "Foreign Fieldcleaver",
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"tags": [],
@@ -134,7 +134,7 @@
 			"tags": ["summon"],
 			"summons": [
 				{
-					"label": "LeaLotus Lamp",
+					"label": "Lea Lotus Lamp",
 					"duration": 12,
 					"durationModifiers": [
 						{

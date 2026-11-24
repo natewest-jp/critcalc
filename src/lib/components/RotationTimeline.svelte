@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { abilityName } from '$lib/i18n/abilityNames';
 	import { characterName } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -2640,7 +2641,7 @@
 					r.characterId === ev.characterId &&
 					r.bars.some((b) => castAtOrBefore(ev.characterId, b.source, b.start)?.id === ev.id)
 			)
-			.map((r) => r.label);
+			.map((r) => abilityName(r.characterId, r.label));
 		const src = ev.src;
 		const standIn =
 			src && src.to <= notation.length
@@ -3549,8 +3550,12 @@
 												<div
 													class="rp-summon-bar rp-inspectable"
 													onclick={() => inspectRaised(srow.characterId, sbar.source, sbar.start)}
-													onmouseenter={(e) => sbar.steps && showStepTooltip(e, sbar, srow.label)}
-													onmousemove={(e) => sbar.steps && showStepTooltip(e, sbar, srow.label)}
+													onmouseenter={(e) =>
+														sbar.steps &&
+														showStepTooltip(e, sbar, abilityName(srow.characterId, srow.label))}
+													onmousemove={(e) =>
+														sbar.steps &&
+														showStepTooltip(e, sbar, abilityName(srow.characterId, srow.label))}
 													onmouseleave={() => sbar.steps && hideTooltip()}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
@@ -3572,7 +3577,9 @@
 															aria-hidden="true"
 														></div>
 													{/if}
-													<span class="rp-summon-label">{srow.label}</span>
+													<span class="rp-summon-label"
+														>{abilityName(srow.characterId, srow.label)}</span
+													>
 												</div>
 												<!-- One stub per FRAME (`summonMarks`): an absorbed twin shares its
 												     Anemo tick's; a stream keeps its own cadence. Past the fade, a

@@ -6,6 +6,7 @@ import plannerComposer from './planner-composer.webp';
 import plannerBenchCard from './planner-bench-card.webp';
 import plannerBenchCardJA from './planner-bench-card.ja.webp';
 import plannerTimeline from './planner-timeline.webp';
+import plannerTimelineJA from './planner-timeline.ja.webp';
 import plannerPadding from './planner-padding.webp';
 import plannerPlayback from './planner-playback.webp';
 import plannerPlaybackJA from './planner-playback.ja.webp';
@@ -79,7 +80,7 @@ export const HELP_SHOTS = {
 	'planner-timeline': {
 		...data['planner-timeline'],
 		src: plannerTimeline,
-		locales: {}
+		locales: { ja: { ...data['planner-timeline'].locales.ja, src: plannerTimelineJA } }
 	} as HelpShotSet,
 	'planner-padding': {
 		...data['planner-padding'],
