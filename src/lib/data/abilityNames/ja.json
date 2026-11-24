@@ -11,7 +11,8 @@
 		"Cake and the Art of Mechanism Repair": "ケーキと機械のリペアアート",
 		"Butter and Cats and the Law of Energy Supply": "バターと猫と エネルギー供給の法則",
 		"Perpetual Turbine of Metal and Light": "金属と光の永久タービン",
-		"The Burden of Creative Genius": "天才なりの構築責任"
+		"The Burden of Creative Genius": "天才なりの構築責任",
+		"Moonsign: Ascendant Gleam": "月兆・満照"
 	},
 	"albedo": {
 		"Favonius Bladework - Weiss": "西風剣術・白",
@@ -25,11 +26,13 @@
 		"Grace of Helios": "太陽の華",
 		"Descent of Divinity": "聖なる堕落",
 		"Tide of Hadean": "太古の潮",
-		"Dust of Purification": "無垢なる土"
+		"Dust of Purification": "無垢なる土",
+		"Transient Blossom": "刹那の花"
 	},
 	"alhaitham": {
 		"Abductive Reasoning": "リトロダクション",
 		"Universality: An Elaboration on Form": "共相·イデア模写",
+		"Chisel-Light Mirror": "琢光鏡",
 		"Particular Field: Fetters of Phenomena": "殊境·顕象結縛",
 		"Four-Causal Correction": "四因是正",
 		"Mysteries Laid Bare": "謎林説破",
@@ -38,7 +41,8 @@
 		"Negation": "ネゲーション",
 		"Elucidation": "エルシデーション",
 		"Sagacity": "サギャシティ",
-		"Structuration": "ストラクタレーション"
+		"Structuration": "ストラクタレーション",
+		"Projection Attack": "光幕攻撃"
 	},
 	"aloy": {
 		"Rapid Fire": "ラピッドファイア",
@@ -46,7 +50,8 @@
 		"Prophecies of Dawn": "ドーンプロフェシー",
 		"Combat Override": "戦闘オーバーライド",
 		"Strong Strike": "強打",
-		"Star of Another World": "異界の星"
+		"Star of Another World": "異界の星",
+		"Rushing Ice": "アイスラッシュ"
 	},
 	"alyosha": {
 		"Skirmishing Spear": "迅雷の角槍",
@@ -80,6 +85,7 @@
 	},
 	"arataki_itto": {
 		"Fight Club Legend": "喧嘩屋伝説",
+		"Raging Oni King": "憤怒の鬼王",
 		"Masatsu Zetsugi: Akaushi Burst!": "魔殺絶技·岩牛発破！",
 		"Ushi": "丑雄",
 		"Royal Descent: Behold, Itto the Evil!": "最凶鬼王·一斗轟臨！！",
@@ -145,13 +151,14 @@
 		"Summoner of Storm": "雷引きの潮",
 		"Stunning Revenge": "星に導かれた岸線",
 		"Crimson Tidewalker": "白波に映る霞光",
-		"Bane of Evil": "北斗の祓い"
+		"Bane of Evil": "北斗の祓い",
+		"Thunderbeast's Targe": "雷獣の盾"
 	},
 	"bennett": {
 		"Strike of Fortune": "好運の剣",
 		"Passion Overload": "溢れる情熱",
-		"Fantastic Voyage": "素晴らしい旅",
 		"Inspiration Field": "鼓舞エリア",
+		"Fantastic Voyage": "素晴らしい旅",
 		"Rekindle": "情熱復活",
 		"Fearnaught": "恐れなき熱血",
 		"It Should Be Safe...": "多分安全",
@@ -179,6 +186,9 @@
 	"charlotte": {
 		"Cool-Color Capture": "寒色撮影技法",
 		"Framing: Freezing Point Composition": "フレーミング·氷点法",
+		"\"Snappy Silhouette\" Mark": "「スナップシルエット」マーク",
+		"\"Focused Impression\" Mark": "「フォーカスインプレッション」マーク",
+		"Focused Impression": "フォーカスインプレッション",
 		"Still Photo: Comprehensive Confirmation": "スチルフォト·多角的立証",
 		"Newsflash Field": "スクープフィールド",
 		"Moment of Impact": "衝撃的モーメント",
@@ -192,7 +202,9 @@
 	},
 	"chasca": {
 		"Phantom Feather Flurry": "フェザー・フルーリー",
+		"Multitarget Fire": "マルチ照準",
 		"Spirit Reins, Shadow Hunt": "スピリット・レインズ",
+		"Nightsoul": "夜魂",
 		"Soul Reaper's Fatal Round": "ソウルリーパーの猛襲",
 		"Bullet Trick": "弾丸トリック",
 		"Intent to Cover": "援護の気持ち",
@@ -221,6 +233,7 @@
 		"Fluttering Hasode": "羽袖一触",
 		"Tamoto": "「たもと」",
 		"Hiyoku: Twin Blades": "二刀の型·比翼",
+		"Kinu": "「きぬ」",
 		"Tailor-Made": "量体裁衣",
 		"The Finishing Touch": "錦上添花",
 		"Six Paths of Sage Silkcraft": "正絹六通",
@@ -257,7 +270,8 @@
 		"Cloud Serpent's Feathered Crown": "雲中蛇の フェザークラウン",
 		"Death Defier's Spirit Skull": "拒死者の スピリットスカル",
 		"Nemontemi's Hex": "五悪曜のカーズ",
-		"Teoiztac's Secret Pact": "原動天の シークレットパクト"
+		"Teoiztac's Secret Pact": "原動天の シークレットパクト",
+		"Spiritvessel Skull": "憑霊のスカル"
 	},
 	"clorinde": {
 		"Oath of Hunting Shadows": "影追いの誓い",
@@ -265,6 +279,7 @@
 		"Hunter's Vigil": "夜狩の巡回",
 		"Impale the Night": "穿夜",
 		"Last Lightfall": "消えゆく残光",
+		"Night Vigil": "夜巡り",
 		"Dark-Shattering Flame": "夜を裂く紫焔",
 		"Lawful Remuneration": "契約の報償",
 		"\"From This Day, I Pass the Candle's Shadow-Veil\"": "「ここより、 燭影の帷を通る」",
@@ -272,7 +287,9 @@
 		"\"I Pledge to Remember the Oath of Daylight\"": "「白昼の誓いを忘れるな」",
 		"\"To Enshrine Tears, Life, and Love\"": "「涙と命、仁愛を心に刻め」",
 		"\"Holding Dawn's Coming as My Votive\"": "「やがて夜明けは訪れる」",
-		"\"And So Shall I Never Despair\"": "「故に—— 希望を捨ててはならない」"
+		"\"And So Shall I Never Despair\"": "「故に—— 希望を捨ててはならない」",
+		"Glimbright Shade": "明燭の影",
+		"Nightvigil Shade": "夜巡りの影"
 	},
 	"collei": {
 		"Supplicant's Bowmanship": "祈りの射技",
@@ -303,7 +320,8 @@
 		"Dreamlike Glow Across Tranquil Waters": "柔き光の露と夢の湖の漣",
 		"Cloudveiled Ridges in Floral Mists": "花の嵐や雲と木と岩の陰",
 		"Silence Tending One Lone Song": "幽き中に唯だ響く君の歌",
-		"Through Darkness Led by Moonlight": "暗き夜の月と共に往く道"
+		"Through Darkness Led by Moonlight": "暗き夜の月と共に往く道",
+		"Gravity Interference": "引力の干渉"
 	},
 	"cyno": {
 		"Invoker's Spear": "七聖槍術",
@@ -325,6 +343,7 @@
 		"Favonius Bladework - Ritual": "西風剣術・祭儀",
 		"Immersive Ordinance": "受洗の礼典",
 		"Radiant Psalter": "純光の祈り",
+		"Shield of Sacred Favor": "聖眷シールド",
 		"The Wind's Gentle Grace": "優しき風の寵愛",
 		"Prayer of Well-Wrought Joy": "遊び心に満ちた祈り",
 		"Infallible Procession": "無瑕の導き",
@@ -336,6 +355,10 @@
 	},
 	"dehya": {
 		"Sandstorm Assault": "剣闘術・金砂塵",
+		"Molten Inferno": "熔鉄流獄",
+		"Indomitable Flame": "浄焔怒涛",
+		"Fiery Sanctum": "浄焔剣獄",
+		"Ranging Flame": "剣域熾焔",
 		"Leonine Bite": "炎哮獅子咬",
 		"Unstinting Succor": "惜しみなき扶翼",
 		"Stalwart and True": "至誠の尊崇",
@@ -344,11 +367,14 @@
 		"A Rage Swift as Fire": "掠める熾炎の怒り",
 		"An Oath Abiding": "誓いし永遠の銘心",
 		"The Alpha Unleashed": "不縛なる至高の獅子",
-		"The Burning Claws Cleaving": "黄金を裂く焔爪"
+		"The Burning Claws Cleaving": "黄金を裂く焔爪",
+		"Fiery Sanctum Field": "「浄焔剣獄」領域"
 	},
 	"diluc": {
 		"Tempered Sword": "百煉の剣",
+		"Searing Onslaught": "逆焔の刃",
 		"Dawn": "黎明",
+		"Phoenix": "炎の鳥",
 		"Relentless": "ノンストップ",
 		"Blessing of Phoenix": "溶融の翼",
 		"Conviction": "罪の裁断",
@@ -402,13 +428,15 @@
 		"Flame Mirror's Revelation": "焔鏡の顕現",
 		"Emanare's Source": "充溢の根源",
 		"Scouring Flame's Sundering": "業火の裂目",
-		"Dual Birth": "二重の誕生"
+		"Dual Birth": "二重の誕生",
+		"Cycle of Enlightenment": "輪廻啓発"
 	},
 	"emilie": {
 		"Shadow-Hunting Spear (Custom)": "影追いの槍術・改",
 		"Fragrance Extraction": "フレグランス·アコード",
 		"Lumidouce Case": "ルミドゥースの瓶",
 		"Aromatic Explication": "アロマティック·アナライズ",
+		"Heart Note": "ルミドゥースの心",
 		"Lingering Fragrance": "余香",
 		"Rectification": "精留",
 		"Light Fragrance Leaching": "淡く香るフレグランス",
@@ -421,6 +449,8 @@
 	"escoffier": {
 		"Kitchen Skills": "キッチンスキル",
 		"Low-Temperature Cooking": "ミ・キュイ",
+		"Cooking Mek": "調理マシナリー",
+		"Cold Storage": "「チルド」",
 		"Scoring Cuts": "デコ・デコパージュ",
 		"Better to Salivate Than Medicate": "美食は良薬に勝る",
 		"Inspiration-Immersed Seasoning": "シーズニングの中の閃き",
@@ -457,7 +487,8 @@
 		"Spirit-Orchard Stroll": "霊囿漫遊",
 		"Divine Comprehension": "神機明悟",
 		"Wonderland of Rumination": "思慮奇境",
-		"The Wondrous Path of Truth": "妙道合一"
+		"The Wondrous Path of Truth": "妙道合一",
+		"Pressurized Collapse": "風圧崩潰"
 	},
 	"fischl": {
 		"Bolts of Downfall": "罪滅ぼしの矢",
@@ -475,9 +506,11 @@
 	},
 	"flins": {
 		"Pocztowy Demonspear": "聖護の魔槍",
+		"Manifest Flame": "幽炎の露顕",
 		"Ancient Rite: Arcane Light": "古律・孤灯の秘密",
 		"Northland Spearstorm": "北国の嵐槍",
 		"Ancient Ritual: Cometh the Night": "旧儀・夜の賓客",
+		"Thunderous Symphony": "雷霆のシンフォニー",
 		"Symphony of Winter": "厳冬の響き",
 		"Whispering Flame": "幽炎の囁き",
 		"Part the Veil of Snow": "雪影の幕をひらく時",
@@ -490,6 +523,7 @@
 	"freminet": {
 		"Flowing Eddies": "潜流の剣",
 		"Pressurized Floe": "プレッシャー·フロウ",
+		"Shattering Pressure": "高圧粉砕",
 		"Shadowhunter's Ambush": "シャドウハンターの奇襲",
 		"Saturation Deep Dive": "飽和潜水",
 		"Parallel Condensers": "並流式冷却装置",
@@ -504,6 +538,7 @@
 		"Soloist's Solicitation": "ソリストの誘い",
 		"Salon Solitaire": "サロン·ソリティア",
 		"Singer of Many Waters": "衆の水の歌い手",
+		"Pneuma": "プネウマ",
 		"Let the People Rejoice": "万民のカルナバル",
 		"Endless Waltz": "終わりなき円舞",
 		"Unheard Confession": "聴き手なき独白",
@@ -560,6 +595,7 @@
 	},
 	"hu_tao": {
 		"Secret Spear of Wangsheng": "往生秘伝槍法",
+		"Paramita Papilio": "冥蝶の舞",
 		"Guide to Afterlife": "蝶導来世",
 		"Spirit Soother": "安神秘法",
 		"Flutter By": "蝶隠の時",
@@ -573,6 +609,7 @@
 	},
 	"iansan": {
 		"Weighted Spike": "ウェイトスピア",
+		"Swift Stormflight": "ライトニング・ステップ",
 		"Thunderbolt Rush": "サンダーボルト・スプリント",
 		"The Three Principles of Power": "力の三原則",
 		"Kinetic Energy Scale": "運動量メーター",
@@ -615,6 +652,7 @@
 		"Cyclonic Duster": "サイクロン・ダスター",
 		"Cleaning Mode: Carrier Frequency": "洗浄モード・定常周波数",
 		"Birgitta": "ビルギッタ",
+		"Optical Flow": "オプティカルフロー",
 		"Supreme Instruction: Cyclonic Exterminator": "至高なる指令・全域浄化",
 		"Overclocking Circuit": "オーバークロック",
 		"Panoramic Permutation Protocol": "再構築プロトコル",
@@ -795,6 +833,7 @@
 	"kujou_sara": {
 		"Tengu Bowmanship": "天狗伝弓術",
 		"Tengu Stormcall": "烏天狗雷霆召呪",
+		"Ambush": "伏",
 		"Subjugation: Koukou Sendou": "煌煌千道鎮式",
 		"Immovable Will": "不動心",
 		"Decorum": "御公儀",
@@ -817,10 +856,11 @@
 		"To Sequester Sorrow": "捨て去りし苦痛の心",
 		"To Sever Sealing": "捨て去りし閉鎖の心",
 		"To Cease Courtesies": "捨て去りし阿諛の心",
-		"To Ward Weakness": "捨て去りし軟弱な心"
+		"To Ward Weakness": "捨て去りし軟弱な心",
+		"Thundergrass": "雷草"
 	},
 	"lan_yan": {
-		"Normal Attack": "通常攻撃",
+		"Feathermoon Ring": "翦月輪",
 		"Swallow-Wisp Pinion Dance": "鳳跡随翦舞",
 		"Lustrous Moonrise": "月踏む鶴弦",
 		"Four Sealing Divination Charms": "四方封刀の霊占",
@@ -867,6 +907,7 @@
 		"Countermeasure: Lumi's Battle Cry!": "ルミのやっふー作戦",
 		"Lumi": "ルミ",
 		"Memo: Survival Guide in Extreme Conditions": "絶体絶命サバイバル備忘録",
+		"Memo Heal": "備忘録の回復",
 		"Field Observation Notes": "野外観察日誌",
 		"Universal Naturalist Archive": "博物分類図鑑",
 		"Provisional Classification": "未分類のモノたち",
@@ -933,7 +974,9 @@
 	},
 	"mavuika": {
 		"Flames Weave Life": "命を紡ぐ炎",
+		"Flamestrider": "双駆輪",
 		"The Named Moment": "名を称える刻",
+		"Rings of Searing Radiance": "焚曜の輪",
 		"Hour of Burning Skies": "天を焦がす刻",
 		"Gift of Flaming Flowers": "炎花の貢物",
 		"\"Kiongozi\"": "「キオンゴズィ」",
@@ -960,6 +1003,9 @@
 	"mitya": {
 		"Chain Reaction": "連鎖反応",
 		"Principle: Variable Detection": "定律・変数検知",
+		"Detection Core": "検知コア",
+		"Steady State": "安定状態",
+		"Overloaded": "過負荷",
 		"Analysis: Gradient Theory": "解析・変化ノ理",
 		"Baseline Stress Test": "基準耐圧テスト",
 		"Explosive Reagent: Safe Limits Exceeded": "臨界爆発性試薬",
@@ -974,6 +1020,7 @@
 	"mona": {
 		"Ripple of Fate": "因果点破",
 		"Mirror Reflection of Doom": "水中幻願",
+		"Phantom": "虚影",
 		"Stellaris Phantasm": "星命定軌",
 		"Illusory Bubble": "泡影",
 		"\"Come 'n' Get Me, Hag!\"": "「おばば、私を捕まえられますか～」",
@@ -1056,6 +1103,7 @@
 	"nicole": {
 		"Allegoria": "寓意",
 		"Revelation: Uncreated Light": "聖言黙示・顕れぬ光",
+		"Shield of Blazing Light": "熾光の護り",
 		"Revelation: Ladder of Divine Ascent": "聖言黙示・天路歴程",
 		"Methexis": "分かち合い",
 		"Philokalia": "美への愛",
@@ -1064,11 +1112,19 @@
 		"\"A Lamp by Your Side, A Light to Shine the Way\"": "「汝の傍に灯を、 行く手に光を」",
 		"\"Whether Left or Right, No Matter Which Way You Turn\"": "「たとえ汝が 何処へ赴こうとも」",
 		"\"You Will Hear My Voice Beside You\"": "「汝の傍らより語りかけん」",
-		"\"This Is the Path, Walk It Without Delay\"": "「迷わず 正しき道を歩むべし」"
+		"\"This Is the Path, Walk It Without Delay\"": "「迷わず 正しき道を歩むべし」",
+		"Grace of Kenosis": "虚己の恵み",
+		"Arcane Projection": "ミステリウムの影",
+		"Guidance of Theosis": "聖祝の導き",
+		"Unity": "合性",
+		"Pathfinder's Blessing": "導きの加護"
 	},
 	"nilou": {
 		"Dance of Samser": "弦月のダンス",
+		"Sword Dance": "剣舞",
 		"Dance of Haftkarsvar": "七域のダンス",
+		"Whirling Steps": "旋舞のステップ",
+		"Water Wheel": "水輪",
 		"Tranquility Aura": "天を滌う水環",
 		"Dance of Abzendegi: Distant Dreams, Listening Spring": "浮蓮のダンス·遠夢聆泉",
 		"Court of Dancing Petals": "落花廻旋の庭",
@@ -1096,6 +1152,7 @@
 	"noelle": {
 		"Favonius Bladework - Maid": "西風剣術・メイド",
 		"Breastplate": "護心鎧",
+		"Stone Armor": "護身の岩鎧",
 		"Sweeping Time": "大掃除",
 		"Devotion": "誠心誠意",
 		"Nice and Clean": "きれいさっぱり",
@@ -1120,7 +1177,8 @@
 		"\"I'll Chase the Shouting Wind Along, Climbing Alone As I Go\"": "「荒れ狂う風を追い ひとり高みへ昇る」",
 		"\"Up, Up the Long, Delirious, Burning Blue\"": "「燃ゆる青空の中へ 恍惚と堕ちていく」",
 		"\"Oh! I Have Slipped the Surly Bonds of Earth\"": "「見よ——塵と土の 痛みと別れる時を」",
-		"\"Put Out My Hand, and Touched the Face of the Divine\"": "「さあ手を伸ばして 永遠の空に触れて」"
+		"\"Put Out My Hand, and Touched the Face of the Divine\"": "「さあ手を伸ばして 永遠の空に触れて」",
+		"Marvelous Splendor": "春の華"
 	},
 	"ororon": {
 		"Spiritvessel Snapshot": "憑霊の閃矢",
@@ -1140,6 +1198,8 @@
 		"Badaboom! Hexbuster Hammer": "ドッスン！魔女祓いの鉄槌",
 		"Ring-A-Ding-Ding! Hexhunter Chime": "リンリン！魔女を狩る音",
 		"The Bell Tolls! The Hunt Is On!": "魔女狩りの時間なのだ！",
+		"Witchlure Bell": "魔女を誘う鈴",
+		"Hunter-Seeker": "ハンティング",
 		"Verdict and Punishment": "さらなる懲罰",
 		"Tolling Synchronicity": "鈴の音とともに",
 		"With a Vow to Rescue, the Journey Begins": "誓いを立てたあの日から キミを救う旅が始まった",
@@ -1147,7 +1207,8 @@
 		"The Caravan Exits the Mountain Pass, the Scenery Once More Changed": "キャラバンと山を越え 巡る景色を眺めながら",
 		"Looking Back Following the Wind, One's Shadow Still Halved": "振り返ってもいまだ キミの影はないけど",
 		"100 Defeats? No Problem, Tomorrow, We Go Again": "百回敗けたって 明日も来るから",
-		"And That's the Story! Share It With Your Friends!": "物語はこれでおしまい みんなに話してあげて"
+		"And That's the Story! Share It With Your Friends!": "物語はこれでおしまい みんなに話してあげて",
+		"Hunt the Witch": "魔女狩り"
 	},
 	"qiqi": {
 		"Ancient Sword Art": "雲来古剣法",
@@ -1266,6 +1327,7 @@
 		"Dawnstar Piercer": "踏辰摂斗",
 		"Spring Spirit Summoning": "仰霊威召将役呪",
 		"Divine Maiden's Deliverance": "神女遣霊真訣",
+		"Talisman Spirit": "籙霊",
 		"Deific Embrace": "大洞弥羅尊法",
 		"Spirit Communion Seal": "縛霊通真法印",
 		"Clarity of Heart": "心斎",
@@ -1273,7 +1335,8 @@
 		"Seclusion": "潜虚",
 		"Insight": "洞観",
 		"Divine Attainment": "化神",
-		"Mystical Abandon": "忘玄"
+		"Mystical Abandon": "忘玄",
+		"Icy Quill": "氷翎"
 	},
 	"shikanoin_heizou": {
 		"Fudou Style Martial Arts": "不動流格闘術",
@@ -1304,7 +1367,9 @@
 	},
 	"skirk": {
 		"Havoc: Sunder": "極悪技・断",
+		"Seven-Phase Flash": "七相一閃",
 		"Havoc: Warp": "極悪技・閃",
+		"Rapid Movement": "高速移動",
 		"Havoc: Ruin": "極悪技・滅",
 		"Havoc: Extinction": "極悪技・尽",
 		"Reason Beyond Reason": "理の超越",
@@ -1333,6 +1398,9 @@
 	"tartaglia": {
 		"Cutting Torrent": "断雨",
 		"Foul Legacy: Raging Tide": "魔王の武装·荒波",
+		"Melee Stance": "近接モード",
+		"Havoc: Obliteration": "極悪技·尽滅閃",
+		"Ranged Stance": "遠隔モード",
 		"Never Ending": "無尽蔵",
 		"Sword of Torrents": "水形剣",
 		"Foul Legacy: Tide Withholder": "魔王の武装·押波",
@@ -1400,8 +1468,10 @@
 		"Brumal Grimfrost": "殺める輝氷"
 	},
 	"traveler_dendro": {
+		"Foreign Fieldcleaver": "異邦の草薙",
 		"Razorgrass Blade": "草縁剣",
 		"Surgent Manifestation": "臥草若化",
+		"Lea Lotus Lamp": "草蓮灯",
 		"Verdant Overgrowth": "蔓生の埜草",
 		"Verdant Luxury": "生い茂る草叢",
 		"Symbiotic Creeper": "寄身の倚草",
@@ -1452,6 +1522,7 @@
 		"Tides of Justice": "正義の潮水"
 	},
 	"traveler_pyro": {
+		"Foreign Blaze": "異邦の烈焔",
 		"Flowfire Blade": "流火の剣",
 		"Plains Scorcher": "燎原の灼炎",
 		"True Flame of Incineration": "燃え立つ真火",
@@ -1466,6 +1537,7 @@
 	"valeriy": {
 		"Guard Tactics: Sword and Shield": "近衛戦法・剣攻盾守",
 		"Active Defense: Bastion Charge": "攻勢防御・要塞突撃",
+		"Supercharged": "蓄雷",
 		"Focused Fire: Lightning Salvo": "集中砲火・雷弾強襲",
 		"Thunderburst Shells": "雷霰重弾",
 		"Advance With the Creeping Barrage": "弾幕攻撃の奇襲",
@@ -1480,9 +1552,11 @@
 	},
 	"varesa": {
 		"By the Horns": "バイ・ザ・ホーンズ",
+		"Fiery Passion": "猛烈パッション状態",
 		"Riding the Night-Rainbow": "ホッピング・ナイトレインボー",
 		"Fiery Passion Rush": "猛烈パッション状態の突進",
 		"Guardian Vent!": "シャイニングヴェント！",
+		"Volcano Kablam": "「大火山おろし」",
 		"Tag-Team Triple Jump!": "連翔、三段跳び！",
 		"The Hero Twice-Returned!": "ヒーロー、二度目の見参！",
 		"Undying Passion": "燃え続ける情熱",
@@ -1494,6 +1568,7 @@
 	},
 	"varka": {
 		"Favonius Bladework: Dancing Radiance": "西風剣術・流光の舞",
+		"Sturm und Drang": "疾風怒濤",
 		"Windbound Execution": "堕ちる烈風",
 		"Four Winds' Ascension": "出づる四風",
 		"Northwind Avatar": "我こそ朔風",
@@ -1551,6 +1626,7 @@
 		"Kuugo: Fushoudan": "空居·不生断",
 		"Hanega: Song of the Wind": "羽画·風姿華歌",
 		"Kyougen: Five Ceremonial Plays": "狂言·式楽伍番",
+		"Windfavored": "児姿優風",
 		"Jade-Claimed Flower": "拾玉得花",
 		"Gales of Reverie": "夢跡一風",
 		"Shoban: Ostentatious Plumage": "初番·茂風流羽行",
@@ -1562,6 +1638,7 @@
 	},
 	"wriothesley": {
 		"Forceful Fists of Frost": "フロストコンビネーション",
+		"Chilling Penalty": "烈霜の懲戒",
 		"Icefang Rush": "アイスファング·ラッシュ",
 		"Darkgold Wolfbite": "ガンメタル·ウルフバイト",
 		"There Shall Be a Plea for Justice": "やがて公義は弁ぜらる",
@@ -1590,6 +1667,7 @@
 	},
 	"xianyun": {
 		"Word of Wind and Flower": "清風散花の詞",
+		"Skyladder": "天梯昇り",
 		"Stars Gather at Dusk": "夕集の竹星",
 		"Starwicker": "竹星",
 		"Galefeather Pursuit": "白羽高くして祥風を追う",
@@ -1603,6 +1681,7 @@
 	},
 	"xiao": {
 		"Whirlwind Thrust": "微塵突進",
+		"Yaksha's Mask": "夜叉の儺面",
 		"Lemniscatic Wind Cycling": "風輪両立",
 		"Bane of All Evil": "靖妖儺舞",
 		"Conqueror of Evil: Tamer of Demons": "降魔·平妖大聖",
@@ -1691,6 +1770,8 @@
 		"Raphanus Sky Cluster": "祥雲団々落清白",
 		"Yuegui: Throwing Mode": "月桂・投擲型",
 		"Moonjade Descent": "玉顆珊々月中落",
+		"Yuegui": "月桂",
+		"Jumping Mode": "跳躍型",
 		"Starscatter": "天星零落",
 		"In Others' Shoes": "先意承問",
 		"Adeptus' Tutelage": "瑶閣賜物",
@@ -1730,6 +1811,7 @@
 	"yumemizuki_mizuki": {
 		"Pure Heart, Pure Dreams": "夢我夢心",
 		"Aisa Utamakura Pilgrimage": "秋沙歌枕巡り",
+		"Dreamdrifter": "夢浮かみ",
 		"Anraku Secret Spring Therapy": "極楽秘湯療法",
 		"Mini Baku": "獏ちゃん",
 		"Bright Moon's Restless Voice": "名月浮声",
@@ -1772,7 +1854,9 @@
 	},
 	"zibai": {
 		"Golden Blade's Petaled Touch": "桂花に触れる金刃",
+		"Lunar Phase Shift": "隙を過ぐる月",
 		"Heaven and Earth Made Manifest": "衆生は忽然たるのみ",
+		"Spirit Steed's Stride": "翔ける霊駒",
 		"Tri-Sphere Eminence": "三垣の威儀法",
 		"The Selenic Adeptus Descends": "月下に舞い降りる天女",
 		"Layered Peaks Pierce the Clouds": "雲間に連なる山々",

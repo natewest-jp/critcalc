@@ -4,7 +4,9 @@ import { join } from 'node:path';
 import type { CharacterData } from '$lib/types/character';
 import { namesOf } from '$lib/data/abilityNameSources';
 import { overwriteGetLocale, baseLocale, type Locale } from '$lib/paraglide/runtime';
-import { abilityName, loadAbilityNames } from './abilityNames';
+import { abilityName, compose, loadAbilityNames } from './abilityNames';
+import { childrenOf, isOurWord, NOTATION, splitName } from '$lib/data/nameParts';
+import ja from '$lib/data/abilityNames/ja.json';
 
 /**
  * The game's ability names in other languages
@@ -19,71 +21,20 @@ const corpus: CharacterData[] = readdirSync(DIR)
 /** Not a game character: the planner's placeholder kit. */
 const NOT_IN_GAME = ['blank'];
 
-/** Names that are ours, composed from a game name and our words, with no
- *  single entry in the game's text. */
+/** Parts the game's text has no line for, left in English. */
 const KNOWN_GAPS: Record<string, Record<string, string[]>> = {
-	ja: {
-		arataki_itto: ['Fight Club Legend (Raging Oni King)'],
-		chasca: ['Multitarget Fire (Tap)', 'End Nightsoul'],
-		chiori: ['Kinu'],
-		dahlia: ['Shield of Sacred Favor'],
-		dehya: ['Molten Inferno: Indomitable Flame', 'Fiery Sanctum', 'Molten Inferno: Ranging Flame'],
-		diluc: [
-			'Searing Onslaught (E1)',
-			'Searing Onslaught (E2)',
-			'Searing Onslaught (E3)',
-			'Phoenix'
-		],
-		escoffier: ['Cooking Mek (Cold Storage)'],
-		flins: ['Pocztowy Demonspear (Manifest Flame)'],
-		hu_tao: ['Secret Spear of Wangsheng (Paramita Papilio)'],
-		iansan: ['Weighted Spike (Swift Stormflight)'],
-		ifa: ['Airborne Disease Prevention (while hovering)'],
-		ineffa: ['Optical Flow Shield Barrier'],
-		keqing: ['Stellar Restoration (Blink)'],
-		lan_yan: [
-			'Feathermoon Ring (N follow-up, C1)',
-			'Feathermoon Ring (N follow-up)',
-			'Feathermoon Ring (E follow-up)'
-		],
-		linnea: ['Memo Heal Aura'],
-		mavuika: ['Flamestrider Strikes', 'Rings of Searing Radiance'],
-		mitya: ['Detection Core: Steady State', 'Detection Core: Overloaded'],
-		mona: ['Phantom'],
-		nicole: ['Shield of Blazing Light'],
-		nilou: [
-			'Sword Dance',
-			'Whirling Steps 1',
-			'Whirling Steps 2',
-			'Water Wheel (Whirling Steps 3)'
-		],
-		noelle: ['Stone Armor'],
-		prune: ['Witchlure Bell (Hunter-Seeker)'],
-		shenhe: ['Talisman Spirit Field'],
-		skirk: ['Havoc: Sunder (Seven-Phase Flash)'],
-		tartaglia: [
-			'Foul Legacy: Raging Tide (Melee Stance)',
-			'Foul Legacy: Raging Tide (Exit Melee)',
-			'Havoc: Obliteration (Ranged Stance)',
-			'Havoc: Obliteration (Melee Stance)'
-		],
-		traveler_dendro: ['Foreign Thunderwood', 'LeaLotus Lamp'],
-		traveler_geo: ['Wake of Earth Wall'],
-		traveler_hydro: ['Rising Waters Bubble'],
-		traveler_pyro: ['Foreign Emberblade'],
-		valeriy: ['Supercharged Shield'],
-		varesa: ['Fiery Passion Strikes'],
-		varka: ['Favonius Bladework: Dancing Radiance (Sturm und Drang)'],
-		wriothesley: ['Forceful Fists of Frost (Chilling Penalty)'],
-		xianyun: ['Skyladder (1st Leap)', 'Skyladder (2nd Leap)', 'Skyladder (3rd Leap)'],
-		xiao: ["Whirlwind Thrust (Yaksha's Mask)"],
-		yaoyao: ['Yuegui: Jumping Mode'],
-		yoimiya: ['Firework Flare-Up (Niwabi Fire-Dance)'],
-		yumemizuki_mizuki: ['End Dreamdrifter'],
-		yun_jin: ['Opening Flourish Shield'],
-		zibai: ["Golden Blade's Petaled Touch (Lunar Phase Shift)", "Spirit Steed's Stride"]
-	}
+	ja: {}
 };
+
+const TABLES: Record<string, Record<string, Record<string, string>>> = { ja };
+
+/** The parts of `label` that would still show English: each leaf that is not
+ *  a game name in `row`, one of our words, or notation. */
+function gapsOf(row: Record<string, string>, label: string): string[] {
+	if (row[label] || isOurWord(label) || NOTATION.test(label)) return [];
+	const node = splitName(label);
+	return node ? childrenOf(node).flatMap((c) => gapsOf(row, c)) : [label];
+}
 
 const as = (locale: Locale) => overwriteGetLocale(() => locale);
 afterAll(() => as(baseLocale));
@@ -95,12 +46,13 @@ for (const locale of Object.keys(KNOWN_GAPS) as Locale[]) {
 			await loadAbilityNames(locale);
 		});
 
-		it('names every ability, passive, constellation, summon, and shield', () => {
+		it('names every part of every name and label the page shows', () => {
 			const missing: Record<string, string[]> = {};
 			for (const c of corpus) {
 				if (NOT_IN_GAME.includes(c.id)) continue;
-				const gaps = namesOf(c).filter((n) => abilityName(c.id, n) === n);
-				if (gaps.length) missing[c.id] = gaps;
+				const row = TABLES[locale][c.id] ?? {};
+				const gaps = [...new Set(namesOf(c).flatMap((n) => gapsOf(row, n)))];
+				if (gaps.length) missing[c.id] = gaps.sort();
 			}
 			expect(missing).toEqual(KNOWN_GAPS[locale]);
 		});
@@ -116,6 +68,24 @@ for (const locale of Object.keys(KNOWN_GAPS) as Locale[]) {
 		});
 	});
 }
+
+describe('composed labels', () => {
+	// The parts are put back together by messages, so English must come back
+	// letter for letter: otherwise the split misread the label.
+	it('compose back to their English exactly', () => {
+		as(baseLocale);
+		for (const c of corpus) for (const n of namesOf(c)) expect(compose({}, n)).toBe(n);
+	});
+
+	it('put the game name and our words together in Japanese', async () => {
+		as('ja');
+		await loadAbilityNames('ja');
+		expect(abilityName('diluc', 'Searing Onslaught (E1)')).toBe('逆焔の刃（E1）');
+		expect(abilityName('bennett', 'Hold Lv.2')).toBe('長押しLv.2');
+		expect(abilityName('xingqiu', 'A1: Hydropathic')).toBe(`A1：${ja.xingqiu.Hydropathic}`);
+		as(baseLocale);
+	});
+});
 
 describe('abilityName', () => {
 	it('keeps English in English', () => {

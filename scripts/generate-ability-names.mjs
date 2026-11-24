@@ -30,9 +30,14 @@
  *    the name is the label less its suffix and a joining の. Only the suffixes
  *    in `LABEL_SUFFIXES` are read, and every label found must agree.
  *
- * A name neither source finds is listed too. Some are ours, composed from a
- * game name and our words ("A1: X", "X (C4)"), and `$lib/i18n/abilityNames`
- * splits those before looking the game part up.
+ * 4. By hand (`BY_HAND`), for the few parts the game prints only inside a
+ *    description: each entry cites the line it was read from.
+ *
+ * A label composed from a game name and our words ("A1: Rekindle",
+ * "Searing Onslaught (E1)") is looked up whole first, then part by part
+ * (`$lib/data/nameParts.ts`), and `$lib/i18n/abilityNames` composes it back.
+ * A part neither source finds is listed: our own words, which are messages
+ * there, or a name the game's text doesn't have.
  *
  * The text maps are Dimbreath's `animegamedata2` (branch `main`), cached in
  * the gitignored `assets-src/textmap/`; `localize-endgame.mjs --refresh`
@@ -45,6 +50,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { namesOf } from '../src/lib/data/abilityNameSources.ts';
+import { childrenOf, isOurWord, NOTATION, splitName } from '../src/lib/data/nameParts.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CHARACTERS = join(ROOT, 'src/lib/data/characters');
@@ -80,7 +86,53 @@ const LABEL_SUFFIXES = {
 	Healing: ['回復量'],
 	'Shield Absorption': ['シールド吸収量'],
 	Shield: ['シールド'],
-	'1-Hit DMG': ['1段ダメージ']
+	'1-Hit DMG': ['1段ダメージ'],
+	'DMG Absorption': ['吸収量']
+};
+
+/**
+ * Names matched by hand, for a part the three sources can't reach: the game
+ * prints it only inside a description, or our label words it differently.
+ * Each entry cites the game's own line it was read from. Checked before the
+ * sources, so it also settles a name the text maps split two ways.
+ */
+const BY_HAND = {
+	ja: {
+		alhaitham: { 'Projection Attack': '光幕攻撃' }, // "Projection Attack Interval" 光幕攻撃の間隔
+		charlotte: { 'Focused Impression': 'フォーカスインプレッション' }, // 「フォーカスインプレッション」マークのダメージ
+		chasca: { Nightsoul: '夜魂' }, // "Nightsoul Transmission" 夜魂トランス
+		chiori: { Kinu: '「きぬ」' }, // her A4: 簡易型自動制御人形の「きぬ」
+		clorinde: {
+			'Glimbright Shade': '明燭の影', // her C6: 「明燭の影」が現れて追撃を行い
+			'Nightvigil Shade': '夜巡りの影' // her C1: 敵の近くに夜巡りの影を召喚して
+		},
+		columbina: { 'Gravity Interference': '引力の干渉' }, // a highlighted term, six lines
+		dehya: { 'Fiery Sanctum': '浄焔剣獄' }, // "Fiery Sanctum: Redmane's Blood" 浄焔剣獄·赤鬣の血
+		diluc: { Phoenix: '炎の鳥' }, // Dawn: 前方に飛行する炎の鳥を出し
+		durin: { 'Cycle of Enlightenment': '輪廻啓発' }, // a highlighted term, 「輪廻啓発」
+		emilie: { 'Heart Note': 'ルミドゥースの心' }, // her C4, "Lumidouce Heart Note"
+		escoffier: { 'Cooking Mek': '調理マシナリー', 'Cold Storage': '「チルド」' }, // "Cold Storage Mode" 「チルド」モード
+		freminet: { 'Shattering Pressure': '高圧粉砕' }, // a highlighted term
+		ineffa: { 'Optical Flow': 'オプティカルフロー' }, // "Optical Flow Shield Barrier" オプティカルフローシールド
+		kujou_sara: { Ambush: '伏' }, // "Tengu Juurai: Ambush" 天狗呪雷·伏
+		kuki_shinobu: { Thundergrass: '雷草' }, // her C4: 雷草が敵の位置に落ち
+		linnea: { 'Memo Heal': '備忘録の回復' }, // ours: her burst is "Memo: …" 絶体絶命サバイバル備忘録
+		mavuika: { 'Rings of Searing Radiance': '焚曜の輪' }, // "Ring of Searing Radiance DMG" 焚曜の輪のダメージ
+		mitya: { Overloaded: '過負荷', 'Steady State': '安定状態' }, // the reaction; a highlighted term
+		mona: { Phantom: '虚影' }, // a highlighted term
+		nicole: {
+			'Shield of Blazing Light': '熾光の護り', // her skill: 熾光の護りを展開する
+			"Pathfinder's Blessing": '導きの加護', // her C4: 「導きの加護」効果を付与する
+			Unity: '合性' // "Arcane Projection: Unity" ミステリウムの影・合性
+		},
+		nilou: { 'Sword Dance': '剣舞', 'Whirling Steps': '旋舞のステップ', 'Water Wheel': '水輪' }, // "Sword Dance/Whirling Steps 1-Hit DMG", "Luminous Illusion/Water Wheel DMG"
+		noelle: { 'Stone Armor': '護身の岩鎧' }, // Breastplate: 護身の岩鎧を召喚し ("protective stone armor")
+		prune: { 'Hunter-Seeker': 'ハンティング', 'Hunt the Witch': '魔女狩り' }, // 「ハンティング」モード; 「魔女狩り」効果を獲得する
+		skirk: { 'Rapid Movement': '高速移動' }, // her skill's Hold: 高速移動し続ける
+		valeriy: { Supercharged: '蓄雷' }, // "Supercharged Shield" 蓄雷シールド
+		yaoyao: { Yuegui: '月桂', 'Jumping Mode': '跳躍型' }, // 「月桂·跳躍型」
+		zibai: { "Spirit Steed's Stride": '翔ける霊駒' } // "Spirit Steed's Stride 1-Hit DMG" 翔ける霊駒の1段目ダメージ
+	}
 };
 
 /** One name from several text-map candidates, or null when they disagree. */
@@ -164,15 +216,21 @@ for (const [locale, lang] of Object.entries(LOCALES)) {
 	let fromMap = 0;
 	let dotted = 0;
 	let fromLabel = 0;
+	let byHand = 0;
 	const missing = [];
 	const split = [];
 	for (const c of characters) {
 		if (NOT_IN_GAME.has(c.id)) continue;
 		const db = fromGenshinDb(c.name, lang.gdb);
 		const row = {};
-		for (const name of namesOf(c)) {
-			let local = db.get(name);
-			if (local) fromDb++;
+		/** One name: whole first; a composed label that isn't found whole is
+		 *  looked up part by part, so "Searing Onslaught (E1)" finds Searing
+		 *  Onslaught. Notation and our words are left to the page. */
+		const resolve = (name) => {
+			if (name in row || NOTATION.test(name) || isOurWord(name)) return;
+			let local = BY_HAND[locale]?.[c.id]?.[name] ?? db.get(name);
+			if (BY_HAND[locale]?.[c.id]?.[name]) byHand++;
+			else if (local) fromDb++;
 			else {
 				// A plural ("Rain Swords") is the game's singular in Japanese.
 				const hashes =
@@ -185,17 +243,22 @@ for (const [locale, lang] of Object.entries(LOCALES)) {
 					fromMap++;
 					if (new Set(candidates).size > 1) dotted++;
 				} else if ((local = fromLabels(name, localMap))) fromLabel++;
-				else if (candidates.length)
-					split.push(`${c.id}: ${name} → ${[...new Set(candidates)].join(' | ')}`);
-				else missing.push(`${c.id}: ${name}`);
+				else {
+					const node = splitName(name);
+					if (node) return childrenOf(node).forEach(resolve);
+					if (candidates.length)
+						split.push(`${c.id}: ${name} → ${[...new Set(candidates)].join(' | ')}`);
+					else missing.push(`${c.id}: ${name}`);
+				}
 			}
 			if (local) row[name] = local;
-		}
+		};
+		namesOf(c).forEach(resolve);
 		if (Object.keys(row).length) table[c.id] = row;
 	}
 	tables[locale] = table;
 	report.push(
-		`${locale}: ${fromDb} from genshin-db, ${fromMap} from the text maps (${dotted} by the middle dot), ${fromLabel} from talent labels, ${split.length} split, ${missing.length} missing`,
+		`${locale}: ${fromDb} from genshin-db, ${fromMap} from the text maps (${dotted} by the middle dot), ${fromLabel} from talent labels, ${byHand} by hand, ${split.length} split, ${missing.length} missing`,
 		...split.map((s) => `  split  ${s}`),
 		...missing.map((s) => `  none   ${s}`)
 	);

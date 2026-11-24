@@ -112,8 +112,8 @@
 		const { section, abilityName: english, variant } = cap.source;
 		if (section === 'factionBonus')
 			return m.tb_name_team_bonus({ name: factionBonusName(english) });
-		const shown = data ? abilityName(data.id, english) : english;
-		const name = variant ? `${shown} (${variant})` : shown;
+		const label = variant ? `${english} (${variant})` : english;
+		const name = data ? abilityName(data.id, label) : label;
 		if (section === 'passive') return m.tb_name_passive({ name });
 		return name;
 	}

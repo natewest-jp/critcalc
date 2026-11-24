@@ -307,6 +307,24 @@ writes genshin-db's names, and `scripts/localize-endgame.mjs` adds the endgame t
 190. Character, weapon, and artifact set names → genshin-db's Japanese (楓原万葉, 流浪楽章, 旧貴族のしつけ). The game's full name, where English shows a short one (Kazuha) · game
 191. The Traveler of an element → 旅人（風）, the draft's 旅人 with genshin-db's element name · ours. Game8 and Altema write 主人公(風) (open question 17)
 192. Stygian Onslaught's bosses, mechanics, and checks, the Abyss's blessings and opponents, and the Theater's bosses → the game's Japanese text map, matched by the Chinese line lunaris.moe serves (百戦錬磨のドモヴォーイの彫刻師（百風）, {sprite}元素キャラクター) · game. A line with no Japanese match stays English: one boss title (Battle-Hardened Pioneer Secret Source Control Array: Will of the Hive), one check, and nine boss mechanics, listed by the script.
+193. Ability, passive, constellation, summon, and shield names → the game's Japanese, from genshin-db, the text maps, the talent tables' row labels, and a short hand-matched list that cites each line (`scripts/generate-ability-names.mjs`; 心景幻成, 摩耶の宮殿, 「たもと」) · game. The game's own spacing stays (心を呑む者の ピルグリメイジ), and ・ where two spellings differ only in the middle dot.
+
+## J. Labels composed from a game name
+
+The planner's labels that join a game name to notation or our words (`ability_*` messages, put
+together by `$lib/i18n/abilityNames`). Notation stays as players write it.
+
+194. "A1: X", "C2: X" → A1：X, C2：X · ours, the full-width colon of Japanese prose
+195. "X (E1)", "X (Hold)", "C4 (X)" → X（E1）, X（長押し）, C4（X） · ours, the full-width brackets of 191; two details join with 、
+196. "X: Y", a name and its part (Molten Inferno: Ranging Flame) → X・Y · game, as the game writes such names (変転・漆黒の否)
+197. "X 1", a step of a name (Whirling Steps 1) → X1 · ours
+198. X Shield, X Field, X Mark → Xシールド, X領域, Xマーク · game ("Focused Impression" Mark is 「フォーカスインプレッション」マーク); X Bubble, X Aura, X Wall, X Strikes, X RES shred → Xの泡, Xのオーラ, Xの壁, Xの連撃, Xの耐性ダウン · ours
+199. End X, With X, in X → X終了, Xあり, X内 · ours
+200. Hold Lv.2, Lv 4 → 長押しLv.2, Lv.4 · ours, from 55
+201. Hold, Press, Tap → 長押し, 一回押し, 短押し · game (55; Tap is the game's 短押し for Chasca). Short Hold, Holding → 短めの長押し, 長押し中 · ours
+202. Aimed Shot, Fully-Charged Aimed Shot → 狙い撃ち, フルチャージ狙い撃ち · game (56) and ours
+203. Normal Attack, Elemental Skill, Elemental Burst, Infusion → 通常攻撃, 元素スキル, 元素爆発, 元素付与 · game
+204. The planner's own words in labels: Heal mode, After Hold E, After Press E, Tap Fire, Exit Melee, 1st Leap, N follow-up, E follow-up, while hovering, faster ticks, four rings, recast extension, Blink, Max, Field → 回復モード, 長押しE後, 一回押しE後, 短押し射撃, 近接モード終了, 1回目の跳躍, 通常攻撃の追撃, 元素スキルの追撃, 滞空中, 間隔短縮, 輪4つ, 再発動で延長, 瞬間移動, 最大, 領域 · ours
 
 ## Open questions for the Japanese community
 

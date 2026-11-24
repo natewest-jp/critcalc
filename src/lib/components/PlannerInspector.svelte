@@ -153,7 +153,7 @@
 					{abilityName(cast.characterId, cast.abilityName)}{#if cast.variantLabel}<span
 							class="pi-variant"
 						>
-							· {cast.variantLabel}</span
+							· {abilityName(cast.characterId, cast.variantLabel)}</span
 						>{/if}
 				</h2>
 				<p class="pi-sub">
