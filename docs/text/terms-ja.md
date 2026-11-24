@@ -326,6 +326,19 @@ together by `$lib/i18n/abilityNames`). Notation stays as players write it.
 203. Normal Attack, Elemental Skill, Elemental Burst, Infusion → 通常攻撃, 元素スキル, 元素爆発, 元素付与 · game
 204. The planner's own words in labels: Heal mode, After Hold E, After Press E, Tap Fire, Exit Melee, 1st Leap, N follow-up, E follow-up, while hovering, faster ticks, four rings, recast extension, Blink, Max, Field → 回復モード, 長押しE後, 一回押しE後, 短押し射撃, 近接モード終了, 1回目の跳躍, 通常攻撃の追撃, 元素スキルの追撃, 滞空中, 間隔短縮, 輪4つ, 再発動で延長, 瞬間移動, 最大, 領域 · ours
 
+## K. Kit notes
+
+The notes on a character's entries (`caveat`, and a `notModeled` ruling's `reason`), drafted by
+Claude into `src/lib/data/kitNotes/ja.json` (`scripts/kit-notes.mjs`). Polite form, like the
+rest of the site; game names inside a note follow 193.
+
+205. The Rotation Planner doesn't draw damage amounts → ローテーションプランナーはダメージの数値を描画しません · ours
+206. doesn't track energy / Nightsoul points / HP → 元素エネルギー／夜魂値／HPを追跡しません · ours, the game's words
+207. doesn't simulate chance, so the same rotation always draws the same bars for everyone → 確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します · ours
+208. pickups, positioning, pulling opponents together, co-op → 拾得, 位置, 敵の引き寄せ, マルチプレイ · players
+209. Listed as always active; in game… → 常に有効として表示しています。ゲームでは… · ours
+210. Not modeled: … → 未対応：… · ours, from 40
+
 ## Open questions for the Japanese community
 
 Each is a real split between two words a player might expect. The draft uses the first.

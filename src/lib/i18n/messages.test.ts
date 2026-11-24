@@ -10,6 +10,7 @@
  * plugin fails to load, and then compiles no messages at all. The first test
  * here is what notices.
  */
+import { AVOID } from './avoidedForms';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -59,21 +60,6 @@ const markup = (msg: Message): string =>
  * What's new entry, a new button). Chinese joins once its draft is whole.
  */
 const COMPLETE: string[] = ['ja'];
-
-/**
- * Forms a locale's term list rules out (`docs/text/terms-<locale>.md`), the
- * way the English termbase's `avoid` lists do for English. A form is matched in
- * every text a message can render.
- */
-const AVOID: Record<string, { form: RegExp; why: string }[]> = {
-	ja: [
-		{ form: /凸/, why: 'entry 88: constellations are C0–C6, never 凸' },
-		{
-			form: /(?<![A-Za-z])CD(?![A-Za-z])/,
-			why: 'entry 28: cooldown is クールタイム (CT in dense labels), never CD'
-		}
-	]
-};
 
 /** A literal brace or backslash is escaped in the text: `\{8s\}` renders `{8s}`. */
 const unescape = (text: string): string => text.replace(/\\([{}\\])/g, '$1');
