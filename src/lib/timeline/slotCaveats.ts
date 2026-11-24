@@ -15,9 +15,23 @@
 import type { CharacterData } from '$lib/types/character';
 import type { Element } from '$lib/types/ability';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
+import { m } from '$lib/paraglide/messages';
+
+/** An entry's kind in the game's words (通常攻撃, 固有天賦). A constellation
+ *  is "C4" in every language, as players write it. Read at each use, so it
+ *  follows the page's language. */
+const ABILITY_KIND: Record<string, () => string> = {
+	normal: m.planner_normal,
+	charged: m.planner_charged,
+	plunge: m.planner_plunge,
+	skill: m.planner_skill,
+	burst: m.planner_burst,
+	passive: m.planner_passive
+};
 
 export type SlotCaveat = {
-	/** "Skill" · "Burst" · "Passive" · "C4" — the ability's short kind label. */
+	/** "Skill" · "Burst" · "Passive" · "C4" — the ability's short kind label,
+	 *  in the page's language. */
 	kind: string;
 	name: string;
 	caveat: string;
@@ -63,7 +77,7 @@ export function collectSlotCaveats(
 				kind:
 					a.abilityType === 'constellation'
 						? `C${a.constellationLevel}`
-						: a.abilityType.charAt(0).toUpperCase() + a.abilityType.slice(1)
+						: (ABILITY_KIND[a.abilityType]?.() ?? a.abilityType)
 			}));
 
 		if (caveats.length > 0) {
