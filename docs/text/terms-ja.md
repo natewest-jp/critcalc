@@ -1,8 +1,8 @@
 # Japanese terms
 
 How critcalc writes its terms in Japanese: the vocabulary the Japanese draft of the tool
-interiors (the Rotation Planner, the Team Builder with Roster, and the Visualizers) is
-written from. Each entry is numbered so a reader can answer by number.
+interiors (the Rotation Planner, the Team Builder with Roster, and the Visualizers) and of
+Help is written from. Each entry is numbered so a reader can answer by number.
 
 **Status.** Nate's reviewer ruled entries 31 and 88; the reviewer is not a Genshin
 player, so the rest are Claude's calls from the game's text and the Japanese community's own
@@ -269,6 +269,21 @@ The Visualizers:
 169. Radiance counter → 輝映カウンター · ours, from the game's 輝映
 170. Paimon.moe's Wish Counter, Settings, Export to Excel → 祈願カウンター, 設定, Excelにエクスポート · unchecked against Paimon.moe's Japanese page
 
+## G. Added while drafting Help
+
+Help's prose needed these. The game's words come from genshin-db's Japanese talent text.
+
+171. Help's character and ability names in prose → the game's Japanese: 夢見月瑞希の夢浮かみ (Dreamdrifter), スピリット・レインズ (Spirit Reins, Shadow Hunt), ファジオ and 演算負荷 (Fagio, Decoding Power; overheating is 高負荷), 冥蝶の舞 (Paramita Papilio), 大掃除 (Sweeping Time), オズ (Oz), 飛星 (Shooting Stars) · game. Notation stays as written (`Mizuki E ~2s`), and the composer's names are the English game's display names, which the draft says.
+172. caveats (the inspector's notes on a kit) → 注意点 · ours
+173. active row (the on-field row) → フィールド上の行 · ours, from 30
+174. walk-cancel → 歩きキャンセル · players
+175. time token → 時間トークン · ours
+176. the ruler, the baseline, a connector → 目盛り, 基準線, 接続線 · ours
+177. portrait → 立ち絵, as the interiors have it; magnifier → 虫眼鏡; a hollow chip → 中抜き · ours
+178. the Visualizers' Readout → 読み取り表示 · ours
+179. Starglitter → 星輝 · game
+180. "Menacing or lower" (Stygian's fourth difficulty and below) → エクストラより下の難易度 · ours, naming the difficulty above it, since the draft has no checked name for the fourth (open question 14)
+
 ## Open questions for the Japanese community
 
 Each is a real split between two words a player might expect. The draft uses the first.
@@ -286,3 +301,4 @@ Each is a real split between two words a player might expect. The draft uses the
 11. (135) soft pity: ソフト天井, or 確率上昇?
 12. (144) The four-element resonance: does the game name it in Japanese? The draft has 元素共鳴（異なる4種）.
 13. (162) Dense stat labels: 元チャ and 会心ダメ, or the Latin ER and CD?
+14. (180) Stygian Onslaught's fourth difficulty, Menacing: what does the game call it? The draft writes around it as エクストラより下の難易度.
