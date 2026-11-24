@@ -1,8 +1,8 @@
 # Japanese terms
 
 How critcalc writes its terms in Japanese: the vocabulary the Japanese draft of the tool
-interiors (the Rotation Planner, the Team Builder with Roster, and the Visualizers) and of
-Help is written from. Each entry is numbered so a reader can answer by number.
+interiors (the Rotation Planner, the Team Builder with Roster, and the Visualizers), of
+Help, and of the About area's pages is written from. Each entry is numbered so a reader can answer by number.
 
 **Status.** Nate's reviewer ruled entries 31 and 88; the reviewer is not a Genshin
 player, so the rest are Claude's calls from the game's text and the Japanese community's own
@@ -284,6 +284,21 @@ Help's prose needed these. The game's words come from genshin-db's Japanese tale
 179. Starglitter → 星輝 · game
 180. "Menacing or lower" (Stygian's fourth difficulty and below) → エクストラより下の難易度 · ours, naming the difficulty above it, since the draft has no checked name for the fourth (open question 14)
 
+## H. Added while drafting the pages
+
+About, What's new, Contribute, Beta, and Privacy needed these. The game's words come from
+genshin-db's Japanese talent text unless marked otherwise.
+
+181. What's new's ability names in prose → the game's Japanese: 衡平な裁量 (Equitable Judgment, as 重撃·衡平な裁量), 変転・漆黒の否 (Denial of Darkness), 白焔の龍 and 黒蝕の龍 (Durin's White and Dark forms), 鳳跡随翦舞 and 翦月輪 (Swallow-Wisp Pinion Dance, Feathermoon Rings), 化海月 and 葛籠の中の玉櫛 (Bake-Kurage, Tamakushi Casket), 聖祝の導き (Guidance of Theosis), フリーズキャッツクロー (Icy Paws), 琢光鏡 and 光幕攻撃 (Chisel-Light Mirror, Projection Attack), 夜魂値 (Nightsoul points), 万象、灰に帰す (All Is Ash) · game
+182. Witch's Revelation (the Hexerei talents unlocked by a quest) → 魔女の啓示 · ours, unchecked: genshin-db does not carry these talents yet (open question 15)
+183. Known gaps → 既知の未対応事項 · ours, from 40
+184. tick cadence → 判定間隔, from the interiors' 1回の判定 · ours
+185. training dummy → 木人 · players
+186. co-op → マルチプレイ · game
+187. Shatter → 氷砕き · game, as Help has it
+188. mains ("Calling all mains!") → キャラ愛好家 · ours. Japanese has no loan for a "main" as a player devoted to one character.
+189. Dates follow the page's language through `Intl` (11月11日, 2026年11月, 2026年10月26日), so they are not messages.
+
 ## Open questions for the Japanese community
 
 Each is a real split between two words a player might expect. The draft uses the first.
@@ -302,3 +317,5 @@ Each is a real split between two words a player might expect. The draft uses the
 12. (144) The four-element resonance: does the game name it in Japanese? The draft has 元素共鳴（異なる4種）.
 13. (162) Dense stat labels: 元チャ and 会心ダメ, or the Latin ER and CD?
 14. (180) Stygian Onslaught's fourth difficulty, Menacing: what does the game call it? The draft writes around it as エクストラより下の難易度.
+15. (182) Witch's Revelation: what does the game call these talents in Japanese? The draft has 魔女の啓示.
+16. (138, 169) The wish counter: the draft writes it 輝映カウンター, after the Stellar reactions' 輝映, while the mechanic it counts is 掴みし明光. Should the counter be 明光カウンター?
