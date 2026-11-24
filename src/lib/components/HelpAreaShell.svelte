@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { hrefTo } from '$lib/i18n/paths';
 	import type { Component } from 'svelte';
 	import type { Area } from '$lib/help/areas';
@@ -67,7 +68,7 @@
 		<HRule />
 	</header>
 	<div class="area-shell">
-		<nav class="area-nav" aria-label="{area.title} sections">
+		<nav class="area-nav" aria-label={m.help_area_sections({ area: area.title })}>
 			<ul class="area-chapters">
 				{#each area.chapters as ch (ch.id)}
 					<li>

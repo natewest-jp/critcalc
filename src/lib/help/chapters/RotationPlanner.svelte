@@ -6,415 +6,169 @@
 	 card / slot, the timeline (never "chart"), a tab holding a rotation (never
 	 "plan"), the aura lane = the gauge lines + the reaction spawns, the aura
 	 log, the view bar / document bar. ⚓ A limit is the TOOL's ("The Rotation
-	 Planner doesn't…"); "we" only for a choice that isn't a limit. -->
+	 Planner doesn't…"); "we" only for a choice that isn't a limit.
+
+	 The text is in messages/*.json (`help_planner_*`). A paragraph is one
+	 message, its bold words, code, links, and screenshot numbers as markup
+	 (`{#ref}2{/ref}` is HelpRef 2), so a translation can move them; `p` below
+	 says what each tag renders as. Notation in `{#code}` stays as written. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 	import HelpFigure from '$lib/components/HelpFigure.svelte';
 	import HelpRef from '$lib/components/HelpRef.svelte';
+	import Msg from '$lib/components/Msg.svelte';
 </script>
 
-<h1>Rotation planner</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet code(t: string)}<code>{t}</code>{/snippet}
+{#snippet warn(t: string)}<code class="flag-warning">{t}</code>{/snippet}
+{#snippet approx(t: string)}<code class="flag-approx">{t}</code>{/snippet}
+{#snippet ref(t: string)}<HelpRef n={Number(t)} />{/snippet}
+{#snippet kqm(t: string)}<a
+		href="https://library.keqingmains.com/theorycrafting#combat-notation"
+		target="_blank"
+		rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
+	>{/snippet}
+{#snippet feedback(t: string)}<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer"
+		>{t}</a
+	>{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg
+		{parts}
+		tags={{ strong, code, warn, approx, ref, kqm, coverage, feedback }}
+	/>{/snippet}
 
-<p class="flavor">
-	A ledger of where every star will be, frame by frame. Its compiler held that the heavens keep
-	perfect time and can be charted in intricate detail.
-</p>
+<h1>{m.help_planner_rotation_planner()}</h1>
 
-<p class="lede">
-	Write a rotation in KQM notation and the rotation planner draws it as a timeline: who is on field,
-	every cast and its cooldown, the buffs it grants, and what it does to the enemy’s aura, timed from
-	measured frame data.
-</p>
+<p class="flavor">{m.help_planner_a_ledger_of_where_every_star_will_be()}</p>
+
+<p class="lede">{m.help_planner_write_a_rotation_in_kqm_notation_and_the()}</p>
 
 <section>
-	<h2 id="notation">Writing a rotation</h2>
-	<p>
-		The composer under the timeline takes
-		<a
-			href="https://library.keqingmains.com/theorycrafting#combat-notation"
-			target="_blank"
-			rel="noopener noreferrer">KQM notation</a
-		>. A rotation is segments separated by <code>&gt;</code>, each starting with a character’s name
-		and followed by what they do:
-	</p>
+	<h2 id="notation">{m.help_planner_writing_a_rotation()}</h2>
+	<p>{@render p(m.help_planner_the_composer_under_the_timeline_takes.parts())}</p>
 	<ul>
-		<li>
-			<code>N</code> to <code>N9</code> are normal attacks — <code>N3</code> is three swings, and
-			<code>N2 N3</code> continues the same string. <code>C</code> is a charged attack,
-			<code>P</code>
-			a plunge (<code>lP</code> a low one), <code>D</code> a dash, and <code>J</code> a jump.
-			<code>A</code> is a bow’s fully charged aimed shot.
-		</li>
-		<li>
-			<code>E</code> and <code>Q</code> are skill and burst, with <code>hE</code> for a hold where the
-			kit has one.
-		</li>
-		<li>
-			Stances add special forms: <code>sE</code> a special skill, <code>sQ</code> a short burst,
-			<code>sC</code> a special charged attack, and <code>F</code> the finisher of a spinning charged
-			attack like Mavuika’s.
-		</li>
-		<li>
-			<code>3[N2 D]</code> or <code>[N2 D]x3</code> repeat the actions in the brackets,
-			<code>(E)</code> marks an optional action that isn’t drawn on the timeline, and
-			<code>E/Q</code> draws the first of two alternatives.
-		</li>
+		<li>{@render p(m.help_planner_n_to_n9_are_normal_attacks_n3_is_three.parts())}</li>
+		<li>{@render p(m.help_planner_e_and_q_are_skill_and_burst_with_he_for.parts())}</li>
+		<li>{@render p(m.help_planner_stances_add_special_forms_se_a_special.parts())}</li>
+		<li>{@render p(m.help_planner_3_n2_d_or_n2_d_x3_repeat_the_actions_in.parts())}</li>
 		<li id="time-token">
-			critcalc adds a time token of its own, written <code>~Xs</code>. <code>~1.5s</code> adds 1.5
-			seconds of waiting on the active character’s row. A few abilities take it as their length
-			instead:
+			{@render p(m.help_planner_critcalc_adds_a_time_token_of_its_own.parts())}
 			<ul>
-				<li>
-					<strong>Mizuki’s Dreamdrifter and Chasca’s Spirit Reins, Shadow Hunt</strong> run their
-					full length unless <code>~Xs</code> is the last thing in that character’s turn.
-					<code>Mizuki E ~2s</code> ends Dreamdrifter after two seconds, so a swap can land at that moment.
-				</li>
-				<li>
-					<strong>Sandrone’s Charged Attack</strong> holds until just before Fagio overheats
-					(reaches maximum Decoding Power). <code>C ~1.5s</code> holds for 1.5 seconds instead, regardless
-					of the current Decoding Power level.
-				</li>
-				<li>
-					<strong>Sayu’s held Skill</strong> rolls for as long as you set with <code>hE ~2s</code>,
-					up to ten seconds.
-				</li>
-				<li>
-					<strong>Neuvillette’s Charged Attack</strong> runs the full beam. <code>C ~1s</code> ends it
-					early, at its last hit by then.
-				</li>
+				<li>{@render p(m.help_planner_mizuki_s_dreamdrifter_and_chasca_s.parts())}</li>
+				<li>{@render p(m.help_planner_sandrone_s_charged_attack_holds_until.parts())}</li>
+				<li>{@render p(m.help_planner_sayu_s_held_skill_rolls_for_as_long_as.parts())}</li>
+				<li>{@render p(m.help_planner_neuvillette_s_charged_attack_runs_the.parts())}</li>
 			</ul>
 		</li>
 	</ul>
-	<p>
-		Names are the game’s display names — Kazuha, Raiden, Tartaglia — and the composer suggests them
-		as you type. Actions can be run together (<code>QEN2</code>), and pasted rotations are cleaned
-		up for you: footnote marks dropped, line breaks joined.
-	</p>
-	<p>
-		Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on a
-		Mac). They work for edits made from the bench and the team builder too. Each rotation keeps its
-		own edit history until the page reloads.
-	</p>
-	<p>
-		A skill or burst written before it’s ready waits for its cooldown, and everything after it waits
-		too. Charges come back one at a time, as in the game.
-	</p>
+	<p>{@render p(m.help_planner_names_are_the_game_s_display_names.parts())}</p>
+	<p>{m.help_planner_undo_and_redo_sit_at_the_end_of_the()}</p>
+	<p>{m.help_planner_a_skill_or_burst_written_before_it_s()}</p>
 	<HelpFigure
 		shot="planner-composer"
-		alt="The composer holding a rotation: Sucrose’s hE underlined in yellow, and Flinz, a misspelled name, underlined in orange."
+		alt={m.help_planner_the_composer_holding_a_rotation_sucrose()}
 	>
-		<p>
-			The composer underlines what it can’t draw exactly as written, in two colors. An
-			<strong>orange</strong> underline means it couldn’t take the text: a name that matches no
-			character, like <code class="flag-warning">Flinz</code> (that segment is skipped), an aimed
-			shot on a character without a bow, or a token it doesn’t know. A <strong>yellow</strong> one
-			means it took the text and drew a stand-in: a hold version the kit doesn’t have, like
-			<code class="flag-approx">hE</code>, timed as a tap instead; a plunge with no measured frames;
-			a fifth character, who has no slot. Hover the token for the reason.
-		</p>
+		<p>{@render p(m.help_planner_the_composer_underlines_what_it_can_t.parts())}</p>
 	</HelpFigure>
-	<p>
-		<strong>Walk-cancels.</strong> <code>W</code> ends the attack string the way walking does in
-		game: <code>N1 W N1</code> is two first hits. For most attacks a walk can start only once the animation
-		has ended, though some characters can walk out a little sooner. Regardless, walk cancels give you
-		a reset of the attack string without the stamina a dash would cost.
-	</p>
+	<p>{@render p(m.help_planner_walk_cancels_w_ends_the_attack_string.parts())}</p>
 </section>
 
 <section>
-	<h2 id="team">The team</h2>
-	<p>
-		The bench holds four slots. Typing a character’s name puts them in the first empty slot, even
-		with no actions after it, and deleting all of their notation frees the slot again. A team opened
-		from the Library, a lineup, or a team link is placed in its slots and stays there while you
-		write. When a placed character isn’t written into the notation yet, they’re shown resting
-		(dimmed). When no slot is empty, any other name you type takes the first resting character’s
-		slot.
-	</p>
-	<HelpFigure shot="planner-bench-card" alt="Flins’s bench card, its five controls numbered.">
-		<p>
-			Each slot on the bench beside the timeline has a bench card. Clicking the portrait <HelpRef
-				n={1}
-			/> opens the character’s page in the inspector. On a wide screen, the two buttons at the card’s
-			left change the slot: The top one <HelpRef n={2} /> opens the team builder’s swap mode for that
-			slot, and picking someone there takes you back to the planner with the notation renamed throughout.
-			The bottom one <HelpRef n={3} />
-			removes the character from the team and deletes their notation. Clicking an empty slot’s portrait
-			adds someone instead. On a phone, <strong>Remove from team</strong> is on the character’s page in
-			the inspector.
-		</p>
-		<p>
-			The chip on the portrait <HelpRef n={4} /> is the character’s constellation, and the pill beside
-			it <HelpRef n={5} /> sets their weapon and artifact set for this rotation. A character you own is
-			at your roster’s level. Choosing another level for them makes a what-if: a copy of the rotation
-			in Theorycraft at that level, paired with this one so you can switch between the two. A character
-			you don’t own keeps the level this rotation gives them, and their chip is drawn hollow. In Theorycraft
-			every level belongs to the rotation.
-		</p>
+	<h2 id="team">{m.help_planner_the_team()}</h2>
+	<p>{m.help_planner_the_bench_holds_four_slots_typing_a()}</p>
+	<HelpFigure shot="planner-bench-card" alt={m.help_planner_flins_s_bench_card_its_five_controls()}>
+		<p>{@render p(m.help_planner_each_slot_on_the_bench_beside_the.parts())}</p>
+		<p>{@render p(m.help_planner_the_chip_on_the_portrait_is_the.parts())}</p>
 	</HelpFigure>
-	<p>
-		A character without curated frame data carries a mark beside their name, and their actions are
-		drawn with generic timing. The
-		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what is covered
-		for each character.
-	</p>
+	<p>{@render p(m.help_planner_a_character_without_curated_frame_data.parts())}</p>
 </section>
 
 <section>
-	<!-- Nate's wording, 2026-11-08. Braces are written as string expressions
-	     because a bare `{` opens a Svelte expression. -->
-	<h2 id="blank">Blank, a stand-in character</h2>
-	<p>
-		Type “Blank” in the notation box to create a stand-in for a character the planner doesn’t have,
-		such as one you’re theorycrafting before release. Write it like any other character:
-		<code>Blank E N3 Q</code>.
-	</p>
-	<p>
-		To show how long a skill or burst lasts, put the length in braces right after it:
-		<code>{'Blank E{8s}'}</code> draws an 8-second bar, and <code>{'Q{12s}'}</code> a 12-second one. Blank
-		has no cooldowns, so casting an ability again right away ends the bar before it. Please note that
-		Blank’s ability durations are left out of the KQM notation export.
-	</p>
-	<p>
-		A rotation can only use one Blank (if you would like support for more than one Blank, please
-		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">request it</a>). Its
-		actions use generic timing, and none of them hit, grant a buff, or apply an element.
-	</p>
-	<p>
-		Blank counts as no element. It never breaks a rule like Nilou’s (no Pyro, Cryo, Electro, Anemo,
-		or Geo teammates), but it can’t supply an element a teammate needs either, like the Electro
-		member Chevreuse looks for.
-	</p>
+	<!-- Nate's wording, 2026-11-08. A literal brace in a message is written
+	     `\{` in messages/*.json. -->
+	<h2 id="blank">{m.help_planner_blank_a_stand_in_character()}</h2>
+	<p>{@render p(m.help_planner_type_blank_in_the_notation_box_to_create.parts())}</p>
+	<p>{@render p(m.help_planner_to_show_how_long_a_skill_or_burst_lasts.parts())}</p>
+	<p>{@render p(m.help_planner_a_rotation_can_only_use_one_blank_if_you.parts())}</p>
+	<p>{m.help_planner_blank_counts_as_no_element_it_never()}</p>
 </section>
 
 <section>
-	<h2 id="timeline">Reading the timeline</h2>
-	<HelpFigure
-		shot="planner-timeline"
-		alt="Columbina’s rows over the first five seconds: her skill and its cooldown, two summons, her burst, her active row, and the swap connector down to Ineffa, numbered."
-	>
-		<p>
-			Each character gets a group of rows: their skill <HelpRef n={1} />, then any summons and
-			shields <HelpRef n={2} />, then their burst <HelpRef n={3} />, then the active row <HelpRef
-				n={4}
-			/>, which shows when they’re on field and what they’re doing. Received buffs and weapon procs
-			follow underneath, and connectors mark each swap <HelpRef n={5} />.
-		</p>
-		<p>
-			A skill or burst bar is followed by a faded tail <HelpRef n={6} /> labeled with the cooldown, ending
-			where the ability can be used again. A stance that lasts longer than its own cooldown is drawn dimmer
-			past the point where the cooldown ran out.
-		</p>
+	<h2 id="timeline">{m.help_planner_reading_the_timeline()}</h2>
+	<HelpFigure shot="planner-timeline" alt={m.help_planner_columbina_s_rows_over_the_first_five()}>
+		<p>{@render p(m.help_planner_each_character_gets_a_group_of_rows.parts())}</p>
+		<p>{@render p(m.help_planner_a_skill_or_burst_bar_is_followed_by_a.parts())}</p>
 	</HelpFigure>
-	<p>
-		Below the characters are the team-wide lanes — team buffs, Nightsoul bursts, and Moonsign’s
-		Ascendant Gleam bonuses when the team has them — and above the composer a strip lists the
-		always-on bonuses: resonances, faction bonuses, and permanent passives.
-	</p>
-	<p>Energy isn’t modeled: A burst is ready whenever its cooldown is.</p>
-	<p>
-		<strong>Zoom</strong> in the toolbar opens a slider and <strong>Reset</strong>; the mouse wheel
-		over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
-	</p>
-	<p>
-		<strong>Buffs</strong> and <strong>Auras</strong> in the toolbar are layers. Buffs hides every bar
-		that says what a cast grants — buff rows, weapon procs, the team lanes, and the always-on strip —
-		and Auras hides the aura lane. Skills, bursts, summons, and shields stay, since they say when an ability
-		is happening. With both off, the timeline is ability timings and nothing else. If you change either
-		one, your choice is remembered. On a small screen both are off to begin with.
-	</p>
+	<p>{m.help_planner_below_the_characters_are_the_team_wide()}</p>
+	<p>{m.help_planner_energy_isn_t_modeled_a_burst_is_ready()}</p>
+	<p>{@render p(m.help_planner_zoom_in_the_toolbar_opens_a_slider_and.parts())}</p>
+	<p>{@render p(m.help_planner_buffs_and_auras_in_the_toolbar_are.parts())}</p>
 </section>
 
 <section>
-	<h2 id="human-timing">Timing like a person</h2>
-	<p>
-		<strong>Human timing</strong> is on by default. It adds some frames of reaction time before each input
-		the game doesn’t buffer for you: after a skill, burst, plunge, dash, or jump, from a normal attack
-		into anything but another normal or a charged attack, and on the first input after a swap. Normal
-		into normal and normal into charged are exempt, because the game allows queuing of those inputs. A
-		bow’s charged shot is the exception: It always takes the reaction time.
-	</p>
+	<h2 id="human-timing">{m.help_planner_timing_like_a_person()}</h2>
+	<p>{@render p(m.help_planner_human_timing_is_on_by_default_it_adds.parts())}</p>
 	<HelpFigure
 		shot="planner-padding"
-		alt="Flins’s active row, with a hatched sliver of reaction time before each input after his swap in, one of them numbered."
+		alt={m.help_planner_flins_s_active_row_with_a_hatched_sliver()}
 	>
-		<p>
-			Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
-			This is 10 frames to start with (the KQM starting point), and you can adjust it there.
-			<strong>Animations</strong> lets each action play out in full instead of canceling.
-			<strong>Both</strong> enables both. The padding shows as hatched slivers <HelpRef n={1} /> on the
-			active row, which
-			<strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the
-			frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside
-			<strong>Total</strong> says so and opens Settings.
-		</p>
+		<p>{@render p(m.help_planner_settings_decides_what_it_changes_padding.parts())}</p>
 	</HelpFigure>
-	<p>
-		Swaps take time either way: your ping plus about 90 ms, set under <strong>Swap ping</strong> in
-		Settings. If you write the same character on both sides of a <code>&gt;</code> it costs no swap time,
-		since the character never left the field. Laps relies on this when a rotation ends with the character
-		it starts with.
-	</p>
-	<p>
-		A swap ends a stance only where the game does: Hu Tao’s Paramita ends when she leaves, while
-		Mavuika’s Nightsoul Blessing or Noelle’s Sweeping Time carries on. A few stances hold the field
-		— Mizuki’s Dreamdrifter keeps her on field until it ends, unless the segment is cut short with a
-		time token or a second press of her skill.
-	</p>
-	<p>
-		Because Human timing is your preference, it isn’t stored in a share link. Someone opening your
-		rotation sees it at their own setting.
-	</p>
+	<p>{@render p(m.help_planner_swaps_take_time_either_way_your_ping.parts())}</p>
+	<p>{m.help_planner_a_swap_ends_a_stance_only_where_the_game()}</p>
+	<p>{m.help_planner_because_human_timing_is_your_preference()}</p>
 </section>
 
 <section>
-	<h2 id="playback">Playing it back</h2>
-	<HelpFigure
-		shot="planner-playback"
-		alt="The playback controls with Laps on, and the timeline zoomed out: the cursor partway through the first lap and the gold mark where the second begins, numbered."
-	>
-		<p>
-			<strong>Play</strong>
-			<HelpRef n={1} /> (or Space) runs a cursor <HelpRef n={2} /> along the timeline at game speed, and
-			the plate <HelpRef n={3} />
-			beside it slows it to 0.75× or 0.5×. With sound on, you’ll hear four beats to count you in, then
-			a note for every input. Settings has the sounds and the volume.
-			<strong>Back to the start</strong> (Home) rewinds.
-		</p>
-		<p>
-			Bluetooth headphones and speakers delay sound by a tenth of a second or more, so the cursor
-			waits for your device’s delay and stays in step with what you hear.
-		</p>
-		<p>
-			<strong>Laps</strong>
-			<HelpRef n={4} /> simulates the rotation five times in a row, as one run. A skill still on cooldown
-			waits and pushes the rest back, and buffs, stacks, and auras carry from one lap into the next, so
-			a rotation that doesn’t loop cleanly shows it. Gold marks <HelpRef n={5} /> on the ruler show where
-			each lap begins. Laps isn’t saved, shared, or exported.
-		</p>
+	<h2 id="playback">{m.help_planner_playing_it_back()}</h2>
+	<HelpFigure shot="planner-playback" alt={m.help_planner_the_playback_controls_with_laps_on_and()}>
+		<p>{@render p(m.help_planner_play_or_space_runs_a_cursor_along_the.parts())}</p>
+		<p>{m.help_planner_bluetooth_headphones_and_speakers_delay()}</p>
+		<p>{@render p(m.help_planner_laps_simulates_the_rotation_five_times.parts())}</p>
 	</HelpFigure>
 </section>
 
 <section>
-	<h2 id="aura">The enemy’s aura</h2>
-	<HelpFigure
-		shot="planner-aura"
-		alt="The aura lane over the first seven seconds: Hydro and then Electro gauge lines, their element pills, the Lunar-Charged marker, and a Thundercloud below the baseline, numbered."
-	>
-		<p>
-			The aura lane above the ruler represents the elemental aura on the enemy. The gauge lines <HelpRef
-				n={1}
-			/> draw each element attached to them, and a line’s height is how much gauge is left, so you can
-			see an aura land, decay, get topped up, and get eaten by a reaction. The gaps are where the next
-			trigger has nothing to react with. Hover anywhere on it to read all the auras present at that moment.
-		</p>
-		<p>
-			Above the lines, a pill <HelpRef n={2} /> in the element’s color marks each hit that applied an
-			element, and a labeled marker <HelpRef n={3} /> above that names each reaction it caused. A run
-			of a ticking reaction such as Electro-Charged is one marker with a count. Frozen, Quicken, Burning,
-			and Burning’s Dendro fuel are separate objects from the auras that made them, with their own decay,
-			so they get their own lines. A yellow ring on a pill means the hit has no measured gauge strength,
-			and 1U is assumed.
-		</p>
-		<p>
-			<strong>The reaction spawns</strong>
-			<HelpRef n={4} />, below the baseline, are what some reactions leave behind: a Dendro Core
-			from Bloom, a Starlight Prism from Stellar-Conduct, a Thundercloud from Lunar-Charged, and
-			Moondrifts from Lunar-Crystallize. A dot marks each one appearing, and a stepped shape shows
-			how many there are, so a step down is one expiring or being spent. A Dendro Core arrives half
-			a second after its Bloom, lasts 6s, and there can be five on the field at once. Hyperbloom or
-			Burgeon takes the oldest Dendro Core. A Starlight Prism lasts 7s and a further Stellar-Conduct
-			refreshes it. There is only ever one Thundercloud, lasting 5.5s, and another Lunar-Charged
-			restarts its clock. Lunar-Crystallize keeps three Moondrifts topped up, 9s each, drawn as one
-			row. The damage these deal isn’t modeled; their presence is, along with any character effect
-			that depends on it.
-		</p>
+	<h2 id="aura">{m.help_planner_the_enemy_s_aura()}</h2>
+	<HelpFigure shot="planner-aura" alt={m.help_planner_the_aura_lane_over_the_first_seven()}>
+		<p>{@render p(m.help_planner_the_aura_lane_above_the_ruler_represents.parts())}</p>
+		<p>{@render p(m.help_planner_above_the_lines_a_pill_in_the_element_s.parts())}</p>
+		<p>{@render p(m.help_planner_the_reaction_spawns_below_the_baseline.parts())}</p>
 	</HelpFigure>
-	<p>
-		<strong>The Polestar Field.</strong> A Starlight Prism holds a Polestar Field around it, and the field’s
-		buffs sit in the team buffs, because any party member’s Stellar-Conduct raises the same field. Its
-		Cryo and Electro bonus moves: The field counts the Cryo and Electro hits that applied an element,
-		resets every 4s, and boosts based on that count — 20% with none, 29% at one, up to 40% at twelve.
-	</p>
-	<p>
-		<strong>Log</strong> in the toolbar opens the aura log beside the timeline. Hovering a row highlights
-		that moment on the aura lane, clicking one scrolls there, and clicking a pill or marker on the aura
-		lane opens the log at its row. The log also works with the Auras layer off.
-	</p>
-	<p>
-		The model behind it is the gauge explorer’s: the ×0.8 aura tax, decay rates, how much each
-		reaction consumes, and the Crystallize cooldown. It assumes one enemy without a permanent aura
-		that applies nothing back to you, and Shatter isn’t modeled. (If you would like to see permanent
-		auras as a feature, please send a request through the
-		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>.)
-	</p>
+	<p>{@render p(m.help_planner_the_polestar_field_a_starlight_prism.parts())}</p>
+	<p>{@render p(m.help_planner_log_in_the_toolbar_opens_the_aura_log.parts())}</p>
+	<p>{@render p(m.help_planner_the_model_behind_it_is_the_gauge.parts())}</p>
 </section>
 
 <section>
-	<h2 id="inspector">The inspector</h2>
+	<h2 id="inspector">{m.help_planner_the_inspector()}</h2>
 	<HelpFigure
 		shot="planner-inspector"
-		alt="The inspector open on the team: Columbina’s caveats for her normal attack, skill, and burst, then Ineffa, then Sucrose’s."
+		alt={m.help_planner_the_inspector_open_on_the_team_columbina()}
 	>
-		<p>
-			<strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character
-			with the caveats on their kit, where the timeline knowingly differs from the game, with constellation
-			notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon
-			or shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing
-			again closes it. A character’s page links to their coverage.
-		</p>
+		<p>{@render p(m.help_planner_inspector_opens_a_panel_beside_the.parts())}</p>
 	</HelpFigure>
-	<p>
-		Turn on <strong>Coverage strips</strong> in Settings to draw each character’s coverage under the composer
-		and dim the parts of the kit this rotation doesn’t use.
-	</p>
+	<p>{@render p(m.help_planner_turn_on_coverage_strips_in_settings_to.parts())}</p>
 </section>
 
 <section>
-	<h2 id="saving">Saving, comparing, and sharing</h2>
-	<p>
-		The planner shows one rotation at a time and saves it as you work, in the profile you’re in. The
-		rotation’s name in the top bar opens <strong>Rotations</strong> in the Library, where
-		<strong>New rotation</strong> starts another and each one can be pinned, renamed, or deleted.
-	</p>
-	<p>
-		A rotation in Theorycraft can go to one of your profiles with <strong>Move to a profile</strong
-		>. Before it moves, you see which levels change, since the profile’s roster decides them for
-		characters you own.
-	</p>
-	<p>
-		<strong>Compare</strong>, under the bench, pairs two rotations.
-		<strong>Duplicate and compare</strong>
-		copies this one so you can change the copy, and <strong>Compare with…</strong> picks another from
-		the Library. The button that takes Compare’s place, or ⌃`, switches between them.
-	</p>
-	<p>
-		<strong>Share</strong> in the toolbar copies a link, the KQM notation, or an image of the timeline.
-		The link opens the rotation with its constellations and loadouts in Theorycraft, so it doesn’t change
-		the reader’s profiles. The KQM copy removes inputs that are specific to critcalc — time tokens, optional
-		marks, and stack counts — and keeps the rest as you wrote it. The image is the whole timeline, not
-		only the part on screen, with the notation written above it.
-	</p>
+	<h2 id="saving">{m.help_planner_saving_comparing_and_sharing()}</h2>
+	<p>{@render p(m.help_planner_the_planner_shows_one_rotation_at_a_time.parts())}</p>
+	<p>{@render p(m.help_planner_a_rotation_in_theorycraft_can_go_to_one.parts())}</p>
+	<p>{@render p(m.help_planner_compare_under_the_bench_pairs_two.parts())}</p>
+	<p>{@render p(m.help_planner_share_in_the_toolbar_copies_a_link_the.parts())}</p>
 </section>
 
 <section>
-	<h2 id="phone">On a phone</h2>
-	<HelpFigure
-		shot="planner-phone-dock"
-		alt="The rotation planner on a phone: the bench as a row above the timeline, and the composer open at the foot of the screen with its row of keys."
-	>
-		<p>
-			On a phone the composer <HelpRef n={1} /> docks to the bottom of the screen. Collapsed it shows
-			the last line of the rotation. Tap it to open it with the keyboard, and tap anywhere else to close
-			it. A row of keys <HelpRef n={2} /> above the keyboard offers the inputs that fit where the cursor
-			is.
-		</p>
-		<p>
-			The bench becomes a row <HelpRef n={3} /> above the timeline. The arrow at the left end of the strip
-			above it folds the row away. Tapping a portrait on a phone opens the character’s details. The Buffs
-			and Auras layers are turned off by default and the zoom starts wider than on desktop.
-		</p>
+	<h2 id="phone">{m.help_planner_on_a_phone()}</h2>
+	<HelpFigure shot="planner-phone-dock" alt={m.help_planner_the_rotation_planner_on_a_phone_the()}>
+		<p>{@render p(m.help_planner_on_a_phone_the_composer_docks_to_the.parts())}</p>
+		<p>{@render p(m.help_planner_the_bench_becomes_a_row_above_the.parts())}</p>
 	</HelpFigure>
 </section>

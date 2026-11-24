@@ -69,7 +69,14 @@ const LIBRARY_ITEMS: SectionItem[] = [
 ];
 
 const chapterItems = (area: typeof HELP_AREA): SectionItem[] =>
-	area.chapters.map((c) => ({ id: `${area.id}/${c.id}` as Section, label: c.title, path: c.path }));
+	area.chapters.map((c) => ({
+		id: `${area.id}/${c.id}` as Section,
+		// A getter, so the label follows the page's language (areas.ts).
+		get label() {
+			return c.title;
+		},
+		path: c.path
+	}));
 
 /**
  * The sidebar (§6.1's table). The profile's group is titled with the profile's

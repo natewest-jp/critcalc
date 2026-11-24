@@ -245,9 +245,9 @@
 - `tb_off_field_dps` — roles.ts:54 m()
   > Off-Field DPS
   - terms: 🏷 DPS
-- `tb_support` — roles.ts:61 m() · TheaterView.svelte:174 m() · TheaterView.svelte:175 m()
+- `tb_support` — roles.ts:61 m() · TheaterView.svelte:175 m() · TheaterView.svelte:176 m()
   > Support
-- `tb_survivability` — roles.ts:68 m() · TheaterView.svelte:177 m() · TheaterView.svelte:178 m()
+- `tb_survivability` — roles.ts:68 m() · TheaterView.svelte:178 m() · TheaterView.svelte:179 m()
   > Survivability
 - `tb_all` — characterFilters.ts:52 m()
   > All
@@ -266,13 +266,13 @@
 - `tb_fontweight_cc_name_fs_px_fontfamily` — CharacterCard.svelte:49 font:
   > {cs.fontWeight} {CC_NAME_FS}px {cs.fontFamily}
   - vars: `cs.fontWeight` `CC_NAME_FS` `cs.fontFamily`
-- `tb_you_own_c_chip` — CharacterCard.svelte:229 m()
+- `tb_you_own_c_chip` — CharacterCard.svelte:230 m()
   > You own C{chip}
   - vars: `chip`
-- `tb_hidden_more_x` — CharacterCard.svelte:242 m()
+- `tb_hidden_more_x` — CharacterCard.svelte:243 m()
   > {count} more capability | {count} more capabilities
   - vars: `count`
-- `tb_displayname_s_details` — CharacterCard.svelte:251 m() · CharacterCard.svelte:252 m()
+- `tb_displayname_s_details` — CharacterCard.svelte:252 m() · CharacterCard.svelte:253 m()
   > {name}'s details
   - vars: `name`
 - `tb_name_passive` — CharacterDetails.svelte:112 m()
@@ -311,7 +311,7 @@
   - terms: 🎮 Constellation · 📖 rotation · 📖 Planner · 📖 Roster
 - `tb_default_build` — CharacterDetails.svelte:214 m()
   > Default build
-- `tb_capabilities_ca09` — CharacterDetails.svelte:231 m() · CharacterFilterStrip.svelte:99 m() · CharacterFilterStrip.svelte:203 m()
+- `tb_capabilities_ca09` — CharacterDetails.svelte:231 m() · CharacterFilterStrip.svelte:100 m() · CharacterFilterStrip.svelte:204 m()
   > Capabilities
 - `tb_loading_kit_data` — CharacterDetails.svelte:233 m()
   > Loading kit data…
@@ -344,37 +344,37 @@
   - terms: 🎮 Energy
 - `tb_something_not_right_with_this_character` — CharacterDetails.svelte:326 m()
   > Something not right with this character?
-- `tb_elements_n_selected` — CharacterFilterStrip.svelte:97 m()
+- `tb_elements_n_selected` — CharacterFilterStrip.svelte:98 m()
   > Elements: {n} selected
   - vars: `n`
-- `tb_elements` — CharacterFilterStrip.svelte:97 m() · CharacterFilterStrip.svelte:196 m()
+- `tb_elements` — CharacterFilterStrip.svelte:98 m() · CharacterFilterStrip.svelte:197 m()
   > Elements
-- `tb_capabilities_n_selected` — CharacterFilterStrip.svelte:99 m()
+- `tb_capabilities_n_selected` — CharacterFilterStrip.svelte:100 m()
   > Capabilities: {n} selected
   - vars: `n`
-- `tb_role` — CharacterFilterStrip.svelte:105 m()
+- `tb_role` — CharacterFilterStrip.svelte:106 m()
   > Role
-- `tb_show_every_role_again` — CharacterFilterStrip.svelte:113 m()
+- `tb_show_every_role_again` — CharacterFilterStrip.svelte:114 m()
   > Show every role again
-- `tb_element` — CharacterFilterStrip.svelte:128 m() · RosterTab.svelte:207 m()
+- `tb_element` — CharacterFilterStrip.svelte:129 m() · RosterTab.svelte:207 m()
   > Element
-- `tb_can_provide` — CharacterFilterStrip.svelte:148 m()
+- `tb_can_provide` — CharacterFilterStrip.svelte:149 m()
   > Can provide
-- `tb_can_provide_facet` — CharacterFilterStrip.svelte:158 m()
+- `tb_can_provide_facet` — CharacterFilterStrip.svelte:159 m()
   > Can provide: {facet}
   - vars: `facet`
-- `tb_roles` — CharacterFilterStrip.svelte:188 m() · CharacterFilterStrip.svelte:230 m()
+- `tb_roles` — CharacterFilterStrip.svelte:189 m() · CharacterFilterStrip.svelte:231 m()
   > Roles
-- `tb_filters` — CharacterFilterStrip.svelte:213 m()
+- `tb_filters` — CharacterFilterStrip.svelte:214 m()
   > Filters
-- `tb_role_and_element` — CharacterFilterStrip.svelte:213 m()
+- `tb_role_and_element` — CharacterFilterStrip.svelte:214 m()
   > Role and element
-- `tb_roles_1_selected` — CharacterFilterStrip.svelte:230 m()
+- `tb_roles_1_selected` — CharacterFilterStrip.svelte:231 m()
   > Roles: 1 selected
-- `tb_count_character_x` — CharacterFilterStrip.svelte:268 m()
+- `tb_count_character_x` — CharacterFilterStrip.svelte:269 m()
   > {count} character | {count} characters
   - vars: `count`
-- `tb_clear` — CharacterFilterStrip.svelte:274 m() · +page.svelte:1457 m() · +page.svelte:1707 m() · +page.svelte:1775 m()
+- `tb_clear` — CharacterFilterStrip.svelte:275 m() · +page.svelte:1457 m() · +page.svelte:1707 m() · +page.svelte:1775 m()
   > Clear
 - `tb_no_characters_match_these_filters` — CharacterGrid.svelte:40 m()
   > No characters match these filters.
@@ -946,46 +946,46 @@
 - `tb_acts_acts` — TheaterPickers.svelte:105 m()
   > {count} act | {count} acts
   - vars: `count`
-- `tb_ii` — TheaterView.svelte:77 ROMAN:
+- `tb_ii` — TheaterView.svelte:78 ROMAN:
   > II
-- `tb_iii` — TheaterView.svelte:77 ROMAN:
+- `tb_iii` — TheaterView.svelte:78 ROMAN:
   > III
-- `tb_primary_antagonists` — TheaterView.svelte:92 m()
+- `tb_primary_antagonists` — TheaterView.svelte:93 m()
   > Primary Antagonists
-- `tb_lv_level` — TheaterView.svelte:98 m()
+- `tb_lv_level` — TheaterView.svelte:99 m()
   > Lv. {level}
   - vars: `level`
-- `tb_opening_and_alternate_cast_members` — TheaterView.svelte:119 m()
+- `tb_opening_and_alternate_cast_members` — TheaterView.svelte:120 m()
   > Opening and Alternate Cast members selected
-- `tb_counting_one_supporting_cast_character` — TheaterView.svelte:126 m()
+- `tb_counting_one_supporting_cast_character` — TheaterView.svelte:127 m()
   > Counting one Supporting Cast character from a friend
-- `tb_count_one_supporting_cast_character_from` — TheaterView.svelte:127 m()
+- `tb_count_one_supporting_cast_character_from` — TheaterView.svelte:128 m()
   > Count one Supporting Cast character from a friend
-- `tb_1_supporting_cast` — TheaterView.svelte:129 m()
+- `tb_1_supporting_cast` — TheaterView.svelte:130 m()
   > +1 Supporting Cast
-- `tb_id_opening_character` — TheaterView.svelte:138 m()
+- `tb_id_opening_character` — TheaterView.svelte:139 m()
   > {name} · Opening Character
   - vars: `name`
-- `tb_supporting_cast` — TheaterView.svelte:150 m() · TheaterView.svelte:152 m()
+- `tb_supporting_cast` — TheaterView.svelte:151 m() · TheaterView.svelte:153 m()
   > Supporting Cast
-- `tb_stats` — TheaterView.svelte:159 m()
+- `tb_stats` — TheaterView.svelte:160 m()
   > Stats
-- `tb_on_field` — TheaterView.svelte:167 m() · TheaterView.svelte:168 m()
+- `tb_on_field` — TheaterView.svelte:168 m() · TheaterView.svelte:169 m()
   > On-Field
-- `tb_off_field` — TheaterView.svelte:170 m() · TheaterView.svelte:171 m()
+- `tb_off_field` — TheaterView.svelte:171 m() · TheaterView.svelte:172 m()
   > Off-Field
-- `tb_extras_extra_extra_alternate_cast` — TheaterView.svelte:188 m()
+- `tb_extras_extra_extra_alternate_cast` — TheaterView.svelte:189 m()
   > {extras}/{extra} extra Alternate Cast members have been added. Buffs based on the number of extra members added are obtained
   - vars: `extras` `extra`
-- `tb_add_at_least_need_characters_to_start` — TheaterView.svelte:190 m()
+- `tb_add_at_least_need_characters_to_start` — TheaterView.svelte:191 m()
   > Add at least {count} character to start the show | Add at least {count} characters to start the show
   - vars: `count`
-- `tb_alternate_cast` — TheaterView.svelte:193 m()
+- `tb_alternate_cast` — TheaterView.svelte:194 m()
   > Alternate Cast
-- `tb_gain_flowers_per_extra_fantasia_flowers` — TheaterView.svelte:202 m()
+- `tb_gain_flowers_per_extra_fantasia_flowers` — TheaterView.svelte:203 m()
   > Gain {#b}{flowers}{/b} Fantasia Flowers
   - vars: `flowers`
-- `tb_gain_blessinglevels_blessing_level_s` — TheaterView.svelte:210 m()
+- `tb_gain_blessinglevels_blessing_level_s` — TheaterView.svelte:211 m()
   > Gain {#b}{levels}{/b} Blessing Level(s): Increases Max HP by {#b}{hp}{/b}, ATK by {#b}{atk}{/b}, DEF by {#b}{def}{/b}, and Elemental Mastery by {#b}{em}{/b}.
   - vars: `levels` `hp` `atk` `def` `em`
   - terms: 🎮 Elemental Mastery · 🎮 Max HP · 🎮 ATK · 🎮 DEF

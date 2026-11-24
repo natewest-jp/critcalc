@@ -6,160 +6,108 @@
 	 Nate's review: "What is critcalc?" and "Does it tell me my damage number"
 	 are cut (About says what the site is; ⛔ the aim is not restated here) —
 	 describe the thing. The home-screen links go to Google's and Apple's own
-	 help pages. -->
+	 help pages.
+
+	 The text is in messages/*.json (`faq_*`). A paragraph is one message, its
+	 bold words and links as markup, so a translation can move them; `p` below
+	 says what each tag renders as. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
+	import Msg from '$lib/components/Msg.svelte';
 </script>
 
-<h1>Help &amp; FAQ</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet beta(t: string)}<a href={hrefTo('/beta')}>{t}</a>{/snippet}
+{#snippet privacy(t: string)}<a href={hrefTo('/privacy')}>{t}</a>{/snippet}
+{#snippet settings(t: string)}<a href={hrefTo('/settings')}>{t}</a>{/snippet}
+{#snippet about(t: string)}<a href={hrefTo('/about')}>{t}</a>{/snippet}
+{#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
+	>{/snippet}
+{#snippet feedback(t: string)}<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer"
+		>{t}</a
+	>{/snippet}
+{#snippet kqm(t: string)}<a href="https://keqingmains.com" target="_blank" rel="noopener noreferrer"
+		>{t}</a
+	>{/snippet}
+{#snippet android(t: string)}<a
+		href="https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid"
+		target="_blank"
+		rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet iphone(t: string)}<a
+		href="https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios"
+		target="_blank"
+		rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg
+		{parts}
+		tags={{ strong, beta, privacy, settings, about, coverage, feedback, kqm, android, iphone }}
+	/>{/snippet}
 
-<p class="lede">
-	Questions about the site as a whole. Each tool has its own chapter alongside this one.
-</p>
+<h1>{m.faq_help_faq()}</h1>
+
+<p class="lede">{m.faq_questions_about_the_site_as_a_whole_each()}</p>
 
 <section>
-	<h2 id="what-it-is">What critcalc is</h2>
+	<h2 id="what-it-is">{m.faq_what_critcalc_is()}</h2>
 
-	<h3>Is critcalc official?</h3>
-	<p>
-		No. It’s an unofficial fan project, not affiliated with or endorsed by HoYoverse. It’s also not
-		created or backed by any company. This is a solo dev project.
-	</p>
+	<h3>{m.faq_is_critcalc_official()}</h3>
+	<p>{m.faq_no_it_s_an_unofficial_fan_project_not()}</p>
 
-	<h3>What does the beta tag mean?</h3>
-	<p>
-		That the site is still in its early stages and could use some help. The
-		<a href={hrefTo('/beta')}>Beta</a> page goes into a little more detail.
-	</p>
+	<h3>{m.faq_what_does_the_beta_tag_mean()}</h3>
+	<p>{@render p(m.faq_that_the_site_is_still_in_its_early.parts())}</p>
 </section>
 
 <section>
-	<h2 id="your-data">Your data</h2>
+	<h2 id="your-data">{m.faq_your_data()}</h2>
 
-	<h3>Do I need an account?</h3>
-	<p>
-		No. Everything you set up (your profiles with their rosters, teams, rotations, and lineups, and
-		your settings) is stored in this browser and nowhere else. <a href={hrefTo('/privacy')}
-			>Privacy</a
-		>
-		lists exactly what is kept in your browser and what leaves it. Because nothing is kept anywhere else,
-		clearing this site’s data in your browser erases it, so it’s worth downloading a backup now and then.
-	</p>
+	<h3>{m.faq_do_i_need_an_account()}</h3>
+	<p>{@render p(m.faq_no_everything_you_set_up_your_profiles.parts())}</p>
 
-	<h3>How do I move my data to another device?</h3>
-	<p>
-		In <a href={hrefTo('/settings')}>Settings</a> under <strong>Backup</strong>, click
-		<strong>Export…</strong> to download all your data as one file. Move that file to the other
-		device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
-		file’s data. The file carries every profile in this browser, each with its roster, teams, rotations,
-		and lineups, plus your settings and the visualizers’ layout.
-	</p>
+	<h3>{m.faq_how_do_i_move_my_data_to_another_device()}</h3>
+	<p>{@render p(m.faq_in_settings_under_backup_click_export_to.parts())}</p>
 
-	<h3>What does a share link carry?</h3>
-	<p>
-		Only the thing you’re sharing, written into the link itself. A rotation planner link holds the
-		notation and each character’s constellation and loadout; a team builder link holds the lineup’s
-		teams and their constellations, but not their pinned rotations; a visualizers link holds that
-		one instrument’s settings.
-	</p>
-	<p>
-		A link opens at the reader’s own settings, not yours. If you share a rotation with Human timing
-		on and they have it off, they see the frame-perfect version. Links can get long, and some chat
-		apps cut them short; if one won’t open, that’s the usual cause.
-	</p>
+	<h3>{m.faq_what_does_a_share_link_carry()}</h3>
+	<p>{m.faq_only_the_thing_you_re_sharing_written()}</p>
+	<p>{m.faq_a_link_opens_at_the_reader_s_own()}</p>
 </section>
 
 <section>
-	<h2 id="the-data">The data behind it</h2>
+	<h2 id="the-data">{m.faq_the_data_behind_it()}</h2>
 
-	<h3>Where does the character data come from?</h3>
-	<p>
-		Each kit starts from genshin-db’s datamine and is curated by hand: effects and conditions from
-		the kit text, frame counts measured against gcsim wherever it has the character. Kits newer than
-		genshin-db’s text are read from the Fandom wiki’s tooltips. <a href={hrefTo('/about')}>About</a> gives
-		the full list of sources behind this project.
-	</p>
+	<h3>{m.faq_where_does_the_character_data_come_from()}</h3>
+	<p>{@render p(m.faq_each_kit_starts_from_genshin_db_s.parts())}</p>
 
-	<h3>Is my character fully in?</h3>
-	<p>
-		The <a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> answers that
-		for every character, ability by ability, and gives the reason for anything the rotation planner leaves
-		out. A character without curated frames still appears everywhere, marked “Not yet curated”, with generic
-		frame timings as a stand-in.
-	</p>
+	<h3>{m.faq_is_my_character_fully_in()}</h3>
+	<p>{@render p(m.faq_the_coverage_page_answers_that_for_every.parts())}</p>
 
-	<h3>Something looks wrong.</h3>
-	<p>
-		Please report it through the
-		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>.
-		<strong>Report a problem</strong>
-		in the top bar’s <strong>?</strong> menu opens the same form with a link to what you’re looking
-		at already filled in. A character’s details card has its own link:
-		<strong>Something not right with this character?</strong>
-	</p>
+	<h3>{m.faq_something_looks_wrong()}</h3>
+	<p>{@render p(m.faq_please_report_it_through_the_feedback.parts())}</p>
 </section>
 
 <section>
-	<h2 id="timing">Timing</h2>
+	<h2 id="timing">{m.faq_timing()}</h2>
 
-	<h3>Why is the timeline faster or slower than the timing I know?</h3>
-	<p>
-		Check <strong>Human timing</strong> (it’s on by default). This pads every input the game doesn’t
-		buffer with a few frames of reaction time — 10 to start with, which is the KQM starting point.
-		Normal attack into normal attack is queued up by the game, so no padding is added there. Turn it
-		off in <a href={hrefTo('/settings')}>Settings</a> to see the frame-perfect rotation, or tune it there.
-	</p>
-	<p>
-		Swapping characters costs time either way. Swaps are calculated as your ping plus about 90 ms.
-		At critcalc’s default ping setting (60 ms), that results in nine frames for every swap. Set your
-		own ping under <strong>Swap ping</strong> in Settings.
-	</p>
+	<h3>{m.faq_why_is_the_timeline_faster_or_slower()}</h3>
+	<p>{@render p(m.faq_check_human_timing_it_s_on_by_default.parts())}</p>
+	<p>{@render p(m.faq_swapping_characters_costs_time_either.parts())}</p>
 
-	<h3>Why does a skill come back later than its cooldown says?</h3>
-	<p>
-		Because for most skills the cooldown doesn’t start on the button press. It starts a few frames
-		into the cast (eleven frames for Nahida’s skill, for example), and the timeline draws it from
-		there. A few skills start even later: Xilonen’s cooldown timer only begins once her Nightsoul
-		state ends, so it runs after the stance rather than from the cast.
-	</p>
+	<h3>{m.faq_why_does_a_skill_come_back_later_than()}</h3>
+	<p>{m.faq_because_for_most_skills_the_cooldown()}</p>
 </section>
 
 <section>
-	<h2 id="odds-and-ends">Odds and ends</h2>
+	<h2 id="odds-and-ends">{m.faq_odds_and_ends()}</h2>
 
-	<h3>Which terminology does critcalc follow?</h3>
-	<p>
-		<a href="https://keqingmains.com" target="_blank" rel="noopener noreferrer">Keqing Mains</a>:
-		its notation for rotations, its names for mechanics, and the game’s own names for reactions —
-		Frozen and Overloaded, for instance.
-	</p>
+	<h3>{m.faq_which_terminology_does_critcalc_follow()}</h3>
+	<p>{@render p(m.faq_keqing_mains_its_notation_for_rotations.parts())}</p>
 
-	<h3>Does it work on a phone?</h3>
-	<p>
-		Yes, down to 320px wide, though the rotation planner and team builder are easier with more room.
-		On a phone the rotation planner starts with the Buffs and Auras layers off, and you can hide the
-		bench.
-	</p>
-	<p>
-		If you use critcalc on your phone often, I’d suggest adding it to your home screen, which opens
-		the site without your browser’s bars. On an iPhone, it also stops Safari from clearing your data
-		when you haven’t visited in a while. It still needs a connection: Character data loads as you
-		use it, so going offline partway through can leave a character half-loaded.
-	</p>
-	<p>
-		Here’s how to add it to your home screen on an
-		<a
-			href="https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid"
-			target="_blank"
-			rel="noopener noreferrer">Android phone (Chrome)</a
-		>
-		and on an
-		<a
-			href="https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios"
-			target="_blank"
-			rel="noopener noreferrer">iPhone (Safari)</a
-		>.
-	</p>
+	<h3>{m.faq_does_it_work_on_a_phone()}</h3>
+	<p>{m.faq_yes_down_to_320px_wide_though_the()}</p>
+	<p>{m.faq_if_you_use_critcalc_on_your_phone_often()}</p>
+	<p>{@render p(m.faq_here_s_how_to_add_it_to_your_home_screen.parts())}</p>
 </section>

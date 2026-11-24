@@ -31,7 +31,9 @@ const texts = (msg: Message): string[] =>
 	typeof msg === 'string' ? [msg] : msg.flatMap((v) => Object.values(v.match));
 /** The inputs a caller passes: placeholders in the text, and declared inputs. */
 const inputs = (msg: Message): string => {
-	const names = new Set(texts(msg).flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((p) => p[1])));
+	const names = new Set(
+		texts(msg).flatMap((t) => [...t.matchAll(/(?<!\\)\{(\w+)\}/g)].map((p) => p[1]))
+	);
 	if (typeof msg !== 'string') {
 		const locals = new Set<string>();
 		for (const v of msg)
@@ -51,6 +53,9 @@ const markup = (msg: Message): string =>
 		.sort()
 		.join();
 
+/** A literal brace or backslash is escaped in the text: `\{8s\}` renders `{8s}`. */
+const unescape = (text: string): string => text.replace(/\\([{}\\])/g, '$1');
+
 describe('messages', () => {
 	it('compiles every English message', () => {
 		const call = m as unknown as Record<string, (p?: object) => string>;
@@ -58,7 +63,7 @@ describe('messages', () => {
 		expect(missing).toEqual([]);
 		for (const [k, msg] of Object.entries(en))
 			if (typeof msg === 'string' && !inputs(msg))
-				expect(call[k](), k).toBe(msg.replace(/\{[#/]\w+\}/g, ''));
+				expect(call[k](), k).toBe(unescape(msg.replace(/\{[#/]\w+\}/g, '')));
 	});
 
 	it('has a file for every locale and no file for any other', () => {

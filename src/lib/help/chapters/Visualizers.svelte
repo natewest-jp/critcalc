@@ -5,374 +5,129 @@
 	 sweep of the shipped instruments and their pass records
 	 (docs/*-pass-2026-10-0*.md). If an instrument is added or renamed,
 	 INSTRUMENTS in visualizers/lib/workspace.ts is the source of truth for the
-	 roster, and the sections follow the picker’s order. -->
+	 roster, and the sections follow the picker’s order.
+
+	 The text is in messages/*.json (`help_vz_*`). A paragraph is one message,
+	 its bold words, links, and screenshot numbers as markup (`{#ref}2{/ref}` is
+	 HelpRef 2), so a translation can move them; `p` below says what each tag
+	 renders as. The formulas keep their non-breaking spaces in the message. -->
 
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
 	import HelpFigure from '$lib/components/HelpFigure.svelte';
 	import HelpRef from '$lib/components/HelpRef.svelte';
+	import Msg from '$lib/components/Msg.svelte';
 </script>
 
-<h1>Visualizers</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet ref(t: string)}<HelpRef n={Number(t)} />{/snippet}
+{#snippet eod(t: string)}<a
+		href="https://www.hoyolab.com/article/622264"
+		target="_blank"
+		rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet gganalysis(t: string)}<a
+		href="https://github.com/OneBST/GGanalysis"
+		target="_blank"
+		rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg {parts} tags={{ strong, ref, eod, gganalysis }} />{/snippet}
 
-<p class="flavor">
-	A dome with eight apertures, each lens ground to bring a single principle of the expanse into
-	focus.
-</p>
+<h1>{m.help_vz_visualizers()}</h1>
 
-<p class="lede">
-	Eight instruments, each taking one mechanic and drawing it, with controls to push it around and a
-	Readout that puts the result in words.
-</p>
+<p class="flavor">{m.help_vz_a_dome_with_eight_apertures_each_lens()}</p>
+
+<p class="lede">{m.help_vz_eight_instruments_each_taking_one()}</p>
 
 <section>
-	<h2 id="workspace">The workspace</h2>
-	<HelpFigure
-		shot="vz-workspace"
-		alt="The Gauge explorer’s bar: the instrument menu, then Defaults, Copy link, the ⋯ menu, and Layout."
-	>
-		<p>
-			The workspace shows one instrument at a time, picked from the menu at its top left <HelpRef
-				n={1}
-			/>.
-			<strong>Layout</strong>
-			<HelpRef n={2} />, at the bar’s right end, shows two or three side by side when the window is
-			wide enough, or <strong>Auto</strong> for as many as fit. Picking an instrument already
-			showing in another tile swaps the two, and <strong>Reset layout</strong> goes back to one instrument
-			and the default lineup.
-		</p>
-		<p>
-			Each instrument has <strong>Defaults</strong>
-			<HelpRef n={3} />, which puts its controls back to their defaults (with Undo), and
-			<strong>Copy link</strong>
-			<HelpRef n={4} />, which copies a link that reopens the instrument exactly as it looks now (in
-			the reader’s first tile). Its <strong>⋯</strong> menu <HelpRef n={5} /> has
-			<strong>How it works</strong>, which opens this page at the instrument’s section, and
-			<strong>Report a problem</strong>, for feedback about that instrument.
-		</p>
+	<h2 id="workspace">{m.help_vz_the_workspace()}</h2>
+	<HelpFigure shot="vz-workspace" alt={m.help_vz_the_gauge_explorer_s_bar_the_instrument()}>
+		<p>{@render p(m.help_vz_the_workspace_shows_one_instrument_at_a.parts())}</p>
+		<p>{@render p(m.help_vz_each_instrument_has_defaults_which_puts.parts())}</p>
 	</HelpFigure>
-	<p>
-		Each instrument’s settings are saved with your profile, and the layout with this browser, so
-		both are as you left them next visit. A link you open shows the settings it carries, and those
-		are what’s kept from then on.
-	</p>
+	<p>{m.help_vz_each_instrument_s_settings_are_saved()}</p>
 </section>
 
 <section>
-	<h2 id="crit-heatmap">Crit heatmap</h2>
-	<HelpFigure
-		shot="vz-crit"
-		alt="The crit heatmap with a build at 50% CRIT Rate and 200% CRIT DMG on its 300 CV line, the best split ringed at 75% and 150%, a pinned build at 70% and 140%, and the bars for eight hits under the map."
-	>
-		<p>
-			Your average damage per hit, 1&nbsp;+&nbsp;CRIT Rate&nbsp;×&nbsp;CRIT DMG, across every split
-			of CRIT Rate (up the side) and CRIT DMG (along the bottom). Press anywhere on the map to move
-			your build <HelpRef n={1} /> there, or drag a handle on either axis, or type a value beside it.
-			The right edge and the curves that extend from it reveal bands of average damage increase over many
-			rotations.
-		</p>
-		<p>
-			The solid line through your build is every build with your total crit value (CV), counted as
-			2&nbsp;×&nbsp;CRIT Rate&nbsp;+&nbsp;CRIT DMG with base crit stats included. A ring <HelpRef
-				n={2}
-			/> marks that budget’s best split, which sits on the 1:2 ratio until CRIT Rate would pass 100% and
-			then leaves it; press it to move your build there. <strong>Pin this build</strong> holds a
-			second marker <HelpRef n={3} />, and the line from it to yours shows how much the move changes
-			your average.
-		</p>
-		<p>
-			The average hides how uneven a rotation can be. The bars beside the map (under it, on a phone) <HelpRef
-				n={4}
-			/>
-			share its CRIT Rate axis: one for each number of crits in a rotation, set at that number’s share
-			of the hits, as long as its chance. Set the hits over the map.
-			<strong>No-crit shading</strong>
-			darkens builds by their chance of a whole rotation without a single crit, and
-			<strong>Roll</strong> plays one rotation and lights the bar it lands on.
-		</p>
+	<h2 id="crit-heatmap">{m.help_vz_crit_heatmap()}</h2>
+	<HelpFigure shot="vz-crit" alt={m.help_vz_the_crit_heatmap_with_a_build_at_50_crit()}>
+		<p>{@render p(m.help_vz_your_average_damage_per_hit_1_crit_rate.parts())}</p>
+		<p>{@render p(m.help_vz_the_solid_line_through_your_build_is.parts())}</p>
+		<p>{@render p(m.help_vz_the_average_hides_how_uneven_a_rotation.parts())}</p>
 	</HelpFigure>
-	<p>
-		I came up with the concept for the crit heatmap and wondered how best to present it visually,
-		and subsequently came across
-		<a href="https://www.hoyolab.com/article/622264" target="_blank" rel="noopener noreferrer"
-			>EODGamer’s spreadsheet heatmap</a
-		>. Thanks, EODGamer — your chart confirmed the shape in my mind.
-	</p>
+	<p>{@render p(m.help_vz_i_came_up_with_the_concept_for_the_crit.parts())}</p>
 </section>
 
 <section>
-	<h2 id="gauge-explorer">Gauge explorer</h2>
-	<HelpFigure
-		shot="vz-gauge"
-		alt="The gauge explorer’s Overvape example: Hydro at 0s, Electro at 1s marked Electro-Charged, and Pyro at 2s marked Overloaded and Vaporize, with each aura’s curve dropping where the Pyro reacts."
-	>
-		<p>
-			How auras attach, decay and get consumed, over up to 15s and eight applications. Each element
-			button over the chart <HelpRef n={1} /> adds a 1U application 1s after the last one, and a click
-			on the empty band above the chart adds one at that moment instead. Drag a pill <HelpRef
-				n={2}
-			/> to move it, or tap it to change its element, size or time, or to remove it. A focused pill moves
-			with the arrow keys, 0.1s at a time or 1s with Shift. Enter opens its editor, and Delete removes
-			it. <strong>Clear</strong> empties the chart, and <strong>Example scenarios</strong>, under
-			the chart, loads fourteen examples that each demonstrate an interesting aspect of Genshin’s
-			elemental gauge system.
-		</p>
-		<p>
-			The chart draws each aura’s gauge over time. Over each application are the reactions it
-			triggered <HelpRef n={3} />, and what it did to its own aura where that matters (topped up,
-			refreshed, or too weak to attach). Beside each drop in a curve <HelpRef n={4} /> is what the reaction
-			took off it. Point at the chart and the headline reads the aura on the target at that moment; press
-			to pin the moment, which is how to read one on touch. With nothing pointed at, the headline says
-			when the target is left bare.
-		</p>
+	<h2 id="gauge-explorer">{m.help_vz_gauge_explorer()}</h2>
+	<HelpFigure shot="vz-gauge" alt={m.help_vz_the_gauge_explorer_s_overvape_example()}>
+		<p>{@render p(m.help_vz_how_auras_attach_decay_and_get_consumed.parts())}</p>
+		<p>{@render p(m.help_vz_the_chart_draws_each_aura_s_gauge_over.parts())}</p>
 	</HelpFigure>
-	<p>
-		The model is based on KQM’s study of Genshin’s elemental gauge, checked against gcsim and
-		stepped at 60 frames a second. An aura keeps 80% of what was applied and decays over 2.5s per
-		unit plus 7s. Applying the same element tops the gauge up but keeps the first application’s
-		decay rate, except Pyro since version 3.0, where a weaker hit does nothing and a stronger one
-		replaces the aura outright. Reactions consume different amounts: forward Vaporize and Melt take
-		twice the trigger, reverse half; Overloaded, Superconduct and Quicken one for one; Swirl and
-		Crystallize half, with a 1s cooldown on Crystallize. Bloom takes Dendro at half the rate of
-		Hydro. Electro-Charged leaves both auras in place and drains each by 0.4U a second. Aggravate
-		and Spread consume nothing.
-	</p>
-	<p>
-		The instrument is built assuming one target, and every application you place applies. (ICD is
-		the ICD timeline’s job.) Swirl’s spread to other enemies and Shatter aren’t modeled. Neither are
-		Lunar-Charged, which drains both auras about half as fast as Electro-Charged, or
-		Lunar-Crystallize, which has no cooldown. The other Lunar and Stellar reactions consume the
-		gauge the same way as the reactions they replace.
-	</p>
+	<p>{m.help_vz_the_model_is_based_on_kqm_s_study_of()}</p>
+	<p>{m.help_vz_the_instrument_is_built_assuming_one()}</p>
 </section>
 
 <section>
-	<h2 id="icd-timeline">ICD timeline</h2>
-	<HelpFigure
-		shot="vz-icd"
-		alt="The ICD timeline with hits every 0.5s under Standard ICD: 2 of every 5 hits apply Electro, bracketed over the first five, with the Hits, Counter, and Timer lanes, and the chart of how often the element lands at each interval beneath."
-	>
-		<p>
-			Which hits in a string actually apply their element. The headline is the share that do: for
-			evenly spaced hits, the pattern that repeats in every timer window (“2 of every 5”, bracketed
-			over its hits on the chart <HelpRef n={1} />), and for an example, its whole list. The chart
-			has three lanes on one time axis. In <strong>Hits</strong>, a tall stem in the element’s color
-			applies and a short, faint tick is blocked. <strong>Counter</strong> is the hit counter,
-			ringed where the counter let a hit through <HelpRef n={2} />. <strong>Timer</strong> shows the timer
-			windows, each with how many hits it applied. Point at a hit to read why it did or didn’t apply.
-		</p>
+	<h2 id="icd-timeline">{m.help_vz_icd_timeline()}</h2>
+	<HelpFigure shot="vz-icd" alt={m.help_vz_the_icd_timeline_with_hits_every_0_5s()}>
+		<p>{@render p(m.help_vz_which_hits_in_a_string_actually_apply.parts())}</p>
 
-		<p>
-			The row over the chart picks the string: evenly spaced hits, or one of four real examples from
-			gcsim (Fischl’s Oz, Hu Tao’s charged attacks, Chevreuse’s burst, and Layla’s Shooting Stars).
-			For evenly spaced hits, the handle under the chart sets the interval, and the strip along it <HelpRef
-				n={3}
-			/>
-			shows how often the element lands at every interval: sometimes a slower string lands it more often.
-			Under the chart, <strong>ICD</strong> sets the rule: <strong>Standard</strong>,
-			<strong>No ICD</strong>, or the example’s own fill in its timer, hit counter, and limit per
-			window, and moving any of them makes it <strong>Custom</strong>.
-		</p>
+		<p>{@render p(m.help_vz_the_row_over_the_chart_picks_the_string.parts())}</p>
 	</HelpFigure>
-	<p>
-		Standard ICD is a 2.5s timer and every third hit, and it stops after eight applications in one
-		window, though no real string gets that far. A hit let through by the timer restarts the timer
-		and the counter; a hit let through by the counter restarts neither. The examples show how far
-		real rules differ: Under its own rule Oz applies on its 1st, 5th and 7th ticks, not the 1st,
-		4th, 7th and 10th that Standard ICD would allow.
-	</p>
-	<p>
-		<strong>Send to gauge explorer</strong> hands the first eight applying hits within 15s to the gauge
-		explorer, at 1U each.
-	</p>
+	<p>{m.help_vz_standard_icd_is_a_2_5s_timer_and_every()}</p>
+	<p>{@render p(m.help_vz_send_to_gauge_explorer_hands_the_first.parts())}</p>
 </section>
 
 <section>
-	<h2 id="reaction-curves">Reaction curves</h2>
-	<HelpFigure
-		shot="vz-curves"
-		alt="Reaction curves with All families at 600 EM: Transformative leads at +369%, with the next 100 EM drawn as a step on its curve and in the strip under the chart."
-	>
-		<p>
-			How each family of reactions scales with Elemental Mastery. The tabs over the chart are the
-			families: Amplifying, Transformative, Additive, Lunar &amp; Stellar, and Crystallize, plus
-			<strong>All families</strong>, which puts them on one scale as the bonus each gets from EM.
-			Drag across the chart or the handle under it to set EM. Each curve’s dot shows its value
-			there, and the headline shows what the next 100 EM would add to one of them. What the next 100
-			EM adds is also visualized as a step on the active curve <HelpRef n={1} /> and in the strip under
-			the chart <HelpRef n={2} />. Pick the curve in the bar over the chart, or click its label.
-		</p>
+	<h2 id="reaction-curves">{m.help_vz_reaction_curves()}</h2>
+	<HelpFigure shot="vz-curves" alt={m.help_vz_reaction_curves_with_all_families_at_600()}>
+		<p>{@render p(m.help_vz_how_each_family_of_reactions_scales_with.parts())}</p>
 	</HelpFigure>
-	<p>
-		Every curve has the same shape, a bonus of k&nbsp;×&nbsp;EM&nbsp;/&nbsp;(c&nbsp;+&nbsp;EM), with
-		its own k and c per family, and Reaction Bonus adds inside it. The Reaction Bonus setting says
-		how much EM the bonus is worth on the curve you’re reading, which varies a lot: at 600 EM, +40%
-		is worth about 87 EM for a transformative reaction and over 500 for an amplifying one. Level
-		matters for the reactions that scale with it. The level slider runs to 90, then jumps to 95 and
-		100.
-	</p>
-	<p>
-		Every figure is before the enemy’s RES. Lunar and Stellar reactions show the share of the
-		character who contributes most, 60%. Stellar Swirl’s figures come from gcsim and haven’t been
-		confirmed in game.
-	</p>
+	<p>{m.help_vz_every_curve_has_the_same_shape_a_bonus()}</p>
+	<p>{m.help_vz_every_figure_is_before_the_enemy_s_res()}</p>
 </section>
 
 <section>
-	<h2 id="damage-breakdown">Damage breakdown</h2>
-	<HelpFigure
-		shot="vz-breakdown"
-		alt="Damage breakdown for a direct hit at 70% CRIT Rate and 140% CRIT DMG: columns for Scaling ATK, DMG Bonus, Crit, Enemy DEF, and Enemy RES, ending at ×4.28, with gold marks over the crit column."
-	>
-		<p>
-			One hit written out as its damage formula, one column per bracket in the formula’s order,
-			headed by the substat whose next roll would add the most <HelpRef n={1} />. Each bar starts
-			where the last one ended, on a scale where each gridline doubles the damage, so a ×2 is the
-			same size wherever it falls and a cut like enemy DEF runs the other way. Hover or tap a column
-			to read what share of the result it accounts for. Where the tile is narrow, the columns become
-			rows.
-		</p>
-		<p>
-			The tabs choose the kind of hit: a direct hit, an additive one like Spread, a transformative
-			reaction, or a Lunar or Stellar one. Set the reaction, your stats, your level, and the enemy
-			in the bar over the chart; only the stats that feed that formula are offered. A column one
-			stat sets, like DMG Bonus or EM, has a grip <HelpRef n={2} />: drag it to change that stat. A
-			direct hit ends as a ratio against a hit from your scaling stat alone, because the talent
-			multiplier isn’t an input. The reaction families end in a number. Enemy RES is entered after
-			shred.
-		</p>
-		<p>
-			The marks at the end of a bar are one more average 5★ roll of each substat that feeds it, as
-			long as what the roll would add, so marks on different bars compare directly; the best is gold <HelpRef
-				n={3}
-			/>. DMG Bonus has none, since it can’t appear as an artifact substat. For an additive reaction
-			the gain is measured on the added damage alone, not the whole hit.
-		</p>
+	<h2 id="damage-breakdown">{m.help_vz_damage_breakdown()}</h2>
+	<HelpFigure shot="vz-breakdown" alt={m.help_vz_damage_breakdown_for_a_direct_hit_at_70()}>
+		<p>{@render p(m.help_vz_one_hit_written_out_as_its_damage.parts())}</p>
+		<p>{@render p(m.help_vz_the_tabs_choose_the_kind_of_hit_a_direct.parts())}</p>
+		<p>{@render p(m.help_vz_the_marks_at_the_end_of_a_bar_are_one.parts())}</p>
 	</HelpFigure>
 </section>
 
 <section>
-	<h2 id="enemy-res-def">Enemy RES &amp; DEF</h2>
-	<HelpFigure
-		shot="vz-defres"
-		alt="Enemy RES & DEF for Pyro, with Viridescent Venerer’s 40% as an arrow along the RES chart landing at ×1.150 and Mavuika’s 20% along the DEF chart landing at ×0.543."
-	>
-		<p>
-			How much of a hit gets through the enemy’s resistance and defense, and what your shred adds to
-			it, which is the headline. The RES chart and the DEF chart share one scale: how much of the
-			hit is kept. Drag across the RES chart or the handle under it to set the enemy’s RES, or pick
-			a common value beside the handle. Each source of shred you pick is a segment of the arrow
-			along its chart’s axis, <HelpRef n={1} /> and its dot <HelpRef n={2} /> shows where you land.
-		</p>
+	<h2 id="enemy-res-def">{m.help_vz_enemy_res_def()}</h2>
+	<HelpFigure shot="vz-defres" alt={m.help_vz_enemy_res_def_for_pyro_with_viridescent()}>
+		<p>{@render p(m.help_vz_how_much_of_a_hit_gets_through_the_enemy.parts())}</p>
 	</HelpFigure>
-	<p>
-		Shred works at three strengths. Between 0% and 75% RES it counts in full; below 0% it still
-		helps but at half strength; above 75% it helps but less than in full. Equal levels with the
-		enemy already halve your damage through DEF, and DEF shred and DEF ignore win it back,
-		multiplying together, so the DEF chart counts them as one figure: how much of the enemy’s DEF is
-		gone. Transformative, Lunar, and Stellar reactions ignore DEF entirely; set that with DEF in the
-		bar over the chart.
-	</p>
-	<p>
-		The Shred setting holds every character and artifact set that shreds the element you’ve chosen,
-		with the constellation it needs and its amounts where they vary. Several shreds add up, but two
-		routes to the same in-game debuff count only once. An immune enemy takes no damage of that
-		element, regardless of the shred.
-	</p>
+	<p>{m.help_vz_shred_works_at_three_strengths_between_0()}</p>
+	<p>{m.help_vz_the_shred_setting_holds_every_character()}</p>
 </section>
 
 <section>
-	<h2 id="artifact-odds">Artifact odds</h2>
-	<HelpFigure
-		shot="vz-artifact-piece"
-		alt="Artifact odds’ Your piece view for a +20 flower with CRIT Rate 10.5, CRIT DMG 21.0, ATK% 9.9, and ER 6.5: better than 95% of +20 flowers with these four substats, its 42 CV marked among 100 dots."
-	>
-		<p>
-			A 5★ artifact’s odds over its life, in four views. Throughout, <strong>Valued stats</strong> are
-			the substats you’d count as good. With only CRIT Rate and CRIT DMG valued, results are in crit value;
-			otherwise in useful rolls, where a top roll counts 1 and the smallest 0.7.
-		</p>
-		<p>
-			<strong>Drop</strong> answers how long a piece takes to farm. Pick the piece type, every main stat
-			you’d accept, and how many of your valued stats it needs, and the chart shows the chance you’d have
-			it after each day of resin, from the domain alone and during a Stygian Onslaught Outbreak. A day
-			is 180 resin, and a run averages a little over one 5★.
-		</p>
-		<p>
-			<strong>Level up</strong> shows the chance a fresh piece ends above each value at +20, with 100
-			dots under the curve, one for each hundredth of the pieces. Drag the chart, or type a value under
-			it, to set the value to beat. It covers pieces that drop with three substats or four, and pieces
-			made with Sanctifying Elixir, which guarantees two of your chosen substats at least two upgrades.
-		</p>
-		<p>
-			<strong>Your piece</strong> is where you enter a real artifact and see how it measures up.
-			Open it from the toolbar <HelpRef n={1} /> and type each substat and its value, or pick them from
-			the list: a field takes only values the game can produce. A badge shows how many upgrades a substat
-			has taken, and when the values fit more than one count, the card asks which one the game shows.
-			Below +20, the chart shows the chance it ends above a value; at +20, the piece is ranked against
-			every +20 piece with the same four substats <HelpRef n={2} />.
-		</p>
+	<h2 id="artifact-odds">{m.help_vz_artifact_odds()}</h2>
+	<HelpFigure shot="vz-artifact-piece" alt={m.help_vz_artifact_odds_your_piece_view_for_a_20()}>
+		<p>{@render p(m.help_vz_a_5_artifact_s_odds_over_its_life_in.parts())}</p>
+		<p>{@render p(m.help_vz_drop_answers_how_long_a_piece_takes_to.parts())}</p>
+		<p>{@render p(m.help_vz_level_up_shows_the_chance_a_fresh_piece.parts())}</p>
+		<p>{@render p(m.help_vz_your_piece_is_where_you_enter_a_real.parts())}</p>
 	</HelpFigure>
-	<HelpFigure
-		shot="vz-artifact-reshape"
-		alt="The Reshape view for the same flower, with CRIT Rate and CRIT DMG selected: the Standard, Advanced, and Decreed curves against its 42 CV, and 100 Standard reshapes as dots."
-	>
-		<p>
-			<strong>Reshape</strong> picks two substats, as the game’s reshape screen does, and draws all
-			three kinds (Standard, Advanced and Decreed) against your piece. A reshape keeps each
-			substat’s starting roll and rerolls its upgrades. <strong>Try a reshape</strong> rolls one and plays
-			it out, then lights where it landed among the dots.
-		</p>
+	<HelpFigure shot="vz-artifact-reshape" alt={m.help_vz_the_reshape_view_for_the_same_flower()}>
+		<p>{@render p(m.help_vz_reshape_picks_two_substats_as_the_game_s.parts())}</p>
 	</HelpFigure>
-	<p>
-		The reshape guarantee is read as a top-up: Upgrades land at random, and if the two selected
-		substats would end with fewer upgrades than guaranteed, the last upgrades go to them until they
-		meet it. This is how two independent models interpret it: Genshin Optimizer and SiriYu’s solver.
-		The exact in-game method is not confirmed yet.
-	</p>
+	<p>{m.help_vz_the_reshape_guarantee_is_read_as_a_top()}</p>
 </section>
 
 <section>
-	<h2 id="wish-odds">Wish odds</h2>
-	<HelpFigure
-		shot="vz-wish"
-		alt="Wish odds for C1 of a featured 5★ from 30 pity with the Radiance counter at 2: a 22.4% chance within 120 pulls, with the C0 and C1 curves and the chance on each pull beneath."
-	>
-		<p>
-			How many pulls a goal takes from where you are now. Pick what you’re pulling for — a featured
-			5★, a featured 4★, the charted weapon, or a 5★ and their weapon together — then set what you
-			have, what you’re aiming for (up to C6 and/or R5), your current pity, and whether you hold a
-			guarantee. The chart shows the chance of reaching each step by every pull count. Drag across
-			it, or use <strong>Pulls saved</strong>
-			<HelpRef n={1} />, to read your odds with what you have. Starglitter earned while pulling
-			isn’t counted, since how much you get depends on what you pull.
-		</p>
-		<p>
-			You win a 50/50 about 55% of the time, Capturing Radiance included: that’s the official rate,
-			and what the chart uses until you set your <strong>Radiance counter</strong>
-			<HelpRef n={2} />. With it set, the chart follows the community’s model instead. A hidden
-			counter starts at 1 from version 5.0, goes up by one for each 50/50 you lose and down by one
-			for each you win (a guarantee doesn’t move it), and at 3 your next 50/50 is a Capturing
-			Radiance, which sets it back to 1.
-			<strong>Find mine</strong> reads your counter, pity and guarantee from a Paimon.moe export, or works
-			the counter out from the 5★s you list. The model comes from OneBST’s analysis of four million wishes,
-			and no history has been found that breaks it; its one unknown is the chance of a Radiance at 2,
-			where we use 9%.
-		</p>
+	<h2 id="wish-odds">{m.help_vz_wish_odds()}</h2>
+	<HelpFigure shot="vz-wish" alt={m.help_vz_wish_odds_for_c1_of_a_featured_5_from_30()}>
+		<p>{@render p(m.help_vz_how_many_pulls_a_goal_takes_from_where.parts())}</p>
+		<p>{@render p(m.help_vz_you_win_a_50_50_about_55_of_the_time.parts())}</p>
 	</HelpFigure>
-	<p>
-		A featured 4★ comes about 22% of the time for each 4★ you pull, and a lost 4★ 50/50 never gives
-		you one of the banner’s featured 4★s. (The rate-up 4★ characters on the banner are excluded from
-		the standard pool temporarily for that banner.)
-	</p>
-	<p>
-		On the weapon banner, a Fate Point charts the weapon you want; without one it’s 37.5% for each
-		featured weapon and 25% for a standard one.
-	</p>
-	<p>
-		The pity curves are the game’s published rates with the community’s soft-pity measurements, and
-		the model is tested against
-		<a href="https://github.com/OneBST/GGanalysis" target="_blank" rel="noopener noreferrer"
-			>GGanalysis</a
-		>: Averages agree to two decimal places, and medians agree exactly.
-	</p>
+	<p>{m.help_vz_a_featured_4_comes_about_22_of_the_time()}</p>
+	<p>{m.help_vz_on_the_weapon_banner_a_fate_point_charts()}</p>
+	<p>{@render p(m.help_vz_the_pity_curves_are_the_game_s_published.parts())}</p>
 </section>

@@ -15,7 +15,7 @@
   > Menu
 - `menu_sections` — MenuState.svelte:300 m()
   > Sections
-- `menu_add_a_profile` — MenuState.svelte:374 m() · MenuState.svelte:545 m() · MenuState.svelte:552 m() · menuState.svelte.ts:96 m()
+- `menu_add_a_profile` — MenuState.svelte:374 m() · MenuState.svelte:545 m() · MenuState.svelte:552 m() · menuState.svelte.ts:103 m()
   > Add a profile
 - `menu_keyboard_shortcuts` — MenuState.svelte:424 m()
   > Keyboard shortcuts
@@ -46,20 +46,20 @@
   - terms: 📖 rotation
 - `menu_lineups` — menuState.svelte.ts:65 m()
   > Lineups
-- `menu_profile` — menuState.svelte.ts:89 m()
+- `menu_profile` — menuState.svelte.ts:96 m()
   > Profile
-- `menu_roster` — menuState.svelte.ts:103 m()
+- `menu_roster` — menuState.svelte.ts:110 m()
   > Roster
   - terms: 📖 Roster
-- `menu_teams` — menuState.svelte.ts:110 m()
+- `menu_teams` — menuState.svelte.ts:117 m()
   > Teams
-- `menu_library` — menuState.svelte.ts:119 m()
+- `menu_library` — menuState.svelte.ts:126 m()
   > Library
-- `menu_help_group` — menuState.svelte.ts:126 m()
+- `menu_help_group` — menuState.svelte.ts:133 m()
   > Help
-- `menu_about` — menuState.svelte.ts:133 m()
+- `menu_about` — menuState.svelte.ts:140 m()
   > About
-- `menu_settings` — menuState.svelte.ts:140 m() · menuState.svelte.ts:146 m()
+- `menu_settings` — menuState.svelte.ts:147 m() · menuState.svelte.ts:153 m()
   > Settings
-- `menu_trash` — menuState.svelte.ts:154 m()
+- `menu_trash` — menuState.svelte.ts:161 m()
   > Trash

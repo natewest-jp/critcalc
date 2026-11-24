@@ -13,10 +13,14 @@
  * `id` — HelpAreaShell derives the sidebar's table of contents from the
  * rendered `h2[id]` elements rather than from a list kept here, so the TOC
  * cannot drift as chapters grow.
+ *
+ * Titles are getters: a message read at module load would freeze one locale
+ * for the whole prerender.
  */
 
 import type { Component } from 'svelte';
 import type { Pathname } from '$app/types';
+import { m } from '$lib/paraglide/messages';
 
 export type ChromeAreaId = 'help' | 'about';
 
@@ -44,29 +48,39 @@ export type Area = {
 // the tool order from toolChrome.ts.
 export const HELP_AREA: Area = {
 	id: 'help',
-	title: 'Help',
+	get title() {
+		return m.help_help();
+	},
 	chapters: [
 		{
 			id: 'faq',
-			title: 'FAQ',
+			get title() {
+				return m.help_faq();
+			},
 			path: '/help',
 			load: () => import('./chapters/Faq.svelte')
 		},
 		{
 			id: 'builder',
-			title: 'Team builder',
+			get title() {
+				return m.help_team_builder();
+			},
 			path: '/help/builder',
 			load: () => import('./chapters/TeamBuilder.svelte')
 		},
 		{
 			id: 'planner',
-			title: 'Rotation planner',
+			get title() {
+				return m.help_rotation_planner();
+			},
 			path: '/help/planner',
 			load: () => import('./chapters/RotationPlanner.svelte')
 		},
 		{
 			id: 'visualizers',
-			title: 'Visualizers',
+			get title() {
+				return m.help_visualizers();
+			},
 			path: '/help/visualizers',
 			load: () => import('./chapters/Visualizers.svelte')
 		}
@@ -79,43 +93,57 @@ export const HELP_AREA: Area = {
 // subordinate to "help".
 export const ABOUT_AREA: Area = {
 	id: 'about',
-	title: 'About',
+	get title() {
+		return m.help_about();
+	},
 	chapters: [
 		{
 			id: 'about',
-			title: 'About',
+			get title() {
+				return m.help_about();
+			},
 			path: '/about',
 			load: () => import('./chapters/About.svelte')
 		},
 		{
 			// ⚓ Nate 2026-10-21: the noticeable changes, newest first.
 			id: 'changelog',
-			title: 'What’s new',
+			get title() {
+				return m.help_what_s_new();
+			},
 			path: '/changelog',
 			load: () => import('./chapters/Changelog.svelte')
 		},
 		{
 			id: 'contribute',
-			title: 'Contribute',
+			get title() {
+				return m.help_contribute();
+			},
 			path: '/contribute',
 			load: () => import('./chapters/Contribute.svelte')
 		},
 		{
 			id: 'beta',
-			title: 'Beta',
+			get title() {
+				return m.help_beta();
+			},
 			path: '/beta',
 			load: () => import('./chapters/Beta.svelte')
 		},
 		{
 			id: 'privacy',
-			title: 'Privacy',
+			get title() {
+				return m.help_privacy();
+			},
 			path: '/privacy',
 			load: () => import('./chapters/Privacy.svelte')
 		},
 		{
 			// ⚓ Nate 2026-09-23: the coverage page's home in the navigation.
 			id: 'coverage',
-			title: 'Coverage',
+			get title() {
+				return m.help_coverage();
+			},
 			path: '/coverage',
 			load: () => import('$lib/components/CoverageList.svelte'),
 			bare: true
