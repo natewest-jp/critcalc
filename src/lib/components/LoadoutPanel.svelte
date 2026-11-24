@@ -12,6 +12,7 @@
 	 * handed and reports every edit through callbacks, so the caller decides
 	 * which layer the write lands in.
 	 */
+	import { artifactName, weaponName } from '$lib/i18n/gameNames';
 	import type { LoadoutEntry } from '$lib/stores';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
 	import { getWeaponsByType, getAllWeapons, weaponImagePath } from '$lib/data/weaponLookup';
@@ -78,7 +79,11 @@
 	<section class="lp-section">
 		<h3 class="lp-hd">
 			<Msg
-				parts={m.bench_artifact_set_x.parts({ set: currentArtifact?.name ?? m.bench_none() })}
+				parts={m.bench_artifact_set_x.parts({
+					set: currentArtifact
+						? artifactName(currentArtifact.id, currentArtifact.name)
+						: m.bench_none()
+				})}
 				tags={{ key }}
 			/>
 		</h3>
@@ -97,8 +102,8 @@
 				<button
 					class="lp-tile"
 					class:lp-tile--current={currentArtifact?.id === set.id}
-					title={set.name}
-					aria-label={set.name}
+					title={artifactName(set.id, set.name)}
+					aria-label={artifactName(set.id, set.name)}
 					aria-pressed={currentArtifact?.id === set.id}
 					onclick={() => onSetArtifact(set.id)}
 				>
@@ -111,7 +116,9 @@
 	<section class="lp-section">
 		<h3 class="lp-hd">
 			<Msg
-				parts={m.bench_weapon_x.parts({ weapon: currentWeapon?.name ?? m.bench_none() })}
+				parts={m.bench_weapon_x.parts({
+					weapon: currentWeapon ? weaponName(currentWeapon.id, currentWeapon.name) : m.bench_none()
+				})}
 				tags={{ key }}
 			/>
 		</h3>
@@ -135,8 +142,8 @@
 					<button
 						class="lp-tile"
 						class:lp-tile--current={currentWeapon?.id === weapon.id}
-						title={weapon.name}
-						aria-label={weapon.name}
+						title={weaponName(weapon.id, weapon.name)}
+						aria-label={weaponName(weapon.id, weapon.name)}
 						aria-pressed={currentWeapon?.id === weapon.id}
 						onclick={() => onSetWeapon(weapon.id, currentRef)}
 					>

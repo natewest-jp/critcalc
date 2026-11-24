@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
@@ -151,7 +152,7 @@
 		!char || !conShort
 			? undefined
 			: ownedCon === null
-				? m.bench_you_don_t_own_displayname({ name: char.displayName })
+				? m.bench_you_don_t_own_displayname({ name: characterName(char.id) })
 				: m.bench_this_rotation_uses_c_conlevel_you_own_c({
 						con: conLevel,
 						owned: String(ownedCon)
@@ -180,7 +181,7 @@
 	const noCons = $derived(!!char && getCharacterIndexEntry(char.id)?.noConstellations === true);
 
 	function slotLabel(c: NonNullable<SlotChar>): string {
-		return c.id.startsWith('traveler') ? m.bench_traveler() : c.displayName;
+		return c.id.startsWith('traveler') ? m.bench_traveler() : characterName(c.id);
 	}
 	// ── Loadout pill state ───────────────────────────────────────────────────
 	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);
@@ -310,7 +311,7 @@
 	class:sp-card--compact={compact}
 	class:sp-card--resting={resting && !!char}
 	title={resting && char
-		? m.bench_displayname_is_resting_not_in_the({ name: char.displayName })
+		? m.bench_displayname_is_resting_not_in_the({ name: characterName(char.id) })
 		: undefined}
 	style:--el={p.main}
 	style:--sp-band="{compact ? compactDisc : CARD_PORTRAIT}px"
@@ -350,9 +351,9 @@
 					onclick={openConstellation}
 					title={conTitle ?? (noCons ? m.bench_constellations_can_t_be_unlocked_for() : undefined)}
 					aria-label={noCons
-						? m.bench_displayname_has_no_constellations({ name: char.displayName })
+						? m.bench_displayname_has_no_constellations({ name: characterName(char.id) })
 						: m.bench_set_constellation_for_displayname({
-								name: char.displayName,
+								name: characterName(char.id),
 								con: conLevel
 							})}
 				>

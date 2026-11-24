@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { m } from '$lib/paraglide/messages';
 	/**
 	 * THE BOARD PANE — the right half of the split screen (lineups design §2.4).
@@ -653,13 +654,17 @@
 						aria-label={entry
 							? sel
 								? swapSlot === i
-									? m.tb_stop_replacing_displayname({ name: entry.displayName })
+									? m.tb_stop_replacing_displayname({ name: characterName(entry.id) })
 									: m.tb_replace_displayname_name_slot_x({
-											name: entry.displayName,
+											name: characterName(entry.id),
 											team: name,
 											n: i + 1
 										})
-								: m.tb_displayname_name_slot_x({ name: entry.displayName, team: name, n: i + 1 })
+								: m.tb_displayname_name_slot_x({
+										name: characterName(entry.id),
+										team: name,
+										n: i + 1
+									})
 							: sel && isErrand
 								? swapSlot === i
 									? m.tb_stop_adding_to_name({ team: name })

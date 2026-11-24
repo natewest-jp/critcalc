@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
@@ -508,7 +509,7 @@
 	// element-qualified ("Anemo Traveler") so typed rotations can address a
 	// specific variant; only this label diverges. (Cryo landed 2026-08-31.)
 	function slotLabel(char: { id: string; displayName: string }): string {
-		return char.id.startsWith('traveler') ? m.planner_traveler() : char.displayName;
+		return char.id.startsWith('traveler') ? m.planner_traveler() : characterName(char.id);
 	}
 
 	/** Character id → the name a reader sees, for the aura log and the marker
@@ -2548,7 +2549,7 @@
 	function moonPayload(row: MoonRow, win: MoonRow['windows'][number]): TooltipPayload {
 		const msChar = slotCharacters[row.slotIdx];
 		return {
-			sourceLabel: m.planner_ascendant_gleam_x({ name: msChar?.displayName ?? '?' }),
+			sourceLabel: m.planner_ascendant_gleam_x({ name: msChar ? characterName(msChar.id) : '?' }),
 			effects: [moonsignScaling(msChar?.element)],
 			isMutuallyExclusive: false,
 			duration: win.duration
@@ -2566,7 +2567,7 @@
 			if (!row || !bar) return null;
 			return {
 				...(stepPayload(bar, bar.sourceLabel, t.at) ?? receivedPayload(bar)),
-				on: getLoadedCharacter(row.characterId)?.displayName ?? row.characterId,
+				on: characterName(row.characterId),
 				start: bar.start,
 				end: bar.end
 			};
@@ -2649,7 +2650,7 @@
 				: null;
 		return {
 			characterId: ev.characterId,
-			displayName: char?.displayName ?? ev.characterId,
+			displayName: characterName(ev.characterId),
 			element: char?.element ?? '',
 			ability: ev.ability,
 			abilityName:
@@ -2770,9 +2771,8 @@
 					: m.planner_reaction_time_s({ seconds: secondsLabel(marker.time) }),
 			// ⚠ ONE ROW PER REACTION, built in the projection so the uniqueness is
 			// testable — see `auraMarkerRows` for the duplicate-key crash it closes.
-			effects: auraMarkerRows(
-				marker,
-				(id) => getLoadedCharacter(id)?.displayName ?? '—'
+			effects: auraMarkerRows(marker, (id) =>
+				getLoadedCharacter(id) ? characterName(id) : '—'
 			) satisfies TooltipEffectRow[],
 			isMutuallyExclusive: false
 		};
@@ -3106,8 +3106,7 @@
 												onAuraMarkEnter(tick.time);
 												showTooltip(e, {
 													sourceLabel: m.planner_characterid_time_s({
-														name:
-															getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId,
+														name: characterName(tick.characterId),
 														seconds: secondsLabel(tick.time)
 													}),
 													effects: [
@@ -3979,7 +3978,7 @@
 														class="rp-buff-label"
 														style:max-width={labelCapPx(g, row.windows[wi + 1], !!LUNAR_ICON)}
 														>{m.planner_displayname_ascendant_gleam({
-															name: msChar?.displayName ?? ''
+															name: msChar ? characterName(msChar.id) : ''
 														})}</span
 													>
 												</div>

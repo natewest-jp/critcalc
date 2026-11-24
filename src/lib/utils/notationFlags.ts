@@ -40,6 +40,7 @@
  * against.
  */
 
+import { characterName } from '$lib/i18n/gameNames';
 import { tokenizeNotation, tokenizeActionRun, type Token } from './tokenizer';
 import { TEAM_SIZE } from './notationEdit';
 import { getIndexEntryByDisplayName, twinLabel, twinOfName } from '$lib/data/characterLookup';
@@ -209,7 +210,7 @@ export function flagNotation(
 					text: head.text,
 					reason: 'no-slot',
 					message: m.planner_no_slot_for_displayname_a_team_holds({
-						name: entry.displayName,
+						name: characterName(entry.id),
 						size: TEAM_SIZE,
 						n: distinct.length
 					})
@@ -233,7 +234,7 @@ export function flagNotation(
 				message:
 					entry.id === 'blank'
 						? m.planner_a_bar_length_goes_right_after_blank_s_e()
-						: m.planner_only_blank_takes_a_bar_length({ name: entry.displayName })
+						: m.planner_only_blank_takes_a_bar_length({ name: characterName(entry.id) })
 			});
 		}
 
@@ -249,7 +250,9 @@ export function flagNotation(
 					to: tok.to,
 					text: tok.text,
 					reason: 'unsupported-token',
-					message: m.planner_f_is_the_finisher_of_a_spinning_charged({ name: entry.displayName })
+					message: m.planner_f_is_the_finisher_of_a_spinning_charged({
+						name: characterName(entry.id)
+					})
 				});
 				continue;
 			}
@@ -265,7 +268,7 @@ export function flagNotation(
 					reason: 'unsupported-token',
 					// One whole sentence per weapon type (`weapon` selects it).
 					message: m.planner_only_a_bow_can_take_an_aimed_shot({
-						name: entry.displayName,
+						name: characterName(entry.id),
 						weapon: entry.weapon ?? 'unknown'
 					})
 				});
@@ -282,7 +285,9 @@ export function flagNotation(
 					to: tok.to,
 					text: tok.text,
 					reason: 'approximate-cast',
-					message: m.planner_displayname_s_plunge_isn_t_measured_yet({ name: entry.displayName })
+					message: m.planner_displayname_s_plunge_isn_t_measured_yet({
+						name: characterName(entry.id)
+					})
 				});
 				continue;
 			}
@@ -306,7 +311,7 @@ export function flagNotation(
 						to: tok.to,
 						text: tok.text,
 						reason: 'approximate-cast',
-						message: m.planner_displayname_s_charged_attack_isn_t({ name: entry.displayName })
+						message: m.planner_displayname_s_charged_attack_isn_t({ name: characterName(entry.id) })
 					});
 				} else if (tok.text.startsWith('s') && !entry.specialCharge) {
 					flags.push({
@@ -314,7 +319,7 @@ export function flagNotation(
 						to: tok.to,
 						text: tok.text,
 						reason: 'approximate-cast',
-						message: m.planner_displayname_has_no_special_charged({ name: entry.displayName })
+						message: m.planner_displayname_has_no_special_charged({ name: characterName(entry.id) })
 					});
 				}
 				continue;
@@ -325,7 +330,7 @@ export function flagNotation(
 				to: tok.to,
 				text: tok.text,
 				reason: 'approximate-cast',
-				message: approximateCastMessage(entry.displayName, tok.text, entry.casts)
+				message: approximateCastMessage(characterName(entry.id), tok.text, entry.casts)
 			});
 		}
 	}

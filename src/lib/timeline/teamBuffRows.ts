@@ -10,8 +10,9 @@
  * (phases 4–6 of the arc).
  */
 
-import type { TimelineWindow } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
+import { artifactName, characterName } from '$lib/i18n/gameNames';
+import type { TimelineWindow } from '$lib/utils/notationParser';
 import { getArtifactSetById } from '$lib/data/artifactLookup';
 import type {
 	BuffEffect,
@@ -56,8 +57,7 @@ export function projectTeamBuffRows(
 	for (const w of buffWins) {
 		const src = w.source;
 		if (src.type === 'weapon') continue; // weapon windows are received-surface only
-		const char = getCharacter(w.characterId);
-		const displayName = char?.displayName ?? w.characterId;
+		const displayName = characterName(w.characterId, getCharacter(w.characterId)?.displayName);
 
 		// Display formatting — same buffDisplay calls the legacy bars made,
 		// with the window's carried trigger-time context.
@@ -162,7 +162,7 @@ export function projectTeamBuffRows(
 			explicitKind = w.debuff ? 'debuff' : 'buff';
 		} else {
 			const set = getArtifactSetById(src.setId);
-			sourceLabel = set?.name ?? src.setId;
+			sourceLabel = set ? artifactName(set.id, set.name) : src.setId;
 			if (src.trigger === 'cast') {
 				const lbl = AB_LABEL[src.abilityClass!];
 				rowKey = `${w.characterId}::artifact::${src.setId}::${src.triggerKey}::${lbl}`;

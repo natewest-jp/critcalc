@@ -10,6 +10,7 @@
   stray click must not decide a move. Strings are working copy.
 -->
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { fade } from 'svelte/transition';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { moveRequest } from '$lib/moveRequest.svelte';
@@ -17,7 +18,6 @@
 	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
 	import type { LevelChange } from '$lib/storage/move';
 	import { pictureUrl } from '$lib/profileLook';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { siteSettings } from '$lib/stores';
 	import { m } from '$lib/paraglide/messages';
 
@@ -43,7 +43,7 @@
 			.then((l) => (kind = l.some((d) => d.id === id) ? 'lineup' : 'rotation'));
 	});
 
-	const nameOf = (cid: string) => getCharacterIndexEntry(cid)?.displayName ?? cid;
+	const nameOf = (cid: string) => characterName(cid);
 	const picture = (p: ProfileRecord) =>
 		pictureUrl(pictureOf(p), $siteSettings.useNewOutfits, p.twin);
 

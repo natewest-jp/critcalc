@@ -19,6 +19,7 @@
   (below). Strings are working copy.
 -->
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
@@ -76,7 +77,7 @@
 		onShowWork: (t: TeamRecord, section: 'rotations' | 'lineups') => void;
 	} = $props();
 
-	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+	const nameOf = (id: string) => characterName(id);
 	const label = (t: Pick<TeamRecord, 'name' | 'slots'>) => t.name || rotationLabel(t.slots);
 
 	// ── The draft ───────────────────────────────────────────────────────────
@@ -709,7 +710,7 @@
 									<span class="til-corner"><img src={elementIcon(c.element)} alt="" /></span>
 								{/if}
 							</span>
-							<span class="til-name">{c.displayName}</span>
+							<span class="til-name">{characterName(c.id)}</span>
 						</button>
 					</li>
 				{/each}

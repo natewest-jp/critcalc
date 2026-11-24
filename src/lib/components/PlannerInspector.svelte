@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import { rotationTwin } from '$lib/travelerTwin.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
 	import CharacterDetails from '$lib/components/CharacterDetails.svelte';
@@ -90,10 +91,7 @@
 		style:height="{size}px"
 		aria-hidden="true"
 	>
-		{#if src}<img {src} alt="" />{:else}{(getCharacterIndexEntry(id)?.displayName ?? id).slice(
-				0,
-				2
-			)}{/if}
+		{#if src}<img {src} alt="" />{:else}{characterName(id).slice(0, 2)}{/if}
 	</span>
 {/snippet}
 
@@ -111,7 +109,7 @@
 		<header class="pi-head">
 			{@render face(charId, 40)}
 			<div class="pi-head-text">
-				<h2 class="pi-title">{charEntry?.displayName ?? charId}</h2>
+				<h2 class="pi-title">{characterName(charId)}</h2>
 				<p class="pi-sub">
 					<span style:color={colorFor(charId)}>{charEntry?.element ?? '?'}</span>
 					· {charEntry?.weapon ?? '?'} · {charEntry?.rarity}★
@@ -160,7 +158,7 @@
 						class="pi-link"
 						type="button"
 						onclick={() => pv.inspect({ kind: 'character', id: cast.characterId })}
-						>{cast.displayName}</button
+						>{characterName(cast.characterId)}</button
 					>
 					<Msg
 						parts={m.planner_label_at_time_s.parts({
@@ -275,7 +273,7 @@
 					onclick={() => pv.inspect({ kind: 'character', id })}
 				>
 					{@render face(id, 26)}
-					<span style:color={colorFor(id)}>{getCharacterIndexEntry(id)?.displayName ?? id}</span>
+					<span style:color={colorFor(id)}>{characterName(id)}</span>
 					<Mark name="forwardSlim" size={12} />
 				</button>
 				{@render notes(id)}

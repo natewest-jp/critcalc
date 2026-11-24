@@ -8,6 +8,7 @@
 
 import type { LoadoutEntry } from '$lib/stores';
 import type { TimelineWindow } from '$lib/utils/rotationEvents';
+import { weaponName } from '$lib/i18n/gameNames';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { WeaponProcSubrow } from './types';
 import { m } from '$lib/paraglide/messages';
@@ -39,7 +40,7 @@ export function computeWeaponProcRows(
 		const weapon = weaponId ? getWeaponById(weaponId) : null;
 		// Full weapon name (shortName retired for display 2026-07-31 — the JSONs
 		// keep the field for future use; truncating bars fade instead of slicing).
-		const label = weapon ? weapon.name : m.planner_e_reset();
+		const label = weapon ? weaponName(weapon.id, weapon.name) : m.planner_e_reset();
 		rows.push({ characterId: charId, label, bars });
 	}
 	return rows;

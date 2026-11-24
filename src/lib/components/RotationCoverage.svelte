@@ -6,6 +6,7 @@
 	 * don't have, an action you never type). The strip answers "can I trust this
 	 * rotation?"; a name opens that character's coverage over the planner.
 	 */
+	import { characterName } from '$lib/i18n/gameNames';
 	import { characterIndex } from '$lib/data/characterIndex.generated';
 	import { decodeCoverage } from '$lib/coverage/deriveCoverage';
 	import { unusedSegments } from '$lib/coverage/rotationUse';
@@ -36,7 +37,7 @@
 			.filter((id) => byId[id])
 			.map((id) => ({
 				id,
-				name: byId[id].displayName,
+				name: characterName(id),
 				states: decodeCoverage(byId[id].coverage),
 				dim: unusedSegments(events, id, constellations[id] ?? 0)
 			}))

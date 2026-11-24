@@ -10,6 +10,7 @@
   the portrait stands on, so they read as cut out of it in every state.
 -->
 <script lang="ts">
+	import { artifactName, weaponName } from '$lib/i18n/gameNames';
 	import Mark from './Mark.svelte';
 	import type { LoadoutEntry } from '$lib/stores';
 	import { getArtifactSetById, artifactImagePath } from '$lib/data/artifactLookup';
@@ -55,13 +56,13 @@
 			out.push({
 				kind: 'artifact',
 				img: artifactImagePath(entry.artifactSetId),
-				title: artifact.name
+				title: artifactName(artifact.id, artifact.name)
 			});
 		if (weapon && entry?.weaponId)
 			out.push({
 				kind: 'weapon',
 				img: weaponImagePath(entry.weaponId),
-				title: `${weapon.name} R${ref}`
+				title: `${weaponName(weapon.id, weapon.name)} R${ref}`
 			});
 		return out;
 	});

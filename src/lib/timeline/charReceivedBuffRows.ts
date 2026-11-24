@@ -10,8 +10,9 @@
  * a corpus byte-parity proof (phases 4–6 of the arc).
  */
 
-import type { TimelineWindow } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
+import { characterName, weaponName } from '$lib/i18n/gameNames';
+import type { TimelineWindow } from '$lib/utils/notationParser';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type {
 	BuffEffect,
@@ -44,27 +45,25 @@ export function projectCharReceivedBuffRows(
 		let sourceLabel: string;
 		if (src.type === 'weapon') {
 			const weapon = getWeaponById(src.weaponId);
-			sourceLabel = weapon?.name ?? src.weaponId;
+			sourceLabel = weapon ? weaponName(weapon.id, weapon.name) : src.weaponId;
 		} else if (src.type === 'character' && src.trigger === 'nightsoulBurst') {
-			const char = getCharacter(w.characterId);
-			sourceLabel = m.planner_characterid_nb({ name: char?.displayName ?? w.characterId });
+			sourceLabel = m.planner_characterid_nb({
+				name: characterName(w.characterId, getCharacter(w.characterId)?.displayName)
+			});
 		} else if (src.type === 'character' && src.trigger === 'stackThreshold') {
 			// Named after the fire — the team surface's rule (stack-threshold round).
-			const char = getCharacter(w.characterId);
 			const fire =
 				src.fireLabel ?? m.planner_x_threshold({ token: AB_LABEL[src.abilityClass ?? 'skill'] });
-			sourceLabel = `${char?.displayName ?? w.characterId} ${fire}`;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${fire}`;
 		} else if (src.type === 'character' && src.trigger === 'stacks') {
 			// Named after what the count IS (the effect's `attribution`, e.g.
 			// Marvelous Splendor), else its hosting entry — never a cast.
-			const char = getCharacter(w.characterId);
 			const what = (w.effects[0] as BuffEffect).attribution ?? src.hostLabel ?? 'stacks';
-			sourceLabel = `${char?.displayName ?? w.characterId} ${what}`;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${what}`;
 		} else if (src.type === 'character' && src.trigger === 'teamHit') {
 			// Named after the hosting passive — the bar belongs to no cast of the
 			// holder's (cross-character onHit round, 2026-09-21).
-			const char = getCharacter(w.characterId);
-			const name = char?.displayName ?? w.characterId;
+			const name = characterName(w.characterId, getCharacter(w.characterId)?.displayName);
 			sourceLabel = src.hostLabel ? `${name} ${src.hostLabel}` : m.planner_name_hit({ name });
 		} else if (src.type === 'character' && src.trigger === 'reaction') {
 			// ⚠ A reaction window carries no `abilityClass` — it is not bound to a
@@ -72,19 +71,18 @@ export function projectCharReceivedBuffRows(
 			// until 2026-08-15, when the onReaction self/active dispatch put the
 			// first character-reaction window on THIS surface; the team surface
 			// has always said "reaction" here.
-			const char = getCharacter(w.characterId);
-			sourceLabel = m.planner_characterid_reaction({ name: char?.displayName ?? w.characterId });
+			sourceLabel = m.planner_characterid_reaction({
+				name: characterName(w.characterId, getCharacter(w.characterId)?.displayName)
+			});
 		} else if (src.type === 'character') {
-			const char = getCharacter(w.characterId);
-			sourceLabel = `${char?.displayName ?? w.characterId} ${AB_LABEL[src.abilityClass!]}`;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${AB_LABEL[src.abilityClass!]}`;
 		} else if (src.type === 'faction') {
 			// Same naming rule as the team surface: the bonus, not the cast. The
 			// row key here is `receiverId::sourceLabel`, so two triggers of one
 			// bonus DO pool into a single received row — correct on this surface,
 			// where the question is "what am I receiving from whom", and the
 			// tooltip gates (duration / procCooldown) keep unlike bars apart.
-			const char = getCharacter(w.characterId);
-			sourceLabel = `${char?.displayName ?? w.characterId} ${src.bonusName}`;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${src.bonusName}`;
 		} else {
 			continue; // artifact windows are team-surface only
 		}

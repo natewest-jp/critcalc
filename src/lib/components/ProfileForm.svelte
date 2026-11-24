@@ -13,6 +13,7 @@
   Strings are working copy.
 -->
 <script lang="ts">
+	import { characterName } from '$lib/i18n/gameNames';
 	import Mark from './Mark.svelte';
 	import InspectModal from './InspectModal.svelte';
 	import { get } from 'svelte/store';
@@ -125,9 +126,7 @@
 	// ── Character pictures: any character, the profile's own first ─────────
 	/** ⚓ ONE Traveler (characterLookup): the variants share a portrait. */
 	const pictureName = (id: string) =>
-		id.startsWith('traveler_')
-			? m.profile_traveler()
-			: (getCharacterIndexEntry(id)?.displayName ?? id);
+		id.startsWith('traveler_') ? m.profile_traveler() : characterName(id);
 	/** ⚓ `blank` is the notation's empty seat, not a character. */
 	const oneEach = (ids: string[]): string[] => {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local to one call, never read reactively

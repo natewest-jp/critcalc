@@ -299,6 +299,15 @@ genshin-db's Japanese talent text unless marked otherwise.
 188. mains ("Calling all mains!") → キャラ愛好家 · ours. Japanese has no loan for a "main" as a player devoted to one character.
 189. Dates follow the page's language through `Intl` (11月11日, 2026年11月, 2026年10月26日), so they are not messages.
 
+## I. The game's names
+
+Read from the game's data, never drafted, so they are not messages: `scripts/generate-game-names.mjs`
+writes genshin-db's names, and `scripts/localize-endgame.mjs` adds the endgame text.
+
+190. Character, weapon, and artifact set names → genshin-db's Japanese (楓原万葉, 流浪楽章, 旧貴族のしつけ). The game's full name, where English shows a short one (Kazuha) · game
+191. The Traveler of an element → 旅人（風）, the draft's 旅人 with genshin-db's element name · ours. Game8 and Altema write 主人公(風) (open question 17)
+192. Stygian Onslaught's bosses, mechanics, and checks, the Abyss's blessings and opponents, and the Theater's bosses → the game's Japanese text map, matched by the Chinese line lunaris.moe serves (百戦錬磨のドモヴォーイの彫刻師（百風）, {sprite}元素キャラクター) · game. A line with no Japanese match stays English: one boss title (Battle-Hardened Pioneer Secret Source Control Array: Will of the Hive), one check, and nine boss mechanics, listed by the script.
+
 ## Open questions for the Japanese community
 
 Each is a real split between two words a player might expect. The draft uses the first.
@@ -319,3 +328,4 @@ Each is a real split between two words a player might expect. The draft uses the
 14. (180) Stygian Onslaught's fourth difficulty, Menacing: what does the game call it? The draft writes around it as エクストラより下の難易度.
 15. (182) Witch's Revelation: what does the game call these talents in Japanese? The draft has 魔女の啓示.
 16. (138, 169) The wish counter: the draft writes it 輝映カウンター, after the Stellar reactions' 輝映, while the mechanic it counts is 掴みし明光. Should the counter be 明光カウンター?
+17. (191) The Traveler of an element: 旅人（風）, as the draft names the Traveler elsewhere, or 主人公(風), as Game8 and Altema list them?

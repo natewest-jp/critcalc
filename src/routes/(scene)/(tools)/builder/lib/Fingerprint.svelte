@@ -27,7 +27,7 @@
 	 */
 	import { FACETS } from '$lib/capabilities/facets';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
-	import { shortName } from '$lib/data/characterLookup';
+	import { characterShortName } from '$lib/i18n/gameNames';
 	import type { FingerprintCluster, FingerprintSlot } from '$lib/fingerprint';
 	import FingerprintGlyph from '$lib/components/FingerprintGlyph.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -78,7 +78,7 @@
 	 *  the verb agrees, never a run assembled from fragments). */
 	function sentence(s: FingerprintSlot, change: 'gain' | 'loss' | null): string {
 		const who = (state: string) =>
-			s.members.filter((m) => m.state === state).map((m) => shortName(m.id));
+			s.members.filter((m) => m.state === state).map((m) => characterShortName(m.id));
 		const lit = who('lit');
 		const outlined = who('outlined');
 		const locked = who('locked');
