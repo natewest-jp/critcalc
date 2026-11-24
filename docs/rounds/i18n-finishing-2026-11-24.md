@@ -112,6 +112,8 @@ curated yet." The More filters' chips and the detail card's kicker already capit
 
 ## For Nate's eye
 
+⚓ Nate 2026-11-24: all four are fine as built, the English name sort included.
+
 - Game names are the game's full names, so a card that read "Kazuha" reads 楓原万葉, and the
   Traveler reads 旅人（風）. The roster's name sort still follows English, which looks unordered in
   Japanese; a kana order needs readings for the kanji names (香菱, 楓原万葉) that genshin-db doesn't
