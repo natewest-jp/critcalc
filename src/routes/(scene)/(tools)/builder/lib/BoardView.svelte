@@ -54,6 +54,7 @@
 		bossImage,
 		currentAbyss,
 		inLang,
+		bossTitleParts,
 		liveSeasons,
 		type Battlefield,
 		type Season
@@ -440,7 +441,7 @@
 	 *  details still carry the whole name). */
 	function bossName(boss: Battlefield['boss'], short: boolean): string {
 		const full = inLang(BOSSES[boss].name);
-		return short ? full.split(': ')[0] : full;
+		return short ? bossTitleParts(full).name : full;
 	}
 
 	/** The Abyss half whose opponents are open. */
