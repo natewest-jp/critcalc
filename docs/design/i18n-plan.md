@@ -266,11 +266,25 @@ messages, with no unintended change to English. What it taught, for every locale
 - A name dropped into a sentence (`{name}`) may need gender or case agreement; reword such
   messages so the name stands alone, or give the translator variants.
 
-### Checks to add
+### Checks
 
-- **A completeness test per open locale:** every English message has a line in that locale, so
-  a new What's new entry can't show English on a translated page.
-- **A per-locale avoided-forms check,** like the English termbase's: for Japanese, 凸 and CD.
+Both live in `src/lib/i18n/messages.test.ts`:
+
+- **Completeness:** every English message has a line in each locale whose draft is whole
+  (`COMPLETE`), so a new What's new entry can't show English on a translated page. A locale
+  joins the list when its draft is whole, not when it opens, so it can't decay before then.
+- **Avoided forms,** like the English termbase's `avoid` lists (`AVOID`): for Japanese, 凸 and
+  CD, each citing its entry in the term list.
+
+### Game names
+
+- Names come from the game's data, never from a message: characters, weapons, sets, regions,
+  and weapon types from genshin-db (`scripts/generate-game-names.mjs`), and the endgame's
+  bosses, mechanics, checks, and blessings from the game's text maps, matched by the Chinese
+  line lunaris serves (`scripts/localize-endgame.mjs`). The text maps also settle a term
+  genshin-db's Japanese lacks.
+- Ability, passive, and constellation names, and the kit notes in the character data, are still
+  English in every locale; they need their own pass (`docs/todo.md`).
 
 ---
 
