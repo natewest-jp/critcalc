@@ -31,24 +31,15 @@ import type { EventLogRow } from '$lib/components/EventLog.svelte';
 import type { AuraLane } from './auraPlot';
 import { m } from '$lib/paraglide/messages';
 import { elementPalette, shiftHue } from '$lib/utils/elementColors';
+// ⚠ ELEMENT_LABEL, not `AURA_MOD_META`: that map has no row for Anemo and Geo,
+// which never attach but land constantly and must be logged.
+import { elementLabel } from '$lib/utils/auraDisplay';
 
 const FPS = 60;
 
 /** Trailing zeros dropped — "1", "1.5", "0.8". The pip carries no unit letter;
  *  the panel and the chart's own axis both say what U is. */
 const fmtUnits = (u: number) => `${Number(u.toFixed(2))}`;
-
-/**
- * ⚠ NOT `AURA_MOD_META`. That map is keyed by `AuraKey` — the things that can BE
- * an aura — and an application's element is an `Element`, which includes the two
- * that never attach. Anemo and Geo land constantly and must be logged; looking
- * them up in the mod map is a type error, and casting past it would have printed
- * `undefined` for exactly the elements the reader most needs named.
- * ⚠ Capitalised rather than table-driven on purpose: every element's display
- * name IS its id capitalised, and a seven-entry table restating that is a table
- * that can fall out of step with the ids.
- */
-const elementLabel = (element: string) => element[0].toUpperCase() + element.slice(1);
 
 /**
  * The pip's fill and its halo — ⚓ THE SAME PAIR THE CHART'S BARS USE.

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { characterName } from '$lib/i18n/gameNames';
+	import { elementLabel } from '$lib/utils/auraDisplay';
+	import { characterName, regionName, weaponTypeName } from '$lib/i18n/gameNames';
 	import { m } from '$lib/paraglide/messages';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -71,9 +72,9 @@
 		<div class="dc-hero-row">
 			<div class="dc-hero-text">
 				<p class="kicker dc-hero-kicker">
-					{entry?.element ?? '?'} · {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region
-						? ` · ${entry.region}`
-						: ''}
+					{entry?.element ? elementLabel(entry.element) : '?'} · {entry?.weapon
+						? weaponTypeName(entry.weapon)
+						: '?'} · {entry?.rarity}★{entry?.region ? ` · ${regionName(entry.region)}` : ''}
 				</p>
 				<h2 class="dc-hero-title">{characterName(id)}</h2>
 				{#if onToggleTeam && teamState}

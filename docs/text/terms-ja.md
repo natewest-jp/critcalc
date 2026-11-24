@@ -186,7 +186,7 @@ Gauge explorer:
 Reaction curves:
 
 114. Amplifying, Additive, Transformative → 増幅反応, 激化反応, 転化反応 · players. Japanese has no word for "additive"; Spread and Aggravate are the 激化 reactions, so the family takes that name.
-115. Lunar reactions → 月反応 (月感電, 月開花, 月結晶); Stellar reactions → 星反応 (星電導, 星拡散); Radiance → 輝映 · game. Stellar Glimmer is not in genshin-db's Japanese text yet: `// TODO: data gap` when it is extracted.
+115. Lunar reactions → 月反応 (月感電, 月開花, 月結晶); Stellar reactions → 星反応 (星電導, 星拡散); Radiance → 輝映 · game. Stellar Glimmer → 星反応 where it names the reactions (星反応キャラクター, 星反応が有利) and 輝映・星閃 as the state · game, from the game's text map (genshin-db's Japanese does not carry it), so "Base Stellar Glimmer DMG" is 星反応の基礎ダメージ.
 116. Reaction family → 反応の系統 · ours
 117. Crystallize shard → 結晶の欠片 · game
 118. top contributor (the Lunar damage share) → 最大貢献者 · ours
@@ -240,7 +240,7 @@ Shared and the Planner:
 146. CRIT Rate, CRIT DMG, Healing Bonus, Interruption Resistance, All Elemental RES, Physical RES → 会心率, 会心ダメージ, 与える治療効果, 中断耐性, 全元素耐性, 物理耐性 · game
 147. the weapon types → 片手剣, 両手剣, 長柄武器, 法器, 弓 · game
 148. Polestar Field, Moondrift, Thundercloud, Dendro Core → 極星フィールド, 月籠, 雷雲, 草原核 · game
-149. Starlight Prism → スターライトプリズム · ours, until genshin-db carries it. Stellar Glimmer stays English for the same reason.
+149. Starlight Prism → スターライトプリズム · game, from the game's text map (星辉棱晶 → スターライトプリズム); genshin-db's Japanese does not carry it. Stellar Glimmer is entry 115.
 150. Notes, Total, Share, Playback speed → 注記, 合計, 共有, 再生速度 · ours
 151. Standing, Alongside, Recorded hits → 存在中, 同時存在, 記録されたヒット数 · ours
 152. Original, What-if, Comparing → 比較元, もしも, 比較中 · ours

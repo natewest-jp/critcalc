@@ -12,7 +12,7 @@
 	 * handed and reports every edit through callbacks, so the caller decides
 	 * which layer the write lands in.
 	 */
-	import { artifactName, weaponName } from '$lib/i18n/gameNames';
+	import { artifactName, weaponName, weaponTypeName } from '$lib/i18n/gameNames';
 	import type { LoadoutEntry } from '$lib/stores';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
 	import { getWeaponsByType, getAllWeapons, weaponImagePath } from '$lib/data/weaponLookup';
@@ -124,7 +124,9 @@
 		</h3>
 		{#if weapons.length === 0}
 			<p class="lp-empty">
-				{m.bench_no_weapontype_type_weapons_are_curated({ type: weaponType ?? '' })}
+				{m.bench_no_weapontype_type_weapons_are_curated({
+					type: weaponType ? weaponTypeName(weaponType) : ''
+				})}
 			</p>
 		{:else}
 			<div class="lp-grid">

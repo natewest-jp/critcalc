@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { artifactName, characterName } from '$lib/i18n/gameNames';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { shredSources } from '$lib/data/shredSources.generated';
 	import { SHRED_ELEMENTS, type ShredElement } from '$lib/capabilities/shredSources';
@@ -157,6 +158,13 @@
 		{ stat: 'def', label: m.vz_defres_def_shred() },
 		{ stat: 'ignore', label: m.vz_defres_def_ignore() }
 	];
+	/** A source's owner in the page's language. Read at each use: the groups
+	 *  are built once at module load, which would freeze one language. */
+	const ownerLabel = (g: SourceGroup) =>
+		g.ownerKind === 'artifact'
+			? artifactName(g.owner, g.ownerName)
+			: characterName(g.owner, g.ownerName);
+
 	// characters before sets, then by name
 	const ofStat = (stat: SourceGroup['stat']) =>
 		visible
@@ -164,7 +172,7 @@
 			.sort(
 				(a, b) =>
 					Number(a.ownerKind === 'artifact') - Number(b.ownerKind === 'artifact') ||
-					a.ownerName.localeCompare(b.ownerName)
+					ownerLabel(a).localeCompare(ownerLabel(b))
 			);
 	const onOf = (stat: SourceGroup['stat']) => ofStat(stat).filter((g) => g.key in picks);
 
@@ -197,7 +205,7 @@
 	/** The Shred segment's face: what is on, the first two by name. */
 	const shredFace = $derived.by(() => {
 		const on = [
-			...SECTIONS.flatMap((s) => onOf(s.stat)).map((g) => `${g.ownerName} ${picks[g.key]}%`),
+			...SECTIONS.flatMap((s) => onOf(s.stat)).map((g) => `${ownerLabel(g)} ${picks[g.key]}%`),
 			...(otherRes || otherDef || otherIgnore ? [m.vz_defres_other_sources()] : [])
 		];
 		if (!on.length) return m.vz_defres_none();
@@ -301,7 +309,7 @@
 			segs.push({
 				from: cur,
 				to: cur - picks[g.key],
-				label: `${g.ownerName} ${picks[g.key]}%`,
+				label: `${ownerLabel(g)} ${picks[g.key]}%`,
 				title: abilityOf(g)
 			});
 			cur -= picks[g.key];
@@ -366,7 +374,7 @@
 		let cur = 0;
 		for (const g of onOf('def')) {
 			const to = Math.min(100, cur + picks[g.key]);
-			segs.push({ from: cur, to, label: `${g.ownerName} ${picks[g.key]}%`, title: abilityOf(g) });
+			segs.push({ from: cur, to, label: `${ownerLabel(g)} ${picks[g.key]}%`, title: abilityOf(g) });
 			cur = to;
 		}
 		if (otherDef) {
@@ -386,7 +394,7 @@
 			segs.push({
 				from: cur,
 				to,
-				label: m.vz_defres_ownername_key_ignored({ name: g.ownerName, amount: picks[g.key] }),
+				label: m.vz_defres_ownername_key_ignored({ name: ownerLabel(g), amount: picks[g.key] }),
 				title: `${abilityOf(g)} (${whoOf(g)})`
 			});
 			cur = to;
@@ -774,7 +782,7 @@
 												<label class="check" title={g.options.map((o) => o.ability).join(' / ')}>
 													<input type="checkbox" checked={on} onchange={() => toggle(g)} />
 													<span class="check-box"></span>
-													<span class="dr-name">{g.ownerName}</span>
+													<span class="dr-name">{ownerLabel(g)}</span>
 													<!-- A constellation badge is notation (C1–C6), English in
 													     every locale, as the planner's is. -->
 													{#if conOf(g) > 0}<span class="dr-con">C{conOf(g)}</span>{/if}
@@ -784,7 +792,7 @@
 													<span
 														class="dr-options"
 														role="radiogroup"
-														aria-label={m.vz_defres_ownername_s_amount({ name: g.ownerName })}
+														aria-label={m.vz_defres_ownername_s_amount({ name: ownerLabel(g) })}
 													>
 														{#each g.options as o (o.amount)}
 															<button

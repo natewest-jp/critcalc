@@ -14,8 +14,9 @@
 import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
 import type { Reaction, Stat, State } from '$lib/types/ability';
 import { BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
-import { REACTION_LABEL } from '$lib/utils/auraDisplay';
+import { REACTION_LABEL, elementLabel } from '$lib/utils/auraDisplay';
 import { labels } from '$lib/i18n/labels';
+import { factionName } from '$lib/i18n/gameNames';
 import { m } from '$lib/paraglide/messages';
 
 export const KIND_LABEL: Record<CapabilityKind, string> = labels({
@@ -127,11 +128,11 @@ export function caveatText(caveat: string): string {
 		case 'stacks':
 			return m.tb_needs_arg_stacks({ stack: arg });
 		case 'teamFaction':
-			return m.tb_needs_arg_teammates({ faction: arg });
+			return m.tb_needs_arg_teammates({ faction: factionName(arg) });
 		case 'teamElements':
 			return m.tb_depends_on_team_elements();
 		case 'activeIs':
-			return m.tb_when_active_character_is_arg({ faction: arg });
+			return m.tb_when_active_character_is_arg({ faction: factionName(arg) });
 		case 'enemyHp':
 			return m.tb_depends_on_enemy_hp();
 		case 'selfHp':
@@ -139,7 +140,7 @@ export function caveatText(caveat: string): string {
 		case 'recipientHp':
 			return m.tb_depends_on_recipient_hp();
 		case 'enemyAura':
-			return m.tb_vs_arg_affected_enemies({ element: arg });
+			return m.tb_vs_arg_affected_enemies({ element: elementLabel(arg) });
 		case 'chainStage':
 			return m.tb_at_a_specific_cast_in_the_chain();
 		case 'weaponType':

@@ -5,6 +5,7 @@
 	 * the same x on both surfaces. The five state registers are `.cov-state` in
 	 * app.css, shared with the legend's swatches.
 	 */
+	import { m } from '$lib/paraglide/messages';
 	import {
 		COVERAGE_SEGMENTS,
 		type CoverageSegmentKey,
@@ -48,7 +49,12 @@
 			class="cov-seg cov-state cov-state--{states[i]}"
 			class:is-dim={dim?.has(seg.key)}
 			style:grid-column={COVERAGE_LAYOUT.segCol[seg.key]}
-			title={titles ? `${SEGMENT_TITLE[seg.key]}: ${STATE_LABEL[states[i]]}` : undefined}
+			title={titles
+				? m.coverage_segment_state({
+						segment: SEGMENT_TITLE[seg.key],
+						state: STATE_LABEL[states[i]]
+					})
+				: undefined}
 			onpointerenter={onEnter ? (e) => onEnter(e, seg.key) : undefined}
 			onpointerleave={onLeave}
 		></span>

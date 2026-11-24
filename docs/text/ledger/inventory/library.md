@@ -43,8 +43,8 @@
   > {count} day ago | {count} days ago
   - vars: `count`
 - `library_id_c_lv` — LibraryPlace.svelte:215 push:
-  > {getCharacterIndexEntry(id)?.displayName ?? id} C{lv}
-  - vars: `getCharacterIndexEntry(id)?.displayName ?? id` `lv`
+  > {characterName(id)} C{lv}
+  - vars: `characterName(id)` `lv`
 - `library_first_half` — LibraryPlace.svelte:259 m()
   > 1st
 - `library_second_half` — LibraryPlace.svelte:259 m()
@@ -102,7 +102,7 @@
   - terms: 📖 rotation
 - `library_cancel` — LibraryPlace.svelte:694 m() · MoveDialog.svelte:145 m()
   > Cancel
-- `library_new_rotation` — LibraryPlace.svelte:697 m() · convert.ts:28 m()
+- `library_new_rotation` — LibraryPlace.svelte:697 m() · convert.ts:26 m()
   > New rotation
   - terms: 📖 rotation
 - `library_new_lineup` — LibraryPlace.svelte:701 m()
@@ -170,22 +170,22 @@
   - terms: 📖 rotation
 - `library_imported_team` — rotationTabs.svelte.ts:527 label:
   > Imported team
-- `library_stygian_season` — convert.ts:34 m()
+- `library_stygian_season` — convert.ts:32 m()
   > Stygian {season}
   - vars: `season`
-- `library_stygian` — convert.ts:34 m()
+- `library_stygian` — convert.ts:32 m()
   > Stygian
-- `library_abyss_moon` — convert.ts:37 m()
+- `library_abyss_moon` — convert.ts:35 m()
   > Abyss {moon}
   - vars: `moon`
-- `library_abyss` — convert.ts:37 m()
+- `library_abyss` — convert.ts:35 m()
   > Abyss
-- `library_theater_month` — convert.ts:41 m()
+- `library_theater_month` — convert.ts:39 m()
   > Theater {month}
   - vars: `month`
-- `library_theater` — convert.ts:41 m()
+- `library_theater` — convert.ts:39 m()
   > Theater
-- `library_custom_lineup` — convert.ts:43 m()
+- `library_custom_lineup` — convert.ts:41 m()
   > Custom lineup
 - `library_shared_lineup` — boardUrl.ts:88 m()
   > Shared lineup

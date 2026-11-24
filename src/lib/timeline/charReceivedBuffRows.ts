@@ -11,7 +11,7 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import { characterName, weaponName } from '$lib/i18n/gameNames';
+import { characterName, factionBonusName, weaponName } from '$lib/i18n/gameNames';
 import type { TimelineWindow } from '$lib/utils/notationParser';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type {
@@ -82,7 +82,7 @@ export function projectCharReceivedBuffRows(
 			// bonus DO pool into a single received row — correct on this surface,
 			// where the question is "what am I receiving from whom", and the
 			// tooltip gates (duration / procCooldown) keep unlike bars apart.
-			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${src.bonusName}`;
+			sourceLabel = `${characterName(w.characterId, getCharacter(w.characterId)?.displayName)} ${factionBonusName(src.bonusName)}`;
 		} else {
 			continue; // artifact windows are team-surface only
 		}

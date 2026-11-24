@@ -9,6 +9,8 @@
 
 import { m } from '$lib/paraglide/messages';
 import { labels } from '$lib/i18n/labels';
+import { factionName } from '$lib/i18n/gameNames';
+import { elementLabel } from '$lib/utils/auraDisplay';
 import type { Stat, BuffValue, Element } from '$lib/types/ability';
 
 export function isPctStat(stat: Stat): boolean {
@@ -66,7 +68,7 @@ export function formatBuffDisplayValue(
 			return value.maxStacks != null ? Math.min(adjusted, value.maxStacks) : adjusted;
 		};
 		const overSuffix = threshold > 0 ? ` ${m.planner_over_threshold({ threshold })}` : '';
-		const capSuffix = value.cap != null ? ` (cap ${value.cap})` : '';
+		const capSuffix = value.cap != null ? m.planner_cap_cap({ cap: value.cap }) : '';
 		if (typeof value.per === 'object') {
 			const scalingLabel = scalingStatLabel(value.per.stat);
 			if (stacks != null && stacks > threshold) {
@@ -86,21 +88,22 @@ export function formatBuffDisplayValue(
 			return pct ? `+${total}%` : `+${total}`;
 		}
 		const perStr = pct ? `+${value.per}%` : `+${value.per}`;
-		return `${perStr}/stack${overSuffix}${capSuffix}`;
+		return m.planner_value_stack_over_cap({ value: perStr, over: overSuffix, cap: capSuffix });
 	}
 	if (value.type === 'perTeamCount') {
 		const unit =
 			'elements' in value.count
-				? m.planner_x_ally({ elements: value.count.elements.join('/') })
-				: m.planner_faction_member({ faction: value.count.faction });
-		const capSuffix = value.cap != null ? ` (cap ${value.cap}${pct ? '%' : ''})` : '';
+				? m.planner_x_ally({ elements: value.count.elements.map(elementLabel).join('/') })
+				: m.planner_faction_member({ faction: factionName(value.count.faction) });
+		const capSuffix =
+			value.cap != null ? m.planner_cap_cap({ cap: `${value.cap}${pct ? '%' : ''}` }) : '';
 		const perStr = pct ? `+${value.per}%` : `+${value.per}`;
 		return `${perStr}/${unit}${capSuffix}`;
 	}
 	const ratioNum =
 		typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 	const scalingLabel = scalingStatLabel(value.stat);
-	const scalingCap = value.cap != null ? ` (cap ${value.cap})` : '';
+	const scalingCap = value.cap != null ? m.planner_cap_cap({ cap: value.cap }) : '';
 	// ⚠️ The offset must SHOW. A reader who sees "~1% ATK (cap 20)" and does not
 	// see "above 1000" will read a buff the character does not have at low ATK —
 	// which is the whole reason these kits went unauthored before the field

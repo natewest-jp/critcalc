@@ -11,7 +11,7 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import { artifactName, characterName } from '$lib/i18n/gameNames';
+import { artifactName, characterName, factionBonusName } from '$lib/i18n/gameNames';
 import type { TimelineWindow } from '$lib/utils/notationParser';
 import { getArtifactSetById } from '$lib/data/artifactLookup';
 import type {
@@ -97,7 +97,9 @@ export function projectTeamBuffRows(
 				const attribution = w.debuff
 					? undefined
 					: (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
-				sourceLabel = attribution ? `${displayName} ${attribution}` : `${displayName} ${lbl} (end)`;
+				sourceLabel = attribution
+					? `${displayName} ${attribution}`
+					: m.planner_name_label_end({ name: displayName, label: lbl });
 			} else if (src.trigger === 'nightsoulBurst') {
 				rowKey = `${w.characterId}::char::NB`;
 				sourceLabel = m.planner_displayname_nb({ name: displayName });
@@ -138,7 +140,7 @@ export function projectTeamBuffRows(
 			// ⚓ Named after the BONUS, not the cast — a Secret Rite bar labelled
 			// "Sucrose E" reads as an unconditional buff, and the team-composition
 			// gate is the most important thing about it.
-			sourceLabel = `${displayName} ${src.bonusName}`;
+			sourceLabel = `${displayName} ${factionBonusName(src.bonusName)}`;
 			// ⚠ The stat rides the key. A faction bonus commonly grants the same
 			// stat off two different triggers (Prune: +60% ATK on any reaction to
 			// himself, +30% to the active character on a Swirl), and those are two

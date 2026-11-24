@@ -5,22 +5,22 @@
 
 **90 messages** · `BenchBand.svelte` · `CompareControl.svelte` · `LoadoutPanel.svelte` · `SidePortrait.svelte` · `SlotPortrait.svelte` · `TeamBonusesBlock.svelte` · `resonance.ts`
 
-- `bench_displayname_s_details` — BenchBand.svelte:381 m()
+- `bench_displayname_s_details` — BenchBand.svelte:382 m()
   > {name}'s details
   - vars: `name`
-- `bench_empty_slot` — BenchBand.svelte:383 m()
+- `bench_empty_slot` — BenchBand.svelte:384 m()
   > Empty slot
-- `bench_choose_a_character_for_this_slot` — BenchBand.svelte:384 m()
+- `bench_choose_a_character_for_this_slot` — BenchBand.svelte:385 m()
   > Choose a character for this slot
-- `bench_swap_displayname` — BenchBand.svelte:401 m() · BenchBand.svelte:404 m()
+- `bench_swap_displayname` — BenchBand.svelte:402 m() · BenchBand.svelte:405 m()
   > Swap {name}
   - vars: `name`
-- `bench_swap_empty_slot` — BenchBand.svelte:405 m()
+- `bench_swap_empty_slot` — BenchBand.svelte:406 m()
   > Swap (empty slot)
-- `bench_remove_displayname_from_team` — BenchBand.svelte:414 m() · BenchBand.svelte:417 m()
+- `bench_remove_displayname_from_team` — BenchBand.svelte:415 m() · BenchBand.svelte:418 m()
   > Remove {name} from team
   - vars: `name`
-- `bench_remove_empty_slot` — BenchBand.svelte:418 m()
+- `bench_remove_empty_slot` — BenchBand.svelte:419 m()
   > Remove (empty slot)
 - `bench_theorycraft` — CompareControl.svelte:51 nameOfProfile:
   > Theorycraft
@@ -54,35 +54,35 @@
 - `bench_compare` — CompareControl.svelte:193 m() · CompareControl.svelte:194 m() · CompareControl.svelte:211 m() · CompareControl.svelte:212 m()
   > Compare
   - terms: 📖 Compare
-- `bench_artifact_set_x` — LoadoutPanel.svelte:81 m()
+- `bench_artifact_set_x` — LoadoutPanel.svelte:82 m()
   > {#key}Artifact set:{/key} {set}
   - vars: `set`
-- `bench_none` — LoadoutPanel.svelte:81 m() · LoadoutPanel.svelte:114 m()
+- `bench_none` — LoadoutPanel.svelte:85 m() · LoadoutPanel.svelte:120 m()
   > None
-- `bench_no_artifact_set` — LoadoutPanel.svelte:89 m() · LoadoutPanel.svelte:90 m()
+- `bench_no_artifact_set` — LoadoutPanel.svelte:94 m() · LoadoutPanel.svelte:95 m()
   > No artifact set
-- `bench_weapon_x` — LoadoutPanel.svelte:114 m()
+- `bench_weapon_x` — LoadoutPanel.svelte:119 m()
   > {#key}Weapon:{/key} {weapon}
   - vars: `weapon`
-- `bench_no_weapontype_type_weapons_are_curated` — LoadoutPanel.svelte:120 m()
+- `bench_no_weapontype_type_weapons_are_curated` — LoadoutPanel.svelte:127 m()
   > No {type}-type weapons are curated yet.
   - vars: `type`
-- `bench_no_weapon` — LoadoutPanel.svelte:127 m() · LoadoutPanel.svelte:128 m()
+- `bench_no_weapon` — LoadoutPanel.svelte:136 m() · LoadoutPanel.svelte:137 m()
   > No weapon
-- `bench_refinement` — LoadoutPanel.svelte:159 m()
+- `bench_refinement` — LoadoutPanel.svelte:168 m()
   > Refinement
   - terms: 🎮 Refinement
-- `bench_equip_a_weapon_first` — LoadoutPanel.svelte:160 m()
+- `bench_equip_a_weapon_first` — LoadoutPanel.svelte:169 m()
   > equip a weapon first
-- `bench_r_r` — LoadoutPanel.svelte:171 <button>
+- `bench_r_r` — LoadoutPanel.svelte:180 <button>
   > R{r}
   - vars: `r`
-- `bench_this_rotation_s_own_choice` — LoadoutPanel.svelte:182 m()
+- `bench_this_rotation_s_own_choice` — LoadoutPanel.svelte:191 m()
   > This rotation's own choice.
   - terms: 📖 rotation
-- `bench_use_the_team_s` — LoadoutPanel.svelte:183 m()
+- `bench_use_the_team_s` — LoadoutPanel.svelte:192 m()
   > Use the team's
-- `bench_from_the_team_team` — LoadoutPanel.svelte:185 m()
+- `bench_from_the_team_team` — LoadoutPanel.svelte:194 m()
   > From the team {team}.
   - vars: `team`
 - `bench_you_don_t_own_name` — SidePortrait.svelte:141 m()
@@ -91,71 +91,71 @@
 - `bench_this_team_uses_c_con_you_own_c_ownedcon` — SidePortrait.svelte:142 m()
   > This team uses C{con} · you own C{owned}
   - vars: `con` `owned`
-- `bench_open_character_selector` — SlotPortrait.svelte:92 m()
+- `bench_open_character_selector` — SlotPortrait.svelte:93 m()
   > Open character selector
-- `bench_empty` — SlotPortrait.svelte:94 m()
+- `bench_empty` — SlotPortrait.svelte:95 m()
   > Empty
-- `bench_you_don_t_own_displayname` — SlotPortrait.svelte:154 m()
+- `bench_you_don_t_own_displayname` — SlotPortrait.svelte:155 m()
   > You don't own {name}
   - vars: `name`
-- `bench_this_rotation_uses_c_conlevel_you_own_c` — SlotPortrait.svelte:155 m()
+- `bench_this_rotation_uses_c_conlevel_you_own_c` — SlotPortrait.svelte:156 m()
   > This rotation uses C{con} · you own C{owned}
   - vars: `con` `owned`
   - terms: 📖 rotation
-- `bench_traveler` — SlotPortrait.svelte:183 m()
+- `bench_traveler` — SlotPortrait.svelte:184 m()
   > Traveler
   - terms: 🎮 Traveler
-- `bench_displayname_is_resting_not_in_the` — SlotPortrait.svelte:313 m()
+- `bench_displayname_is_resting_not_in_the` — SlotPortrait.svelte:314 m()
   > {name} is resting: not in the rotation yet
   - vars: `name`
   - terms: 📖 rotation
-- `bench_constellations_can_t_be_unlocked_for` — SlotPortrait.svelte:351 m()
+- `bench_constellations_can_t_be_unlocked_for` — SlotPortrait.svelte:352 m()
   > Constellations can’t be unlocked for this character
   - terms: 🎮 Constellation
-- `bench_displayname_has_no_constellations` — SlotPortrait.svelte:353 m()
+- `bench_displayname_has_no_constellations` — SlotPortrait.svelte:354 m()
   > {name} has no constellations
   - vars: `name`
   - terms: 🎮 Constellation
-- `bench_set_constellation_for_displayname` — SlotPortrait.svelte:354 m()
+- `bench_set_constellation_for_displayname` — SlotPortrait.svelte:355 m()
   > Set constellation for {name}, currently C{con}
   - vars: `name` `con`
   - terms: 🎮 Constellation
-- `bench_frame_timing_not_curated_yet_the` — SlotPortrait.svelte:375 m()
+- `bench_frame_timing_not_curated_yet_the` — SlotPortrait.svelte:376 m()
   > Frame timing not curated yet — the rotation planner draws this character’s actions with generic timing
   - terms: 📖 rotation
-- `bench_frame_timing_not_curated_yet` — SlotPortrait.svelte:376 m()
+- `bench_frame_timing_not_curated_yet` — SlotPortrait.svelte:377 m()
   > Frame timing not curated yet
-- `bench_artifact_set_and_weapon` — SlotPortrait.svelte:396 m()
+- `bench_artifact_set_and_weapon` — SlotPortrait.svelte:397 m()
   > Artifact set and weapon
-- `bench_choose_artifact_set_and_weapon` — SlotPortrait.svelte:397 m()
+- `bench_choose_artifact_set_and_weapon` — SlotPortrait.svelte:398 m()
   > Choose artifact set and weapon
-- `bench_artifact_set` — SlotPortrait.svelte:416 m()
+- `bench_artifact_set` — SlotPortrait.svelte:417 m()
   > Artifact set
-- `bench_choose_artifact_set` — SlotPortrait.svelte:417 m()
+- `bench_choose_artifact_set` — SlotPortrait.svelte:418 m()
   > Choose artifact set
-- `bench_weapon_refinement_currentref` — SlotPortrait.svelte:428 m()
+- `bench_weapon_refinement_currentref` — SlotPortrait.svelte:429 m()
   > Weapon · refinement {r}
   - vars: `r`
   - terms: 🎮 Refinement
-- `bench_weapon` — SlotPortrait.svelte:429 m()
+- `bench_weapon` — SlotPortrait.svelte:430 m()
   > Weapon
-- `bench_choose_weapon_and_refinement` — SlotPortrait.svelte:431 m()
+- `bench_choose_weapon_and_refinement` — SlotPortrait.svelte:432 m()
   > Choose weapon and refinement
   - terms: 🎮 Refinement
-- `bench_close_picker` — SlotPortrait.svelte:467 m()
+- `bench_close_picker` — SlotPortrait.svelte:468 m()
   > Close picker
-- `bench_twin` — SlotPortrait.svelte:491 m()
+- `bench_twin` — SlotPortrait.svelte:492 m()
   > Twin
-- `bench_label_resonance` — TeamBonusesBlock.svelte:172 m() · TeamBonusesBlock.svelte:219 m()
+- `bench_label_resonance` — TeamBonusesBlock.svelte:173 m() · TeamBonusesBlock.svelte:220 m()
   > {label} — Resonance
   - vars: `label`
   - terms: 🎮 Elemental Resonance
-- `bench_always_on_buffs` — TeamBonusesBlock.svelte:253 m()
+- `bench_always_on_buffs` — TeamBonusesBlock.svelte:254 m()
   > Always-on buffs
-- `bench_moonsign_ascendant_gleam` — TeamBonusesBlock.svelte:273 <span>
+- `bench_moonsign_ascendant_gleam` — TeamBonusesBlock.svelte:274 <span>
   > Moonsign: Ascendant Gleam
   - terms: 🎮 Ascendant Gleam · 🎮 Moonsign
-- `bench_hexerei_secret_rite` — TeamBonusesBlock.svelte:276 <span>
+- `bench_hexerei_secret_rite` — TeamBonusesBlock.svelte:277 <span>
   > Hexerei: Secret Rite
   - terms: 🎮 Secret Rite · 🎮 Hexerei
 - `bench_fervent_flames` — resonance.ts:44 m()
