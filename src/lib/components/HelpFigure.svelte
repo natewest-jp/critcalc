@@ -17,11 +17,14 @@
 
 	The image and the points come from the generated manifest
 	(`scripts/help-shots/`); the pins are drawn here, over it, so their look
-	is the custom properties below, not pixels in the image.
+	is the custom properties below, not pixels in the image. Each shot was
+	taken in every language Help is drafted in, with its own pins, and the
+	page shows its own language's, else English's.
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { HELP_SHOTS, type HelpShotId } from '$lib/help/shots/shots.generated';
+	import { HELP_SHOTS, type HelpShot, type HelpShotId } from '$lib/help/shots/shots.generated';
+	import { getLocale } from '$lib/i18n/locale';
 
 	let {
 		shot,
@@ -36,7 +39,7 @@
 		children: Snippet;
 	} = $props();
 
-	const s = $derived(HELP_SHOTS[shot]);
+	const s = $derived<HelpShot>(HELP_SHOTS[shot].locales[getLocale()] ?? HELP_SHOTS[shot]);
 	/** 🎛️ Narrower than this (width ÷ height), a shot counts as tall and
 	 *  wraps its text at the middle widths. */
 	const TALL_RATIO = 1.2;

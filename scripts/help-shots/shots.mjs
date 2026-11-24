@@ -30,8 +30,44 @@
  * fixed rotation.
  */
 
+import { readFileSync } from 'node:fs';
 import { deflateRawSync } from 'node:zlib';
 import { PLANNER_SAMPLES } from '../../src/lib/data/plannerSamples.ts';
+import { characterIndex } from '../../src/lib/data/characterIndex.generated.ts';
+import { GAME_NAMES } from '../../src/lib/data/gameNames.generated.ts';
+
+/**
+ * THE LANGUAGE BEING SHOT. `capture.mjs` sets it before each shot, and a
+ * selector that names the page's words reads them through `t`, so one list
+ * serves every language. A callout's `selector` may be a function for this.
+ */
+let lang = 'en';
+const catalogs = {};
+export const setShotLang = (l) => {
+	lang = l;
+};
+/** A message's text in the language being shot, with `{name}` filled. */
+export function t(key, vars = {}) {
+	catalogs[lang] ??= JSON.parse(
+		readFileSync(new URL(`../../messages/${lang}.json`, import.meta.url), 'utf8')
+	);
+	const text = catalogs[lang][key];
+	if (typeof text !== 'string') throw new Error(`help-shots: no plain message ${key} in ${lang}`);
+	return text.replace(/\{(\w+)\}/g, (all, v) => (v in vars ? String(vars[v]) : all));
+}
+/** A message as a pattern for `:text-matches()`, each placeholder open
+ *  ("{applies} of these {total}" → "^.+? of these .+?$"). */
+const pattern = (key) =>
+	'^' +
+	t(key)
+		.split(/\{[^}]*\}/)
+		// Doubled: the selector's own string reads one backslash away.
+		.map((s) => s.replace(/[.*+?^$()[\]\\|]/g, '\\\\$&'))
+		.join('.+?') +
+	'$';
+/** A character's name as the page being shot shows it. */
+const nameOf = (id) =>
+	GAME_NAMES[lang]?.character[id] ?? characterIndex.find((c) => c.id === id).displayName;
 
 /**
  * THE PLANNER'S CAST (⚓ Nate 2026-11-15): Flins Lunar-Charged, one of the
@@ -97,11 +133,12 @@ const builderSeed = () => ({
  *  with the whole toolbar, so the shot reads at margin size. */
 const PANE_DESK = 1100;
 /** Owned on: the grid shows only the cast, so a new release can't reorder it. */
-const ownedOnly = (page) => page.locator('.tb-band button[aria-label="Owned"]').click();
+const ownedOnly = (page) =>
+	page.locator(`.tb-band button[aria-label="${t('tb_owned_b62f')}"]`).click();
 /** A team on the lineup, in order. */
 const TEAM = (i) => `.bv-team >> nth=${i}`;
 /** A character's card in the grid. */
-const CARD_OF = (name) => `.cg-grid .cc:has(.cc-name:text-is("${name}"))`;
+const CARD_OF = (id) => `.cg-grid .cc:has(.cc-name:text-is("${nameOf(id)}"))`;
 
 /**
  * THE VISUALIZERS' STAGING (Claude proposed, ⚓ Nate 2026-11-18): each shot
@@ -149,7 +186,10 @@ const critBar = (page) =>
 /** Artifact odds' dots: the top of the tallest column clear of the dots'
  *  caption, so the pin standing over it covers no words. */
 const topDot = async (page) => {
-	const caption = await boxOf(page, `${TILE('artifact')} text:has-text("one dot each")`);
+	const caption = await boxOf(
+		page,
+		`${TILE('artifact')} text:text-matches("${pattern('vz_artifact_100_20_slotplural_like_yours_one_dot')}")`
+	);
 	return page.locator(`${TILE('artifact')} .stage-graph circle[r="3.9"]`).evaluateAll(
 		(els, clear) => {
 			const r = els
@@ -338,7 +378,8 @@ export const SHOTS = [
 		callouts: [
 			{ selector: '.rp-aura-series-name >> nth=0', at: 'bottom', side: 'bottom' },
 			{ selector: '.rp-aura-tick >> nth=1', at: 'top', side: 'top' },
-			{ selector: '.rp-aura-marker-label', at: 'right', side: 'right' },
+			// The run's label: a shorter language can fit an earlier one too.
+			{ selector: '.rp-aura-marker-label >> nth=-1', at: 'right', side: 'right' },
 			{ selector: '.rp-gadget-row circle >> nth=0', at: 'bottom', side: 'bottom' }
 		]
 	},
@@ -351,7 +392,7 @@ export const SHOTS = [
 		// The panel as it opens: the team, each character with the caveats
 		// on their kit.
 		prepare: async (page) => {
-			await page.getByRole('button', { name: 'Inspector' }).click();
+			await page.getByRole('button', { name: t('planner_inspector'), exact: true }).click();
 			await page.mouse.move(1, 999);
 		},
 		clip: async (page) => {
@@ -408,16 +449,16 @@ export const SHOTS = [
 		// live seasons, which date.
 		prepare: async (page) => {
 			// The Builder's door in the top bar opens the Library's Lineups.
-			await page.locator('.nav-btn:has-text("Builder")').click();
-			await page.getByRole('button', { name: /New lineup/ }).click();
-			await page.locator('[role=menu][aria-label="New lineup"]').waitFor();
+			await page.locator(`.nav-btn:has-text("${t('chrome_builder')}")`).click();
+			await page.getByRole('button', { name: t('library_new_lineup'), exact: true }).click();
+			await page.locator(`[role=menu][aria-label="${t('library_new_lineup')}"]`).waitFor();
 			await page.mouse.move(1, 999);
 		},
 		// Tight on the menu's right and bottom: past them is the first card.
 		clip: async (page) => {
 			const b = await boxOf(
 				page,
-				':is(button:has-text("New lineup"), [role=menu][aria-label="New lineup"])'
+				`:is(button:has-text("${t('library_new_lineup')}"), [role=menu][aria-label="${t('library_new_lineup')}"])`
 			);
 			return { x: b.x - 8, y: b.y - 8, width: b.width + 8, height: b.height + 9 };
 		}
@@ -435,11 +476,11 @@ export const SHOTS = [
 		prepare: async (page) => {
 			await ownedOnly(page);
 			await page.locator(`${TEAM(1)} >> .bv-slot >> nth=0`).click();
-			await page.locator(`${CARD_OF('Linnea')} >> .cc-main`).click();
+			await page.locator(`${CARD_OF('linnea')} >> .cc-main`).click();
 			// Linnea's card keeps focus after the click, and a focused card
 			// shows its magnifier too.
 			await page.evaluate(() => document.activeElement?.blur());
-			await page.locator(CARD_OF('Zibai')).hover();
+			await page.locator(CARD_OF('zibai')).hover();
 		},
 		clip: async (page) => {
 			const banner = await boxOf(page, '.tb-dest');
@@ -453,7 +494,7 @@ export const SHOTS = [
 		},
 		callouts: [
 			{ selector: '.tb-dest', at: 'top-left', dx: 70, side: 'top' },
-			{ selector: `${CARD_OF('Zibai')} >> .cc-mag`, at: 'top', side: 'top' }
+			{ selector: () => `${CARD_OF('zibai')} >> .cc-mag`, at: 'top', side: 'top' }
 		]
 	},
 	{
@@ -481,16 +522,24 @@ export const SHOTS = [
 		callouts: [
 			// The strip's pins stand in the gutter at the left, and the card's at
 			// the right (Mavuika's, the last card), so none covers the grid.
-			{ selector: '.rfs-bar[aria-label="Role"]', at: 'left', side: 'left' },
+			{ selector: () => `.rfs-bar[aria-label="${t('tb_role')}"]`, at: 'left', side: 'left' },
 			{ selector: '.rfs-glyphs .rfs-bar >> nth=0', at: 'left', side: 'left' },
 			// Her last lit icon, pinned from below, so its pin clears the dim one's.
 			{
-				selector: `${CARD_OF('Mavuika')} >> .cc-g:not(.cc-g--dim) >> nth=-1`,
+				selector: () => `${CARD_OF('mavuika')} >> .cc-g:not(.cc-g--dim) >> nth=-1`,
 				at: 'bottom',
 				side: 'bottom'
 			},
-			{ selector: `${CARD_OF('Mavuika')} >> .cc-g--dim >> nth=0`, at: 'right', side: 'right' },
-			{ selector: 'button[aria-label="Read capabilities at"]', at: 'top', side: 'top' }
+			{
+				selector: () => `${CARD_OF('mavuika')} >> .cc-g--dim >> nth=0`,
+				at: 'right',
+				side: 'right'
+			},
+			{
+				selector: () => `button[aria-label="${t('tb_read_capabilities_at')}"]`,
+				at: 'top',
+				side: 'top'
+			}
 		]
 	},
 	{
@@ -505,9 +554,21 @@ export const SHOTS = [
 		clip: async (page) => boxOf(page, `${TEAM(0)} >> .fp`, { pad: 10 }),
 		scale: 1.5,
 		callouts: [
-			{ selector: `${TEAM(0)} >> .fp-slot[aria-label^="EM buff"]`, at: 'top', side: 'top' },
-			{ selector: `${TEAM(0)} >> .fp-slot[aria-label^="Shield"]`, at: 'top', side: 'top' },
-			{ selector: `${TEAM(0)} >> .fp-slot[aria-label^="CRIT buff"]`, at: 'bottom', side: 'bottom' }
+			{
+				selector: () => `${TEAM(0)} >> .fp-slot[aria-label^="${t('tb_em_buff')}"]`,
+				at: 'top',
+				side: 'top'
+			},
+			{
+				selector: () => `${TEAM(0)} >> .fp-slot[aria-label^="${t('tb_shield')}"]`,
+				at: 'top',
+				side: 'top'
+			},
+			{
+				selector: () => `${TEAM(0)} >> .fp-slot[aria-label^="${t('tb_crit_buff')}"]`,
+				at: 'bottom',
+				side: 'bottom'
+			}
 		]
 	},
 	{
@@ -525,7 +586,15 @@ export const SHOTS = [
 		prepare: async (page) => {
 			// The first click selects Zibai's team; the second opens the swap.
 			await page.locator(`${TEAM(1)} >> .bv-slot >> nth=1`).click();
-			await page.getByRole('button', { name: 'Replace Columbina, Team 2 slot 2' }).click();
+			await page
+				.getByRole('button', {
+					name: t('tb_replace_displayname_name_slot_x', {
+						name: nameOf('columbina'),
+						team: t('tb_team_x', { n: 2 }),
+						n: 2
+					})
+				})
+				.click();
 			await page.mouse.move(1, 999);
 		},
 		clip: async (page) => {
@@ -541,7 +610,11 @@ export const SHOTS = [
 		callouts: [
 			{ selector: '.tb-dest', at: 'top-left', dx: 70, side: 'top' },
 			{ selector: '.cg-section >> nth=1 >> .tb-swap-head', at: 'left', dx: 110, side: 'right' },
-			{ selector: `${CARD_OF('Candace')} >> .cc-g--gain >> nth=0`, at: 'right', side: 'right' }
+			{
+				selector: () => `${CARD_OF('candace')} >> .cc-g--gain >> nth=0`,
+				at: 'right',
+				side: 'right'
+			}
 		]
 	},
 	{
@@ -593,7 +666,7 @@ export const SHOTS = [
 		route: vz('crit', { v: 1 }),
 		// Two instruments side by side, through the Layout plate.
 		prepare: async (page) => {
-			await page.locator('role=button[name="Layout"]').click();
+			await page.locator(`role=button[name="${t('vz_layout')}"]`).click();
 			await page.locator('role=radio[name="2"]').click();
 			await page.keyboard.press('Escape');
 			await page.mouse.move(1, 999);
@@ -615,19 +688,20 @@ export const SHOTS = [
 		},
 		callouts: [
 			{ selector: '.ws-band-cell >> nth=1 >> .ws-picker', at: 'bottom', side: 'bottom' },
-			{ selector: 'role=button[name="Layout"]', at: 'bottom', side: 'bottom' },
+			{ selector: () => `role=button[name="${t('vz_layout')}"]`, at: 'bottom', side: 'bottom' },
 			{
-				selector: '.ws-band-cell >> nth=1 >> button:has-text("Defaults")',
+				selector: () => `.ws-band-cell >> nth=1 >> button:has-text("${t('vz_defaults')}")`,
 				at: 'bottom',
 				side: 'bottom'
 			},
 			{
-				selector: '.ws-band-cell >> nth=1 >> button:has-text("Copy link")',
+				selector: () => `.ws-band-cell >> nth=1 >> button:has-text("${t('vz_copy_link')}")`,
 				at: 'bottom',
 				side: 'bottom'
 			},
 			{
-				selector: '.ws-band-cell >> nth=1 >> role=button[name="More instrument actions"]',
+				selector: () =>
+					`.ws-band-cell >> nth=1 >> role=button[name="${t('vz_more_instrument_actions')}"]`,
 				at: 'bottom',
 				side: 'bottom'
 			}
@@ -685,7 +759,12 @@ export const SHOTS = [
 				at: 'left',
 				side: 'left'
 			},
-			{ selector: `${TILE('gauge')} text:has-text("Vaporize")`, at: 'right', dx: 1, side: 'right' },
+			{
+				selector: () => `${TILE('gauge')} text:has-text("${t('vz_gauge_vaporize')}")`,
+				at: 'right',
+				dx: 1,
+				side: 'right'
+			},
 			// Two drop labels, Electro's and Hydro's, stacked at the drop.
 			{ selector: `${TILE('gauge')} .gx-drop >> nth=0`, at: 'right', dx: 1, dy: 4, side: 'right' }
 		]
@@ -700,7 +779,13 @@ export const SHOTS = [
 		route: vz('icd', { v: 1, source: 'even', interval: 0.5, rule: 'standard' }),
 		clip: (page) => headTo(page, 'icd', '.icd-anchors'),
 		callouts: [
-			{ selector: `${TILE('icd')} text:has-text("of these")`, at: 'left', dx: -1, side: 'left' },
+			{
+				selector: () =>
+					`${TILE('icd')} text:text-matches("${pattern('vz_icd_applies_of_these_of')}")`,
+				at: 'left',
+				dx: -1,
+				side: 'left'
+			},
 			{ selector: `${TILE('icd')} circle[fill="none"] >> nth=0`, at: 'bottom', side: 'bottom' },
 			{ selector: `${TILE('icd')} circle[style*="frame-bg"]`, at: 'left', side: 'left' }
 		]
@@ -714,7 +799,8 @@ export const SHOTS = [
 		clip: (page) => headTo(page, 'curves', '.stage-handle'),
 		callouts: [
 			{
-				selector: `${TILE('curves')} text:has-text("next 100 EM") >> nth=0`,
+				selector: () =>
+					`${TILE('curves')} text:has-text("${t('vz_rc_next_gain_step_em', { step: 100 })}") >> nth=0`,
 				at: 'right',
 				side: 'right'
 			},
@@ -746,7 +832,8 @@ export const SHOTS = [
 				side: 'right'
 			},
 			{
-				selector: `${TILE('breakdown')} .stage-graph text:has-text("CD") >> nth=0`,
+				selector: () =>
+					`${TILE('breakdown')} .stage-graph text:has-text("${t('vz_artifact_cd')}") >> nth=0`,
 				at: 'top',
 				side: 'top'
 			}
@@ -774,7 +861,8 @@ export const SHOTS = [
 		clip: (page) => headTo(page, 'defres', '.dr-handle'),
 		callouts: [
 			{
-				selector: `${TILE('defres')} text:has-text("Viridescent Venerer 40%")`,
+				selector: () =>
+					`${TILE('defres')} text:has-text("${GAME_NAMES[lang]?.artifact.viridescent_venerer ?? 'Viridescent Venerer'} 40%")`,
 				at: 'bottom',
 				side: 'bottom'
 			},
@@ -834,7 +922,7 @@ export const SHOTS = [
 		callouts: [
 			{ selector: `${TILE('wish')} input[type=range]`, at: 'left', side: 'left' },
 			{
-				selector: `${TILE('wish')} button:has-text("Radiance counter")`,
+				selector: () => `${TILE('wish')} button:has-text("${t('vz_wish_radiance_counter')}")`,
 				at: 'bottom',
 				side: 'bottom'
 			}

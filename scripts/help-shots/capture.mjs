@@ -15,9 +15,15 @@
  *   into a profile by the app's first load.
  * - The pointer is parked off the surface before the capture.
  *
+ * Every shot is rendered once per language in `LANGS`, from that language's
+ * pages (`/ja/planner`): English as `<id>.webp`, the others as
+ * `<id>.<lang>.webp`, each with its own size and pins, since the layout moves
+ * with the words. `HelpFigure.svelte` shows the page's own, else English's.
+ *
  * Usage: `npm run help-shots` (build + capture), or
- * `node scripts/help-shots/capture.mjs [--only id,id]` against an existing
- * build. `--only` re-renders those shots and keeps the rest of the manifest.
+ * `node scripts/help-shots/capture.mjs [--only id,id] [--lang ja]` against an
+ * existing build. `--only` and `--lang` re-render those shots or languages and
+ * keep the rest of the manifest.
  */
 import { chromium, devices } from 'playwright';
 import sharp from 'sharp';
@@ -27,7 +33,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import * as prettier from 'prettier';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SHOTS } from './shots.mjs';
+import { SHOTS, setShotLang, t } from './shots.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'src/lib/help/shots');
@@ -44,8 +50,21 @@ const DEVICES = {
 	phone: { ...devices['iPhone 13'], deviceScaleFactor: 2 }
 };
 
-const onlyArg = process.argv.indexOf('--only');
-const only = onlyArg > -1 ? new Set(process.argv[onlyArg + 1].split(',')) : null;
+/** The languages Help is shot in: English, and each locale with a draft of
+ *  the tools. Chinese joins once it has one. */
+const LANGS = ['en', 'ja'];
+/** The browser's own locale per language, so nothing the browser formats
+ *  (a date input, a number) shows another language's form. */
+const BROWSER_LOCALE = { en: 'en-US', ja: 'ja-JP' };
+
+const argOf = (name) => {
+	const i = process.argv.indexOf(name);
+	return i > -1 ? new Set(process.argv[i + 1].split(',')) : null;
+};
+const only = argOf('--only');
+const onlyLang = argOf('--lang');
+/** A shot's file and manifest key in one language. */
+const fileOf = (id, lang) => (lang === 'en' ? `${id}.webp` : `${id}.${lang}.webp`);
 
 if (!existsSync(join(ROOT, 'build/index.html'))) {
 	console.error('help-shots: no build/ — run `npm run help-shots`, which builds first.');
@@ -87,12 +106,13 @@ function anchor(b, at = 'center') {
 	}[at];
 }
 
-async function capture(browser, shot) {
+async function capture(browser, shot, lang) {
+	setShotLang(lang);
 	const context = await browser.newContext({
 		...DEVICES[shot.device],
 		...(shot.width && { viewport: { ...DEVICES[shot.device].viewport, width: shot.width } }),
 		reducedMotion: 'reduce',
-		locale: 'en-US',
+		locale: BROWSER_LOCALE[lang],
 		timezoneId: 'UTC'
 	});
 	const page = await context.newPage();
@@ -122,7 +142,7 @@ async function capture(browser, shot) {
 		if (s.settings) localStorage.setItem('critcalc:siteSettings', JSON.stringify(s.settings));
 	}, shot.seed ?? {});
 
-	await page.goto(BASE + shot.route);
+	await page.goto(BASE + (lang === 'en' ? '' : `/${lang}`) + shot.route);
 	await page.locator('.tool-main, div.menu').first().waitFor({ state: 'visible' });
 
 	// A seeded browser is a returning visitor: answer the once-only dialog
@@ -136,7 +156,7 @@ async function capture(browser, shot) {
 		await dialog.locator('.btn--primary').click();
 		await dialog.waitFor({ state: 'detached' });
 	}
-	const dismiss = page.locator('.nr button[aria-label="Dismiss"]');
+	const dismiss = page.locator(`.nr button[aria-label="${t('notices_dismiss')}"]`);
 	await dismiss
 		.first()
 		.waitFor({ state: 'visible', timeout: 3000 })
@@ -163,8 +183,10 @@ async function capture(browser, shot) {
 		let a;
 		if (c.point) a = await c.point(page);
 		else {
-			const b = await page.locator(c.selector).boundingBox();
-			if (!b) throw new Error(`help-shots: ${shot.id} callout ${i + 1} (${c.selector}) not found`);
+			// A selector that names the page's words is a function of the language.
+			const selector = typeof c.selector === 'function' ? c.selector() : c.selector;
+			const b = await page.locator(selector).boundingBox();
+			if (!b) throw new Error(`help-shots: ${shot.id} callout ${i + 1} (${selector}) not found`);
 			a = anchor(b, c.at);
 		}
 		const p = { x: a.x + (c.dx ?? 0), y: a.y + (c.dy ?? 0) };
@@ -179,7 +201,7 @@ async function capture(browser, shot) {
 	const png = await page.screenshot({ clip, type: 'png' });
 	await sharp(png)
 		.webp({ quality: QUALITY })
-		.toFile(join(OUT, `${shot.id}.webp`));
+		.toFile(join(OUT, fileOf(shot.id, lang)));
 	await context.close();
 
 	return { width: clip.width, height: clip.height, scale: shot.scale ?? 1, callouts };
@@ -187,31 +209,56 @@ async function capture(browser, shot) {
 
 // ── All of them ────────────────────────────────────────────────────────────
 await mkdir(OUT, { recursive: true });
-const previous = only ? await loadPrevious() : {};
+const previous = only || onlyLang ? await loadPrevious() : {};
+/** id → language → its entry. English is the manifest's own entry; the other
+ *  languages ride under `locales`. */
 const entries = {};
 const browser = await chromium.launch();
 try {
-	for (const shot of SHOTS) {
-		if (only && !only.has(shot.id)) {
-			if (previous[shot.id]) entries[shot.id] = previous[shot.id];
-			continue;
+	for (const shot of SHOTS)
+		for (const lang of LANGS) {
+			const kept = lang === 'en' ? previous[shot.id] : previous[shot.id]?.locales?.[lang];
+			if ((only && !only.has(shot.id)) || (onlyLang && !onlyLang.has(lang))) {
+				if (kept) (entries[shot.id] ??= {})[lang] = kept;
+				continue;
+			}
+			process.stdout.write(`help-shots: ${shot.id} (${lang}) … `);
+			const e = await capture(browser, shot, lang);
+			// A shot with no words in it (icons, notation, bars) comes out the
+			// same in every language: keep English's alone, which the figure
+			// falls back to.
+			const file = join(OUT, fileOf(shot.id, lang));
+			const en = join(OUT, fileOf(shot.id, 'en'));
+			if (lang !== 'en' && existsSync(en) && readFileSync(file).equals(readFileSync(en))) {
+				await unlink(file);
+				console.log('same as English');
+				continue;
+			}
+			(entries[shot.id] ??= {})[lang] = e;
+			console.log(`${e.width}×${e.height}`);
 		}
-		process.stdout.write(`help-shots: ${shot.id} … `);
-		entries[shot.id] = await capture(browser, shot);
-		console.log(`${entries[shot.id].width}×${entries[shot.id].height}`);
-	}
 } finally {
 	await browser.close();
 	stop();
 }
 
 // Images no shot names any more.
+const named = new Set(
+	SHOTS.flatMap((s) => LANGS.filter((l) => entries[s.id]?.[l]).map((l) => fileOf(s.id, l)))
+);
 for (const f of await readdir(OUT))
-	if (f.endsWith('.webp') && !SHOTS.some((s) => `${s.id}.webp` === f)) await unlink(join(OUT, f));
+	if (f.endsWith('.webp') && !named.has(f)) await unlink(join(OUT, f));
 
-const ident = (id) => id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
-const ids = SHOTS.map((s) => s.id).filter((id) => entries[id]);
-const data = Object.fromEntries(ids.map((id) => [id, entries[id]]));
+const ident = (id, lang = 'en') =>
+	id.replace(/-(\w)/g, (_, c) => c.toUpperCase()) + (lang === 'en' ? '' : lang.toUpperCase());
+const ids = SHOTS.map((s) => s.id).filter((id) => entries[id]?.en);
+const others = (id) => LANGS.filter((l) => l !== 'en' && entries[id][l]);
+const data = Object.fromEntries(
+	ids.map((id) => {
+		const { en, ...rest } = entries[id];
+		return [id, { ...en, ...(Object.keys(rest).length && { locales: rest }) }];
+	})
+);
 await writeFormatted(DATA, JSON.stringify(data));
 await writeFormatted(
 	MANIFEST,
@@ -219,7 +266,11 @@ await writeFormatted(
 // The shot list is scripts/help-shots/shots.mjs; HelpFigure.svelte draws these.
 
 import data from './shots.generated.json';
-${ids.map((id) => `import ${ident(id)} from './${id}.webp';`).join('\n')}
+${ids
+	.flatMap((id) =>
+		['en', ...others(id)].map((l) => `import ${ident(id, l)} from './${fileOf(id, l)}';`)
+	)
+	.join('\n')}
 
 export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
 
@@ -235,9 +286,19 @@ export type HelpShot = {
 	callouts: { n: number; x: number; y: number; side: HelpCalloutSide }[];
 };
 
+/** A shot in English, and in each other language it was taken in. */
+export type HelpShotSet = HelpShot & { locales: Partial<Record<string, HelpShot>> };
+
 export const HELP_SHOTS = {
-${ids.map((id) => `'${id}': { ...data['${id}'], src: ${ident(id)} } as HelpShot,`).join('\n')}
-} satisfies Record<string, HelpShot>;
+${ids
+	.map((id) => {
+		const locales = others(id)
+			.map((l) => `${l}: { ...data['${id}'].locales.${l}, src: ${ident(id, l)} }`)
+			.join(', ');
+		return `'${id}': { ...data['${id}'], src: ${ident(id)}, locales: { ${locales} } } as HelpShotSet,`;
+	})
+	.join('\n')}
+} satisfies Record<string, HelpShotSet>;
 
 export type HelpShotId = keyof typeof HELP_SHOTS;
 `
