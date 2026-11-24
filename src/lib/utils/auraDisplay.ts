@@ -73,6 +73,10 @@ export const ELEMENT_LABEL: Record<ElementId, string> = labels({
 	geo: m.planner_geo
 });
 
+/** An element's name, for a value typed as any element (physical included,
+ *  which has no row here and prints as it is). */
+export const elementLabel = (e: string): string => ELEMENT_LABEL[e as ElementId] ?? e;
+
 export const AURA_MOD_META: Record<AuraKey, AuraModMeta> = {
 	pyro: {
 		get label() {

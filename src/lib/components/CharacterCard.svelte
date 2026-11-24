@@ -65,6 +65,7 @@
 
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { elementLabel } from '$lib/utils/auraDisplay';
 	/**
 	 * THE CHARACTER CARD — the Team Builder's grid tile (lineups design §11.6,
 	 * the card round 2026-10-11; designed on /lab/cards, concept E, ⚓ Nate).
@@ -214,7 +215,7 @@
 					<img
 						class="cc-el"
 						src={elementIcon(entry.element)}
-						alt={entry.element}
+						alt={elementLabel(entry.element)}
 						decoding="async"
 						draggable="false"
 					/>
