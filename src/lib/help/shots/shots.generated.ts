@@ -4,29 +4,49 @@
 import data from './shots.generated.json';
 import plannerComposer from './planner-composer.webp';
 import plannerBenchCard from './planner-bench-card.webp';
+import plannerBenchCardJA from './planner-bench-card.ja.webp';
 import plannerTimeline from './planner-timeline.webp';
 import plannerPadding from './planner-padding.webp';
 import plannerPlayback from './planner-playback.webp';
+import plannerPlaybackJA from './planner-playback.ja.webp';
 import plannerAura from './planner-aura.webp';
+import plannerAuraJA from './planner-aura.ja.webp';
 import plannerInspector from './planner-inspector.webp';
+import plannerInspectorJA from './planner-inspector.ja.webp';
 import plannerPhoneDock from './planner-phone-dock.webp';
+import plannerPhoneDockJA from './planner-phone-dock.ja.webp';
 import builderNewLineup from './builder-new-lineup.webp';
+import builderNewLineupJA from './builder-new-lineup.ja.webp';
 import builderAdding from './builder-adding.webp';
+import builderAddingJA from './builder-adding.ja.webp';
 import builderCharacters from './builder-characters.webp';
+import builderCharactersJA from './builder-characters.ja.webp';
 import builderCapabilities from './builder-capabilities.webp';
 import builderSwap from './builder-swap.webp';
+import builderSwapJA from './builder-swap.ja.webp';
 import builderTeamChips from './builder-team-chips.webp';
 import builderPhone from './builder-phone.webp';
+import builderPhoneJA from './builder-phone.ja.webp';
 import vzWorkspace from './vz-workspace.webp';
+import vzWorkspaceJA from './vz-workspace.ja.webp';
 import vzCrit from './vz-crit.webp';
+import vzCritJA from './vz-crit.ja.webp';
 import vzGauge from './vz-gauge.webp';
+import vzGaugeJA from './vz-gauge.ja.webp';
 import vzIcd from './vz-icd.webp';
+import vzIcdJA from './vz-icd.ja.webp';
 import vzCurves from './vz-curves.webp';
+import vzCurvesJA from './vz-curves.ja.webp';
 import vzBreakdown from './vz-breakdown.webp';
+import vzBreakdownJA from './vz-breakdown.ja.webp';
 import vzDefres from './vz-defres.webp';
+import vzDefresJA from './vz-defres.ja.webp';
 import vzArtifactPiece from './vz-artifact-piece.webp';
+import vzArtifactPieceJA from './vz-artifact-piece.ja.webp';
 import vzArtifactReshape from './vz-artifact-reshape.webp';
+import vzArtifactReshapeJA from './vz-artifact-reshape.ja.webp';
 import vzWish from './vz-wish.webp';
+import vzWishJA from './vz-wish.ja.webp';
 
 export type HelpCalloutSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
 
@@ -42,32 +62,135 @@ export type HelpShot = {
 	callouts: { n: number; x: number; y: number; side: HelpCalloutSide }[];
 };
 
+/** A shot in English, and in each other language it was taken in. */
+export type HelpShotSet = HelpShot & { locales: Partial<Record<string, HelpShot>> };
+
 export const HELP_SHOTS = {
-	'planner-composer': { ...data['planner-composer'], src: plannerComposer } as HelpShot,
-	'planner-bench-card': { ...data['planner-bench-card'], src: plannerBenchCard } as HelpShot,
-	'planner-timeline': { ...data['planner-timeline'], src: plannerTimeline } as HelpShot,
-	'planner-padding': { ...data['planner-padding'], src: plannerPadding } as HelpShot,
-	'planner-playback': { ...data['planner-playback'], src: plannerPlayback } as HelpShot,
-	'planner-aura': { ...data['planner-aura'], src: plannerAura } as HelpShot,
-	'planner-inspector': { ...data['planner-inspector'], src: plannerInspector } as HelpShot,
-	'planner-phone-dock': { ...data['planner-phone-dock'], src: plannerPhoneDock } as HelpShot,
-	'builder-new-lineup': { ...data['builder-new-lineup'], src: builderNewLineup } as HelpShot,
-	'builder-adding': { ...data['builder-adding'], src: builderAdding } as HelpShot,
-	'builder-characters': { ...data['builder-characters'], src: builderCharacters } as HelpShot,
-	'builder-capabilities': { ...data['builder-capabilities'], src: builderCapabilities } as HelpShot,
-	'builder-swap': { ...data['builder-swap'], src: builderSwap } as HelpShot,
-	'builder-team-chips': { ...data['builder-team-chips'], src: builderTeamChips } as HelpShot,
-	'builder-phone': { ...data['builder-phone'], src: builderPhone } as HelpShot,
-	'vz-workspace': { ...data['vz-workspace'], src: vzWorkspace } as HelpShot,
-	'vz-crit': { ...data['vz-crit'], src: vzCrit } as HelpShot,
-	'vz-gauge': { ...data['vz-gauge'], src: vzGauge } as HelpShot,
-	'vz-icd': { ...data['vz-icd'], src: vzIcd } as HelpShot,
-	'vz-curves': { ...data['vz-curves'], src: vzCurves } as HelpShot,
-	'vz-breakdown': { ...data['vz-breakdown'], src: vzBreakdown } as HelpShot,
-	'vz-defres': { ...data['vz-defres'], src: vzDefres } as HelpShot,
-	'vz-artifact-piece': { ...data['vz-artifact-piece'], src: vzArtifactPiece } as HelpShot,
-	'vz-artifact-reshape': { ...data['vz-artifact-reshape'], src: vzArtifactReshape } as HelpShot,
-	'vz-wish': { ...data['vz-wish'], src: vzWish } as HelpShot
-} satisfies Record<string, HelpShot>;
+	'planner-composer': {
+		...data['planner-composer'],
+		src: plannerComposer,
+		locales: {}
+	} as HelpShotSet,
+	'planner-bench-card': {
+		...data['planner-bench-card'],
+		src: plannerBenchCard,
+		locales: { ja: { ...data['planner-bench-card'].locales.ja, src: plannerBenchCardJA } }
+	} as HelpShotSet,
+	'planner-timeline': {
+		...data['planner-timeline'],
+		src: plannerTimeline,
+		locales: {}
+	} as HelpShotSet,
+	'planner-padding': {
+		...data['planner-padding'],
+		src: plannerPadding,
+		locales: {}
+	} as HelpShotSet,
+	'planner-playback': {
+		...data['planner-playback'],
+		src: plannerPlayback,
+		locales: { ja: { ...data['planner-playback'].locales.ja, src: plannerPlaybackJA } }
+	} as HelpShotSet,
+	'planner-aura': {
+		...data['planner-aura'],
+		src: plannerAura,
+		locales: { ja: { ...data['planner-aura'].locales.ja, src: plannerAuraJA } }
+	} as HelpShotSet,
+	'planner-inspector': {
+		...data['planner-inspector'],
+		src: plannerInspector,
+		locales: { ja: { ...data['planner-inspector'].locales.ja, src: plannerInspectorJA } }
+	} as HelpShotSet,
+	'planner-phone-dock': {
+		...data['planner-phone-dock'],
+		src: plannerPhoneDock,
+		locales: { ja: { ...data['planner-phone-dock'].locales.ja, src: plannerPhoneDockJA } }
+	} as HelpShotSet,
+	'builder-new-lineup': {
+		...data['builder-new-lineup'],
+		src: builderNewLineup,
+		locales: { ja: { ...data['builder-new-lineup'].locales.ja, src: builderNewLineupJA } }
+	} as HelpShotSet,
+	'builder-adding': {
+		...data['builder-adding'],
+		src: builderAdding,
+		locales: { ja: { ...data['builder-adding'].locales.ja, src: builderAddingJA } }
+	} as HelpShotSet,
+	'builder-characters': {
+		...data['builder-characters'],
+		src: builderCharacters,
+		locales: { ja: { ...data['builder-characters'].locales.ja, src: builderCharactersJA } }
+	} as HelpShotSet,
+	'builder-capabilities': {
+		...data['builder-capabilities'],
+		src: builderCapabilities,
+		locales: {}
+	} as HelpShotSet,
+	'builder-swap': {
+		...data['builder-swap'],
+		src: builderSwap,
+		locales: { ja: { ...data['builder-swap'].locales.ja, src: builderSwapJA } }
+	} as HelpShotSet,
+	'builder-team-chips': {
+		...data['builder-team-chips'],
+		src: builderTeamChips,
+		locales: {}
+	} as HelpShotSet,
+	'builder-phone': {
+		...data['builder-phone'],
+		src: builderPhone,
+		locales: { ja: { ...data['builder-phone'].locales.ja, src: builderPhoneJA } }
+	} as HelpShotSet,
+	'vz-workspace': {
+		...data['vz-workspace'],
+		src: vzWorkspace,
+		locales: { ja: { ...data['vz-workspace'].locales.ja, src: vzWorkspaceJA } }
+	} as HelpShotSet,
+	'vz-crit': {
+		...data['vz-crit'],
+		src: vzCrit,
+		locales: { ja: { ...data['vz-crit'].locales.ja, src: vzCritJA } }
+	} as HelpShotSet,
+	'vz-gauge': {
+		...data['vz-gauge'],
+		src: vzGauge,
+		locales: { ja: { ...data['vz-gauge'].locales.ja, src: vzGaugeJA } }
+	} as HelpShotSet,
+	'vz-icd': {
+		...data['vz-icd'],
+		src: vzIcd,
+		locales: { ja: { ...data['vz-icd'].locales.ja, src: vzIcdJA } }
+	} as HelpShotSet,
+	'vz-curves': {
+		...data['vz-curves'],
+		src: vzCurves,
+		locales: { ja: { ...data['vz-curves'].locales.ja, src: vzCurvesJA } }
+	} as HelpShotSet,
+	'vz-breakdown': {
+		...data['vz-breakdown'],
+		src: vzBreakdown,
+		locales: { ja: { ...data['vz-breakdown'].locales.ja, src: vzBreakdownJA } }
+	} as HelpShotSet,
+	'vz-defres': {
+		...data['vz-defres'],
+		src: vzDefres,
+		locales: { ja: { ...data['vz-defres'].locales.ja, src: vzDefresJA } }
+	} as HelpShotSet,
+	'vz-artifact-piece': {
+		...data['vz-artifact-piece'],
+		src: vzArtifactPiece,
+		locales: { ja: { ...data['vz-artifact-piece'].locales.ja, src: vzArtifactPieceJA } }
+	} as HelpShotSet,
+	'vz-artifact-reshape': {
+		...data['vz-artifact-reshape'],
+		src: vzArtifactReshape,
+		locales: { ja: { ...data['vz-artifact-reshape'].locales.ja, src: vzArtifactReshapeJA } }
+	} as HelpShotSet,
+	'vz-wish': {
+		...data['vz-wish'],
+		src: vzWish,
+		locales: { ja: { ...data['vz-wish'].locales.ja, src: vzWishJA } }
+	} as HelpShotSet
+} satisfies Record<string, HelpShotSet>;
 
 export type HelpShotId = keyof typeof HELP_SHOTS;

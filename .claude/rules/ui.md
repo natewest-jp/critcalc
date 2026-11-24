@@ -82,5 +82,5 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - The global `img { display: block; max-width: 100% }` squashes art meant to overhang its box; give such art `max-width: none`.
 - ⚠️ A malformed comment in `app.css` silently deletes the rule after it, and no gate catches it. After editing comments there, strip them and look for a stray `*/`.
 - Avatars come from `getAvatar(id, preferNewfit, size, traveler)`, with the Traveler from the profile's `travelerTwin`. The availability manifest (`hasAvatar`) prevents server-rendered 404 images, which fail prerendering. Regenerate with `npm run generate-newfit`.
-- Help's screenshots are rendered from the build (`scripts/help-shots/shots.mjs` names each one's route and state). A change to a surface Help shows reruns `npm run help-shots`, and Nate sees the before and after.
+- Help's screenshots are rendered from the build (`scripts/help-shots/shots.mjs` names each one's route and state), once per drafted language (`LANGS` in `capture.mjs`); a selector that names the page's words reads them through `t()`. A change to a surface Help shows reruns `npm run help-shots`, and Nate sees the before and after.
 - Notices (toasts, banners, confirms, save status) follow `docs/design/notices-design.md`. ⚠️ An Undo toast must check that its document and profile are still active.
