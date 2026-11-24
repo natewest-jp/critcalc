@@ -3,7 +3,7 @@
  * ability, passive, and constellation, every summon and shield an ability or
  * its variants raise, and the labels the planner prints for them (a variant's
  * "Hold Lv.2", an effect's attribution "A1: Rekindle", a threshold's fire, a
- * drawn stack count). A label composed from a game name and our words comes
+ * drawn stack count), and the faction bonuses' names. A label composed from a game name and our words comes
  * apart through `nameParts.ts`. One list for the generator
  * (`scripts/generate-ability-names.mjs`) and the test that holds its table
  * complete (`$lib/i18n/abilityNames.test.ts`).
@@ -49,6 +49,8 @@ export function namesOf(c: CharacterData): string[] {
 	}
 	for (const p of c.passives ?? []) out.add(p.name);
 	for (const k of c.constellations ?? []) out.add(k.name);
+	for (const f of (c as { factionBonuses?: { name: string }[] }).factionBonuses ?? [])
+		out.add(f.name);
 	printed([c.abilities, c.passives, c.constellations], out);
 	return [...out].filter(Boolean);
 }

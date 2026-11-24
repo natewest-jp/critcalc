@@ -82,6 +82,8 @@ describe('composed labels', () => {
 		await loadAbilityNames('ja');
 		expect(abilityName('diluc', 'Searing Onslaught (E1)')).toBe('逆焔の刃（E1）');
 		expect(abilityName('bennett', 'Hold Lv.2')).toBe('長押しLv.2');
+		// Coverage's cast and variant, joined by the interface's own dot.
+		expect(abilityName('diluc', 'Searing Onslaught (E1) · Hold')).toBe('逆焔の刃（E1） · 長押し');
 		expect(abilityName('xingqiu', 'A1: Hydropathic')).toBe(`A1：${ja.xingqiu.Hydropathic}`);
 		as(baseLocale);
 	});

@@ -12,8 +12,8 @@
  * stripping.
  */
 
-/** Our words, and the game's action words, that a label uses alone or as a
- *  part ("Hold", "N follow-up"). They are messages in `$lib/i18n/abilityNames`,
+/** Our words, and the game's fixed terms, that a label uses alone or as a
+ *  part ("Hold", "N follow-up", the Hexerei bonus "Secret Rite"). They are messages in `$lib/i18n/abilityNames`,
  *  never looked up in the game's text: a short word there matches the wrong
  *  line ("Field" is a rice field). */
 export const OUR_WORDS = [
@@ -44,7 +44,8 @@ export const OUR_WORDS = [
 	'faster ticks',
 	'four rings',
 	'recast extension',
-	'Blink'
+	'Blink',
+	'Secret Rite'
 ] as const;
 export type OurWord = (typeof OUR_WORDS)[number];
 export const isOurWord = (s: string): s is OurWord => (OUR_WORDS as readonly string[]).includes(s);
@@ -65,6 +66,8 @@ export const SUFFIX_WORDS = [
 export type SuffixWord = (typeof SUFFIX_WORDS)[number];
 
 export type NameNode =
+	/** "Feathermoon Ring · Hold", coverage's cast and its variant. */
+	| { kind: 'listed'; name: string; part: string }
 	/** "A1: Rekindle", "C2 Ambush": notation, then a name. */
 	| { kind: 'tagged'; tag: string; rest: string; colon: boolean }
 	/** "C4 (Pathfinder's Blessing)": notation with a detail and no name. */
@@ -96,6 +99,7 @@ const TAG = '(A1|A4|C[1-6])';
 export function splitName(s: string): NameNode | null {
 	if (isOurWord(s)) return null;
 	let m: RegExpMatchArray | null;
+	if ((m = s.match(/^(.+?) · (.+)$/))) return { kind: 'listed', name: m[1], part: m[2] };
 	if ((m = s.match(new RegExp(`^${TAG}: (.+)$`))))
 		return { kind: 'tagged', tag: m[1], rest: m[2], colon: true };
 	if ((m = s.match(new RegExp(`^${TAG} \\(([^()]+)\\)$`))))
@@ -133,6 +137,8 @@ export function childrenOf(node: NameNode): string[] {
 			return [node.base, ...node.details];
 		case 'joined':
 			return [node.head, node.part];
+		case 'listed':
+			return [node.name, node.part];
 		case 'numbered':
 		case 'suffix':
 		case 'amount':

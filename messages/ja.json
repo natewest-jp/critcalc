@@ -3150,5 +3150,6 @@
 	"ability_faster_ticks": "間隔短縮",
 	"ability_four_rings": "輪4つ",
 	"ability_recast_extension": "再発動で延長",
-	"ability_blink": "瞬間移動"
+	"ability_blink": "瞬間移動",
+	"tb_physical": "物理"
 }

@@ -1,11 +1,5 @@
 {
-	"planner-composer": {
-		"width": 523,
-		"height": 66,
-		"scale": 1,
-		"callouts": [],
-		"locales": { "ja": { "width": 523, "height": 66, "scale": 1, "callouts": [] } }
-	},
+	"planner-composer": { "width": 523, "height": 66, "scale": 1, "callouts": [] },
 	"planner-bench-card": {
 		"width": 190,
 		"height": 81,
@@ -64,15 +58,7 @@
 		"width": 290,
 		"height": 34,
 		"scale": 1.5,
-		"callouts": [{ "n": 1, "x": 0.3069, "y": 0.9118, "side": "bottom" }],
-		"locales": {
-			"ja": {
-				"width": 290,
-				"height": 34,
-				"scale": 1.5,
-				"callouts": [{ "n": 1, "x": 0.3069, "y": 0.9118, "side": "bottom" }]
-			}
-		}
+		"callouts": [{ "n": 1, "x": 0.3069, "y": 0.9118, "side": "bottom" }]
 	},
 	"planner-playback": {
 		"width": 440,
@@ -214,19 +200,7 @@
 			{ "n": 1, "x": 0.3743, "y": 0.2366, "side": "top" },
 			{ "n": 2, "x": 0.1146, "y": 0.2366, "side": "top" },
 			{ "n": 3, "x": 0.4371, "y": 0.7776, "side": "bottom" }
-		],
-		"locales": {
-			"ja": {
-				"width": 370,
-				"height": 43,
-				"scale": 1.5,
-				"callouts": [
-					{ "n": 1, "x": 0.3743, "y": 0.2366, "side": "top" },
-					{ "n": 2, "x": 0.1146, "y": 0.2366, "side": "top" },
-					{ "n": 3, "x": 0.4371, "y": 0.7776, "side": "bottom" }
-				]
-			}
-		}
+		]
 	},
 	"builder-swap": {
 		"width": 596,
@@ -254,15 +228,7 @@
 		"width": 362,
 		"height": 132,
 		"scale": 1.5,
-		"callouts": [{ "n": 1, "x": 0.9282, "y": 0.6892, "side": "right" }],
-		"locales": {
-			"ja": {
-				"width": 362,
-				"height": 132,
-				"scale": 1.5,
-				"callouts": [{ "n": 1, "x": 0.9282, "y": 0.6892, "side": "right" }]
-			}
-		}
+		"callouts": [{ "n": 1, "x": 0.9282, "y": 0.6892, "side": "right" }]
 	},
 	"builder-phone": {
 		"width": 390,

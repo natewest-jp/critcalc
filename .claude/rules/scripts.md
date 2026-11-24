@@ -19,6 +19,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - `audit-data-outliers.mjs` is a self-consistency sweep (decimal-form leaks, RES shred sign stored negative, placeholder zeros, magnitude outliers).
 - `normalize-talent-levels.mjs` enforces the talent-level-10 convention.
 - The network scripts are `fetch-wiki-capabilities.mjs` (MediaWiki API; WebFetch is blocked there) and `fetch-endgame.mjs` (lunaris.moe → `src/lib/data/endgame/` Stygian, Abyss and Theater files, then `build-endgame-art.mjs`). Its last step, `localize-endgame.mjs`, adds Japanese from the game's text maps by matching each line's Chinese. No leaks: a season ships only once `season-dates.json` names it, one hand-added line per season.
+- `generate-ability-names.mjs` (by hand; it reads the cached text maps) writes each locale's ability names, and `kit-notes.mjs` lists and stamps each locale's kit notes. The tests that guard both are named in `.claude/rules/data.md`.
 - ⚠️ `scripts/probe-*.mjs` is a retired pattern. `probe-ink-centering.mjs` is the one survivor. Never add another; scratch work goes in `scratch/`.
 
 ## The oracle

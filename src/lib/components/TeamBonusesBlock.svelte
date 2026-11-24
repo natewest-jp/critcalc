@@ -274,10 +274,12 @@
 			<!-- TODO: data gap — the game's localized names for these two bonuses
 			     (genshin-db), so they stay English until that lookup exists. -->
 			{#if comp.hasAscendantGleam}
-				<span class="faction-badge faction-badge--moonsign">Moonsign: Ascendant Gleam</span>
+				<span class="faction-badge faction-badge--moonsign"
+					>{m.planner_moonsign_ascendant_gleam()}</span
+				>
 			{/if}
 			{#if comp.hasSecretRite}
-				<span class="faction-badge faction-badge--hexerei">Hexerei: Secret Rite</span>
+				<span class="faction-badge faction-badge--hexerei">{m.planner_hexerei_secret_rite()}</span>
 			{/if}
 			{#each permanentByChar as bonuses, ci (ci)}
 				{@const owner = chars[ci]}

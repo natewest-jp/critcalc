@@ -78,7 +78,8 @@ const WORD: Record<OurWord, () => string> = {
 	'faster ticks': m.ability_faster_ticks,
 	'four rings': m.ability_four_rings,
 	'recast extension': m.ability_recast_extension,
-	Blink: m.ability_blink
+	Blink: m.ability_blink,
+	'Secret Rite': m.tb_secret_rite
 };
 
 const SUFFIX: Record<SuffixWord, (p: { name: string }) => string> = {
@@ -119,6 +120,9 @@ function composeNode(row: Record<string, string>, node: NameNode, s: string): st
 			return m.ability_detail({ name: c(node.base), detail: list(node.details) });
 		case 'joined':
 			return m.ability_part({ name: c(node.head), part: c(node.part) });
+		case 'listed':
+			// The interface's own joiner, the same in every language.
+			return `${c(node.name)} · ${c(node.part)}`;
 		case 'numbered':
 			return m.ability_step({ name: c(node.base), n: node.n });
 		case 'suffix':

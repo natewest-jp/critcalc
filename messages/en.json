@@ -3206,5 +3206,6 @@
 	"ability_faster_ticks": "faster ticks",
 	"ability_four_rings": "four rings",
 	"ability_recast_extension": "recast extension",
-	"ability_blink": "Blink"
+	"ability_blink": "Blink",
+	"tb_physical": "Physical"
 }
