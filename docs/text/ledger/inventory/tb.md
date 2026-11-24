@@ -129,9 +129,8 @@
 - `tb_inside_the_polestar_field` — capabilityText.ts:127 m()
   > inside the Polestar Field
   - terms: 🎮 Polestar Field
-- `tb_needs_arg_stacks` — capabilityText.ts:129 m()
-  > needs {stack} stacks
-  - vars: `stack`
+- `tb_depends_on_stacks` — capabilityText.ts:129 m()
+  > depends on stacks
 - `tb_needs_arg_teammates` — capabilityText.ts:131 m()
   > needs {faction} teammates
   - vars: `faction`

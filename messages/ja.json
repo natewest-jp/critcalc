@@ -1679,7 +1679,7 @@
 	"tb_depends_on_a_character_state": "キャラクターの状態による",
 	"tb_needs_a_arg_enabler": "{reaction}のイネーブラーが必要",
 	"tb_inside_the_polestar_field": "極星フィールド内",
-	"tb_needs_arg_stacks": "{stack}の層が必要",
+	"tb_depends_on_stacks": "層数による",
 	"tb_needs_arg_teammates": "{faction}のチームメンバーが必要",
 	"tb_depends_on_team_elements": "チームの元素構成による",
 	"tb_when_active_character_is_arg": "フィールド上キャラクターが{faction}の時",

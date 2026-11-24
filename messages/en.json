@@ -1708,7 +1708,7 @@
 	"tb_depends_on_a_character_state": "depends on a character state",
 	"tb_needs_a_arg_enabler": "needs a {reaction} enabler",
 	"tb_inside_the_polestar_field": "inside the Polestar Field",
-	"tb_needs_arg_stacks": "needs {stack} stacks",
+	"tb_depends_on_stacks": "depends on stacks",
 	"tb_needs_arg_teammates": "needs {faction} teammates",
 	"tb_depends_on_team_elements": "depends on team elements",
 	"tb_when_active_character_is_arg": "when active character is {faction}",

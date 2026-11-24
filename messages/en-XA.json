@@ -1708,7 +1708,7 @@
 	"tb_depends_on_a_character_state": "⟦ðéþéñðš öñ å çĥåŕåçţéŕ šţåţé ōñé ţŵö ţĥŕéé⟧",
 	"tb_needs_a_arg_enabler": "⟦ñééðš å {reaction} éñåƀļéŕ ōñé ţŵö⟧",
 	"tb_inside_the_polestar_field": "⟦îñšîðé ţĥé Þöļéšţåŕ Ƒîéļð ōñé ţŵö ţĥŕéé⟧",
-	"tb_needs_arg_stacks": "⟦ñééðš {stack} šţåçķš ōñé ţŵö⟧",
+	"tb_depends_on_stacks": "⟦ðéþéñðš öñ šţåçķš ōñé ţŵö⟧",
 	"tb_needs_arg_teammates": "⟦ñééðš {faction} ţéåɱɱåţéš ōñé ţŵö⟧",
 	"tb_depends_on_team_elements": "⟦ðéþéñðš öñ ţéåɱ éļéɱéñţš ōñé ţŵö⟧",
 	"tb_when_active_character_is_arg": "⟦ŵĥéñ åçţîṽé çĥåŕåçţéŕ îš {faction} ōñé ţŵö ţĥŕéé⟧",

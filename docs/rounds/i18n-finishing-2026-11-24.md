@@ -93,8 +93,6 @@ curated yet." The More filters' chips and the detail card's kicker already capit
   (a field or a summon), so they need their own pass. This is now the largest English in `/ja`.
 - **Kit notes** (each ability's `caveat` in the character data), the English prose the
   Inspector and the detail card show.
-- A capability caption for a stack condition prints the stack's raw key in every language
-  ("needs impactMomentum stacks"): copy proposal 1 below.
 - One boss title, one check, and nine boss mechanics the text map has no line for.
 - Names that stay Latin on purpose: critcalc, notation, Theorycraft, and the sample rotations'
   names (they are saved as tab labels the code recognizes).
@@ -125,9 +123,8 @@ curated yet." The More filters' chips and the detail card's kicker already capit
 
 ## Copy proposals
 
-1. The capability caption for a stack condition (`tb_needs_arg_stacks`), which shows a raw key:
-   Now: needs impactMomentum stacks
-   → depends on stacks
+1. The capability caption for a stack condition, which showed a raw key: "needs impactMomentum
+   stacks" → "depends on stacks" (⚓ Nate 2026-11-24, landed as `tb_depends_on_stacks`).
 
 ## Next
 
