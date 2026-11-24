@@ -5,37 +5,37 @@
 
 **13 messages** · `Contribute.svelte`
 
-- `contribute_contribute` — Contribute.svelte:17 <h1>
+- `contribute_contribute` — Contribute.svelte:37 m()
   > Contribute
-- `contribute_how_to_tell_me_something_is_wrong_and` — Contribute.svelte:19 <p>
+- `contribute_how_to_tell_me_something_is_wrong_and` — Contribute.svelte:39 m()
   > How to tell me something is wrong, and where else help goes furthest.
-- `contribute_report_a_problem` — Contribute.svelte:22 <h2>
+- `contribute_report_a_problem` — Contribute.svelte:42 m()
   > Report a problem
-- `contribute_reports_go_through_the_feedback_form` — Contribute.svelte:23 <p>
-  > Reports go through the <a>feedback form</a>, which takes bugs, characters that behave differently from the game, ideas, and anything else.
-- `contribute_the_quickest_route_is_report_a_problem` — Contribute.svelte:28 <p>
-  > The quickest route is <strong>Report a problem</strong> in the top bar’s <strong>?</strong> menu, which opens the form with a link to what you’re looking at, so I see the same rotation, lineup, or instrument you did. A character’s details card has its own link, <strong>Something not right with this character?</strong> It fills in the character and their constellation.
+- `contribute_reports_go_through_the_feedback_form` — Contribute.svelte:43 m()
+  > Reports go through the {#feedback}feedback form{/feedback}, which takes bugs, characters that behave differently from the game, ideas, and anything else.
+- `contribute_the_quickest_route_is_report_a_problem` — Contribute.svelte:44 m()
+  > The quickest route is {#strong}Report a problem{/strong} in the top bar’s {#strong}?{/strong} menu, which opens the form with a link to what you’re looking at, so I see the same rotation, lineup, or instrument you did. A character’s details card has its own link, {#strong}Something not right with this character?{/strong} It fills in the character and their constellation.
   - terms: 🎮 Constellation · 📖 instrument · 📖 rotation
-- `contribute_what_helps_most_is_what_you_expected_and` — Contribute.svelte:34 <p>
+- `contribute_what_helps_most_is_what_you_expected_and` — Contribute.svelte:45 m()
   > What helps most is what you expected and what you got instead. For a character, the source helps too: the kit text, a gcsim config, or a combat log from the training dummy.
   - terms: 🔒 gcsim
-- `contribute_before_reporting_a_missing_mechanic` — Contribute.svelte:38 <p>
-  > Before reporting a missing mechanic, check the <a>coverage page</a>. A part of a kit the rotation planner leaves out on purpose is listed there with the reason.
+- `contribute_before_reporting_a_missing_mechanic` — Contribute.svelte:46 m()
+  > Before reporting a missing mechanic, check the {#coverage}coverage page{/coverage}. A part of a kit the rotation planner leaves out on purpose is listed there with the reason.
   - terms: 📖 rotation
-- `contribute_help_the_projects_critcalc_is_built_on` — Contribute.svelte:46 <h2>
+- `contribute_help_the_projects_critcalc_is_built_on` — Contribute.svelte:50 m()
   > Help the projects critcalc is built on
   - terms: 🔒 critcalc
-- `contribute_most_of_what_the_tools_show_was_measured` — Contribute.svelte:47 <p>
+- `contribute_most_of_what_the_tools_show_was_measured` — Contribute.svelte:51 m()
   > Most of what the tools show was measured by someone else and given to the community. A correction made in one of these projects reaches every tool built on it, critcalc included:
   - terms: 🔒 critcalc
-- `contribute_gcsim_whose_frame_data_and_tick_cadences` — Contribute.svelte:53 <li>
-  > <a>gcsim</a>, whose frame data and tick cadences the rotation planner is timed from. A character implementation or a bug report there helps directly.
+- `contribute_gcsim_whose_frame_data_and_tick_cadences` — Contribute.svelte:53 m()
+  > {#gcsim}gcsim{/gcsim}, whose frame data and tick cadences the rotation planner is timed from. A character implementation or a bug report there helps directly.
   - terms: 📖 rotation · 🔒 gcsim
-- `contribute_keqing_mains_which_keeps_the_notation` — Contribute.svelte:58 <li>
-  > <a>Keqing Mains</a>, which keeps the notation, the theorycrafting conventions, and the testing behind them.
+- `contribute_keqing_mains_which_keeps_the_notation` — Contribute.svelte:54 m()
+  > {#kqm}Keqing Mains{/kqm}, which keeps the notation, the theorycrafting conventions, and the testing behind them.
   - terms: 🔒 Keqing Mains · 📖 notation
-- `contribute_financial_support` — Contribute.svelte:65 <h2>
+- `contribute_financial_support` — Contribute.svelte:59 m()
   > Financial support
-- `contribute_thank_you_for_checking_critcalc_isn_t_in` — Contribute.svelte:66 <p>
+- `contribute_thank_you_for_checking_critcalc_isn_t_in` — Contribute.svelte:60 m()
   > Thank you for checking! critcalc isn’t in need of financial support right now.
   - terms: 🔒 critcalc

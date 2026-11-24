@@ -20,10 +20,20 @@
 	 notice (when a hit applies its element).
 
 	 To add an entry: one <article> at the top of its month's .timeline, newest
-	 first; a new month is a new <section> with an <h2 id="YYYY-MM"> and its own
-	 .timeline. The daily check-in proposes an entry when a user-visible to-do
-	 item is removed. -->
+	 first, with its title and paragraphs as `changelog_*` messages in
+	 messages/en.json (then run scripts/generate-pseudo-locale.mjs); a new month
+	 is a new <section> with an <h2 id="YYYY-MM"> and its own .timeline. Dates
+	 are written from the ISO day in the page's language, so they need no
+	 message. The daily check-in proposes an entry when a user-visible to-do
+	 item is removed.
+
+	 A paragraph is one message, its bold words, code, and links as markup, so a
+	 translation can move them; `p` below says what each tag renders as. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
+	import Msg from '$lib/components/Msg.svelte';
+	import { formatDay } from '$lib/i18n/dates';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { chapterSection, menu } from '$lib/menuState.svelte';
@@ -36,258 +46,133 @@
 		event.preventDefault();
 		menu.show(chapterSection('help', 'planner'), 'time-token');
 	}
+
+	/** "November 2026", from any day in the month. */
+	const monthOf = (iso: string) => formatDay(iso, { month: 'long', year: 'numeric' });
 </script>
 
-<h1>What’s new</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet code(t: string)}<code>{t}</code>{/snippet}
+{#snippet gaps(t: string)}<a href="#known-gaps">{t}</a>{/snippet}
+{#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
+	>{/snippet}
+{#snippet timetoken(t: string)}<a
+		href="{hrefTo('/help/planner')}#time-token"
+		onclick={openTimeToken}>{t}</a
+	>{/snippet}
+{#snippet reshape(t: string)}<a href="{hrefTo('/visualizers')}?i=artifact&do=reshape">{t}</a
+	>{/snippet}
+{#snippet github(t: string)}<a
+		href="https://github.com/natewest-jp/critcalc"
+		target="_blank"
+		rel="noopener noreferrer">{t}</a
+	>{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg
+		{parts}
+		tags={{ strong, code, gaps, coverage, timetoken, reshape, github }}
+	/>{/snippet}
 
-<p class="lede">
-	<a href="#known-gaps">Known gaps</a> are at the bottom of the page. For how far each character’s
-	kit has gotten, see the
-	<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
-</p>
+<!-- An entry's title, with its date after it. -->
+{#snippet head(title: string, iso: string)}
+	<header class="entry-head">
+		<h3>{title}</h3>
+		<time class="entry-date" datetime={iso}
+			>{formatDay(iso, { month: 'long', day: 'numeric' })}</time
+		>
+	</header>
+{/snippet}
+
+<h1>{m.changelog_what_s_new()}</h1>
+
+<p class="lede">{@render p(m.changelog_known_gaps_are_at_the_bottom_of_the_page.parts())}</p>
 
 <section>
-	<h2 id="2026-11">November 2026</h2>
+	<h2 id="2026-11">{monthOf('2026-11-01')}</h2>
 
 	<div class="timeline">
 		<!-- Nate's wording, 2026-11-11 ("exlude" corrected to "exclude"). -->
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Imaginarium Theater added to the Team Builder</h3>
-				<time class="entry-date" datetime="2026-11-11">November 11</time>
-			</header>
-			<p>
-				You can now plan lineups for Imaginarium Theater to figure out which difficulty you will be
-				able to enter based on your current Roster. All of your owned characters are assumed to be
-				at level 70 or above, so to exclude characters from showing up in Theater lineups (if they
-				are level 70 or below), a new setting has been added to the Roster: While editing your
-				roster, hover over any owned character to see a button appear in the top right corner (the
-				butterfly with a strike through it). This will exclude them from Theater lineups.
-			</p>
+			{@render head(m.changelog_imaginarium_theater_added_to_the_team(), '2026-11-11')}
+			<p>{m.changelog_you_can_now_plan_lineups_for_imaginarium()}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Sandrone is ready in the Rotation Planner</h3>
-				<time class="entry-date" datetime="2026-11-10">November 10</time>
-			</header>
-			<p>
-				Sandrone’s attacks, Skill, and Burst now run on gcsim’s frame data. A Charged Attack holds
-				until just before Fagio overheats (Decoding Power reaches maximum), and it cools off just
-				like in-game (faster off-field, cleared by a Skill tap). If you don’t want the full Charged
-				Attack, you can choose how long to hold it <a
-					href="{hrefTo('/help/planner')}#time-token"
-					onclick={openTimeToken}>with C ~Xs</a
-				>. Neuvillette’s Charged Attack also takes C ~Xs now, to end Equitable Judgment early.
-			</p>
+			{@render head(m.changelog_sandrone_is_ready_in_the_rotation(), '2026-11-10')}
+			<p>{@render p(m.changelog_sandrone_s_attacks_skill_and_burst_now.parts())}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Durin’s two dragons and Lan Yan’s Feathermoon Rings</h3>
-				<time class="entry-date" datetime="2026-11-07">November 7</time>
-			</header>
-			<p>
-				After Durin’s Denial of Darkness, his next Normal Attack starts the string again from the
-				first hit. Durin’s passives and constellations now follow the dragon that is out, so the
-				White and Dark forms draw their own effects.
-			</p>
-			<p>
-				Pressing Normal Attack right after Lan Yan’s Swallow-Wisp Pinion Dance now throws her
-				Feathermoon Rings, as it does in game, instead of an ordinary Normal Attack. Lan Yan’s
-				Feathermoon Rings now also deal damage in the element her dash absorbs, her shield becomes
-				infused, and her first constellation’s extra rings appear.
-			</p>
+			{@render head(m.changelog_durin_s_two_dragons_and_lan_yan_s(), '2026-11-07')}
+			<p>{m.changelog_after_durin_s_denial_of_darkness_his()}</p>
+			<p>{m.changelog_pressing_normal_attack_right_after_lan()}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Mitya and Valeriy, the Witch’s Revelation, and Kokomi’s jellyfish</h3>
-				<time class="entry-date" datetime="2026-11-06">November 6</time>
-			</header>
-			<p>
-				Mitya and Valeriy are in the roster. Their kits come from the game’s own text, and their
-				casts use generic timing until frame data exists for them.
-			</p>
-			<p>
-				Diona’s, Mizuki’s, and Cyno’s Witch’s Revelation talents were cross-checked against gcsim.
-				Diona’s extra Icy Paws now apply Cryo, her C6 bonuses follow the Stellar reaction the team
-				enables, and Mizuki’s C2 lowers enemy RES for as long as Dreamdrifter lasts.
-			</p>
-			<p>
-				Kokomi’s burst now refreshes a Bake-Kurage that’s still out, as Tamakushi Casket says, and
-				Nicole’s Guidance of Theosis no longer lands on Nicole herself.
-			</p>
+			{@render head(m.changelog_mitya_and_valeriy_the_witch_s_revelation(), '2026-11-06')}
+			<p>{m.changelog_mitya_and_valeriy_are_in_the_roster()}</p>
+			<p>{m.changelog_diona_s_mizuki_s_and_cyno_s_witch_s()}</p>
+			<p>{m.changelog_kokomi_s_burst_now_refreshes_a_bake()}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>A new layout for the visualizers</h3>
-				<time class="entry-date" datetime="2026-11-04">November 4</time>
-			</header>
-			<p>
-				Visualizers has a new layout. All of the heavy panels have been slimmed to control bars,
-				buttons, and interactions directly on the graphs. The headline (the large text) now appears
-				for all visualizers and carries more useful information.
-			</p>
-			<p>
-				Each one also now remembers your last-used settings, so you’ll find things the way you left
-				them.
-			</p>
-			<p>
-				Artifact odds has a new Try a reshape button that simulates the game’s Reshape animation.
-				<a href="{hrefTo('/visualizers')}?i=artifact&do=reshape">Give it a try!</a>
-			</p>
+			{@render head(m.changelog_a_new_layout_for_the_visualizers(), '2026-11-04')}
+			<p>{m.changelog_visualizers_has_a_new_layout_all_of_the()}</p>
+			<p>{m.changelog_each_one_also_now_remembers_your_last()}</p>
+			<p>{@render p(m.changelog_artifact_odds_has_a_new_try_a_reshape.parts())}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Capturing Radiance in Wish Odds</h3>
-				<time class="entry-date" datetime="2026-11-02">November 2</time>
-			</header>
-			<p>
-				Wish odds can follow your Capturing Radiance counter now, using the community’s model of how
-				Radiance works. Find your current Radiance chances from a Paimon.moe export, or by answering
-				a few questions about your recent 5★s.
-			</p>
+			{@render head(m.changelog_capturing_radiance_in_wish_odds(), '2026-11-02')}
+			<p>{m.changelog_wish_odds_can_follow_your_capturing()}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Editing in the gauge explorer</h3>
-				<time class="entry-date" datetime="2026-11-01">November 1</time>
-			</header>
-			<p>
-				The gauge explorer’s controls have been simplified: Now the element buttons on the toolbar
-				add the next application, and editing gauge strength and element can be done by clicking on
-				an existing application. Playback has been removed; it was only confusing users and not
-				providing much.
-			</p>
+			{@render head(m.changelog_editing_in_the_gauge_explorer(), '2026-11-01')}
+			<p>{m.changelog_the_gauge_explorer_s_controls_have_been()}</p>
 		</article>
 	</div>
 </section>
 
 <section>
-	<h2 id="2026-10">October 2026</h2>
+	<h2 id="2026-10">{monthOf('2026-10-01')}</h2>
 
 	<div class="timeline">
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Alhaitham’s Mirrors, Ifa’s hover, and held skills</h3>
-				<time class="entry-date" datetime="2026-10-30">October 30</time>
-			</header>
-			<p>
-				Alhaitham’s Chisel-Light Mirrors are now simulated. While he holds a Mirror, his attacks
-				deal Dendro damage and fire Projection Attacks, his burst hits more times for each Mirror it
-				consumes, and his C1, C2, C4, and C6 follow the count. The timeline shows how many Mirrors
-				he has.
-			</p>
-			<p>
-				Ifa’s hover runs on Nightsoul points, so dashing shortens it, and his skill’s cooldown
-				starts sooner.
-			</p>
-			<p>
-				Held skills start their cooldown at the right moment. Fourteen characters’ Hold variants,
-				including Candace’s, Charlotte’s, and Razor’s, were ending their cooldown early.
-			</p>
+			{@render head(m.changelog_alhaitham_s_mirrors_ifa_s_hover_and_held(), '2026-10-30')}
+			<p>{m.changelog_alhaitham_s_chisel_light_mirrors_are_now()}</p>
+			<p>{m.changelog_ifa_s_hover_runs_on_nightsoul_points_so()}</p>
+			<p>{m.changelog_held_skills_start_their_cooldown_at_the()}</p>
 		</article>
 		<article class="entry">
-			<header class="entry-head">
-				<h3>The Traveler twins, and Arlecchino’s cooldown</h3>
-				<time class="entry-date" datetime="2026-10-28">October 28</time>
-			</header>
-			<p>
-				Aether and Lumine attack at different speeds in game, and the rotation planner now times
-				each twin separately, in all seven elements. <code>Cryo Traveler</code> uses your profile’s
-				twin; write <code>Cryo Aether</code> or <code>Cryo Lumine</code> to choose one, or pick the twin
-				from the Traveler’s constellation on the bench.
-			</p>
-			<p>
-				Arlecchino’s skill cooldown. Each Normal Attack hit now takes 0.8 seconds off All Is Ash’s
-				cooldown, as it does in game.
-			</p>
+			{@render head(m.changelog_the_traveler_twins_and_arlecchino_s(), '2026-10-28')}
+			<p>{@render p(m.changelog_aether_and_lumine_attack_at_different.parts())}</p>
+			<p>{m.changelog_arlecchino_s_skill_cooldown_each_normal()}</p>
 		</article>
-
 		<!-- ⏭ Ships with the flip (copy pass 2026-10-27): date it the day it goes live. -->
 		<article class="entry">
-			<header class="entry-head">
-				<h3>Profiles, and a new layout</h3>
-				<time class="entry-date" datetime="2026-10-27">October 27</time>
-			</header>
-			<p>
-				critcalc now keeps your work in profiles, so you can plan for separate Genshin accounts. A
-				profile holds its own roster, teams, and library of rotations and lineups.
-			</p>
-			<p>
-				Shared links open in Theorycraft, a built-in profile with no roster for exploring ideas
-				outside your own profiles.
-			</p>
-			<p>
-				Tools now work with one rotation or lineup at a time. However, the rotation planner has a
-				<strong>Compare</strong> button beside the bench, so you can flip between two ideas quickly.
-			</p>
-			<p>
-				Work saves itself as you go, and anything you delete stays in the Trash for 30 days. If you
-				used the site before, everything you had is in a new profile called My profile.
-			</p>
+			{@render head(m.changelog_profiles_and_a_new_layout(), '2026-10-27')}
+			<p>{m.changelog_critcalc_now_keeps_your_work_in_profiles()}</p>
+			<p>{m.changelog_shared_links_open_in_theorycraft_a_built()}</p>
+			<p>{@render p(m.changelog_tools_now_work_with_one_rotation_or.parts())}</p>
+			<p>{m.changelog_work_saves_itself_as_you_go_and_anything()}</p>
 		</article>
-
 		<article class="entry">
-			<header class="entry-head">
-				<h3>A team you open stays on the bench</h3>
-				<time class="entry-date" datetime="2026-10-22">October 22</time>
-			</header>
-			<p>
-				On the rotation planner: A team opened from the Library, a lineup, or a team link now
-				arrives with an empty notation box and its four characters already in their slots. Each one
-				keeps their slot until you write their actions. Until their name is typed, they’re shown
-				resting (dimmed). Before this, clearing the notation box to start writing removed
-				characters.
-			</p>
+			{@render head(m.changelog_a_team_you_open_stays_on_the_bench(), '2026-10-22')}
+			<p>{m.changelog_on_the_rotation_planner_a_team_opened()}</p>
 		</article>
-
 		<article class="entry">
-			<header class="entry-head">
-				<h3>critcalc launches</h3>
-				<time class="entry-date" datetime="2026-10-19">October 19</time>
-			</header>
-			<p>
-				critcalc.app goes live with a team builder, rotation planner, and eight visualizers. Source
-				code is on
-				<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
-					>GitHub</a
-				>.
-			</p>
+			{@render head(m.changelog_critcalc_launches(), '2026-10-19')}
+			<p>{@render p(m.changelog_critcalc_app_goes_live_with_a_team.parts())}</p>
 		</article>
 	</div>
 </section>
 
 <section>
-	<h2 id="known-gaps">Known gaps</h2>
-	<p>
-		Longer-term limits that are not yet modeled. Gaps in a single character’s kit are on the
-		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
-	</p>
+	<h2 id="known-gaps">{m.changelog_known_gaps()}</h2>
+	<p>{@render p(m.changelog_longer_term_limits_that_are_not_yet.parts())}</p>
 	<ul>
-		<li>
-			<strong>Energy.</strong> The rotation planner treats a burst as ready whenever its cooldown is.
-		</li>
-		<li>
-			<strong>More than one enemy.</strong> The rotation planner and the gauge explorer assume a single
-			target, so Swirl’s spread to other enemies isn’t drawn.
-		</li>
-		<li>
-			<strong>Enemies with their own element.</strong> The enemy is assumed to have no permanent aura
-			and to apply nothing back to you.
-		</li>
-		<li><strong>Shatter.</strong></li>
-		<li>
-			<strong>Damage from reaction objects.</strong> Dendro Cores, Starlight Prisms, the Thundercloud,
-			and Moondrifts are drawn while they exist, but the damage they deal isn’t.
-		</li>
-		<li>
-			<strong>Lunar-Charged and Lunar-Crystallize in the gauge explorer.</strong> The rotation planner
-			models both; the gauge explorer doesn’t yet.
-		</li>
-		<li>
-			<strong>Co-op shields.</strong> Shields that only reach other players’ characters in co-op, such
-			as Nicole’s C2 and the splash from Diona’s C2.
-		</li>
-		<li><strong>Languages.</strong> The site is in English only for now.</li>
+		<li>{@render p(m.changelog_energy_the_rotation_planner_treats_a.parts())}</li>
+		<li>{@render p(m.changelog_more_than_one_enemy_the_rotation_planner.parts())}</li>
+		<li>{@render p(m.changelog_enemies_with_their_own_element_the_enemy.parts())}</li>
+		<li>{@render p(m.changelog_shatter.parts())}</li>
+		<li>{@render p(m.changelog_damage_from_reaction_objects_dendro.parts())}</li>
+		<li>{@render p(m.changelog_lunar_charged_and_lunar_crystallize_in.parts())}</li>
+		<li>{@render p(m.changelog_co_op_shields_shields_that_only_reach.parts())}</li>
+		<li>{@render p(m.changelog_languages_the_site_is_in_english_only.parts())}</li>
 	</ul>
 </section>
 

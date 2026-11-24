@@ -5,54 +5,39 @@
 	 page existed). ↻ Rewritten by Nate 2026-10-18 in the first person: the
 	 note now covers the data as well as the surface (the kits are where
 	 checking matters most), and ⛔ it still names no end date. Style guide
-	 §1.4: "I" for what is personal, "we" for modelling decisions. -->
+	 §1.4: "I" for what is personal, "we" for modelling decisions.
+
+	 The text is in messages/*.json (`beta_*`). A paragraph is one message, its
+	 bold words and links as markup, so a translation can move them; `p` below
+	 says what each tag renders as. -->
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import type { MessagePart } from '$lib/paraglide/runtime';
+	import Msg from '$lib/components/Msg.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
 
-<h1>Beta</h1>
+{#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
+{#snippet contribute(t: string)}<a href={hrefTo('/contribute')}>{t}</a>{/snippet}
+{#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
+	>{/snippet}
+{#snippet p(parts: MessagePart[])}<Msg {parts} tags={{ strong, contribute, coverage }} />{/snippet}
 
-<p class="lede">
-	critcalc may be rough around the edges for a bit. It’s a solo project, and while most things have
-	been worked through, new problems still turn up.
-</p>
+<h1>{m.beta_beta()}</h1>
+
+<p class="lede">{m.beta_critcalc_may_be_rough_around_the_edges()}</p>
 
 <section>
-	<h2 id="report">If something looks wrong</h2>
-	<p>
-		I’ve only been able to test the site on the few devices I own, so if something doesn’t look
-		right on yours, <a href={hrefTo('/contribute')}>I’d like to hear about it</a>.
-	</p>
-	<p>
-		The character data is where I could use the most help. Every kit is curated by hand from the kit
-		text and timed against gcsim’s measured frames wherever gcsim has the character, and where a kit
-		isn’t finished the tools say so instead of guessing. The
-		<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows how far each
-		character has gotten.
-	</p>
-	<p>
-		That said, I don’t have all characters or constellations. Calling all mains! If you see
-		something wrong with a character you know,
-		<a href={hrefTo('/contribute')}>Contribute</a> says how to report it.
-		<strong>Report a problem</strong>
-		in the top bar’s <strong>?</strong> menu is the fastest way, because it sends a link to exactly what
-		you were looking at.
-	</p>
-	<p>Any and all help is appreciated!</p>
+	<h2 id="report">{m.beta_if_something_looks_wrong()}</h2>
+	<p>{@render p(m.beta_i_ve_only_been_able_to_test_the_site_on.parts())}</p>
+	<p>{@render p(m.beta_the_character_data_is_where_i_could_use.parts())}</p>
+	<p>{@render p(m.beta_that_said_i_don_t_have_all_characters_or.parts())}</p>
+	<p>{m.beta_any_and_all_help_is_appreciated()}</p>
 </section>
 
 <section>
-	<h2 id="what-changes">What changes and what stays the same</h2>
-	<p>
-		The interface will keep changing for a while, and more features are on the way. Coverage of kits
-		will improve as reports get filed and data gaps are uncovered.
-	</p>
-	<p>
-		While that happens, your saved data won’t be lost. Everything in your Library stays in your
-		browser through every update. It’s still worth downloading a backup now and then (<strong
-			>Export…</strong
-		> in Settings), because clearing your browser’s site data erases it. Settings shows when you last
-		did.
-	</p>
+	<h2 id="what-changes">{m.beta_what_changes_and_what_stays_the_same()}</h2>
+	<p>{m.beta_the_interface_will_keep_changing_for_a()}</p>
+	<p>{@render p(m.beta_while_that_happens_your_saved_data_won_t.parts())}</p>
 </section>
