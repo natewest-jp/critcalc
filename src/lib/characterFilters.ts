@@ -16,7 +16,7 @@
 
 import type { CharacterIndexEntry } from '$lib/types/character';
 import { m } from '$lib/paraglide/messages';
-import { characterMatches } from '$lib/i18n/gameNames';
+import { characterMatches, REGION_OTHER } from '$lib/i18n/gameNames';
 import type { SvelteSet } from 'svelte/reactivity';
 
 export type IdentityFilters = {
@@ -79,10 +79,8 @@ export type GridFilters = {
 	factionBuffs?: SvelteSet<string>;
 };
 
-/** The region of a character from outside Teyvat — every Traveler, Skirk and
- *  Aloy (⚓ Nate, 2026-10-15). It is not a nation, so its chip goes LAST. */
-// Stays English: it is the data's own region value, matched against `entry.region`.
-export const REGION_OTHER = 'Other';
+/** The region of a character from outside Teyvat (`$lib/i18n/gameNames`). */
+export { REGION_OTHER };
 
 /** The roster's region chips: the nations alphabetically, then "Other". */
 export function regionChips(roster: readonly CharacterIndexEntry[]): string[] {

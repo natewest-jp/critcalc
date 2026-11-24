@@ -242,12 +242,13 @@
 				{#each sortedCaps as cap, i (i)}
 					<li class="dc-cap" class:dc-cap--locked={locked(cap)}>
 						<span class="dc-cap-kind"
-							>{KIND_LABEL[cap.kind] ?? cap.kind}{(cap.kind === 'buff' ||
-								cap.kind === 'resShred' ||
-								cap.kind === 'infuse') &&
+							>{(cap.kind === 'buff' || cap.kind === 'resShred' || cap.kind === 'infuse') &&
 							cap.detail
-								? `: ${capDetailText(cap.kind, cap.detail)}`
-								: ''}</span
+								? m.tb_kind_detail({
+										kind: KIND_LABEL[cap.kind] ?? cap.kind,
+										detail: capDetailText(cap.kind, cap.detail)
+									})
+								: (KIND_LABEL[cap.kind] ?? cap.kind)}</span
 						>
 						<span class="dc-cap-src">
 							{sectionLabel(cap)}

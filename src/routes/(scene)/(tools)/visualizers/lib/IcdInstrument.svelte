@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Msg from '$lib/components/Msg.svelte';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { ELEMENT_LABEL } from '$lib/utils/auraDisplay';
 	import Mark from '$lib/components/Mark.svelte';
@@ -574,11 +575,19 @@
      at every interval along it; the pointed hit's reading; and the rule.
      ⚓ The ICD timeline has no setup bar (⚓ Nate 2026-11-04): its rule is the
      thing you play with, a live control, so it is on the surface. -->
+{#snippet verdict(text: string)}<strong>{text}</strong>{/snippet}
+
 {#snippet readingText()}
 	{#if reading}
 		<p>
 			<span class="icd-reading-head">{reading.head}</span>
-			<strong>{reading.applies ? m.vz_icd_applies() : m.vz_icd_blocked()}</strong>. {reading.why}
+			<Msg
+				parts={m.vz_icd_verdict_why.parts({
+					verdict: reading.applies ? m.vz_icd_applies() : m.vz_icd_blocked(),
+					why: reading.why
+				})}
+				tags={{ verdict }}
+			/>
 		</p>
 	{:else}
 		<p>{m.vz_icd_point_at_a_hit_to_read_why_it_applies_or()}</p>

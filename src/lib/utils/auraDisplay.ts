@@ -230,15 +230,13 @@ export const AURA_MOD_ORDER: AuraKey[] = [
  * Carrying it would mean a multiplier field on `ReactionEvent`, which is a
  * schema question, not a label one.
  */
-// Melt and the hyphenated names are not listed by the extractor, so they
-// stay as written for now.
 export const REACTION_LABEL: Record<Reaction, string> = labels({
 	vaporize: m.planner_vaporize,
-	melt: () => 'Melt',
+	melt: m.planner_melt,
 	overloaded: m.planner_overloaded,
 	superConduct: m.planner_superconduct,
-	stellarConduct: () => 'Stellar-Conduct',
-	electroCharged: () => 'Electro-Charged',
+	stellarConduct: m.planner_stellar_conduct,
+	electroCharged: m.planner_electro_charged,
 	frozen: m.planner_frozen,
 	shatter: m.planner_shatter,
 	burning: m.planner_burning,
@@ -257,9 +255,9 @@ export const REACTION_LABEL: Record<Reaction, string> = labels({
 	hydroCrystallize: m.planner_crystallize_hydro,
 	cryoCrystallize: m.planner_crystallize_cryo,
 	electroCrystallize: m.planner_crystallize_electro,
-	lunarCrystallize: () => 'Lunar-Crystallize',
-	lunarBloom: () => 'Lunar-Bloom',
-	lunarCharged: () => 'Lunar-Charged'
+	lunarCrystallize: m.planner_lunar_crystallize,
+	lunarBloom: m.planner_lunar_bloom,
+	lunarCharged: m.planner_lunar_charged
 });
 
 /**
@@ -272,15 +270,13 @@ export const REACTION_LABEL: Record<Reaction, string> = labels({
  * so a new `Reaction` is a typecheck failure here instead of a blank marker
  * nobody notices.
  */
-// Melt and the hyphenated names are not listed by the extractor, so they
-// stay as written for now.
 export const REACTION_FAMILY: Record<Reaction, string> = labels({
 	vaporize: m.planner_vaporize,
-	melt: () => 'Melt',
+	melt: m.planner_melt,
 	overloaded: m.planner_overloaded,
 	superConduct: m.planner_superconduct,
-	stellarConduct: () => 'Stellar-Conduct',
-	electroCharged: () => 'Electro-Charged',
+	stellarConduct: m.planner_stellar_conduct,
+	electroCharged: m.planner_electro_charged,
 	frozen: m.planner_frozen,
 	shatter: m.planner_shatter,
 	burning: m.planner_burning,
@@ -299,9 +295,9 @@ export const REACTION_FAMILY: Record<Reaction, string> = labels({
 	hydroCrystallize: m.planner_crystallize,
 	cryoCrystallize: m.planner_crystallize,
 	electroCrystallize: m.planner_crystallize,
-	lunarCrystallize: () => 'Lunar-Cryst.',
-	lunarBloom: () => 'Lunar-Bloom',
-	lunarCharged: () => 'Lunar-Charged'
+	lunarCrystallize: m.planner_lunar_cryst,
+	lunarBloom: m.planner_lunar_bloom,
+	lunarCharged: m.planner_lunar_charged
 });
 
 /**

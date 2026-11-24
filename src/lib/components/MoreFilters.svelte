@@ -8,6 +8,7 @@
 	 * and the constellation lens FOLD in here too, at the top — the cell keeps
 	 * search and this button, and nothing is ever out of reach.
 	 */
+	import { regionName, weaponTypeName } from '$lib/i18n/gameNames';
 	import type { Snippet } from 'svelte';
 	import type { SvelteSet } from 'svelte/reactivity';
 	import type { CharacterIndexEntry } from '$lib/types/character';
@@ -101,7 +102,7 @@
 					class="chip"
 					class:active={filters.weapons.has(w)}
 					aria-pressed={filters.weapons.has(w)}
-					onclick={() => toggleSet(filters.weapons, w)}>{w}</button
+					onclick={() => toggleSet(filters.weapons, w)}>{weaponTypeName(w)}</button
 				>
 			{/each}
 		</div>
@@ -128,7 +129,7 @@
 					class:active={filters.region === region}
 					aria-pressed={filters.region === region}
 					onclick={() => (filters.region = filters.region === region ? '' : region)}
-					>{region}</button
+					>{regionName(region)}</button
 				>
 			{/each}
 		</div>

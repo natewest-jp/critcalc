@@ -5,110 +5,110 @@
 
 **53 messages** · `ProfileForm.svelte` · `profileLook.ts` · `migrate.ts` · `records.ts` · `session.svelte.ts`
 
-- `profile_traveler` — ProfileForm.svelte:129 m() · ProfileForm.svelte:299 m() · ProfileForm.svelte:301 m()
+- `profile_traveler` — ProfileForm.svelte:129 m() · ProfileForm.svelte:298 m() · ProfileForm.svelte:300 m()
   > Traveler
   - terms: 🎮 Traveler
-- `profile_constellation_levels` — ProfileForm.svelte:189 m()
+- `profile_constellation_levels` — ProfileForm.svelte:188 m()
   > Constellation levels
   - terms: 🎮 Constellation
-- `profile_loadouts` — ProfileForm.svelte:190 m()
+- `profile_loadouts` — ProfileForm.svelte:189 m()
   > Loadouts
-- `profile_owned_and_wishlisted` — ProfileForm.svelte:191 m()
+- `profile_owned_and_wishlisted` — ProfileForm.svelte:190 m()
   > Owned and wishlisted
-- `profile_rotations` — ProfileForm.svelte:192 m()
+- `profile_rotations` — ProfileForm.svelte:191 m()
   > Rotations
   - terms: 📖 rotation
-- `profile_lineups` — ProfileForm.svelte:193 m()
+- `profile_lineups` — ProfileForm.svelte:192 m()
   > Lineups
-- `profile_teams` — ProfileForm.svelte:194 m()
+- `profile_teams` — ProfileForm.svelte:193 m()
   > Teams
-- `profile_rotations_and_lineups_go_to_the_trash` — ProfileForm.svelte:206 m()
+- `profile_rotations_and_lineups_go_to_the_trash` — ProfileForm.svelte:205 m()
   > Rotations and lineups go to the Trash for 30 days.
   - terms: 📖 rotation
-- `profile_rotations_lineups_and_teams_go_to_the` — ProfileForm.svelte:207 m()
+- `profile_rotations_lineups_and_teams_go_to_the` — ProfileForm.svelte:206 m()
   > Rotations, lineups, and teams go to the Trash for 30 days.
   - terms: 📖 rotation
-- `profile_constellation_levels_loadouts_and_owned` — ProfileForm.svelte:224 m() · ProfileForm.svelte:336 m()
+- `profile_constellation_levels_loadouts_and_owned` — ProfileForm.svelte:223 m() · ProfileForm.svelte:335 m()
   > Constellation levels, loadouts, and owned marks can’t be brought back.
   - terms: 🎮 Constellation · 📖 loadout
-- `profile_two_notes` — ProfileForm.svelte:227 m()
+- `profile_two_notes` — ProfileForm.svelte:226 m()
   > {first} {second}
   - vars: `first` `second`
-- `profile_clear_name_s_data` — ProfileForm.svelte:232 m()
+- `profile_clear_name_s_data` — ProfileForm.svelte:231 m()
   > Clear {name}’s data?
   - vars: `name`
-- `profile_clear` — ProfileForm.svelte:234 m()
+- `profile_clear` — ProfileForm.svelte:233 m()
   > Clear
-- `profile_keep_it` — ProfileForm.svelte:235 m() · ProfileForm.svelte:272 m()
+- `profile_keep_it` — ProfileForm.svelte:234 m() · ProfileForm.svelte:271 m()
   > Keep it
-- `profile_cleared_name_s_data` — ProfileForm.svelte:246 m()
+- `profile_cleared_name_s_data` — ProfileForm.svelte:245 m()
   > Cleared {name}’s data
   - vars: `name`
-- `profile_counts` — ProfileForm.svelte:263 m()
+- `profile_counts` — ProfileForm.svelte:262 m()
   > {rotations}, {lineups}, {teams}
   - vars: `rotations` `lineups` `teams`
-- `profile_delete_name` — ProfileForm.svelte:269 m()
+- `profile_delete_name` — ProfileForm.svelte:268 m()
   > Delete {name}?
   - vars: `name`
-- `profile_its_roster_and_what_go_with_it_you_can` — ProfileForm.svelte:270 m()
+- `profile_its_roster_and_what_go_with_it_you_can` — ProfileForm.svelte:269 m()
   > Its roster and {what} go with it. You can restore it from the Trash for 30 days.
   - vars: `what`
-- `profile_delete_profile` — ProfileForm.svelte:271 m() · ProfileForm.svelte:443 m()
+- `profile_delete_profile` — ProfileForm.svelte:270 m() · ProfileForm.svelte:442 m()
   > Delete profile
-- `profile_aether` — ProfileForm.svelte:302 m()
+- `profile_aether` — ProfileForm.svelte:301 m()
   > Aether
   - terms: 🎮 Aether
-- `profile_lumine` — ProfileForm.svelte:302 m()
+- `profile_lumine` — ProfileForm.svelte:301 m()
   > Lumine
   - terms: 🎮 Lumine
-- `profile_which_twin_takes_the_role_of_traveler_in` — ProfileForm.svelte:313 m()
+- `profile_which_twin_takes_the_role_of_traveler_in` — ProfileForm.svelte:312 m()
   > Which twin takes the role of Traveler in this account.
   - terms: 🎮 Traveler
-- `profile_clear_data` — ProfileForm.svelte:319 m()
+- `profile_clear_data` — ProfileForm.svelte:318 m()
   > Clear data
-- `profile_clear_ellipsis` — ProfileForm.svelte:331 m()
+- `profile_clear_ellipsis` — ProfileForm.svelte:330 m()
   > Clear…
-- `profile_theorycraft_is_the_built_in_profile_and` — ProfileForm.svelte:345 m()
+- `profile_theorycraft_is_the_built_in_profile_and` — ProfileForm.svelte:344 m()
   > Theorycraft is the built-in profile, and has fewer settings.
-- `profile_data` — ProfileForm.svelte:348 m() · ProfileForm.svelte:440 m()
+- `profile_data` — ProfileForm.svelte:347 m() · ProfileForm.svelte:439 m()
   > Data
-- `profile_a_profile_is_one_genshin_account_kept_in` — ProfileForm.svelte:354 m()
+- `profile_a_profile_is_one_genshin_account_kept_in` — ProfileForm.svelte:353 m()
   > A profile is one Genshin account, kept in this browser: its roster, teams, rotations, and lineups. Shared links open in Theorycraft, so your profiles stay as you left them.
   - terms: 📖 rotation · 🎮 Genshin Impact
-- `profile_name` — ProfileForm.svelte:360 m()
+- `profile_name` — ProfileForm.svelte:359 m()
   > Name
-- `profile_theorycraft_is_the_built_in_profile_s` — ProfileForm.svelte:382 m()
+- `profile_theorycraft_is_the_built_in_profile_s` — ProfileForm.svelte:381 m()
   > Theorycraft is the built-in profile’s name.
-- `profile_another_profile_is_called_name` — ProfileForm.svelte:385 m()
+- `profile_another_profile_is_called_name` — ProfileForm.svelte:384 m()
   > Another profile is called {name}.
   - vars: `name`
-- `profile_picture` — ProfileForm.svelte:391 m()
+- `profile_picture` — ProfileForm.svelte:390 m()
   > Picture
-- `profile_change` — ProfileForm.svelte:399 m()
+- `profile_change` — ProfileForm.svelte:398 m()
   > Change…
-- `profile_any_character_or_quest_avatar` — ProfileForm.svelte:401 m()
+- `profile_any_character_or_quest_avatar` — ProfileForm.svelte:400 m()
   > Any character or quest avatar.
-- `profile_color` — ProfileForm.svelte:405 m() · ProfileForm.svelte:407 m()
+- `profile_color` — ProfileForm.svelte:404 m() · ProfileForm.svelte:406 m()
   > Color
-- `profile_the_frame_around_the_picture` — ProfileForm.svelte:422 m()
+- `profile_the_frame_around_the_picture` — ProfileForm.svelte:421 m()
   > The frame around the picture.
-- `profile_add_profile` — ProfileForm.svelte:431 m()
+- `profile_add_profile` — ProfileForm.svelte:430 m()
   > Add profile
-- `profile_delete_profile_ellipsis` — ProfileForm.svelte:446 m()
+- `profile_delete_profile_ellipsis` — ProfileForm.svelte:445 m()
   > Delete profile…
-- `profile_its_roster_and_everything_in_it_go_to` — ProfileForm.svelte:449 m()
+- `profile_its_roster_and_everything_in_it_go_to` — ProfileForm.svelte:448 m()
   > Its roster and everything in it go to the Trash for 30 days.
-- `profile_choose_a_picture` — ProfileForm.svelte:458 m()
+- `profile_choose_a_picture` — ProfileForm.svelte:457 m()
   > Choose a picture
-- `profile_profile_picture` — ProfileForm.svelte:463 m()
+- `profile_profile_picture` — ProfileForm.svelte:462 m()
   > Profile picture
-- `profile_search_characters` — ProfileForm.svelte:484 m() · ProfileForm.svelte:485 m()
+- `profile_search_characters` — ProfileForm.svelte:483 m() · ProfileForm.svelte:484 m()
   > Search characters
-- `profile_characters_you_own` — ProfileForm.svelte:488 m()
+- `profile_characters_you_own` — ProfileForm.svelte:487 m()
   > Characters you own
-- `profile_everyone_else` — ProfileForm.svelte:492 m()
+- `profile_everyone_else` — ProfileForm.svelte:491 m()
   > Everyone else
-- `profile_no_character_matches_x` — ProfileForm.svelte:498 m()
+- `profile_no_character_matches_x` — ProfileForm.svelte:497 m()
   > No character matches “{query}”.
   - vars: `query`
 - `profile_pyro` — profileLook.ts:25 m()
@@ -134,5 +134,5 @@
   - terms: 🎮 Geo
 - `profile_theorycraft` — profileLook.ts:33 theorycraft: · records.ts:223 name:
   > Theorycraft
-- `profile_my_profile` — migrate.ts:50 MIGRATED_PROFILE_NAME: · ProfileForm.svelte:375 m() · session.svelte.ts:2019 m()
+- `profile_my_profile` — migrate.ts:50 MIGRATED_PROFILE_NAME: · ProfileForm.svelte:374 m() · session.svelte.ts:2019 m()
   > My profile

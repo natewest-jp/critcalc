@@ -139,7 +139,7 @@ const SURFACES = [
 	// The Roster and the character inspector, which the Planner's inspector also shows.
 	[
 		'tb',
-		/builder\/|CharacterCard|CompositionChips|RosterTab|CharacterFilterStrip|MoreFilters|CharacterGrid|CharacterDetails|InspectModal|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons|^lib\/theater\.ts$|^lib\/data\/characterLookup\.ts$/
+		/builder\/|CharacterCard|CompositionChips|RosterTab|CharacterFilterStrip|MoreFilters|CharacterGrid|CharacterDetails|InspectModal|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons|^lib\/theater\.ts$|^lib\/data\/characterLookup\.ts$|^lib\/i18n\/gameNames\.ts$/
 	],
 	[
 		'planner',

@@ -88,23 +88,22 @@ export const BUFF_STAT_ICON: Partial<Record<Stat, string>> = {
 	pyroCritDmg: '/assets/elements/flat-white/pyro.png'
 };
 
-// Read through labels(), so each read follows the locale. ATK%, DEF% and HP%
-// stay as written: the extractor does not list them as messages.
+// Read through labels(), so each read follows the locale.
 export const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = labels({
 	atk: m.planner_atk,
-	'atk%': () => 'ATK%',
+	'atk%': m.planner_atk_0f0a,
 	baseAtk: m.planner_atk,
 	critRate: m.planner_crit_rate,
 	critDmg: m.planner_crit_dmg,
 	em: m.planner_elem_mastery,
 	cdReduction: m.planner_cooldown_reduction,
 	def: m.planner_def,
-	'def%': () => 'DEF%',
+	'def%': m.planner_def_7253,
 	defIgnore: m.planner_def_ignore,
 	skillDefIgnore: m.planner_skill_def_ignore,
 	burstDefIgnore: m.planner_burst_def_ignore,
 	hp: m.planner_hp,
-	'hp%': () => 'HP%',
+	'hp%': m.planner_hp_b294,
 	healingBonus: m.planner_healing_bonus,
 	interruptionRes: m.planner_interruption_res,
 	allDmgBonus: m.planner_dmg_bonus,
