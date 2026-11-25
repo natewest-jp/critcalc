@@ -723,7 +723,8 @@
 	const CHEV_HEAD = 0.12;
 	/** 🎛️ ⚓ Nate (2026-11-25): the result's fade runs the other way, lighter
 	 *  at its head and darker at its tail; a subtotal keeps the stripes'
-	 *  direction. Upright only: the rows form keeps its own. */
+	 *  direction. Both forms: upright, dark at the bottom; the rows form,
+	 *  dark at the left. */
 	const TOTAL_FADE_FROM_TAIL = true;
 	const chevAlpha = (k: number, count: number) =>
 		count <= 1 ? CHEV_HEAD : CHEV_HEAD * (1 - k / (count - 1));
@@ -1701,7 +1702,10 @@
 									style:background={barFill(r)}
 								>
 									{#if isSum(r)}
-										<span class="bd-wf-fade"></span>
+										<span
+											class="bd-wf-fade"
+											class:is-tail={r.kind === 'total' && TOTAL_FADE_FROM_TAIL}
+										></span>
 									{:else}
 										<!-- k = 0 is the HEAD; each step back toward the tail fades.
 										     k = −1 sits past the head, so the pattern runs through it. -->
@@ -2184,6 +2188,23 @@
 	.bd-wf-bar.is-loss .bd-wf-fade {
 		background: linear-gradient(
 			to right,
+			color-mix(in srgb, var(--bright-ink) 12%, transparent),
+			transparent
+		);
+	}
+
+	/* The result's fade runs tail to head (TOTAL_FADE_FROM_TAIL). */
+	.bd-wf-bar:not(.is-loss) .bd-wf-fade.is-tail {
+		background: linear-gradient(
+			to right,
+			color-mix(in srgb, var(--bright-ink) 12%, transparent),
+			transparent
+		);
+	}
+
+	.bd-wf-bar.is-loss .bd-wf-fade.is-tail {
+		background: linear-gradient(
+			to left,
 			color-mix(in srgb, var(--bright-ink) 12%, transparent),
 			transparent
 		);
