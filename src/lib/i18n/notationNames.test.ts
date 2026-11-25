@@ -6,11 +6,71 @@ import {
 	SUGGEST_FROM,
 	foldName,
 	isImeKey,
+	foreignHeads,
 	segmentHeadAt,
-	suggestNotationNames
+	suggestNotationNames,
+	wholeNotationName
 } from './notationNames';
 
 const names = (q: string) => suggestNotationNames(q).map((s) => s.notation);
+
+describe('the twins, 空 and 蛍', () => {
+	it('reads a twin with an element as that Traveler and twin', () => {
+		expect(names('空（風）')).toEqual(['Anemo Aether']);
+		expect(names('空(風)')).toEqual(['Anemo Aether']);
+		expect(names('空風')).toEqual(['Anemo Aether']);
+		expect(names('蛍（雷）')).toEqual(['Electro Lumine']);
+	});
+
+	it('lists a bare twin as that twin’s seven elements', () => {
+		const aether = names('空');
+		expect(aether).toHaveLength(7);
+		expect(aether.every((n) => n.endsWith(' Aether'))).toBe(true);
+		const lumine = names('蛍');
+		expect(lumine).toHaveLength(7);
+		expect(lumine.every((n) => n.endsWith(' Lumine'))).toBe(true);
+	});
+
+	it('takes the names from the game data', () => {
+		expect(GAME_NAMES.ja.twin).toEqual({ aether: '空', lumine: '蛍' });
+	});
+
+	it('offers nothing from a twin inside another word', () => {
+		expect(names('空気')).toEqual([]);
+		expect(names('蛍光')).toEqual([]);
+		expect(names('旅人')).not.toContain('Anemo Aether');
+	});
+
+	it('gives a bare twin no single answer, so a bulk replace leaves it', () => {
+		expect(wholeNotationName('空')).toBeNull();
+		expect(wholeNotationName('空（風）')?.notation).toBe('Anemo Aether');
+	});
+});
+
+describe('foreignHeads', () => {
+	it('finds each segment head that is one whole name', () => {
+		const doc = '胡桃 E > 鍾離 hE > Furina E Q > 空（風） E';
+		const heads = foreignHeads(doc);
+		expect(heads.map((h) => [h.native, h.notation])).toEqual([
+			['胡桃', 'Hu Tao'],
+			['鍾離', 'Zhongli'],
+			['空（風）', 'Anemo Aether']
+		]);
+		for (const h of heads) expect(doc.slice(h.from, h.to)).toBe(h.native);
+	});
+
+	it('leaves prefixes, bare twins, unknown words, and non-heads alone', () => {
+		expect(foreignHeads('フリ E > 空 Q > 謎 E > Hu Tao 胡桃')).toEqual([]);
+	});
+
+	it('reads heads at the start, after a bare >, and after a line break', () => {
+		expect(foreignHeads('胡桃 E>鍾離 E\n> 魈 Q').map((h) => h.notation)).toEqual([
+			'Hu Tao',
+			'Zhongli',
+			'Xiao'
+		]);
+	});
+});
 
 describe('suggestNotationNames', () => {
 	it('turns a whole Japanese name into its notation name', () => {

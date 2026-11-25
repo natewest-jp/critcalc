@@ -9,7 +9,7 @@
  * line there and a test case, nothing else.
  */
 import { GAME_NAMES } from '$lib/data/gameNames.generated';
-import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { getCharacterIndexEntry, travelerName } from '$lib/data/characterLookup';
 
 /** The languages whose character names the composer turns into notation.
  *  ⚠️ Chinese is held back on purpose: many of its names share their kanji with
@@ -55,29 +55,55 @@ export function foldName(text: string): string {
 
 interface Entry {
 	id: string;
+	notation: string;
 	native: string;
 	folded: string;
 }
 
-/** Every offered name, folded once, in the table's order (which is by id). */
+/**
+ * Every offered name, folded once, in the table's order (which is by id):
+ * each character's game name, then the twins'. A twin with an element (空（風）)
+ * names that Traveler and twin (`Anemo Aether`); the twin alone (空) names all
+ * seven of that twin's elements, so it is a whole name with seven answers.
+ */
 let entries: Entry[] | null = null;
 function allEntries(): Entry[] {
 	if (entries) return entries;
 	entries = [];
-	for (const lang of SUGGEST_FROM)
-		for (const [id, native] of Object.entries(GAME_NAMES[lang]?.character ?? {}))
-			entries.push({ id, native, folded: foldName(native) });
+	for (const lang of SUGGEST_FROM) {
+		const table = GAME_NAMES[lang];
+		if (!table) continue;
+		const add = (id: string, notation: string, native: string) =>
+			entries!.push({ id, notation, native, folded: foldName(native) });
+		for (const [id, native] of Object.entries(table.character)) {
+			const notation = getCharacterIndexEntry(id)?.displayName;
+			if (notation) add(id, notation, native);
+		}
+		for (const twin of ['aether', 'lumine'] as const) {
+			const twinName = table.twin?.[twin];
+			if (!twinName) continue;
+			for (const id of Object.keys(table.character)) {
+				const t = getCharacterIndexEntry(id);
+				if (!t || !id.startsWith('traveler_')) continue;
+				const notation = travelerName(t.displayName, twin);
+				const el = t.element && table.element?.[t.element];
+				if (el) add(id, notation, `${twinName}（${el}）`);
+				add(id, notation, twinName);
+			}
+		}
+	}
 	return entries;
 }
 
 /**
  * The notation names a typed word could mean: the whole name first, then the
- * names it starts (at `MIN_PREFIX` letters or more), each character once.
+ * names it starts (at `MIN_PREFIX` letters or more), each notation name once.
  * A word inside a name but not at its start offers nothing (桃 is not 胡桃).
  *
  * Names that start other names are why the whole name comes first: リネ is
  * Lyney and starts リネット, Lynette, so both are offered with Lyney on top.
- * 旅人 starts every Traveler, so it offers all seven.
+ * 旅人 starts every Traveler, so it offers all seven; 空 is a twin's whole
+ * name, and offers that twin's seven.
  */
 export function suggestNotationNames(query: string): NameSuggestion[] {
 	const q = foldName(query);
@@ -85,16 +111,61 @@ export function suggestNotationNames(query: string): NameSuggestion[] {
 	const exact: NameSuggestion[] = [];
 	const prefix: NameSuggestion[] = [];
 	const seen = new Set<string>();
-	for (const e of allEntries()) {
-		const whole = e.folded === q;
-		if (!whole && !(q.length >= MIN_PREFIX && e.folded.startsWith(q))) continue;
-		if (seen.has(e.id)) continue;
-		const notation = getCharacterIndexEntry(e.id)?.displayName;
-		if (!notation) continue;
-		seen.add(e.id);
-		(whole ? exact : prefix).push({ id: e.id, notation, native: e.native, exact: whole });
-	}
+	// Whole names first, over every entry, so a prefix entry can't claim a
+	// notation name a whole one also gives (空 is whole for Anemo Aether, and
+	// the start of 空（風）).
+	for (const whole of [true, false])
+		for (const e of allEntries()) {
+			const hit = whole
+				? e.folded === q
+				: q.length >= MIN_PREFIX && e.folded.startsWith(q) && e.folded !== q;
+			if (!hit || seen.has(e.notation)) continue;
+			seen.add(e.notation);
+			(whole ? exact : prefix).push({
+				id: e.id,
+				notation: e.notation,
+				native: e.native,
+				exact: whole
+			});
+		}
 	return [...exact, ...prefix];
+}
+
+/**
+ * The one notation name a whole word means, or null when it means none or
+ * several (空 alone is seven Travelers). What a bulk replace may act on.
+ */
+export function wholeNotationName(word: string): NameSuggestion | null {
+	const found = suggestNotationNames(word).filter((s) => s.exact);
+	return found.length === 1 ? found[0] : null;
+}
+
+export interface HeadReplacement {
+	from: number;
+	to: number;
+	native: string;
+	notation: string;
+}
+
+/**
+ * Every segment head in `doc` that is a whole game name with one notation
+ * name, and what it becomes. A segment starts the text or follows `>`; its
+ * head is its first word. Anything else (a prefix, an ambiguous twin, a word
+ * that is not a name) is left for the squiggle to mark.
+ */
+export function foreignHeads(doc: string): HeadReplacement[] {
+	const out: HeadReplacement[] = [];
+	const re = /(^|>)(\s*)([^\s>]+)/g;
+	let m: RegExpExecArray | null;
+	while ((m = re.exec(doc)) !== null) {
+		const word = m[3];
+		if (!isForeignName(word)) continue;
+		const hit = wholeNotationName(word);
+		if (!hit) continue;
+		const from = m.index + m[1].length + m[2].length;
+		out.push({ from, to: from + word.length, native: word, notation: hit.notation });
+	}
+	return out;
 }
 
 /**

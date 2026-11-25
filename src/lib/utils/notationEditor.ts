@@ -25,6 +25,9 @@ import {
 import { sameSeats, seatsExtension, seatsField, setSeats } from './notationSeats';
 import { emptySeating, makeSeating, type Seating } from './notationEdit';
 import type { NotationTint } from '$lib/timeline/notationTints';
+import { foreignHeads } from '$lib/i18n/notationNames';
+import { notices } from '$lib/notices.svelte';
+import { m } from '$lib/paraglide/messages';
 
 export interface NotationEditor {
 	/** Replace the document — text, and the party's seats when given (no-op
@@ -92,8 +95,45 @@ export function createNotationEditor(
 			if (externalUpdate) return;
 			if (u.docChanged || seats !== u.startState.field(seatsField))
 				onChange(u.state.doc.toString(), seats);
+			if (u.transactions.some((tr) => tr.isUserEvent('input.paste')))
+				queueMicrotask(() => offerNotationNames(true));
 		})
 	];
+
+	// ⚓ NAMES IN ANOTHER LANGUAGE, ALL AT ONCE (Nate 2026-11-25). A paste or a
+	// loaded rotation whose segments start with whole game names in Japanese
+	// (胡桃 E > 鍾離 E) is offered one action that writes them all as their
+	// notation names. Offered, never done: the toast's button is the edit, one
+	// undoable transaction. A prefix, a bare twin (空 is seven Travelers) or an
+	// unknown word stays, for the squiggle. A loaded document is offered once
+	// per text, so going back to it does not ask again.
+	const offered = new Set<string>();
+	function offerNotationNames(pasted: boolean) {
+		const doc = view.state.doc.toString();
+		if (!rotationTabs.canEdit() || foreignHeads(doc).length === 0) return;
+		const key = currentKey;
+		const seen = `${key}\n${doc}`;
+		if (!pasted && offered.has(seen)) return;
+		offered.add(seen);
+		notices.toast('info', m.planner_names_in_japanese_in_this_rotation(), {
+			actions: [
+				{
+					label: m.planner_use_notation_names(),
+					run: () => {
+						// ⚠️ Only on the document it was offered for, and on its text
+						// as it is now: the player may have switched or typed since.
+						if (key !== currentKey || !rotationTabs.canEdit()) return;
+						const heads = foreignHeads(view.state.doc.toString());
+						if (heads.length === 0) return;
+						view.dispatch({
+							changes: heads.map((h) => ({ from: h.from, to: h.to, insert: h.notation })),
+							userEvent: 'input.replace'
+						});
+					}
+				}
+			]
+		});
+	}
 	/** ⚓ One document's state: its text and ITS seats, both in its history. */
 	const stateFor = (doc: string, seating: Seating) =>
 		EditorState.create({ doc, extensions: [extensions, seatsExtension(seating)] });
@@ -108,6 +148,7 @@ export function createNotationEditor(
 	// worth of small states is not worth a pruning protocol.
 	let currentKey = initialKey;
 	const parked = new Map<string, EditorState>();
+	offerNotationNames(false);
 
 	return {
 		/**
@@ -181,6 +222,7 @@ export function createNotationEditor(
 			parked.delete(key);
 			view.setState(next ?? stateFor(value, seats ?? emptySeating()));
 			this.setValue(value, seats);
+			offerNotationNames(false);
 		},
 		undo() {
 			undo(view);
