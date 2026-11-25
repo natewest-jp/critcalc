@@ -130,7 +130,7 @@ describe('charged attacks drawn with a stand-in', () => {
 		expect(flags[0].reason).toBe('approximate-cast');
 		expect(flagSeverity(flags[0].reason)).toBe('provisional');
 		expect(flags[0].message).toBe(
-			"Diluc's charged attack isn't measured yet — drawn with generic timing."
+			'Diluc’s charged attack isn’t measured yet — drawn with generic timing.'
 		);
 	});
 
@@ -153,7 +153,7 @@ describe('charged attacks drawn with a stand-in', () => {
 	it('says the plain C is the stand-in when it is one', () => {
 		// "timed as a plain C" would be true and useless: Diluc's plain C is
 		// itself generic, so the sentence that says so wins.
-		expect(flagNotation('Diluc sC')[0].message).toMatch(/charged attack isn't measured yet/);
+		expect(flagNotation('Diluc sC')[0].message).toMatch(/charged attack isn’t measured yet/);
 	});
 
 	it('says nothing about a bow’s C, A or sC — its aimed shot is measured', () => {

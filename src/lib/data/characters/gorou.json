@@ -188,7 +188,7 @@
 					"units": 1
 				}
 			],
-			"caveat": "With only the War Banner out, the buff reaches whoever is standing inside it; the bar shows it for the whole party's active character wherever they go. Under General's Glory the field follows you, so there is nothing to stand in."
+			"caveat": "With only the War Banner out, the buff reaches whoever is standing inside it; the bar shows it for the whole party’s active character wherever they go. Under General’s Glory the field follows you, so there is nothing to stand in."
 		},
 		{
 			"id": "gorou__burst__juuga_forward_unto_victory",
@@ -333,7 +333,7 @@
 					"units": 1
 				}
 			],
-			"caveat": "An E cast while General's Glory is up still draws a banner here; in game none appears until the Glory ends."
+			"caveat": "An E cast while General’s Glory is up still draws a banner here; in game none appears until the Glory ends."
 		}
 	],
 	"passives": [

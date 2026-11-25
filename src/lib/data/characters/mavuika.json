@@ -296,7 +296,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Pressing E again during Nightsoul's Blessing waits for the cooldown here; in game it switches between the Flamestrider and the Ring.",
+			"caveat": "Pressing E again during Nightsoul’s Blessing waits for the cooldown here; in game it switches between the Flamestrider and the Ring.",
 			"_curatorNotes": [
 				"⛔ SUPERSEDED 2026-10-16 (Nightsoul round) — kept as history: Hold-E migrated to a true variant-driven bike-NS opener (2026-05-08): variant overrides behavior → \"stance\", opensState → \"nightsoulBlessing\", terminatesOnSwap → true, duration → 9. Now possible since the parser is variant-aware for stance fields. The Tap form remains instant (no NS — ring-mode NS rendering would need full P1 multi-state to distinguish ring from bike inside NS).",
 				"Tap behavior: \"instant\" — gcsim skillFrames AnimationLength 28, ActionSwap 24. Hold uses skillFramesHold (AnimationLength 43, ActionSwap 34).",
@@ -604,7 +604,7 @@
 					"mod": "searingRadiance"
 				}
 			],
-			"caveat": "The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the following ring's Pyro pulses every 3s.",
+			"caveat": "The Scorching Ring’s 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the following ring’s Pyro pulses every 3s.",
 			"_curatorNotes": [
 				"Three effects: (1) Ring hit → Flamestrider trigger 200% ATK Pyro (0.5s ICD). Ring summon entity isn't modelled (no summons[] entry on the skill); the on-Ring-hit trigger has no schema primitive. Removed prior placeholder damage effect (200 ATK manual). (2) Bike → Ring follower summons every 3s for 500% ATK Pyro AoE. Tick-based summon emission is P3 (Summon.effects[]) gap. Removed prior placeholder damage effect (500 ATK manual). (3) Out-of-combat NS regeneration: pure resource flow, not modelled.",
 				"Both (1) and (2) become authorable when the Ring is added as a summon (P3). For now, damage stays description-only.",

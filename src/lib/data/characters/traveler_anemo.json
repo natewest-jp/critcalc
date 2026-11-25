@@ -415,7 +415,7 @@
 			],
 			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model defeating opponents, so there is no kill for this heal to follow."
+				"reason": "The Rotation Planner doesn’t model defeating opponents, so there is no kill for this heal to follow."
 			}
 		}
 	],
@@ -427,7 +427,7 @@
 			"constellationLevel": 1,
 			"description": "Palm Vortex's Storm DMG is increased by 100% in its initial cast (the cast made before any other element is absorbed).\n\nMaximum upgrade level is 15.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the first Storm hits."
+				"reason": "The Rotation Planner doesn’t draw damage amounts, and this only raises how hard the first Storm hits."
 			}
 		},
 		{
@@ -484,7 +484,7 @@
 					"value": -20
 				}
 			],
-			"caveat": "Only the Anemo shred is shown; if the tornado absorbed an element, that element's RES is also lowered by 20% for 10s.",
+			"caveat": "Only the Anemo shred is shown; if the tornado absorbed an element, that element’s RES is also lowered by 20% for 10s.",
 			"_curatorNotes": [
 				"C6 resShred authored (capability sweep 2026-07-28): gcsim traveler/common/anemo/cons.go:24-36 c6cb — ResistMod −0.20 for 600f (10s) per hit; burst.go:77 applies it for Anemo on every Gust Surge hit, burst.go:88 additionally for the absorbed element. Mirrors Venti storm_of_defiance (same mechanic) minus its element-less second effect — absorption is runtime-dynamic, so the absorbed-element shred stays a caveat instead of over-rendering.",
 				"Stale beta data corrected per genshin-db (capability sweep 2026-07-28): name 'Crush Mountains and Seas' → 'Intertwined Winds' (id retained for stability); description replaced — the old text framed the second shred as Swirl-gated, but the live kit gates it on Elemental Absorption."

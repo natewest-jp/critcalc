@@ -188,7 +188,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: Continuous Tapping — Lumi's Million Ton Crush and her slower Standard Power form.",
+			"caveat": "Not modeled: Continuous Tapping — Lumi’s Million Ton Crush and her slower Standard Power form.",
 			"_curatorNotes": [
 				"Skill cast: spawns Lumi after 36f (skillRecastDur). Lumi attacks at intervals defined by skillSuperInterval=[111, 63, 144] (Super Power form) or skillStandardInterval=340f (Standard Power form). Skill duration 25s (skillDur).",
 				"behavior:instant + summons[] is the layla/ineffa pattern. Lumi authored as a 25s stationary summon without effects (the variable-cadence multi-form attack pattern doesn't fit summonTick which assumes constant interval).",

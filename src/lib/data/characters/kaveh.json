@@ -153,7 +153,7 @@
 				}
 			],
 			"description": "When DMG dealt by a Dendro Core (including DMG from Burgeon and Hyperbloom) hits Kaveh, Kaveh will regain HP equal to 300% of his Elemental Mastery. This effect can be triggered once every 0.5s.",
-			"caveat": "Kaveh heals only when the Dendro Core actually bursts on him; every Bloom, Burgeon and Hyperbloom in the party counts here."
+			"caveat": "Kaveh heals only when the Dendro Core actually bursts on him; every Bloom, Burgeon, and Hyperbloom in the party counts here."
 		},
 		{
 			"id": "kaveh__passive__a_craftsmans_curious_conceptions",
@@ -180,7 +180,7 @@
 				}
 			],
 			"description": "During Painted Dome, after Kaveh's Normal, Charged, or Plunging Attacks hit opponents, his Elemental Mastery will increase by 25. This effect can be triggered once every 0.1s. Max 4 stacks.\nThis effect will be canceled when Painted Dome's effects end.",
-			"caveat": "Kaveh reaches the full +100 Elemental Mastery after four Normal, Charged or Plunging Attack hits inside Painted Dome; the bar shows it from the cast."
+			"caveat": "Kaveh reaches the full +100 Elemental Mastery after four Normal, Charged, or Plunging Attack hits inside Painted Dome; the bar shows it from the cast."
 		}
 	],
 	"constellations": [
@@ -198,7 +198,7 @@
 			"constellationLevel": 2,
 			"description": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model attack speed, so this Normal Attack SPD bonus isn't shown."
+				"reason": "The Rotation Planner doesn’t model attack speed, so this Normal Attack SPD bonus isn’t shown."
 			}
 		},
 		{

@@ -452,7 +452,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model pulling opponents together, which is all Lustrous Moonrise adds beyond its damage."
+				"reason": "The Rotation Planner doesn’t model pulling opponents together, which is all Lustrous Moonrise adds beyond its damage."
 			}
 		}
 	],

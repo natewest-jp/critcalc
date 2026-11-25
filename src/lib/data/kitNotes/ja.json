@@ -2,7 +2,7 @@
 	"aino": {
 		"aino__passive__structured_power_booster": {
 			"reason": {
-				"en": "10aeaebb",
+				"en": "f5902499",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はお水ひえひえ装置のダメージを上げるだけです。"
 			}
 		}
@@ -10,13 +10,13 @@
 	"albedo": {
 		"albedo__constellation__dust_of_purification": {
 			"reason": {
-				"en": "1fcda7e3",
+				"en": "3bf4ef31",
 				"text": "陽華の領域内に結晶シールドか月籠が必要ですが、ローテーションプランナーは欠片の拾得もフィールド上の位置も扱いません。"
 			}
 		},
 		"albedo__passive__calcite_might": {
 			"reason": {
-				"en": "f236ceaf",
+				"en": "78368169",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は、HPが50%未満の敵に対する刹那の花のダメージを上げるだけです。"
 			}
 		}
@@ -24,7 +24,7 @@
 	"alhaitham": {
 		"alhaitham__constellation__debate": {
 			"caveat": {
-				"en": "97303d69",
+				"en": "79afcda3",
 				"text": "バーは1回の発動による琢光鏡を1本ずつ表します。ゲームでは同時に4層までしか存在しないため、バーが重なる区間の合計はゲームより多く見えることがあります。"
 			}
 		}
@@ -32,7 +32,7 @@
 	"alyosha": {
 		"alyosha__constellation__standard_reclaimed": {
 			"caveat": {
-				"en": "5a414938",
+				"en": "ecc7f9b4",
 				"text": "攻撃力ボーナスは狩人の照準が2層で2倍になり、元素熟知+100には2層とも必要です。タイムラインは1層分の攻撃力を表示し、元素熟知は最初の発動から付与します。"
 			}
 		}
@@ -40,13 +40,13 @@
 	"amber": {
 		"amber__constellation__bunny_triggered": {
 			"reason": {
-				"en": "4da21118",
+				"en": "427fe048",
 				"text": "ローテーションプランナーは矢の命中位置を扱わず、この効果にはフルチャージ狙い撃ちがウサギ伯爵の足に命中する必要があります。"
 			}
 		},
 		"amber__passive__precise_shot": {
 			"reason": {
-				"en": "133b1c7d",
+				"en": "71479a53",
 				"text": "狙い撃ちが弱点に命中する必要がありますが、ローテーションプランナーは矢の命中位置を扱いません。"
 			}
 		}
@@ -54,19 +54,19 @@
 	"arataki_itto": {
 		"arataki_itto__constellation__stay_a_while_and_listen_up": {
 			"reason": {
-				"en": "1acc9bbc",
+				"en": "c54b3a48",
 				"text": "ローテーションプランナーは乱神の怪力を追跡しないため、この効果で得られる層は表示されません。"
 			}
 		},
 		"arataki_itto__passive__arataki_ichiban": {
 			"reason": {
-				"en": "5207316a",
+				"en": "c300f542",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、荒瀧逆袈裟の斬撃は通常のタイミングのままです。"
 			}
 		},
 		"arataki_itto__passive__bloodline_of_the_crimson_oni": {
 			"reason": {
-				"en": "5442bb81",
+				"en": "ff658b0f",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は荒瀧逆袈裟のダメージを上げるだけです。"
 			}
 		}
@@ -74,7 +74,7 @@
 	"arlecchino": {
 		"arlecchino__constellation__all_reprisals_and_arrears_mine_to_bear": {
 			"reason": {
-				"en": "3547c5ab",
+				"en": "61ecc343",
 				"text": "ローテーションプランナーは命の契約を扱わず、この命ノ星座のダメージボーナスはそれに依存します。"
 			}
 		},
@@ -86,13 +86,13 @@
 		},
 		"arlecchino__normal__invitation_to_a_beheading": {
 			"caveat": {
-				"en": "a72307b5",
+				"en": "978c69a7",
 				"text": "攻撃は常に炎元素として描画され、通常攻撃が命中するたびに万象、灰に帰すのクールタイムが短縮されます。赤死の宴が常に発動しているものとして扱っているためです。ゲームでは、命の契約がHP上限の30%に達するまでどちらも起きません。"
 			}
 		},
 		"arlecchino__passive__agony_alone_may_be_repaid": {
 			"reason": {
-				"en": "261f0491",
+				"en": "b73a0f5b",
 				"text": "ローテーションプランナーは命の契約を扱いません。この固有天賦は、アルレッキーノが得る命の契約の量を変えるだけです。"
 			}
 		}
@@ -100,7 +100,7 @@
 	"baizhu": {
 		"baizhu__passive__all_things_are_of_the_earth": {
 			"caveat": {
-				"en": "b27dd8ae",
+				"en": "12c951c8",
 				"text": "未対応：元素爆発の無隙シールドで回復を受けてから6秒間、キャラクターの燃焼、開花、超開花、烈開花のダメージが最大100%、超激化と草激化のダメージが最大40%アップします。"
 			}
 		}
@@ -108,25 +108,25 @@
 	"barbara": {
 		"barbara__constellation__dedicating_everything_to_you": {
 			"reason": {
-				"en": "85ce8b2b",
+				"en": "30620c7d",
 				"text": "ローテーションプランナーはキャラクターの戦闘不能を扱わないため、この復活には表示するものがありません。"
 			}
 		},
 		"barbara__constellation__gleeful_songs": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"barbara__passive__encore": {
 			"reason": {
-				"en": "7208a658",
+				"en": "7030f41a",
 				"text": "ローテーションプランナーは粒子の拾得を扱わず、この延長は元素オーブと元素粒子の拾得で起きます。"
 			}
 		},
 		"barbara__skill__let_the_show_begin": {
 			"caveat": {
-				"en": "dd235ac7",
+				"en": "7ba43eaf",
 				"text": "15秒間の歌声の輪は描画されないため、通常攻撃と重撃の命中で回復する区間を示すものはありません。フィールド上キャラクターへの定期的な回復（約5秒毎）も表示されません。"
 			}
 		}
@@ -134,7 +134,7 @@
 	"beidou": {
 		"beidou__constellation__stunning_revenge": {
 			"reason": {
-				"en": "b298184c",
+				"en": "349870dc",
 				"text": "ローテーションプランナーは北斗が攻撃を受けることを扱わないため、この効果が通常攻撃に加える雷元素ダメージは表示されません。"
 			}
 		},
@@ -146,7 +146,7 @@
 		},
 		"beidou__passive__retribution": {
 			"reason": {
-				"en": "69cda152",
+				"en": "eeb42c52",
 				"text": "ローテーションプランナーは北斗が攻撃を受けることを扱わないため、この効果が報いるジャストタイミングの反撃はローテーション内で起きません。"
 			}
 		}
@@ -162,7 +162,7 @@
 	"candace": {
 		"candace__passive__aegis_of_crossed_arrows": {
 			"reason": {
-				"en": "e991fe8e",
+				"en": "d95649d0",
 				"text": "ローテーションプランナーはキャンディスが攻撃を受けることを扱わないため、長押しスキルは常にチャージ時間をすべて使います。"
 			}
 		}
@@ -170,19 +170,19 @@
 	"charlotte": {
 		"charlotte__constellation__a_responsibility_to_oversee": {
 			"reason": {
-				"en": "bf978b03",
+				"en": "fd6afc91",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、元素エネルギーも追跡しません。この効果はスチルフォト·多角的立証のダメージを上げ、元素エネルギーを回復するだけです。"
 			}
 		},
 		"charlotte__constellation__a_summation_of_interest": {
 			"caveat": {
-				"en": "4489e3b1",
+				"en": "0a1ac777",
 				"text": "連携攻撃は、長押しスキルによる「フォーカスインプレッション」マークが敵に残っている間だけ発動します。一回押しスキルのスナップシルエットでは発動しません。"
 			}
 		},
 		"charlotte__passive__moment_of_impact": {
 			"reason": {
-				"en": "fdcaebed",
+				"en": "81d20211",
 				"text": "ローテーションプランナーは敵の撃破を扱わないため、このクールタイム短縮は発動できません。"
 			}
 		}
@@ -190,19 +190,19 @@
 	"chasca": {
 		"chasca__constellation__cylinder_the_restless_roulette": {
 			"reason": {
-				"en": "11a216a4",
+				"en": "34ff629a",
 				"text": "追加のシャドウチェイサー弾・光輝は確率で起きる「スピリット転化」に依存します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"chasca__normal__multitarget_fire_tap": {
 			"caveat": {
-				"en": "0a6b768e",
+				"en": "f4d7b3d2",
 				"text": "未対応：夜魂の加護中の長押し重撃モード。最大6発の弾を撃ち、一部はチームの炎、水、氷、雷元素に変化します。タイムラインには短押しの1発だけが表示されます。"
 			}
 		},
 		"chasca__passive__bullet_trick": {
 			"reason": {
-				"en": "c48f05d5",
+				"en": "358d2d5d",
 				"text": "「スピリット転化」は確率で起きます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。層はシャドウチェイサー弾・光輝のダメージを上げるだけで、そのダメージはローテーションプランナーが描画しません。"
 			}
 		}
@@ -210,7 +210,7 @@
 	"chevreuse": {
 		"chevreuse__constellation__in_pursuit_of_ending_evil": {
 			"caveat": {
-				"en": "4cd7eafe",
+				"en": "3777ec04",
 				"text": "炎元素と雷元素のバーは発動時から積み上がります。ゲームでは最初の層は2秒後、元素スキルの最初の回復と同時に付与されます。"
 			}
 		}
@@ -218,7 +218,7 @@
 	"chongyun": {
 		"chongyun__passive__steady_breathing": {
 			"reason": {
-				"en": "21341e24",
+				"en": "801508ce",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、重華積霜エリア内の通常攻撃は通常のタイミングのままです。"
 			}
 		},
@@ -232,19 +232,19 @@
 	"citlali": {
 		"citlali__burst__edict_of_entwined_splendor": {
 			"reason": {
-				"en": "23df6cd3",
+				"en": "b63b720b",
 				"text": "ローテーションプランナーは夜魂値を追跡しないため、この元素爆発でシトラリが回復する夜魂値は表示されません。"
 			}
 		},
 		"citlali__constellation__teoiztacs_secret_pact": {
 			"reason": {
-				"en": "5abcf099",
+				"en": "870d047f",
 				"text": "ローテーションプランナーは夜魂値を追跡しません。この炎元素・水元素ダメージアップの元になる「秘律カウント」は、イツパパが消費する夜魂値からたまります。"
 			}
 		},
 		"citlali__passive__itzpapalotls_star_garments": {
 			"reason": {
-				"en": "263cb58f",
+				"en": "c54b5e11",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はイツパパの霜落の嵐と氷晶の嵐のダメージを上げるだけです。また、ローテーションプランナーは夜魂値も追跡しません。"
 			}
 		},
@@ -258,7 +258,7 @@
 	"clorinde": {
 		"clorinde__burst__last_lightfall": {
 			"reason": {
-				"en": "2357ffb3",
+				"en": "dcf1150f",
 				"text": "ローテーションプランナーは命の契約を扱わないため、この元素爆発で付与される命の契約は表示されません。"
 			}
 		},
@@ -270,7 +270,7 @@
 		},
 		"clorinde__constellation__to_enshrine_tears_life_and_love": {
 			"reason": {
-				"en": "3547c5ab",
+				"en": "61ecc343",
 				"text": "ローテーションプランナーは命の契約を扱わず、この命ノ星座のダメージボーナスはそれに依存します。"
 			}
 		},
@@ -288,7 +288,7 @@
 		},
 		"clorinde__skill__impale_the_night": {
 			"reason": {
-				"en": "e78c6ed0",
+				"en": "d040ecda",
 				"text": "ローテーションプランナーは命の契約を扱いません。この突進でクロリンデが回復する量は命の契約で決まります。"
 			}
 		}
@@ -314,13 +314,13 @@
 		},
 		"columbina__passive__law_of_the_new_moon": {
 			"reason": {
-				"en": "a2a927f5",
+				"en": "0e4d6221",
 				"text": "効果のうち2つは、33%の確率で追加の命中を起こします。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。3つ目は山月の草露をためる効果で、ローテーションプランナーはこの資源を追跡しません。"
 			}
 		},
 		"columbina__passive__lunar_vigil": {
 			"reason": {
-				"en": "85ce8b2b",
+				"en": "30620c7d",
 				"text": "ローテーションプランナーはキャラクターの戦闘不能を扱わないため、この復活には表示するものがありません。"
 			}
 		},
@@ -334,13 +334,13 @@
 	"cyno": {
 		"cyno__burst__sacred_rite_wolfs_swiftness": {
 			"caveat": {
-				"en": "3b2f74eb",
+				"en": "07e60add",
 				"text": "元素熟知ボーナスは元素爆発の基本の継続時間で表示しています。ゲームでは状態と同じだけ続くため、冥祭のたびに4秒延長されます。"
 			}
 		},
 		"cyno__constellation__ordinance_unceasing_vigil": {
 			"caveat": {
-				"en": "1dc9f740",
+				"en": "882ba21a",
 				"text": "元素熟知バフは、元素爆発の発動時に極星フィールドがある場合だけ描画されます。元素スキルの啓途誓使による同じバフは描画されません。"
 			}
 		},
@@ -352,7 +352,7 @@
 		},
 		"cyno__passive__featherfall_judgment": {
 			"caveat": {
-				"en": "90a6e3ab",
+				"en": "b012021d",
 				"text": "未対応：末路真眼状態でスキルを発動した時に放つ渡荒の雷。3本のうち1本が雷元素を付着させるため、敵のオーラはゲームより少しだけ少なくたまります。"
 			}
 		}
@@ -360,19 +360,19 @@
 	"dahlia": {
 		"dahlia__constellation__infallible_procession": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"dahlia__constellation__you_shall_go_out_with_joy": {
 			"reason": {
-				"en": "13e52b69",
+				"en": "49052e4b",
 				"text": "ローテーションプランナーは攻撃速度もキャラクターの戦闘不能も扱わないため、この命ノ星座はどちらの効果も描画されません。"
 			}
 		},
 		"dahlia__passive__prayer_of_wellwrought_joy": {
 			"reason": {
-				"en": "2cafbdde",
+				"en": "97d11380",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、このボーナス中も通常攻撃は通常のタイミングのままです。"
 			}
 		}
@@ -386,7 +386,7 @@
 		},
 		"dehya__constellation__the_burning_claws_cleaving": {
 			"reason": {
-				"en": "a98eebb3",
+				"en": "fd58df13",
 				"text": "熾炎獅子状態の延長は会心の命中で起きます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。この会心率ボーナスの対象は炎哮獅子咬だけで、ローテーションプランナーはそれを描画しません。"
 			}
 		},
@@ -406,13 +406,13 @@
 		},
 		"diluc__constellation__flowing_flame": {
 			"reason": {
-				"en": "2136465b",
+				"en": "585e62ad",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は次の逆焔の刃のダメージを上げるだけです。"
 			}
 		},
 		"diluc__constellation__searing_ember": {
 			"reason": {
-				"en": "97a6f79d",
+				"en": "358d049d",
 				"text": "ローテーションプランナーはディルックが受けるダメージを扱わないため、この攻撃力ボーナスは発動できません。"
 			}
 		}
@@ -420,7 +420,7 @@
 	"diona": {
 		"diona__constellation__shaken_not_purred": {
 			"reason": {
-				"en": "7210d8b9",
+				"en": "836a7697",
 				"text": "ローテーションプランナーはダメージの数値もシールドの強さも描画しません。この効果はフリーズキャッツクローとそのシールドを強めるだけです。他のキャラクターに与えるシールドはマルチプレイ限定です。"
 			}
 		},
@@ -440,7 +440,7 @@
 		},
 		"dori__passive__compound_interest": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		}
@@ -448,7 +448,7 @@
 	"durin": {
 		"durin__passive__chaos_formed_like_the_night": {
 			"reason": {
-				"en": "965b09d2",
+				"en": "816e1c18",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は白焔の龍と黒蝕の龍のダメージを上げるだけです。"
 			}
 		}
@@ -470,7 +470,7 @@
 	"escoffier": {
 		"escoffier__constellation__fresh_fragrant_stew_is_an_art": {
 			"caveat": {
-				"en": "7beaf1ce",
+				"en": "bf3a714c",
 				"text": "命中ごとの層の消費は未対応です。Eの前に `{coldDish:N}` を書くと層数を指定できます（最大5）。表示されるのは通常攻撃のダメージボーナスだけで、ゲームでは層が重撃、落下攻撃、元素スキル、元素爆発のダメージも上げます。"
 			}
 		}
@@ -478,7 +478,7 @@
 	"eula": {
 		"eula__constellation__noble_obligation": {
 			"reason": {
-				"en": "e32fca5c",
+				"en": "98d67094",
 				"text": "光臨の剣の追加の層は50%の確率で得られます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。開始時の層はダメージを上げるだけで、ローテーションプランナーはダメージを描画しません。"
 			}
 		},
@@ -498,7 +498,7 @@
 	"faruzan": {
 		"faruzan__constellation__divine_comprehension": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
@@ -518,13 +518,13 @@
 	"fischl": {
 		"fischl__constellation__devourer_of_all_sins": {
 			"reason": {
-				"en": "2d397fd4",
+				"en": "081d253c",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は夜巡りの翼の召喚時の一撃を強く、広くするだけです。"
 			}
 		},
 		"fischl__passive__stellar_predator": {
 			"reason": {
-				"en": "1fa76cf9",
+				"en": "5c245d7f",
 				"text": "ローテーションプランナーは矢の命中位置を扱わず、この効果にはフルチャージ狙い撃ちがオズに命中する必要があります。"
 			}
 		}
@@ -540,19 +540,19 @@
 	"freminet": {
 		"freminet__constellation__dreams_of_the_foamy_deep": {
 			"reason": {
-				"en": "c6512a11",
+				"en": "024b88a3",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、この会心率ボーナスは高圧粉砕にだけ適用されます。"
 			}
 		},
 		"freminet__constellation__penguins_and_the_land_of_plenty": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"freminet__passive__parallel_condensers": {
 			"reason": {
-				"en": "4ef6d075",
+				"en": "b0a4a873",
 				"text": "ローテーションプランナーは氷砕きを扱わず、このボーナスは氷砕きで発動します。"
 			}
 		}
@@ -560,25 +560,25 @@
 	"furina": {
 		"furina__constellation__a_woman_adapts_like_duckweed_in_water": {
 			"reason": {
-				"en": "2f731608",
+				"en": "d0c4a860",
 				"text": "ローテーションプランナーはテンションもチームのHPの変化も追跡しないため、この効果が与えるHP上限は表示されません。"
 			}
 		},
 		"furina__constellation__love_is_a_rebellious_bird_that_none_can_tame": {
 			"reason": {
-				"en": "ef3e92aa",
+				"en": "984c9eb0",
 				"text": "ローテーションプランナーはテンションを追跡せず、この命ノ星座が変えるのはそれだけです。"
 			}
 		},
 		"furina__passive__endless_waltz": {
 			"reason": {
-				"en": "2742d1e7",
+				"en": "6ef2bcb1",
 				"text": "この回復は他の回復のあふれた分で発動し、ローテーションプランナーは受けた回復を追跡しません。"
 			}
 		},
 		"furina__skill__salon_solitaire": {
 			"caveat": {
-				"en": "dc28e174",
+				"en": "d1ef9468",
 				"text": "衆の水の歌い手の回復の目印は、基本の2秒間隔で描画されます。聴き手なき独白はHP上限が高いとこの間隔を最大16%短縮しますが、タイムラインはこれを扱いません。"
 			}
 		}
@@ -586,19 +586,19 @@
 	"gaming": {
 		"gaming__constellation__plum_blossoms_underfoot": {
 			"reason": {
-				"en": "43407b08",
+				"en": "375ec9c6",
 				"text": "この効果は嘉明が受けた回復のあふれた分で発動し、ローテーションプランナーは受けた回復を追跡しません。"
 			}
 		},
 		"gaming__constellation__soar_across_mountains": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"gaming__constellation__to_tame_all_beasts": {
 			"reason": {
-				"en": "6329222d",
+				"en": "5af60d47",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、この会心ボーナスは踏雲献瑞にだけ適用されます。"
 			}
 		}
@@ -606,13 +606,13 @@
 	"ganyu": {
 		"ganyu__constellation__westward_sojourn": {
 			"reason": {
-				"en": "b53c1260",
+				"en": "62ba51be",
 				"text": "この効果は敵が降衆天華の中に留まる時間に依存し、ローテーションプランナーは位置を扱いません。"
 			}
 		},
 		"ganyu__passive__undivided_heart": {
 			"reason": {
-				"en": "b6b01d56",
+				"en": "46c2c4a4",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、この会心率ボーナスは霜華の矢にだけ適用されます。"
 			}
 		}
@@ -620,7 +620,7 @@
 	"gorou": {
 		"gorou__burst__juuga_forward_unto_victory": {
 			"caveat": {
-				"en": "7ab0d1f1",
+				"en": "e39f9db7",
 				"text": "大将威儀の間にEを発動すると、ここでは旗指物が描画されます。ゲームでは大将威儀が終わるまで現れません。"
 			}
 		},
@@ -632,7 +632,7 @@
 		},
 		"gorou__skill__inuzaka_allround_defense": {
 			"caveat": {
-				"en": "4e8d6e10",
+				"en": "3c217f24",
 				"text": "大将の旗指物だけが出ている時、バフはその中に立っているキャラクターに届きます。バーは、どこにいてもチームのフィールド上キャラクターに表示されます。大将威儀の間は領域がキャラクターに追従するため、中に立つ必要はありません。"
 			}
 		}
@@ -640,13 +640,13 @@
 	"hu_tao": {
 		"hu_tao__constellation__butterflys_embrace": {
 			"reason": {
-				"en": "238dfcbe",
+				"en": "e30bd2de",
 				"text": "この効果は胡桃のHPが25%未満になるか致命傷を受けた時に発動し、ローテーションプランナーはHPを追跡しません。"
 			}
 		},
 		"hu_tao__constellation__garden_of_eternal_rest": {
 			"reason": {
-				"en": "b4ac8fba",
+				"en": "dc3aaa28",
 				"text": "この効果は敵を倒した時に発動し、ローテーションプランナーは敵の撃破を扱いません。"
 			}
 		}
@@ -654,13 +654,13 @@
 	"iansan": {
 		"iansan__constellation__slow_and_steady_wins_the_race": {
 			"reason": {
-				"en": "cbd6fca1",
+				"en": "03c8beef",
 				"text": "ローテーションプランナーは夜魂値を追跡せず、この命ノ星座が変えるのはそれだけです。"
 			}
 		},
 		"iansan__constellation__startings_never_easy": {
 			"reason": {
-				"en": "774197f7",
+				"en": "6e6190b7",
 				"text": "ローテーションプランナーは元素エネルギーも夜魂値も追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
@@ -674,13 +674,13 @@
 	"ifa": {
 		"ifa__constellation__guiding_spirit_of_ballistic_prayer": {
 			"reason": {
-				"en": "2f74da4c",
+				"en": "3378ab8a",
 				"text": "ローテーションプランナーは夜魂値も救命の理念も追跡せず、この命ノ星座が変えるのはそれだけです。"
 			}
 		},
 		"ifa__constellation__oath_on_a_feathered_knot": {
 			"reason": {
-				"en": "0890e9c1",
+				"en": "dd173423",
 				"text": "この追加の射撃は50%の確率で発動します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
@@ -702,25 +702,25 @@
 	"jahoda": {
 		"jahoda__constellation__one_more_flask": {
 			"reason": {
-				"en": "3366fe73",
+				"en": "724dc771",
 				"text": "この跳ね返りは50%の確率で起きます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"jahoda__constellation__the_littlest_luck": {
 			"caveat": {
-				"en": "a10d6b9a",
+				"en": "d76cbd5c",
 				"text": "瓶が満タンになると、近くにいる月兆のチームメンバーは20秒間会心率+5%、会心ダメージ+40%を得ます。このバフはタイムラインに表示されません。"
 			}
 		},
 		"jahoda__constellation__wild_berry_amid_the_dust": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"jahoda__passive__sweet_berry_bounty": {
 			"caveat": {
-				"en": "8f720928",
+				"en": "dde5fc84",
 				"text": "ロボットの回復がHP70%を超えるキャラクターに届くと、そのキャラクターは6秒間元素熟知+100を得ます。この強化はタイムラインに表示されません。"
 			}
 		},
@@ -734,25 +734,25 @@
 	"jean": {
 		"jean__constellation__peoples_aegis": {
 			"reason": {
-				"en": "fb70a1fc",
+				"en": "70e5ec02",
 				"text": "この効果は元素粒子の拾得で発動し、ローテーションプランナーは粒子も攻撃速度も扱いません。"
 			}
 		},
 		"jean__constellation__spiraling_tempest": {
 			"reason": {
-				"en": "02ebefd6",
+				"en": "334f8bd8",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は長押しの風圧剣のダメージを上げるだけです。"
 			}
 		},
 		"jean__passive__let_the_wind_lead": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"jean__skill__gale_blade": {
 			"reason": {
-				"en": "f112b400",
+				"en": "86975406",
 				"text": "ローテーションプランナーは敵の引き寄せを扱いません。風圧剣の長押しでダメージ以外に加わるのはそれだけです。"
 			}
 		}
@@ -766,13 +766,13 @@
 		},
 		"kachina__constellation__shards_are_gems_too": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"kachina__passive__the_weight_of_stone": {
 			"reason": {
-				"en": "9407f2e6",
+				"en": "68613840",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はぐるぐるコマちゃんのダメージを上げるだけです。"
 			}
 		},
@@ -786,7 +786,7 @@
 	"kaedehara_kazuha": {
 		"kaedehara_kazuha__constellation__oozora_genpou": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		}
@@ -800,13 +800,13 @@
 		},
 		"kaeya__constellation__neverending_performance": {
 			"reason": {
-				"en": "8542181f",
+				"en": "a0df68bd",
 				"text": "この効果は敵を倒した時だけ元素爆発を延長し、ローテーションプランナーは敵の撃破を扱いません。"
 			}
 		},
 		"kaeya__passive__glacial_heart": {
 			"reason": {
-				"en": "7ba9ea0e",
+				"en": "20abeb32",
 				"text": "ローテーションプランナーは元素粒子を扱わないため、この効果で追加される粒子は表示されません。"
 			}
 		}
@@ -814,7 +814,7 @@
 	"kamisato_ayaka": {
 		"kamisato_ayaka__constellation__snowswept_sakura": {
 			"reason": {
-				"en": "159b742f",
+				"en": "b5dd6095",
 				"text": "この効果は50%の確率でクールタイムを短縮します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		}
@@ -822,7 +822,7 @@
 	"kamisato_ayato": {
 		"kamisato_ayato__constellation__endless_flow": {
 			"reason": {
-				"en": "2ac90f19",
+				"en": "67345ee1",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、この通常攻撃の攻撃速度ボーナスは表示されません。"
 			}
 		},
@@ -834,7 +834,7 @@
 		},
 		"kamisato_ayato__passive__kamisato_art_michiyuku_hagetsu": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		}
@@ -842,19 +842,19 @@
 	"kaveh": {
 		"kaveh__constellation__grace_of_royal_roads": {
 			"reason": {
-				"en": "2ac90f19",
+				"en": "67345ee1",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、この通常攻撃の攻撃速度ボーナスは表示されません。"
 			}
 		},
 		"kaveh__passive__a_craftsmans_curious_conceptions": {
 			"caveat": {
-				"en": "76b31527",
+				"en": "4a92ec4f",
 				"text": "カーヴェはムカルナスの描像中に通常攻撃、重撃、落下攻撃を4回命中させると元素熟知+100に達します。バーは発動時から表示されます。"
 			}
 		},
 		"kaveh__passive__an_architects_undertaking": {
 			"caveat": {
-				"en": "54bbde69",
+				"en": "04613daf",
 				"text": "カーヴェが回復するのは、草原核が実際に自身の位置で破裂した時だけです。ここではチーム内の開花、烈開花、超開花をすべて数えています。"
 			}
 		}
@@ -862,13 +862,13 @@
 	"keqing": {
 		"keqing__constellation__keen_extraction": {
 			"reason": {
-				"en": "005faed8",
+				"en": "a5133686",
 				"text": "この効果は50%の確率で元素粒子を生成します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"keqing__constellation__tenacious_star": {
 			"caveat": {
-				"en": "2af69d4f",
+				"en": "bb5e979b",
 				"text": "バーは雷元素ダメージ+6%を1つ表示します。ゲームでは通常攻撃、重撃、元素スキル、元素爆発がそれぞれ8秒のタイマーを持つため、最大4つまで重なります。"
 			}
 		}
@@ -876,13 +876,13 @@
 	"kinich": {
 		"kinich__constellation__parrots_beak": {
 			"reason": {
-				"en": "319a455c",
+				"en": "19156c66",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、この会心ダメージボーナスは廻狩貫鱗砲にだけ適用されます。"
 			}
 		},
 		"kinich__passive__the_price_of_desolation": {
 			"reason": {
-				"en": "9e1f94bf",
+				"en": "add421f1",
 				"text": "ローテーションプランナーは夜魂値を追跡せず、この固有天賦が変えるのはそれだけです。"
 			}
 		}
@@ -890,7 +890,7 @@
 	"kirara": {
 		"kirara__constellation__perfectly_packaged": {
 			"reason": {
-				"en": "8464514d",
+				"en": "0c96db4d",
 				"text": "ローテーションプランナーはマルチプレイを扱わず、これらのシールドは他のプレイヤーのキャラクターにだけ付与されます。"
 			}
 		}
@@ -912,7 +912,7 @@
 		},
 		"kujou_sara__passive__decorum": {
 			"reason": {
-				"en": "5fe75ff6",
+				"en": "d126216a",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果がチームに回復する元素エネルギーは描画されません。"
 			}
 		},
@@ -934,7 +934,7 @@
 	"lan_yan": {
 		"lan_yan__burst__lustrous_moonrise": {
 			"reason": {
-				"en": "bbcf6a65",
+				"en": "9088dd0f",
 				"text": "ローテーションプランナーは敵の引き寄せを扱いません。月踏む鶴弦でダメージ以外に加わるのはそれだけです。"
 			}
 		},
@@ -956,19 +956,19 @@
 	"layla": {
 		"layla__constellation__fortress_of_fantasy": {
 			"reason": {
-				"en": "3b41b178",
+				"en": "67091820",
 				"text": "ローテーションプランナーはマルチプレイを扱わず、この追加のシールドは他のプレイヤーのキャラクターだけを守ります。"
 			}
 		},
 		"layla__constellation__lights_remit": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"layla__passive__sweet_slumber_undisturbed": {
 			"caveat": {
-				"en": "1b695244",
+				"en": "040d192e",
 				"text": "ボーナスはレイラの元素スキルのダメージすべてに表示しています。ゲームでは飛星にだけ適用されます。"
 			}
 		}
@@ -976,7 +976,7 @@
 	"linnea": {
 		"linnea__skill__countermeasure_lumis_battle_cry": {
 			"caveat": {
-				"en": "0b8a7847",
+				"en": "9cc418dd",
 				"text": "未対応：連打。ルミの100万トンハンマーと、より遅い通常の形態。"
 			}
 		}
@@ -984,25 +984,25 @@
 	"lisa": {
 		"lisa__constellation__plasma_eruption": {
 			"reason": {
-				"en": "791bb7d6",
+				"en": "abf8b388",
 				"text": "薔薇の雷光が放つ雷の数はランダムです。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"lisa__constellation__pulsating_witch": {
 			"reason": {
-				"en": "29bcaa61",
+				"en": "6e177091",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は蒼雷の長押しのダメージを上げるだけで、導雷の層はそのためだけにあります。"
 			}
 		},
 		"lisa__passive__induced_aftershock": {
 			"reason": {
-				"en": "29bcaa61",
+				"en": "6e177091",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は蒼雷の長押しのダメージを上げるだけで、導雷の層はそのためだけにあります。"
 			}
 		},
 		"lisa__skill__violet_arc": {
 			"reason": {
-				"en": "29bcaa61",
+				"en": "6e177091",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は蒼雷の長押しのダメージを上げるだけで、導雷の層はそのためだけにあります。"
 			}
 		}
@@ -1022,13 +1022,13 @@
 		},
 		"lohen__constellation__o_breezes_that_so_oft_bear_sorrowful_lament": {
 			"reason": {
-				"en": "6b16d738",
+				"en": "d43fb2b6",
 				"text": "ローテーションプランナーは闘争心を追跡せず、この命ノ星座が変えるのはそれだけです。"
 			}
 		},
 		"lohen__constellation__radiant_love_laughing_death": {
 			"reason": {
-				"en": "9453314d",
+				"en": "0591a02d",
 				"text": "ローテーションプランナーは元素エネルギーも闘争心も追跡しないため、この効果が回復するものは描画されません。"
 			}
 		},
@@ -1040,7 +1040,7 @@
 		},
 		"lohen__passive__moratorium_on_questioning": {
 			"reason": {
-				"en": "553bd77a",
+				"en": "51cefe64",
 				"text": "ローテーションプランナーは闘争心を追跡せず、この固有天賦が変えるのはそれだけです。"
 			}
 		},
@@ -1054,7 +1054,7 @@
 	"lynette": {
 		"lynette__constellation__a_cold_blade_like_a_shadow": {
 			"reason": {
-				"en": "9c41bdc3",
+				"en": "ab0914c1",
 				"text": "ローテーションプランナーは敵の引き寄せを扱いません。この命ノ星座でダメージ以外に加わるのはそれだけです。"
 			}
 		}
@@ -1062,7 +1062,7 @@
 	"lyney": {
 		"lyney__passive__perilous_performance": {
 			"reason": {
-				"en": "cb564bde",
+				"en": "7aa3b802",
 				"text": "ローテーションプランナーは元素エネルギーを追跡せず、ダメージの数値も描画しません。この効果は元素エネルギーを回復し、ファニーキャット·ハットのクラッカーバレットのダメージを上げるだけです。"
 			}
 		}
@@ -1070,7 +1070,7 @@
 	"mavuika": {
 		"mavuika__constellation__humanitys_name_unfettered": {
 			"caveat": {
-				"en": "5d21451a",
+				"en": "a7f3e6c6",
 				"text": "焚曜の輪・灼影による防御力-20%は、元素爆発または長押しスキルの後の双駆輪の期間全体に表示されます。ゲームでは交代すると早めに終わります。未対応：つき従う輪による3秒毎の炎元素ダメージ。"
 			}
 		},
@@ -1088,7 +1088,7 @@
 		},
 		"mavuika__skill__the_named_moment": {
 			"caveat": {
-				"en": "5c04d99b",
+				"en": "c54b56ad",
 				"text": "夜魂の加護中にEをもう一度押すと、ここではクールタイムを待ちます。ゲームでは双駆輪と焚曜の輪が切り替わります。"
 			}
 		}
@@ -1096,17 +1096,17 @@
 	"mika": {
 		"mika__constellation__sunfrost_encomium": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"mika__skill__starfrost_swirl": {
 			"caveat": {
-				"en": "5d0bd5b2",
+				"en": "a35596ee",
 				"text": "霊風は表示されません。チーム内キャラクターは、フィールド上にいる間12秒間攻撃速度+22%を得ます。"
 			},
 			"reason": {
-				"en": "20d88ace",
+				"en": "0d84aabc",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、霊風の攻撃速度ボーナスは描画されません。"
 			}
 		}
@@ -1114,7 +1114,7 @@
 	"mitya": {
 		"mitya__constellation__the_isotopes_born_of_decay": {
 			"reason": {
-				"en": "98aefe95",
+				"en": "e7cdb34b",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、この効果は検知コアによる追加ダメージです。"
 			}
 		},
@@ -1126,19 +1126,19 @@
 		},
 		"mitya__passive__explosive_reagent_safe_limits_exceeded": {
 			"reason": {
-				"en": "d0efbf0c",
+				"en": "267af34c",
 				"text": "プランナーは変形ビーコンを追跡しません。この効果は、ビーコンが1つ生成されるごとにミーチャの会心率を上げます。"
 			}
 		},
 		"mitya__passive__stellar_jubilee_topsecret_protocol": {
 			"caveat": {
-				"en": "c9a43030",
+				"en": "96ca1686",
 				"text": "ミーチャがチームにいると、星電導はスターライトプリズムの代わりに変形ビーコンを生成します。表示される極星フィールドの長さはプリズムの7秒です。"
 			}
 		},
 		"mitya__skill__principle_variable_detection": {
 			"caveat": {
-				"en": "86a3b7c4",
+				"en": "882b9eba",
 				"text": "ゲームでは、6秒以内にもう一度一回押しすると検知コアの状態が切り替わります。タイムラインは発動時に選ばれた状態のままです。"
 			}
 		}
@@ -1160,37 +1160,37 @@
 	"mualani": {
 		"mualani__constellation__spirit_of_the_springs_people": {
 			"reason": {
-				"en": "7292727a",
+				"en": "faf9b0d2",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はサメサメバイト·ビッグウェーブのダメージを（すべての噛みつきで）上げるだけです。"
 			}
 		},
 		"mualani__constellation__the_leisurely_meztli": {
 			"reason": {
-				"en": "dc806283",
+				"en": "f8b2b19f",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は最初のサメサメバイト·ビッグウェーブのダメージを上げるだけです。"
 			}
 		},
 		"mualani__normal__sharkys_bite": {
 			"caveat": {
-				"en": "93a4d687",
+				"en": "ec3f33e5",
 				"text": "サーフィン中に入力した重撃もブロックとして描画されますが、ゲームでは夜魂の加護中に重撃は使えません。"
 			}
 		},
 		"mualani__passive__heatresistant_freshwater_floater": {
 			"reason": {
-				"en": "28b528ea",
+				"en": "5768c28c",
 				"text": "ローテーションプランナーは拾得を扱わないため、ムアラニがプクフグフロートから得る夜魂値で夜魂の加護は延びません。"
 			}
 		},
 		"mualani__passive__natlans_greatest_guide": {
 			"reason": {
-				"en": "54ccb690",
+				"en": "862281be",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は爆瀑ロケットのダメージを上げるだけです。"
 			}
 		},
 		"mualani__skill__surfshark_wavebreaker": {
 			"caveat": {
-				"en": "355ac244",
+				"en": "234cf35a",
 				"text": "夜魂の加護のバーは、移動しない場合の6秒の長さで描画されます。ゲームではプクフグフロートを拾うと夜魂値が回復するため、たいていもっと長く続きます。"
 			}
 		}
@@ -1198,13 +1198,13 @@
 	"nahida": {
 		"nahida__passive__awakening_elucidated": {
 			"caveat": {
-				"en": "2b58d890",
+				"en": "d17d3af4",
 				"text": "元素熟知1000以上の構成として扱っています。スキルダメージ+80%と会心率+24%の上限（どちらも元素熟知200を超えた分に応じて増加）に達した状態で表示されます。会心率はすべての命中にも表示されますが、ゲームでは滅浄三業にだけ適用されます。"
 			}
 		},
 		"nahida__passive__compassion_illuminated": {
 			"caveat": {
-				"en": "7a6c1a7a",
+				"en": "b5d1b3ac",
 				"text": "上限の元素熟知+250で表示しています。ゲームではチーム内で最も高い元素熟知の25%なので、上限に届くのは誰かの元素熟知が1,000以上の時だけです。"
 			}
 		}
@@ -1212,19 +1212,19 @@
 	"navia": {
 		"navia__constellation__the_flexible_finesse_of_the_spinas_president": {
 			"reason": {
-				"en": "749def47",
+				"en": "631549fd",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はセレモニアル·クリスタルショットの会心ダメージを上げるだけです。"
 			}
 		},
 		"navia__passive__mutual_assistance_network": {
 			"caveat": {
-				"en": "6547fb02",
+				"en": "ec28007e",
 				"text": "両方の段階を常に有効として表示しています。ゲームでは、炎、雷、氷、水元素のチームメンバーが1人いるとナヴィアの攻撃力+20%、2人で+40%です。"
 			}
 		},
 		"navia__skill__ceremonial_crystalshot": {
 			"reason": {
-				"en": "d2c7e158",
+				"en": "8181e7e2",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はセレモニアル·クリスタルショットのダメージを上げるだけです。"
 			}
 		}
@@ -1238,7 +1238,7 @@
 		},
 		"nefer__constellation__planning_breeds_success": {
 			"reason": {
-				"en": "a68e6f05",
+				"en": "d9aac70b",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は幻の戯による月開花ダメージを上げるだけです。"
 			}
 		},
@@ -1252,25 +1252,25 @@
 	"neuvillette": {
 		"neuvillette__burst__o_tides_i_have_returned": {
 			"reason": {
-				"en": "b931f03a",
+				"en": "607b57e6",
 				"text": "ローテーションプランナーは拾得を扱わないため、この効果が生成する源水の雫は描画されません。"
 			}
 		},
 		"neuvillette__constellation__crown_of_commiseration": {
 			"reason": {
-				"en": "3fb6fd37",
+				"en": "a613dbcb",
 				"text": "ローテーションプランナーは拾得も回復も扱わないため、ヌヴィレットが回復を受けた時に得る源水の雫は描画されません。"
 			}
 		},
 		"neuvillette__constellation__juridical_exhortation": {
 			"reason": {
-				"en": "5869d5be",
+				"en": "119dc620",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は衡平な裁量の会心ダメージを上げるだけです。"
 			}
 		},
 		"neuvillette__constellation__wrathful_recompense": {
 			"reason": {
-				"en": "767e14b2",
+				"en": "22d51c8a",
 				"text": "ローテーションプランナーは拾得を扱わないため、吸収した源水の雫で衡平な裁量は延びません。追加の水流はダメージを足すだけです。"
 			}
 		},
@@ -1282,7 +1282,7 @@
 		},
 		"neuvillette__skill__o_tears_i_shall_repay": {
 			"reason": {
-				"en": "b931f03a",
+				"en": "607b57e6",
 				"text": "ローテーションプランナーは拾得を扱わないため、この効果が生成する源水の雫は描画されません。"
 			}
 		}
@@ -1290,13 +1290,13 @@
 	"nicole": {
 		"nicole__constellation__do_not_be_afraid_child_who_is_loved": {
 			"caveat": {
-				"en": "801414e9",
+				"en": "1ae2cbeb",
 				"text": "未対応：追加のミステリウムの影。ゲームではフィールド上キャラクターの命中で6秒毎に発動します。"
 			}
 		},
 		"nicole__constellation__i_will_guide_you_and_show_you_the_path_you_should_tread": {
 			"caveat": {
-				"en": "3d7cad5a",
+				"en": "526722a0",
 				"text": "全元素耐性として20秒間表示しています。ゲームでは、フィールド上キャラクター自身の元素の耐性だけが、聖祝の導きを持つ間だけ下がります。"
 			}
 		},
@@ -1316,7 +1316,7 @@
 	"nilou": {
 		"nilou__passive__court_of_dancing_petals": {
 			"caveat": {
-				"en": "a2e61a77",
+				"en": "598fd1fb",
 				"text": "発動ごとに10秒間の1区間として表示しています。ゲームでは、金盃の豊穣（30秒）の間にチーム内キャラクターが草元素攻撃を受けるたびに再発動するため、開花のローテーションではほぼ常に有効です。"
 			}
 		},
@@ -1330,7 +1330,7 @@
 	"ningguang": {
 		"ningguang__passive__strategic_reserve": {
 			"caveat": {
-				"en": "01293260",
+				"en": "4a92beb6",
 				"text": "バーは璇璣屏の発動時から始まります。ゲームでは、キャラクターは30秒の間いつでも屏を通り抜けるとボーナスを得ます。"
 			}
 		}
@@ -1338,13 +1338,13 @@
 	"ororon": {
 		"ororon__constellation__trails_amidst_the_forest_fog": {
 			"reason": {
-				"en": "5f53d4b7",
+				"en": "8894c539",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、「夜冥」は「顕象超感覚」のダメージを上げるだけです。追加の跳ね返りには、ローテーションプランナーが扱う1体より多くの敵が必要です。"
 			}
 		},
 		"ororon__passive__aspect_catalyst": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		}
@@ -1378,13 +1378,13 @@
 	"qiqi": {
 		"qiqi__constellation__ascetics_of_frost": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"qiqi__constellation__divine_suppression": {
 			"reason": {
-				"en": "04b0ab22",
+				"en": "c5720850",
 				"text": "ローテーションプランナーは敵の攻撃力を扱いません。また、追加の回復はHPが最も低いチームメンバーに届きますが、それが誰かは分かりません。"
 			}
 		},
@@ -1396,13 +1396,13 @@
 		},
 		"qiqi__constellation__rite_of_resurrection": {
 			"reason": {
-				"en": "d3002fa9",
+				"en": "7808bb47",
 				"text": "ローテーションプランナーは戦闘不能のキャラクターを扱わず、この効果は戦闘不能のチームメンバーを復活させて回復するだけです。"
 			}
 		},
 		"qiqi__passive__a_glimpse_into_arcanum": {
 			"reason": {
-				"en": "81888462",
+				"en": "7f06d21e",
 				"text": "閃耀状態の外では、この護符は50%の確率でしか付与されず、ローテーションプランナーは確率を再現しません。閃耀状態では必ず付与されますが、ローテーションプランナーは攻撃の命中から護符を置けません。"
 			}
 		},
@@ -1414,7 +1414,7 @@
 		},
 		"qiqi__skill__adeptus_art_herald_of_frost": {
 			"caveat": {
-				"en": "9c5eab7e",
+				"en": "caae887e",
 				"text": "魔女の諭示が解放済みとして扱っています：クールタイム15秒と寒病鬼差の連携攻撃です。その2.2秒のクールタイムは、ここではチーム全体で共有されます。ゲームではキャラクターごとに別です。"
 			}
 		}
@@ -1422,13 +1422,13 @@
 	"raiden_shogun": {
 		"raiden_shogun__constellation__ominous_inscription": {
 			"reason": {
-				"en": "3dd4bfe8",
+				"en": "41f89efa",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は奥義·夢想真説と夢想の一心のダメージを上げるだけです。"
 			}
 		},
 		"raiden_shogun__passive__wishes_unnumbered": {
 			"reason": {
-				"en": "a2165a50",
+				"en": "9def1a4e",
 				"text": "ローテーションプランナーは拾得を扱いません。この効果で得る願力は、奥義·夢想真説と夢想の一心のダメージを上げるだけです。"
 			}
 		}
@@ -1448,13 +1448,13 @@
 		},
 		"razor__constellation__wolfs_instinct": {
 			"reason": {
-				"en": "db2cbab5",
+				"en": "d99142f1",
 				"text": "ローテーションプランナーは拾得を扱わないため、元素オーブや元素粒子の拾得によるこのダメージボーナスは描画されません。"
 			}
 		},
 		"razor__passive__hunger": {
 			"reason": {
-				"en": "dd10fc6c",
+				"en": "02f0ba50",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この元素チャージ効率ボーナスの条件である元素エネルギー50%未満かどうかが分かりません。"
 			}
 		}
@@ -1462,13 +1462,13 @@
 	"rosaria": {
 		"rosaria__constellation__painful_grace": {
 			"reason": {
-				"en": "3f2a4d7b",
+				"en": "500334a9",
 				"text": "この元素エネルギーは会心の命中で回復します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"rosaria__constellation__unholy_revelation": {
 			"reason": {
-				"en": "e4ed4200",
+				"en": "8c6a2ade",
 				"text": "この効果は会心の命中で発動します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		}
@@ -1476,7 +1476,7 @@
 	"sandrone": {
 		"sandrone__constellation__an_heiress_gazed_into_the_lookingglass": {
 			"reason": {
-				"en": "68957b1d",
+				"en": "4d67d115",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果はファジオの収束した光線の会心ダメージを上げるだけです。"
 			}
 		},
@@ -1488,13 +1488,13 @@
 		},
 		"sandrone__normal__formule_phenomenale_selfevident_proposition": {
 			"caveat": {
-				"en": "02c79677",
+				"en": "58d2aed7",
 				"text": "Cだけを書くと、ファジオがオーバーヒートする前の最後の光線までチャージを続けます。C ~Xs と書くと自分で長さを指定できます。ファジオの温度そのものは描画されません。"
 			}
 		},
 		"sandrone__passive__eternal_speculation_engine": {
 			"reason": {
-				"en": "a8ec04b4",
+				"en": "439acbf0",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は、ファジオの2発目のプリズム弾とエネルギー光線のダメージを上げるだけです。"
 			}
 		}
@@ -1508,7 +1508,7 @@
 		},
 		"sangonomiya_kokomi__constellation__the_moon_overlooks_the_waters": {
 			"reason": {
-				"en": "43cdbae7",
+				"en": "34023141",
 				"text": "ローテーションプランナーは攻撃速度も元素エネルギーも扱わないため、攻撃速度ボーナスも、これらの通常攻撃が回復する元素エネルギーも描画されません。"
 			}
 		}
@@ -1516,25 +1516,25 @@
 	"sayu": {
 		"sayu__constellation__egress_prep": {
 			"reason": {
-				"en": "fd055da5",
+				"en": "4b955953",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は風々輪·旋舞蹴のダメージを上げるだけです。"
 			}
 		},
 		"sayu__constellation__skiving_new_and_improved": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"sayu__constellation__sleep_oclock": {
 			"caveat": {
-				"en": "a75f1ede",
+				"en": "723fd54a",
 				"text": "むじむじだるまの元素熟知による回復ボーナスは1回につきHP6,000が上限ですが、表示される数値はそれを示しません。"
 			}
 		},
 		"sayu__passive__no_work_today": {
 			"reason": {
-				"en": "6c13ae12",
+				"en": "a159f8b0",
 				"text": "追加の回復は回復を受けたキャラクターの近くに立つキャラクターに届き、ローテーションプランナーは位置を扱いません。"
 			}
 		}
@@ -1554,25 +1554,25 @@
 		},
 		"sethos__constellation__pylon_of_the_sojourning_sun_temple": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"sethos__constellation__sealed_shrines_spiritsong": {
 			"reason": {
-				"en": "551785a5",
+				"en": "3fe2db63",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は貫影の矢の会心率を上げるだけです。"
 			}
 		},
 		"sethos__passive__the_sand_kings_boon": {
 			"reason": {
-				"en": "b32baa6c",
+				"en": "51658932",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は貫影の矢のダメージを上げるだけです。"
 			}
 		},
 		"sethos__skill__ancient_rite_the_thundering_sands": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		}
@@ -1580,7 +1580,7 @@
 	"shenhe": {
 		"shenhe__constellation__insight": {
 			"reason": {
-				"en": "b519b9b0",
+				"en": "1ee74898",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は申鶴の次の仰霊威召将役呪のダメージを上げるだけです。"
 			}
 		},
@@ -1594,31 +1594,31 @@
 	"shikanoin_heizou": {
 		"shikanoin_heizou__constellation__investigative_collection": {
 			"reason": {
-				"en": "81c6ecff",
+				"en": "9958c2e1",
 				"text": "ローテーションプランナーは敵の引き寄せを扱わないため、引き寄せが強くなってもタイムラインは何も変わりません。"
 			}
 		},
 		"shikanoin_heizou__constellation__named_juvenile_casebook": {
 			"reason": {
-				"en": "334d1cd5",
+				"en": "e8346443",
 				"text": "ローテーションプランナーは攻撃速度を扱わず、変格の層は戮心拳のダメージを上げるだけです。"
 			}
 		},
 		"shikanoin_heizou__constellation__tome_of_lies": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"shikanoin_heizou__passive__paradoxical_practice": {
 			"reason": {
-				"en": "496f734a",
+				"en": "be7279b8",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は戮心拳のダメージを上げるだけです。"
 			}
 		},
 		"shikanoin_heizou__skill__heartstopper_strike": {
 			"reason": {
-				"en": "496f734a",
+				"en": "be7279b8",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は戮心拳のダメージを上げるだけです。"
 			}
 		}
@@ -1626,7 +1626,7 @@
 	"sigewinne": {
 		"sigewinne__burst__super_saturated_syringing": {
 			"reason": {
-				"en": "10415b62",
+				"en": "2e81ce22",
 				"text": "ローテーションプランナーは拾得も命の契約も扱わないため、この効果が吸収する源水の雫は描画されません。"
 			}
 		},
@@ -1638,19 +1638,19 @@
 		},
 		"sigewinne__constellation__can_the_most_radiant_of_spirits_pray_for_me": {
 			"caveat": {
-				"en": "1db67e8c",
+				"en": "93bc7822",
 				"text": "会心のバーはシグウィンのダメージすべてを対象にしています。ゲームでは、ボーナスは過飽和まごころお注射にだけ届きます。"
 			}
 		},
 		"sigewinne__passive__detailed_diagnosis_thorough_treatment": {
 			"reason": {
-				"en": "6bb53371",
+				"en": "0fde32b3",
 				"text": "ローテーションプランナーは命の契約を扱わず、この回復ボーナスはそれに応じて変わります。"
 			}
 		},
 		"sigewinne__passive__requires_appropriate_rest": {
 			"caveat": {
-				"en": "55b839cd",
+				"en": "eb0b6825",
 				"text": "待機中のチームメンバーの元素スキルが命中するたびに、発動時に付与された10層の静養を1層消費します。使い切ると、継続時間がまだ表示されていても元素スキルの追加ダメージは止まります。"
 			}
 		}
@@ -1658,25 +1658,25 @@
 	"skirk": {
 		"skirk__constellation__far_to_fall": {
 			"reason": {
-				"en": "ff52f638",
+				"en": "22f53952",
 				"text": "ローテーションプランナーは拾得を扱わず、水晶の刃はスカークが吸収する虚境の裂け目から生まれます。"
 			}
 		},
 		"skirk__constellation__to_the_source": {
 			"reason": {
-				"en": "509ec2e7",
+				"en": "4c33b1cd",
 				"text": "ローテーションプランナーは拾得を扱わず、「極悪技・斬」の層はスカークが吸収する虚境の裂け目から得られます。"
 			}
 		},
 		"skirk__passive__reason_beyond_reason": {
 			"reason": {
-				"en": "b5be282c",
+				"en": "5af81f1a",
 				"text": "ローテーションプランナーは拾得を扱わないため、スカークが吸収する虚境の裂け目は描画されず、蛇の狡智はゲームより少なくなります。"
 			}
 		},
 		"skirk__passive__return_to_oblivion": {
 			"caveat": {
-				"en": "0b0a7008",
+				"en": "9f71b356",
 				"text": "通常攻撃の段階は、チーム内の氷元素・水元素のメンバーの数に従い、そのうちの誰かが氷元素か水元素の攻撃を命中させると現れます。ゲームでは、メンバーごとの命中がそれぞれ20秒の層を付与します。対応する元素爆発ダメージの段階は表示されません。"
 			}
 		},
@@ -1696,7 +1696,7 @@
 		},
 		"sucrose__constellation__alchemania": {
 			"reason": {
-				"en": "2b8aa91c",
+				"en": "835be162",
 				"text": "クールタイムの短縮は1～7秒のランダムです。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
@@ -1714,7 +1714,7 @@
 		},
 		"sucrose__skill__astable_anemohypostasis_creation_6308": {
 			"reason": {
-				"en": "7ab23318",
+				"en": "5a4c3642",
 				"text": "ローテーションプランナーは敵の引き寄せを扱わないため、風霊の引き寄せは描画されません。"
 			}
 		}
@@ -1728,7 +1728,7 @@
 		},
 		"tartaglia__passive__sword_of_torrents": {
 			"reason": {
-				"en": "cc0ebff9",
+				"en": "b15ab4eb",
 				"text": "この断流は会心の命中で付与されます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		}
@@ -1736,13 +1736,13 @@
 	"thoma": {
 		"thoma__constellation__a_comrades_duty": {
 			"reason": {
-				"en": "d12b3705",
+				"en": "e8d0e563",
 				"text": "この効果は敵がシールドを持つキャラクターを攻撃した時に発動し、ローテーションプランナーは敵からの攻撃を扱いません。"
 			}
 		},
 		"thoma__constellation__longterm_planning": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		}
@@ -1756,7 +1756,7 @@
 		},
 		"tighnari__skill__vijnanaphala_mine": {
 			"caveat": {
-				"en": "4063683b",
+				"en": "5d06ccf9",
 				"text": "未対応：通塞識による花筐の矢のチャージ時間短縮。バフが有効な間も、矢は基本のチャージ時間すべてで表示されます。"
 			}
 		}
@@ -1770,19 +1770,19 @@
 		},
 		"traveler_anemo__constellation__crush_mountains_and_seas": {
 			"caveat": {
-				"en": "6e80250f",
+				"en": "775ee389",
 				"text": "表示されるのは風元素の耐性ダウンだけです。竜巻が元素を吸収した場合、その元素の耐性も10秒間20%下がります。"
 			}
 		},
 		"traveler_anemo__constellation__raging_vortex": {
 			"reason": {
-				"en": "34627b6d",
+				"en": "fed5c78f",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は最初の風災のダメージを上げるだけです。"
 			}
 		},
 		"traveler_anemo__passive__second_wind": {
 			"reason": {
-				"en": "53c79412",
+				"en": "05dffa08",
 				"text": "ローテーションプランナーは敵の撃破を扱わないため、この回復のきっかけになる撃破がありません。"
 			}
 		}
@@ -1796,7 +1796,7 @@
 		},
 		"traveler_dendro__passive__verdant_luxury": {
 			"reason": {
-				"en": "949d1e61",
+				"en": "82654be3",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は草縁剣と臥草若化のダメージを上げるだけです。"
 			}
 		},
@@ -1810,31 +1810,31 @@
 	"traveler_electro": {
 		"traveler_electro__constellation__fickle_cloudstrike": {
 			"reason": {
-				"en": "09441684",
+				"en": "b78efd62",
 				"text": "ローテーションプランナーは豊穰の勾玉の拾得も元素エネルギーも扱わず、この効果が変えるのはそれだけです。"
 			}
 		},
 		"traveler_electro__constellation__spring_thunder_of_fertility": {
 			"reason": {
-				"en": "4340021b",
+				"en": "4e7a5d39",
 				"text": "ローテーションプランナーは豊穰の勾玉の拾得を扱わないため、勾玉の数が変わってもタイムラインは何も変わりません。"
 			}
 		},
 		"traveler_electro__constellation__worldshaker": {
 			"reason": {
-				"en": "2680d845",
+				"en": "de4192bf",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、元素エネルギーも追跡しません。この効果は3回毎の落雷のダメージを上げ、元素エネルギーを回復するだけです。"
 			}
 		},
 		"traveler_electro__passive__resounding_roar": {
 			"reason": {
-				"en": "2678f635",
+				"en": "79b64d79",
 				"text": "ローテーションプランナーは豊穰の勾玉の拾得を扱わないため、勾玉による元素チャージ効率は表示されません。"
 			}
 		},
 		"traveler_electro__passive__thunderflash": {
 			"reason": {
-				"en": "db5a193f",
+				"en": "0eb4b303",
 				"text": "ローテーションプランナーは豊穰の勾玉の拾得を扱わないため、勾玉による雷影剣のクールタイム短縮は表示されません。"
 			}
 		}
@@ -1856,19 +1856,19 @@
 		},
 		"traveler_hydro__constellation__swelling_lake": {
 			"reason": {
-				"en": "a6797ecb",
+				"en": "9dcc2e67",
 				"text": "ローテーションプランナーは源水の雫の拾得を扱わないため、雫が回復する元素エネルギーは表示されません。"
 			}
 		},
 		"traveler_hydro__constellation__tides_of_justice": {
 			"reason": {
-				"en": "fcdc7219",
+				"en": "da132459",
 				"text": "ローテーションプランナーは源水の雫の拾得を扱わないため、雫による回復は表示されません。"
 			}
 		},
 		"traveler_hydro__passive__clear_waters": {
 			"reason": {
-				"en": "708bc3b7",
+				"en": "ed4332c9",
 				"text": "ローテーションプランナーはダメージの数値を描画せず、HPも追跡しません。この効果は消費したHPに応じて飛散する激流のダメージを上げるだけです。"
 			}
 		}
@@ -1876,25 +1876,25 @@
 	"traveler_pyro": {
 		"traveler_pyro__burst__plains_scorcher": {
 			"reason": {
-				"en": "91e3b699",
+				"en": "3720f0a5",
 				"text": "ローテーションプランナーは夜魂値を追跡しないため、燎原の灼炎が回復する夜魂値は描画されません。"
 			}
 		},
 		"traveler_pyro__constellation__everlit_candle": {
 			"reason": {
-				"en": "34c2b779",
+				"en": "1ec3eeb5",
 				"text": "ローテーションプランナーは夜魂値を追跡しないため、この効果が回復する夜魂値は描画されません。"
 			}
 		},
 		"traveler_pyro__constellation__starfires_flowing_light": {
 			"caveat": {
-				"en": "decc311b",
+				"en": "836e6e21",
 				"text": "12秒間すべて表示していますが、夜魂状態が尽きると終わります（元素爆発で補充しない限り約6秒）。自身の夜魂の加護中のキャラクターが得る追加の9%は描画されません。"
 			}
 		},
 		"traveler_pyro__constellation__the_sacred_flame_imperishable": {
 			"caveat": {
-				"en": "d1a98bc7",
+				"en": "85c80b39",
 				"text": "12秒間すべて表示していますが、どちらも夜魂状態が尽きると終わります。会心ダメージ+40%は通常攻撃、重撃、落下攻撃にだけ適用されます。"
 			}
 		},
@@ -1914,7 +1914,7 @@
 		},
 		"valeriy__passive__advance_with_the_creeping_barrage": {
 			"caveat": {
-				"en": "6a483920",
+				"en": "5c59bf86",
 				"text": "元素爆発による衝撃エネルギーは数えないため、その後の重撃がここで重砲直射になるのは、スキルが衝撃エネルギーを供給した場合だけです。"
 			}
 		}
@@ -1922,13 +1922,13 @@
 	"varka": {
 		"varka__constellation__beloved_mondstadt_steadfast_you_shall_shine": {
 			"caveat": {
-				"en": "7f7225b6",
+				"en": "45fb25d8",
 				"text": "未対応：この効果で無料になる出づる四風と蒼牙。タイムラインではどちらも使用回数を消費します。"
 			}
 		},
 		"varka__constellation__when_dawn_breaks_our_journey_shall_take_flight": {
 			"reason": {
-				"en": "65c35fe6",
+				"en": "23bfab00",
 				"text": "この追加の一撃は風元素を付着させず、ローテーションプランナーはダメージの数値を描画しません。"
 			}
 		}
@@ -1936,7 +1936,7 @@
 	"venti": {
 		"venti__burst__winds_grand_ode": {
 			"caveat": {
-				"en": "f848d45b",
+				"en": "ef9387e9",
 				"text": "未対応：暴風の目が近くの氷、炎、水、雷元素のオーラを吸収し、その後のティックごとにその元素の攻撃が加わること。表示されるのは風元素のティックだけです。"
 			}
 		},
@@ -1948,7 +1948,7 @@
 		},
 		"venti__constellation__storm_of_defiance": {
 			"caveat": {
-				"en": "66652bf8",
+				"en": "30058746",
 				"text": "表示されるのは風元素の耐性ダウンだけです。暴風の目が元素を吸収した場合、その元素の耐性も10秒間20%下がります。"
 			}
 		},
@@ -1962,13 +1962,13 @@
 	"vodyanitsa": {
 		"vodyanitsa__burst__koda_sink_with_thee": {
 			"reason": {
-				"en": "9d40fb1d",
+				"en": "b897d54f",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は共に沈みゆくコーダのダメージを上げるだけです。"
 			}
 		},
 		"vodyanitsa__constellation__melancholic_voice_upon_the_gentle_waters": {
 			"reason": {
-				"en": "e759f7c4",
+				"en": "a23e3042",
 				"text": "ローテーションプランナーは回復で発動する効果を描画せず、HPも追跡しません。この効果が依存するのはそれだけです。"
 			}
 		}
@@ -1976,31 +1976,31 @@
 	"wanderer": {
 		"wanderer__constellation__niban_isle_amidst_white_waves": {
 			"reason": {
-				"en": "35f858ca",
+				"en": "56f48324",
 				"text": "ローテーションプランナーは空居力を追跡せず、このボーナスは消費した量に応じて変わります。"
 			}
 		},
 		"wanderer__constellation__shoban_ostentatious_plumage": {
 			"reason": {
-				"en": "51c4746f",
+				"en": "5d4215f3",
 				"text": "ローテーションプランナーは攻撃速度を扱わず、この効果が強化する風の矢は、描画されない確率の発動から生まれます。"
 			}
 		},
 		"wanderer__constellation__yonban_set_adrift_into_spring": {
 			"reason": {
-				"en": "decd9685",
+				"en": "4aaa30bf",
 				"text": "追加の元素はランダムに選ばれます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"wanderer__passive__gales_of_reverie": {
 			"reason": {
-				"en": "27dab4b9",
+				"en": "9db702ab",
 				"text": "「傾落」はランダムに発動します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		},
 		"wanderer__passive__jadeclaimed_flower": {
 			"caveat": {
-				"en": "39c988a0",
+				"en": "15f89a78",
 				"text": "未対応：元素吸収によるバフ。氷元素の会心率+20%と炎元素の攻撃力+30%は表示されません。"
 			}
 		}
@@ -2008,7 +2008,7 @@
 	"wriothesley": {
 		"wriothesley__constellation__terror_for_the_evildoers": {
 			"caveat": {
-				"en": "18479f1a",
+				"en": "a2da373c",
 				"text": "未対応：強化された重撃が、1回の状態につき1回、烈霜の懲戒を4秒延長すること。そのためスキルの有効時間は4秒短く表示されます。"
 			}
 		},
@@ -2028,7 +2028,7 @@
 	"xiangling": {
 		"xiangling__passive__beware_its_super_hot": {
 			"reason": {
-				"en": "a56efafb",
+				"en": "d1e131ad",
 				"text": "ローテーションプランナーはグゥオパァーの唐辛子の拾得を扱わないため、それによる攻撃力アップは表示されません。"
 			}
 		}
@@ -2036,13 +2036,13 @@
 	"xianyun": {
 		"xianyun__burst__stars_gather_at_dusk": {
 			"caveat": {
-				"en": "bb431cbb",
+				"en": "c49f16ed",
 				"text": "未対応：補助仙力の8層（チームの落下攻撃1回につき1層消費）。落下攻撃のバフは、何回落下攻撃をしても16秒間すべて表示されます。"
 			}
 		},
 		"xianyun__skill__skyladder_2": {
 			"reason": {
-				"en": "195c5e6e",
+				"en": "e85c7db0",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は次の閑雲衝撃波のダメージを上げるだけです。"
 			}
 		}
@@ -2098,7 +2098,7 @@
 	"xinyan": {
 		"xinyan__constellation__fatal_acceleration": {
 			"reason": {
-				"en": "695d8793",
+				"en": "448eb56b",
 				"text": "ローテーションプランナーは攻撃速度を扱わず、この効果は会心の命中で発動しますが、それは再現されません。"
 			}
 		},
@@ -2112,7 +2112,7 @@
 	"yae_miko": {
 		"yae_miko__constellation__foxs_mooncall": {
 			"caveat": {
-				"en": "ab4bf018",
+				"en": "937b58c0",
 				"text": "最上位の元素熟知+200で表示しています。これには殺生櫻が同時に3つ必要です。少ない場合、ボーナスは元素熟知60、90、120になります。"
 			}
 		},
@@ -2130,7 +2130,7 @@
 		},
 		"yae_miko__passive__enlightened_blessing": {
 			"reason": {
-				"en": "05919da0",
+				"en": "c2d0a09a",
 				"text": "ローテーションプランナーはダメージの数値を描画しません。この効果は殺生櫻のダメージを上げるだけです。"
 			}
 		},
@@ -2142,7 +2142,7 @@
 		},
 		"yae_miko__skill__yakan_evocation_sesshou_sakura": {
 			"caveat": {
-				"en": "832b0603",
+				"en": "353b70dd",
 				"text": "24秒間（落雷8回）の殺生櫻は、魔女の諭示の天賦「大祓之宣託」が解放済みのものとして扱っています。解放していない場合、殺生櫻は14秒間続き、5回落雷します。"
 			}
 		}
@@ -2156,7 +2156,7 @@
 		},
 		"yanfei__passive__blazing_eye": {
 			"reason": {
-				"en": "9e40880b",
+				"en": "ffef1b59",
 				"text": "この効果は重撃の会心で発動します。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		}
@@ -2164,19 +2164,19 @@
 	"yaoyao": {
 		"yaoyao__burst__moonjade_descent": {
 			"caveat": {
-				"en": "9731fc98",
+				"en": "72253bbe",
 				"text": "タイムラインは月桂1体分の大根を1秒に1回表示します。ゲームでは最大3体が同時に投げるため、大根の着弾と回復は約3倍の頻度で起きます。"
 			}
 		},
 		"yaoyao__constellation__innocent": {
 			"reason": {
-				"en": "ecc87abc",
+				"en": "e7e100a0",
 				"text": "ローテーションプランナーは元素エネルギーを追跡しないため、この効果が回復する元素エネルギーは描画されません。"
 			}
 		},
 		"yaoyao__passive__starscatter": {
 			"reason": {
-				"en": "3988a6b3",
+				"en": "579bd61b",
 				"text": "これらの大根はヨォーヨが走る、跳ぶ、移動する時に投げられ、ローテーションプランナーは移動を扱いません。"
 			}
 		}
@@ -2192,7 +2192,7 @@
 	"yoimiya": {
 		"yoimiya__constellation__naganohara_meteor_swarm": {
 			"reason": {
-				"en": "b0d485e1",
+				"en": "4631e883",
 				"text": "追加の熾焔の矢はそれぞれ50%の確率で放たれます。ローテーションプランナーは確率を再現しないため、同じローテーションは誰にとっても同じバーを描画します。"
 			}
 		}
@@ -2206,7 +2206,7 @@
 		},
 		"yumemizuki_mizuki__constellation__buds_warm_lucid_springs": {
 			"reason": {
-				"en": "7ff5651c",
+				"en": "96975686",
 				"text": "ローテーションプランナーは夢見風の名菓の拾得を扱わないため、その回復、ダメージ、元素エネルギーは表示されません。"
 			}
 		},
@@ -2220,13 +2220,13 @@
 	"yun_jin": {
 		"yun_jin__constellation__decorous_harmony": {
 			"reason": {
-				"en": "6bd65663",
+				"en": "f68258a9",
 				"text": "ローテーションプランナーは攻撃速度を扱わないため、この効果でタイムラインは何も変わりません。"
 			}
 		},
 		"yun_jin__passive__true_to_oneself": {
 			"reason": {
-				"en": "07d68f00",
+				"en": "a513bfae",
 				"text": "ローテーションプランナーでは敵が攻撃しないため、反撃する攻撃がありません。"
 			}
 		}
@@ -2234,13 +2234,13 @@
 	"zhongli": {
 		"zhongli__constellation__chrysos_bounty_of_dominator": {
 			"reason": {
-				"en": "01da0c28",
+				"en": "326cd972",
 				"text": "ローテーションプランナーでは敵が攻撃しないため、玉璋シールドがこの回復の元になるダメージを受けることはありません。"
 			}
 		},
 		"zhongli__passive__resonant_waves": {
 			"reason": {
-				"en": "9941f4f2",
+				"en": "d7a40e24",
 				"text": "ローテーションプランナーでは敵が攻撃しないため、玉璋シールドがそれを強化する攻撃を受けることはありません。"
 			}
 		}
@@ -2254,7 +2254,7 @@
 		},
 		"zibai__constellation__the_world_a_journey_in_passing": {
 			"reason": {
-				"en": "06738142",
+				"en": "42df5ce4",
 				"text": "ローテーションプランナーは「隙に浮かぶ光」を追跡せず、この効果は消費した量に応じてダメージを上げるだけです。"
 			}
 		},

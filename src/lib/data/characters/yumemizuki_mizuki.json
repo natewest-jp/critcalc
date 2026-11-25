@@ -702,7 +702,7 @@
 			],
 			"description": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal. It will also heal a nearby party member with lower HP for 266% of Yumemizuki Mizuki's Elemental Mastery, as well as regenerate 5 Energy for Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model picking up Yumemi Style Special Snacks, so their healing, damage and Energy aren't shown."
+				"reason": "The Rotation Planner doesn’t model picking up Yumemi Style Special Snacks, so their healing, damage, and Energy aren’t shown."
 			}
 		},
 		{

@@ -265,7 +265,7 @@
 			"tags": ["heal", "summon"],
 			"energyCost": 80,
 			"effects": [],
-			"caveat": "The timeline shows one Yuegui's radishes, once a second. In game up to 3 throw at once, so radishes land — and heal — about three times as often.",
+			"caveat": "The timeline shows one Yuegui’s radishes, once a second. In game up to 3 throw at once, so radishes land — and heal — about three times as often.",
 			"_curatorNotes": [
 				"Generator behavior 'stance' changed to 'instant' — Adeptal Legacy state does NOT replace normals/charge; Yaoyao retains full action freedom during burst. | Generator top-level duration: 5s removed; gcsim burstDur = 6*60 = 6s — discrepancy with genshin-db value of 5s; reviewer to verify in-game. | Up to 3 Yuegui: Jumping Mode spawn sequentially at frames 104, 162, and 221 (per burst.go QueueCharTask calls); each has Duration=-1 (lives until burst ends via removeBurst()); only first spawn frame (104) modeled in spawnsAt. | Adeptal Legacy ends when Yaoyao leaves the field — gcsim subscribes to OnCharacterSwap via onExitField(); terminatesOn: 'swap' on the summon reflects this. | Adeptal Legacy also grants +15% movement speed and increased dendro RES — not in effects[] (empty from generator); reviewer to add. | Radishes thrown during Adeptal Legacy use burstRadishAI (AttackTagElementalBurst) instead of skillRadishAI; this tag switch is not represented in effects[].",
 				"Radish heal authored 2026-07-12 as a summonTick heal on Yuegui: Jumping Mode. Same throw cadence as the skill Yuegui (yuegui.go: first throw 29f after spawn, then every 60f; +13f radish travel → first heal ~0.7s, then 1s) → interval 1, firstTickDelay 0.7. TL10 heal: burstRadishHealing[0][9]=0.036303 (3.63% Max HP) + burstRadishHealing[1][9]=427.29947 (sidecar 'Adeptal Legacy White Jade Radish Healing' col 10 = '3.63% Max HP+427'). Snapshots Yaoyao's Max HP + Healing Bonus at Jumping-Yuegui spawn.",
@@ -290,7 +290,7 @@
 			"abilityType": "passive",
 			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, Yaoyao will constantly throw White Jade Radishes at nearby opponents when she is sprinting, jumping, or running. She can throw 1 White Jade Radish this way once every 0.6s.",
 			"notModeled": {
-				"reason": "These radishes are thrown while Yaoyao sprints, jumps or runs, and the Rotation Planner doesn’t model movement."
+				"reason": "These radishes are thrown while Yaoyao sprints, jumps, or runs, and the Rotation Planner doesn’t model movement."
 			}
 		},
 		{
@@ -367,7 +367,7 @@
 			"constellationLevel": 2,
 			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn’t track energy, so it doesn’t draw the Energy this restores."
 			}
 		},
 		{

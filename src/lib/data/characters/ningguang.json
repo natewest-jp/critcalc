@@ -149,7 +149,7 @@
 				}
 			],
 			"description": "A character that passes through the Jade Screen will gain a 12% Geo DMG Bonus for 10s.",
-			"caveat": "The bar starts at the Jade Screen's cast; in game a character picks the bonus up by walking through the screen, any time in its 30s."
+			"caveat": "The bar starts at the Jade Screen’s cast; in game a character picks the bonus up by walking through the screen, any time in its 30s."
 		}
 	],
 	"constellations": [

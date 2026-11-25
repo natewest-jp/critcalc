@@ -782,7 +782,7 @@
 				}
 			],
 			"description": "The Hunter's Precision effect obtained from activating a **Hunter's Mark** can now stack, max 2 stacks. When the stack count reaches 2, characters affected by Hunter's Precision will also have their Elemental Mastery increased by 100 if they are on the field.",
-			"caveat": "The ATK bonus doubles at two Hunter's Precision stacks and the +100 EM needs both; the timeline shows one stack's ATK and grants the EM from the first activation.",
+			"caveat": "The ATK bonus doubles at two Hunter’s Precision stacks and the +100 EM needs both; the timeline shows one stack’s ATK and grants the EM from the first activation.",
 			"_curatorNotes": [
 				"The +100 EM is authored at the same two activation sites as Hunter's Precision itself, target 'active' (\"currently active party members\" / \"if they are on the field\").",
 				"⛔ WHAT IS NOT MODELLED IS THE SECOND STACK, and the caveat says so. Counting Hunter's Precision stacks would need a second stack resource granted per activation, whose gate would have to read the FIRST resource's post-grant value inside one dispatch — a dependency on intra-cast effect ordering that nothing documents and nothing guards. `BuffEffect.stacks` {maxStacks, durationModel} is not the answer either: it has NO consumer anywhere (the only maxStacks reader is the perStack BuffValue), so authoring it would render nothing and assert something no test could check.",

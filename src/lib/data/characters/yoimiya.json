@@ -323,7 +323,7 @@
 				"Probabilistic extra-hit mechanic: 50% chance per in-stance N for an extra arrow at 60% of total mult. Not modeled — schema has no probabilistic damage-add concept and proc reliability is non-trivial in practice. Reviewer-owned."
 			],
 			"notModeled": {
-				"reason": "Each extra Blazing Arrow has a 50% chance to fire. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "Each extra Blazing Arrow has a 50% chance to fire. The Rotation Planner doesn’t simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		}
 	],

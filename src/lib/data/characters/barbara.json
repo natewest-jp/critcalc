@@ -165,7 +165,7 @@
 					"flat": 635.608
 				}
 			],
-			"caveat": "The 15s Melody Loop isn't drawn, so nothing marks the window in which Normal and Charged hits heal. The periodic active-character regen (about every 5s) isn't shown either.",
+			"caveat": "The 15s Melody Loop isn’t drawn, so nothing marks the window in which Normal and Charged hits heal. The periodic active-character regen (about every 5s) isn’t shown either.",
 			"_curatorNotes": [
 				"Melody Loop is a duration-bounded self-status on the active character (15s base, terminates on recast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation. The Loop enables on-hit healing from Barbara's Normal Attacks (4× on Charged) and periodic active-character HP regen, and applies the Wet status to the bearer.",
 				"Melody Loop duration extension (A4 Encore): when active character gains Elemental Orb/Particle, Melody Loop extends by 1s (max +5s total). Fits the `durationExtensions[]` primitive (E5, 2026-05-10) but the matching trigger `onPickup` is not yet a schema primitive.",
@@ -300,7 +300,7 @@
 			],
 			"description": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model particle pickups, and this extension comes from picking up Elemental Orbs and Particles."
+				"reason": "The Rotation Planner doesn’t model particle pickups, and this extension comes from picking up Elemental Orbs and Particles."
 			}
 		}
 	],
@@ -316,7 +316,7 @@
 			],
 			"description": "Barbara regenerates 1 Energy every 10s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn’t track energy, so it doesn’t draw the Energy this restores."
 			}
 		},
 		{
@@ -390,7 +390,7 @@
 			"constellationLevel": 6,
 			"description": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model characters falling in battle, so this revive has nothing to show."
+				"reason": "The Rotation Planner doesn’t model characters falling in battle, so this revive has nothing to show."
 			}
 		}
 	],

@@ -115,7 +115,7 @@
 			"cooldownStartDelay": 16,
 			"tags": [],
 			"effects": [],
-			"caveat": "Soulwind isn't shown — party members gain 22% ATK SPD for 12s while they're on the field.",
+			"caveat": "Soulwind isn’t shown — party members gain 22% ATK SPD for 12s while they’re on the field.",
 			"_curatorNotes": [
 				"Generator authored 'behavior: \"stance\"'; changed to 'instant'. Soulwind is a 12s team ATK SPD buff — normals/charge are not replaced. Reviewer to decide if buff duration needs self-status representation.",
 				"Soulwind team ATK SPD buff not authorable (capability sweep 2026-07-28): gcsim skill.go:220-227 skillBuff() adds an AtkSpd StatMod to every party member for 12s; mika_gen.go:188 atkSpdBuff[9]=0.22 (TL10 = 22%). The Stat union has no attack-speed key (vocabulary frozen pre-launch), so the mechanic is caveated instead of authored.",
@@ -151,7 +151,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model attack speed, so Soulwind's ATK SPD bonus isn't drawn."
+				"reason": "The Rotation Planner doesn’t model attack speed, so Soulwind’s ATK SPD bonus isn’t drawn."
 			}
 		},
 		{
@@ -271,7 +271,7 @@
 			],
 			"description": "When Mika's own Skyfeather Song's Eagleplume state heals party members, this will restore 3 Energy to Mika. This form of Energy restoration can occur 5 times during the Eagleplume state created by 1 use of Skyfeather Song.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn’t track energy, so it doesn’t draw the Energy this restores."
 			}
 		},
 		{
