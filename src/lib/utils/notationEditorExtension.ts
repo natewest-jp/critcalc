@@ -37,6 +37,7 @@ import {
 	type CompletionResult
 } from '@codemirror/autocomplete';
 import { tokenizeNotation, MAX_NOTATION_CHARS, type Token, type TokenKind } from './tokenizer';
+import { halfWidthChanges, halfWidthNotation } from './notationWidth';
 import { flagNotation, flagSeverity, type NotationFlag } from './notationFlags';
 import { seatsField } from './notationSeats';
 import { get } from 'svelte/store';
@@ -376,9 +377,11 @@ const SUPERSCRIPT_RE = /[\u00B2\u00B3\u00B9\u2070\u2074-\u2079]+/g;
  *   1. Strip superscript footnote markers (¹²³…) common in KQM documents
  *   2. Collapse line breaks to spaces (pasting multi-line from a guide)
  *   3. Ensure spaces around '>' so segments split cleanly
+ * after making full-width notation ASCII (`halfWidthNotation`), so a line
+ * written in Japanese input pastes as plain notation.
  */
 function normalizePaste(raw: string): string {
-	return raw
+	return halfWidthNotation(raw)
 		.replace(SUPERSCRIPT_RE, '')
 		.replace(/[\r\n]+/g, ' ')
 		.replace(/\s*>\s*/g, ' > ')
@@ -393,11 +396,33 @@ const pasteHandler = EditorView.domEventHandlers({
 		const sel = view.state.selection.main;
 		view.dispatch({
 			changes: { from: sel.from, to: sel.to, insert: normalized },
-			selection: { anchor: sel.from + normalized.length }
+			selection: { anchor: sel.from + normalized.length },
+			// Named, so the read-only filter refuses it like any other input,
+			// and the editor can offer the notation names for what it brought.
+			userEvent: 'input.paste'
 		});
 		return true;
 	}
 });
+
+/**
+ * Full-width notation typed in Japanese input (Ｅ, ＞, the ideographic space)
+ * becomes ASCII as it lands (`notationWidth.ts`), in the same transaction, so
+ * one ⌘Z undoes both. Never during a composition: rewriting the IME's
+ * provisional text breaks it. `imeGuard` folds what a composition commits.
+ */
+const halfWidthOnInput = EditorState.transactionFilter.of((tr) => {
+	if (!tr.docChanged || !tr.isUserEvent('input.type') || tr.isUserEvent('input.type.compose'))
+		return tr;
+	const changes = halfWidthChanges(tr.newDoc.toString());
+	return changes.length ? [tr, { changes, sequential: true }] : tr;
+});
+
+/** Fold the document's full-width notation now, as one input edit. */
+function foldHalfWidth(view: EditorView): void {
+	const changes = halfWidthChanges(view.state.doc.toString());
+	if (changes.length) view.dispatch({ changes, userEvent: 'input.type' });
+}
 
 // ---------------------------------------------------------------------------
 // Character name autocomplete
@@ -476,8 +501,9 @@ function foreignNameCompletion(
 }
 
 /**
- * The composer's half of the IME rule above. On `compositionend` the source
- * is asked again, since its answer during the composition was nothing. A key
+ * The composer's half of the IME rule above. On `compositionend` the
+ * committed text's full-width notation is folded, and the source is asked
+ * again, since its answer during the composition was nothing. A key
  * the IME owns (Enter or Tab confirming a conversion) is kept from the
  * completion keymap, so confirming 胡桃 never also accepts Hu Tao. The key is
  * not prevented, so the IME still gets it.
@@ -491,6 +517,9 @@ function imeGuard(): Extension {
 				// Later, so CodeMirror has read the committed text first (Safari
 				// fires this before the final change lands).
 				setTimeout(() => {
+					if (view.compositionStarted) return;
+					// What the composition committed, in full-width forms (Ｅ, ＞).
+					foldHalfWidth(view);
 					const head = segmentHeadAt(view.state.doc.toString(), view.state.selection.main.head);
 					if (head && isForeignName(head.text) && !view.compositionStarted) startCompletion(view);
 				}, 20);
@@ -740,6 +769,7 @@ export function buildNotationExtensions(
 		pickedRange,
 		notationHighlight,
 		pasteHandler,
+		halfWidthOnInput,
 		autocompletion({ override: [characterCompletionSource] }),
 		imeGuard(),
 		// Tooltips (the autocomplete popup) portal to <body>: inside the editor
