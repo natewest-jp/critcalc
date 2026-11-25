@@ -138,7 +138,7 @@
 				"Source: Fandom \"Explosive Reagent: Safe Limits Exceeded\" (2026-11-06)."
 			],
 			"notModeled": {
-				"reason": "The planner doesn’t track Gradient Beacons, and this raises Mitya’s CRIT Rate for each one created."
+				"reason": "The Rotation Planner doesn’t track Gradient Beacons, and this raises Mitya’s CRIT Rate for each one created."
 			}
 		},
 		{

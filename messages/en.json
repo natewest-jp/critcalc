@@ -2133,6 +2133,7 @@
 	"tb_this_pick_takes_it_away": "This pick takes it away.",
 	"tb_click_to_find_who_provides_it": "Click to find who provides it.",
 	"tb_the_team_s_capabilities": "The team’s capabilities",
+	"tb_season_month": "Season: {month}",
 	"tb_season_name_start_end": "Season: {name}, {start} – {end}",
 	"tb_cycle_name_start_end": "Cycle: {name}, {start} – {end}",
 	"tb_gains": "Gains",

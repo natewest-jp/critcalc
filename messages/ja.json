@@ -2091,6 +2091,7 @@
 	"tb_this_pick_takes_it_away": "この選択で失われます。",
 	"tb_click_to_find_who_provides_it": "クリックすると、提供できるキャラクターを探せます。",
 	"tb_the_team_s_capabilities": "チームの能力",
+	"tb_season_month": "シーズン：{month}",
 	"tb_season_name_start_end": "シーズン：{name}、{start}～{end}",
 	"tb_cycle_name_start_end": "期間：{name}、{start}～{end}",
 	"tb_gains": "獲得",

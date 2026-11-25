@@ -267,7 +267,7 @@
 				"[caption-sweep 2026-07-20] Caveat added when constellation passive-trigger bonuses were wired into the Always-on caption: the null-resolving gate lists optimistically."
 			],
 			"description": "Increases Yanfei's Charged Attack CRIT Rate by 20% against enemies below 50% HP.",
-			"caveat": "Listed as always active; in game the Charged Attack CRIT Rate bonus only applies against enemies below 50% HP."
+			"caveat": "Listed as always active; in game the Charged Attack CRIT Rate bonus only applies against opponents below 50% HP."
 		},
 		{
 			"id": "yanfei__constellation__samadhi_fireforged",

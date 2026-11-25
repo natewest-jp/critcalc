@@ -143,6 +143,22 @@ describe('US English in the source (docs/text/style-guide.md)', () => {
 	});
 });
 
+describe('user-facing text renders through messages (CLAUDE.md: standing rules)', () => {
+	/** Dev-only pages, English by design. */
+	const DEV = /^src\/routes\/(\(scene\)\/)?(lab|styleguide)\//;
+	/** A text prop or attribute written as an English literal (`label="Teams"`)
+	 *  stays English on every locale; it belongs in `m.<key>()`. */
+	const LITERAL =
+		/\b(label|title|placeholder|ariaLabel|aria-label|alt|kicker|heading|hint)="[^"{]*[A-Za-z]{2}/;
+
+	it('no component passes an English literal as a label, title, or alt', () => {
+		const offenders = files.filter(
+			(f) => f.endsWith('.svelte') && !DEV.test(f) && LITERAL.test(stripComments(read(f)))
+		);
+		expect(offenders).toEqual([]);
+	});
+});
+
 /**
  * The source half of the mark sweep; `e2e/marks.spec.ts` is the rendered half,
  * on the surfaces it opens. Same code points, same exemptions: rarity stars
