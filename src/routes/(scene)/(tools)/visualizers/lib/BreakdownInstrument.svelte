@@ -721,6 +721,10 @@
 	const CHEV_SLOPE = 0.45;
 	/** Faint (⚓ Nate): 12% at the head, fading to nothing at the tail */
 	const CHEV_HEAD = 0.12;
+	/** 🎛️ ⚓ Nate (2026-11-25): the result's fade runs the other way, lighter
+	 *  at its head and darker at its tail; a subtotal keeps the stripes'
+	 *  direction. Upright only: the rows form keeps its own. */
+	const TOTAL_FADE_FROM_TAIL = true;
 	const chevAlpha = (k: number, count: number) =>
 		count <= 1 ? CHEV_HEAD : CHEV_HEAD * (1 - k / (count - 1));
 	function chevrons(k: number): { points: string; alpha: number }[] {
@@ -1393,8 +1397,8 @@
 									id="{uid}-fade-{r.id}"
 									x1="0"
 									x2="0"
-									y1={g.loss ? 1 : 0}
-									y2={g.loss ? 0 : 1}
+									y1={g.loss !== (r.kind === 'total' && TOTAL_FADE_FROM_TAIL) ? 1 : 0}
+									y2={g.loss !== (r.kind === 'total' && TOTAL_FADE_FROM_TAIL) ? 0 : 1}
 								>
 									<stop offset="0" style:stop-color="var(--bright-ink)" stop-opacity={CHEV_HEAD} />
 									<stop offset="1" style:stop-color="var(--bright-ink)" stop-opacity="0" />
