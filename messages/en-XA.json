@@ -2133,6 +2133,7 @@
 	"tb_this_pick_takes_it_away": "⟦Ţĥîš þîçķ ţåķéš îţ åŵåý. ōñé ţŵö⟧",
 	"tb_click_to_find_who_provides_it": "⟦Çļîçķ ţö ƒîñð ŵĥö þŕöṽîðéš îţ. ōñé ţŵö ţĥŕéé⟧",
 	"tb_the_team_s_capabilities": "⟦Ţĥé ţéåɱ’š çåþåƀîļîţîéš ōñé ţŵö⟧",
+	"tb_season_month": "⟦Šéåšöñ: {month} ōñé⟧",
 	"tb_season_name_start_end": "⟦Šéåšöñ: {name}, {start} – {end} ōñé ţŵö⟧",
 	"tb_cycle_name_start_end": "⟦Çýçļé: {name}, {start} – {end} ōñé⟧",
 	"tb_gains": "⟦Ĝåîñš ōñé⟧",

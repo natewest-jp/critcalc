@@ -55,7 +55,7 @@
 <!-- The host the New tag stands on (SeasonPicker's). -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <span class="tp-host" onclick={onOpen}>
-	<BandMenu glass ariaLabel="Season: {fmtMonth(season.start)}" align="start">
+	<BandMenu glass ariaLabel={m.tb_season_month({ month: fmtMonth(season.start) })} align="start">
 		{#snippet face()}<span class="tp-face">{fmtMonth(season.start, 'short')}</span>{/snippet}
 		{#snippet items(close)}
 			{#each seasons as s (s.start)}

@@ -2091,6 +2091,7 @@
 	"tb_this_pick_takes_it_away": "这个选择会失去它。",
 	"tb_click_to_find_who_provides_it": "点击查找能提供它的角色。",
 	"tb_the_team_s_capabilities": "队伍能力",
+	"tb_season_month": "赛季：{month}",
 	"tb_season_name_start_end": "赛季：{name}，{start}–{end}",
 	"tb_cycle_name_start_end": "周期：{name}，{start}–{end}",
 	"tb_gains": "获得",

@@ -550,7 +550,7 @@
 		{#if !filled}
 			<span class="bv-fill" class:bv-fill--vert={phone && !phoneStack}>
 				<BandMenu
-					label="Teams"
+					label={m.menu_teams()}
 					mark="teams"
 					size="sm"
 					align="end"
