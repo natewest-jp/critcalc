@@ -978,6 +978,7 @@
 	"planner_edit_here": "ここで編集",
 	"planner_edit_the_notation": "表記を編集",
 	"planner_type_a_rotation_in_kqm_notation": "KQM表記でローテーションを入力",
+	"planner_name_in_notation": "KQM表記での名前",
 	"planner_notation_history": "表記の履歴",
 	"planner_undo_the_last_notation_change": "直前の表記の変更を元に戻す",
 	"planner_undo_z": "元に戻す（⌘Z）",

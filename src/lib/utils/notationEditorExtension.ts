@@ -26,11 +26,13 @@ import {
 	keymap,
 	tooltips
 } from '@codemirror/view';
-import { EditorState, StateEffect, StateField, type Extension } from '@codemirror/state';
+import { EditorState, Prec, StateEffect, StateField, type Extension } from '@codemirror/state';
 import { history, historyKeymap, defaultKeymap } from '@codemirror/commands';
 import {
 	autocompletion,
 	completionKeymap,
+	completionStatus,
+	startCompletion,
 	type CompletionContext,
 	type CompletionResult
 } from '@codemirror/autocomplete';
@@ -44,6 +46,12 @@ import {
 	searchTwinNames,
 	getIndexEntryByDisplayName
 } from '$lib/data/characterLookup';
+import {
+	isForeignName,
+	isImeKey,
+	segmentHeadAt,
+	suggestNotationNames
+} from '$lib/i18n/notationNames';
 import { elementPalette } from './elementColors';
 import { resolveActionElement, type NormalActionKind } from './actionElement';
 import type { Element } from '$lib/types/ability';
@@ -394,21 +402,16 @@ const pasteHandler = EditorView.domEventHandlers({
 // ---------------------------------------------------------------------------
 // Character name autocomplete
 // Mirrors the old textarea logic: only completes the first token in a segment
-// (before any whitespace), requires ≥2 characters typed.
+// (before any whitespace), requires ≥2 characters typed. A name in another
+// language goes to foreignNameCompletion, which has its own rules.
 // ---------------------------------------------------------------------------
 
 function characterCompletionSource(context: CompletionContext): CompletionResult | null {
-	const doc = context.state.doc.toString();
-	const pos = context.pos;
-	const before = doc.slice(0, pos);
-
-	// Find start of the current segment (after last '>' or beginning of doc)
-	const lastSep = before.lastIndexOf('>');
-	const afterSep = before.slice(lastSep + 1);
-	const trimmed = afterSep.trimStart();
-
-	// Abort if: we're past the first token (whitespace in segment), or query too short
-	if (/\s/.test(trimmed)) return null;
+	// The first word of the caret's segment; null once past it.
+	const head = segmentHeadAt(context.state.doc.toString(), context.pos);
+	if (!head) return null;
+	if (isForeignName(head.text)) return foreignNameCompletion(context, head);
+	const trimmed = head.text;
 	if (trimmed.length < 2) return null;
 
 	// A Traveler's twin names (`Anemo Lumine`) are offered only when typed.
@@ -418,9 +421,8 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 	];
 	if (names.length === 0) return null;
 
-	const from = pos - trimmed.length;
 	return {
-		from,
+		from: head.from,
 		options: names.map((name) => ({
 			label: name,
 			// Append a space so the user can immediately type the first action token
@@ -429,6 +431,82 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 		// Keep the completion open while typing non-whitespace
 		validFor: /^\S*$/
 	};
+}
+
+/**
+ * A name typed in another language (胡桃, フリーナ), offered as the name
+ * notation uses (`$lib/i18n/notationNames`). The list shows the notation name
+ * with the typed language's beside it, and picking it replaces the word; the
+ * word is never replaced unasked.
+ *
+ * ⚠️ AN IME COMPOSES BEFORE IT COMMITS. While a Japanese player composes, the
+ * document holds the provisional text, and CodeMirror asks this source on
+ * every keystroke of it. Answering then would flash suggestions for kana the
+ * player is still converting, so nothing is offered until `compositionend`,
+ * which asks again (`imeGuard`). English keeps answering mid-composition: an
+ * Android keyboard composes every Latin word.
+ */
+function foreignNameCompletion(
+	context: CompletionContext,
+	head: { from: number; text: string }
+): CompletionResult | null {
+	if (context.view?.compositionStarted) return null;
+	const found = suggestNotationNames(head.text);
+	if (found.length === 0) return null;
+	// Replace the whole word, past the caret too, and don't double a space
+	// that is already there.
+	const doc = context.state.doc;
+	let to = context.pos;
+	while (to < doc.length && !/[\s>]/.test(doc.sliceString(to, to + 1))) to++;
+	const spaced = /\s/.test(doc.sliceString(to, to + 1));
+	const section = m.planner_name_in_notation();
+	return {
+		from: head.from,
+		to,
+		options: found.map((s) => ({
+			label: s.notation,
+			detail: s.native,
+			apply: s.notation + (spaced ? '' : ' '),
+			section
+		})),
+		// The match is ours (the typed word is not the label's start), so
+		// CodeMirror neither filters nor reorders, and asks again per keystroke.
+		filter: false
+	};
+}
+
+/**
+ * The composer's half of the IME rule above. On `compositionend` the source
+ * is asked again, since its answer during the composition was nothing. A key
+ * the IME owns (Enter or Tab confirming a conversion) is kept from the
+ * completion keymap, so confirming 胡桃 never also accepts Hu Tao. The key is
+ * not prevented, so the IME still gets it.
+ */
+function imeGuard(): Extension {
+	let endedAt = -Infinity;
+	return [
+		EditorView.domEventHandlers({
+			compositionend(_event, view) {
+				endedAt = Date.now();
+				// Later, so CodeMirror has read the committed text first (Safari
+				// fires this before the final change lands).
+				setTimeout(() => {
+					const head = segmentHeadAt(view.state.doc.toString(), view.state.selection.main.head);
+					if (head && isForeignName(head.text) && !view.compositionStarted) startCompletion(view);
+				}, 20);
+				return false;
+			}
+		}),
+		Prec.highest(
+			EditorView.domEventHandlers({
+				keydown(event, view) {
+					if (event.key !== 'Enter' && event.key !== 'Tab') return false;
+					if (completionStatus(view.state) !== 'active') return false;
+					return isImeKey(event, view.compositionStarted, Date.now() - endedAt);
+				}
+			})
+		)
+	];
 }
 
 // ---------------------------------------------------------------------------
@@ -539,6 +617,26 @@ const notationTheme = EditorView.theme({
 		background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
 		color: 'var(--text)'
 	},
+	// A name typed in another language (foreignNameCompletion): the notation
+	// name, then the typed language's in the secondary voice, upright (the
+	// base theme's italic slants kana and kanji into a fake oblique), under a
+	// small header saying what is offered. The knobs: --rp-suggest-native-gap
+	// (name to name) and --rp-suggest-head-size (the header's size).
+	'.cm-completionDetail': {
+		marginLeft: 'var(--rp-suggest-native-gap, 0.75em)',
+		fontStyle: 'normal',
+		color: 'var(--muted)'
+	},
+	// Both classes: the base theme's own rule names both, and a theme rule
+	// only outranks it at equal specificity.
+	'.cm-tooltip.cm-tooltip-autocomplete > ul > completion-section': {
+		padding: '4px 10px 3px',
+		borderBottom: '1px solid var(--border)',
+		color: 'var(--muted)',
+		opacity: '1',
+		fontSize: 'var(--rp-suggest-head-size, 0.72rem)',
+		lineHeight: '1.3'
+	},
 
 	// Token highlight classes.
 	// paddingRight on action tokens gives visual breathing room between
@@ -643,6 +741,7 @@ export function buildNotationExtensions(
 		notationHighlight,
 		pasteHandler,
 		autocompletion({ override: [characterCompletionSource] }),
+		imeGuard(),
 		// Tooltips (the autocomplete popup) portal to <body>: inside the editor
 		// they'd be trapped in .tool-main's stacking context, underneath the
 		// dire border's raised edge treatment (z2) — the popup opens downward
