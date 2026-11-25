@@ -5,7 +5,7 @@
 		"seenUpstream": "2663bac24",
 		"date": "2026-11-17",
 		"tag": "v2.50.0",
-		"note": "2663bac24 (seen 2026-11-23) adds a weapon, Starsealed Edict; nothing under internal/characters moved, clone not advanced, audit still a284a499b"
+		"note": "seen 2026-11-25: upstream still 2663bac24 (Starsealed Edict, a weapon); nothing under internal/characters moved, clone not advanced, audit still a284a499b"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -13,23 +13,23 @@
 		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-11-23T00:00:00Z"
+		"lastSeen": "2026-11-25T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
 		"stygian": "7.2",
 		"abyss": "2026-11-16 Resounding Moon",
 		"pending": [
-			"Abyss: the cycle after Resounding Moon (lunaris 7.2.52 id 20100, 甲霰之月) — beta only, no English name yet; due 2026-12-16",
+			"Abyss: the cycle after Resounding Moon (lunaris 7.2.53 id 20100, 甲霰之月) — beta only, no English name yet; due 2026-12-16",
 			"Theater: the December season, due 2026-12-01",
 			"Stygian 7.3: due 2026-12-23"
 		]
 	},
 	"todo": {
-		"lastSwept": "24d0789c"
+		"lastSwept": "fa2a1a57"
 	},
 	"roles": {
-		"audited": "2026-11-23",
+		"audited": "2026-11-25",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
