@@ -256,7 +256,7 @@ messages, with no unintended change to English. What it taught, for every locale
   house terms (rotation and team building especially). Check them in the community's own
   wikis and guides before using them.
 - Start `terms-zh.md` from Japanese's open questions: most are the same splits.
-- Decide Simplified only, or Traditional too, before the term list (open question below).
+- Simplified only (⚓ Nate 2026-11-25). The term list is `docs/text/terms-zh.md`.
 
 ### For Spanish, French, Russian, and other alphabetic locales
 
@@ -314,7 +314,7 @@ see the whole tool at once. Stacked rounds:
 
 ## Open questions
 
-- Which Chinese — Simplified only, or both Simplified and Traditional?
-  (genshin-db supports both at no extra cost beyond bundle size.)
+- ~~Which Chinese?~~ Simplified only for now (⚓ Nate 2026-11-25). Traditional, if it comes,
+  is its own term list and draft: Taiwan and Hong Kong players differ in words as well as glyphs.
 - ~~Does the Tier C term list need to be enumerated up front, or discovered during the audit
   pass?~~ Up front: Japanese drafted the interiors from a term list made first (§6).
