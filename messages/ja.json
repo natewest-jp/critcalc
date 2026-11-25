@@ -80,13 +80,8 @@
 	"landing_imaginarium_theater_month": "幻想シアター（{month}）",
 	"landing_characters_modeled": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "対応キャラクター {count}人"
 			}
@@ -116,14 +111,8 @@
 	"settings_no_profiles_of_your_own": "自分のプロフィールなし",
 	"settings_count_profiles": [
 		{
-			"declarations": [
-				"input count",
-				"input names",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "input names", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "プロフィール{count}件（{names}）"
 			}
@@ -131,13 +120,8 @@
 	],
 	"settings_count_rotations": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "ローテーション{count}件"
 			}
@@ -145,13 +129,8 @@
 	],
 	"settings_count_lineups": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "ラインナップ{count}件"
 			}
@@ -159,13 +138,8 @@
 	],
 	"settings_count_teams": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "チーム{count}件"
 			}
@@ -214,13 +188,8 @@
 	"settings_last_backup_when": "最後のバックアップ：{#value}{when}{/value}。",
 	"settings_saved_since": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "その後、{#value}保存済みの項目{count}件{/value}が変更されています。"
 			}
@@ -446,13 +415,8 @@
 	"trash_deleted_yesterday": "昨日削除",
 	"trash_deleted_days_ago": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}日前に削除"
 			}
@@ -461,13 +425,8 @@
 	"trash_cleared_tomorrow": "明日消去",
 	"trash_days_left": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "残り{count}日"
 			}
@@ -484,13 +443,8 @@
 	"trash_restoring_anything_of_name_s_brings_the": "{name}のものをひとつでも復元すると、プロフィールも一緒に戻ります。",
 	"trash_count_teams": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "チーム{count}件"
 			}
@@ -514,13 +468,8 @@
 	"library_yesterday": "昨日",
 	"library_days_ago": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}日前"
 			}
@@ -545,13 +494,8 @@
 	"library_more_more": "ほか{count}人",
 	"library_more_teams": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "ほか{count}チーム"
 			}
@@ -798,13 +742,8 @@
 	"coverage_least_covered_first": "未対応が多い順",
 	"coverage_showing_length_characters_from_the": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "ローテーションプランナーの{count}人のキャラクターを表示しています。"
 			}
@@ -893,13 +832,8 @@
 	"planner_cooldown": "クールタイム",
 	"planner_charges_charges": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "· 使用可能回数{count}回"
 			}
@@ -912,15 +846,8 @@
 	"planner_always_on_for_the_whole_rotation": "常時、ローテーション全体",
 	"planner_tip_on_on_on_on_the_team_start_s_to_end": [
 		{
-			"declarations": [
-				"input who",
-				"input name",
-				"input start",
-				"input end"
-			],
-			"selectors": [
-				"who"
-			],
+			"declarations": ["input who", "input name", "input start", "input end"],
+			"selectors": ["who"],
 			"match": {
 				"who=team": "チーム全体 · {start}s～{end}s",
 				"who=*": "{name} · {start}s～{end}s"
@@ -949,14 +876,8 @@
 	"planner_pushed_out_by_a_newer_core": "新しい草原核に押し出された",
 	"planner_human_timing_f_frames_s_s_after_the_swap": [
 		{
-			"declarations": [
-				"input frames",
-				"input seconds",
-				"local framesPlural = frames: plural"
-			],
-			"selectors": [
-				"framesPlural"
-			],
+			"declarations": ["input frames", "input seconds", "local framesPlural = frames: plural"],
+			"selectors": ["framesPlural"],
 			"match": {
 				"framesPlural=other": "人の操作タイミング：交代後{frames}フレーム（{seconds}s）。新しいキャラクターが現れるまで先行入力は受け付けられません。"
 			}
@@ -970,10 +891,7 @@
 				"input seconds",
 				"local framesPlural = frames: plural"
 			],
-			"selectors": [
-				"after",
-				"framesPlural"
-			],
+			"selectors": ["after", "framesPlural"],
 			"match": {
 				"after=normal, framesPlural=*": "人の操作タイミング：通常攻撃の後{frames}フレーム（{seconds}s）。ゲームが先行入力を受け付けない入力の前の間です。",
 				"after=charged, framesPlural=*": "人の操作タイミング：重撃の後{frames}フレーム（{seconds}s）。ゲームが先行入力を受け付けない入力の前の間です。",
@@ -1023,13 +941,8 @@
 	"planner_characterid_time_s": "{name} · {seconds}s",
 	"planner_x_x_applied": [
 		{
-			"declarations": [
-				"input element",
-				"input name"
-			],
-			"selectors": [
-				"element"
-			],
+			"declarations": ["input element", "input name"],
+			"selectors": ["element"],
 			"match": {
 				"element=pyro": "炎元素付着",
 				"element=hydro": "水元素付着",
@@ -1045,13 +958,8 @@
 	"planner_on_this_frame": "このフレーム",
 	"planner_sameframe_applications": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "元素付着{count}回"
 			}
@@ -1235,13 +1143,8 @@
 	"planner_f_is_the_finisher_of_a_spinning_charged": "Fは回転する重撃の最終段です — {name}の重撃は回転しません。",
 	"planner_only_a_bow_can_take_an_aimed_shot": [
 		{
-			"declarations": [
-				"input weapon",
-				"input name"
-			],
-			"selectors": [
-				"weapon"
-			],
+			"declarations": ["input weapon", "input name"],
+			"selectors": ["weapon"],
 			"match": {
 				"weapon=sword": "狙い撃ちができるのは弓だけです — {name}の武器は片手剣です。",
 				"weapon=claymore": "狙い撃ちができるのは弓だけです — {name}の武器は両手剣です。",
@@ -1420,13 +1323,8 @@
 	"vz_gauge_add_e": "{element}を追加",
 	"vz_gauge_max_apps_applications_is_the_most": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "元素付着は{count}回までです"
 			}
@@ -1461,13 +1359,8 @@
 	"vz_icd_applies_of_every_of": "{total}回ごとに{applies}回",
 	"vz_icd_n_th": [
 		{
-			"declarations": [
-				"input n",
-				"local nOrdinal = n: plural type=ordinal"
-			],
-			"selectors": [
-				"nOrdinal"
-			],
+			"declarations": ["input n", "local nOrdinal = n: plural type=ordinal"],
+			"selectors": ["nOrdinal"],
 			"match": {
 				"nOrdinal=other": "{n}"
 			}
@@ -1487,9 +1380,7 @@
 				"input left",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countPlural"
-			],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "この区間の元素付着{count}回は使い切りました。{hit}回目からのタイマーが切れるまで、残り{left}です。"
 			}
@@ -1663,13 +1554,8 @@
 	"vz_wish_at_most_worst": "最大 {worst}",
 	"vz_wish_n_pulls": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}連"
 			}
@@ -1846,13 +1732,8 @@
 	"tb_you_own_c_chip": "C{chip}を所持",
 	"tb_hidden_more_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "ほか{count}件の能力"
 			}
@@ -1881,13 +1762,8 @@
 	"tb_cooldown_s_cooldown": "クールタイム{seconds}秒",
 	"tb_charges_charges": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "· 使用可能回数{count}回"
 			}
@@ -1909,13 +1785,8 @@
 	"tb_roles_1_selected": "役割：1件選択中",
 	"tb_count_character_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}人"
 			}
@@ -1951,13 +1822,8 @@
 	"tb_name": "名前",
 	"tb_n_character_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}人"
 			}
@@ -1965,13 +1831,8 @@
 	],
 	"tb_hide_the_on_field_characters": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "フィールド上のキャラクターを隠す"
 			}
@@ -1979,13 +1840,8 @@
 	],
 	"tb_hide_the_off_field_characters": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "待機中のキャラクターを隠す"
 			}
@@ -1993,13 +1849,8 @@
 	],
 	"tb_show_count_on_field_characters_too": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "フィールド上のキャラクター{count}人も表示"
 			}
@@ -2007,13 +1858,8 @@
 	],
 	"tb_show_count_off_field_characters_too": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "待機中のキャラクター{count}人も表示"
 			}
@@ -2022,13 +1868,8 @@
 	"tb_undo": "元に戻す",
 	"tb_marked_n_owned": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}人を所持に設定しました"
 			}
@@ -2036,13 +1877,8 @@
 	],
 	"tb_marked_n_owned_at_c6": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}人をC6で所持に設定しました"
 			}
@@ -2050,13 +1886,8 @@
 	],
 	"tb_marked_n_not_owned": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}人を未所持に設定しました"
 			}
@@ -2121,13 +1952,8 @@
 	"tb_removed_label": "{team}を削除しました",
 	"tb_no_repeats_count_repeated_characters": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "重複なし：重複していた{count}人が別のチームから外れました"
 			}
@@ -2175,13 +2001,8 @@
 	"tb_blessing_level_buff_effects_increased_by": "祝福レベルのバフ効果が100%アップ",
 	"tb_length_character_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}人"
 			}
@@ -2277,13 +2098,8 @@
 	"tb_mode_mode": "モード：{mode}",
 	"tb_acts_acts": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}幕"
 			}
@@ -2305,13 +2121,8 @@
 	"tb_extras_extra_extra_alternate_cast": "追加の待機キャストを{extras}/{extra}人加えました。追加人数に応じたバフを獲得します",
 	"tb_add_at_least_need_characters_to_start": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "開演するには{count}人以上を追加してください"
 			}
@@ -2326,13 +2137,8 @@
 	"vz_instruments_shown": "表示する計器の数",
 	"vz_the_window_is_too_narrow_for_opt": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "ウィンドウの幅が足りず、計器を{count}つ並べられません"
 			}
@@ -2341,13 +2147,8 @@
 	"vz_show_as_many_instruments_as_the_window": "ウィンドウに収まるだけ計器を並べる",
 	"vz_show_opt_instrument_x_at_a_time": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "計器を{count}つずつ表示する"
 			}
@@ -2383,12 +2184,8 @@
 	"vz_label_type_a_value": "{label}、値を入力",
 	"vz_kind_reshape": [
 		{
-			"declarations": [
-				"input tier"
-			],
-			"selectors": [
-				"tier"
-			],
+			"declarations": ["input tier"],
+			"selectors": ["tier"],
 			"match": {
 				"tier=standard": "通常再構築",
 				"tier=advanced": "上級再構築",
@@ -2444,13 +2241,8 @@
 	"vz_artifact_they_come_out_the_same": "どちらも同じです。",
 	"vz_artifact_better_than_math_round_compareto": [
 		{
-			"declarations": [
-				"input tier",
-				"input pct"
-			],
-			"selectors": [
-				"tier"
-			],
+			"declarations": ["input tier", "input pct"],
+			"selectors": ["tier"],
 			"match": {
 				"tier=standard": "通常再構築の{pct}%より良い",
 				"tier=advanced": "上級再構築の{pct}%より良い",
@@ -2464,14 +2256,8 @@
 	"vz_artifact_1_day": "1日",
 	"vz_artifact_d_days": [
 		{
-			"declarations": [
-				"input count",
-				"input days",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "input days", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{days}日"
 			}
@@ -2480,12 +2266,8 @@
 	"vz_artifact_useful_rolls": "有効強化回数",
 	"vz_artifact_slotword_s": [
 		{
-			"declarations": [
-				"input slot"
-			],
-			"selectors": [
-				"slot"
-			],
+			"declarations": ["input slot"],
+			"selectors": ["slot"],
 			"match": {
 				"slot=flower": "生の花",
 				"slot=plume": "死の羽",
@@ -2504,13 +2286,8 @@
 	"vz_artifact_this_roll": "今回",
 	"vz_artifact_100_reshapename_reshapes_one_dot_each": [
 		{
-			"declarations": [
-				"input tier",
-				"input lit"
-			],
-			"selectors": [
-				"tier"
-			],
+			"declarations": ["input tier", "input lit"],
+			"selectors": ["tier"],
 			"match": {
 				"tier=standard": "通常再構築100回、1回1点：{lit}回が手持ちの聖遺物を上回る",
 				"tier=advanced": "上級再構築100回、1回1点：{lit}回が手持ちの聖遺物を上回る",
@@ -2544,13 +2321,8 @@
 	"vz_artifact_how_many_of_your_valued_stats_it_has": "狙いのステータスをいくつ持つか",
 	"vz_artifact_has_n_wantedsubs_length_n_1_all_n_n": [
 		{
-			"declarations": [
-				"input form",
-				"input n"
-			],
-			"selectors": [
-				"form"
-			],
+			"declarations": ["input form", "input n"],
+			"selectors": ["form"],
 			"match": {
 				"form=all": "{n}つすべて",
 				"form=count": "{n}つ"
@@ -2584,10 +2356,7 @@
 				"local countExact = count",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countExact",
-				"countPlural"
-			],
+			"selectors": ["countExact", "countPlural"],
 			"match": {
 				"countExact=*, countPlural=other": "この値は{count}通りの強化回数に当てはまります。"
 			}
@@ -2608,13 +2377,8 @@
 	"vz_artifact_enter_your_piece_to_see_how_it_measures": "聖遺物を入力すると、その出来がわかります",
 	"vz_artifact_beats_chance_a_reshapename_reshape_beats": [
 		{
-			"declarations": [
-				"input tier",
-				"input chance"
-			],
-			"selectors": [
-				"tier"
-			],
+			"declarations": ["input tier", "input chance"],
+			"selectors": ["tier"],
 			"match": {
 				"tier=standard": "{chance}{#span}通常再構築が手持ちの聖遺物を上回る確率{/span}",
 				"tier=advanced": "{chance}{#span}上級再構築が手持ちの聖遺物を上回る確率{/span}",
@@ -2625,14 +2389,8 @@
 	"vz_artifact_better_than_x_of_20_slotplural_with": "{pct}%より良い{#span}（同じサブ効果4つを持つ+20の{slots}の中で）{/span}",
 	"vz_artifact_beats_chance_it_ends_above_reference_x": [
 		{
-			"declarations": [
-				"input when",
-				"input chance",
-				"input value"
-			],
-			"selectors": [
-				"when"
-			],
+			"declarations": ["input when", "input chance", "input value"],
+			"selectors": ["when"],
 			"match": {
 				"when=now": "{chance}{#span}{value}を超える確率{/span}",
 				"when=end": "{chance}{#span}+20で{value}を超える確率{/span}"
@@ -2670,9 +2428,7 @@
 				"input high",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countPlural"
-			],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "この値は強化{totals}回分ですが、{level}の聖遺物は{low}～{high}回だけです。"
 			}
@@ -2705,12 +2461,8 @@
 	"vz_artifact_useful_rolls_count_every_roll_in_your": "有効強化回数は、狙いのステータスへの強化をその伸びで数えます：最大の伸びは1、最小は0.7。サブ効果の初期値も数えます。",
 	"vz_artifact_until_you_drag_it_the_value_to_beat_is_a": [
 		{
-			"declarations": [
-				"input slot"
-			],
-			"selectors": [
-				"slot"
-			],
+			"declarations": ["input slot"],
+			"selectors": ["slot"],
 			"match": {
 				"slot=flower": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の生の花の中央値です。",
 				"slot=plume": "ドラッグするまでは、超えたい値はこのサブ効果を持つ+20の死の羽の中央値です。",
@@ -2794,15 +2546,8 @@
 	"vz_breakdown_mult_60_top_contributor_share": "{mult} × 最大貢献者の取り分60%",
 	"vz_breakdown_reaction_phrase_a_phrase_reaction_name": [
 		{
-			"declarations": [
-				"input form",
-				"input name",
-				"input mult",
-				"input shown"
-			],
-			"selectors": [
-				"form"
-			],
+			"declarations": ["input form", "input name", "input mult", "input shown"],
+			"selectors": ["form"],
 			"match": {
 				"form=name": "{name}は基礎値を{mult}倍にし、最大貢献者がその60%を与えます：×{shown}。",
 				"form=phrase": "{name}は基礎値を{mult}倍にし、最大貢献者がその60%を与えます：×{shown}。"
@@ -2824,14 +2569,8 @@
 	"vz_breakdown_mult_1_2_78_em_em_1400_bonusword": "{mult} × (1 + 2.78 × EM ÷ (EM + 1400){bonus})",
 	"vz_breakdown_a_x_name_would_multiply_the_hit_by_f": [
 		{
-			"declarations": [
-				"input direction",
-				"input name",
-				"input factor"
-			],
-			"selectors": [
-				"direction"
-			],
+			"declarations": ["input direction", "input name", "input factor"],
+			"selectors": ["direction"],
 			"match": {
 				"direction=forward": "フォワード{name}で、ヒットは{factor}になります。",
 				"direction=reverse": "リバース{name}で、ヒットは{factor}になります。"
@@ -2921,13 +2660,8 @@
 	"vz_crit_average_damage": "平均ダメージ",
 	"vz_crit_crits_in_n_x": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}ヒット中の会心数"
 			}
@@ -2944,9 +2678,7 @@
 				"input chance",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countPlural"
-			],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}ヒット中{k}回会心：{#strong}{multiplier}{/strong}、ローテーションの{chance}で発生します。"
 			}
@@ -2964,13 +2696,8 @@
 	"vz_crit_crit_damage": "会心ダメージ",
 	"vz_crit_crits_in_hitsperrotation_hitsperrotation": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}ヒット中の会心数"
 			}
@@ -2982,13 +2709,8 @@
 	"vz_crit_each_bar_is_a_number_of_crits_in_one": "各バーは1ローテーション中の会心数です。カーソルを合わせるかタップすると内容が表示されます。",
 	"vz_crit_roll_hitsperrotation_hitsperrotation": [
 		{
-			"declarations": [
-				"input count",
-				"local countPlural = count: plural"
-			],
-			"selectors": [
-				"countPlural"
-			],
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}ヒットを試す"
 			}
@@ -3002,9 +2724,7 @@
 				"input multiplier",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countPlural"
-			],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "{count}ヒット中{k}回会心：今回は{#strong}{multiplier}{/strong}です。"
 			}
@@ -3018,9 +2738,7 @@
 				"input chance",
 				"local countPlural = count: plural"
 			],
-			"selectors": [
-				"countPlural"
-			],
+			"selectors": ["countPlural"],
 			"match": {
 				"countPlural=other": "平均で{count}ヒット中{average}回会心し、ローテーションの{chance}は一度も会心しません。"
 			}
