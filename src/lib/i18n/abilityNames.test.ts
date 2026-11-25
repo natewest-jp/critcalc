@@ -7,6 +7,7 @@ import { overwriteGetLocale, baseLocale, type Locale } from '$lib/paraglide/runt
 import { abilityName, compose, loadAbilityNames } from './abilityNames';
 import { childrenOf, isOurWord, NOTATION, splitName } from '$lib/data/nameParts';
 import ja from '$lib/data/abilityNames/ja.json';
+import zh from '$lib/data/abilityNames/zh.json';
 
 /**
  * The game's ability names in other languages
@@ -23,10 +24,11 @@ const NOT_IN_GAME = ['blank'];
 
 /** Parts the game's text has no line for, left in English. */
 const KNOWN_GAPS: Record<string, Record<string, string[]>> = {
-	ja: {}
+	ja: {},
+	zh: {}
 };
 
-const TABLES: Record<string, Record<string, Record<string, string>>> = { ja };
+const TABLES: Record<string, Record<string, Record<string, string>>> = { ja, zh };
 
 /** The parts of `label` that would still show English: each leaf that is not
  *  a game name in `row`, one of our words, or notation. */

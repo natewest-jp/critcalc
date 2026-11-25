@@ -27,12 +27,7 @@ const ids = (dir: string) =>
 
 /** Not a game character: the planner's placeholder kit. */
 const NOT_IN_GAME = ['blank'];
-/** genshin-db's elements carry no Chinese, so Chinese Travelers wait for the
- *  Chinese term list. */
-const KNOWN_GAPS: Record<string, string[]> = {
-	ja: [],
-	zh: ids('characters').filter((id) => id.startsWith('traveler_'))
-};
+const KNOWN_GAPS: Record<string, string[]> = { ja: [], zh: [] };
 
 const WEAPON_TYPES = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
 const regions = () =>
@@ -114,7 +109,7 @@ describe('names in the page language', () => {
 
 	it('falls back to English where a locale has no name', () => {
 		as('zh');
-		expect(characterName('traveler_anemo')).toBe('Anemo Traveler');
+		expect(characterName('blank')).toBe('Blank');
 		as('ja');
 		expect(characterName('blank')).toBe('Blank');
 	});
