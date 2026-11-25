@@ -32,8 +32,12 @@ that item.
 
 ### 1a. Feedback: the Google Sheet
 
-The feedback Form writes to a linked Google Sheet, read through the Google
-Drive connector (`read_file_content`, tab "Form responses 1"). ⚠️ The Sheet's
+The feedback Forms write to one linked Google Sheet, read through the Google
+Drive connector (`read_file_content`): the English form to tab "Form
+responses 1", the Japanese form (`/ja`'s links, `src/lib/feedback.ts`) to
+"Form responses 2". One read returns both tabs; each has its own last row in
+state (`feedback.lastRow`, `feedback.lastRowJa`). Triage a Japanese row in
+English, quoting its words only as far as triage needs. ⚠️ The Sheet's
 file ID lives in memory (`reference_feedback_sheet`), ⛔ never in this public
 repo. ⚠️ The connector has SELECTED-file access, so it sees only this Sheet,
 which it created; the Form's original response Sheet answers "not found". If
@@ -41,8 +45,9 @@ the read fails, report it and ask Nate. ⛔ Don't go looking for another way
 in, and ⛔ never publish the Sheet to the web as CSV: rows can carry contact
 details.
 
-Read rows after `feedback.lastRow` (a SHEET row number; row 1 is the header,
-row 2 is Nate's 2026-10-20 launch anchor, which is not feedback). Timestamps
+Read rows after each tab's last row (a SHEET row number; row 1 is the header.
+In the English tab, row 2 is Nate's 2026-10-20 launch anchor, which is not
+feedback). Timestamps
 are `DD/MM/YYYY HH:MM:SS`. ⚠️ The Drive read returns a SAMPLE of a large
 table, not every row; once the table outgrows it, say so in the report (a
 Google Sheets connector's `get_values` would read a range). Classify each as **bug ·

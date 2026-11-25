@@ -1,5 +1,5 @@
-// The feedback form — the ONE place that knows its id, its entry ids and the
-// exact option strings (2026-10-15).
+// The feedback forms — the ONE place that knows their ids, their entry ids and
+// the exact option strings (2026-10-15).
 //
 // critcalc's reports go to a Google Form. Every "Report a problem" link on the
 // site is built here, prefilled through the form's own `usp=pp_url` mechanism
@@ -13,30 +13,66 @@
 // form and this file together.
 //
 // ⚓ SSR-safe: nothing here reads `navigator` at import time — the browser
-// string is read only when a URL is built, and only when asked for.
+// string is read only when a URL is built, and only when asked for. The
+// locale is read then too, never at module load (a prerender serves every
+// locale from one module).
 
-/** The form's viewform address (short link: https://forms.gle/k7MhVXdC6oS6EDzJ9,
- *  which cannot carry a prefill). A plain link to the form uses this as is. */
-export const FEEDBACK_FORM_URL =
-	'https://docs.google.com/forms/d/e/1FAIpQLSezoj64z3Rpf_a2M7sazZwtKcZePURWUDpllpjZFehtMi9E4g/viewform';
+import { getLocale, type Locale } from '$lib/i18n/locale';
 
-/** "What's this about?" — the choice that BRANCHES the form. */
-export const FEEDBACK_CATEGORY = {
-	broken: "Something's broken",
-	character: "A character isn't right",
-	idea: 'An idea or a request',
-	other: 'Something else'
-} as const;
-export type FeedbackCategory = keyof typeof FEEDBACK_CATEGORY;
+/** One form per language: Google Forms holds one language per form. The
+ *  Japanese form is a copy of the English one, so it keeps the English
+ *  form's entry ids and branching, and answers land in a second tab of the
+ *  same Sheet. A locale with no form of its own uses the English one. */
+type FeedbackForm = {
+	/** The viewform address. A plain link to the form uses this as is. */
+	url: string;
+	/** "What's this about?": the choice that BRANCHES the form. */
+	category: Record<FeedbackCategory, string>;
+	/** "Where?" */
+	tool: Record<FeedbackTool, string>;
+};
 
-/** "Where?" */
-export const FEEDBACK_TOOL = {
-	planner: 'Rotation planner',
-	builder: 'Team builder',
-	visualizers: 'Visualizers',
-	site: 'The rest of the site'
-} as const;
-export type FeedbackTool = keyof typeof FEEDBACK_TOOL;
+export type FeedbackCategory = 'broken' | 'character' | 'idea' | 'other';
+export type FeedbackTool = 'planner' | 'builder' | 'visualizers' | 'site';
+
+const FORMS: Partial<Record<Locale, FeedbackForm>> & { en: FeedbackForm } = {
+	en: {
+		// Short link: https://forms.gle/k7MhVXdC6oS6EDzJ9 (it can't carry a prefill).
+		url: 'https://docs.google.com/forms/d/e/1FAIpQLSezoj64z3Rpf_a2M7sazZwtKcZePURWUDpllpjZFehtMi9E4g/viewform',
+		category: {
+			broken: "Something's broken",
+			character: "A character isn't right",
+			idea: 'An idea or a request',
+			other: 'Something else'
+		},
+		tool: {
+			planner: 'Rotation planner',
+			builder: 'Team builder',
+			visualizers: 'Visualizers',
+			site: 'The rest of the site'
+		}
+	},
+	ja: {
+		url: 'https://docs.google.com/forms/d/e/1FAIpQLSdZOXkQullJPX4a1pWV1DHLeit_wtNUGQJJs50WfC3as19OQg/viewform',
+		category: {
+			broken: '不具合がある',
+			character: 'キャラクターの情報に誤りがある',
+			idea: 'アイデアやリクエスト',
+			other: 'その他'
+		},
+		tool: {
+			planner: 'ローテーションプランナー',
+			builder: 'チームビルダー',
+			visualizers: 'ビジュアライザー',
+			site: 'サイトのその他の部分'
+		}
+	}
+};
+
+const formFor = (locale: Locale): FeedbackForm => FORMS[locale] ?? FORMS.en;
+
+/** The form a reader in this locale should land on. */
+export const feedbackFormUrl = (locale: Locale = getLocale()) => formFor(locale).url;
 
 const ENTRY = {
 	category: 'entry.1492565433',
@@ -114,19 +150,20 @@ function enc(s: string): string {
  * A prefilled link to the form. Empty fields are omitted; a share link that
  * would push the URL past MAX_FEEDBACK_URL is omitted too.
  */
-export function feedbackUrl(p: FeedbackPrefill = {}): string {
+export function feedbackUrl(p: FeedbackPrefill = {}, locale: Locale = getLocale()): string {
+	const form = formFor(locale);
 	const fields: [string, string][] = [];
-	if (p.category) fields.push([ENTRY.category, FEEDBACK_CATEGORY[p.category]]);
-	if (p.tool) fields.push([ENTRY.tool, FEEDBACK_TOOL[p.tool]]);
+	if (p.category) fields.push([ENTRY.category, form.category[p.category]]);
+	if (p.tool) fields.push([ENTRY.tool, form.tool[p.tool]]);
 	if (p.character) fields.push([ENTRY.character, p.character]);
 	if (p.constellation !== undefined && p.constellation >= 0 && p.constellation <= 6)
 		fields.push([ENTRY.constellation, `C${Math.round(p.constellation)}`]);
 	if (p.includeTech || p.error !== undefined)
 		fields.push([ENTRY.tech, techDetails({ error: p.error, userAgent: p.userAgent })]);
-	if (fields.length === 0 && !p.shareLink) return FEEDBACK_FORM_URL;
+	if (fields.length === 0 && !p.shareLink) return form.url;
 
 	const build = (f: [string, string][]) =>
-		`${FEEDBACK_FORM_URL}?usp=pp_url${f.map(([k, v]) => `&${k}=${enc(v)}`).join('')}`;
+		`${form.url}?usp=pp_url${f.map(([k, v]) => `&${k}=${enc(v)}`).join('')}`;
 	const base = build(fields);
 	if (!p.shareLink) return base;
 	const withLink = build([...fields, [ENTRY.shareLink, p.shareLink]]);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-	FEEDBACK_FORM_URL,
 	MAX_FEEDBACK_URL,
+	feedbackFormUrl,
 	feedbackToolForPath,
 	feedbackUrl,
 	techDetails
@@ -15,7 +15,7 @@ function fields(url: string): Record<string, string> {
 
 describe('feedbackUrl', () => {
 	it('is the bare form with nothing to prefill', () => {
-		expect(feedbackUrl()).toBe(FEEDBACK_FORM_URL);
+		expect(feedbackUrl()).toBe(feedbackFormUrl());
 	});
 
 	it('writes the option strings exactly, apostrophes encoded', () => {
@@ -69,6 +69,31 @@ describe('feedbackUrl', () => {
 		const withErr = techDetails({ userAgent: 'UA', error: new RangeError('x'.repeat(500)) });
 		expect(withErr).toContain('Error: xxx');
 		expect(withErr.length).toBeLessThan(300);
+	});
+});
+
+describe('the form per locale', () => {
+	const JA_FORM = '1FAIpQLSdZOXkQullJPX4a1pWV1DHLeit_wtNUGQJJs50WfC3as19OQg';
+
+	it('sends Japanese readers to the Japanese form, with its own option strings', () => {
+		expect(feedbackFormUrl('ja')).toContain(JA_FORM);
+		const url = feedbackUrl({ category: 'character', tool: 'site', constellation: 2 }, 'ja');
+		expect(url).toContain(JA_FORM);
+		expect(fields(url)).toEqual({
+			usp: 'pp_url',
+			'entry.1492565433': 'キャラクターの情報に誤りがある',
+			'entry.581506306': 'サイトのその他の部分',
+			'entry.389684346': 'C2'
+		});
+	});
+
+	it('keeps every other locale on the English form until it has its own', () => {
+		for (const locale of ['en', 'zh', 'en-XA'] as const) {
+			expect(feedbackFormUrl(locale)).not.toContain(JA_FORM);
+			expect(fields(feedbackUrl({ category: 'broken' }, locale))['entry.1492565433']).toBe(
+				"Something's broken"
+			);
+		}
 	});
 });
 

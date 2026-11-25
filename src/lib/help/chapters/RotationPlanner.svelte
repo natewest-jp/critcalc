@@ -17,7 +17,7 @@
 	import type { MessagePart } from '$lib/paraglide/runtime';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
-	import { FEEDBACK_FORM_URL } from '$lib/feedback';
+	import { feedbackFormUrl } from '$lib/feedback';
 	import HelpFigure from '$lib/components/HelpFigure.svelte';
 	import HelpRef from '$lib/components/HelpRef.svelte';
 	import Msg from '$lib/components/Msg.svelte';
@@ -35,7 +35,7 @@
 	>{/snippet}
 {#snippet coverage(t: string)}<a href={hrefTo('/coverage')} onclick={(e) => openCoverage(e)}>{t}</a
 	>{/snippet}
-{#snippet feedback(t: string)}<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer"
+{#snippet feedback(t: string)}<a href={feedbackFormUrl()} target="_blank" rel="noopener noreferrer"
 		>{t}</a
 	>{/snippet}
 {#snippet p(parts: MessagePart[])}<Msg
