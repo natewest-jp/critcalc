@@ -839,6 +839,18 @@
 		font-family: var(--font-display);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
+		/* A tool's name is one word: never broken (ビジュアライ / ザー). */
+		white-space: nowrap;
+	}
+	/* Japanese: proportional kana, and on a narrow phone the name shrinks to
+	   its tile (ビジュアライザー is eight full-width kana). 🎛️ The cap is
+	   --tile-name-cjk-fit, in units of the tile's width. */
+	.tool-tile {
+		container-type: inline-size;
+	}
+	.tool-tile-name:lang(ja) {
+		font-feature-settings: 'palt';
+		font-size: min(var(--fs-lg), var(--tile-name-cjk-fit, 13cqi));
 	}
 
 	/* ── Main ── */
