@@ -15,7 +15,8 @@
  * A name is taken only when genshin-db's English name is exactly ours, so its
  * autocomplete can't hand back a neighbour. The Travelers have no entry of
  * their own there (only Aether and Lumine), so each is 旅人 with its element's
- * one-character name, 旅人（風）, as the existing draft names the Traveler.
+ * one-character name, 旅人（風）, as the existing draft names the Traveler, and
+ * 旅行者（风） in Chinese.
  * Game8 and Altema write 主人公(風) instead (an open question in
  * `docs/text/terms-ja.md`). The placeholder Blank is not a game character.
  *
@@ -61,17 +62,38 @@ function lookup(folder, name, language) {
 	return gdb[folder](name, { ...english, resultLanguage: gdb.Language[language] })?.name || null;
 }
 
-/** An element's one-character name (風), or null where genshin-db has none. */
+/**
+ * genshin-db's elements carry no Chinese, so the game's one-character names
+ * are written here, read from the game's text map (TextMapCHS, the line whose
+ * English is the bare element name: Anemo → 风). This script runs on every
+ * build, where the text maps are absent, so it can't read them itself.
+ */
+const CHINESE_ELEMENTS = {
+	Anemo: '风',
+	Pyro: '火',
+	Cryo: '冰',
+	Electro: '雷',
+	Hydro: '水',
+	Geo: '岩',
+	Dendro: '草'
+};
+
+/** An element's one-character name (風, 风), or null where neither source has one. */
 function elementName(element, language) {
-	const el = gdb.elements(element, { ...english, resultLanguage: gdb.Language[language] })?.name;
-	// TODO: data gap — genshin-db's elements carry no Chinese; zh waits for its term list.
-	if (!el || language !== 'Japanese') return null;
-	return el;
+	if (language === 'ChineseSimplified') return CHINESE_ELEMENTS[element] ?? null;
+	if (language !== 'Japanese') return null;
+	return (
+		gdb.elements(element, { ...english, resultLanguage: gdb.Language[language] })?.name || null
+	);
 }
+
+/** The Traveler's word in each locale: the game's 旅行者 in Chinese, and the
+ *  Japanese draft's 旅人 (`docs/text/terms-*.md`, entry 191). */
+const TRAVELER = { Japanese: '旅人', ChineseSimplified: '旅行者' };
 
 function travelerName(element, language) {
 	const el = elementName(element, language);
-	return el ? `旅人（${el}）` : null;
+	return el ? `${TRAVELER[language]}（${el}）` : null;
 }
 
 const capital = (s) => s[0].toUpperCase() + s.slice(1);

@@ -25,6 +25,7 @@
 	} from './wishHistory';
 	import { formatChance } from './chance';
 	import Mark from '$lib/components/Mark.svelte';
+	import { columns } from '$lib/i18n/columns';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import InstrumentSlider from './kit/InstrumentSlider.svelte';
 	import Msg from '$lib/components/Msg.svelte';
@@ -347,7 +348,8 @@
 	// and 25% so their (often equal) medians don't print on top of each other.
 	/** Clear space kept between two labels on one row. */
 	const LABEL_PAD_PX = 5;
-	/** A condensed 11px glyph, generously — only decides which side a label sits. */
+	/** A condensed 11px glyph, generously (a CJK one counts two, `columns`) — only
+	 *  decides which side a label sits. */
 	const LABEL_CHAR_PX = 7;
 	const labels = $derived.by(() => {
 		const heights = target === 'pair' ? [0.75, 0.25, 0.5] : curves.map(() => 0.5);
@@ -355,7 +357,7 @@
 			const h = heights[i];
 			const k = c.cdf.findIndex((p) => p >= h);
 			const x = xOf(k < 0 ? domain : k);
-			const w = c.label.length * LABEL_CHAR_PX;
+			const w = columns(c.label) * LABEL_CHAR_PX;
 			// a label that would run into the y axis's numbers goes right of its line
 			const right = x - 6 - w < PADL;
 			const x0 = right ? x + 6 : x - 6 - w;
@@ -429,7 +431,7 @@
 			.filter((c) => c.k > 0 && c.k <= domain)
 			.map((c) => {
 				const x = xOf(c.k);
-				const w = c.text.length * LABEL_CHAR_PX;
+				const w = columns(c.text) * LABEL_CHAR_PX;
 				const right = x + 5 + w <= graphW - PADR;
 				const x0 = right ? x + 5 : x - 5 - w;
 				let row = 0;
@@ -472,12 +474,12 @@
 		// A dot label that would sit on a crossing's label goes to the marker's
 		// other side (a low chance puts it down at the feet).
 		const boxes = crossings.map((c) => {
-			const w = c.text.length * LABEL_CHAR_PX;
+			const w = columns(c.text) * LABEL_CHAR_PX;
 			const x0 = c.anchor === 'start' ? c.lx : c.lx - w;
 			return { x0, x1: x0 + w, y0: c.ly - 11, y1: c.ly + 2 };
 		});
 		return placed.map((l) => {
-			const w = l.text.length * LABEL_CHAR_PX;
+			const w = columns(l.text) * LABEL_CHAR_PX;
 			const at = (onLeft: boolean) => {
 				const x0 = onLeft ? x - 8 - w : x + 8;
 				return { x0, x1: x0 + w, y0: l.y + 3.5 - 11, y1: l.y + 3.5 + 2 };

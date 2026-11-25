@@ -311,6 +311,13 @@ export const GAME_NAMES: Record<
 			"tartaglia": "达达利亚",
 			"thoma": "托马",
 			"tighnari": "提纳里",
+			"traveler_anemo": "旅行者（风）",
+			"traveler_cryo": "旅行者（冰）",
+			"traveler_dendro": "旅行者（草）",
+			"traveler_electro": "旅行者（雷）",
+			"traveler_geo": "旅行者（岩）",
+			"traveler_hydro": "旅行者（水）",
+			"traveler_pyro": "旅行者（火）",
 			"valeriy": "瓦列里",
 			"varesa": "瓦雷莎",
 			"varka": "法尔伽",
@@ -372,6 +379,14 @@ export const GAME_NAMES: Record<
 			"aether": "空",
 			"lumine": "荧"
 		},
-		"element": {}
+		"element": {
+			"anemo": "风",
+			"cryo": "冰",
+			"dendro": "草",
+			"electro": "雷",
+			"geo": "岩",
+			"hydro": "水",
+			"pyro": "火"
+		}
 	}
 };

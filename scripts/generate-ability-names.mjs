@@ -21,9 +21,10 @@
  *    and constellations (c1–c6), taken only where genshin-db's English is
  *    exactly ours.
  * 2. The game's text maps: our English is looked up in the English text map,
- *    and the same hash in the Japanese one is the game's name. One English
- *    line can sit at several hashes; when their Japanese differ only in the
- *    middle dot, the full-width ・ wins, as the endgame text writes it. Any
+ *    and the same hash in the locale's one is the game's name. One English
+ *    line can sit at several hashes; when their names differ only in the
+ *    middle dot, the locale's dot wins (・ in Japanese, as the endgame text
+ *    writes it; · in Chinese). Any
  *    other disagreement is left out and listed.
  * 3. The talent tables' row labels, for a name the game never prints alone
  *    (a summon, a field, a stance): "Tamoto DMG|…" is 「たもと」のダメージ|…, so
@@ -58,8 +59,13 @@ const OUT = join(ROOT, 'src/lib/data/abilityNames');
 const CACHE = join(ROOT, 'assets-src/textmap');
 const gdb = createRequire(import.meta.url)('genshin-db');
 
-/** Our locale → genshin-db's language and the text maps' code. */
-const LOCALES = { ja: { gdb: 'Japanese', map: 'JP' } };
+/** Our locale → genshin-db's language, the text maps' code, the middle dot
+ *  that wins when two spellings differ only in it, and the particle that
+ *  joins a name to a talent label's suffix ("X DMG" → Xのダメージ, X伤害). */
+const LOCALES = {
+	ja: { gdb: 'Japanese', map: 'JP', dot: '・', joiner: /の$/ },
+	zh: { gdb: 'ChineseSimplified', map: 'CHS', dot: '·', joiner: /的$/ }
+};
 const NOT_IN_GAME = new Set(['blank']);
 
 async function textMap(code) {
@@ -75,19 +81,34 @@ async function textMap(code) {
 
 const DOTS = /[·･・]/g;
 
-/** A talent-table label's English suffix → the Japanese ones it can end in. */
+/** A talent-table label's English suffix → the endings it can have, per locale. */
 const LABEL_SUFFIXES = {
-	DMG: ['ダメージ'],
-	'Explosion DMG': ['爆発ダメージ'],
-	DoT: ['継続ダメージ'],
-	Duration: ['継続時間', '存在時間', '持続時間'],
-	CD: ['クールタイム'],
-	'Attack Interval': ['攻撃間隔'],
-	Healing: ['回復量'],
-	'Shield Absorption': ['シールド吸収量'],
-	Shield: ['シールド'],
-	'1-Hit DMG': ['1段ダメージ'],
-	'DMG Absorption': ['吸収量']
+	ja: {
+		DMG: ['ダメージ'],
+		'Explosion DMG': ['爆発ダメージ'],
+		DoT: ['継続ダメージ'],
+		Duration: ['継続時間', '存在時間', '持続時間'],
+		CD: ['クールタイム'],
+		'Attack Interval': ['攻撃間隔'],
+		Healing: ['回復量'],
+		'Shield Absorption': ['シールド吸収量'],
+		Shield: ['シールド'],
+		'1-Hit DMG': ['1段ダメージ'],
+		'DMG Absorption': ['吸収量']
+	},
+	zh: {
+		DMG: ['伤害'],
+		'Explosion DMG': ['爆炸伤害'],
+		DoT: ['持续伤害'],
+		Duration: ['持续时间', '存在时间'],
+		CD: ['冷却时间'],
+		'Attack Interval': ['攻击间隔'],
+		Healing: ['治疗量'],
+		'Shield Absorption': ['护盾吸收量'],
+		Shield: ['护盾'],
+		'1-Hit DMG': ['第一段伤害', '单次伤害', '一段伤害'],
+		'DMG Absorption': ['吸收量']
+	}
 };
 
 /**
@@ -132,14 +153,50 @@ const BY_HAND = {
 		valeriy: { Supercharged: '蓄雷' }, // "Supercharged Shield" 蓄雷シールド
 		yaoyao: { Yuegui: '月桂', 'Jumping Mode': '跳躍型' }, // 「月桂·跳躍型」
 		zibai: { "Spirit Steed's Stride": '翔ける霊駒' } // "Spirit Steed's Stride 1-Hit DMG" 翔ける霊駒の1段目ダメージ
+	},
+	zh: {
+		alhaitham: { 'Projection Attack': '光幕攻击' }, // "Projection Attack Interval" 光幕攻击间隔
+		charlotte: { 'Focused Impression': '聚焦印象' }, // "Focused Impression" Mark DMG 「聚焦印象」印记伤害
+		chasca: { Nightsoul: '夜魂' }, // "Nightsoul Transmission" 夜魂传递
+		chiori: { Kinu: '「绢」' }, // her A4: 简易自动制御人形「绢」
+		clorinde: {
+			'Glimbright Shade': '明烛之影', // her C6: 明烛之影会在特定条件下出现
+			'Nightvigil Shade': '夜巡之影' // her C1: 附近唤出夜巡之影
+		},
+		columbina: { 'Gravity Interference': '引力干涉' }, // "Gravity Interference: Lunar-Charged DMG" 引力干涉·月感电伤害
+		dehya: { 'Fiery Sanctum': '净焰剑狱' }, // "Fiery Sanctum: Redmane's Blood" 净焰剑狱·赤鬃之血
+		diluc: { Phoenix: '火之鸟' }, // Dawn: 挥出向前飞行的火之鸟
+		durin: { 'Cycle of Enlightenment': '轮变启迪' }, // a highlighted term, 「轮变启迪」
+		emilie: { 'Heart Note': '心韵' }, // her C4, "Lumidouce Heart Note" 柔灯心韵
+		escoffier: { 'Cooking Mek': '厨艺机关', 'Cold Storage': '低温冷藏' }, // "Cooking Mek: Cold Storage Mode" 厨艺机关·低温冷藏模式
+		freminet: { 'Shattering Pressure': '高压粉碎' }, // "Level 0 Shattering Pressure DMG" 零阶高压粉碎伤害
+		ineffa: { 'Optical Flow': '光流' }, // "Optical Flow Shield Barrier" 光流屏障护盾
+		kamisato_ayato: { Shunsuiken: '瞬水剑' }, // "Shunsuiken 3-Hit DMG" 三段瞬水剑伤害
+		kujou_sara: { Ambush: '伏' }, // "Tengu Juurai: Ambush" 天狗咒雷·伏
+		kuki_shinobu: { 'Thundergrass Mark': '雷草标', Thundergrass: '雷草' }, // her C4: 雷草标将落在敌人所在的位置
+		linnea: { 'Memo Heal': '备忘治疗' }, // ours: her burst is "Memo: …" 备忘·绝境生存指南
+		mavuika: { 'Rings of Searing Radiance': '焚曜之环' }, // "Ring of Searing Radiance DMG" 焚曜之环伤害
+		mitya: { Overloaded: '超载', 'Steady State': '稳态' }, // the reaction; "Steady State Core DMG" 稳态炉心伤害
+		mona: { Phantom: '虚影' }, // a highlighted term
+		nicole: {
+			'Shield of Blazing Light': '炽光护盾', // her burst: 并展开炽光护盾
+			"Pathfinder's Blessing": '先导之佑', // her C4: 「先导之佑」效果
+			Unity: '合一' // "Arcane Projection: Unity" 「奥迹造影·合一」
+		},
+		nilou: { 'Sword Dance': '剑舞步', 'Whirling Steps': '旋舞步', 'Water Wheel': '水轮' }, // "Sword Dance/Whirling Steps 1-Hit DMG" 剑舞步/旋舞步一段伤害, "Luminous Illusion/Water Wheel DMG" 水月/水轮伤害
+		noelle: { 'Stone Armor': '护体岩铠' }, // Breastplate: 唤出护体的岩铠; the effect is 护体岩铠
+		prune: { 'Hunter-Seeker': '寻猎', 'Hunt the Witch': '寻猎魔女' }, // "Hunter-Seeker Mode Duration" 寻猎模式持续时间; 「寻猎魔女」效果
+		skirk: { 'Rapid Movement': '快速移动' }, // her skill's Hold: 将持续快速移动
+		valeriy: { Supercharged: '蓄雷' }, // "Fortune Stick: Supercharged" 灵签·蓄雷
+		yaoyao: { Yuegui: '月桂', 'Jumping Mode': '弹跳型' } // 「月桂·弹跳型」
 	}
 };
 
 /** One name from several text-map candidates, or null when they disagree. */
-function pick(candidates) {
+function pick(candidates, dot) {
 	const set = [...new Set(candidates)];
 	if (set.length === 1) return set[0];
-	if (new Set(set.map((s) => s.replace(DOTS, '・'))).size === 1) return set[0].replace(DOTS, '・');
+	if (new Set(set.map((s) => s.replace(DOTS, dot))).size === 1) return set[0].replace(DOTS, dot);
 	return null;
 }
 
@@ -190,21 +247,21 @@ for (const [hash, s] of Object.entries(enMap)) {
 }
 
 /** Source 3: the name lifted out of the talent tables' labels, or null. */
-function fromLabels(name, localMap) {
+function fromLabels(name, localMap, lang, locale) {
 	const found = [];
 	const stems = name.endsWith('s') ? [name, name.slice(0, -1)] : [name];
 	for (const stem of stems)
-		for (const [en, endings] of Object.entries(LABEL_SUFFIXES))
+		for (const [en, endings] of Object.entries(LABEL_SUFFIXES[locale]))
 			for (const hash of byLabel.get(`${stem} ${en}`) ?? []) {
 				const s = localMap[hash];
 				if (!s) continue;
 				const left = s.split('|')[0].trim();
 				const end = endings.find((e) => left.endsWith(e));
 				if (!end) continue;
-				const core = left.slice(0, -end.length).replace(/の$/, '').trim();
+				const core = left.slice(0, -end.length).replace(lang.joiner, '').trim();
 				if (core) found.push(core);
 			}
-	return found.length ? pick(found) : null;
+	return found.length ? pick(found, lang.dot) : null;
 }
 
 const tables = {};
@@ -232,17 +289,17 @@ for (const [locale, lang] of Object.entries(LOCALES)) {
 			if (BY_HAND[locale]?.[c.id]?.[name]) byHand++;
 			else if (local) fromDb++;
 			else {
-				// A plural ("Rain Swords") is the game's singular in Japanese.
+				// A plural ("Rain Swords") is the game's singular in Japanese and Chinese.
 				const hashes =
 					byEnglish.get(name) ??
 					(name.endsWith('s') ? byEnglish.get(name.slice(0, -1)) : null) ??
 					[];
 				const candidates = hashes.map((h) => localMap[h]?.trim()).filter(Boolean);
-				local = candidates.length ? pick(candidates) : null;
+				local = candidates.length ? pick(candidates, lang.dot) : null;
 				if (local) {
 					fromMap++;
 					if (new Set(candidates).size > 1) dotted++;
-				} else if ((local = fromLabels(name, localMap))) fromLabel++;
+				} else if ((local = fromLabels(name, localMap, lang, locale))) fromLabel++;
 				else {
 					const node = splitName(name);
 					if (node) return childrenOf(node).forEach(resolve);

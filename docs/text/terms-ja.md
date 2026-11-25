@@ -143,7 +143,7 @@ Drafted in the frame, notices, and sections rounds.
     - the modes Easy, Normal, Hard, Visionary, Lunar → イージー, ノーマル, ハード, マスター, 月諭 (Visionary is the fourth mode, which Japanese calls マスター)
     - act → 幕 (第3幕); Arcana → アルカナ
     - Fantasia Flowers → 幻戯の花; Blessing Level → 祝福レベル
-    - Primary Antagonists (the heading over the boss acts) → 主な敵 · ours, as the wiki names no heading (open question 6)
+    - Primary Antagonists (the heading over the boss acts) → 主な相手 · game, from the text map (主要对手 → 主な相手)
 93. Stygian Onslaught · game, from the Japanese wiki's 幽境の激戦 page:
     - Fearless and Dire are difficulties 5 and 6, エクストラ and アルティメット, so Fearless HP and Dire HP → エクストラのHP and アルティメットのHP
     - Battlefield (one of the season's three fights) → 戦場 · ours, as the wiki names no term (open question 6)
@@ -223,7 +223,7 @@ Wish odds:
 137. guarantee → 確定 · players
 138. Capturing Radiance → 掴みし明光 · game
 139. featured → ピックアップ · game
-140. Fate Points, Epitomized Path → 命定値, 神鋳定軌 · game
+140. Fate Points, Epitomized Path → 命定値, 神鋳軌定 · game, from the text map (4 lines, none with 神鋳定軌)
 141. pulls → 祈願回数, and N連 in counts · players
 142. Character Event Wish, Weapon Event Wish → イベント祈願・キャラクター, イベント祈願・武器 · game
 
@@ -235,7 +235,7 @@ genshin-db's Japanese text unless marked otherwise.
 Shared and the Planner:
 
 143. Elemental Resonance → 元素共鳴, and each one by its element: 炎元素共鳴 to 岩元素共鳴 · players (Game8; genshin-db does not carry resonances)
-144. Protective Canopy → 元素共鳴（異なる4種） · ours (open question 12)
+144. Protective Canopy → 元素共鳴（異なる4種） · ours. The game's name is 交錯の護り (元素共鳴：交錯の護り in the text map), but the draft names the other resonances the players' way (143), so the label keeps their form until the community answers (open question 12)
 145. Refinement → 精錬ランク · game
 146. CRIT Rate, CRIT DMG, Healing Bonus, Interruption Resistance, All Elemental RES, Physical RES → 会心率, 会心ダメージ, 与える治療効果, 中断耐性, 全元素耐性, 物理耐性 · game
 147. the weapon types → 片手剣, 両手剣, 長柄武器, 法器, 弓 · game
@@ -282,7 +282,7 @@ Help's prose needed these. The game's words come from genshin-db's Japanese tale
 177. portrait → 立ち絵, as the interiors have it; magnifier → 虫眼鏡; a hollow chip → 中抜き · ours
 178. the Visualizers' Readout → 読み取り表示 · ours
 179. Starglitter → 星輝 · game
-180. "Menacing or lower" (Stygian's fourth difficulty and below) → エクストラより下の難易度 · ours, naming the difficulty above it, since the draft has no checked name for the fourth (open question 14)
+180. "Menacing or lower" (Stygian's fourth difficulty and below) → マスター以下の難易度 · game: Menacing is マスター (幽境の激戦・マスター, 難易度マスター以上の挑戦をクリア in the text map)
 
 ## H. Added while drafting the pages
 
@@ -290,7 +290,7 @@ About, What's new, Contribute, Beta, and Privacy needed these. The game's words 
 genshin-db's Japanese talent text unless marked otherwise.
 
 181. What's new's ability names in prose → the game's Japanese: 衡平な裁量 (Equitable Judgment, as 重撃·衡平な裁量), 変転・漆黒の否 (Denial of Darkness), 白焔の龍 and 黒蝕の龍 (Durin's White and Dark forms), 鳳跡随翦舞 and 翦月輪 (Swallow-Wisp Pinion Dance, Feathermoon Rings), 化海月 and 葛籠の中の玉櫛 (Bake-Kurage, Tamakushi Casket), 聖祝の導き (Guidance of Theosis), フリーズキャッツクロー (Icy Paws), 琢光鏡 and 光幕攻撃 (Chisel-Light Mirror, Projection Attack), 夜魂値 (Nightsoul points), 万象、灰に帰す (All Is Ash) · game
-182. Witch's Revelation (the Hexerei talents unlocked by a quest) → 魔女の啓示 · ours, unchecked: genshin-db does not carry these talents yet (open question 15)
+182. Witch's Revelation (the Hexerei talents unlocked by a quest) → 魔女の諭示 · game, from the text map (5 lines)
 183. Known gaps → 既知の未対応事項 · ours, from 40
 184. tick cadence → 判定間隔, from the interiors' 1回の判定 · ours
 185. training dummy → 木人 · players
@@ -348,15 +348,15 @@ Each is a real split between two words a player might expect. The draft uses the
 3. (65) Double Hydro, in team names: ダブル水, or 水2?
 4. (68) A character's capabilities (heal, shield, buff): 能力, or 役割 (which the draft gives to Role)?
 5. (86, 87) enabler and selfish carry: the loans イネーブラー and セルフィッシュキャリー, or 起点 and 自己完結型アタッカー?
-6. (92, 93) The Theater's Primary Antagonists heading and Stygian's Battlefield: does the game name them? The draft has 主な敵 and 戦場.
+6. (92, 93) ~~The Theater's Primary Antagonists heading and~~ Stygian's Battlefield: does the game name it? The draft has 戦場. (The heading is the game's 主な相手, from the text map.)
 7. (97) Gauge explorer: 元素量シミュレーター, or 元素量エクスプローラー?
 8. (109) Forward and reverse Vaporize and Melt: フォワード / リバース, or 強 / 弱?
 9. (121) A damage-formula bracket: 乗算枠, or 項?
 10. (126) substat: the game's サブ効果, or the players' サブOP?
 11. (135) soft pity: ソフト天井, or 確率上昇?
-12. (144) The four-element resonance: does the game name it in Japanese? The draft has 元素共鳴（異なる4種）.
+12. (144) The four-element resonance: the game names it 交錯の護り. Should the label use it, and the other resonances their game names (熱誠の炎), or keep the players' 炎元素共鳴 and 元素共鳴（異なる4種）?
 13. (162) Dense stat labels: 元チャ and 会心ダメ, or the Latin ER and CD?
-14. (180) Stygian Onslaught's fourth difficulty, Menacing: what does the game call it? The draft writes around it as エクストラより下の難易度.
-15. (182) Witch's Revelation: what does the game call these talents in Japanese? The draft has 魔女の啓示.
+14. ~~(180) Stygian Onslaught's fourth difficulty, Menacing: what does the game call it?~~ Answered by the text map: マスター.
+15. ~~(182) Witch's Revelation: what does the game call these talents in Japanese?~~ Answered by the text map: 魔女の諭示.
 16. (138, 169) The wish counter: the draft writes it 輝映カウンター, after the Stellar reactions' 輝映, while the mechanic it counts is 掴みし明光. Should the counter be 明光カウンター?
 17. (191) The Traveler of an element: 旅人（風）, as the draft names the Traveler elsewhere, or 主人公(風), as Game8 and Altema list them?

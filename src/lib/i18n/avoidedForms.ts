@@ -10,5 +10,11 @@ export const AVOID: Record<string, { form: RegExp; why: string }[]> = {
 			form: /(?<![A-Za-z])CD(?![A-Za-z])/,
 			why: 'entry 28: cooldown is クールタイム (CT in dense labels), never CD'
 		}
+	],
+	zh: [
+		{
+			form: /(?<![A-Za-z])CD(?![A-Za-z])/,
+			why: 'entry 28: cooldown is 冷却时间 (冷却 in dense labels), never CD'
+		}
 	]
 };

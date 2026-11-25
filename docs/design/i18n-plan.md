@@ -1,6 +1,6 @@
 # Internationalization Plan
 
-**Status:** Platform built (`docs/rounds/i18n-setup-2026-11-19.md`); the frame pilot is up, hidden, with the pseudo-locale (step 4) and a Japanese draft of the frame (`docs/rounds/i18n-frame-pilot-2026-11-19.md`). What is next is in `docs/todo.md`. Where this plan and the setup record differ, the record is what shipped: system CJK fonts instead of Plex CJK, and locales `ja` then `zh` first (`docs/rounds/launch-roadmap.md` § locale priority).
+**Status:** Platform built (`docs/rounds/i18n-setup-2026-11-19.md`). Japanese and Simplified Chinese are drafted whole and hidden (`docs/rounds/i18n-*.md`, `docs/rounds/i18n-zh-2026-11-25.md`), waiting on their communities' review. What is next is in `docs/todo.md`. Where this plan and the setup record differ, the record is what shipped: system CJK fonts instead of Plex CJK, and locales `ja` then `zh` first (`docs/rounds/launch-roadmap.md` § locale priority).
 **Scope:** Add multi-language support to critcalc
 **Target locales:** English (default), Spanish, French, Russian, Chinese, Japanese, Korean
 
@@ -256,7 +256,7 @@ messages, with no unintended change to English. What it taught, for every locale
   house terms (rotation and team building especially). Check them in the community's own
   wikis and guides before using them.
 - Start `terms-zh.md` from Japanese's open questions: most are the same splits.
-- Decide Simplified only, or Traditional too, before the term list (open question below).
+- Simplified only (⚓ Nate 2026-11-25). The term list is `docs/text/terms-zh.md`.
 
 ### For Spanish, French, Russian, and other alphabetic locales
 
@@ -314,7 +314,7 @@ see the whole tool at once. Stacked rounds:
 
 ## Open questions
 
-- Which Chinese — Simplified only, or both Simplified and Traditional?
-  (genshin-db supports both at no extra cost beyond bundle size.)
+- ~~Which Chinese?~~ Simplified only for now (⚓ Nate 2026-11-25). Traditional, if it comes,
+  is its own term list and draft: Taiwan and Hong Kong players differ in words as well as glyphs.
 - ~~Does the Tier C term list need to be enumerated up front, or discovered during the audit
   pass?~~ Up front: Japanese drafted the interiors from a term list made first (§6).

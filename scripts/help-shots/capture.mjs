@@ -51,11 +51,11 @@ const DEVICES = {
 };
 
 /** The languages Help is shot in: English, and each locale with a draft of
- *  the tools. Chinese joins once it has one. */
-const LANGS = ['en', 'ja'];
+ *  the tools. */
+const LANGS = ['en', 'ja', 'zh'];
 /** The browser's own locale per language, so nothing the browser formats
  *  (a date input, a number) shows another language's form. */
-const BROWSER_LOCALE = { en: 'en-US', ja: 'ja-JP' };
+const BROWSER_LOCALE = { en: 'en-US', ja: 'ja-JP', zh: 'zh-CN' };
 
 const argOf = (name) => {
 	const i = process.argv.indexOf(name);

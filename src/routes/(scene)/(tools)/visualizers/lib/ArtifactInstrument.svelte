@@ -696,7 +696,7 @@
 	const daysPhrase = (d: number) =>
 		d === 1 ? m.vz_artifact_1_day() : m.vz_artifact_d_days({ count: d, days: fmtNum(d) });
 	const fmtValue = (x: number) => x.toFixed(1);
-	const unitWord = $derived(unit === 'cv' ? 'CV' : m.vz_artifact_useful_rolls());
+	const unitWord = $derived(unit === 'cv' ? m.vz_artifact_cv_unit() : m.vz_artifact_useful_rolls());
 	const valueOf = (x: number) => `${fmtValue(x)} ${unitWord}`;
 	/** The slot's name in the plural, inside a sentence (⚠️ sands is its own
 	 *  plural): a message of its own per slot, never a lowercased name. */
