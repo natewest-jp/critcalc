@@ -1761,8 +1761,20 @@
 
 <style>
 	/* ── The setup bar's popovers ── */
+	/* The stats face is the setup bar's longest (⚓ Nate 2026-11-25: in
+	   Japanese it ran off a phone's edge). Its button may shrink to the bar,
+	   and the face wraps between stats, never inside a CJK word. */
+	:global(.band-menu-trigger:has(> .bd-glance)) {
+		min-width: 0;
+		max-width: 100%;
+	}
 	.bd-glance {
 		font-variant-numeric: tabular-nums;
+		min-width: 0;
+		flex-wrap: wrap;
+		white-space: normal;
+		word-break: keep-all;
+		text-align: start;
 	}
 
 	.bd-picks {
