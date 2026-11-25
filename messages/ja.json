@@ -979,7 +979,7 @@
 	"planner_edit_the_notation": "表記を編集",
 	"planner_type_a_rotation_in_kqm_notation": "KQM表記でローテーションを入力",
 	"planner_name_in_notation": "KQM表記での名前",
-	"planner_names_in_japanese_in_this_rotation": "このローテーションにはキャラクター名が日本語で書かれています。KQM表記は英語名を使うので、共有したローテーションを誰でも読めます。",
+	"planner_names_in_japanese_in_this_rotation": "キャラクター名が日本語になっています。KQM表記は英語名を使うので、共有したローテーションを誰でも読めます。",
 	"planner_use_notation_names": "KQM表記の名前にする",
 	"planner_notation_history": "表記の履歴",
 	"planner_undo_the_last_notation_change": "直前の表記の変更を元に戻す",
