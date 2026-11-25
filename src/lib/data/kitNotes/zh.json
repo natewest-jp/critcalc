@@ -1126,7 +1126,7 @@
 		},
 		"mitya__passive__explosive_reagent_safe_limits_exceeded": {
 			"reason": {
-				"en": "267af34c",
+				"en": "7c778fee",
 				"text": "排轴工具不追踪递变信标，而此效果会根据生成的每个递变信标提高米提亚的暴击率。"
 			}
 		},
@@ -1146,13 +1146,13 @@
 	"mona": {
 		"mona__burst__stellaris_phantasm": {
 			"caveat": {
-				"en": "c1449fac",
+				"en": "39f1f41d",
 				"text": "全队伤害加成只对困在泡影中的敌人生效。游戏中下一次命中会使泡影破裂，星异的5秒会比显示的稍晚开始，其2U水元素附着也会早约8秒落下。"
 			}
 		},
 		"mona__constellation__prophecy_of_oblivion": {
 			"caveat": {
-				"en": "449c7f20",
+				"en": "4d657d15",
 				"text": "两项暴击加成都只在敌人带有星异时生效，暴击伤害也只作用于魔导队伍角色。两者都按始终生效显示。"
 			}
 		}
@@ -2150,7 +2150,7 @@
 	"yanfei": {
 		"yanfei__constellation__right_of_final_interpretation": {
 			"caveat": {
-				"en": "53f30e17",
+				"en": "aae50e21",
 				"text": "按常驻生效显示；游戏中重击的暴击率加成只对生命值低于50%的敌人生效。"
 			}
 		},
