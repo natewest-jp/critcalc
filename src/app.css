@@ -4446,6 +4446,9 @@ button.link {
    PingFang as `.PingFang SC`), it falls back through the first face's cascade,
    which ends in Songti. The platform UI font's cascade follows `<html lang>`,
    so it lands on PingFang or Hiragino instead.
+   Chinese leads with IBM Plex Sans SC, self-hosted under /assets and linked
+   only on Chinese pages (+layout.svelte); the system faces after it cover the
+   moment before its slices arrive.
    `<html lang>` is set per page by hooks.server.ts. */
 :root:lang(ja) {
 	--font-cjk:
@@ -4454,8 +4457,8 @@ button.link {
 }
 :root:lang(zh-Hans) {
 	--font-cjk:
-		'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC',
-		system-ui;
+		'IBM Plex Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC',
+		'Noto Sans CJK SC', system-ui;
 }
 :root:lang(ja),
 :root:lang(zh-Hans) {
