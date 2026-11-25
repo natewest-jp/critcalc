@@ -721,6 +721,11 @@
 	const CHEV_SLOPE = 0.45;
 	/** Faint (⚓ Nate): 12% at the head, fading to nothing at the tail */
 	const CHEV_HEAD = 0.12;
+	/** 🎛️ ⚓ Nate (2026-11-25): the result's fade runs the other way, lighter
+	 *  at its head and darker at its tail; a subtotal keeps the stripes'
+	 *  direction. Both forms: upright, dark at the bottom; the rows form,
+	 *  dark at the left. */
+	const TOTAL_FADE_FROM_TAIL = true;
 	const chevAlpha = (k: number, count: number) =>
 		count <= 1 ? CHEV_HEAD : CHEV_HEAD * (1 - k / (count - 1));
 	function chevrons(k: number): { points: string; alpha: number }[] {
@@ -1393,8 +1398,8 @@
 									id="{uid}-fade-{r.id}"
 									x1="0"
 									x2="0"
-									y1={g.loss ? 1 : 0}
-									y2={g.loss ? 0 : 1}
+									y1={g.loss !== (r.kind === 'total' && TOTAL_FADE_FROM_TAIL) ? 1 : 0}
+									y2={g.loss !== (r.kind === 'total' && TOTAL_FADE_FROM_TAIL) ? 0 : 1}
 								>
 									<stop offset="0" style:stop-color="var(--bright-ink)" stop-opacity={CHEV_HEAD} />
 									<stop offset="1" style:stop-color="var(--bright-ink)" stop-opacity="0" />
@@ -1697,7 +1702,10 @@
 									style:background={barFill(r)}
 								>
 									{#if isSum(r)}
-										<span class="bd-wf-fade"></span>
+										<span
+											class="bd-wf-fade"
+											class:is-tail={r.kind === 'total' && TOTAL_FADE_FROM_TAIL}
+										></span>
 									{:else}
 										<!-- k = 0 is the HEAD; each step back toward the tail fades.
 										     k = −1 sits past the head, so the pattern runs through it. -->
@@ -1761,8 +1769,20 @@
 
 <style>
 	/* ── The setup bar's popovers ── */
+	/* The stats face is the setup bar's longest (⚓ Nate 2026-11-25: in
+	   Japanese it ran off a phone's edge). Its button may shrink to the bar,
+	   and the face wraps between stats, never inside a CJK word. */
+	:global(.band-menu-trigger:has(> .bd-glance)) {
+		min-width: 0;
+		max-width: 100%;
+	}
 	.bd-glance {
 		font-variant-numeric: tabular-nums;
+		min-width: 0;
+		flex-wrap: wrap;
+		white-space: normal;
+		word-break: keep-all;
+		text-align: start;
 	}
 
 	.bd-picks {
@@ -2168,6 +2188,23 @@
 	.bd-wf-bar.is-loss .bd-wf-fade {
 		background: linear-gradient(
 			to right,
+			color-mix(in srgb, var(--bright-ink) 12%, transparent),
+			transparent
+		);
+	}
+
+	/* The result's fade runs tail to head (TOTAL_FADE_FROM_TAIL). */
+	.bd-wf-bar:not(.is-loss) .bd-wf-fade.is-tail {
+		background: linear-gradient(
+			to right,
+			color-mix(in srgb, var(--bright-ink) 12%, transparent),
+			transparent
+		);
+	}
+
+	.bd-wf-bar.is-loss .bd-wf-fade.is-tail {
+		background: linear-gradient(
+			to left,
 			color-mix(in srgb, var(--bright-ink) 12%, transparent),
 			transparent
 		);

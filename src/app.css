@@ -2439,6 +2439,15 @@ img {
 .link:focus-visible {
 	text-decoration-color: color-mix(in srgb, var(--accent) 90%, transparent);
 }
+/* A link that is a <button> (it acts, rather than goes) sheds the browser's
+   button chrome, so it reads as the same link. */
+button.link {
+	padding: 0;
+	border: none;
+	background: none;
+	font: inherit;
+	cursor: pointer;
+}
 .link.link--quiet {
 	color: inherit;
 	text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);

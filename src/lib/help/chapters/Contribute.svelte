@@ -18,7 +18,7 @@
 	import Msg from '$lib/components/Msg.svelte';
 	import { hrefTo } from '$lib/i18n/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
-	import { FEEDBACK_FORM_URL } from '$lib/feedback';
+	import { feedbackFormUrl } from '$lib/feedback';
 </script>
 
 {#snippet strong(t: string)}<strong>{t}</strong>{/snippet}
@@ -26,7 +26,7 @@
 	>{/snippet}
 {#snippet out(href: string, t: string)}<a {href} target="_blank" rel="noopener noreferrer">{t}</a
 	>{/snippet}
-{#snippet feedback(t: string)}{@render out(FEEDBACK_FORM_URL, t)}{/snippet}
+{#snippet feedback(t: string)}{@render out(feedbackFormUrl(), t)}{/snippet}
 {#snippet gcsim(t: string)}{@render out('https://gcsim.app', t)}{/snippet}
 {#snippet kqm(t: string)}{@render out('https://keqingmains.com', t)}{/snippet}
 {#snippet p(parts: MessagePart[])}<Msg
