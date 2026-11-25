@@ -494,7 +494,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Per-hit stack consumption isn't modeled — add `{coldDish:N}` before E to set the stacks (up to 5). Only the Normal-attack DMG bonus is shown; in game the stacks also boost charged, plunge, skill, and burst DMG.",
+			"caveat": "Per-hit stack consumption isn’t modeled — add `{coldDish:N}` before E to set the stacks (up to 5). Only the Normal-attack DMG bonus is shown; in game the stacks also boost charged, plunge, skill, and burst DMG.",
 			"_curatorNotes": [
 				"C2 mechanics: c2() called from skill() — sets c2Count = 5 and adds c2Key status for 15s. c2Init subscribes OnEnemyHit globally, filters: not Escoffier, active char, status active, c2Count > 0, element Cryo, AttackTag in {normal, charged, plunge, skill, burst}. On match: FlatDmg += c2Per × ATK = 240% × ATK; c2Count--.",
 				"Migrated to perStack-scaling BuffValue (2026-05-08): per: { stat: atk, ratio: 240 }, maxStacks: 5. Conditions gate visibility on (constellation 2) AND (stacks coldDish min 1). User asserts {coldDish:N} before E to set initial stacks; the bar resolves to ~N×240% ATK FlatDmg.",

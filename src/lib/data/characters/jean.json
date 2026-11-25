@@ -116,7 +116,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model pulling opponents together, which is all holding Gale Blade adds beyond its damage."
+				"reason": "The Rotation Planner doesn’t model pulling opponents together, which is all holding Gale Blade adds beyond its damage."
 			}
 		},
 		{
@@ -228,7 +228,7 @@
 			],
 			"description": "Using Dandelion Breeze will regenerate 20% of its Energy.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn’t track energy, so it doesn’t draw the Energy this restores."
 			}
 		}
 	],
@@ -243,7 +243,7 @@
 			],
 			"description": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard a held Gale Blade hits."
+				"reason": "The Rotation Planner doesn’t draw damage amounts, and this only raises how hard a held Gale Blade hits."
 			}
 		},
 		{
@@ -256,7 +256,7 @@
 			],
 			"description": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s.",
 			"notModeled": {
-				"reason": "This triggers on picking up Energy particles, and the Rotation Planner doesn't model particles or ATK SPD."
+				"reason": "This triggers on picking up Energy particles, and the Rotation Planner doesn’t model particles or ATK SPD."
 			}
 		},
 		{

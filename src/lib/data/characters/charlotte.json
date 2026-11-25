@@ -336,7 +336,7 @@
 			"abilityType": "passive",
 			"description": "When opponents marked by \"Focused Impression\" are defeated, Framing: Freezing Point Composition's CD will be decreased by 2s. This CD decrease can be triggered 4 times every 12s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model opponents being defeated, so this cooldown reduction can't trigger."
+				"reason": "The Rotation Planner doesn’t model opponents being defeated, so this cooldown reduction can’t trigger."
 			}
 		},
 		{
@@ -420,7 +420,7 @@
 			],
 			"description": "When Still Photo: Comprehensive Confirmation hits an opponent marked by Snappy Silhouette or Focused Impression, it will deal 10% more DMG and restore 2 Energy to Charlotte. This restoration can be triggered 5 times every 20s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't draw damage amounts or track energy, and this only makes Still Photo: Comprehensive Confirmation hit harder and restore Energy."
+				"reason": "The Rotation Planner doesn’t draw damage amounts or track energy, and this only makes Still Photo: Comprehensive Confirmation hit harder and restore Energy."
 			}
 		},
 		{
@@ -439,7 +439,7 @@
 			"_curatorNotes": [
 				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6 A Summation of Interest — effects[0] (damage 180% atk cryo) RE-TRIGGERED and RE-HOMED onto the skill's hE variant. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `charlotte/cons.go:113-160` — `OnEnemyDamage`, gated on `skillHoldMarkKey` (the Focused Impression mark, `skill.go:197` = `720+0.9*60` = 774f), on `ae.Info.ActorIndex == Core.Player.Active()`, and on `AttackTagNormal || AttackTagExtra`; sets a 6s `c6IcdKey`, then at +14f queues a Cryo `AttackTagElementalBurst`, `ICDTagNone`, Durability 25 hit **and** a `0.42 × TotalAtk` heal to the active character. `armedFor: 12` is the kit's \"Focused Impression\" Mark Duration (genshin-db `combat2` param8 = 12s at every talent level), **not** gcsim's 774f ≈ 12.9s — the two disagree and the kit is taken; the window opens at the cast while the mark in fact lands at the hold's hitmark, which is the stated `armedFor` convention. `icdGate: 'none'` is gcsim's `ICDTagNone` (`cons.go:137`); `units: 1` is its Durability 25; `frame: 14` is `Tasks.Add(…, 14)` with the inner `QueueAttack` at hitmark 0. Keep that the hit is tagged Elemental Burst in game, which is cosmetic here. ⚠️ gcsim runs ONE `c6IcdKey` over both the damage and the heal; authored as two effects they get two independent 6s `procCooldown` clocks. They cannot drift in practice — both fire off the same hit stream with the same filter — but a future change to one filter would desynchronise them. `source: 'active'` correctly includes Charlotte's own swings when she is on field (`cons.go:126`). No stat collision (heal and damage are different effect kinds); adding the heal introduces no new facet, Charlotte already claims `heal` from the burst."
 			],
-			"caveat": "The coordinated attack only fires while an opponent still carries the Focused Impression mark from a held Skill; a tapped Skill's Snappy Silhouette does not arm it."
+			"caveat": "The coordinated attack only fires while an opponent still carries the Focused Impression mark from a held Skill; a tapped Skill’s Snappy Silhouette does not arm it."
 		}
 	],
 	"meta": {

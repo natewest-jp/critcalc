@@ -230,7 +230,7 @@
 			],
 			"description": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model attack speed, and this triggers on CRIT hits, which it doesn't simulate."
+				"reason": "The Rotation Planner doesn’t model attack speed, and this triggers on CRIT hits, which it doesn’t simulate."
 			}
 		},
 		{

@@ -258,7 +258,7 @@
 			"description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
 			"application": [],
 			"nonHitting": true,
-			"caveat": "Not modeled: the Stormeye absorbing a nearby Cryo, Pyro, Hydro or Electro aura, after which each tick adds a hit of that element — only its Anemo ticks are shown."
+			"caveat": "Not modeled: the Stormeye absorbing a nearby Cryo, Pyro, Hydro, or Electro aura, after which each tick adds a hit of that element — only its Anemo ticks are shown."
 		}
 	],
 	"passives": [
@@ -413,7 +413,7 @@
 				"[Hexerei] Fandom 'Storm of Defiance' constellation infobox, buffType=Hexerei buff field: the two RES shreds are UNCHANGED under Secret Rite (-20% Anemo, -20% absorbed element) — the existing effects stand as authored. The buff field adds only 'the DMG Venti deals to these opponents will gain a CRIT DMG Bonus of 100%'. Not authored: it boosts Venti's own hits only, is tied to the enemy debuff rather than a stated duration, and inventing one would fake timing."
 			],
 			"description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%.",
-			"caveat": "Only the Anemo shred is shown; if the Stormeye absorbed an element, that element's RES is also lowered by 20% for 10s."
+			"caveat": "Only the Anemo shred is shown; if the Stormeye absorbed an element, that element’s RES is also lowered by 20% for 10s."
 		}
 	],
 	"factionBonuses": [

@@ -240,7 +240,7 @@
 				"No effect authored — Riptide application on melee CRIT. gcsim: makeA4CB returns a callback gated on a.IsCrit; conditional on stance + crit + target type. Schema cannot express crit-conditional callbacks; flag for reviewer."
 			],
 			"notModeled": {
-				"reason": "This Riptide is applied on CRIT hits. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "This Riptide is applied on CRIT hits. The Rotation Planner doesn’t simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		}
 	],

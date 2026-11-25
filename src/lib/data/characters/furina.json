@@ -197,7 +197,7 @@
 			],
 			"summonsFollowState": true,
 			"tags": ["heal", "summon"],
-			"caveat": "The Singer's heal marks are drawn at its base 2s cadence; Unheard Confession shortens that by up to 16% at high Max HP, which the timeline doesn't model.",
+			"caveat": "The Singer’s heal marks are drawn at its base 2s cadence; Unheard Confession shortens that by up to 16% at high Max HP, which the timeline doesn’t model.",
 			"_curatorNotes": [
 				"Salon Member summonTick damage authored 2026-07-12 at talent level 10, per-member (three effects on the one Salon Solitaire summon entry — computeSummonTicks merges multiple summonTick series). All three scale off Furina's Max HP (stat 'hp'): gcsim skill.go builds each hit as FlatDmg = skillX[TalentLvlSkill] × MaxHP, Hydro, AttackTagElementalArt.",
 				"Cadences are gcsim's KQM-measured means (skill.go consts, sourced from the spreadsheet linked at skill.go:32). Real attack timing has stochastic jitter of up to ±7 frames per tick (calcSalonTick box-cox distribution, skill.go:52-60) — not modelable with fixed-interval summonTick; means used. Members attack only while Furina is in Ousia alignment and STOP when a Charged Attack flips her to Pneuma — modelled since the Arkhe round (2026-09-04); the note that used to sit here said the planner could not track alignment and that the ticks therefore ran for the whole window, and both halves are now false.",
@@ -386,7 +386,7 @@
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). passive: Endless Waltz — effects[0] (heal scaling 2 hp) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/furina/asc.go:24-47` — an `event.OnHeal` subscription gated on `hi.Caller != c.Index()`, `overheal > 0` and `hi.Target == Player.Active()`, which opens a 4s status; `asc.go:49-68` then self-queues a `HealTypePercent` `Src: 0.02` team heal every 120f while it holds. Retained: `_curatorNotes` must gain the reason: the trigger is `event.OnHeal` + overheal, and `{ type: 'onHeal' }` has no reader anywhere in this codebase (it is as dead as `manual`), so there is no partial trigger to fall back to. Retain that the heal is 2% of **each receiver's own** Max HP (`HealTypePercent`), which our `scaling`/`stat: 'hp'` pair reads as a percentage of *Furina's* HP — a second reason not to keep it. ⚠️ None to the Team Builder — Furina keeps her `heal` capability from the `heal` AbilityTag on Salon Solitaire (`pushTagCapabilities` in `deriveCapabilities.ts`), not from this effect, and `manual` is already skipped there, so the derived set is byte-identical after the delete. ⛔ Do not reach for `onHPIncrease` as a proxy: same dead list."
 			],
 			"notModeled": {
-				"reason": "This heal is triggered by overflow healing from other sources, and the Rotation Planner doesn't track healing received."
+				"reason": "This heal is triggered by overflow healing from other sources, and the Rotation Planner doesn’t track healing received."
 			}
 		},
 		{
@@ -404,7 +404,7 @@
 			"constellationLevel": 1,
 			"description": "When using Let the People Rejoice, Furina will gain 150 Fanfare.\nAdditionally, Furina's Fanfare limit is increased by 100.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track Fanfare, which is all this constellation changes."
+				"reason": "The Rotation Planner doesn’t track Fanfare, which is all this constellation changes."
 			}
 		},
 		{
@@ -414,7 +414,7 @@
 			"constellationLevel": 2,
 			"description": "While Let the People Rejoice lasts, Furina's Fanfare gain from increases or decreases in nearby characters' HP is increased by 250%. Each point of Fanfare above the limit will increase Furina's Max HP by 0.35%. Her maximum Max HP increase is 140%.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track Fanfare or party HP changes, so the Max HP this grants isn't shown."
+				"reason": "The Rotation Planner doesn’t track Fanfare or party HP changes, so the Max HP this grants isn’t shown."
 			}
 		},
 		{

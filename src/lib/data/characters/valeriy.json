@@ -377,7 +377,7 @@
 				"⚠️ Workaround checked and ruled out: a `{impactMomentum:N}` notation assertion does not reach a rotation-scoped key (`Valeriy {impactMomentum:100} C` draws nothing), so a player cannot assert the A1 Momentum by hand either.",
 				"Wiki wording differs trivially from genshin-db (\"an attack whose Elemental Type is Electro\"); genshin-db's kept."
 			],
-			"caveat": "Impact Momentum from the burst isn't counted, so a Charged Attack after it only becomes Direct-Fire Mortar here if the skill supplied the Momentum."
+			"caveat": "Impact Momentum from the burst isn’t counted, so a Charged Attack after it only becomes Direct-Fire Mortar here if the skill supplied the Momentum."
 		},
 		{
 			"id": "valeriy__passive__into_the_breach",

@@ -205,7 +205,7 @@
 			],
 			"description": "When Razor's Energy is below 50%, increases Energy Recharge by 30%.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track energy, so it can't tell when Razor is below 50% Energy for this Energy Recharge bonus."
+				"reason": "The Rotation Planner doesn’t track energy, so it can’t tell when Razor is below 50% Energy for this Energy Recharge bonus."
 			}
 		}
 	],
@@ -220,7 +220,7 @@
 			],
 			"description": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model pickups, so this DMG bonus from picking up Elemental Orbs or Particles isn't drawn."
+				"reason": "The Rotation Planner doesn’t model pickups, so this DMG bonus from picking up Elemental Orbs or Particles isn’t drawn."
 			}
 		},
 		{

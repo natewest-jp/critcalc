@@ -479,7 +479,7 @@
 				"↻ THE `allDmgBonus 200 / manual` EFFECT IS RETIRED TO THE DESCRIPTION, 2026-09-16 (T0.5; manual-trigger-retirement step 3, retire). It is not a buff window at all: gcsim cons.go:32-55 adds it to the SNAPSHOT of a single Rebuke: Vaulting Fist attack (snap.Stats[DmgP] += 2.0), one hit, consumed immediately. Authored as a duration-less self buff it derived as an unconditional +200% all-DMG capability in the Team Builder, and data-outliers.md flagged the magnitude. A single hit's damage multiplier is out of scope by the tool constitution; the constellation's own text keeps the claim.",
 				"↻ 2026-10-30 (memory-triage round): gcsim now implements the Witch's Revelation layer (`8e0bc716c`, PR #3212: `stellar.go`, a `revelation` param that defaults ON in `wriothesley.go`, gated per hit on `reactable.PolestarFieldKey`, i.e. standing in a Polestar Field, which the caveat already names). The wiki-only evidence above is now cross-checked: `c1StellarCACB`: a Luster: Vaulting Fist hit calls `c1SkillExtension()` (the 4s Chilling Penalty extension, once per window) and opens a 5s +50% Stellar-Conduct bonus for the next N5; `makeC1N5CB` the mirror +50% for the next Luster. Agrees with the kit text authored here; the extension stays blocked on `onHit` dispatch to stance owners, and the +50% pair are single-instance bonuses, as noted."
 			],
-			"caveat": "Not modeled: the enhanced Charged Attack extending Chilling Penalty by 4s once per window, so the skill's active span is shown 4s short."
+			"caveat": "Not modeled: the enhanced Charged Attack extending Chilling Penalty by 4s once per window, so the skill’s active span is shown 4s short."
 		},
 		{
 			"id": "wriothesley__constellation__shackles_for_the_arrogant",

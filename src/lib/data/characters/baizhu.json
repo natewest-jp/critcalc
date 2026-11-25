@@ -260,7 +260,7 @@
 			"id": "baizhu__passive__all_things_are_of_the_earth",
 			"name": "All Things Are of the Earth",
 			"abilityType": "passive",
-			"caveat": "Not modeled: for 6s after being healed by the burst's Seamless Shields, a character deals up to 100% more Burning, Bloom, Hyperbloom, and Burgeon DMG and up to 40% more Aggravate and Spread DMG.",
+			"caveat": "Not modeled: for 6s after being healed by the burst’s Seamless Shields, a character deals up to 100% more Burning, Bloom, Hyperbloom, and Burgeon DMG and up to 40% more Aggravate and Spread DMG.",
 			"_curatorNotes": [
 				"Year of Verdant Favor scales with Baizhu's Max HP (cap 50,000): per 1,000 HP, Burning/Bloom/Hyperbloom/Burgeon reaction DMG +2% (max +100%), Aggravate/Spread DMG Bonus +0.8% (max +40%), Lunar-Bloom +0.7%; lasts 6s. Real trigger is 'healed by Seamless Shield' (gcsim baizhu/asc.go:51-80 — a4 fires inside summonSeamlessShieldHealing), target = the healed character.",
 				"Value-less self allDmgBonus generator artifact removed 2026-07-28 (capability sweep): it carried no value, the wrong trigger (onReaction:burning), and the wrong target (self). Not re-authorable, and team allDmgBonus would grossly overstate a reaction-only bonus. Caveated instead.",

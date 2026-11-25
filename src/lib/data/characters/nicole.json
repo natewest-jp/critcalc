@@ -333,7 +333,7 @@
 				}
 			],
 			"description": "When the current active character of your own in the party hits an opponent, an additional special \"Arcane Projection: Unity\" will be summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type at 600% of their ATK. This DMG will be considered as having been dealt by the corresponding character.\nThis effect can trigger once every 6s.",
-			"caveat": "Not modeled: the extra Arcane Projections, which in game fire off the active character's hits once every 6s."
+			"caveat": "Not modeled: the extra Arcane Projections, which in game fire off the active character’s hits once every 6s."
 		},
 		{
 			"id": "nicole__constellation__i_will_guide_you_and_show_you_the_path_you_should_tread",
@@ -390,7 +390,7 @@
 			"_curatorNotes": [
 				"⚓ The shield half of this C2 is CO-OP ONLY and is deliberately UNMODELLED (2026-08-18) — Kirara C2 is the house form. \"Nearby active party members\" is plural only in co-op, where each player has their own on-field character; in a single-player party there is exactly one active character and the skill's own Shield of Blazing Light (gcsim `Target: -1`, player-wide) already covers them. gcsim implements NO shield for this constellation at all — `cons.go` c2 is the +300 ATK buff and the RES ticker, both authored below. ⛔ It was briefly authored as a `target: 'team'` shield Effect and that was WRONG in two ways: the corpus renders this phrase as `target: 'active'` everywhere else (Illuga, Aino), and a team-target shield made the Team Builder claim Nicole shields the whole party at C2. See docs/rounds/constellation-shield-gap.md §7.3."
 			],
-			"caveat": "Shown as All Elemental RES for the full 20s; in game only the active character's own Element is shredded, and only while they hold Guidance of Theosis."
+			"caveat": "Shown as All Elemental RES for the full 20s; in game only the active character’s own Element is shredded, and only while they hold Guidance of Theosis."
 		},
 		{
 			"id": "nicole__constellation__a_lamp_by_your_side_a_light_to_shine_the_way",

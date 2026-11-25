@@ -224,7 +224,7 @@
 			],
 			"behavior": "instant",
 			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.\nIf your current active character hits an opponent with an attack, the Herald of Frost will perform a coordinated attack on the opponent, dealing Cryo DMG.",
-			"caveat": "Assumes the Witch's Revelation is unlocked: a 15s cooldown and the Herald's coordinated attacks. Their 2.2s cooldown is shared by the whole party here; in game each character has their own.",
+			"caveat": "Assumes the Witch’s Revelation is unlocked: a 15s cooldown and the Herald’s coordinated attacks. Their 2.2s cooldown is shared by the whole party here; in game each character has their own.",
 			"application": [
 				{
 					"frame": 32,
@@ -366,7 +366,7 @@
 			],
 			"description": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s.",
 			"notModeled": {
-				"reason": "Outside a Radiance state this Talisman only has a 50% chance to apply, which the Rotation Planner doesn't simulate. In a Radiance state it always applies, but the Rotation Planner can't place a Talisman from an attack hit."
+				"reason": "Outside a Radiance state this Talisman only has a 50% chance to apply, which the Rotation Planner doesn’t simulate. In a Radiance state it always applies, but the Rotation Planner can’t place a Talisman from an attack hit."
 			}
 		},
 		{
@@ -576,7 +576,7 @@
 			],
 			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn’t track energy, so it doesn’t draw the Energy this restores."
 			}
 		},
 		{
@@ -721,7 +721,7 @@
 			],
 			"description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model the opponent's ATK, and the extra heal goes to whichever party member has the lowest HP, which it can't know."
+				"reason": "The Rotation Planner doesn’t model the opponent’s ATK, and the extra heal goes to whichever party member has the lowest HP, which it can’t know."
 			}
 		},
 		{
@@ -745,7 +745,7 @@
 			],
 			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins.",
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't model fallen characters, and this only revives and heals party members who have fallen."
+				"reason": "The Rotation Planner doesn’t model fallen characters, and this only revives and heals party members who have fallen."
 			}
 		}
 	],

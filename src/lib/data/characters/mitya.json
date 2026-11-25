@@ -77,7 +77,7 @@
 				"⚠️ The Core's form is NOT a State: a `steadyCore`/`overloadedCore` pair (opened by each summon's `opensState`) would let A1/C1/C2 bind with `whileState` and end exactly with the Core, but adding a State member is a shared-schema edit (the union + characterLint STATES) outside this pass. Until then the form-bound effects are 25s windows from the cast, which overrun by up to 7s when a recast of the OTHER form replaces the Core early (18s CD < 25s life).",
 				"No frames and no `application[]` (frameless, FRAMELESS_EXEMPT): the cast applies Electro provisionally at the press. Tap 163.3% / Hold 233.3% ATK at T10."
 			],
-			"caveat": "A second tap within 6s switches the Detection Core's state in game. The timeline keeps the state the cast chose."
+			"caveat": "A second tap within 6s switches the Detection Core’s state in game. The timeline keeps the state the cast chose."
 		},
 		{
 			"id": "mitya__burst__analysis_gradient_theory",
@@ -138,7 +138,7 @@
 				"Source: Fandom \"Explosive Reagent: Safe Limits Exceeded\" (2026-11-06)."
 			],
 			"notModeled": {
-				"reason": "The planner doesn't track Gradient Beacons, and this raises Mitya's CRIT Rate for each one created."
+				"reason": "The planner doesn’t track Gradient Beacons, and this raises Mitya’s CRIT Rate for each one created."
 			}
 		},
 		{
@@ -171,7 +171,7 @@
 				"Radiance: Stellar-Conduct (inside a Polestar Field) is named but gates nothing in his kit, so there is nothing to bind to it.",
 				"Sources: genshin-db 5.2.15 passive3 (description kept verbatim); Fandom \"Top-Secret Protocol\" (2026-11-06) — ⚠️ the Fandom text OMITS the sentence \"Triggering another Stellar-Conduct reaction will refresh the duration of the aforementioned effects\", which genshin-db and Ambr both carry; the game text wins."
 			],
-			"caveat": "With Mitya in the party, Stellar-Conduct creates Gradient Beacons instead of a Starlight Prism. The Polestar Field span shown is the Prism's 7s."
+			"caveat": "With Mitya in the party, Stellar-Conduct creates Gradient Beacons instead of a Starlight Prism. The Polestar Field span shown is the Prism’s 7s."
 		}
 	],
 	"constellations": [
@@ -333,7 +333,7 @@
 				"NOT modeled: 300% EM Stellar-Conduct DMG from the Core per 5 Beacons consumed — a damage instance keyed to the untracked Beacon count, and damage magnitude. Source: Fandom \"The Isotopes Born of Decay\" (2026-11-06)."
 			],
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't draw damage amounts, and this is extra damage from the Detection Core."
+				"reason": "The Rotation Planner doesn’t draw damage amounts, and this is extra damage from the Detection Core."
 			}
 		},
 		{

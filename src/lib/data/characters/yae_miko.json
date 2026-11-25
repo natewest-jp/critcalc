@@ -159,7 +159,7 @@
 				"nonHitting (non-hitting casts round, 2026-09-16 (docs/rounds/nonhitting-casts-round.md §1)): gcsim yaemiko/skill.go:28: the Sesshou Sakura gadget at f34 ticks on its own."
 			],
 			"application": [],
-			"caveat": "The 24s Sesshou Sakura (8 strikes) assumes the Witch's Revelation talent Edict of Cleansing is unlocked; without it the totem lasts 14s and strikes 5 times.",
+			"caveat": "The 24s Sesshou Sakura (8 strikes) assumes the Witch’s Revelation talent Edict of Cleansing is unlocked; without it the totem lasts 14s and strikes 5 times.",
 			"nonHitting": true
 		},
 		{
@@ -219,7 +219,7 @@
 				"Sesshou Sakura DMG +0.15% per point of EM — gcsim a4 AddAttackMod `m[DmgP] = c.Stat(EM) * 0.0015` on the Sesshou Sakura ticks. ↻ RETIRED to description 2026-09-15 (essential-characters T0; docs/rounds/manual-trigger-retirement.md step 3): the effect was a `manual` skeleton with no `value` and the wrong stat (`em`), so it reached no surface and claimed a buff that does not exist. What the passive does is damage magnitude, which is out of scope — nothing to draw, so nothing is authored and no caveat is owed."
 			],
 			"notModeled": {
-				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Sesshou Sakura hits."
+				"reason": "The Rotation Planner doesn’t draw damage amounts, and this only raises how hard Sesshou Sakura hits."
 			}
 		},
 		{
@@ -288,7 +288,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"description": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%.",
-			"caveat": "Shown at +200 EM, the top tier — that needs all three Sesshou Sakura out at once. With fewer out the bonus is 60, 90 or 120 EM instead.",
+			"caveat": "Shown at +200 EM, the top tier — that needs all three Sesshou Sakura out at once. With fewer out the bonus is 60, 90, or 120 EM instead.",
 			"effects": [
 				{
 					"type": "buff",
