@@ -19,6 +19,10 @@
  * Game8 and Altema write 主人公(風) instead (an open question in
  * `docs/text/terms-ja.md`). The placeholder Blank is not a game character.
  *
+ * The twins' own names (空, 蛍, from genshin-db's Aether and Lumine) and the
+ * Travelers' one-character element names (風) ride along too, so the composer
+ * can read 空（風） as `Anemo Aether` (`$lib/i18n/notationNames`).
+ *
  * Two small tables ride along, read off each character's genshin-db entry:
  * region names (keyed by the corpus's English region; "Other" is ours, not
  * the game's) and weapon-type names (keyed by our weapon id). English gets a
@@ -57,12 +61,20 @@ function lookup(folder, name, language) {
 	return gdb[folder](name, { ...english, resultLanguage: gdb.Language[language] })?.name || null;
 }
 
-function travelerName(element, language) {
+/** An element's one-character name (風), or null where genshin-db has none. */
+function elementName(element, language) {
 	const el = gdb.elements(element, { ...english, resultLanguage: gdb.Language[language] })?.name;
 	// TODO: data gap — genshin-db's elements carry no Chinese; zh waits for its term list.
 	if (!el || language !== 'Japanese') return null;
-	return `旅人（${el}）`;
+	return el;
 }
+
+function travelerName(element, language) {
+	const el = elementName(element, language);
+	return el ? `旅人（${el}）` : null;
+}
+
+const capital = (s) => s[0].toUpperCase() + s.slice(1);
 
 const characters = await corpus('characters');
 const weapons = await corpus('weapons');
@@ -71,8 +83,29 @@ const artifacts = await corpus('artifacts');
 const tables = {};
 const gaps = [];
 for (const [locale, language] of Object.entries(WITH_ENGLISH)) {
-	const t = { character: {}, weapon: {}, artifact: {}, region: {}, weaponType: {} };
+	const t = {
+		character: {},
+		weapon: {},
+		artifact: {},
+		region: {},
+		weaponType: {},
+		twin: {},
+		element: {}
+	};
 	tables[locale] = t;
+	// The twins' own names (空, 蛍) and each Traveler element's one-character
+	// name (風), so the composer can read 空（風） as `Anemo Aether`.
+	if (locale !== 'en') {
+		for (const twin of ['aether', 'lumine']) {
+			const name = lookup('characters', capital(twin), language);
+			if (name) t.twin[twin] = name;
+		}
+		for (const c of characters) {
+			if (!c.id.startsWith('traveler_')) continue;
+			const name = elementName(capital(c.element), language);
+			if (name) t.element[c.element] = name;
+		}
+	}
 	// Region and weapon type, from every character genshin-db knows by our name.
 	for (const c of characters) {
 		if (NOT_IN_GAME.has(c.id) || c.id.startsWith('traveler_')) continue;
@@ -87,7 +120,7 @@ for (const [locale, language] of Object.entries(WITH_ENGLISH)) {
 	for (const c of characters) {
 		if (NOT_IN_GAME.has(c.id)) continue;
 		const name = c.id.startsWith('traveler_')
-			? travelerName(c.element[0].toUpperCase() + c.element.slice(1), language)
+			? travelerName(capital(c.element), language)
 			: lookup('characters', c.name, language);
 		if (name) t.character[c.id] = name;
 		else gaps.push(`${locale} character ${c.id}`);
@@ -118,6 +151,10 @@ export const GAME_NAMES: Record<
 		artifact: Record<string, string>;
 		region: Record<string, string>;
 		weaponType: Record<string, string>;
+		/** The twins' own names, by twin ('aether' → 空). */
+		twin: Record<string, string>;
+		/** A Traveler element's one-character name, by element ('anemo' → 風). */
+		element: Record<string, string>;
 	}
 > = ${JSON.stringify(tables, null, '\t')};
 `;

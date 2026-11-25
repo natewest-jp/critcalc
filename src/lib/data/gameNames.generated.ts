@@ -10,6 +10,10 @@ export const GAME_NAMES: Record<
 		artifact: Record<string, string>;
 		region: Record<string, string>;
 		weaponType: Record<string, string>;
+		/** The twins' own names, by twin ('aether' → 空). */
+		twin: Record<string, string>;
+		/** A Traveler element's one-character name, by element ('anemo' → 風). */
+		element: Record<string, string>;
 	}
 > = {
 	"en": {
@@ -23,7 +27,9 @@ export const GAME_NAMES: Record<
 			"bow": "Bow",
 			"polearm": "Polearm",
 			"catalyst": "Catalyst"
-		}
+		},
+		"twin": {},
+		"element": {}
 	},
 	"ja": {
 		"character": {
@@ -189,6 +195,19 @@ export const GAME_NAMES: Record<
 			"bow": "弓",
 			"polearm": "長柄武器",
 			"catalyst": "法器"
+		},
+		"twin": {
+			"aether": "空",
+			"lumine": "蛍"
+		},
+		"element": {
+			"anemo": "風",
+			"cryo": "氷",
+			"dendro": "草",
+			"electro": "雷",
+			"geo": "岩",
+			"hydro": "水",
+			"pyro": "炎"
 		}
 	},
 	"zh": {
@@ -348,6 +367,11 @@ export const GAME_NAMES: Record<
 			"bow": "弓",
 			"polearm": "长柄武器",
 			"catalyst": "法器"
-		}
+		},
+		"twin": {
+			"aether": "空",
+			"lumine": "荧"
+		},
+		"element": {}
 	}
 };
