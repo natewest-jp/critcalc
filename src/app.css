@@ -4440,17 +4440,22 @@ button.link {
    Mincho or Song serif, and the mono stack in whatever the system pairs with
    `monospace`. Latin keeps its own faces; only the CJK characters change.
    System fonts download nothing (docs/rounds/launch-roadmap.md § the wording
-   pass). The knob is `--font-cjk`, one list per locale. Headings in gothic
-   rather than mincho is a first cut for Nate to judge on screen.
+   pass). The knob is `--font-cjk`, one list per locale. Gothic everywhere,
+   headings included, never mincho or Song (⚓ Nate). ⚠️ Each list ends in
+   `system-ui`: where Safari can't reach the named faces by name (macOS hides
+   PingFang as `.PingFang SC`), it falls back through the first face's cascade,
+   which ends in Songti. The platform UI font's cascade follows `<html lang>`,
+   so it lands on PingFang or Hiragino instead.
    `<html lang>` is set per page by hooks.server.ts. */
 :root:lang(ja) {
 	--font-cjk:
 		'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo,
-		'Noto Sans JP', 'Noto Sans CJK JP';
+		'Noto Sans JP', 'Noto Sans CJK JP', system-ui;
 }
 :root:lang(zh-Hans) {
 	--font-cjk:
-		'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC';
+		'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC',
+		system-ui;
 }
 :root:lang(ja),
 :root:lang(zh-Hans) {
