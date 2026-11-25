@@ -1002,6 +1002,8 @@
 	"planner_edit_the_notation": "Edit the notation",
 	"planner_type_a_rotation_in_kqm_notation": "Type a rotation in KQM notation",
 	"planner_name_in_notation": "Name in notation",
+	"planner_names_in_japanese_in_this_rotation": "This rotation names characters in Japanese. Notation uses the English names, so a shared rotation reads for everyone.",
+	"planner_use_notation_names": "Use notation names",
 	"planner_notation_history": "Notation history",
 	"planner_undo_the_last_notation_change": "Undo the last notation change",
 	"planner_undo_z": "Undo (⌘Z)",
