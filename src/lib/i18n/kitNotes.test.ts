@@ -5,6 +5,7 @@ import { kitNoteHash, kitNotesOf } from '$lib/data/kitNoteHash';
 import { overwriteGetLocale, baseLocale, type Locale } from '$lib/paraglide/runtime';
 import { kitNote, loadKitNotes, type KitNoteTable } from './kitNotes';
 import ja from '$lib/data/kitNotes/ja.json';
+import zh from '$lib/data/kitNotes/zh.json';
 import { AVOID } from './avoidedForms';
 
 /**
@@ -18,7 +19,7 @@ const corpus = readdirSync(DIR)
 	.filter((f) => f.endsWith('.json'))
 	.map((f) => JSON.parse(readFileSync(join(DIR, f), 'utf8')));
 
-const TABLES: Record<string, KitNoteTable> = { ja: ja as KitNoteTable };
+const TABLES: Record<string, KitNoteTable> = { ja: ja as KitNoteTable, zh: zh as KitNoteTable };
 
 const as = (locale: Locale) => overwriteGetLocale(() => locale);
 afterAll(() => as(baseLocale));

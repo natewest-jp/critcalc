@@ -106,7 +106,7 @@ const LABEL_SUFFIXES = {
 		Healing: ['治疗量'],
 		'Shield Absorption': ['护盾吸收量'],
 		Shield: ['护盾'],
-		'1-Hit DMG': ['单次伤害', '一段伤害'],
+		'1-Hit DMG': ['第一段伤害', '单次伤害', '一段伤害'],
 		'DMG Absorption': ['吸收量']
 	}
 };

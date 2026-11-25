@@ -2446,6 +2446,7 @@
 	"vz_artifact_chance_to_end_above_each_x_at_20": "+20で各{unit}を超える確率",
 	"vz_artifact_days_of_resin_f956": "樹脂の日数",
 	"vz_artifact_crit_value_cv_at_20": "+20での会心値（CV）",
+	"vz_artifact_cv_unit": "CV",
 	"vz_artifact_useful_rolls_in_your_valued_stats_at_20": "+20での狙いのステータスの有効強化回数",
 	"vz_artifact_chance_you_have_it_by_then": "それまでに手に入る確率",
 	"vz_artifact_chance_a_reshape_ends_above": "再構築で超える確率",

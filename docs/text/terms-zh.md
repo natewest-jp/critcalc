@@ -133,7 +133,7 @@ no space between Chinese and a Latin token or number (1U水, 第2轮), as the ga
 85. ATK, CRIT, DMG%, EM, HP/DEF buffs → 攻击力增益, 暴击增益, 增伤, 精通增益, 生命值/防御力增益 · players' 增伤, ours for the rest
 86. enabler → 挂元素角色, as in 挂草 · players, unsourced (open question 5)
 87. selfish carry → 自给自足型主C · players' 主C, ours as a whole (open question 5)
-88. constellations → 命之座 in prose, with C0–C6 as written in labels · game, kept (open question 6: players write 0命–6命 and 满命)
+88. constellations → 命之座; one constellation level in prose → N命 (1命, 6命), as players write it; C0–C6 as written in labels and notation · game, players, kept (open question 6)
 89. Lock the roster → 锁定角色 · ours
 90. Compare → 对比 · ours
 91. audition → 试用 · ours
@@ -318,6 +318,37 @@ descriptions read.
 208. pickups, positioning, pulling opponents together, co-op → 拾取, 站位, 聚怪, 多人游戏 · players
 209. Listed as always active; in game… → 按常驻生效显示；游戏中… · ours
 210. Not modeled: … → 未适配：… · ours, from 40
+
+## L. Added while drafting
+
+Words the draft needed that the sections above did not settle. The game's words come from the
+text map.
+
+The frame and sections:
+
+211. profile → 档案; My profile and Theorycraft keep their English names, as built-in names · ours
+212. Library → 资料库; Trash → 回收站; Backup → 备份; Export, Import, Restore → 导出, 导入, 还原 · ours
+213. What's new, About, Contribute, Beta, Privacy, Help & FAQ → 更新日志, 关于, 参与贡献, 测试版, 隐私, 帮助与常见问题 · ours
+214. top bar → 顶栏; Report a problem → 报告问题 · ours
+215. Slot N → N号位; the Abyss's halves → 上半, 下半 · players
+216. outfits → 装扮; the sounds and note sets of Settings → named for what they evoke (马林巴, 灯笼, 草甸) · ours
+
+The tools:
+
+217. kit → 技能组; Normal, Skill, Burst as short labels → 普攻, 战技, 爆发 · players
+218. Theater, short form → 剧诗; the cast → 出演角色 · players, ours
+219. Spiral Abyss → 深境螺旋; its blessing → 渊月祝福 · game
+220. Stygian's checks → 战场要点 · ours
+221. buffering an input → 预输入 · players
+222. Cooldown Reduction → 冷却缩短 · ours; the text map has no line for it
+223. Laps, as the toggle → 轮次 · ours, from 50
+224. bench card → 角色卡 · ours, from 44
+225. Fagio overheating → 功率过载, the mode he enters at full 解算功率 · game
+226. Won and lost (a 50/50's badges) → 没歪, 歪了; Featured 5★ and 4★ → UP五星, UP四星 · players
+227. unactivated (a fourth substat not yet rolled) → 待激活 · game
+228. Thundercloud: 雷暴云 in Lunar-Charged prose, as the game's Lunar text has it; 雳云 where a kit's own text uses it · game (148)
+229. Elemental Absorption → 元素转化, the word in the Anemo absorption texts · game
+230. Twin → 双子 · players
 
 ## Open questions for the Chinese community
 

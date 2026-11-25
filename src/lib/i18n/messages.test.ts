@@ -59,7 +59,7 @@ const markup = (msg: Message): string =>
  * line there too: otherwise a page in that language shows it in English (a new
  * What's new entry, a new button). Chinese joins once its draft is whole.
  */
-const COMPLETE: string[] = ['ja'];
+const COMPLETE: string[] = ['ja', 'zh'];
 
 /** A literal brace or backslash is escaped in the text: `\{8s\}` renders `{8s}`. */
 const unescape = (text: string): string => text.replace(/\\([{}\\])/g, '$1');

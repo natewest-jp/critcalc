@@ -1,0 +1,2268 @@
+{
+	"aino": {
+		"aino__passive__structured_power_booster": {
+			"reason": {
+				"en": "10aeaebb",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高精密水冷仪造成的伤害。"
+			}
+		}
+	},
+	"albedo": {
+		"albedo__constellation__dust_of_purification": {
+			"reason": {
+				"en": "1fcda7e3",
+				"text": "此效果需要阳华领域内出现结晶护盾或月笼，而排轴工具不模拟晶片的拾取，也不模拟场上物体的位置。"
+			}
+		},
+		"albedo__passive__calcite_might": {
+			"reason": {
+				"en": "f236ceaf",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高刹那之花对生命值低于50%的敌人造成的伤害。"
+			}
+		}
+	},
+	"alhaitham": {
+		"alhaitham__constellation__debate": {
+			"caveat": {
+				"en": "97303d69",
+				"text": "每条代表一次触发产生的琢光镜。游戏中同时至多存在四层，因此在条相互重叠处，合计数值可能高于游戏中的实际数值。"
+			}
+		}
+	},
+	"alyosha": {
+		"alyosha__constellation__standard_reclaimed": {
+			"caveat": {
+				"en": "5a414938",
+				"text": "攻击力加成在拥有两层猎者之准时翻倍，+100元素精通也需要两层；时间轴只显示一层的攻击力加成，并从第一次触发起就给予元素精通加成。"
+			}
+		}
+	},
+	"amber": {
+		"amber__constellation__bunny_triggered": {
+			"reason": {
+				"en": "4da21118",
+				"text": "排轴工具不模拟射击的命中位置，而此效果需要满蓄力瞄准射击命中兔兔伯爵的脚部。"
+			}
+		},
+		"amber__passive__precise_shot": {
+			"reason": {
+				"en": "133b1c7d",
+				"text": "此效果需要瞄准射击命中弱点，而排轴工具不模拟射击的命中位置。"
+			}
+		}
+	},
+	"arataki_itto": {
+		"arataki_itto__constellation__stay_a_while_and_listen_up": {
+			"reason": {
+				"en": "1acc9bbc",
+				"text": "排轴工具不追踪乱神之怪力，因此不显示此效果给予的层数。"
+			}
+		},
+		"arataki_itto__passive__arataki_ichiban": {
+			"reason": {
+				"en": "5207316a",
+				"text": "排轴工具不模拟攻击速度，因此荒泷逆袈裟的斩击保持原有的出手时机。"
+			}
+		},
+		"arataki_itto__passive__bloodline_of_the_crimson_oni": {
+			"reason": {
+				"en": "5442bb81",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高荒泷逆袈裟造成的伤害。"
+			}
+		}
+	},
+	"arlecchino": {
+		"arlecchino__constellation__all_reprisals_and_arrears_mine_to_bear": {
+			"reason": {
+				"en": "3547c5ab",
+				"text": "排轴工具不模拟生命之契，而此命之座的伤害加成取决于生命之契。"
+			}
+		},
+		"arlecchino__constellation__all_rewards_and_retribution_mine_to_bestow": {
+			"caveat": {
+				"en": "5d24deda",
+				"text": "抗性条会在每次元素爆发和重击时显示；游戏中只有确实回收了血偿勒令·结才会出现，而这需要万相化灰留下的血偿勒令。"
+			}
+		},
+		"arlecchino__normal__invitation_to_a_beheading": {
+			"caveat": {
+				"en": "a72307b5",
+				"text": "她的攻击始终按火元素显示，且每次普通攻击命中都会缩短万相化灰的冷却时间，如同红死之宴始终生效。游戏中，这两者都要等她的生命之契达到生命值上限的30%才会发生。"
+			}
+		},
+		"arlecchino__passive__agony_alone_may_be_repaid": {
+			"reason": {
+				"en": "261f0491",
+				"text": "排轴工具不模拟生命之契，而此天赋只会改变阿蕾奇诺获得的生命之契数值。"
+			}
+		}
+	},
+	"baizhu": {
+		"baizhu__passive__all_things_are_of_the_earth": {
+			"caveat": {
+				"en": "b27dd8ae",
+				"text": "未适配：受到元素爆发的无郤气护盾治疗后的6秒内，角色造成的燃烧、绽放、超绽放、烈绽放反应伤害至多提升100%，超激化、蔓激化反应伤害至多提升40%。"
+			}
+		}
+	},
+	"barbara": {
+		"barbara__constellation__dedicating_everything_to_you": {
+			"reason": {
+				"en": "85ce8b2b",
+				"text": "排轴工具不模拟角色在战斗中倒下，因此此复活效果无从显示。"
+			}
+		},
+		"barbara__constellation__gleeful_songs": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"barbara__passive__encore": {
+			"reason": {
+				"en": "7208a658",
+				"text": "排轴工具不模拟元素微粒的拾取，而此延长效果来自拾取元素晶球和元素微粒。"
+			}
+		},
+		"barbara__skill__let_the_show_begin": {
+			"caveat": {
+				"en": "dd235ac7",
+				"text": "不显示持续15秒的歌声之环，因此没有标出普通攻击和重击命中时会触发治疗的时间段。约每5秒一次的当前场上角色持续回复也不显示。"
+			}
+		}
+	},
+	"beidou": {
+		"beidou__constellation__stunning_revenge": {
+			"reason": {
+				"en": "b298184c",
+				"text": "排轴工具不模拟北斗受到攻击，因此不显示此效果为她的普通攻击附加的雷元素伤害。"
+			}
+		},
+		"beidou__constellation__upon_the_turbulent_sea_the_thunder_arises": {
+			"reason": {
+				"en": "4817af23",
+				"text": "排轴工具只模拟单个敌人，因此闪电没有额外的目标可以弹射。"
+			}
+		},
+		"beidou__passive__retribution": {
+			"reason": {
+				"en": "69cda152",
+				"text": "排轴工具不模拟北斗受到攻击，因此此天赋奖励的完美时机反击不会在循环中出现。"
+			}
+		}
+	},
+	"bennett": {
+		"bennett__constellation__impasse_conqueror": {
+			"reason": {
+				"en": "9b1aaf4a",
+				"text": "此效果需要班尼特的生命值低于70%，而排轴工具不追踪生命值。"
+			}
+		}
+	},
+	"candace": {
+		"candace__passive__aegis_of_crossed_arrows": {
+			"reason": {
+				"en": "e991fe8e",
+				"text": "排轴工具不模拟坎蒂丝受到攻击，因此她的长按元素战技始终需要完整的蓄力时间。"
+			}
+		}
+	},
+	"charlotte": {
+		"charlotte__constellation__a_responsibility_to_oversee": {
+			"reason": {
+				"en": "bf978b03",
+				"text": "排轴工具不显示伤害数值，也不追踪元素能量，而此效果只会提高定格·全方位确证造成的伤害并恢复元素能量。"
+			}
+		},
+		"charlotte__constellation__a_summation_of_interest": {
+			"caveat": {
+				"en": "4489e3b1",
+				"text": "只有敌人仍带有长按元素战技施加的聚焦印象时，协同攻击才会发动；点按元素战技的瞬时剪影不会激活它。"
+			}
+		},
+		"charlotte__passive__moment_of_impact": {
+			"reason": {
+				"en": "fdcaebed",
+				"text": "排轴工具不模拟敌人被击败，因此此冷却缩减无法触发。"
+			}
+		}
+	},
+	"chasca": {
+		"chasca__constellation__cylinder_the_restless_roulette": {
+			"reason": {
+				"en": "11a216a4",
+				"text": "额外的焕光追影弹取决于附灵转化，而它有一定几率触发。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"chasca__normal__multitarget_fire_tap": {
+			"caveat": {
+				"en": "0a6b768e",
+				"text": "未适配：夜魂加持期间的长按重击模式，至多发射6枚子弹，其中部分会转化为队伍中的火、水、冰、雷元素。时间轴只显示单发的点按射击。"
+			}
+		},
+		"chasca__passive__bullet_trick": {
+			"reason": {
+				"en": "c48f05d5",
+				"text": "附灵转化有一定几率触发。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。层数只会提高焕光追影弹的伤害，而排轴工具不显示伤害数值。"
+			}
+		}
+	},
+	"chevreuse": {
+		"chevreuse__constellation__in_pursuit_of_ending_evil": {
+			"caveat": {
+				"en": "4cd7eafe",
+				"text": "火元素和雷元素条从施放时开始累积；游戏中第一层在2秒后随元素战技的第一次治疗生效。"
+			}
+		}
+	},
+	"chongyun": {
+		"chongyun__passive__steady_breathing": {
+			"reason": {
+				"en": "21341e24",
+				"text": "排轴工具不模拟攻击速度，因此重华叠霜领域内的普通攻击保持原有的出手时机。"
+			}
+		},
+		"chongyun__skill__spirit_blade_chonghuas_layered_frost": {
+			"caveat": {
+				"en": "64a9de56",
+				"text": "假定当前场上角色始终留在重华叠霜领域内；实战中离开领域后，附魔只会持续2.9秒。"
+			}
+		}
+	},
+	"citlali": {
+		"citlali__burst__edict_of_entwined_splendor": {
+			"reason": {
+				"en": "23df6cd3",
+				"text": "排轴工具不追踪夜魂值，因此不显示此元素爆发为茜特菈莉恢复的夜魂值。"
+			}
+		},
+		"citlali__constellation__teoiztacs_secret_pact": {
+			"reason": {
+				"en": "5abcf099",
+				"text": "排轴工具不追踪夜魂值，而提供此火元素与水元素伤害加成的秘律之数，来自伊兹帕帕消耗的夜魂值。"
+			}
+		},
+		"citlali__passive__itzpapalotls_star_garments": {
+			"reason": {
+				"en": "263cb58f",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高伊兹帕帕的霜陨风暴和冰风暴造成的伤害。排轴工具也不追踪夜魂值。"
+			}
+		},
+		"citlali__skill__dawnfrost_darkstar": {
+			"caveat": {
+				"en": "4a3c01cb",
+				"text": "判定标记显示在整个持续时间内，但游戏中要等夜魂值达到50、白燧状态激活后才开始，因此在夜魂值积累期间，前面的判定会显示得过多。"
+			}
+		}
+	},
+	"clorinde": {
+		"clorinde__burst__last_lightfall": {
+			"reason": {
+				"en": "2357ffb3",
+				"text": "排轴工具不模拟生命之契，因此不显示此元素爆发赋予的生命之契。"
+			}
+		},
+		"clorinde__constellation__and_so_shall_i_never_despair": {
+			"caveat": {
+				"en": "39129218",
+				"text": "每次贯夜都会显示明烛之影；游戏中这次点按必须在生命之契达到生命值上限的100%或以上时命中。克洛琳德即将受到攻击时出现的明烛之影不会显示——这里无从得知敌人何时出手。"
+			}
+		},
+		"clorinde__constellation__to_enshrine_tears_life_and_love": {
+			"reason": {
+				"en": "3547c5ab",
+				"text": "排轴工具不模拟生命之契，而此命之座的伤害加成取决于生命之契。"
+			}
+		},
+		"clorinde__passive__darkshattering_flame": {
+			"caveat": {
+				"en": "6673adce",
+				"text": "条只显示一层——游戏中可同时存在三层，单次命中至多获得1,800点伤害加成。只有她的雷元素普通攻击会获得此加成，因此在夜巡状态外，她的普通攻击得不到任何加成。"
+			}
+		},
+		"clorinde__passive__lawful_remuneration": {
+			"caveat": {
+				"en": "53a5e9ba",
+				"text": "在每次贯夜和残光将终时都会显示——游戏中只有她的生命之契达到生命值上限的100%或以上时才会触发。她受到的治疗也会改变生命之契，这部分不显示条。"
+			}
+		},
+		"clorinde__skill__impale_the_night": {
+			"reason": {
+				"en": "e78c6ed0",
+				"text": "排轴工具不模拟生命之契，而此突进为克洛琳德恢复的生命值取决于生命之契。"
+			}
+		}
+	},
+	"columbina": {
+		"columbina__burst__moonlit_melancholy": {
+			"caveat": {
+				"en": "dbc40815",
+				"text": "游戏中的一项加成，在这里显示为三条反应伤害提升，每种月曜反应一条。此加成只在当前场上角色处于领域内时生效，但这里按完整持续时间显示。"
+			}
+		},
+		"columbina__constellation__radiance_over_blossoms_and_peaks": {
+			"caveat": {
+				"en": "6d2febf0",
+				"text": "游戏中，C1还会在施放时触发一次引力干涉，每15秒至多一次；这次标记及其分支不显示。"
+			}
+		},
+		"columbina__normal__moondew_cleanse": {
+			"caveat": {
+				"en": "205cdeff",
+				"text": "队伍中有草元素角色时，每次重击都显示为月露涤荡，如同草露永不耗尽（游戏中至多积攒3层）。完整的月绽放队伍或许能连续使用多次；超绽放或其他混合队伍可能只能连续使用1～2次。"
+			}
+		},
+		"columbina__passive__law_of_the_new_moon": {
+			"reason": {
+				"en": "a2a927f5",
+				"text": "其中两项效果是33%几率的额外一击。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。第三项会积攒山月草露，而排轴工具不追踪这项资源。"
+			}
+		},
+		"columbina__passive__lunar_vigil": {
+			"reason": {
+				"en": "85ce8b2b",
+				"text": "排轴工具不模拟角色在战斗中倒下，因此此复活效果无从显示。"
+			}
+		},
+		"columbina__skill__eternal_tides": {
+			"caveat": {
+				"en": "33fdf709",
+				"text": "引力涟漪结束时剩余的引力会延续到下一个引力涟漪；游戏中在其结束后重新施放，会从零开始。"
+			}
+		}
+	},
+	"cyno": {
+		"cyno__burst__sacred_rite_wolfs_swiftness": {
+			"caveat": {
+				"en": "3b2f74eb",
+				"text": "元素精通加成按元素爆发的基础持续时间显示；游戏中它与状态持续时间相同，因此每次冥祭也会将其延长4秒。"
+			}
+		},
+		"cyno__constellation__ordinance_unceasing_vigil": {
+			"caveat": {
+				"en": "1dc9f740",
+				"text": "只有施放元素爆发时存在极星辉域，才会显示元素精通增益。元素战技的启途誓使带来的同一增益不显示。"
+			}
+		},
+		"cyno__passive__a_star_with_which_to_start_the_journey": {
+			"caveat": {
+				"en": "80c528a6",
+				"text": "假定已解锁此天赋——元素战技总会开启6秒的启途誓使。"
+			}
+		},
+		"cyno__passive__featherfall_judgment": {
+			"caveat": {
+				"en": "90a6e3ab",
+				"text": "未适配：在末途真眼状态下施放元素战技时发射的渡荒之雷。三道中有一道会附着雷元素，因此敌人的附着元素会比游戏中略少。"
+			}
+		}
+	},
+	"dahlia": {
+		"dahlia__constellation__infallible_procession": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"dahlia__constellation__you_shall_go_out_with_joy": {
+			"reason": {
+				"en": "13e52b69",
+				"text": "排轴工具不模拟攻击速度，也不模拟角色在战斗中倒下，因此此命之座的两部分效果都不显示。"
+			}
+		},
+		"dahlia__passive__prayer_of_wellwrought_joy": {
+			"reason": {
+				"en": "2cafbdde",
+				"text": "排轴工具不模拟攻击速度，因此在此加成下普通攻击保持原有的出手时机。"
+			}
+		}
+	},
+	"dehya": {
+		"dehya__burst__leonine_bite": {
+			"caveat": {
+				"en": "d586d877",
+				"text": "在元素爆发状态下，N和E会变为火元素的拳击和踢击。输入它们时显示的是常规普通攻击和元素战技的帧数——对这些状态内的攻击来说时机不正确。"
+			}
+		},
+		"dehya__constellation__the_burning_claws_cleaving": {
+			"reason": {
+				"en": "a98eebb3",
+				"text": "炽炎狮子延长的时间来自暴击。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。此暴击率加成只作用于炎啸狮子咬，而排轴工具不显示伤害数值。"
+			}
+		},
+		"dehya__skill__indomitable_flame": {
+			"caveat": {
+				"en": "e9a8d0c1",
+				"text": "假定当前场上角色始终留在净焰剑狱内，抗打断能力只在其中生效。熔金铸躯在队伍中所有角色身上显示9秒，但它同样只在领域内生效。"
+			}
+		}
+	},
+	"diluc": {
+		"diluc__constellation__conviction": {
+			"caveat": {
+				"en": "6b7ea477",
+				"text": "按常驻生效显示；游戏中伤害加成只对生命值高于50%的敌人生效。"
+			}
+		},
+		"diluc__constellation__flowing_flame": {
+			"reason": {
+				"en": "2136465b",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高下一次逆焰之刃造成的伤害。"
+			}
+		},
+		"diluc__constellation__searing_ember": {
+			"reason": {
+				"en": "97a6f79d",
+				"text": "排轴工具不模拟迪卢克受到伤害，因此此攻击力加成无法触发。"
+			}
+		}
+	},
+	"diona": {
+		"diona__constellation__shaken_not_purred": {
+			"reason": {
+				"en": "7210d8b9",
+				"text": "排轴工具不显示伤害数值和护盾强度，而此效果只会强化猫爪冻冻及其护盾。它为其他角色提供的护盾只在多人游戏中存在。"
+			}
+		},
+		"diona__skill__icy_paws": {
+			"caveat": {
+				"en": "c90edc46",
+				"text": "假定每只猫爪都命中——点按2只，长按5只——因此护盾按完整持续时间显示。命中次数较少时，护盾持续时间更短。"
+			}
+		}
+	},
+	"dori": {
+		"dori__constellation__sprinkling_weight": {
+			"caveat": {
+				"en": "83cb5771",
+				"text": "显示为她每次普通攻击命中时的全队治疗。游戏中只在镇灵之灯·烦恼解决炮之后的3秒内生效。"
+			}
+		},
+		"dori__passive__compound_interest": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		}
+	},
+	"durin": {
+		"durin__passive__chaos_formed_like_the_night": {
+			"reason": {
+				"en": "965b09d2",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高白焰之龙和黑蚀之龙造成的伤害。"
+			}
+		}
+	},
+	"emilie": {
+		"emilie__constellation__marcotte_sillage": {
+			"caveat": {
+				"en": "293bf6c1",
+				"text": "普通攻击和重击在完整的5秒内都显示为草元素。游戏中香迹留驻会在4次攻击后提前结束。"
+			}
+		},
+		"emilie__passive__rectification": {
+			"caveat": {
+				"en": "9a9134f8",
+				"text": "只对处于燃烧状态的敌人生效。标签上显示的加成按敌人始终处于燃烧状态计算。"
+			}
+		}
+	},
+	"escoffier": {
+		"escoffier__constellation__fresh_fragrant_stew_is_an_art": {
+			"caveat": {
+				"en": "7beaf1ce",
+				"text": "未适配每次命中时的层数消耗——请在E前加上`{coldDish:N}`来设定层数（至多5层）。只显示普通攻击伤害加成；游戏中这些层数还会提高重击、下落攻击、元素战技和元素爆发造成的伤害。"
+			}
+		}
+	},
+	"eula": {
+		"eula__constellation__noble_obligation": {
+			"reason": {
+				"en": "e32fca5c",
+				"text": "额外的光降之剑层数有50%几率获得。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。初始层数只会提高其伤害，而排轴工具不显示伤害数值。"
+			}
+		},
+		"eula__constellation__the_obstinacy_of_ones_inferiors": {
+			"caveat": {
+				"en": "292df75f",
+				"text": "按常驻生效显示；游戏中光降之剑的加成只对生命值低于50%的敌人生效。"
+			}
+		},
+		"eula__skill__icetide_vortex": {
+			"caveat": {
+				"en": "313419ba",
+				"text": "持续14秒的减抗假定长按施放消耗了2层冷酷之心。每消耗一层提供7秒，未消耗任何层数的长按不会减抗。"
+			}
+		}
+	},
+	"faruzan": {
+		"faruzan__constellation__divine_comprehension": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"faruzan__constellation__the_wondrous_path_of_truth": {
+			"caveat": {
+				"en": "d7850c8b",
+				"text": "暴击伤害增益按提升所有伤害显示；游戏中只对风元素伤害生效。"
+			}
+		},
+		"faruzan__skill__wind_realm_of_nasamjnin": {
+			"caveat": {
+				"en": "b627d7d3",
+				"text": "无论是否处于疾风示现状态，蓄力射击都按飓烈箭的时机显示。"
+			}
+		}
+	},
+	"fischl": {
+		"fischl__constellation__devourer_of_all_sins": {
+			"reason": {
+				"en": "2d397fd4",
+				"text": "排轴工具不显示伤害数值，而此效果只会让夜巡影翼召唤时的攻击伤害更高、范围更大。"
+			}
+		},
+		"fischl__passive__stellar_predator": {
+			"reason": {
+				"en": "1fa76cf9",
+				"text": "排轴工具不模拟射击的命中位置，而此效果需要满蓄力瞄准射击命中奥兹。"
+			}
+		}
+	},
+	"flins": {
+		"flins__skill__northland_spearstorm": {
+			"caveat": {
+				"en": "524aae1c",
+				"text": "游戏中此次施放后的6秒内，元素爆发会被替换；时间轴仍将普通的`Q`显示为消耗80点元素能量的完整元素爆发，因此请输入`sQ`来使用消耗30点元素能量的版本。"
+			}
+		}
+	},
+	"freminet": {
+		"freminet__constellation__dreams_of_the_foamy_deep": {
+			"reason": {
+				"en": "c6512a11",
+				"text": "排轴工具不显示伤害数值，而此暴击率加成只作用于高压粉碎。"
+			}
+		},
+		"freminet__constellation__penguins_and_the_land_of_plenty": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"freminet__passive__parallel_condensers": {
+			"reason": {
+				"en": "4ef6d075",
+				"text": "排轴工具不模拟碎冰，而此加成由碎冰触发。"
+			}
+		}
+	},
+	"furina": {
+		"furina__constellation__a_woman_adapts_like_duckweed_in_water": {
+			"reason": {
+				"en": "2f731608",
+				"text": "排轴工具不追踪气氛值和队伍的生命值变化，因此不显示此效果提供的生命值上限。"
+			}
+		},
+		"furina__constellation__love_is_a_rebellious_bird_that_none_can_tame": {
+			"reason": {
+				"en": "ef3e92aa",
+				"text": "排轴工具不追踪气氛值，而此命之座只改变气氛值。"
+			}
+		},
+		"furina__passive__endless_waltz": {
+			"reason": {
+				"en": "2742d1e7",
+				"text": "此治疗由其他来源的溢出治疗触发，而排轴工具不追踪受到的治疗。"
+			}
+		},
+		"furina__skill__salon_solitaire": {
+			"caveat": {
+				"en": "dc28e174",
+				"text": "众水的歌者的治疗标记按基础的2秒间隔显示；无人听的自白会在生命值上限较高时将间隔至多缩短16%，时间轴不模拟这一点。"
+			}
+		}
+	},
+	"gaming": {
+		"gaming__constellation__plum_blossoms_underfoot": {
+			"reason": {
+				"en": "43407b08",
+				"text": "此效果由嘉明受到的溢出治疗触发，而排轴工具不追踪受到的治疗。"
+			}
+		},
+		"gaming__constellation__soar_across_mountains": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"gaming__constellation__to_tame_all_beasts": {
+			"reason": {
+				"en": "6329222d",
+				"text": "排轴工具不显示伤害数值，而此暴击加成只作用于踏云献瑞。"
+			}
+		}
+	},
+	"ganyu": {
+		"ganyu__constellation__westward_sojourn": {
+			"reason": {
+				"en": "b53c1260",
+				"text": "此效果取决于敌人在降众天华领域内停留多久，而排轴工具不模拟站位。"
+			}
+		},
+		"ganyu__passive__undivided_heart": {
+			"reason": {
+				"en": "b6b01d56",
+				"text": "排轴工具不显示伤害数值，而此暴击率加成只作用于霜华矢。"
+			}
+		}
+	},
+	"gorou": {
+		"gorou__burst__juuga_forward_unto_victory": {
+			"caveat": {
+				"en": "7ab0d1f1",
+				"text": "大将威仪持续期间施放的E在这里仍会显示旗帜；游戏中要等威仪结束后才会出现。"
+			}
+		},
+		"gorou__constellation__valiant_hound_mountainous_fealty": {
+			"caveat": {
+				"en": "9ff55a41",
+				"text": "每次施放都会在元素战技行和元素爆发行上显示各自的条。游戏中此增益不可叠加，只有最新的一次生效。"
+			}
+		},
+		"gorou__skill__inuzaka_allround_defense": {
+			"caveat": {
+				"en": "4e8d6e10",
+				"text": "只有大将旗指物在场时，增益只作用于站在其范围内的角色；条则显示为无论队伍中的当前场上角色身在何处都能获得。处于大将威仪状态下时，领域会跟随你移动，因此不存在需要站进去的范围。"
+			}
+		}
+	},
+	"hu_tao": {
+		"hu_tao__constellation__butterflys_embrace": {
+			"reason": {
+				"en": "238dfcbe",
+				"text": "此效果在胡桃的生命值低于25%或受到致命伤害时触发，而排轴工具不追踪生命值。"
+			}
+		},
+		"hu_tao__constellation__garden_of_eternal_rest": {
+			"reason": {
+				"en": "b4ac8fba",
+				"text": "此效果在敌人被击败时触发，而排轴工具不模拟敌人被击败。"
+			}
+		}
+	},
+	"iansan": {
+		"iansan__constellation__slow_and_steady_wins_the_race": {
+			"reason": {
+				"en": "cbd6fca1",
+				"text": "排轴工具不追踪夜魂值，而此命之座只改变夜魂值。"
+			}
+		},
+		"iansan__constellation__startings_never_easy": {
+			"reason": {
+				"en": "774197f7",
+				"text": "排轴工具不追踪元素能量和夜魂值，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"iansan__normal__weighted_spike_swift_stormflight": {
+			"caveat": {
+				"en": "8b2c1adf",
+				"text": "未适配：元素战技后的5秒内，普通攻击会自动触发一次无消耗的强化踩踏。时间轴只在夜魂加持状态下替换重击，因此此时的普通攻击按普通的一击显示。"
+			}
+		}
+	},
+	"ifa": {
+		"ifa__constellation__guiding_spirit_of_ballistic_prayer": {
+			"reason": {
+				"en": "2f74da4c",
+				"text": "排轴工具不追踪夜魂值和救援要义，而此命之座只改变这两者。"
+			}
+		},
+		"ifa__constellation__oath_on_a_feathered_knot": {
+			"reason": {
+				"en": "0890e9c1",
+				"text": "此额外射击有50%几率发动。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"ifa__passive__field_medics_vision": {
+			"caveat": {
+				"en": "b26b8ce0",
+				"text": "显示的加成假定救援要义固定为60点：扩散和感电反应伤害+90%，月感电和星扩散反应伤害+12%。游戏中它们随队伍的夜魂值总和实时增减。"
+			}
+		}
+	},
+	"illuga": {
+		"illuga__passive__torchforgers_covenant": {
+			"caveat": {
+				"en": "80e1458b",
+				"text": "暴击率加成按通用的暴击增益显示；游戏中只对队伍的岩元素伤害生效。"
+			}
+		}
+	},
+	"jahoda": {
+		"jahoda__constellation__one_more_flask": {
+			"reason": {
+				"en": "3366fe73",
+				"text": "此弹射有50%几率发生。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"jahoda__constellation__the_littlest_luck": {
+			"caveat": {
+				"en": "a10d6b9a",
+				"text": "瓶子装满时，附近的月兆队伍角色获得5%暴击率和40%暴击伤害，持续20秒——时间轴不显示此增益。"
+			}
+		},
+		"jahoda__constellation__wild_berry_amid_the_dust": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"jahoda__passive__sweet_berry_bounty": {
+			"caveat": {
+				"en": "8f720928",
+				"text": "机器人的治疗命中生命值高于70%的角色时，该角色还会获得100点元素精通，持续6秒——时间轴不显示此加成。"
+			}
+		},
+		"jahoda__skill__savvy_strategy_splitting_the_spoils": {
+			"caveat": {
+				"en": "e9d5f917",
+				"text": "状态按完整持续时间显示；游戏中再次按下E、进行攻击或瓶子装满时，状态会提前结束。"
+			}
+		}
+	},
+	"jean": {
+		"jean__constellation__peoples_aegis": {
+			"reason": {
+				"en": "fb70a1fc",
+				"text": "此效果在拾取元素微粒时触发，而排轴工具不模拟元素微粒和攻击速度。"
+			}
+		},
+		"jean__constellation__spiraling_tempest": {
+			"reason": {
+				"en": "02ebefd6",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高长按风压剑造成的伤害。"
+			}
+		},
+		"jean__passive__let_the_wind_lead": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"jean__skill__gale_blade": {
+			"reason": {
+				"en": "f112b400",
+				"text": "排轴工具不模拟聚怪，而长按风压剑除伤害外只增加了聚怪效果。"
+			}
+		}
+	},
+	"kachina": {
+		"kachina__constellation__more_foes_more_caution": {
+			"caveat": {
+				"en": "f1c226cb",
+				"text": "显示为固定的+20%防御力；游戏中领域内的当前场上角色会根据领域内有1/2/3/4个及以上敌人，获得8%/12%/16%/20%的提升。"
+			}
+		},
+		"kachina__constellation__shards_are_gems_too": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"kachina__passive__the_weight_of_stone": {
+			"reason": {
+				"en": "9407f2e6",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高冲天转转造成的伤害。"
+			}
+		},
+		"kachina__skill__go_go_turbo_twirly": {
+			"caveat": {
+				"en": "28e7aac0",
+				"text": "冲天转转依靠夜魂值运作，而非计时器，因此实际持续时间取决于骑乘或移动的多少。显示的约12秒假定它停在原地冲击。"
+			}
+		}
+	},
+	"kaedehara_kazuha": {
+		"kaedehara_kazuha__constellation__oozora_genpou": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		}
+	},
+	"kaeya": {
+		"kaeya__constellation__excellent_blood": {
+			"caveat": {
+				"en": "eadce212",
+				"text": "按常驻生效显示；游戏中暴击率加成只对受到冰元素影响的敌人生效。"
+			}
+		},
+		"kaeya__constellation__neverending_performance": {
+			"reason": {
+				"en": "8542181f",
+				"text": "只有敌人被击败时，此效果才会延长元素爆发，而排轴工具不模拟敌人被击败。"
+			}
+		},
+		"kaeya__passive__glacial_heart": {
+			"reason": {
+				"en": "7ba9ea0e",
+				"text": "排轴工具不模拟元素微粒，因此不显示此效果额外产生的元素微粒。"
+			}
+		}
+	},
+	"kamisato_ayaka": {
+		"kamisato_ayaka__constellation__snowswept_sakura": {
+			"reason": {
+				"en": "159b742f",
+				"text": "此效果有50%几率缩短冷却时间。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		}
+	},
+	"kamisato_ayato": {
+		"kamisato_ayato__constellation__endless_flow": {
+			"reason": {
+				"en": "2ac90f19",
+				"text": "排轴工具不模拟攻击速度，因此不显示此普通攻击速度加成。"
+			}
+		},
+		"kamisato_ayato__constellation__kyouka_fuushi": {
+			"caveat": {
+				"en": "40cf661c",
+				"text": "按常驻生效显示；游戏中瞬水剑的伤害加成只对生命值不高于50%的敌人生效。"
+			}
+		},
+		"kamisato_ayato__passive__kamisato_art_michiyuku_hagetsu": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		}
+	},
+	"kaveh": {
+		"kaveh__constellation__grace_of_royal_roads": {
+			"reason": {
+				"en": "2ac90f19",
+				"text": "排轴工具不模拟攻击速度，因此不显示此普通攻击速度加成。"
+			}
+		},
+		"kaveh__passive__a_craftsmans_curious_conceptions": {
+			"caveat": {
+				"en": "76b31527",
+				"text": "卡维在繁绘隅穹内以普通攻击、重击或下落攻击命中四次后，才能获得完整的+100元素精通；条从施放时开始显示。"
+			}
+		},
+		"kaveh__passive__an_architects_undertaking": {
+			"caveat": {
+				"en": "54bbde69",
+				"text": "只有草原核确实在卡维身上爆炸时，卡维才会恢复生命值；这里队伍中的每次绽放、烈绽放和超绽放都计算在内。"
+			}
+		}
+	},
+	"keqing": {
+		"keqing__constellation__keen_extraction": {
+			"reason": {
+				"en": "005faed8",
+				"text": "此效果有50%几率产生元素微粒。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"keqing__constellation__tenacious_star": {
+			"caveat": {
+				"en": "2af69d4f",
+				"text": "条显示一份6%雷元素伤害加成；游戏中普通攻击、重击、元素战技和元素爆发各自拥有独立的8秒计时，因此至多可同时存在四份。"
+			}
+		}
+	},
+	"kinich": {
+		"kinich__constellation__parrots_beak": {
+			"reason": {
+				"en": "319a455c",
+				"text": "排轴工具不显示伤害数值，而此暴击伤害加成只作用于迴猎贯鳞炮。"
+			}
+		},
+		"kinich__passive__the_price_of_desolation": {
+			"reason": {
+				"en": "9e1f94bf",
+				"text": "排轴工具不追踪夜魂值，而此天赋只改变夜魂值。"
+			}
+		}
+	},
+	"kirara": {
+		"kirara__constellation__perfectly_packaged": {
+			"reason": {
+				"en": "8464514d",
+				"text": "排轴工具不模拟多人游戏，而这些护盾只会提供给其他玩家的角色。"
+			}
+		}
+	},
+	"klee": {
+		"klee__constellation__chained_reactions": {
+			"caveat": {
+				"en": "bc5bb3b4",
+				"text": "在每次符合条件的命中时都会显示，但火花是有一定几率触发的效果——游戏中攻击力加成生效的频率要低得多。"
+			}
+		}
+	},
+	"kujou_sara": {
+		"kujou_sara__burst__subjugation_koukou_sendou": {
+			"caveat": {
+				"en": "d1248e7e",
+				"text": "显示为一段连续9.2秒的增益，但游戏中是一连串6秒的攻击力增益重新赋予，来自施放后约3.2秒内落下的攻击。在那之后切入的角色不会再获得增益。"
+			}
+		},
+		"kujou_sara__passive__decorum": {
+			"reason": {
+				"en": "5fe75ff6",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果为队伍恢复的元素能量。"
+			}
+		},
+		"kujou_sara__skill__tengu_stormcall": {
+			"caveat": {
+				"en": "fa38825c",
+				"text": "显示为施放时即获得；游戏中攻击力增益来自鸣煌护持期间发射的满蓄力瞄准射击，或C2的天狗咒雷·伏，在落地约1.5秒后爆发。"
+			}
+		}
+	},
+	"kuki_shinobu": {
+		"kuki_shinobu__constellation__to_ward_weakness": {
+			"caveat": {
+				"en": "4e7abf75",
+				"text": "只在久岐忍生命值低于25%时生效，持续15秒，每分钟一次——标签上显示的数值按始终生效计算。"
+			}
+		}
+	},
+	"lan_yan": {
+		"lan_yan__burst__lustrous_moonrise": {
+			"reason": {
+				"en": "bbcf6a65",
+				"text": "排轴工具不模拟聚怪，而鹍弦踏月出除伤害外只增加了聚怪效果。"
+			}
+		},
+		"lan_yan__constellation__dance_vestments_billow_like_rainbow_jade": {
+			"reason": {
+				"en": "2959acad",
+				"text": "排轴工具只显示护盾何时存在，不显示其吸收量，而此效果只会补充凤缕护盾。"
+			}
+		}
+	},
+	"lauma": {
+		"lauma__normal__peregrination_of_linnunrata": {
+			"caveat": {
+				"en": "05e62769",
+				"text": "这里唤灵之祷在灵使形态结束后的4秒内可用；游戏中元素精通较高时，这段时间至多缩短0.8秒，因此较晚的重击可能会改为进入灵使形态。"
+			}
+		}
+	},
+	"layla": {
+		"layla__constellation__fortress_of_fantasy": {
+			"reason": {
+				"en": "3b41b178",
+				"text": "排轴工具不模拟多人游戏，而此额外护盾只保护其他玩家的角色。"
+			}
+		},
+		"layla__constellation__lights_remit": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"layla__passive__sweet_slumber_undisturbed": {
+			"caveat": {
+				"en": "1b695244",
+				"text": "加成按莱依拉的全部元素战技伤害显示；游戏中只有飞星能获得。"
+			}
+		}
+	},
+	"linnea": {
+		"linnea__skill__countermeasure_lumis_battle_cry": {
+			"caveat": {
+				"en": "0b8a7847",
+				"text": "未适配：连续点按——露米的百万吨重锤，以及她较慢的普通厉害形态。"
+			}
+		}
+	},
+	"lisa": {
+		"lisa__constellation__plasma_eruption": {
+			"reason": {
+				"en": "791bb7d6",
+				"text": "蔷薇的雷光发射的雷光数量是随机的。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"lisa__constellation__pulsating_witch": {
+			"reason": {
+				"en": "29bcaa61",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高长按苍雷造成的伤害。引雷层数只为此而存在。"
+			}
+		},
+		"lisa__passive__induced_aftershock": {
+			"reason": {
+				"en": "29bcaa61",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高长按苍雷造成的伤害。引雷层数只为此而存在。"
+			}
+		},
+		"lisa__skill__violet_arc": {
+			"reason": {
+				"en": "29bcaa61",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高长按苍雷造成的伤害。引雷层数只为此而存在。"
+			}
+		}
+	},
+	"lohen": {
+		"lohen__burst__manifest_judgment": {
+			"caveat": {
+				"en": "9e1104bc",
+				"text": "队伍中有2名及以上魔导角色时，魔导·秘仪的普通攻击/重击伤害增益会在每次施放时显示，但游戏中需要争胜达到50%或以上。"
+			}
+		},
+		"lohen__constellation__in_flight_i_strike_whatever_flies": {
+			"caveat": {
+				"en": "0f195cd7",
+				"text": "从元素战技或元素爆发施放时开始显示；游戏中+200元素精通需要破邪之刃（由元素爆发或镂骨彻心命中获得）在普通攻击或重击命中时触发。"
+			}
+		},
+		"lohen__constellation__o_breezes_that_so_oft_bear_sorrowful_lament": {
+			"reason": {
+				"en": "6b16d738",
+				"text": "排轴工具不追踪争胜，而此命之座只改变争胜。"
+			}
+		},
+		"lohen__constellation__radiant_love_laughing_death": {
+			"reason": {
+				"en": "9453314d",
+				"text": "排轴工具不追踪元素能量和争胜，因此不显示此效果恢复的数值。"
+			}
+		},
+		"lohen__passive__flippant_masterpiece": {
+			"caveat": {
+				"en": "d244e392",
+				"text": "这条+15%攻击力的条按全队显示。游戏中只有洛恩和触发冰元素反应的角色能获得。"
+			}
+		},
+		"lohen__passive__moratorium_on_questioning": {
+			"reason": {
+				"en": "553bd77a",
+				"text": "排轴工具不追踪争胜，而此天赋只改变争胜。"
+			}
+		},
+		"lohen__skill__etched_into_bone_and_soul": {
+			"caveat": {
+				"en": "fa3e2cfb",
+				"text": "每次施放都显示在输入的位置。游戏中需要先积攒100点欢悦，这大约需要在奇谋状态下以普通攻击或重击命中六次。"
+			}
+		}
+	},
+	"lynette": {
+		"lynette__constellation__a_cold_blade_like_a_shadow": {
+			"reason": {
+				"en": "9c41bdc3",
+				"text": "排轴工具不模拟聚怪，而此命之座除伤害外只增加了聚怪效果。"
+			}
+		}
+	},
+	"lyney": {
+		"lyney__passive__perilous_performance": {
+			"reason": {
+				"en": "cb564bde",
+				"text": "排轴工具不追踪元素能量，也不显示伤害数值，而此效果只会恢复元素能量，并提高怪笑猫猫帽的礼花术弹造成的伤害。"
+			}
+		}
+	},
+	"mavuika": {
+		"mavuika__constellation__humanitys_name_unfettered": {
+			"caveat": {
+				"en": "5d21451a",
+				"text": "焚曜之环20%的防御力降低，会在元素爆发或长按元素战技后的整个驰轮车持续时间内显示；游戏中她切出后会提前结束。未适配：之后的焚曜之环每3秒一次的火元素脉冲。"
+			}
+		},
+		"mavuika__normal__flamestrider_strikes": {
+			"caveat": {
+				"en": "1e115402",
+				"text": "这里冲刺等待冷却时会留下空隙；若要像双击技巧那样持续旋转，请多加几个C。"
+			}
+		},
+		"mavuika__passive__kiongozi": {
+			"caveat": {
+				"en": "ca8b2520",
+				"text": "显示的+40%伤害加成假定斗志已满（消耗200点）；实际上每消耗1点提升0.2%，直至上限，因此较低的数值未纳入模拟。C4移除20秒的衰减并额外+10%，同样未纳入模拟。"
+			}
+		},
+		"mavuika__skill__the_named_moment": {
+			"caveat": {
+				"en": "5c04d99b",
+				"text": "在夜魂加持期间再次按下E，这里会等待冷却时间结束；游戏中会在驰轮车和焚曜之环之间切换。"
+			}
+		}
+	},
+	"mika": {
+		"mika__constellation__sunfrost_encomium": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"mika__skill__starfrost_swirl": {
+			"caveat": {
+				"en": "5d0bd5b2",
+				"text": "不显示灵风——队伍中的角色在场上时获得22%攻击速度，持续12秒。"
+			},
+			"reason": {
+				"en": "20d88ace",
+				"text": "排轴工具不模拟攻击速度，因此不显示灵风的攻击速度加成。"
+			}
+		}
+	},
+	"mitya": {
+		"mitya__constellation__the_isotopes_born_of_decay": {
+			"reason": {
+				"en": "98aefe95",
+				"text": "排轴工具不显示伤害数值，而此效果是侦测炉心造成的额外伤害。"
+			}
+		},
+		"mitya__constellation__the_matter_that_slumbers_beyond_inertness": {
+			"caveat": {
+				"en": "eccb7cfa",
+				"text": "点按元素战技后，全队元素精通条显示的是每个递变信标的加成；游戏中这+123会额外叠加。"
+			}
+		},
+		"mitya__passive__explosive_reagent_safe_limits_exceeded": {
+			"reason": {
+				"en": "d0efbf0c",
+				"text": "排轴工具不追踪递变信标，而此效果会根据生成的每个递变信标提高米提亚的暴击率。"
+			}
+		},
+		"mitya__passive__stellar_jubilee_topsecret_protocol": {
+			"caveat": {
+				"en": "c9a43030",
+				"text": "队伍中有米提亚时，星超导会生成递变信标，而非星辉棱晶。显示的极星辉域持续时间为星辉棱晶的7秒。"
+			}
+		},
+		"mitya__skill__principle_variable_detection": {
+			"caveat": {
+				"en": "86a3b7c4",
+				"text": "游戏中6秒内再次点按会切换侦测炉心的状态。时间轴保持施放时选定的状态。"
+			}
+		}
+	},
+	"mona": {
+		"mona__burst__stellaris_phantasm": {
+			"caveat": {
+				"en": "c1449fac",
+				"text": "全队伤害加成只对困在泡影中的敌人生效。游戏中下一次命中会使泡影破裂，星异的5秒会比显示的稍晚开始，其2U水元素附着也会早约8秒落下。"
+			}
+		},
+		"mona__constellation__prophecy_of_oblivion": {
+			"caveat": {
+				"en": "449c7f20",
+				"text": "两项暴击加成都只在敌人带有星异时生效，暴击伤害也只作用于魔导队伍角色。两者都按始终生效显示。"
+			}
+		}
+	},
+	"mualani": {
+		"mualani__constellation__spirit_of_the_springs_people": {
+			"reason": {
+				"en": "7292727a",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高巨浪鲨鲨撕咬造成的伤害，且现在每次撕咬都会生效。"
+			}
+		},
+		"mualani__constellation__the_leisurely_meztli": {
+			"reason": {
+				"en": "dc806283",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高她第一次巨浪鲨鲨撕咬造成的伤害。"
+			}
+		},
+		"mualani__normal__sharkys_bite": {
+			"caveat": {
+				"en": "93a4d687",
+				"text": "在冲浪时输入的重击仍会显示一段，但游戏中她在夜魂加持期间无法使用重击。"
+			}
+		},
+		"mualani__passive__heatresistant_freshwater_floater": {
+			"reason": {
+				"en": "28b528ea",
+				"text": "排轴工具不模拟拾取，因此玛拉妮从豚豚球获得的夜魂值不会延长她的夜魂加持。"
+			}
+		},
+		"mualani__passive__natlans_greatest_guide": {
+			"reason": {
+				"en": "54ccb690",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高爆瀑飞弹造成的伤害。"
+			}
+		},
+		"mualani__skill__surfshark_wavebreaker": {
+			"caveat": {
+				"en": "355ac244",
+				"text": "夜魂加持条按不移动时的6秒显示。游戏中拾取豚豚球会补充她的夜魂值，因此通常持续更久。"
+			}
+		}
+	},
+	"nahida": {
+		"nahida__passive__awakening_elucidated": {
+			"caveat": {
+				"en": "2b58d890",
+				"text": "假定为1,000以上元素精通的配装：+80%元素战技伤害和+24%暴击率的上限（均按超过200的元素精通计算）都显示为已达到。暴击率还会显示在每次命中上；游戏中只作用于灭净三业。"
+			}
+		},
+		"nahida__passive__compassion_illuminated": {
+			"caveat": {
+				"en": "7a6c1a7a",
+				"text": "按+250元素精通的上限显示。游戏中数值为队伍中最高元素精通的25%，因此只有当某位角色的元素精通达到1,000或以上时才能达到上限。"
+			}
+		}
+	},
+	"navia": {
+		"navia__constellation__the_flexible_finesse_of_the_spinas_president": {
+			"reason": {
+				"en": "749def47",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高典仪式晶火的暴击伤害。"
+			}
+		},
+		"navia__passive__mutual_assistance_network": {
+			"caveat": {
+				"en": "6547fb02",
+				"text": "两档加成都按常驻生效显示；游戏中队伍中有一名火、雷、冰或水元素角色时，娜维娅获得+20%攻击力，有两名时获得+40%。"
+			}
+		},
+		"navia__skill__ceremonial_crystalshot": {
+			"reason": {
+				"en": "d2c7e158",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高典仪式晶火造成的伤害。"
+			}
+		}
+	},
+	"nefer": {
+		"nefer__constellation__delusion_ensnares_reason": {
+			"caveat": {
+				"en": "5e6d9702",
+				"text": "−20%草元素抗性条从元素战技开始固定持续13.5秒；游戏中它在影舞结束4.5秒后结束，因此提前离场会让它更早结束。"
+			}
+		},
+		"nefer__constellation__planning_breeds_success": {
+			"reason": {
+				"en": "a68e6f05",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高幻戏造成的月绽放伤害。"
+			}
+		},
+		"nefer__normal__striking_serpent": {
+			"caveat": {
+				"en": "45e91a42",
+				"text": "只显示基础的重击。未适配：蛇行移动状态，以及在影舞状态下有草露可用时替代它的多段幻戏重击。"
+			}
+		}
+	},
+	"neuvillette": {
+		"neuvillette__burst__o_tides_i_have_returned": {
+			"reason": {
+				"en": "b931f03a",
+				"text": "排轴工具不模拟拾取，因此不显示此效果产生的源水之滴。"
+			}
+		},
+		"neuvillette__constellation__crown_of_commiseration": {
+			"reason": {
+				"en": "3fb6fd37",
+				"text": "排轴工具不模拟拾取，也不追踪治疗，因此不显示那维莱特受到治疗时获得的源水之滴。"
+			}
+		},
+		"neuvillette__constellation__juridical_exhortation": {
+			"reason": {
+				"en": "5869d5be",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高衡平推裁的暴击伤害。"
+			}
+		},
+		"neuvillette__constellation__wrathful_recompense": {
+			"reason": {
+				"en": "767e14b2",
+				"text": "排轴工具不模拟拾取，因此吸收的源水之滴不会延长衡平推裁，而额外的水流只会增加其伤害。"
+			}
+		},
+		"neuvillette__normal__as_water_seeks_equilibrium": {
+			"caveat": {
+				"en": "766cab46",
+				"text": "源水之滴只计数，不定位：每次重击至多吸收3枚由元素战技和元素爆发产生的源水之滴。没有剩余时，蓄力会持续完整的3.5秒。"
+			}
+		},
+		"neuvillette__skill__o_tears_i_shall_repay": {
+			"reason": {
+				"en": "b931f03a",
+				"text": "排轴工具不模拟拾取，因此不显示此效果产生的源水之滴。"
+			}
+		}
+	},
+	"nicole": {
+		"nicole__constellation__do_not_be_afraid_child_who_is_loved": {
+			"caveat": {
+				"en": "801414e9",
+				"text": "未适配：额外的奥迹造影，游戏中会随当前场上角色的命中每6秒发动一次。"
+			}
+		},
+		"nicole__constellation__i_will_guide_you_and_show_you_the_path_you_should_tread": {
+			"caveat": {
+				"en": "3d7cad5a",
+				"text": "在完整的20秒内按所有元素抗性显示；游戏中只降低当前场上角色自身元素的抗性，且只在其持有圣祝之引时生效。"
+			}
+		},
+		"nicole__constellation__whether_left_or_right_no_matter_which_way_you_turn": {
+			"caveat": {
+				"en": "8a88116e",
+				"text": "未适配：命中8次后效果消失（每个被命中的敌人计一次），因此显示的持续时间可能比实际更长。"
+			}
+		},
+		"nicole__passive__methexis": {
+			"caveat": {
+				"en": "1e67b326",
+				"text": "未适配：C6时角色离场后强化不再还原，因此全队可同时持有。"
+			}
+		}
+	},
+	"nilou": {
+		"nilou__passive__court_of_dancing_petals": {
+			"caveat": {
+				"en": "a2e61a77",
+				"text": "显示为每次施放一段10秒；游戏中在金杯的丰馈（30秒）生效期间，每当队伍中的角色受到草元素攻击就会重新触发，因此在绽放循环中几乎始终生效。"
+			}
+		},
+		"nilou__skill__dance_of_haftkarsvar": {
+			"caveat": {
+				"en": "7ab4eb2e",
+				"text": "每段剑舞步按普通攻击连段选取，而非共用的步数，因此旋舞步之后的剑舞步可能显示错误的挥砍。"
+			}
+		}
+	},
+	"ningguang": {
+		"ningguang__passive__strategic_reserve": {
+			"caveat": {
+				"en": "01293260",
+				"text": "条从璇玑屏施放时开始；游戏中角色要在其存在的30秒内穿过璇玑屏才能获得加成。"
+			}
+		}
+	},
+	"ororon": {
+		"ororon__constellation__trails_amidst_the_forest_fog": {
+			"reason": {
+				"en": "5f53d4b7",
+				"text": "排轴工具不显示伤害数值，而夜暝只会提高显象超感造成的伤害。额外的弹跳需要更多敌人，而排轴工具只模拟一个敌人。"
+			}
+		},
+		"ororon__passive__aspect_catalyst": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		}
+	},
+	"prune": {
+		"prune__constellation__and_thats_the_story_share_it_with_your_friends": {
+			"caveat": {
+				"en": "420819c5",
+				"text": "攻击力加成会在任何队伍反应后显示；游戏中反应必须由带有振铃鼓舞的队友触发，且场上的队友自身也需带有振铃鼓舞才能获得。"
+			}
+		},
+		"prune__constellation__useful_for_cleaning_messy_baggage_elemental_powers_are_indeed": {
+			"caveat": {
+				"en": "8ef9a632",
+				"text": "按她初始的+10%攻击力显示；游戏中每次诱巫饵铃或元素转化锤击命中都会再增加5%，至多40%。"
+			}
+		},
+		"prune__passive__tolling_synchronicity": {
+			"caveat": {
+				"en": "63191283",
+				"text": "队伍中有2名及以上魔导角色时，队伍触发的反应还会提供攻击力；这在每次队伍反应时都会显示，但游戏中只有带有振铃鼓舞的魔导队友触发的才计算在内。"
+			}
+		},
+		"prune__skill__ringadingding_hexhunter_chime": {
+			"caveat": {
+				"en": "f2a2f8dc",
+				"text": "振铃鼓舞的全队增益会在每次元素战技命中后显示；游戏中只有扩散后6秒内可用的元素转化锤击才能赋予。"
+			}
+		}
+	},
+	"qiqi": {
+		"qiqi__constellation__ascetics_of_frost": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"qiqi__constellation__divine_suppression": {
+			"reason": {
+				"en": "04b0ab22",
+				"text": "排轴工具不模拟敌人的攻击力，且额外治疗会提供给生命值最低的队伍角色，而这无从得知。"
+			}
+		},
+		"qiqi__constellation__frozen_to_the_bone": {
+			"caveat": {
+				"en": "6b94e646",
+				"text": "在星超导队伍中，50%攻击力加成按始终处于极星辉域内，在整个循环中显示。"
+			}
+		},
+		"qiqi__constellation__rite_of_resurrection": {
+			"reason": {
+				"en": "d3002fa9",
+				"text": "排轴工具不模拟倒下的角色，而此效果只会复活并治疗已倒下的队伍角色。"
+			}
+		},
+		"qiqi__passive__a_glimpse_into_arcanum": {
+			"reason": {
+				"en": "81888462",
+				"text": "不处于辉映状态时，此度厄真符只有50%几率施加，而排轴工具不模拟概率。处于辉映状态时必定施加，但排轴工具无法根据攻击命中放置度厄真符。"
+			}
+		},
+		"qiqi__passive__seven_sacred_treasures": {
+			"caveat": {
+				"en": "8b85eb72",
+				"text": "星超导的加成按始终处于极星辉域内显示。即使寒病鬼差提前离场，扩散加成仍会持续完整的8秒；游戏中会随寒病鬼差一同结束。"
+			}
+		},
+		"qiqi__skill__adeptus_art_herald_of_frost": {
+			"caveat": {
+				"en": "9c5eab7e",
+				"text": "假定已解锁魔女的谕示：15秒冷却时间以及寒病鬼差的协同攻击。这里协同攻击的2.2秒冷却时间由全队共享；游戏中每名角色各自计算。"
+			}
+		}
+	},
+	"raiden_shogun": {
+		"raiden_shogun__constellation__ominous_inscription": {
+			"reason": {
+				"en": "3dd4bfe8",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高奥义·梦想真说和梦想一心造成的伤害。"
+			}
+		},
+		"raiden_shogun__passive__wishes_unnumbered": {
+			"reason": {
+				"en": "a2165a50",
+				"text": "排轴工具不模拟拾取，且此效果提供的愿力只会提高奥义·梦想真说和梦想一心造成的伤害。"
+			}
+		}
+	},
+	"razor": {
+		"razor__constellation__lupus_fulguris": {
+			"caveat": {
+				"en": "0859f5ef",
+				"text": "暴击率和暴击伤害加成会在每次施放元素战技和元素爆发后显示；游戏中只有确实消耗了雷之印才会生效。"
+			}
+		},
+		"razor__constellation__suppression": {
+			"caveat": {
+				"en": "14bdf0f3",
+				"text": "按常驻生效显示；游戏中暴击率加成只对生命值低于30%的敌人生效。"
+			}
+		},
+		"razor__constellation__wolfs_instinct": {
+			"reason": {
+				"en": "db2cbab5",
+				"text": "排轴工具不模拟拾取，因此不显示拾取元素晶球或元素微粒带来的伤害加成。"
+			}
+		},
+		"razor__passive__hunger": {
+			"reason": {
+				"en": "dd10fc6c",
+				"text": "排轴工具不追踪元素能量，因此无法判断雷泽的元素能量何时低于50%，以获得此元素充能效率加成。"
+			}
+		}
+	},
+	"rosaria": {
+		"rosaria__constellation__painful_grace": {
+			"reason": {
+				"en": "3f2a4d7b",
+				"text": "此元素能量在暴击时恢复。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"rosaria__constellation__unholy_revelation": {
+			"reason": {
+				"en": "e4ed4200",
+				"text": "此效果在暴击时触发。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		}
+	},
+	"sandrone": {
+		"sandrone__constellation__an_heiress_gazed_into_the_lookingglass": {
+			"reason": {
+				"en": "68957b1d",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高法洁欧凝聚光束的暴击伤害。"
+			}
+		},
+		"sandrone__constellation__morrow_after_the_golden_dusk": {
+			"caveat": {
+				"en": "7b6f0e1d",
+				"text": "全队的辉映·星烁加成按始终生效显示；游戏中只在法洁欧处于解算模式时生效。"
+			}
+		},
+		"sandrone__normal__formule_phenomenale_selfevident_proposition": {
+			"caveat": {
+				"en": "02c79677",
+				"text": "单独的C会持续到法洁欧过热前的最后一道光束。输入C ~Xs可自行设定持续时间。法洁欧的温度本身不显示。"
+			}
+		},
+		"sandrone__passive__eternal_speculation_engine": {
+			"reason": {
+				"en": "a8ec04b4",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高法洁欧的第二发棱晶弹和聚能光束造成的伤害。"
+			}
+		}
+	},
+	"sangonomiya_kokomi": {
+		"sangonomiya_kokomi__constellation__sango_isshin": {
+			"caveat": {
+				"en": "63cbcdf1",
+				"text": "水元素伤害条会在每次普通攻击和重击时显示；游戏中需要仪来羽衣，因此只在她的元素爆发持续期间生效。"
+			}
+		},
+		"sangonomiya_kokomi__constellation__the_moon_overlooks_the_waters": {
+			"reason": {
+				"en": "43cdbae7",
+				"text": "排轴工具不模拟攻击速度，也不追踪元素能量，因此攻击速度加成和这些普通攻击恢复的元素能量都不显示。"
+			}
+		}
+	},
+	"sayu": {
+		"sayu__constellation__egress_prep": {
+			"reason": {
+				"en": "fd055da5",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高风风轮舞踢造成的伤害。"
+			}
+		},
+		"sayu__constellation__skiving_new_and_improved": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"sayu__constellation__sleep_oclock": {
+			"caveat": {
+				"en": "a75f1ede",
+				"text": "不倒貉貉基于元素精通的治疗加成每次至多6,000点，标签上显示的数值未体现这一上限。"
+			}
+		},
+		"sayu__passive__no_work_today": {
+			"reason": {
+				"en": "6c13ae12",
+				"text": "额外治疗会作用于被治疗角色附近的角色，而排轴工具不模拟站位。"
+			}
+		}
+	},
+	"sethos": {
+		"sethos__constellation__beneficent_plumage": {
+			"caveat": {
+				"en": "150f435a",
+				"text": "条会在每次贯影箭时显示；游戏中需要该箭命中两个或以上敌人。瞑弦矢也能赋予此效果，但不显示。"
+			}
+		},
+		"sethos__constellation__papyrus_scripture_of_silent_secrets": {
+			"caveat": {
+				"en": "e77bef87",
+				"text": "每个来源都会显示各自的15%条；游戏中此加成至多叠加两层，因此三条重叠时为30%，而非45%。"
+			}
+		},
+		"sethos__constellation__pylon_of_the_sojourning_sun_temple": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"sethos__constellation__sealed_shrines_spiritsong": {
+			"reason": {
+				"en": "551785a5",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高贯影箭的暴击率。"
+			}
+		},
+		"sethos__passive__the_sand_kings_boon": {
+			"reason": {
+				"en": "b32baa6c",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高贯影箭造成的伤害。"
+			}
+		},
+		"sethos__skill__ancient_rite_the_thundering_sands": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		}
+	},
+	"shenhe": {
+		"shenhe__constellation__insight": {
+			"reason": {
+				"en": "b519b9b0",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高申鹤下一次仰灵威召将役咒造成的伤害。"
+			}
+		},
+		"shenhe__skill__spring_spirit_summoning": {
+			"caveat": {
+				"en": "da30bf7e",
+				"text": "按完整持续时间显示；游戏中每次冰元素攻击会消耗5枚冰翎（长按为7枚）中的1枚，C6时的普通攻击和重击除外。只有冰元素伤害能获得加成。"
+			}
+		}
+	},
+	"shikanoin_heizou": {
+		"shikanoin_heizou__constellation__investigative_collection": {
+			"reason": {
+				"en": "81c6ecff",
+				"text": "排轴工具不模拟聚怪，因此更强的牵引在时间轴上不会带来任何变化。"
+			}
+		},
+		"shikanoin_heizou__constellation__named_juvenile_casebook": {
+			"reason": {
+				"en": "334d1cd5",
+				"text": "排轴工具不模拟攻击速度，而变格层数只会提高勠心拳造成的伤害。"
+			}
+		},
+		"shikanoin_heizou__constellation__tome_of_lies": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"shikanoin_heizou__passive__paradoxical_practice": {
+			"reason": {
+				"en": "496f734a",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高勠心拳造成的伤害。"
+			}
+		},
+		"shikanoin_heizou__skill__heartstopper_strike": {
+			"reason": {
+				"en": "496f734a",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高勠心拳造成的伤害。"
+			}
+		}
+	},
+	"sigewinne": {
+		"sigewinne__burst__super_saturated_syringing": {
+			"reason": {
+				"en": "10415b62",
+				"text": "排轴工具不模拟拾取和生命之契，因此不显示此效果吸收的源水之滴。"
+			}
+		},
+		"sigewinne__constellation__can_the_most_merciful_of_spirits_defeat_its_foes": {
+			"caveat": {
+				"en": "1c0b4edf",
+				"text": "水球护盾条随产生它的施放一同结束，游戏中护盾也在此时消失。不显示它对水元素伤害250%的吸收效果。"
+			}
+		},
+		"sigewinne__constellation__can_the_most_radiant_of_spirits_pray_for_me": {
+			"caveat": {
+				"en": "1db67e8c",
+				"text": "暴击条覆盖希格雯的所有伤害；游戏中加成只作用于过饱和心意注射。"
+			}
+		},
+		"sigewinne__passive__detailed_diagnosis_thorough_treatment": {
+			"reason": {
+				"en": "6bb53371",
+				"text": "排轴工具不模拟生命之契，而此治疗加成随生命之契变化。"
+			}
+		},
+		"sigewinne__passive__requires_appropriate_rest": {
+			"caveat": {
+				"en": "55b839cd",
+				"text": "每名后台队友的元素战技命中会消耗施放时获得的10层静养中的1层——层数用尽后，即使时间段仍在显示，额外的元素战技伤害也会停止。"
+			}
+		}
+	},
+	"skirk": {
+		"skirk__constellation__far_to_fall": {
+			"reason": {
+				"en": "ff52f638",
+				"text": "排轴工具不模拟拾取，而晶刃来自丝柯克汲取的虚境裂隙。"
+			}
+		},
+		"skirk__constellation__to_the_source": {
+			"reason": {
+				"en": "509ec2e7",
+				"text": "排轴工具不模拟拾取，而极恶技·斩的层数来自丝柯克汲取的虚境裂隙。"
+			}
+		},
+		"skirk__passive__reason_beyond_reason": {
+			"reason": {
+				"en": "b5be282c",
+				"text": "排轴工具不模拟拾取，因此不显示丝柯克汲取的虚境裂隙，她的蛇之狡谋也会低于游戏中的数值。"
+			}
+		},
+		"skirk__passive__return_to_oblivion": {
+			"caveat": {
+				"en": "0b0a7008",
+				"text": "普通攻击档位取决于队伍中冰元素或水元素队友的数量，并在其中一人造成冰元素或水元素命中后出现；游戏中每名队友的命中各自提供一层20秒的效果。对应的元素爆发伤害档位不显示。"
+			}
+		},
+		"skirk__skill__havoc_warp": {
+			"caveat": {
+				"en": "5b39f9c3",
+				"text": "显示为一瞬间；游戏中长按版本是由玩家控制、长度可变的移动，至多持续约3秒，因此实际时机取决于你按住多久。"
+			}
+		}
+	},
+	"sucrose": {
+		"sucrose__burst__forbidden_creation_isomer_75_type_ii": {
+			"caveat": {
+				"en": "07b3adef",
+				"text": "魔导伤害加成按全队显示；游戏中只有魔导队伍角色能获得。"
+			}
+		},
+		"sucrose__constellation__alchemania": {
+			"reason": {
+				"en": "2b8aa91c",
+				"text": "冷却缩减为随机的1到7秒。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"sucrose__constellation__chaotic_entropy": {
+			"caveat": {
+				"en": "0eda2e2b",
+				"text": "未适配：全队对应被吸收元素的20%伤害加成，以及魔导队伍角色额外获得的8.6%。"
+			}
+		},
+		"sucrose__passive__catalyst_conversion": {
+			"caveat": {
+				"en": "13e5cea0",
+				"text": "按全队显示，但游戏中只有元素类型与扩散元素相同的队伍角色能获得——风元素角色永远无法获得。"
+			}
+		},
+		"sucrose__skill__astable_anemohypostasis_creation_6308": {
+			"reason": {
+				"en": "7ab23318",
+				"text": "排轴工具不模拟聚怪，因此不显示风灵的牵引。"
+			}
+		}
+	},
+	"tartaglia": {
+		"tartaglia__constellation__foul_legacy_understream": {
+			"reason": {
+				"en": "94ea15e7",
+				"text": "此效果在敌人被击败时触发，而排轴工具只模拟一个不会倒下的敌人。"
+			}
+		},
+		"tartaglia__passive__sword_of_torrents": {
+			"reason": {
+				"en": "cc0ebff9",
+				"text": "此断流在暴击时施加。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		}
+	},
+	"thoma": {
+		"thoma__constellation__a_comrades_duty": {
+			"reason": {
+				"en": "d12b3705",
+				"text": "此效果在敌人攻击受护盾保护的角色时触发，而排轴工具不模拟敌人的攻击。"
+			}
+		},
+		"thoma__constellation__longterm_planning": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		}
+	},
+	"tighnari": {
+		"tighnari__constellation__origins_known_from_the_stem": {
+			"caveat": {
+				"en": "2db7b2f4",
+				"text": "草元素伤害条假定敌人始终留在识蕴领域内。游戏中最后一个敌人离开6秒后消失。"
+			}
+		},
+		"tighnari__skill__vijnanaphala_mine": {
+			"caveat": {
+				"en": "4063683b",
+				"text": "未适配：通塞识对花筥箭蓄力时间的缩短——即使增益生效，射击仍按完整的基础蓄力时间显示。"
+			}
+		}
+	},
+	"traveler_anemo": {
+		"traveler_anemo__burst__gust_surge": {
+			"caveat": {
+				"en": "181f135c",
+				"text": "未适配：龙卷风吸收附近的冰、火、水、雷元素附着后，每次判定都会追加一次该元素的攻击——只显示其风元素判定。"
+			}
+		},
+		"traveler_anemo__constellation__crush_mountains_and_seas": {
+			"caveat": {
+				"en": "6e80250f",
+				"text": "只显示风元素减抗；若龙卷风吸收了某种元素，该元素的抗性也会降低20%，持续10秒。"
+			}
+		},
+		"traveler_anemo__constellation__raging_vortex": {
+			"reason": {
+				"en": "34627b6d",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高第一次爆风造成的伤害。"
+			}
+		},
+		"traveler_anemo__passive__second_wind": {
+			"reason": {
+				"en": "53c79412",
+				"text": "排轴工具不模拟击败敌人，因此此治疗没有可以跟随的击败。"
+			}
+		}
+	},
+	"traveler_dendro": {
+		"traveler_dendro__constellation__withering_aggregation": {
+			"caveat": {
+				"en": "2643685a",
+				"text": "在草灯莲的整个持续时间内显示；实战中只在当前场上角色处于其作用范围内时生效。"
+			}
+		},
+		"traveler_dendro__passive__verdant_luxury": {
+			"reason": {
+				"en": "949d1e61",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高草缘剑和偃草若化造成的伤害。"
+			}
+		},
+		"traveler_dendro__passive__verdant_overgrowth": {
+			"caveat": {
+				"en": "2643685a",
+				"text": "在草灯莲的整个持续时间内显示；实战中只在当前场上角色处于其作用范围内时生效。"
+			}
+		}
+	},
+	"traveler_electro": {
+		"traveler_electro__constellation__fickle_cloudstrike": {
+			"reason": {
+				"en": "09441684",
+				"text": "排轴工具不模拟拾取丰穰勾玉，也不追踪元素能量，而此效果只涉及这两者。"
+			}
+		},
+		"traveler_electro__constellation__spring_thunder_of_fertility": {
+			"reason": {
+				"en": "4340021b",
+				"text": "排轴工具不模拟拾取丰穰勾玉，因此丰穰勾玉的数量在时间轴上不会带来任何变化。"
+			}
+		},
+		"traveler_electro__constellation__worldshaker": {
+			"reason": {
+				"en": "2680d845",
+				"text": "排轴工具不显示伤害数值，也不追踪元素能量，而此效果只会让每第三次威光落雷造成更高的伤害并恢复元素能量。"
+			}
+		},
+		"traveler_electro__passive__resounding_roar": {
+			"reason": {
+				"en": "2678f635",
+				"text": "排轴工具不模拟拾取丰穰勾玉，因此不显示它们提供的元素充能效率。"
+			}
+		},
+		"traveler_electro__passive__thunderflash": {
+			"reason": {
+				"en": "db5a193f",
+				"text": "排轴工具不模拟拾取丰穰勾玉，因此不显示它们为雷影剑缩短的冷却时间。"
+			}
+		}
+	},
+	"traveler_geo": {
+		"traveler_geo__constellation__invincible_stonewall": {
+			"caveat": {
+				"en": "e8364caa",
+				"text": "在整个领域持续时间内显示；实战中只在当前场上角色处于岩壁范围内时生效。"
+			}
+		}
+	},
+	"traveler_hydro": {
+		"traveler_hydro__constellation__pouring_descent": {
+			"caveat": {
+				"en": "74c554dc",
+				"text": "未适配：水纹护盾，因此不会出现护盾条——它只在元素战技使用期间存在，而使用时长并不固定。"
+			}
+		},
+		"traveler_hydro__constellation__swelling_lake": {
+			"reason": {
+				"en": "a6797ecb",
+				"text": "排轴工具不模拟拾取源水之滴，因此不显示它们恢复的元素能量。"
+			}
+		},
+		"traveler_hydro__constellation__tides_of_justice": {
+			"reason": {
+				"en": "fcdc7219",
+				"text": "排轴工具不模拟拾取源水之滴，因此不显示它们触发的治疗。"
+			}
+		},
+		"traveler_hydro__passive__clear_waters": {
+			"reason": {
+				"en": "708bc3b7",
+				"text": "排轴工具不显示伤害数值，也不追踪生命值，而此效果只会根据消耗的生命值提高喷发激流造成的伤害。"
+			}
+		}
+	},
+	"traveler_pyro": {
+		"traveler_pyro__burst__plains_scorcher": {
+			"reason": {
+				"en": "91e3b699",
+				"text": "排轴工具不追踪夜魂值，因此不显示灼火燎原恢复的夜魂值。"
+			}
+		},
+		"traveler_pyro__constellation__everlit_candle": {
+			"reason": {
+				"en": "34c2b779",
+				"text": "排轴工具不追踪夜魂值，因此不显示此效果恢复的夜魂值。"
+			}
+		},
+		"traveler_pyro__constellation__starfires_flowing_light": {
+			"caveat": {
+				"en": "decc311b",
+				"text": "按完整的12秒显示；它在夜魂加持状态耗尽时结束（除非元素爆发为其补充，约6秒）。不显示处于自身夜魂加持状态的角色额外获得的9%。"
+			}
+		},
+		"traveler_pyro__constellation__the_sacred_flame_imperishable": {
+			"caveat": {
+				"en": "d1a98bc7",
+				"text": "按完整的12秒显示；两者都在夜魂加持状态耗尽时结束。+40%暴击伤害只作用于普通攻击、重击和下落攻击。"
+			}
+		},
+		"traveler_pyro__skill__flowfire_blade": {
+			"caveat": {
+				"en": "b694e216",
+				"text": "按完整的12秒显示，但除非元素爆发为其补充，夜魂加持状态约6秒就会耗尽。"
+			}
+		}
+	},
+	"valeriy": {
+		"valeriy__normal__guard_tactics_sword_and_shield": {
+			"caveat": {
+				"en": "73172807",
+				"text": "按基础数值在完整的18秒内显示；游戏中每次雷元素命中消耗15层中的1层，只有雷元素伤害能获得加成，且数值随消耗的冲击势能增加。游戏中在元素战技或元素爆发后0.8秒内的普通攻击会变为臼炮直射；请将其写作C来显示攻斥指令。"
+			}
+		},
+		"valeriy__passive__advance_with_the_creeping_barrage": {
+			"caveat": {
+				"en": "6a483920",
+				"text": "不计算元素爆发提供的冲击势能，因此这里只有当元素战技提供了冲击势能时，其后的重击才会变为臼炮直射。"
+			}
+		}
+	},
+	"varka": {
+		"varka__constellation__beloved_mondstadt_steadfast_you_shall_shine": {
+			"caveat": {
+				"en": "7f7225b6",
+				"text": "未适配：此效果提供的免费四风将起和苍噬——在时间轴上两者仍会消耗一次使用次数。"
+			}
+		},
+		"varka__constellation__when_dawn_breaks_our_journey_shall_take_flight": {
+			"reason": {
+				"en": "65c35fe6",
+				"text": "此额外攻击不附着风元素，而排轴工具不显示伤害数值。"
+			}
+		}
+	},
+	"venti": {
+		"venti__burst__winds_grand_ode": {
+			"caveat": {
+				"en": "f848d45b",
+				"text": "未适配：暴风之眼吸收附近的冰、火、水、雷元素附着后，每次判定都会追加一次该元素的攻击——只显示其风元素判定。"
+			}
+		},
+		"venti__constellation__breeze_of_reminiscence": {
+			"caveat": {
+				"en": "44a929c9",
+				"text": "队伍中有2名及以上魔导角色时，元素爆发还会重置元素战技的冷却时间；此重置未纳入模拟。"
+			}
+		},
+		"venti__constellation__storm_of_defiance": {
+			"caveat": {
+				"en": "66652bf8",
+				"text": "只显示风元素减抗；若暴风之眼吸收了某种元素，该元素的抗性也会降低20%，持续10秒。"
+			}
+		},
+		"venti__normal__divine_marksmanship": {
+			"caveat": {
+				"en": "cf5bb60d",
+				"text": "队伍中有2名及以上魔导角色时，暴风之眼期间的普通攻击命中会将其至多延长2秒。暴风之眼始终按8秒显示。"
+			}
+		}
+	},
+	"vodyanitsa": {
+		"vodyanitsa__burst__koda_sink_with_thee": {
+			"reason": {
+				"en": "9d40fb1d",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高终奏·伴尔沉沦造成的伤害。"
+			}
+		},
+		"vodyanitsa__constellation__melancholic_voice_upon_the_gentle_waters": {
+			"reason": {
+				"en": "e759f7c4",
+				"text": "排轴工具不显示由治疗触发的效果，也不追踪生命值，而此效果完全取决于这两者。"
+			}
+		}
+	},
+	"wanderer": {
+		"wanderer__constellation__niban_isle_amidst_white_waves": {
+			"reason": {
+				"en": "35f858ca",
+				"text": "排轴工具不追踪空居力，而此加成随消耗的空居力增加。"
+			}
+		},
+		"wanderer__constellation__shoban_ostentatious_plumage": {
+			"reason": {
+				"en": "51c4746f",
+				"text": "排轴工具不模拟攻击速度，而此效果强化的风矢来自一个有一定几率触发、且不显示的效果。"
+			}
+		},
+		"wanderer__constellation__yonban_set_adrift_into_spring": {
+			"reason": {
+				"en": "decd9685",
+				"text": "额外的元素随机选定。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"wanderer__passive__gales_of_reverie": {
+			"reason": {
+				"en": "27dab4b9",
+				"text": "倾落随机触发。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		},
+		"wanderer__passive__jadeclaimed_flower": {
+			"caveat": {
+				"en": "39c988a0",
+				"text": "未适配：吸收元素带来的增益——冰元素的+20%暴击率和火元素的+30%攻击力都不会出现。"
+			}
+		}
+	},
+	"wriothesley": {
+		"wriothesley__constellation__terror_for_the_evildoers": {
+			"caveat": {
+				"en": "18479f1a",
+				"text": "未适配：强化重击每段持续时间内一次将寒烈的惩裁延长4秒，因此显示的元素战技持续时间比实际短4秒。"
+			}
+		},
+		"wriothesley__passive__there_shall_be_a_reckoning_for_sin": {
+			"caveat": {
+				"en": "afef8920",
+				"text": "在整个持续时间内按满5层显示；游戏中每次生命值变化叠加一层，因此最初几秒的数值较低。"
+			}
+		},
+		"wriothesley__passive__there_shall_be_an_unveiling_for_injustice": {
+			"caveat": {
+				"en": "012e01b5",
+				"text": "按始终生效显示；游戏中这些强化需要队伍中有能触发星超导的角色，且需要站在极星辉域内。"
+			}
+		}
+	},
+	"xiangling": {
+		"xiangling__passive__beware_its_super_hot": {
+			"reason": {
+				"en": "a56efafb",
+				"text": "排轴工具不模拟拾取锅巴的辣椒，因此不显示它提供的攻击力。"
+			}
+		}
+	},
+	"xianyun": {
+		"xianyun__burst__stars_gather_at_dusk": {
+			"caveat": {
+				"en": "bb431cbb",
+				"text": "未适配：仙力助推的8层，队伍每次下落攻击消耗一层。无论已进行多少次下落攻击，下落攻击增益都按完整的16秒显示。"
+			}
+		},
+		"xianyun__skill__skyladder_2": {
+			"reason": {
+				"en": "195c5e6e",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高下一次闲云冲击波造成的伤害。"
+			}
+		}
+	},
+	"xiao": {
+		"xiao__constellation__conqueror_of_evil_guardian_yaksha": {
+			"reason": {
+				"en": "d7b0e0d3",
+				"text": "排轴工具只模拟单个敌人，因此下落攻击永远不会命中此效果需要的两个敌人。"
+			}
+		},
+		"xiao__constellation__transcension_extinction_of_suffering": {
+			"caveat": {
+				"en": "406d5be6",
+				"text": "按常驻生效显示；游戏中防御力加成只在他的生命值低于50%时生效。"
+			}
+		}
+	},
+	"xilonen": {
+		"xilonen__constellation__sabbatical_phrase": {
+			"caveat": {
+				"en": "da87011f",
+				"text": "假定当前场上角色始终在源音采样附近，抗打断能力只在此范围内生效。"
+			}
+		},
+		"xilonen__skill__yohuals_scratch": {
+			"caveat": {
+				"en": "7a95757b",
+				"text": "减抗从施放时开始显示；游戏中要等她的夜魂值充满后，源音采样才会在片刻之后激活。未适配：再次按下E提前结束状态。"
+			}
+		}
+	},
+	"xingqiu": {
+		"xingqiu__constellation__rainbow_upon_the_azure_sky": {
+			"caveat": {
+				"en": "c1950ac1",
+				"text": "从元素爆发开始显示4秒。游戏中每一波雨帘剑攻击都会刷新它，因此只要攻击持续，它就会一直生效。"
+			}
+		},
+		"xingqiu__constellation__the_scent_remained": {
+			"reason": {
+				"en": "fb364746",
+				"text": "排轴工具不显示存在多少把雨帘剑，而此效果只增加了这一点。"
+			}
+		},
+		"xingqiu__skill__guhua_sword_fatal_rainscreen": {
+			"caveat": {
+				"en": "d6cd64ee",
+				"text": "抗打断能力按雨帘剑的完整15秒显示；实战中所有雨帘剑被攻击击碎后会提前结束。"
+			}
+		}
+	},
+	"xinyan": {
+		"xinyan__constellation__fatal_acceleration": {
+			"reason": {
+				"en": "695d8793",
+				"text": "排轴工具不模拟攻击速度，且此效果在暴击时触发，而排轴工具不模拟概率。"
+			}
+		},
+		"xinyan__passive__the_show_goes_on_even_without_an_audience": {
+			"reason": {
+				"en": "9d2058f8",
+				"text": "护盾等级取决于挥击命中的敌人数量，而排轴工具只模拟单个敌人。"
+			}
+		}
+	},
+	"yae_miko": {
+		"yae_miko__constellation__foxs_mooncall": {
+			"caveat": {
+				"en": "ab4bf018",
+				"text": "按最高档的+200元素精通显示——这需要三株杀生樱同时存在。存在的数量较少时，加成为60、90或120点元素精通。"
+			}
+		},
+		"yae_miko__constellation__sakura_channeling": {
+			"caveat": {
+				"en": "2a8c59e2",
+				"text": "未适配：每次杀生樱落雷提供的全队雷元素伤害加成——它从不出现在时间轴上。"
+			}
+		},
+		"yae_miko__passive__edict_of_cleansing": {
+			"caveat": {
+				"en": "af8ce3ca",
+				"text": "假定已解锁此天赋——这里杀生樱始终持续24秒。"
+			}
+		},
+		"yae_miko__passive__enlightened_blessing": {
+			"reason": {
+				"en": "05919da0",
+				"text": "排轴工具不显示伤害数值，而此效果只会提高杀生樱造成的伤害。"
+			}
+		},
+		"yae_miko__passive__the_shrines_sacred_shade": {
+			"caveat": {
+				"en": "eaf6c32a",
+				"text": "未适配：元素爆发每摧毁一株杀生樱就返还一次元素战技可用次数，因此这里Q之后的E条比游戏中更晚。"
+			}
+		},
+		"yae_miko__skill__yakan_evocation_sesshou_sakura": {
+			"caveat": {
+				"en": "832b0603",
+				"text": "持续24秒（8次落雷）的杀生樱假定已解锁魔女的谕示天赋「祓所之讬宣」；未解锁时，杀生樱持续14秒，落雷5次。"
+			}
+		}
+	},
+	"yanfei": {
+		"yanfei__constellation__right_of_final_interpretation": {
+			"caveat": {
+				"en": "53f30e17",
+				"text": "按常驻生效显示；游戏中重击的暴击率加成只对生命值低于50%的敌人生效。"
+			}
+		},
+		"yanfei__passive__blazing_eye": {
+			"reason": {
+				"en": "9e40880b",
+				"text": "此效果在重击暴击时触发。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		}
+	},
+	"yaoyao": {
+		"yaoyao__burst__moonjade_descent": {
+			"caveat": {
+				"en": "9731fc98",
+				"text": "时间轴显示一只月桂每秒投掷一次萝卜。游戏中至多3只同时投掷，因此萝卜落地及治疗的频率约为显示的三倍。"
+			}
+		},
+		"yaoyao__constellation__innocent": {
+			"reason": {
+				"en": "ecc87abc",
+				"text": "排轴工具不追踪元素能量，因此不显示此效果恢复的元素能量。"
+			}
+		},
+		"yaoyao__passive__starscatter": {
+			"reason": {
+				"en": "3988a6b3",
+				"text": "这些萝卜在瑶瑶冲刺、跳跃或奔跑时投掷，而排轴工具不模拟移动。"
+			}
+		}
+	},
+	"yelan": {
+		"yelan__constellation__baitandswitch": {
+			"caveat": {
+				"en": "0429f1a2",
+				"text": "按40%的上限显示。游戏中萦络纵命索每标记一名敌人提供10%。"
+			}
+		}
+	},
+	"yoimiya": {
+		"yoimiya__constellation__naganohara_meteor_swarm": {
+			"reason": {
+				"en": "b0d485e1",
+				"text": "每支额外的炽焰箭有50%几率发射。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
+			}
+		}
+	},
+	"yumemizuki_mizuki": {
+		"yumemizuki_mizuki__burst__anraku_secret_spring_therapy": {
+			"caveat": {
+				"en": "92036070",
+				"text": "每个判定标记代表一份点心，一份点心只会变为治疗或爆炸之一，不会两者兼有。拾取或爆炸可能比标记晚至多4秒。"
+			}
+		},
+		"yumemizuki_mizuki__constellation__buds_warm_lucid_springs": {
+			"reason": {
+				"en": "7ff5651c",
+				"text": "排轴工具不模拟拾取梦见风名物点心，因此不显示它们的治疗、伤害和元素能量。"
+			}
+		},
+		"yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage": {
+			"caveat": {
+				"en": "354bc708",
+				"text": "游戏中此状态下无法进行普通攻击和重击；输入N或C仍会在时间轴上显示一段，因此请自行安排有效的操作顺序。"
+			}
+		}
+	},
+	"yun_jin": {
+		"yun_jin__constellation__decorous_harmony": {
+			"reason": {
+				"en": "6bd65663",
+				"text": "排轴工具不模拟攻击速度，因此此效果在时间轴上不会带来任何变化。"
+			}
+		},
+		"yun_jin__passive__true_to_oneself": {
+			"reason": {
+				"en": "07d68f00",
+				"text": "排轴工具中的敌人不会攻击，因此没有可以反击的攻击。"
+			}
+		}
+	},
+	"zhongli": {
+		"zhongli__constellation__chrysos_bounty_of_dominator": {
+			"reason": {
+				"en": "01da0c28",
+				"text": "排轴工具中的敌人不会攻击，因此玉璋护盾永远不会受到此治疗所依据的伤害。"
+			}
+		},
+		"zhongli__passive__resonant_waves": {
+			"reason": {
+				"en": "9941f4f2",
+				"text": "排轴工具中的敌人不会攻击，因此玉璋护盾永远不会受到强化它的攻击。"
+			}
+		}
+	},
+	"zibai": {
+		"zibai__constellation__at_birth_are_souls_born_and_in_death_leave_but_husks": {
+			"caveat": {
+				"en": "cb7d69a5",
+				"text": "显示为固定的15秒全队时间段，但游戏中只在她处于月转时隙模式时生效——她切至后台后会提前结束。"
+			}
+		},
+		"zibai__constellation__the_world_a_journey_in_passing": {
+			"reason": {
+				"en": "06738142",
+				"text": "排轴工具不追踪「时隙浮光」，而此效果只会根据其消耗量提高伤害。"
+			}
+		},
+		"zibai__skill__spirit_steeds_stride": {
+			"caveat": {
+				"en": "2b075803",
+				"text": "每次施放都显示在输入的位置。游戏中需要70点「时隙浮光」。"
+			}
+		}
+	}
+}
