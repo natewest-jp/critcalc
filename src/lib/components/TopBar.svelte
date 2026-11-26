@@ -874,11 +874,39 @@
 	.tb-glyph--lang {
 		--ink: calc(0.96 * var(--disc)); /* 🎛️ ⚓ NATE 2026-11-26 (parity measured 0.89) */
 	}
+	/* ══ THE DOORS ARE SPACED BY AIR, NOT BOX (2026-11-26) ══════════════════
+	   Every door has the same box, so the gap between two inks was whatever
+	   their shapes left: the book's flat sides crowded its neighbours while
+	   Teams' narrow figures floated apart. Each door gets a side bearing
+	   (--sb, in glyph heights, both sides), so every pair shows the same air,
+	   in any lineup (the phone swaps Help and the book for the compass).
+	   Measured as type is spaced: each side's air is the mean depth of its
+	   profile across the bar's band, capped at a quarter glyph height (a
+	   cog's valleys and Teams' shoulders count, but only so deep), at 8× in
+	   the rendered sizes. Air per side: picture 3.1 · Help 3.0 · compass 3.0
+	   · cog 4.0 · Teams 4.6 · book 1.1 (px). Equal air at the bar's mean
+	   keeps the run its width. The round doors land at 0; the rest: */
+	.tb-glyph--lang {
+		--sb: 0.13; /* 🎛️ +3.3px a side: its flat sides need the most */
+	}
+	.tb-glyph--teams {
+		--sb: -0.13; /* 🎛️ −3.3px a side: the most open profile */
+		/* 🎛️ Nate asked for more air beside the picture (2026-11-26), whose
+		   ring weighs more than the model counts: −1.8px, not −3.3px. */
+		--sb-l: -0.07;
+	}
+	.tb-glyph--menu {
+		--sb: -0.04; /* 🎛️ −1px a side */
+	}
 	.tb-glyph {
 		display: grid;
 		place-items: center;
 		width: calc(var(--ui-ctl-h) + 2px);
 		height: calc(var(--ui-ctl-h) + 2px);
+		/* Optical spacing: each door's side bearings (--sb, or --sb-l and
+		   --sb-r where a side differs). */
+		margin-inline: calc(var(--tb-glyph-h) * var(--sb-l, var(--sb, 0)))
+			calc(var(--tb-glyph-h) * var(--sb-r, var(--sb, 0)));
 		padding: 0;
 		border: none;
 		background: none;
