@@ -35,8 +35,9 @@ that item.
 The feedback Forms write to one linked Google Sheet, read through the Google
 Drive connector (`read_file_content`): the English form to tab "Form
 responses 1", the Japanese form (`/ja`'s links, `src/lib/feedback.ts`) to
-"Form responses 2". One read returns both tabs; each has its own last row in
-state (`feedback.lastRow`, `feedback.lastRowJa`). Triage a Japanese row in
+"Form responses 2", and the Chinese form (`/zh`'s) to "Form responses 3". One
+read returns every tab; each has its own last row in state (`feedback.lastRow`,
+`feedback.lastRowJa`, `feedback.lastRowZh`). Triage a Japanese or Chinese row in
 English, quoting its words only as far as triage needs. ⚠️ The Sheet's
 file ID lives in memory (`reference_feedback_sheet`), ⛔ never in this public
 repo. ⚠️ The connector has SELECTED-file access, so it sees only this Sheet,
