@@ -36,10 +36,12 @@
 	import { notices, announceAfterReload } from '$lib/notices.svelte';
 	import { onMount } from 'svelte';
 	import { hrefTo } from '$lib/i18n/paths';
+	import { getLocale, htmlLang } from '$lib/i18n/locale';
+	import { hrefIn, offeredLanguages, showSwitcher } from '$lib/i18n/switcher';
+	import { page } from '$app/state';
 	import { HUMAN_TIMING_DEFAULTS, siteSettings, SWAP_PING_DEFAULT } from '$lib/stores';
 	import Mark from './Mark.svelte';
 	import Msg from './Msg.svelte';
-	import { htmlLang } from '$lib/i18n/locale';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import { playback } from '$lib/playback/playback.svelte';
@@ -74,7 +76,10 @@
 	let persistDeclined = $state(false);
 	let safari = $state(false);
 	let lastBackup = $state<number | null>(null);
+	/** The switcher's links carry the query only once mounted (`hrefIn`). */
+	let mounted = $state(false);
 	onMount(() => {
+		mounted = true;
 		lastBackup = readLastBackup();
 		safari = isSafari();
 		storagePersisted().then((p) => (persisted = p));
@@ -302,6 +307,30 @@
 <div class="sp">
 	<section class="sp-section" id="settings-appearance">
 		<h2 class="kicker sp-section-title">{m.settings_appearance()}</h2>
+
+		<!-- The language switcher (`$lib/i18n/switcher.ts` says which languages
+		     it offers, and when it shows at all). Each choice is a link to this
+		     page in that language, a full page load. -->
+		{#if showSwitcher()}
+			<div class="sp-row">
+				<span class="sp-name">{m.settings_language()}</span>
+				<span class="sp-ctl">
+					<span class="segment sp-segment" role="group" aria-label={m.settings_language()}>
+						{#each offeredLanguages() as l (l.locale)}
+							<a
+								class="btn sp-lang"
+								class:is-active={l.locale === getLocale()}
+								aria-current={l.locale === getLocale() ? 'true' : undefined}
+								lang={htmlLang(l.locale)}
+								href={hrefIn(page.url, l.locale, mounted)}
+								data-sveltekit-reload>{l.name}</a
+							>
+						{/each}
+					</span>
+				</span>
+				<span class="sp-note">{m.settings_language_note()}</span>
+			</div>
+		{/if}
 
 		<label class="sp-row">
 			<span class="sp-name">{m.settings_updated_outfits()}</span>
@@ -846,5 +875,9 @@
 		.sp-segment > .btn {
 			padding-inline: 0.25rem;
 		}
+	}
+	/* A language is a link styled as a segment's button. */
+	.sp-lang {
+		text-decoration: none;
 	}
 </style>

@@ -32,15 +32,26 @@
 	import Mark from './Mark.svelte';
 	import ReportLink from './ReportLink.svelte';
 	import { feedbackToolForPath } from '$lib/feedback';
+	import { getLocale, htmlLang } from '$lib/i18n/locale';
+	import { hrefIn, offeredLanguages, showSwitcher } from '$lib/i18n/switcher';
+
+	/** 🎛️ The language door's stand-in mark, in px (a stroke mark among drawn
+	 *  discs, until Nate draws one). */
+	const LANG_MARK_PX = 22;
 
 	// A surface with no document (the landing, a content page) still shows
 	// the profile; the tools' session loads it with their documents.
-	onMount(() => void storageSession.peekProfile());
+	/** The switcher's links carry the query only once mounted (`hrefIn`). */
+	let mounted = $state(false);
+	onMount(() => {
+		mounted = true;
+		void storageSession.peekProfile();
+	});
 
 	/** How long ✓ Saved stays before the status clears (§5.1: brief). 🎛️ */
 	const SAVED_SHOWN_MS = 1600;
 
-	type Menu = 'help' | 'profile' | null;
+	type Menu = 'help' | 'language' | 'profile' | null;
 	let menu = $state<Menu>(null);
 
 	const tool = $derived(TOOLS.find((t) => routeOf(page.url).startsWith(t.path)));
@@ -451,6 +462,40 @@
 					</div>
 				{/if}
 			</div>
+
+			<!-- The language switcher (`$lib/i18n/switcher.ts`): every offered
+			     language, each a link to this page in it. Folds into Settings below
+			     `roomy`, as Help folds into the index. -->
+			{#if showSwitcher()}
+				<div class="tb-menu-wrap tb-lang">
+					<button
+						class="tb-glyph"
+						class:is-open={menu === 'language'}
+						aria-label={m.chrome_language()}
+						title={m.chrome_language()}
+						onclick={(e) => toggle('language', e)}
+					>
+						<Mark name="language" size={LANG_MARK_PX} />
+					</button>
+					{#if menu === 'language'}
+						<div class="tb-menu tb-menu--lang ctx-dark" role="menu">
+							{#each offeredLanguages() as l (l.locale)}
+								<a
+									class="mi"
+									role="menuitem"
+									lang={htmlLang(l.locale)}
+									aria-current={l.locale === getLocale() ? 'true' : undefined}
+									href={hrefIn(page.url, l.locale, mounted)}
+									data-sveltekit-reload
+									><span class="tb-lang-tick"
+										>{#if l.locale === getLocale()}<Mark name="check" />{/if}</span
+									>{l.name}</a
+								>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
 
 			<!-- Phone: the index. ↻ 2026-10-25 (⚓ Nate): beside Settings, where Share
 			     stood (tried first between the logo and the document, then between
@@ -882,6 +927,17 @@
 		background: var(--surface-hover);
 	}
 
+	/* The language menu: a tick column, so the names line up whichever is
+	   chosen. */
+	.tb-menu--lang {
+		min-width: 10rem;
+	}
+	.tb-lang-tick {
+		display: inline-grid;
+		place-items: center;
+		width: 1rem;
+	}
+
 	/* ── Profile ── */
 	.tb-profile {
 		display: flex;
@@ -1035,6 +1091,7 @@
 		}
 		.tb-nav,
 		.tb-help,
+		.tb-lang,
 		.tb-invite {
 			display: none;
 		}

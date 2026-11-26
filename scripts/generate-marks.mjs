@@ -183,6 +183,9 @@ const MARKS = {
 	check: 'Check',
 	chevron: 'ChevronDown',
 	search: 'Search',
+	/** The language switcher's door in the top bar: a stand-in for a drawn
+	 *  disc beside Help's and Settings', until Nate draws one. */
+	language: 'Languages',
 	/** The Visualizers' workspace reset, against a tile's own `reset`: same
 	 *  word ("reset") at two scopes, so the MARK has to carry the scope. */
 	layout: 'LayoutGrid',
