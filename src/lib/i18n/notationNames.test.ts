@@ -1,12 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { GAME_NAMES } from '$lib/data/gameNames.generated';
 import { overwriteGetLocale } from '$lib/paraglide/runtime';
+import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { ZH_NICKNAMES } from './nicknamesZh';
 import {
 	IME_KEY_GRACE_MS,
 	SUGGEST_FROM,
 	foldName,
+	headsLanguage,
 	isImeKey,
 	foreignHeads,
+	languagesOf,
 	segmentHeadAt,
 	suggestNotationNames,
 	wholeNotationName
@@ -138,6 +142,55 @@ describe('suggestNotationNames', () => {
 				owner.set(key, id);
 				expect(suggestNotationNames(native)[0]?.id).toBe(id);
 			}
+	});
+});
+
+describe('Chinese names', () => {
+	it('turns a whole Chinese name into its notation name', () => {
+		expect(names('那维莱特')).toEqual(['Neuvillette']);
+		expect(names('钟离')).toEqual(['Zhongli']);
+		expect(names('旅行者（风）')).toEqual(['Anemo Traveler']);
+		expect(names('荧（雷）')).toEqual(['Electro Lumine']);
+	});
+
+	it('offers the nicknames guides write, after the game names', () => {
+		expect(names('雷神')).toEqual(['Raiden']);
+		expect(names('仆人')).toEqual(['Arlecchino']);
+		expect(names('草主')).toEqual(['Dendro Traveler']);
+		// 九条 is a nickname and the start of the game's 九条裟罗: both Kujou Sara.
+		expect(names('九条')).toEqual(['Kujou Sara']);
+	});
+
+	it('offers both owners of a nickname two characters share, and replaces neither', () => {
+		expect(names('火神')).toEqual(['Mavuika', 'Bennett']);
+		expect(names('水神')).toEqual(['Furina', 'Xingqiu']);
+		expect(foreignHeads('火神 E > 钟离 E').map((h) => h.notation)).toEqual(['Zhongli']);
+	});
+
+	it('gives every nickname a character, and lets no one-owner nickname name another', () => {
+		for (const nick of ZH_NICKNAMES) {
+			for (const id of nick.ids) expect(getCharacterIndexEntry(id), nick.name).not.toBeNull();
+			if (nick.ids.length > 1) continue;
+			const ids = suggestNotationNames(nick.name)
+				.filter((s) => s.exact)
+				.map((s) => s.id);
+			expect(ids, nick.name).toEqual(nick.ids);
+		}
+	});
+
+	it('knows which language writes a name', () => {
+		expect(languagesOf('胡桃')).toEqual(['ja', 'zh']);
+		expect(languagesOf('钟离')).toEqual(['zh']);
+		expect(languagesOf('鍾離')).toEqual(['ja']);
+	});
+
+	it('words the offer in the language the names are in', () => {
+		const heads = (doc: string) => foreignHeads(doc);
+		expect(headsLanguage(heads('胡桃 E > 钟离 E'), 'en')).toBe('zh');
+		expect(headsLanguage(heads('胡桃 E > 鍾離 E'), 'en')).toBe('ja');
+		// Written the same in both: the page's language decides, else Japanese.
+		expect(headsLanguage(heads('胡桃 E > 行秋 Q'), 'zh')).toBe('zh');
+		expect(headsLanguage(heads('胡桃 E > 行秋 Q'), 'en')).toBe('ja');
 	});
 });
 

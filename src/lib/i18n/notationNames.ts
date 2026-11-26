@@ -5,17 +5,18 @@
  * shared rotation reads the same for everyone, in every locale.
  *
  * The names are the game's own, from the table `$lib/i18n/gameNames` shows on
- * `/ja`. Which languages are offered is `SUGGEST_FROM`; adding Chinese is a
- * line there and a test case, nothing else.
+ * `/ja` and `/zh`, plus the nicknames Chinese guides write (`nicknamesZh.ts`).
+ * Which languages are offered is `SUGGEST_FROM`.
  */
 import { GAME_NAMES } from '$lib/data/gameNames.generated';
 import { getCharacterIndexEntry, travelerName } from '$lib/data/characterLookup';
+import { ZH_NICKNAMES, travelerNicknames } from './nicknamesZh';
 
 /** The languages whose character names the composer turns into notation.
- *  ⚠️ Chinese is held back on purpose: many of its names share their kanji with
- *  the Japanese ones, so before adding `'zh'` check that no string names two
- *  different characters across the two tables (the test does). */
-export const SUGGEST_FROM: readonly string[] = ['ja'];
+ *  ⚠️ Many Chinese names share their characters with Japanese ones, so a new
+ *  language must not make one string name two different characters across
+ *  the tables (the test checks). */
+export const SUGGEST_FROM: readonly string[] = ['ja', 'zh'];
 
 /** A prefix shorter than this offers nothing unless it is a whole name: one
  *  kana (リ) starts a dozen names, while 魈 is one character long. */
@@ -31,6 +32,10 @@ export interface NameSuggestion {
 	/** Whether the query was the whole name, not only its start. */
 	exact: boolean;
 }
+
+/** A name's language, as far as the tables tell: a name both write the same
+ *  (胡桃) is in both. */
+export type NameLanguage = 'ja' | 'zh';
 
 /** Whether a word is outside notation's alphabet, and so might be a name in
  *  another language. Notation itself is printable ASCII. */
@@ -58,6 +63,7 @@ interface Entry {
 	notation: string;
 	native: string;
 	folded: string;
+	lang: string;
 }
 
 /**
@@ -74,7 +80,7 @@ function allEntries(): Entry[] {
 		const table = GAME_NAMES[lang];
 		if (!table) continue;
 		const add = (id: string, notation: string, native: string) =>
-			entries!.push({ id, notation, native, folded: foldName(native) });
+			entries!.push({ id, notation, native, folded: foldName(native), lang });
 		for (const [id, native] of Object.entries(table.character)) {
 			const notation = getCharacterIndexEntry(id)?.displayName;
 			if (notation) add(id, notation, native);
@@ -91,8 +97,70 @@ function allEntries(): Entry[] {
 				add(id, notation, twinName);
 			}
 		}
+		// The nicknames come after the game's names, so a game name is offered
+		// first. A nickname with two owners is two entries: offered as either,
+		// and with no single answer, never replaced in bulk.
+		if (lang === 'zh')
+			for (const nick of [...ZH_NICKNAMES, ...travelerNicknames(table.element ?? {})])
+				for (const id of nick.ids) {
+					const notation = getCharacterIndexEntry(id)?.displayName;
+					if (notation) add(id, notation, nick.name);
+				}
 	}
 	return entries;
+}
+
+/** The entries by folded name, for the lookups that need a whole name. */
+let byFolded: Map<string, Entry[]> | null = null;
+function entriesByFolded(): Map<string, Entry[]> {
+	if (byFolded) return byFolded;
+	byFolded = new Map();
+	for (const e of allEntries()) {
+		const list = byFolded.get(e.folded);
+		if (list) list.push(e);
+		else byFolded.set(e.folded, [e]);
+	}
+	return byFolded;
+}
+
+/** Which languages write `word` as a whole name. */
+export function languagesOf(word: string): NameLanguage[] {
+	const langs = new Set((entriesByFolded().get(foldName(word)) ?? []).map((e) => e.lang));
+	return (['ja', 'zh'] as const).filter((l) => langs.has(l));
+}
+
+/** The longest name allowed to start a run of Chinese, in UTF-16 units: the
+ *  longest game name is short, and the bound keeps the scan cheap. */
+const MAX_NAME_LENGTH = 12;
+
+/**
+ * The name `text` starts with, and the notation names it can mean, each once.
+ * The longest name wins, so 那维莱特短E reads 那维莱特 and not the nickname
+ * 那维, and 神里绫华E reads 神里绫华 and not 神里. Null when no name starts it.
+ * Shorthand writes the name and its actions together (雷神E), which is why
+ * this reads a start rather than a whole word.
+ */
+export function nameAtStart(
+	text: string
+): { length: number; native: string; matches: NameSuggestion[] } | null {
+	if (!isForeignName(text.charAt(0))) return null;
+	const map = entriesByFolded();
+	for (let len = Math.min(MAX_NAME_LENGTH, text.length); len > 0; len--) {
+		const native = text.slice(0, len);
+		// Folding drops spaces, so 胡桃 E would otherwise read as one name.
+		if (/\s/.test(native)) continue;
+		const found = map.get(foldName(native));
+		if (!found) continue;
+		const seen = new Set<string>();
+		const matches: NameSuggestion[] = [];
+		for (const e of found) {
+			if (seen.has(e.notation)) continue;
+			seen.add(e.notation);
+			matches.push({ id: e.id, notation: e.notation, native, exact: true });
+		}
+		return { length: len, native, matches };
+	}
+	return null;
 }
 
 /**
@@ -166,6 +234,19 @@ export function foreignHeads(doc: string): HeadReplacement[] {
 		out.push({ from, to: from + word.length, native: word, notation: hit.notation });
 	}
 	return out;
+}
+
+/**
+ * Which language a set of heads is in, for the offer's wording: Chinese when
+ * any is written only in Chinese (钟离), Japanese when any only in Japanese
+ * (鍾離), and when every one is written the same in both (胡桃), the page's
+ * own language if it is one of them.
+ */
+export function headsLanguage(heads: HeadReplacement[], locale: string): NameLanguage {
+	const langs = heads.map((h) => languagesOf(h.native));
+	if (langs.some((l) => l.length === 1 && l[0] === 'zh')) return 'zh';
+	if (langs.some((l) => l.length === 1 && l[0] === 'ja')) return 'ja';
+	return locale === 'zh' ? 'zh' : 'ja';
 }
 
 /**

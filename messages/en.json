@@ -1007,6 +1007,19 @@
 	"planner_name_in_notation": "Name in notation",
 	"planner_names_in_japanese_in_this_rotation": "These character names are in Japanese. Notation uses English names, so anyone can read a shared rotation.",
 	"planner_use_notation_names": "Use notation names",
+	"planner_names_in_chinese_in_this_rotation": "These character names are in Chinese. Notation uses English names, so anyone can read a shared rotation.",
+	"planner_rotation_in_chinese_shorthand": "This rotation is in Chinese shorthand. Notation uses English names and KQM’s letters, so anyone can read a shared rotation.",
+	"planner_convert_to_notation": "Convert to notation",
+	"planner_shorthand_left_out": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "One note or alternative was left out. Undo brings it back.",
+				"countPlural=other": "{count} notes and alternatives were left out. Undo brings them back."
+			}
+		}
+	],
 	"planner_notation_history": "Notation history",
 	"planner_undo_the_last_notation_change": "Undo the last notation change",
 	"planner_undo_z": "Undo (⌘Z)",

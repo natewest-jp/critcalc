@@ -984,6 +984,18 @@
 	"planner_name_in_notation": "记法中的名称",
 	"planner_names_in_japanese_in_this_rotation": "这些角色名是日文。记法使用英文名，这样分享出去的循环人人都能读懂。",
 	"planner_use_notation_names": "改用记法名称",
+	"planner_names_in_chinese_in_this_rotation": "这些角色名是中文。记法使用英文名，这样分享出去的循环人人都能读懂。",
+	"planner_rotation_in_chinese_shorthand": "这个循环是中文简写。记法使用英文名和KQM的字母，这样分享出去的循环人人都能读懂。",
+	"planner_convert_to_notation": "转换为记法",
+	"planner_shorthand_left_out": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "略去了{count}处注释或备选写法。撤销即可恢复。"
+			}
+		}
+	],
 	"planner_notation_history": "记法历史",
 	"planner_undo_the_last_notation_change": "撤销上一次记法更改",
 	"planner_undo_z": "撤销（⌘Z）",

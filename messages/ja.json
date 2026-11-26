@@ -984,6 +984,18 @@
 	"planner_name_in_notation": "KQM表記での名前",
 	"planner_names_in_japanese_in_this_rotation": "キャラクター名が日本語になっています。KQM表記は英語名を使うので、共有したローテーションを誰でも読めます。",
 	"planner_use_notation_names": "KQM表記の名前にする",
+	"planner_names_in_chinese_in_this_rotation": "キャラクター名が中国語になっています。KQM表記は英語名を使うので、共有したローテーションを誰でも読めます。",
+	"planner_rotation_in_chinese_shorthand": "このローテーションは中国語の略記です。KQM表記は英語名とKQMの記号を使うので、共有したローテーションを誰でも読めます。",
+	"planner_convert_to_notation": "KQM表記に変換",
+	"planner_shorthand_left_out": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=other": "注記と別案を{count}件省きました。元に戻すと復元できます。"
+			}
+		}
+	],
 	"planner_notation_history": "表記の履歴",
 	"planner_undo_the_last_notation_change": "直前の表記の変更を元に戻す",
 	"planner_undo_z": "元に戻す（⌘Z）",
