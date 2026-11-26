@@ -38,7 +38,8 @@ board's permission page, the tools roundup (`tid=30751515`), and two recent tool
 posting guide (`tid=32852620`) needs 999 reputation in a user forum to read; the rules covered it.
 
 - **The account can post:** a thread needs an activated, unbanned account with board reputation of
-  at least −500. A new account starts at 0.
+  at least −500. A new account starts at 0. ⚠️ NGA also holds a new account's first thread for 48 hours
+  after registration: Nate's first try, the day he registered, landed on a waiting-period page.
 - **Tools are welcome.** The supplementary rules say the moderators support authors of data guides
   and useful tools, and punish baseless attacks on them. Featured posts in blue cover tools.
 - **The precedent:** 梅信心 (meropide.cn) posted a rotation-planning web tool in June 2026
@@ -186,6 +187,8 @@ Choices in the draft, each open to Nate's ruling:
 - No mention of where the data is mined from: the word 解包 sits near the board's rules on leaks.
 
 ## 5. After posting
+
+- Post once the 48-hour wait from 2026-11-26 has passed (2026-11-28 or later).
 
 - Read the thread daily for the first week, and answer every reply (Article 18). The thread
   closes to replies in practice 7 days after its last edit.
