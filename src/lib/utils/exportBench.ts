@@ -18,6 +18,7 @@
  * crowd it).
  */
 
+import { exportFaces } from './exportFonts';
 import {
 	BENCH_CARD_W,
 	CARD_PORTRAIT,
@@ -128,7 +129,6 @@ const CHIP_MARK_H = 7; // <ConMark height={7}>
 const ART_FADE_RIGHT = 6; // SidePortrait fadeRight on the desk card
 const ART_FADE_W = 8; // SidePortrait FADE_W
 const RING_W = 2; // .spt-disc border
-const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
 const conPaths = (level: number) =>
 	CON_MARK_PATHS[Math.min(6, Math.max(0, Math.round(level)))].map((d) => new Path2D(d));
@@ -289,7 +289,7 @@ function paintCard(
 	// ── The column: the name over the loadout pill, centred on the portrait ──
 	const colX = discX + d + COL_INSET;
 	const colW = cellX + BENCH_CARD_W - CARD_PAD_X - colX;
-	ctx.font = `600 ${NAME_PX}px ${SANS}`;
+	ctx.font = `600 ${NAME_PX}px ${exportFaces.sans}`;
 	const lineH = NAME_PX * NAME_LH;
 	const nameLines = card.displayName ? wrapName(ctx, card.displayName, colW - NAME_INSET) : [];
 	const nameH = nameLines.length ? nameLines.length * lineH : lineH;
@@ -350,7 +350,7 @@ function paintCard(
 	if (card.weaponSet) {
 		const zx = colX + PILL_PAD + ZONE_W + ZONE_GAP;
 		const el = elementPalette(card.element).main;
-		ctx.font = `700 10px ${SANS}`;
+		ctx.font = `700 10px ${exportFaces.sans}`;
 		ctx.textAlign = 'right';
 		ctx.textBaseline = 'top';
 		ctx.save();

@@ -39,6 +39,7 @@
  * color changes there, change it here.
  */
 
+import { exportFaces, prepareExportFonts } from './exportFonts';
 import { abilityName } from '$lib/i18n/abilityNames';
 import { FPS } from '$lib/utils/frames';
 import { envelopeDensities } from '$lib/timeline/buffEnvelope';
@@ -229,16 +230,9 @@ export const PALETTE_MIRROR = {
 	RX_THUNDERCLOUD
 } as const;
 
-const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // Chart text follows the site's Sans-default (body font). Only the notation
-// header (KQM notation) keeps MONO — mirrors the on-screen Sans/Mono split.
-// ⚠ MUST NAME THE VARIABLE FAMILY, and it is the one literal that has to. Every
-// other consumer goes through --font-body, but canvas takes a font STRING and
-// cannot resolve a custom property. Since 2026-08-11 the static 'IBM Plex Sans'
-// is not loaded at all, so leaving the old name here would have silently
-// dropped every exported label onto a system sans — a failure that renders
-// perfectly and is only visible by comparing a PNG to the screen.
-const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
+// header (KQM notation) keeps mono — mirrors the on-screen Sans/Mono split.
+// The stacks are the page's own, read per export (`exportFonts.ts`).
 
 /** Set a chart label's type as the screen sets it: weight, size in px and
  *  letter-spacing in px (the computed `--ls-*`), read off the live page
@@ -247,7 +241,7 @@ const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-u
  *  rest of the API; where it is missing the text is merely unspaced. */
 function type(c: CanvasRenderingContext2D, weight: number, px: number, ls = 0) {
 	// Canvas font strings, not text.
-	c.font = `${weight} ${px}px ${SANS}`;
+	c.font = `${weight} ${px}px ${exportFaces.sans}`;
 	if ('letterSpacing' in c) c.letterSpacing = `${ls}px`;
 }
 
@@ -465,7 +459,7 @@ const FOOTER_H = 28;
 const LOGO_SRC = '/critcalc-logo-white.svg';
 
 export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
-	await document.fonts.ready;
+	await prepareExportFonts(snap);
 
 	// Preload every image: stat icons, the bench's art and icons, the logo.
 	const imageSrcs = new Set<string>([LOGO_SRC]);
@@ -504,7 +498,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// chart's left edge (0s), so the page's left column is the brand and the
 	// bench, and everything to the right of it is the rotation.
 	const measure = document.createElement('canvas').getContext('2d')!;
-	measure.font = `${NOTATION_PX}px ${MONO}`;
+	measure.font = `${NOTATION_PX}px ${exportFaces.mono}`;
 	const lead = snap.notation.length - snap.notation.trimStart().length;
 	const notationLines = wrapWords(measure, snap.notation.trim(), lead, w - PAD - ox);
 	const notationH = notationLines.length * NOTATION_LINE_H;
@@ -1629,7 +1623,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// it, otherwise running down from the lockup's top.
 	const blockTop = blockH <= BRAND_H ? brandMid - blockH / 2 : PAD;
 	if (snap.tabLabel) {
-		base.font = `600 ${TITLE_PX}px ${SANS}`;
+		base.font = `600 ${TITLE_PX}px ${exportFaces.sans}`;
 		base.fillStyle = TEXT;
 		base.textAlign = 'left';
 		base.textBaseline = 'middle';
@@ -1638,7 +1632,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 	// The notation, each token in the color the composer gives it.
 	const tintAt = (i: number) => snap.notationTints.find((t) => i >= t.from && i < t.to);
-	base.font = `${NOTATION_PX}px ${MONO}`;
+	base.font = `${NOTATION_PX}px ${exportFaces.mono}`;
 	base.textAlign = 'left';
 	base.textBaseline = 'alphabetic';
 	const spaceW = base.measureText(' ').width;
@@ -1675,7 +1669,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 	// ── The footer: how long the rotation runs, and how it is timed ──
 	const fy = h - PAD - FOOTER_H / 2 + 4;
-	base.font = `500 11px ${SANS}`;
+	base.font = `500 11px ${exportFaces.sans}`;
 	base.fillStyle = MUTED;
 	base.textBaseline = 'middle';
 	base.textAlign = 'left';
