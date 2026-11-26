@@ -15,7 +15,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'keyboard' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'language' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'wish' | 'uncurated' | 'warn' | 'forward' | 'back' | 'arrowUp' | 'arrowDown' | 'forwardSlim' | 'backSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'profile' | 'teams' | 'rotations' | 'lineups' | 'settings' | 'switcher' | 'ban' | 'person' | 'handOff' | 'theater' | 'theaterOff';
+export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'keyboard' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'wish' | 'uncurated' | 'warn' | 'forward' | 'back' | 'arrowUp' | 'arrowDown' | 'forwardSlim' | 'backSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'profile' | 'teams' | 'rotations' | 'lineups' | 'settings' | 'switcher' | 'ban' | 'person' | 'handOff' | 'theater' | 'theaterOff';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -55,7 +55,6 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	check: [["path",{"d":"M20 6 9 17l-5-5"}]],
 	chevron: [["path",{"d":"m6 9 6 6 6-6"}]],
 	search: [["path",{"d":"m21 21-4.34-4.34"}],["circle",{"cx":"11","cy":"11","r":"8"}]],
-	language: [["path",{"d":"m5 8 6 6"}],["path",{"d":"m4 14 6-6 2-3"}],["path",{"d":"M2 5h12"}],["path",{"d":"M7 2h1"}],["path",{"d":"m22 22-5-10-5 10"}],["path",{"d":"M14 18h6"}]],
 	layout: [["rect",{"width":"7","height":"7","x":"3","y":"3","rx":"1"}],["rect",{"width":"7","height":"7","x":"14","y":"3","rx":"1"}],["rect",{"width":"7","height":"7","x":"14","y":"14","rx":"1"}],["rect",{"width":"7","height":"7","x":"3","y":"14","rx":"1"}]],
 	swap: [["path",{"d":"M8 3 4 7l4 4"}],["path",{"d":"M4 7h16"}],["path",{"d":"m16 21 4-4-4-4"}],["path",{"d":"M20 17H4"}]],
 	dice: [["rect",{"width":"12","height":"12","x":"2","y":"10","rx":"2","ry":"2"}],["path",{"d":"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"}],["path",{"d":"M6 18h.01"}],["path",{"d":"M10 14h.01"}],["path",{"d":"M15 6h.01"}],["path",{"d":"M18 9h.01"}]],
