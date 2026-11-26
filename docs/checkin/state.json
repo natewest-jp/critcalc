@@ -2,10 +2,10 @@
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
 		"audited": "a284a499b",
-		"seenUpstream": "2663bac24",
+		"seenUpstream": "41bfe4915",
 		"date": "2026-11-17",
 		"tag": "v2.50.0",
-		"note": "seen 2026-11-25: upstream still 2663bac24 (Starsealed Edict, a weapon); nothing under internal/characters moved, clone not advanced, audit still a284a499b"
+		"note": "seen 2026-11-26: upstream 41bfe4915 (Ascendant Gleam refresh fix in pkg/simulation/setup.go, damage maths); nothing under internal/characters moved, clone not advanced, audit still a284a499b"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -14,7 +14,7 @@
 		"lastRowJa": 1
 	},
 	"github": {
-		"lastSeen": "2026-11-25T00:00:00Z"
+		"lastSeen": "2026-11-26T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
@@ -27,10 +27,10 @@
 		]
 	},
 	"todo": {
-		"lastSwept": "fa2a1a57"
+		"lastSwept": "bdce9678"
 	},
 	"roles": {
-		"audited": "2026-11-25",
+		"audited": "2026-11-26",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
