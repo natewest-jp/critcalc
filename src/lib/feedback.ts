@@ -20,9 +20,9 @@
 import { getLocale, type Locale } from '$lib/i18n/locale';
 
 /** One form per language: Google Forms holds one language per form. The
- *  Japanese form is a copy of the English one, so it keeps the English
- *  form's entry ids and branching, and answers land in a second tab of the
- *  same Sheet. A locale with no form of its own uses the English one. */
+ *  Japanese and Chinese forms are copies of the English one, so they keep the
+ *  English form's entry ids and branching, and answers land in their own tabs
+ *  of the same Sheet. A locale with no form of its own uses the English one. */
 type FeedbackForm = {
 	/** The viewform address. A plain link to the form uses this as is. */
 	url: string;
@@ -65,6 +65,21 @@ const FORMS: Partial<Record<Locale, FeedbackForm>> & { en: FeedbackForm } = {
 			builder: 'チームビルダー',
 			visualizers: 'ビジュアライザー',
 			site: 'サイトのその他の部分'
+		}
+	},
+	zh: {
+		url: 'https://docs.google.com/forms/d/e/1FAIpQLSd3GCCYMb8eoW1bDFl7smIsDbPZEIkaT-axAMgQxas_xNY-YA/viewform',
+		category: {
+			broken: '功能出了问题',
+			character: '角色数据有误',
+			idea: '想法或需求',
+			other: '其他'
+		},
+		tool: {
+			planner: '排轴工具',
+			builder: '配队工具',
+			visualizers: '可视化工具',
+			site: '网站的其他部分'
 		}
 	}
 };

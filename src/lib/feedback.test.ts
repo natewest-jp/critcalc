@@ -74,6 +74,7 @@ describe('feedbackUrl', () => {
 
 describe('the form per locale', () => {
 	const JA_FORM = '1FAIpQLSdZOXkQullJPX4a1pWV1DHLeit_wtNUGQJJs50WfC3as19OQg';
+	const ZH_FORM = '1FAIpQLSd3GCCYMb8eoW1bDFl7smIsDbPZEIkaT-axAMgQxas_xNY-YA';
 
 	it('sends Japanese readers to the Japanese form, with its own option strings', () => {
 		expect(feedbackFormUrl('ja')).toContain(JA_FORM);
@@ -87,9 +88,22 @@ describe('the form per locale', () => {
 		});
 	});
 
+	it('sends Chinese readers to the Chinese form, with its own option strings', () => {
+		expect(feedbackFormUrl('zh')).toContain(ZH_FORM);
+		const url = feedbackUrl({ category: 'broken', tool: 'planner', constellation: 6 }, 'zh');
+		expect(url).toContain(ZH_FORM);
+		expect(fields(url)).toEqual({
+			usp: 'pp_url',
+			'entry.1492565433': '功能出了问题',
+			'entry.581506306': '排轴工具',
+			'entry.389684346': 'C6'
+		});
+	});
+
 	it('keeps every other locale on the English form until it has its own', () => {
-		for (const locale of ['en', 'zh', 'en-XA'] as const) {
+		for (const locale of ['en', 'en-XA'] as const) {
 			expect(feedbackFormUrl(locale)).not.toContain(JA_FORM);
+			expect(feedbackFormUrl(locale)).not.toContain(ZH_FORM);
 			expect(fields(feedbackUrl({ category: 'broken' }, locale))['entry.1492565433']).toBe(
 				"Something's broken"
 			);
