@@ -23,7 +23,7 @@ This is a working list, not a promise: no dates are commitments, nothing about u
 
 ## ⏭ Next
 
-- **Chinese rotation shorthand: Nate's look and copy.** The converter is built (`docs/rounds/zh-shorthand-converter-2026-11-26.md`, from the research in `docs/rounds/zh-shorthand-research-2026-11-26.md`): a paste or load of Chinese shorthand offers one conversion to notation. Waiting on Nate's ruling on its four strings and his look at the toasts. The research's six questions for a Chinese player (§6) join the Chinese community request; each answer becomes a nickname or rule change.
+- **Chinese rotation shorthand: Nate's look and copy.** The converter is built (`docs/rounds/zh-shorthand-converter-2026-11-26.md`, from the research in `docs/rounds/zh-shorthand-research-2026-11-26.md`): a paste or load of Chinese shorthand offers one conversion to notation. Its copy is ruled (the Japanese name offer now matches); waiting on Nate's look at the toasts. The research's six questions for a Chinese player (§6) join the Chinese community request; each answer becomes a nickname or rule change.
 
 ## Queue
 

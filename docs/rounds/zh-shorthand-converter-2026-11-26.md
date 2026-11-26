@@ -2,14 +2,13 @@
 
 Built from the research round's proposal, which Nate approved whole (⚓ 2026-11-26): the six
 rulings in `zh-shorthand-research-2026-11-26.md` §7. Branch `feat/zh-shorthand`, stacked on
-`docs/zh-shorthand-research`. It waits on Nate's ruling on four new strings and his look at the
-offer.
+`docs/zh-shorthand-research`. It waits on Nate's look at the offer.
 
 ## What a player sees
 
 1. A Chinese player pastes `仆人E、班尼特EQ、希诺宁EAA、茜特菈莉AEQ/EE、仆人Z接输出` into the
    composer. An info toast says the rotation is in Chinese shorthand, with one button, **Convert
-   to notation**.
+   notation**.
 2. Pressing it rewrites the rotation in one undoable edit:
    `Arlecchino E > Bennett E Q > Xilonen E N2 > Citlali N1 E Q > Arlecchino C ~?s`.
 3. When the conversion left something out (here the `/EE` alternative), a second toast says how
@@ -48,18 +47,26 @@ Both offers come on a paste or a load, in every locale, as the Japanese name off
 - **A repeat** wraps the turn's actions since its last separator, so `雷神Q+AAAZ*3` repeats
   `AAAZ` and not the Q.
 
-## Proposed copy (four new strings)
+## Copy (⚓ Nate 2026-11-26)
 
-These follow the research's wording and are proposals for Nate. Japanese and Chinese are
+Nate's wording for 1, 2, and 4, landed verbatim; 3 as proposed. Japanese and Chinese are
 Claude's drafts, like the rest of the hidden drafts.
 
-1. The shorthand offer: "This rotation is in Chinese shorthand. Notation uses English names and
-   KQM’s letters, so anyone can read a shared rotation."
-2. Its button: "Convert to notation"
+1. The shorthand offer: "This rotation is in Chinese shorthand. critcalc currently uses English
+   names and KQM notation for all languages."
+2. Its button: "Convert notation"
 3. What was left out: "One note or alternative was left out. Undo brings it back." / "{count}
    notes and alternatives were left out. Undo brings them back."
-4. The Chinese name offer, after the Japanese one: "These character names are in Chinese.
-   Notation uses English names, so anyone can read a shared rotation."
+4. The Chinese name offer: "These character names are in Chinese. critcalc currently uses English
+   names and KQM notation for all languages."
+
+The Japanese name offer takes the same shape (⚓ Nate): "These character names are in Japanese.
+critcalc currently uses English names and KQM notation for all languages."
+
+**Why `钟离E（长按）` is `hE`, not `(hE)`** (Nate asked): a bracket of actions is optional
+(`希诺宁E(Q)AA` → `Xilonen E (Q) N2`), but 长按 is not an action. It says how the E before it is
+pressed, as guides also write without brackets (`钟离长E`). `Zhongli E (hE)` would be a tap and
+then a second, optional hold.
 
 ## Checked in headless Chrome, production build
 
@@ -73,7 +80,6 @@ How the toasts look is Nate's call, as is a real Chinese keyboard on Safari and 
 
 ## Open
 
-- The four strings above.
 - The six questions for a Chinese player (research record §6) can join the Chinese community
   request. Each answer becomes a table change: a nickname added or split, or a rule in
   `shorthandZh.ts`.

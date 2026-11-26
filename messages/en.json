@@ -1005,11 +1005,11 @@
 	"planner_edit_the_notation": "Edit the notation",
 	"planner_type_a_rotation_in_kqm_notation": "Type a rotation in KQM notation",
 	"planner_name_in_notation": "Name in notation",
-	"planner_names_in_japanese_in_this_rotation": "These character names are in Japanese. Notation uses English names, so anyone can read a shared rotation.",
+	"planner_names_in_japanese_in_this_rotation": "These character names are in Japanese. critcalc currently uses English names and KQM notation for all languages.",
 	"planner_use_notation_names": "Use notation names",
-	"planner_names_in_chinese_in_this_rotation": "These character names are in Chinese. Notation uses English names, so anyone can read a shared rotation.",
-	"planner_rotation_in_chinese_shorthand": "This rotation is in Chinese shorthand. Notation uses English names and KQM’s letters, so anyone can read a shared rotation.",
-	"planner_convert_to_notation": "Convert to notation",
+	"planner_names_in_chinese_in_this_rotation": "These character names are in Chinese. critcalc currently uses English names and KQM notation for all languages.",
+	"planner_rotation_in_chinese_shorthand": "This rotation is in Chinese shorthand. critcalc currently uses English names and KQM notation for all languages.",
+	"planner_convert_to_notation": "Convert notation",
 	"planner_shorthand_left_out": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],
