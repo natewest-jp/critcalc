@@ -97,14 +97,17 @@
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bitterLatinUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodyVariableUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={monoRegularUrl} />
-	<!-- Chinese sets its characters in IBM Plex Sans SC, the CJK companion to
-	     the body face (⚓ Nate). Its @font-face rules are split by
-	     unicode-range across 216 slices per weight, so the stylesheet is large
-	     (about 180 KB gzipped) and comes only on Chinese pages, where it is
-	     cached for good; the slices a page's text needs follow. The knob for
-	     the stack is `--font-cjk` in app.css. -->
+	<!-- Chinese and Japanese set their characters in IBM Plex Sans SC and JP,
+	     the CJK companions to the body face (⚓ Nate). Their @font-face rules
+	     are split by unicode-range (216 slices per weight for SC, 124 for JP),
+	     so each stylesheet is large (about 180 KB and 150 KB gzipped) and comes
+	     only on its own locale's pages, where it is cached for good; the slices
+	     a page's text needs follow. The knob for the stack is `--font-cjk` in
+	     app.css. -->
 	{#if getLocale() === 'zh'}
 		<link rel="stylesheet" href="/assets/fonts/ibm-plex-sans-sc-1.1.0/plex-sans-sc.css" />
+	{:else if getLocale() === 'ja'}
+		<link rel="stylesheet" href="/assets/fonts/ibm-plex-sans-jp-3.0.0/plex-sans-jp.css" />
 	{/if}
 </svelte:head>
 
