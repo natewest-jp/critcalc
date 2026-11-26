@@ -179,6 +179,8 @@ describe('symbol marks are geometry, not type (.claude/rules/ui.md: sub-pixel la
 	const ALLOWED: { file: string; span: string }[] = [
 		// Parses the roles sheet's check mark; renders nothing.
 		{ file: 'src/lib/data/parseRolesCsv.ts', span: `'✔'` },
+		// Reads the arrow Chinese guides write between turns; renders nothing.
+		{ file: 'src/lib/i18n/shorthandZh.ts', span: `'→'` },
 		// Live UI, kept by Nate's ruling (2026-10-30): arrows mid-text read fine, and the
 		// `⌃` sits in a tooltip the OS draws. Only ↑ and ↓ are in our Plex subset, so
 		// → and ← fall back to the system's font; one that looks off becomes a <Mark>.

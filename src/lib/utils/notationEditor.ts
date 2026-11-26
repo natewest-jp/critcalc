@@ -25,7 +25,9 @@ import {
 import { sameSeats, seatsExtension, seatsField, setSeats } from './notationSeats';
 import { emptySeating, makeSeating, type Seating } from './notationEdit';
 import type { NotationTint } from '$lib/timeline/notationTints';
-import { foreignHeads } from '$lib/i18n/notationNames';
+import { foreignHeads, headsLanguage, type HeadReplacement } from '$lib/i18n/notationNames';
+import { convertShorthand, readsAsShorthand } from '$lib/i18n/shorthandZh';
+import { getLocale } from '$lib/paraglide/runtime';
 import { notices } from '$lib/notices.svelte';
 import { m } from '$lib/paraglide/messages';
 
@@ -101,21 +103,54 @@ export function createNotationEditor(
 	];
 
 	// ⚓ NAMES IN ANOTHER LANGUAGE, ALL AT ONCE (Nate 2026-11-25). A paste or a
-	// loaded rotation whose segments start with whole game names in Japanese
-	// (胡桃 E > 鍾離 E) is offered one action that writes them all as their
-	// notation names. Offered, never done: the toast's button is the edit, one
-	// undoable transaction. A prefix, a bare twin (空 is seven Travelers) or an
-	// unknown word stays, for the squiggle. A loaded document is offered once
+	// loaded rotation whose segments start with whole game names in Japanese or
+	// Chinese (胡桃 E > 鍾離 E) is offered one action that writes them all as
+	// their notation names. Offered, never done: the toast's button is the edit,
+	// one undoable transaction. A prefix, a bare twin (空 is seven Travelers) or
+	// an unknown word stays, for the squiggle. A loaded document is offered once
 	// per text, so going back to it does not ask again.
+	//
+	// ⚓ Chinese shorthand (雷神E→夜兰EQ, Nate 2026-11-26) is offered a whole
+	// conversion instead, since a name swap would leave its A and Z misread
+	// (`$lib/i18n/shorthandZh`).
 	const offered = new Set<string>();
 	function offerNotationNames(pasted: boolean) {
 		const doc = view.state.doc.toString();
-		if (!rotationTabs.canEdit() || foreignHeads(doc).length === 0) return;
+		if (!rotationTabs.canEdit()) return;
+		const shorthand = readsAsShorthand(doc);
+		const heads = shorthand ? [] : foreignHeads(doc);
+		if (!shorthand && heads.length === 0) return;
 		const key = currentKey;
 		const seen = `${key}\n${doc}`;
 		if (!pasted && offered.has(seen)) return;
 		offered.add(seen);
-		notices.toast('info', m.planner_names_in_japanese_in_this_rotation(), {
+		if (shorthand) offerShorthand(key);
+		else offerNames(key, heads);
+	}
+	function offerShorthand(key: string) {
+		notices.toast('info', m.planner_rotation_in_chinese_shorthand(), {
+			actions: [
+				{
+					label: m.planner_convert_to_notation(),
+					run: () => {
+						// ⚠️ As with the names below: only this document, as it is now.
+						if (key !== currentKey || !rotationTabs.canEdit()) return;
+						const converted = convertShorthand(view.state.doc.toString());
+						if (converted.changes.length === 0) return;
+						view.dispatch({ changes: converted.changes, userEvent: 'input.replace' });
+						if (converted.dropped > 0)
+							notices.toast('info', m.planner_shorthand_left_out({ count: converted.dropped }));
+					}
+				}
+			]
+		});
+	}
+	function offerNames(key: string, heads: HeadReplacement[]) {
+		const message =
+			headsLanguage(heads, getLocale()) === 'zh'
+				? m.planner_names_in_chinese_in_this_rotation()
+				: m.planner_names_in_japanese_in_this_rotation();
+		notices.toast('info', message, {
 			actions: [
 				{
 					label: m.planner_use_notation_names(),

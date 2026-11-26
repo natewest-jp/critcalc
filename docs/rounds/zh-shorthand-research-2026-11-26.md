@@ -249,6 +249,8 @@ These can join the Chinese community request beside `terms-zh.md`'s eight.
 
 ## 7. For Nate to rule on
 
+Ruled (⚓ Nate 2026-11-26): all six as proposed. Built in `zh-shorthand-converter-2026-11-26.md`.
+
 1. **Where it sits:** an offer in the composer on paste and load, as the Japanese name swap is.
    Recommended, for the reasons in §5.
 2. **The first version's scope:** compact chains, lists, and single-character strings. Prose,
