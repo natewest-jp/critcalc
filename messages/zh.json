@@ -1706,6 +1706,7 @@
 	"tb_depends_on_own_hp": "取决于自身生命值",
 	"tb_depends_on_recipient_hp": "取决于目标生命值",
 	"tb_vs_arg_affected_enemies": "对处于{element}影响下的敌人",
+	"tb_after_absorbing_arg": "转化{element}元素后",
 	"tb_at_a_specific_cast_in_the_chain": "连续施放中的特定一段",
 	"tb_weapon_type_dependent": "取决于武器类型",
 	"tb_kind_detail": "{kind}：{detail}",

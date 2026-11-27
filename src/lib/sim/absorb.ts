@@ -28,6 +28,9 @@ import type { SimContext } from './context';
 export type AbsorbLock = {
 	element?: Element;
 	at?: number;
+	/** Further elements the same draw took (`AbsorbSpec.picks`), in `order`
+	 *  after `element` — Wanderer's second Jade-Claimed Flower branch. */
+	also?: Element[];
 	/** Called once, at the lock — an own stream starts here. */
 	onLock: ((element: Element, at: number) => void)[];
 };
@@ -67,6 +70,14 @@ export function lockedAt(ctx: SimContext, key: string, at: number): Element | un
 	return lock?.element !== undefined && lock.at !== undefined && lock.at <= at
 		? lock.element
 		: undefined;
+}
+
+/** Every element `key`'s lock holds, in draw order, with the instant it locked
+ *  — what finalize publishes on the cast (`CastEvent.absorbed`). */
+export function lockElements(lock: AbsorbLock | undefined): { element: Element; at: number }[] {
+	if (lock?.element === undefined || lock.at === undefined) return [];
+	const at = lock.at;
+	return [lock.element, ...(lock.also ?? [])].map((element) => ({ element, at }));
 }
 
 /** Take `key`'s lock at `at`, unless it already holds one — the first match
@@ -117,11 +128,13 @@ export function schedulePolls(
 	const maxPolls = spec.every === undefined ? 1 : (spec.polls ?? Infinity);
 	const poll = (at: number, n: number): void => {
 		if (lock.element !== undefined || !alive(at)) return;
-		for (const el of spec.order) {
-			if (holds(ctx, el, at)) {
-				takeLock(ctx, key, el, at);
-				return;
-			}
+		// ⚓ A draw of several (`picks`) walks the order once and keeps each held
+		// element — gcsim's repeated `AbsorbCheck` with the match deleted between.
+		const held = spec.order.filter((el) => holds(ctx, el, at)).slice(0, spec.picks ?? 1);
+		if (held.length > 0) {
+			if (held.length > 1) lock.also = held.slice(1);
+			takeLock(ctx, key, held[0], at);
+			return;
 		}
 		if (spec.every === undefined || n + 1 >= maxPolls) return;
 		const next = at + spec.every;

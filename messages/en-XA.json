@@ -1736,6 +1736,7 @@
 	"tb_depends_on_own_hp": "⟦ðéþéñðš öñ öŵñ ĤÞ ōñé ţŵö⟧",
 	"tb_depends_on_recipient_hp": "⟦ðéþéñðš öñ ŕéçîþîéñţ ĤÞ ōñé ţŵö⟧",
 	"tb_vs_arg_affected_enemies": "⟦ṽš {element}-åƒƒéçţéð éñéɱîéš ōñé ţŵö⟧",
+	"tb_after_absorbing_arg": "⟦åƒţéŕ åƀšöŕƀîñĝ {element} ōñé ţŵö⟧",
 	"tb_at_a_specific_cast_in_the_chain": "⟦åţ å šþéçîƒîç çåšţ îñ ţĥé çĥåîñ ōñé ţŵö ţĥŕéé⟧",
 	"tb_weapon_type_dependent": "⟦ŵéåþöñ-ţýþé ðéþéñðéñţ ōñé ţŵö⟧",
 	"tb_kind_detail": "⟦{kind}: {detail} ōñé⟧",

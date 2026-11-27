@@ -422,6 +422,34 @@ function walkConditions(cond: Condition | undefined, fn: (c: Condition) => void)
  * silently never evaluates anywhere (found live on Skirk C2, 2026-07-12).
  * Returns a problem description or null.
  */
+/** Every Condition member — a `Record` over the union, so adding a member
+ *  without listing it here is a compile error. An unknown `type` falls to the
+ *  evaluator's optimistic null and DRAWS (Wanderer's A1 shipped a placeholder
+ *  type that way, and drew both buffs on every press). */
+const CONDITION_TYPES: Record<Condition['type'], true> = {
+	state: true,
+	not: true,
+	all: true,
+	any: true,
+	ascension: true,
+	constellation: true,
+	teamFaction: true,
+	teamEnablesReaction: true,
+	inPolestarField: true,
+	absorbed: true,
+	teamElementCount: true,
+	activeCharFaction: true,
+	weaponType: true,
+	chainStage: true,
+	stacks: true,
+	enemyHpBelow: true,
+	enemyHpAbove: true,
+	enemyAffectedBy: true,
+	selfHpBelow: true,
+	selfHpAbove: true,
+	recipientHpBelow: true
+};
+
 function conditionShapeProblem(node: unknown, path: string): string | null {
 	if (typeof node !== 'object' || node === null || Array.isArray(node)) {
 		return `${path}: condition is not an object`;
@@ -431,6 +459,8 @@ function conditionShapeProblem(node: unknown, path: string): string | null {
 		const keys = Object.keys(raw).join(',');
 		return `${path}: condition node lacks a string 'type' (keys: ${keys})`;
 	}
+	if (!Object.hasOwn(CONDITION_TYPES, raw.type))
+		return `${path}: unknown condition type ${JSON.stringify(raw.type)}`;
 	if (raw.type === 'all' || raw.type === 'any') {
 		if (!Array.isArray(raw.conditions)) return `${path}: '${raw.type}' node lacks conditions[]`;
 		for (let i = 0; i < raw.conditions.length; i++) {
@@ -730,6 +760,8 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				bad(`${where}: absorbs.every must be positive integer FRAMES`, id);
 			if (spec.polls !== undefined && (!frames(spec.polls, 1) || spec.every === undefined))
 				bad(`${where}: absorbs.polls needs \`every\` and a positive count`, id);
+			if (spec.picks !== undefined && (!frames(spec.picks, 1) || spec.every !== undefined))
+				bad(`${where}: absorbs.picks is a positive count on a one-draw lock (no \`every\`)`, id);
 			const os = spec.opensState;
 			if (os !== undefined && (!STATES.has(os.state) || !(os.duration > 0)))
 				bad(`${where}: absorbs.opensState needs a known State and a positive duration`, id);
@@ -837,6 +869,65 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 							a.id
 						);
 				}
+			}
+		}
+	}
+
+	// (C.21) AN `absorbed` CONDITION ASKS THE TRIGGERING CAST'S LOCK
+	// (absorbed-condition round, 2026-11-27), so it stands only on an `onCast`
+	// effect of a skill or burst that locks — its own `absorbs` or a summon's.
+	// Anywhere else it resolves to nothing, silently. (B.14c) `opensAtLock`
+	// anchors at that lock, so it needs the condition beside it.
+	{
+		const ABSORBABLE = new Set(['pyro', 'hydro', 'electro', 'cryo']);
+		const locks = new Set<string>();
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+			const lock =
+				a.absorbs !== undefined ||
+				(a.variants ?? []).some((v) => v.absorbs !== undefined) ||
+				(a.summons ?? []).some((sm) => sm.absorbs !== undefined);
+			if (lock) locks.add(a.abilityType);
+		}
+		const hosts = [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])];
+		for (const h of hosts) {
+			const effects = [
+				...((h as { effects?: Effect[] }).effects ?? []),
+				...((h as { variants?: { effects?: Effect[] }[] }).variants ?? []).flatMap(
+					(v) => v.effects ?? []
+				)
+			];
+			for (const eff of effects) {
+				const leaves: Condition[] = [];
+				walkConditions(eff.conditions, (n) => {
+					if (n.type === 'absorbed') leaves.push(n);
+				});
+				const opensAtLock = (eff as { opensAtLock?: unknown }).opensAtLock;
+				if (opensAtLock !== undefined && (opensAtLock !== true || leaves.length === 0))
+					push(
+						'strict',
+						'absorbed-condition',
+						`${h.id}: opensAtLock is \`true\` on a buff gated by an \`absorbed\` condition`,
+						h.id
+					);
+				if (leaves.length === 0) continue;
+				const t = eff.trigger;
+				const ability = t.type === 'onCast' ? t.ability : undefined;
+				if (ability === undefined || !locks.has(ability))
+					push(
+						'strict',
+						'absorbed-condition',
+						`${h.id}: an \`absorbed\` condition needs an onCast trigger on a cast that locks (\`absorbs\`)`,
+						h.id
+					);
+				for (const l of leaves)
+					if (l.type === 'absorbed' && !ABSORBABLE.has(l.element))
+						push(
+							'strict',
+							'absorbed-condition',
+							`${h.id}: absorbed.element must be pyro/hydro/electro/cryo`,
+							h.id
+						);
 			}
 		}
 	}

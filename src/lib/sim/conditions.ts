@@ -97,6 +97,10 @@ export type ConditionContext = {
 	 *  caller resolves the instant (`polestarFieldOpenAt`) and hands over the
 	 *  answer. Absent → `inPolestarField` returns null, the optimistic rule. */
 	inPolestarField?: boolean;
+	/** The elements the triggering cast's absorption lock took
+	 *  (`CastEvent.absorbed`), handed over by the buff pass at a cast. Empty is
+	 *  the definitive "absorbed nothing". Absent → `absorbed` returns null. */
+	absorbed?: ReadonlySet<Element>;
 };
 
 /** Whether a condition tree asks about the Polestar Field anywhere — the gate
@@ -248,6 +252,8 @@ export function evalCondition(
 		}
 		case 'inPolestarField':
 			return context?.inPolestarField ?? null;
+		case 'absorbed':
+			return context?.absorbed ? context.absorbed.has(cond.element) : null;
 		case 'activeCharFaction': {
 			// Resolves at per-segment scope where the receiver's factions are
 			// known. Absent → null so non-segment contexts don't drop the effect.

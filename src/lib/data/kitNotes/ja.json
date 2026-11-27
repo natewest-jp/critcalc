@@ -1696,8 +1696,8 @@
 		},
 		"sucrose__constellation__chaotic_entropy": {
 			"caveat": {
-				"en": "0eda2e2b",
-				"text": "未対応：吸収した元素に対するチーム全体のダメージボーナス20%と、魔導のチームメンバーがさらに得る8.6%。"
+				"en": "048ad66f",
+				"text": "魔導のチームメンバーがさらに得る8.6%は表示されません。"
 			}
 		},
 		"sucrose__passive__catalyst_conversion": {
@@ -1994,8 +1994,8 @@
 		},
 		"wanderer__passive__jadeclaimed_flower": {
 			"caveat": {
-				"en": "15f89a78",
-				"text": "未対応：元素吸収によるバフ。氷元素の会心率+20%と炎元素の攻撃力+30%は表示されません。"
+				"en": "2b0133a1",
+				"text": "水元素を吸収した場合、優風傾姿は2秒短く描画されます。追加される空居力20ポイントは追跡されません。"
 			}
 		}
 	},

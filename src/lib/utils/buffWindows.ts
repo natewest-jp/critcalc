@@ -163,10 +163,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		.filter((ev) => ev.reaction === 'stellarConduct')
 		.map((ev) => ev.time)
 		.sort((a, b) => a - b);
-	type EventStates = StatesAt & { inPolestarField: boolean };
+	// ⚓ AND A CAST'S ABSORPTION LOCK (absorbed-condition round, 2026-11-27):
+	// at a cast, the elements its draw took (`CastEvent.absorbed`) answer an
+	// `absorbed` condition — empty is the definitive "took nothing". Away from a
+	// cast there is no lock to ask, and the leaf stays null.
+	const castById = new Map(castEvents.map((c) => [c.id, c]));
+	type EventStates = StatesAt & { inPolestarField: boolean; absorbed?: ReadonlySet<Element> };
 	const statesAt = (holderId: string, t: number, castId?: number): EventStates => ({
 		...stateIndex.at(holderId, t, castId),
-		inPolestarField: polestarFieldOpenAt(conductTimes, t)
+		inPolestarField: polestarFieldOpenAt(conductTimes, t),
+		...(castId !== undefined
+			? { absorbed: new Set((castById.get(castId)?.absorbed ?? []).map((a) => a.element)) }
+			: {})
 	});
 	type Gate = { resolved: ReadonlySet<string>; ctx: ConditionContext };
 	const gateFor = (
@@ -174,7 +182,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		st: EventStates,
 		field?: 'onField' | 'offField'
 	): Gate => {
-		const base = { ...baseCtx, inPolestarField: st.inPolestarField };
+		const base: ConditionContext = {
+			...baseCtx,
+			inPolestarField: st.inPolestarField,
+			...(st.absorbed ? { absorbed: st.absorbed } : {})
+		};
 		if (field === undefined) {
 			if (st.negated.size === 0) return { resolved: st.active, ctx: base };
 			return { resolved: st.active, ctx: { ...base, negatedStates: st.negated } };
@@ -298,8 +310,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		const parts: T[][] = [];
 		const byDur = new Map<string, T[]>();
 		for (const fx of effects) {
-			const f = fx as { duration?: number; opensAfter?: number };
-			const d = `${f.duration ?? -1}|${f.opensAfter ?? 0}`;
+			const f = fx as { duration?: number; opensAfter?: number; opensAtLock?: true };
+			const d = `${f.duration ?? -1}|${f.opensAfter ?? 0}|${f.opensAtLock ? 'lock' : ''}`;
 			let p = byDur.get(d);
 			if (!p) {
 				p = [];
@@ -332,6 +344,12 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		// 2026-10-30) anchors that long after the cast, and only if its holder is on
 		// field then — gcsim's burst refill and C4's gain return when he is not.
 		const atCast = (part: T[]): Array<{ anchor: number; extend: number; part: T[] }> => {
+			// ⚓ A part that opens AT THE LOCK (`opensAtLock`, Sucrose's Chaotic
+			// Entropy) anchors at the instant the cast's draw took its element.
+			if ((part[0] as { opensAtLock?: true }).opensAtLock) {
+				const lockAt = cast.absorbed?.[0]?.at;
+				return lockAt === undefined ? [] : [{ anchor: lockAt, extend: 0, part }];
+			}
 			const delay = (part[0] as { opensAfter?: number }).opensAfter;
 			if (delay === undefined) return [{ anchor: cast.fieldStart, extend: 0, part }];
 			const at = cast.time + framesOf(delay);

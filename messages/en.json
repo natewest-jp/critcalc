@@ -1736,6 +1736,7 @@
 	"tb_depends_on_own_hp": "depends on own HP",
 	"tb_depends_on_recipient_hp": "depends on recipient HP",
 	"tb_vs_arg_affected_enemies": "vs {element}-affected enemies",
+	"tb_after_absorbing_arg": "after absorbing {element}",
 	"tb_at_a_specific_cast_in_the_chain": "at a specific cast in the chain",
 	"tb_weapon_type_dependent": "weapon-type dependent",
 	"tb_kind_detail": "{kind}: {detail}",

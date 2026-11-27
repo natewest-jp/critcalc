@@ -254,6 +254,8 @@ function caveatLabel(cond: Condition): string | null {
 			return 'recipientHp';
 		case 'enemyAffectedBy':
 			return `enemyAura:${cond.element}`;
+		case 'absorbed':
+			return `absorbs:${cond.element}`;
 		case 'chainStage':
 			return 'chainStage';
 		case 'weaponType':
@@ -456,6 +458,9 @@ function foldCondition(
 			return { type: 'element', element: cond.element };
 		case 'inPolestarField':
 			return positive ? { type: 'reaction', reaction: 'stellarConduct' } : 'free';
+		case 'absorbed':
+			// Something must put that element on the enemy for the draw to take it.
+			return positive ? { type: 'element', element: cond.element } : 'free';
 		default:
 			// state, stacks, chainStage, self/recipient/enemy HP: the player can
 			// make them happen in any team.

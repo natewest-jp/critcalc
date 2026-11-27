@@ -178,7 +178,8 @@
 				"terminatesOnSwap: gcsim's skillActivate sets c.Core.Player.SwapCD = math.MaxInt16 to lock swaps during the stance, making in-practice swap-to-end impossible. The stance is normally ended by Skydweller depletion or by re-pressing E (skillDeactivate). The burst's WindfavoredBurst path also ends the stance and unlocks swap. Setting terminatesOnSwap: true to match the per-character recipe note and the in-game expectation; reviewer to verify if the planner's Windfavored swap semantics need adjustment.",
 				"Element Absorption (recipe.md § 3.5): gcsim absorbCheckA1 absorbs up to 2 of Pyro/Hydro/Cryo/Electro at cast (5-radius circle around player), each granting a distinct Jade-Claimed Flower buff for 20s. Per recipe, no per-element conditional buffs authored; flagged on Jade-Claimed Flower passive.",
 				"Skydweller Points (gcsim: skydwellerPoints): resource pool starting at 100, max 100 (raised to 120 with Hydro absorption via A1), drains 1 per 6 frames passively, -15 per dash (A4-dependent), holding jump/sprint adds drain. State ends when points reach 0. Resource pool not modeled in the schema; flagged here for reviewer.",
-				"↻ 2026-10-04 (cast-ends-stance round): cooldownStartsAtStanceEnd: true — the field the Cooldown note above asked for exists now (lint D.21/D.22). gcsim SetCD(ActionSkill, 360) runs only in skillEndRoutine, so the 6s clock starts when Windfavored ends: at its own end, at a swap, or at the end of an in-stance burst (the Windfavored variant's endsStance), all through the one clampStance edge."
+				"↻ 2026-10-04 (cast-ends-stance round): cooldownStartsAtStanceEnd: true — the field the Cooldown note above asked for exists now (lint D.21/D.22). gcsim SetCD(ActionSkill, 360) runs only in skillEndRoutine, so the 6s clock starts when Windfavored ends: at its own end, at a swap, or at the end of an in-stance burst (the Windfavored variant's endsStance), all through the one clampStance edge.",
+				"↻ 2026-11-27 (absorbed-condition round): `absorbs` {order P > H > E > C, from 0, picks 2} is Jade-Claimed Flower's draw — gcsim `skill.go` calls `absorbCheckA1` at the press, before the 2f hit, and `asc.go` runs `AbsorbCheck` twice over `a1ValidBuffs`, deleting the first match between. The A1 passive's buffs read it through `absorbed` conditions. gcsim's check is a 5-radius circle on the player (the player's own aura counts there); ours reads the one target."
 			],
 			"application": [
 				{
@@ -187,7 +188,12 @@
 					"units": 1
 				}
 			],
-			"cooldownStartsAtStanceEnd": true
+			"cooldownStartsAtStanceEnd": true,
+			"absorbs": {
+				"order": ["pyro", "hydro", "electro", "cryo"],
+				"from": 0,
+				"picks": 2
+			}
 		},
 		{
 			"id": "wanderer__burst__kyougen_five_ceremonial_plays",
@@ -262,13 +268,14 @@
 					"duration": 20,
 					"durationType": "refresh",
 					"conditions": {
-						"type": "<absorbedElement — DOES NOT EXIST>",
+						"type": "absorbed",
 						"element": "cryo"
 					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"whileState": "inStance"
 				},
 				{
 					"type": "buff",
@@ -280,21 +287,23 @@
 					"duration": 20,
 					"durationType": "refresh",
 					"conditions": {
-						"type": "<absorbedElement — DOES NOT EXIST>",
+						"type": "absorbed",
 						"element": "pyro"
 					},
 					"source": "character",
 					"stat": "atk%",
 					"value": 30,
-					"snapshottable": false
+					"snapshottable": false,
+					"whileState": "inStance"
 				}
 			],
-			"caveat": "Not modeled: the absorption buffs — Cryo’s +20% CRIT Rate and Pyro’s +30% ATK never appear.",
+			"caveat": "With Hydro absorbed, Windfavored is drawn 2s short: the 20 extra Kuugoryoku Points aren’t tracked.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): the Cryo +20% CR branch carries a `manual` trigger because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). ↻ 2026-08-18: the phrase \"manual trigger preserved\" implied a holding pen that still surfaces SOMETHING. It does not — a `manual` effect is authored but UNREACHABLE. grep for `'manual'` across src/lib and src/routes returns exactly one line, the type declaration itself (types/ability.ts), so there is no collector, no bar, no chip, no notation token and no toggle anywhere in the app; 167 such effects across 69 characters are in the same state. The whole disclosure here is the ability `caveat`, which is why it must not be trimmed away. ⏭ Re-evaluate if a multi-element-absorption primitive ever lands — ⚠️ and note that the gauge round did NOT deliver one: there is still no `absorb` path in src/lib/sim, so an absorbing Anemo ability applies only Anemo, and the absorption caveats on this character remain fully true.",
 				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored with a `manual` trigger. ⚠️ 2026-08-18: \"toggle\" was wrong — there is nothing to toggle; see the corrected stub-with-caveat note above. (Otherwise already captured there.)",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.\"",
-				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). passive — Jade-Claimed Flower — effects[0] (buff, critRate 20) DEFERRED. gcsim: `wanderer/asc.go:102-127` — `absorbCheckA1` runs at skill cast and calls `AbsorbCheck` up to TWICE against `a1ValidBuffs`, granting one buff per absorbed element; `addA1Buff` (`asc.go:138-165`) adds the Cryo branch as `CR += 0.2` for 1200f (`a1CryoKey`, line 160) and the Pyro branch as `ATKP += 0.3` for 1200f (`a1PyroKey`, line 149). C4 (`asc.go:119-126`) adds one RANDOM further branch when at least one absorbed, raising the simultaneous cap to 3. Keep the 2026-08-18 correction note (a `manual` effect is authored but UNREACHABLE — it is the round's own founding evidence) and its ⏭ line, updated: the effect is now DELETED, not parked, and the restore spec above is what a future absorption round reinstates. Keep the [A7] note's 20s figure and the per-branch list; keep the 2026-08-19 caveat-trim record. ⚠️ Deleting the effect leaves the passive with `effects: []` and no `description`, so the caveat is load-bearing — verify it still renders on the detail card after the edit. Also check `wanderer__constellation__yonban_set_adrift_into_spring` (C4), whose notes point at this passive and must stay pointing at the deferred spec, not at a deleted effect."
+				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). passive — Jade-Claimed Flower — effects[0] (buff, critRate 20) DEFERRED. gcsim: `wanderer/asc.go:102-127` — `absorbCheckA1` runs at skill cast and calls `AbsorbCheck` up to TWICE against `a1ValidBuffs`, granting one buff per absorbed element; `addA1Buff` (`asc.go:138-165`) adds the Cryo branch as `CR += 0.2` for 1200f (`a1CryoKey`, line 160) and the Pyro branch as `ATKP += 0.3` for 1200f (`a1PyroKey`, line 149). C4 (`asc.go:119-126`) adds one RANDOM further branch when at least one absorbed, raising the simultaneous cap to 3. Keep the 2026-08-18 correction note (a `manual` effect is authored but UNREACHABLE — it is the round's own founding evidence) and its ⏭ line, updated: the effect is now DELETED, not parked, and the restore spec above is what a future absorption round reinstates. Keep the [A7] note's 20s figure and the per-branch list; keep the 2026-08-19 caveat-trim record. ⚠️ Deleting the effect leaves the passive with `effects: []` and no `description`, so the caveat is load-bearing — verify it still renders on the detail card after the edit. Also check `wanderer__constellation__yonban_set_adrift_into_spring` (C4), whose notes point at this passive and must stay pointing at the deferred spec, not at a deleted effect.",
+				"↻ 2026-11-27 (absorbed-condition round, docs/rounds/absorbed-condition-2026-11-27.md): the two effects were restored on 2026-09-21 with a PLACEHOLDER condition type (`<absorbedElement — DOES NOT EXIST>`), which the evaluator's default case answered with an optimistic null, so both drew on every press, aura or not. Now each is `{type: 'absorbed', element}` over the skill's draw, and `whileState: inStance` — gcsim `skillEndRoutine` deletes `a1PyroKey`/`a1CryoKey` when Windfavored ends, so the 1200f is an upper bound the stance always cuts. The condition-shape lint now refuses an unknown condition type. Still not modelled: Hydro's +20 Kuugoryoku cap (+120f of Windfavored; the stance is a fixed 10s here — the caveat) and Electro's 0.8 Energy per N/CA hit, 12f ICD (an under-claim: energy draws nothing)."
 			]
 		},
 		{
