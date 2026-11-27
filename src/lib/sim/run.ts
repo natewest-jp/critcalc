@@ -249,6 +249,9 @@ export function runRotation(
 		start: number;
 		normalCounter: number;
 		lastEText: string | null;
+		/** The cast id of that E, whose absorption lock a plunge variant's
+		 *  `absorbedHit` reads (Kazuha's Soumon Swordsmanship). */
+		lastECastId: number | null;
 		stackState: Map<string, number>;
 		stackInstances: Map<string, number[]>;
 	};
@@ -443,6 +446,7 @@ export function runRotation(
 		// Text of the most recent E token cast in this turn. Used by the P handler
 		// to auto-select the correct plunge variant (e.g. "hE" → "After Hold E" frames).
 		let lastEText: string | null = carried?.lastEText ?? null;
+		let lastECastId: number | null = carried?.lastECastId ?? null;
 		// Per-turn stack state (resource counts asserted by `{key:N}` tokens).
 		// Resets at a swap-in so a swap-out clears the resource pool — matches
 		// in-game behavior for Heizou Declension, Yanfei Scarlet Seals, etc.
@@ -1362,7 +1366,10 @@ export function runRotation(
 				// `castEnd` is the instant the clock will reach; it is named so the two
 				// consumers below read exactly what they read when the advance was here.
 				const castEnd = castStart + castTime;
-				if (!isBurst) lastEText = tok.text; // plunge-variant selection
+				if (!isBurst) {
+					lastEText = tok.text; // plunge-variant selection
+					lastECastId = castId;
+				}
 				advanceChain(ctx, active, char.id, kind, castEnd);
 
 				// Q only: character cdReset — refund a charge on each affected
@@ -2046,6 +2053,7 @@ export function runRotation(
 				clock.advance(clock.now + E_CAST_F);
 				humanPad('skill', j);
 				lastEText = tok.text;
+				lastECastId = null;
 			}
 		};
 
@@ -3100,13 +3108,14 @@ export function runRotation(
 						const pNonHitting = activeNormal?.nonHitting?.plunge === true;
 						const pElement = pNonHitting
 							? undefined
-							: resolveActionElement(
+							: (plungeVariant?.element ??
+								resolveActionElement(
 									'plunge',
 									t,
 									char.weapon,
 									char.element,
 									ownInfusion(activeNormal, blockStart) ?? infusionAt(ctx, char, blockStart)
-								);
+								));
 						const plungeEv = emitAction({
 							action: 'plunge',
 							label: t,
@@ -3212,12 +3221,54 @@ export function runRotation(
 									live
 								);
 						};
+						// ⚓ A plunge variant's ABSORBED hit (Kazuha's Soumon Swordsmanship,
+						// absorbed-condition round 2026-11-27): one more hit in the element
+						// the preceding E locked, or none. gcsim `skillPlunge` queues it 1f
+						// before the plunge's own (ICDTagNone, Durability 25, Plunging
+						// Attack DMG), so it is offered first and heard as a plunge hit.
+						const absorbedHit = plungeVariant?.absorbedHit;
+						const lockCast = lastECastId;
+						if (absorbedHit && lockCast !== null && !pNonHitting) {
+							const at = blockStart + absorbedHit.frame;
+							const live = liveSegment === turn;
+							clock.schedule(at, Band.LAND, () => {
+								const element = lockedAt(ctx, `cast#${lockCast}`, at);
+								if (element === undefined) return;
+								emitReactionsAtSwing(
+									ctx,
+									clock,
+									char,
+									'plunge',
+									element,
+									true,
+									at,
+									plungeStates,
+									charConstellationLevel,
+									stackState
+								);
+								dispatchHit(
+									{
+										characterId: char.id,
+										time: at,
+										abilityType: 'plunge',
+										element,
+										damageTag: 'plunge',
+										abilityName: activeNormal?.name,
+										...(live ? {} : { offField: true as const }),
+										sourceEventId: plungeEv.id
+									},
+									true,
+									live
+								);
+							});
+						}
 						const pLate = landSwing(blockStart, castS, plungeFrames, landPlunge);
 						clock.advance(clock.now + castS);
 						humanPad('plunge', j);
 						for (let n = 0; n < pLate; n++) landPlunge(clock.now);
 					}
 					lastEText = null;
+					lastECastId = null;
 				} else if (t === 'D' || t === 'J') {
 					// Dash/jump: emit a block, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
@@ -3363,6 +3414,7 @@ export function runRotation(
 				start: stayStart,
 				normalCounter,
 				lastEText,
+				lastECastId,
 				stackState,
 				stackInstances
 			};

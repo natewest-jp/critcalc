@@ -1,6 +1,6 @@
 # Buffs chosen by the absorbed element (2026-11-27)
 
-**Status: ✅ built** (`feat/absorbed-condition`). Nate: continue absorption from the Prune record's § What's left, Wanderer's A1 and Sucrose's C6 first, as one shared condition on the locked element. What's new stays held until the batch is done.
+**Status: ✅ built** on two stacked branches: `feat/absorbed-condition` (Wanderer, Sucrose) and `feat/kazuha-a1-plunge` on top of it. Nate: continue absorption from the Prune record's § What's left, Wanderer's A1 and Sucrose's C6 first, as one shared condition on the locked element, then Kazuha's A1 plunge. What's new stays held until the batch is done.
 
 ## What gcsim does (at 41bfe4915)
 
@@ -15,6 +15,15 @@
 - **Lint.** C.21: an `absorbed` leaf only on an `onCast` effect whose cast kind locks. B.14c: `opensAtLock` only beside one. D.54: `picks` only on a one-draw lock. And the condition-shape lint now refuses an unknown condition `type` (`CONDITION_TYPES`, a `Record` over the union).
 - **Data.** Wanderer's skill carries `absorbs {P > H > E > C, from 0, picks 2}`; the two A1 buffs read `absorbed` and carry `whileState: inStance`. Sucrose's C6 is four `team` buffs, one per element, `opensAtLock`, 10s.
 - Test: `src/lib/sim/absorbedCondition.test.ts` (six cases), written first and failing on all but one.
+
+## Kazuha's A1 plunge (`feat/kazuha-a1-plunge`)
+
+gcsim (`kazuha/skill.go`, `asc.go`, `plunge.go`): the skill clears the absorbed element, then polls 1f after the press, every 6f, `int(hitmark/6)` times (press 10f → 1 poll, hold 33f → 5). Only the plunge straight after it (`skillPlunge`, Midare Ranzan) reads it: one 200% ATK hit in that element at the plunge's hitmark − 1, Durability 25, ICDTagNone, Plunging Attack DMG. The plunge itself is Anemo, Durability 25, and ignores infusion, landing at 36f (press) or 41f (hold).
+
+- **`PlungeVariant.absorbedHit {frame}`**: the extra hit, reading the lock of the E the plunge follows (`lastECastId` beside `lastEText` in `run.ts`, carried across a same-character `>`). It is offered to the gauge and dispatched as a plunge hit record; nothing locked, nothing lands. Lint D.54: every form of the E its inputs name carries `absorbs`.
+- **`PlungeVariant.element`**: the plunge's own element over the weapon's and any infusion. Midare Ranzan resolved Physical before this.
+- **Data:** the skill's `absorbs` (press 1 poll, the Hold variant 5), and both variants' `lands` (36, 41; they had none, so the plunge landed at its swing's end), `element: anemo`, and `absorbedHit` at 35 and 40. gcsim's optional collision hit is not authored.
+- Tests: three more cases in `src/lib/sim/absorbedCondition.test.ts`, written first.
 
 ## Found on the way: Wanderer's A1 drew on every press
 
