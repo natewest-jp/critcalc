@@ -30,7 +30,12 @@ const modules = import.meta.glob<{ default: CharacterData }>('$lib/data/characte
 });
 const corpus = Object.values(modules).map((m) => m.default);
 
-const TEAM_LEAVES = new Set(['teamFaction', 'teamElementCount', 'teamEnablesReaction']);
+const TEAM_LEAVES = new Set([
+	'teamFaction',
+	'teamElementCount',
+	'teamElementRank',
+	'teamEnablesReaction'
+]);
 function onlyTeamLeaves(c: Condition): boolean {
 	switch (c.type) {
 		case 'all':
@@ -124,6 +129,18 @@ describe('team needs agree with the parser’s evalCondition', () => {
 
 describe('lit means the team CAN make it happen (§9.2)', () => {
 	const team = (...ids: string[]): TeamMember[] => ids.map((id) => getCharacterIndexEntry(id)!);
+
+	// Jahoda's robots deal damage only under Ascendant Gleam (gcsim burst.go
+	// `GetMoonsignLevel() >= 2`), so her summon's off-field damage is too.
+	it('Jahoda’s off-field damage: on with a second Moonsign member, off without', () => {
+		const dmg = getCharacterIndexEntry('jahoda')!.caps.find((c) => c.kind === 'offFieldDamage')!;
+		expect(summaryInTeam(dmg, team('jahoda', 'flins', 'bennett', 'xingqiu'), 'jahoda', 0)).toBe(
+			'yes'
+		);
+		expect(summaryInTeam(dmg, team('jahoda', 'fischl', 'bennett', 'xingqiu'), 'jahoda', 0)).toBe(
+			'inactive'
+		);
+	});
 
 	// The measured case behind the whole design: Chevreuse's ATK buff turns off
 	// in a team with a non-Pyro/Electro element, though she never moved.

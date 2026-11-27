@@ -1368,6 +1368,16 @@ export function scheduleSummonTicks(
 			const tickUnits =
 				(series.effect.trigger.type === 'summonTick' ? series.effect.trigger.units : undefined) ??
 				DEFAULT_UNITS;
+			// ⚓ A series with its OWN lock (`summonTick.ownLock`, Jahoda's robots)
+			// polls and locks on its own key; its marks still go to the window's.
+			// Only a series that passed its conditions polls — a robot A1 does not
+			// grant never looks. ⚠️ Not published on the cast (`CastEvent.absorbed`
+			// reads the summon's lock only); nothing reads a robot's lock there.
+			const ownLock =
+				series.effect.trigger.type === 'summonTick' ? series.effect.trigger.ownLock : undefined;
+			const lockKey = ownLock ? `${absorbKey}#${series.index}` : absorbKey;
+			if (ownLock)
+				schedulePolls(ctx, clock, lockKey, ownLock, castTime, (at) => liveAt(at) && at < endNow());
 			// ⛔ A physical (element-less) tick applies nothing and must not reach an
 			// ICD clock — the same rule a physical swing follows. ↻ It DOES still
 			// reach the clock, since the coordinated-attack round: a physical tick
@@ -1407,6 +1417,11 @@ export function scheduleSummonTicks(
 			const icdKey = named
 				? namedIcdKey(char.id, named)
 				: `${char.id}:summon:${summon.label}:${series.index}:${params ? `${params.timer}/${params.hits}` : 'none'}`;
+			/** `summonTick.icdPerElement` — the named counter, split by the element
+			 *  this tick landed in (gcsim's per-element tags on one group). */
+			const perElement =
+				series.effect.trigger.type === 'summonTick' && series.effect.trigger.icdPerElement === true;
+			const icdKeyFor = (el: Element): string => (perElement ? `${icdKey}:${el}` : icdKey);
 
 			// ⚓ THE SECOND READER of the tick cap, and it MUST agree with
 			// `collectSummonTicks` — that walk draws the markers a reader counts on
@@ -1508,7 +1523,7 @@ export function scheduleSummonTicks(
 				}
 				// ⚓ An ABSORBED tick lands in the lock's element; a twin before the
 				// lock is refused and keeps its cadence, as a field-gated one does.
-				const element = absorbedMode ? lockedAt(ctx, absorbKey, at) : staticElement;
+				const element = absorbedMode ? lockedAt(ctx, lockKey, at) : staticElement;
 				if (absorbedMode && element === undefined) {
 					const skipTo = tickAt(series, chainFirst, k + 1);
 					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo, k + 1));
@@ -1518,10 +1533,10 @@ export function scheduleSummonTicks(
 
 				let applies = element !== undefined;
 				if (element !== undefined && params) {
-					let icd = ctx.icdClocks.get(icdKey);
+					let icd = ctx.icdClocks.get(icdKeyFor(element));
 					if (!icd) {
 						icd = createIcdClock();
-						ctx.icdClocks.set(icdKey, icd);
+						ctx.icdClocks.set(icdKeyFor(element), icd);
 					}
 					while (pendingCastHits.length > 0 && pendingCastHits[0] <= at)
 						icdApplies(icd, pendingCastHits.shift()!, params);
@@ -1620,7 +1635,7 @@ export function scheduleSummonTicks(
 			// ⚓ A STREAM starts at the lock, phased from it; everything else at the
 			// spawn.
 			if (absorbedMode === 'stream') {
-				lockOf(ctx, absorbKey).onLock.push((_el, lockAt) => {
+				lockOf(ctx, lockKey).onLock.push((_el, lockAt) => {
 					const first = lockAt + series.firstDelay;
 					chainFirst = first;
 					if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first, 0));

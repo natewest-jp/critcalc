@@ -464,6 +464,19 @@ export type Condition =
 			comparison: '>=' | '=' | '<=';
 			value: number;
 	  }
+	/** ⚓ `element` is the team's `rank`-th most common of `order` (Jahoda
+	 *  round, 2026-11-27): Jahoda's A1 picks the element most of the party
+	 *  carries, ties going to the earlier in `order`, and her C2 adds the
+	 *  runner-up among the rest (gcsim `asc.go` `a1Init`, `cons.go` `c2Init`).
+	 *  An element nobody carries ranks nowhere. Holder-excluded, like
+	 *  `teamElementCount`; gcsim counts the holder, which for an Anemo holder
+	 *  and an `order` without Anemo is the same answer. */
+	| {
+			type: 'teamElementRank';
+			order: Element[];
+			element: Element;
+			rank: 1 | 2;
+	  }
 	/** True when the currently-active character (the receiver, in per-segment
 	 *  evaluation) belongs to the named faction. Used for buff routing that
 	 *  depends on the active char's identity rather than team-wide composition.
@@ -1147,6 +1160,24 @@ export type Trigger =
 			 * and hits are PUBLISHED by the live chain, ⛔ never walked.
 			 */
 			absorbed?: 'twin' | 'stream';
+			/**
+			 * ⚓ THIS SERIES' OWN LOCK (Jahoda round, 2026-11-27), in place of the
+			 * summon's `absorbs`: one summon whose entities each poll and lock on
+			 * their own clock. Jahoda's robots: gcsim `burst.go` gives each robot an
+			 * `absorbCheckTask` (first at 6f, +41f per robot, every interval ÷ 3), so
+			 * robot 2 can lock an element robot 1 did not. Same shape as `absorbs`,
+			 * anchored at the cast. Absorbed series only, never beside the summon's
+			 * own `absorbs` (lint D.54). The window's marks are still the summon's.
+			 */
+			ownLock?: AbsorbSpec;
+			/**
+			 * ⚓ ONE ICD COUNTER PER LOCKED ELEMENT (Jahoda round, 2026-11-27): the
+			 * named `icdCounter` is split by the element each tick lands in, as
+			 * gcsim's per-element tags on one group are (`ICDTagElementalBurst<El>`
+			 * on `ICDGroupJahodaBurst`) — two robots on Pyro share a window, a Pyro
+			 * and a Hydro robot do not. Needs `icdCounter` and `absorbed` (lint D.54).
+			 */
+			icdPerElement?: true;
 			/**
 			 * ⚓ THE TICK TRAVELS (2026-10-18) — integer FRAMES from a tick's FIRE
 			 * to its landing. `firstTickDelay` and `interval` still state the
