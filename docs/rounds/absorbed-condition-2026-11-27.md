@@ -25,13 +25,17 @@ gcsim (`kazuha/skill.go`, `asc.go`, `plunge.go`): the skill clears the absorbed 
 - **Data:** the skill's `absorbs` (press 1 poll, the Hold variant 5), and both variants' `lands` (36, 41; they had none, so the plunge landed at its swing's end), `element: anemo`, and `absorbedHit` at 35 and 40. gcsim's optional collision hit is not authored.
 - Tests: three more cases in `src/lib/sim/absorbedCondition.test.ts`, written first.
 
+## After Nate's look: the C6 bar was hidden
+
+Nate couldn't find the C6 bar. It was drawn, in the "Sucrose Q" row, but it opens at the lock (185f in `Bennett E > Sucrose Q`), and her A4 EM share in the same row opens a frame later (at the burst's first hit) and outlasts it, so it painted over the bonus whole. A bar that opens at the lock now gets its own row (`::lock` in `teamBuffRows.ts`), named after the effect's `attribution`: "Sucrose Chaotic Entropy". A case in `absorbedCondition.test.ts` checks it, failing without the fix.
+
 ## Found on the way: Wanderer's A1 drew on every press
 
 The 2026-09-21 re-trigger round restored both A1 buffs with a placeholder condition type, `<absorbedElement — DOES NOT EXIST>`. `evalCondition`'s default case answers an unknown leaf with an optimistic null, so since then every Wanderer E has drawn +30% ATK and +20% CRIT Rate, whatever the aura, under a caveat saying they never appear. Fixed by this round, and the new lint check stops the class.
 
 ## Not done
 
-- **Sucrose C6's length** is gcsim's 10s from the lock. The kit text says "during its duration" (the burst's 6s, 8s at C2). It is still the in-game bounty from the survey (§6.4, §8.4).
+- **Sucrose C6's length** is gcsim's 10s from the lock. The kit text says "during its duration" (the burst's 6s, 8s at C2). Nate has C6 and tests it (`docs/rounds/ingame-test-batch.md` § Open, item 14).
 - **Wanderer's Hydro branch** would lengthen Windfavored by 2s (20 points × 6f); the stance is a fixed 10s, so the caveat says so. The Electro branch's Energy draws nothing (an under-claim, no caveat). C4's random branch stays `notModeled`.
 - gcsim reads Wanderer's draw in a circle on the player, whose own aura counts; ours reads the one target.
 - The oracle cannot reach either: the dumper runs one character in an empty core.
