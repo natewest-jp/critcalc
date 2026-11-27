@@ -165,7 +165,13 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 					// reconstructed from geometry either: it spawns at a swap off a
 					// form and ends with a state whose end is the holder's POINTS. The
 					// invariant this oracle can reach is containment — see the assert.
-					if (summon.endsWithState !== undefined || summon.spawnsAtSwapOutFrom !== undefined) {
+					// A full-flask spawn (`spawnsAtFill`) is the same: it spawns where
+					// the live aura filled the flask, if it did.
+					if (
+						summon.endsWithState !== undefined ||
+						summon.spawnsAtSwapOutFrom !== undefined ||
+						summon.spawnsAtFill !== undefined
+					) {
 						out.push({
 							characterId: track.characterId,
 							label: `${POOL_DRIVEN}${summon.label}|${summon.endsWithState ?? ''}`,

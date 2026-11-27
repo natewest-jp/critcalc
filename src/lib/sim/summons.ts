@@ -230,7 +230,11 @@ export function summonEndAt(args: {
 	} = args;
 	// ⚓ A swap-out spawn (`spawnsAtSwapOutFrom`) has nothing to do with the
 	// cast's bar — it starts after the bar ended — so it lives its own life.
-	const ownLifetime = index !== 0 || ownerIsStance || summon.spawnsAtSwapOutFrom !== undefined;
+	const ownLifetime =
+		index !== 0 ||
+		ownerIsStance ||
+		summon.spawnsAtSwapOutFrom !== undefined ||
+		summon.spawnsAtFill !== undefined;
 	const natural = spawnAt + (ownLifetime ? secondaryLifetime(summon, cLevel, context) : barUptime);
 	return summon.terminatesOn === 'swap' && swapOutAt < natural ? swapOutAt : natural;
 }

@@ -141,6 +141,10 @@ export type CastEvent = {
 	 *  pass for an `absorbed` condition and `opensAtLock`. Absent when nothing
 	 *  locked. */
 	absorbed?: { element: Element; at: number }[];
+	/** The instant this cast's stance flask drained FULL (`StanceFill`) — the
+	 *  stance's end. Read by the buff pass for `opensAtFill`. Absent when the
+	 *  flask never filled. */
+	filledAt?: number;
 	/** True when a Sacrificial-series proc fired on this cast (CD reset to 0);
 	 *  the bar renders as a dim continuation instead of uptime + ghost CD. */
 	sacProcFired?: boolean;

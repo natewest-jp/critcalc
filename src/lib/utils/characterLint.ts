@@ -26,6 +26,7 @@ import type {
 	NormalAbility,
 	SkillAbility,
 	BurstAbility,
+	StanceFill,
 	Summon
 } from '$lib/types/ability';
 
@@ -904,9 +905,10 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 							a.id
 						);
 					if (t.absorbed === undefined) continue;
-					if (!sm.absorbs && !t.ownLock)
+					// A full-flask spawn (`spawnsAtFill`) takes the flask's lock.
+					if (!sm.absorbs && !t.ownLock && sm.spawnsAtFill === undefined)
 						bad(
-							`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\` or its own \`ownLock\``,
+							`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\`, its own \`ownLock\`, or \`spawnsAtFill\``,
 							a.id
 						);
 					if (e.type !== 'damage' || e.element !== undefined)
@@ -917,6 +919,66 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				}
 			}
 		}
+	}
+
+	// (D.58) A STANCE THAT ENDS ON A FULL FLASK (`StanceFill`, Jahoda,
+	// 2026-11-27): integer FRAMES, the four absorbable elements, a stance-end
+	// cooldown, and a drain hit for each end. `spawnsAtFill` and `opensAtFill`
+	// (B.14d) stand only where such a flask exists.
+	{
+		const ABSORBABLE = new Set(['pyro', 'hydro', 'electro', 'cryo']);
+		const bad = (msg: string, id?: string) => push('strict', 'stance-fill', msg, id);
+		const int = (n: unknown, min: number) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		let fillSkill = false;
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+			const spec = (a as { endsOnFill?: StanceFill }).endsOnFill;
+			if (spec !== undefined) {
+				if (a.abilityType !== 'skill' || a.behavior !== 'stance')
+					bad(`${a.id}: endsOnFill is for a skill stance`, a.id);
+				else fillSkill = true;
+				if (!(a as { cooldownStartsAtStanceEnd?: boolean }).cooldownStartsAtStanceEnd)
+					bad(`${a.id}: endsOnFill needs cooldownStartsAtStanceEnd`, a.id);
+				if (!spec.order?.length || !spec.order.every((e) => ABSORBABLE.has(e)))
+					bad(`${a.id}: endsOnFill.order must list pyro/hydro/electro/cryo`, a.id);
+				if (
+					!int(spec.from, 0) ||
+					!int(spec.every, 1) ||
+					!int(spec.endsAfter, 0) ||
+					!int(spec.full, 1) ||
+					!int(spec.gain?.locked, 1) ||
+					!int(spec.gain?.other, 0)
+				)
+					bad(`${a.id}: endsOnFill's frames and points are integers`, a.id);
+				for (const d of [spec.drain?.full, spec.drain?.unfilled])
+					if (!d || !int(d.frame, 0))
+						bad(`${a.id}: endsOnFill.drain needs a full and an unfilled hit`, a.id);
+				if (!spec.afterEnd || !int(spec.afterEnd.anim, 1))
+					bad(`${a.id}: endsOnFill.afterEnd is a FrameMap`, a.id);
+			}
+			for (const sm of a.summons ?? [])
+				if (sm.spawnsAtFill !== undefined && spec === undefined)
+					bad(`${a.id} summon "${sm.label}": spawnsAtFill needs the cast's endsOnFill`, a.id);
+		}
+		const hosts = [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])];
+		for (const h of hosts)
+			for (const eff of (h as { effects?: Effect[] }).effects ?? []) {
+				const v = (eff as { opensAtFill?: unknown }).opensAtFill;
+				if (v === undefined) continue;
+				const t = eff.trigger;
+				if (
+					v !== true ||
+					eff.type !== 'buff' ||
+					t.type !== 'onCast' ||
+					t.ability !== 'skill' ||
+					!fillSkill
+				)
+					bad(
+						`${h.id}: opensAtFill is \`true\` on an onCast skill buff of a character whose skill endsOnFill`,
+						h.id
+					);
+			}
 	}
 
 	// (C.21) AN `absorbed` CONDITION ASKS THE TRIGGERING CAST'S LOCK
@@ -2952,12 +3014,17 @@ function lintCastAbility(
 		// ⚓ unless a SIBLING of that kind leaves a differently-named summon (Durin's
 		// two dragons, 2026-11-07): a recast is keyed by label, so only the kind can
 		// say "any burst of his ends this one", at the cast, as gcsim's `burstSrc` does.
-		const siblingSummons = c.abilities.some(
-			(b) =>
-				b !== a &&
-				b.abilityType === a.abilityType &&
-				((b as { summons?: { label: string }[] }).summons ?? []).some((t) => t.label !== s.label)
-		);
+		// ⚓ …and a summon that spawns at its cast's full flask (`spawnsAtFill`):
+		// a recast is keyed by the NEXT spawn, a fill, while the next press is
+		// what ends it (gcsim's `Skill` deletes the Meowball status).
+		const siblingSummons =
+			s.spawnsAtFill !== undefined ||
+			c.abilities.some(
+				(b) =>
+					b !== a &&
+					b.abilityType === a.abilityType &&
+					((b as { summons?: { label: string }[] }).summons ?? []).some((t) => t.label !== s.label)
+			);
 		if (s.terminatesOn === a.abilityType && !siblingSummons) {
 			push(
 				'strict',

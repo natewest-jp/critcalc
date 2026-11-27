@@ -706,12 +706,6 @@
 				"text": "此弹射有50%几率发生。排轴工具不模拟概率，因此同一循环对每个人都画出相同的条。"
 			}
 		},
-		"jahoda__constellation__the_littlest_luck": {
-			"caveat": {
-				"en": "d76cbd5c",
-				"text": "瓶子装满时，附近的月兆队伍角色获得5%暴击率和40%暴击伤害，持续20秒——时间轴不显示此增益。"
-			}
-		},
 		"jahoda__constellation__wild_berry_amid_the_dust": {
 			"reason": {
 				"en": "e7e100a0",
@@ -722,12 +716,6 @@
 			"caveat": {
 				"en": "dde5fc84",
 				"text": "机器人的治疗命中生命值高于70%的角色时，该角色还会获得100点元素精通，持续6秒——时间轴不显示此加成。"
-			}
-		},
-		"jahoda__skill__savvy_strategy_splitting_the_spoils": {
-			"caveat": {
-				"en": "e9d5f917",
-				"text": "状态按完整持续时间显示；游戏中再次按下E、进行攻击或瓶子装满时，状态会提前结束。"
 			}
 		}
 	},

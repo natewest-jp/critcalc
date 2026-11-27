@@ -409,6 +409,11 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 							deferredAt = ctx.swapSpawns.get(ctx.castIdByBar.get(bar) ?? -1);
 							if (deferredAt === undefined) return;
 						}
+						// …and a full-flask spawn (`spawnsAtFill`) where the drain recorded it.
+						if (summon.spawnsAtFill !== undefined) {
+							deferredAt = ctx.fillSpawns.get(ctx.castIdByBar.get(bar) ?? -1);
+							if (deferredAt === undefined) return;
+						}
 						const spawnAt =
 							deferredAt ?? span.from ?? summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
 						// The ONE gate a secondary's `durationModifiers` resolve under — the

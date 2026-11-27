@@ -135,6 +135,7 @@ const BY_HAND = {
 		escoffier: { 'Cooking Mek': '調理マシナリー', 'Cold Storage': '「チルド」' }, // "Cold Storage Mode" 「チルド」モード
 		freminet: { 'Shattering Pressure': '高圧粉砕' }, // a highlighted term
 		ineffa: { 'Optical Flow': 'オプティカルフロー' }, // "Optical Flow Shield Barrier" オプティカルフローシールド
+		jahoda: { 'Shadow Pursuit': '影追撃' }, // her skill: 「影追撃」状態に入る
 		kujou_sara: { Ambush: '伏' }, // "Tengu Juurai: Ambush" 天狗呪雷·伏
 		kuki_shinobu: { Thundergrass: '雷草' }, // her C4: 雷草が敵の位置に落ち
 		linnea: { 'Memo Heal': '備忘録の回復' }, // ours: her burst is "Memo: …" 絶体絶命サバイバル備忘録
@@ -171,6 +172,7 @@ const BY_HAND = {
 		escoffier: { 'Cooking Mek': '厨艺机关', 'Cold Storage': '低温冷藏' }, // "Cooking Mek: Cold Storage Mode" 厨艺机关·低温冷藏模式
 		freminet: { 'Shattering Pressure': '高压粉碎' }, // "Level 0 Shattering Pressure DMG" 零阶高压粉碎伤害
 		ineffa: { 'Optical Flow': '光流' }, // "Optical Flow Shield Barrier" 光流屏障护盾
+		jahoda: { 'Shadow Pursuit': '掠影追袭' }, // her skill: 进入「掠影追袭」状态
 		kamisato_ayato: { Shunsuiken: '瞬水剑' }, // "Shunsuiken 3-Hit DMG" 三段瞬水剑伤害
 		kujou_sara: { Ambush: '伏' }, // "Tengu Juurai: Ambush" 天狗咒雷·伏
 		kuki_shinobu: { 'Thundergrass Mark': '雷草标', Thundergrass: '雷草' }, // her C4: 雷草标将落在敌人所在的位置

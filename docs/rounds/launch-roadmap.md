@@ -507,13 +507,13 @@ All three tools are built, merged, and on `main`. Launch readiness has been a **
 
 From the old working memories (`docs/rounds/instructions-overhaul-round.md` §14), each checked against the code on 2026-10-30; the record is `docs/rounds/memory-triage-round.md`. `docs/todo.md` carries one line pointing here.
 
-- **Elemental absorption leftovers** (`docs/rounds/elemental-absorption-survey.md` §8.1): Venti's stream outliving the Stormeye (an in-game bounty), and Jahoda's flask (`jahoda-robots-2026-11-27.md` § What's left). Lan Yan, Prune, Wanderer, Sucrose C6, Kazuha's plunge, and Jahoda's robots are built (`durin-lan-yan-forms-2026-11-07.md`, `prune-recast-2026-11-27.md`, `absorbed-condition-2026-11-27.md`, `jahoda-robots-2026-11-27.md`). What's new landed (`docs/whats-new-absorption`).
+- **Elemental absorption leftovers** (`docs/rounds/elemental-absorption-survey.md` §8.1): Venti's stream outliving the Stormeye (an in-game bounty). Lan Yan, Prune, Wanderer, Sucrose C6, Kazuha's plunge, and Jahoda's robots and flask are built (`durin-lan-yan-forms-2026-11-07.md`, `prune-recast-2026-11-27.md`, `absorbed-condition-2026-11-27.md`, `jahoda-robots-2026-11-27.md`, `jahoda-flask-2026-11-27.md`). What's new landed (`docs/whats-new-absorption`).
 - **Kit gaps:**
   - Traveler (Hydro) C4 needs a channel window (the skill is `instant`; the shield is deliberately inert, `docs/rounds/constellation-shield-gap.md`).
   - Mavuika: the in-Nightsoul E re-press is unauthored, and gcsim's dumper panicked on it (`docs/rounds/frames-queue-round-2026-10-04.md`; rerun the dump to see if it still does); her form switch mid-Blessing (`docs/rounds/defres-pass-2026-10-06.md`); Fighting Spirit; a bike Charged Attack straight after a Hold E skips its windup in gcsim (+19, not a fresh +34), which `startSpin` doesn't (`docs/rounds/mavuika-spin-hitmark-2026-11-15.md` §4).
   - Nilou: which Sword Dance swing a press draws; A1 Bountiful Cores (gadget strip only, item 3 of the aura audit above).
   - Zibai's Ascendant Gleam N4 extra hit.
-  - From the Mizuki round's F4–F7: Dehya's Sanctum return, a `drivers.json` row for Mizuki's exit press, Chasca's Hold Multitarget Fire, and `holdsField` for Wanderer and Jahoda.
+  - From the Mizuki round's F4–F7: Dehya's Sanctum return, a `drivers.json` row for Mizuki's exit press, Chasca's Hold Multitarget Fire, and `holdsField` for Wanderer (Jahoda's flask holds the field on its own).
   - Mona pop/Omen (low).
 - **Party systems:** the Verdant Dew pool (gcsim `player/verdantdew.go`, three spenders; today only Columbina's stand-in gate, `docs/rounds/verdant-dew.md`) · Skirk's Serpent's Subtlety to `gainStacks.scope: 'rotation'`, deliberately not flipped until the drain interaction is measured.
 - **Timing:**

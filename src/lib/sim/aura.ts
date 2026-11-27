@@ -1218,7 +1218,8 @@ export function scheduleSummonTicks(
 	castApplication?: readonly ElementalApplication[],
 	/** ⚓ The SWAP-OUT spawn (`Summon.spawnsAtSwapOutFrom`, Nightsoul round): set,
 	 *  this call schedules ONLY such summons, spawned here; absent, the cast's
-	 *  own call skips them — the pool calls back at the swap. */
+	 *  own call skips them — the pool calls back at the swap. A full flask's
+	 *  spawn (`Summon.spawnsAtFill`) is the same kind of call, from the drain. */
 	deferredSpawnAt?: number
 ): void {
 	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
@@ -1233,7 +1234,8 @@ export function scheduleSummonTicks(
 		.sort((a, b) => a - b);
 
 	findSummonsForBar(char, kind, label, abilityId, variantLabel ?? null).forEach((summon, index) => {
-		if ((summon.spawnsAtSwapOutFrom !== undefined) !== (deferredSpawnAt !== undefined)) return;
+		const deferred = summon.spawnsAtSwapOutFrom !== undefined || summon.spawnsAtFill !== undefined;
+		if (deferred !== (deferredSpawnAt !== undefined)) return;
 		const spawnAt = deferredSpawnAt ?? summonSpawnAt(castTime, summonActivatesAt, summon, index);
 		const key = `${char.id}::${summon.label}`;
 		// ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize's
