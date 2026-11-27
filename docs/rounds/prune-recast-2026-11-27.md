@@ -33,3 +33,8 @@
 ## What's left of absorption
 
 Kazuha's A1 plunge, Wanderer's A1, Sucrose's C6, Jahoda (survey §8), and Venti's stream ending with the Stormeye (an in-game check). Wanderer's A1 and Sucrose's C6 share one missing piece, a condition on the locked element.
+
+## Rulings after the build
+
+- Nate approved the drafted strings (the `witchtribution` Team Builder phrase in each locale) as landed.
+- What's new: held until more absorption cases land (⚓ Nate), then one entry covering them. The draft for Prune was "When Prune's skill triggers Swirl, pressing it again within 6s now casts Clang Clang! Witch-tribution Comes! in the swirled element, and Tolling Rally comes from that hit."
