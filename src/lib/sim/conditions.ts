@@ -250,6 +250,26 @@ export function evalCondition(
 			}
 			return null;
 		}
+		case 'teamElementRank': {
+			// Same resolution rule as teamElementCount. ⛔ `deriveCapabilities`
+			// carries a twin of this walk (it must stay types-only);
+			// `teamNeeds.test.ts` pins the two together.
+			if (!context?.teamElementCounts) return null;
+			const counts = context.teamElementCounts;
+			const taken: Element[] = [];
+			for (let r = 0; r < cond.rank; r++) {
+				let best: Element | undefined;
+				let bestN = 0;
+				for (const el of cond.order) {
+					if (taken.includes(el)) continue;
+					const n = counts.get(el) ?? 0;
+					if (n > bestN) [best, bestN] = [el, n];
+				}
+				if (best === undefined) return false;
+				taken.push(best);
+			}
+			return taken[cond.rank - 1] === cond.element;
+		}
 		case 'inPolestarField':
 			return context?.inPolestarField ?? null;
 		case 'absorbed':

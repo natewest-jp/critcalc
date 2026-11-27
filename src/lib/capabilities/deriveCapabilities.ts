@@ -241,6 +241,7 @@ function caveatLabel(cond: Condition): string | null {
 		case 'inPolestarField':
 			return 'needsField:polestar';
 		case 'teamElementCount':
+		case 'teamElementRank':
 			return 'teamElements';
 		case 'activeCharFaction':
 			return `activeIs:${cond.faction}`;
@@ -338,6 +339,8 @@ export type TeamNeed =
 	| { type: 'faction'; faction: string; min: number }
 	/** Holder excluded — the corpus's convention for `teamElementCount`. */
 	| { type: 'elementCount'; elements: Element[]; comparison: '>=' | '=' | '<='; value: number }
+	/** Holder excluded — `element` is the `rank`-th most common of `order`. */
+	| { type: 'elementRank'; order: Element[]; element: Element; rank: 1 | 2 }
 	| { type: 'enabler'; reaction: Reaction }
 	/** Someone on the team, the holder included, is this element. */
 	| { type: 'element'; element: Element }
@@ -444,6 +447,13 @@ function foldCondition(
 				elements: [...cond.elements],
 				comparison: cond.comparison,
 				value: cond.value
+			};
+		case 'teamElementRank':
+			return {
+				type: 'elementRank',
+				order: [...cond.order],
+				element: cond.element,
+				rank: cond.rank
 			};
 		case 'teamEnablesReaction':
 			return { type: 'enabler', reaction: cond.reaction };
@@ -574,6 +584,23 @@ export function evalTeamNeed(
 				: need.comparison === '='
 					? n === need.value
 					: n <= need.value;
+		}
+		case 'elementRank': {
+			// ⛔ The twin of `evalCondition`'s walk (`sim/conditions.ts`); pinned
+			// by `teamNeeds.test.ts`.
+			const taken: Element[] = [];
+			for (let r = 0; r < need.rank; r++) {
+				let best: Element | undefined;
+				let bestN = 0;
+				for (const el of need.order) {
+					if (taken.includes(el)) continue;
+					const n = team.filter((m) => m.id !== holderId && m.element === el).length;
+					if (n > bestN) [best, bestN] = [el, n];
+				}
+				if (best === undefined) return false;
+				taken.push(best);
+			}
+			return taken[need.rank - 1] === need.element;
 		}
 		case 'enabler':
 			return team.some((m) => m.enablesReactions?.includes(need.reaction));
@@ -861,7 +888,7 @@ function pushSummonCapabilities(
 	for (const summon of summons ?? []) {
 		// ⚓ A sequenced summon's strikes (`summonStrike`, Lumi) are off-field
 		// damage too.
-		const ticksDamage = (summon.effects ?? []).some(
+		const damageSeries = (summon.effects ?? []).filter(
 			(e) =>
 				e.type === 'damage' &&
 				((e.trigger?.type === 'summonTick' && !e.trigger.appliesOnly) ||
@@ -869,19 +896,26 @@ function pushSummonCapabilities(
 		);
 		const summonDuration =
 			typeof summon.duration === 'number' && summon.duration > 0 ? summon.duration : undefined;
-		if (ticksDamage) {
-			const gate = minConstellationFor(composeConditions(ctx.hostConditions, undefined));
-			if (gate !== null) {
-				out.push({
-					kind: 'offFieldDamage',
-					detail: 'summon',
-					minConstellation: Math.max(gate, ctx.hostConstellation),
-					caveats: [],
-					...(summonDuration !== undefined && { duration: summonDuration }),
-					via: 'effect',
-					source: ctx.source
-				});
-			}
+		// ⚓ One source per damage series, each under its own conditions (Jahoda
+		// round, 2026-11-27): her robots deal damage only under Ascendant Gleam,
+		// so the summon is off-field damage only in a team that makes it. A
+		// series with no team need anywhere keeps the summon lit in every team;
+		// identical sources collapse in `summarizeCapabilities`.
+		for (const e of damageSeries) {
+			const composed = composeConditions(ctx.hostConditions, e.conditions);
+			const gate = minConstellationFor(composed);
+			if (gate === null) continue;
+			const teamNeed = teamNeedFor(composed, undefined, ctx.holderElement);
+			out.push({
+				kind: 'offFieldDamage',
+				detail: 'summon',
+				minConstellation: Math.max(gate, ctx.hostConstellation),
+				caveats: [],
+				...(teamNeed && { teamNeed }),
+				...(summonDuration !== undefined && { duration: summonDuration }),
+				via: 'effect',
+				source: ctx.source
+			});
 		}
 		// Non-damage summon effects (heal ticks — Qiqi herald, buff auras) are
 		// capabilities in their own right.

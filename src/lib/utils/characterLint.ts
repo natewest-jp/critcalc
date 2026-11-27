@@ -438,6 +438,7 @@ const CONDITION_TYPES: Record<Condition['type'], true> = {
 	inPolestarField: true,
 	absorbed: true,
 	teamElementCount: true,
+	teamElementRank: true,
 	activeCharFaction: true,
 	weaponType: true,
 	chainStage: true,
@@ -886,9 +887,28 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 								a.id
 							);
 					}
+					// `ownLock` is one series' own lock (Jahoda's robots), in place of
+					// the summon's; `icdPerElement` splits a named counter by the
+					// element locked.
+					if (t.ownLock !== undefined) {
+						if (t.absorbed === undefined || sm.absorbs !== undefined)
+							bad(
+								`summon "${sm.label}": ownLock is for an absorbed series on a summon without \`absorbs\``,
+								a.id
+							);
+						checkSpec(t.ownLock, `${a.id} summon "${sm.label}" ownLock`, a.id);
+					}
+					if (t.icdPerElement !== undefined && (t.absorbed === undefined || !t.icdCounter))
+						bad(
+							`summon "${sm.label}": icdPerElement needs an absorbed series and an icdCounter`,
+							a.id
+						);
 					if (t.absorbed === undefined) continue;
-					if (!sm.absorbs)
-						bad(`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\``, a.id);
+					if (!sm.absorbs && !t.ownLock)
+						bad(
+							`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\` or its own \`ownLock\``,
+							a.id
+						);
 					if (e.type !== 'damage' || e.element !== undefined)
 						bad(
 							`summon "${sm.label}": an absorbed series is a damage tick that names no element`,
@@ -5200,6 +5220,24 @@ function lintEffect(
 					location
 				);
 			}
+		}
+		// (D.37b) teamElementRank shape — a non-empty `order` of character
+		// elements, an `element` inside it, and a rank of 1 or 2.
+		if (cond.type === 'teamElementRank') {
+			const order = (cond as { order?: unknown }).order;
+			if (
+				!Array.isArray(order) ||
+				order.length === 0 ||
+				!order.every((el) => typeof el === 'string' && CHARACTER_ELEMENTS.has(el)) ||
+				!order.includes(cond.element) ||
+				(cond.rank !== 1 && cond.rank !== 2)
+			)
+				push(
+					'strict',
+					'condition-team-element-rank-invalid',
+					`teamElementRank needs a non-empty order of character elements, an element in it, and rank 1 or 2 (got ${JSON.stringify(cond)})`,
+					location
+				);
 		}
 		// (D.37) teamElementCount condition shape — non-empty elements array,
 		// integer-valid value, recognized comparison op. Resolves at evaluation

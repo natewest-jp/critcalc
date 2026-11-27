@@ -165,6 +165,443 @@
 							"scaling": 143.77,
 							"stat": "atk",
 							"flat": 1101.7
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"ownLock": {
+									"order": ["pyro", "hydro", "electro", "cryo"],
+									"from": 6,
+									"every": 46
+								},
+								"interval": 2.333,
+								"firstTickDelay": 0.683,
+								"icdCounter": "robots",
+								"icdPerElement": true,
+								"icdGate": {
+									"timer": 900,
+									"every": 4,
+									"cap": 5
+								}
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamFaction",
+										"faction": "moonsign",
+										"min": 2
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "any",
+											"conditions": [
+												{
+													"type": "teamElementRank",
+													"order": ["pyro", "hydro", "electro", "cryo"],
+													"element": "cryo",
+													"rank": 1
+												},
+												{
+													"type": "all",
+													"conditions": [
+														{
+															"type": "constellation",
+															"level": 2
+														},
+														{
+															"type": "teamElementRank",
+															"order": ["pyro", "hydro", "electro", "cryo"],
+															"element": "cryo",
+															"rank": 2
+														}
+													]
+												}
+											]
+										}
+									}
+								]
+							},
+							"scaling": 31.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Robot DMG, Ascendant Gleam only (Jahoda round, 2026-11-27; gcsim 41bfe4915 jahoda/burst.go absorbCheckTask/robotAtkTick): each robot polls the aura on its OWN clock, first at 6f + 41f per robot, then every ⌊interval ÷ 3⌋ (46f; 42f under A1 Cryo), P > H > E > C, until the burst ends (790f). On its lock it fires 41f later and every 140f (126f under A1 Cryo, 140 × 0.9) while the burst lasts. 25 durability (1U), ICDTagElementalBurst<El> on ICDGroupJahodaBurst (900f, every 4th, the list's five 1s = cap 5), so robots on one element share a window and robots on two elements do not (`icdPerElement`). FlatDmg burstSkill[9] = 0.310795 → 31.08% ATK. Hits the 3 closest enemies; one target here. Not modelled: A1 Pyro's ×1.3 DMG (a damage figure), C4's +4 Energy per lock."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"ownLock": {
+									"order": ["pyro", "hydro", "electro", "cryo"],
+									"from": 6,
+									"every": 42
+								},
+								"interval": 2.1,
+								"firstTickDelay": 0.683,
+								"icdCounter": "robots",
+								"icdPerElement": true,
+								"icdGate": {
+									"timer": 900,
+									"every": 4,
+									"cap": 5
+								}
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamFaction",
+										"faction": "moonsign",
+										"min": 2
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementRank",
+												"order": ["pyro", "hydro", "electro", "cryo"],
+												"element": "cryo",
+												"rank": 1
+											},
+											{
+												"type": "all",
+												"conditions": [
+													{
+														"type": "constellation",
+														"level": 2
+													},
+													{
+														"type": "teamElementRank",
+														"order": ["pyro", "hydro", "electro", "cryo"],
+														"element": "cryo",
+														"rank": 2
+													}
+												]
+											}
+										]
+									}
+								]
+							},
+							"scaling": 31.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Robot 1 under A1 Cryo (126f, polls every 42f); first poll 6f. See robot 1's note."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"ownLock": {
+									"order": ["pyro", "hydro", "electro", "cryo"],
+									"from": 47,
+									"every": 46
+								},
+								"interval": 2.333,
+								"firstTickDelay": 0.683,
+								"icdCounter": "robots",
+								"icdPerElement": true,
+								"icdGate": {
+									"timer": 900,
+									"every": 4,
+									"cap": 5
+								}
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamFaction",
+										"faction": "moonsign",
+										"min": 2
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "any",
+											"conditions": [
+												{
+													"type": "teamElementRank",
+													"order": ["pyro", "hydro", "electro", "cryo"],
+													"element": "cryo",
+													"rank": 1
+												},
+												{
+													"type": "all",
+													"conditions": [
+														{
+															"type": "constellation",
+															"level": 2
+														},
+														{
+															"type": "teamElementRank",
+															"order": ["pyro", "hydro", "electro", "cryo"],
+															"element": "cryo",
+															"rank": 2
+														}
+													]
+												}
+											]
+										}
+									}
+								]
+							},
+							"scaling": 31.08,
+							"stat": "atk",
+							"_curatorNotes": ["Robot 2; first poll 47f. See robot 1's note."]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"ownLock": {
+									"order": ["pyro", "hydro", "electro", "cryo"],
+									"from": 47,
+									"every": 42
+								},
+								"interval": 2.1,
+								"firstTickDelay": 0.683,
+								"icdCounter": "robots",
+								"icdPerElement": true,
+								"icdGate": {
+									"timer": 900,
+									"every": 4,
+									"cap": 5
+								}
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamFaction",
+										"faction": "moonsign",
+										"min": 2
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementRank",
+												"order": ["pyro", "hydro", "electro", "cryo"],
+												"element": "cryo",
+												"rank": 1
+											},
+											{
+												"type": "all",
+												"conditions": [
+													{
+														"type": "constellation",
+														"level": 2
+													},
+													{
+														"type": "teamElementRank",
+														"order": ["pyro", "hydro", "electro", "cryo"],
+														"element": "cryo",
+														"rank": 2
+													}
+												]
+											}
+										]
+									}
+								]
+							},
+							"scaling": 31.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Robot 2 under A1 Cryo (126f, polls every 42f); first poll 47f. See robot 1's note."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"ownLock": {
+									"order": ["pyro", "hydro", "electro", "cryo"],
+									"from": 88,
+									"every": 46
+								},
+								"interval": 2.333,
+								"firstTickDelay": 0.683,
+								"icdCounter": "robots",
+								"icdPerElement": true,
+								"icdGate": {
+									"timer": 900,
+									"every": 4,
+									"cap": 5
+								}
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamFaction",
+										"faction": "moonsign",
+										"min": 2
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementRank",
+												"order": ["pyro", "hydro", "electro", "cryo"],
+												"element": "electro",
+												"rank": 1
+											},
+											{
+												"type": "all",
+												"conditions": [
+													{
+														"type": "constellation",
+														"level": 2
+													},
+													{
+														"type": "teamElementRank",
+														"order": ["pyro", "hydro", "electro", "cryo"],
+														"element": "electro",
+														"rank": 2
+													}
+												]
+											}
+										]
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "any",
+											"conditions": [
+												{
+													"type": "teamElementRank",
+													"order": ["pyro", "hydro", "electro", "cryo"],
+													"element": "cryo",
+													"rank": 1
+												},
+												{
+													"type": "all",
+													"conditions": [
+														{
+															"type": "constellation",
+															"level": 2
+														},
+														{
+															"type": "teamElementRank",
+															"order": ["pyro", "hydro", "electro", "cryo"],
+															"element": "cryo",
+															"rank": 2
+														}
+													]
+												}
+											]
+										}
+									}
+								]
+							},
+							"scaling": 31.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Robot 3, present when A1 (or C2) picks Electro; first poll 88f. See robot 1's note."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"ownLock": {
+									"order": ["pyro", "hydro", "electro", "cryo"],
+									"from": 88,
+									"every": 42
+								},
+								"interval": 2.1,
+								"firstTickDelay": 0.683,
+								"icdCounter": "robots",
+								"icdPerElement": true,
+								"icdGate": {
+									"timer": 900,
+									"every": 4,
+									"cap": 5
+								}
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamFaction",
+										"faction": "moonsign",
+										"min": 2
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementRank",
+												"order": ["pyro", "hydro", "electro", "cryo"],
+												"element": "electro",
+												"rank": 1
+											},
+											{
+												"type": "all",
+												"conditions": [
+													{
+														"type": "constellation",
+														"level": 2
+													},
+													{
+														"type": "teamElementRank",
+														"order": ["pyro", "hydro", "electro", "cryo"],
+														"element": "electro",
+														"rank": 2
+													}
+												]
+											}
+										]
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementRank",
+												"order": ["pyro", "hydro", "electro", "cryo"],
+												"element": "cryo",
+												"rank": 1
+											},
+											{
+												"type": "all",
+												"conditions": [
+													{
+														"type": "constellation",
+														"level": 2
+													},
+													{
+														"type": "teamElementRank",
+														"order": ["pyro", "hydro", "electro", "cryo"],
+														"element": "cryo",
+														"rank": 2
+													}
+												]
+											}
+										]
+									}
+								]
+							},
+							"scaling": 31.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Robot 3 under A1 Cryo (126f, polls every 42f), present when A1 (or C2) picks Electro; first poll 88f. See robot 1's note."
+							]
 						}
 					]
 				}
@@ -173,17 +610,16 @@
 			"_curatorNotes": [
 				"Initial burst hit at hitmark=0f (immediately): 259.0% ATK Anemo elemental burst.",
 				"Robots: 2 robots base (+1 with A1 Electro), heal active char every 1.45s (87f) for burstHealFlat + burstHealPP×ATK = 1101.7 + 143.77% ATK at lvl=10. Heal authored with both `scaling: 143.77` (ATK%) and `flat: 1101.7` (talent-table flat addend) — 2026-05-09 Quick Schema Wins.",
-				"Robot damage (Moonsign Ascendant Gleam only): 172.66% ATK FlatDmg of absorbed element, ~2.33s interval (140f base, ×0.9=126f with Cryo A1). Not authored — gated on team-Moonsign-Gleam + element absorption + onHit-from-summon (3 deferred primitives stacked).",
 				"Duration: burstDuration=790f = 13.17s. Authored on summons[].duration. Robots follow active char (combat.Player() targeted in robotAtkTick).",
 				"Burst frames: burstFrames=InitAbilSlice(48), ActionSkill=53 ActionAim=55 ActionDash/Jump=54 ActionWalk=55 ActionSwap=36. Per Q-spec swap/N/E/D/J — N defaults to animLen=48.",
 				"Cooldown: SetCDWithDelay(burst, 18*60, 1). ConsumeEnergy(13) drains 13 energy from teammates; not modelled.",
 				"A4 Sweet Berry Bounty (heal-on-active-with-HP>70% triggers +100 EM 6s on healed char): not authored as Effect — gating on heal-trigger + HP-state-of-target is two layers we don't track. Schema doesn't currently route heal events through Effect triggers.",
 				"C1 (50% Meowball bounce): RNG damage extension; not authored.",
-				"C4 (+4 Energy on robot element absorption): would need an absorption-event trigger; not authored.",
 				"C6 (Moonsign Gleam: when flask full, +5% CR / +40% CD to all Moonsign party for 20s): caveated on the C6 node below — the originally-authored buffs were removed because the flask-full trigger sits inside the deferred flask system (stale cross-reference corrected, capability sweep 2026-07-28).",
-				"[A7] Unauthored robot damage tick: 172.66% ATK FlatDmg of the absorbed element, ~2.33s interval (140f base, ×0.9 with Cryo A1); needs summon onHit + element-absorption + Moonsign-team-state, all deferred primitives.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The robots' summon-lane row and its tick marks. `computeSummonTicks` accepts every `summonTick` effect, so the lane draws marks at the 1.45s HEAL cadence and only that — a Moonsign player sees one evenly-spaced series where the game runs a second ~2.33s damage series that would carry its own marks and its own aura applications. The caveat is anchored to exactly that row (\"Only the robots' healing is shown\") and warns the reader not to read the visible cadence as the robots' full output. Category: expected-but-absent.",
-				"↻ 2026-09-15: gcsim main has her (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
+				"↻ 2026-09-15: gcsim main has her (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde.",
+				"Robot damage authored 2026-11-27 (Jahoda round) as six absorbed streams on the robots summon, one per robot × A1 cadence, each with its own lock (`summonTick.ownLock`); see the first series. ↻ The old note gave 172.66% ATK, which was burstSkill[0] read as a percentage of ten; level 10 is 31.08%.",
+				"C4 (+4 Energy per robot lock): energy is not tracked (notModeled on C4)."
 			],
 			"description": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents.",
 			"application": [
@@ -202,9 +638,7 @@
 			"abilityType": "passive",
 			"_curatorNotes": [
 				"A1: Robot enhancement based on highest-count team element (Pyro: +30% robot DMG, Hydro: +20% heal, Electro: +1 robot count, Cryo: -10% interval). Determined at Init time from team composition. With C2 + Moonsign Gleam, also applies the second-highest element's enhancement (up to 2 active).",
-				"Each enhancement modifies a robot system field (robotAi.FlatDmg, robotHi.Src, robotCount, robotHitmarkInterval) — none are exposed as Effects in our schema. The robot system itself is partially authored on the burst as a summon with a heal effect; the A1 enhancements scale that heal/damage but in an element-resolved-at-init manner that doesn't fit any current trigger primitive.",
-				"Not authored — flagged. Effective gameplay: a Pyro-heavy team gets stronger robot damage; Hydro-heavy gets stronger heals; Electro gets a third robot; Cryo gets faster ticks. Document in user-facing release notes when buff rendering for Jahoda lands.",
-				"↻ 2026-09-17 (T1.5): of the four branches only Electro (+1 robot) and Cryo (−10% interval) change anything drawable, and both act on robotCount / robotHitmarkInterval — the robots' DAMAGE series, which is unauthored. gcsim's healInterval is a constant 87f, so the heal tick markers the lane draws are correct under every A1 branch."
+				"Authored 2026-11-27 (Jahoda round) as conditions on the robots' damage series: `teamElementRank` rank 1 (gcsim asc.go a1Init: strictly most members, ties by P > H > E > C, none counted → nothing). Electro adds robot 3 (first poll 88f); Cryo is the 126f cadence with 42f polls, authored as each robot's series twice under mutually exclusive conditions. Pyro (×1.3 robot DMG) and Hydro (×1.2 heal) change a figure, not a frame, so they are not authored. gcsim healInterval is a constant 87f, so the heal markers are right under every branch."
 			],
 			"description": "When your team has at least one Pyro, Hydro, Electro, or Cryo character, the **Purrsonal Coordinated Assistance Robots** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter will be enhanced based on the number of characters of each corresponding element.\nJahoda secretly keeps track of these characters. Among them, the element with the highest number of characters determines the enhancement effect:\n· Pyro: Purrsonal Coordinated Assistance Robots deal 130% of their original DMG.\n· Hydro: Purrsonal Coordinated Assistance Robots heal for 120% of their original healing amount.\n· Electro: The number of Purrsonal Coordinated Assistance Robots increases by one.\n· Cryo: The attack interval of Purrsonal Coordinated Assistance Robots is reduced by 10%.\n\nIf there's a tie between elements, the order of priority that determines which enhancement takes effect is: Pyro, Hydro, Electro, then Cryo. Only one elemental effect can initially be triggered."
 		},
@@ -240,7 +674,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"C2 (Moonsign Ascendant Gleam): A1 tracks BOTH the highest-count element AND the second-highest, allowing two A1 enhancements to apply simultaneously. Same A1 gap; not authored."
+				"C2 (Ascendant Gleam): the runner-up element (gcsim cons.go c2Init, the most common of the rest) applies its A1 branch too. Authored 2026-11-27 as `teamElementRank` rank 2 beside a C2 gate inside the robots' series conditions; the robots only exist under Gleam, which their own gate already says."
 			],
 			"description": "Moonsign: Ascendant Gleam: In the Ascension Talent **\"Plan to Get Paid,\"** Jahoda can secretly track, in addition to the element with the highest number of characters, the element with the next highest number of characters among the remaining types. This allows up to two elemental effects to be active at once. You must first unlock the Ascension Talent \"Plan to Get Paid.\""
 		},
@@ -257,7 +691,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"C4: +4 Energy to Jahoda when a Robot absorbs an element. Robot absorption is gcsim-event-internal, not exposed as a trigger primitive. Not authored."
+				"C4: +4 Energy each time a robot locks an element (gcsim burst.go absorbCheckTask → c4()). The locks are modelled (2026-11-27); energy is not, hence notModeled."
 			],
 			"description": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter undergoes an Elemental Conversion, Jahoda will recover 4 Elemental Energy.",
 			"notModeled": {
