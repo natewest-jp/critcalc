@@ -5,7 +5,7 @@
 		"seenUpstream": "41bfe4915",
 		"date": "2026-11-17",
 		"tag": "v2.50.0",
-		"note": "seen 2026-11-26: upstream 41bfe4915 (Ascendant Gleam refresh fix in pkg/simulation/setup.go, damage maths); nothing under internal/characters moved, clone not advanced, audit still a284a499b"
+		"note": "seen 2026-11-27: no upstream commits past 41bfe4915; nothing under internal/characters moved, clone not advanced, audit still a284a499b"
 	},
 	"feedback": {
 		"sheetConnected": true,
@@ -15,23 +15,23 @@
 		"lastRowZh": 1
 	},
 	"github": {
-		"lastSeen": "2026-11-26T00:00:00Z"
+		"lastSeen": "2026-11-27T00:00:00Z"
 	},
 	"genshinDb": "5.2.15",
 	"endgame": {
 		"stygian": "7.2",
 		"abyss": "2026-11-16 Resounding Moon",
 		"pending": [
-			"Abyss: the cycle after Resounding Moon (lunaris 7.2.53 id 20100, 甲霰之月) — beta only, no English name yet; due 2026-12-16",
+			"Abyss: the cycle after Resounding Moon (lunaris 7.2.54 id 20100, 甲霰之月) — beta only, no English name yet; due 2026-12-16",
 			"Theater: the December season, due 2026-12-01",
 			"Stygian 7.3: due 2026-12-23"
 		]
 	},
 	"todo": {
-		"lastSwept": "bdce9678"
+		"lastSwept": "0624e04c"
 	},
 	"roles": {
-		"audited": "2026-11-26",
+		"audited": "2026-11-27",
 		"unrated": ["mitya", "valeriy"]
 	}
 }
