@@ -22,7 +22,7 @@
  * invisible at the site.
  */
 
-import type { CastAbility, DurationExtension } from '$lib/types/ability';
+import type { CastAbility, DurationExtension, Element, StanceFill } from '$lib/types/ability';
 import type { CastEvent } from '$lib/utils/rotationEvents';
 import type { StateWindowRec } from './context';
 import type { AccrualRecord } from './accrual';
@@ -87,6 +87,23 @@ export type StanceRecord = {
 	 *  ran on while its companion expired at the original end, and every
 	 *  ability gated on the companion went dark for the extension. */
 	companion?: { name: string; rec: { end: number } };
+	/** The live flask of a stance that `endsOnFill` (`sim/stanceFill.ts`). */
+	fill?: StanceFillRecord;
+};
+
+/** A `StanceFill` stance's flask, live for one window. */
+export type StanceFillRecord = {
+	spec: StanceFill;
+	points: number;
+	/** The element the first matching poll locked. */
+	locked?: Element;
+	/** The drain ran (at whichever end came first). */
+	drained: boolean;
+	/** The first action after the end has been placed: the hold is over. */
+	released: boolean;
+	/** Called by `clampStance` when the stance ends early — a full flask or
+	 *  the re-press. */
+	onEarlyEnd: (end: number) => void;
 };
 
 /** Active summon-bound durationExtensions[] owner (E3 v1.5). Registered when a

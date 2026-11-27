@@ -185,6 +185,8 @@ export function clampStance(
 	if (stance.companion) closeStateWindows(ctx, cs, characterId, stance.companion.name, stanceEnd);
 	if (getCooldownStartsAtStanceEnd(stance.ownerAbility))
 		restampStanceCooldown(ctx, stance, cdDelay);
+	// A flask stance drains at whichever end comes first (`sim/stanceFill.ts`).
+	stance.fill?.onEarlyEnd(stanceEnd);
 	return stanceEnd;
 }
 

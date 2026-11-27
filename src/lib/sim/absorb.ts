@@ -36,7 +36,7 @@ export type AbsorbLock = {
 };
 
 /** Does the target hold `el` (or a compound counted as it) at `at`? */
-function holds(ctx: SimContext, el: Element, at: number): boolean {
+export function holds(ctx: SimContext, el: Element, at: number): boolean {
 	const { gauge } = ctx.aura;
 	gauge.advanceTo(at);
 	const g = gauge.gauges();

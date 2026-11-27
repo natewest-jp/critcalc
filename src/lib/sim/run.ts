@@ -49,6 +49,7 @@ import type {
 import {
 	getCooldownStartsAtStanceEnd,
 	getCooldownByStanceTime,
+	getStanceFill,
 	castIsNonHitting,
 	getDefaultDamageTag,
 	getNormalHitDamageTag
@@ -57,7 +58,8 @@ import { BAR_LENGTH_RE, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES, type IcdParams } from '$lib/utils/icd';
 import { createHeat, planHold, ventHeat, type HeatState } from './chargeHold';
-import { lockedAt, lockOf, schedulePolls } from './absorb';
+import { lockedAt, lockOf, schedulePolls, takeLock } from './absorb';
+import { releaseAt, runToStanceEnd, startStanceFill } from './stanceFill';
 import {
 	hasFreeSkill,
 	takeFreeSkill,
@@ -1861,6 +1863,97 @@ export function runRotation(
 				// ⚠️ First, the summons THIS cast ends (`terminatesOn: 'skill' |
 				// 'burst'`) — before it schedules its own.
 				retireSummonsOnCast(ctx, char.id, kind, castStart);
+				// ⚓ A STANCE THAT ENDS ON A FULL FLASK (`StanceFill`, Jahoda, 2026-11-27):
+				// the flask polls the live aura, and the stance drains at whichever end
+				// comes first. The drain is this cast's hit, so it lands through the
+				// cast's own paths at an instant known only then: the gauge offer, the
+				// hit record, and `hitsAt` for the buff pass. A full flask also spawns
+				// the summons that wait for it (`spawnsAtFill`, the Meowballs) in its
+				// element, and stamps `filledAt` for a buff that opens there (C6).
+				const fillSpec = cs.stance?.sourceCastId === castId ? getStanceFill(active) : undefined;
+				if (fillSpec && cs.stance) {
+					const fillStacks = new Map(stackState);
+					startStanceFill(ctx, clock, cs, char.id, fillSpec, cs.stance, (end, full, element) => {
+						const entry = full ? fillSpec.drain.full : fillSpec.drain.unfilled;
+						emitReactionsAtCast(
+							ctx,
+							clock,
+							char,
+							kind,
+							end,
+							[entry],
+							active.noICD,
+							active.icdGate,
+							states,
+							charConstellationLevel,
+							chainIdx,
+							fillStacks,
+							variantCtx
+						);
+						const at = end + entry.frame;
+						castEvent.firstHitAt ??= at;
+						castEvent.hitsAt = [...(castEvent.hitsAt ?? []), at];
+						if (char.element) {
+							const landed: HitEvent = {
+								characterId: char.id,
+								time: at,
+								abilityType: kind,
+								element: resolveElementRef(entry.element, variantCtx),
+								damageTag: getDefaultDamageTag(active, variant),
+								abilityName: active.name,
+								stacks: fillStacks.size > 0 ? new Map(fillStacks) : undefined,
+								sourceEventId: castId
+							};
+							clock.schedule(at, Band.LAND, () => {
+								const live = liveSegment === turn;
+								if (!live) landed.offField = true;
+								dispatchHit(landed, true, live);
+							});
+						}
+						if (!full) return;
+						castEvent.filledAt = end;
+						const spawns = (active.summons ?? []).filter(
+							(sm) =>
+								sm.spawnsAtFill !== undefined &&
+								(sm.spawnsAtFill.conditions === undefined ||
+									evalCondition(
+										sm.spawnsAtFill.conditions,
+										DEFAULT_ASCENSION,
+										states,
+										charConstellationLevel,
+										chainIdx,
+										fillStacks,
+										variantCtx
+									) === true)
+						);
+						if (spawns.length === 0) return;
+						ctx.fillSpawns.set(castId, end);
+						// The summon's lock IS the flask's, taken at its spawn under the key
+						// its absorbed ticks read (`absorbKey` in `scheduleSummonTicks`).
+						if (element !== undefined)
+							for (const sm of spawns)
+								takeLock(ctx, `${char.id}::${sm.label}::${kind}::${end}`, element, end);
+						scheduleSummonTicks(
+							ctx,
+							clock,
+							char,
+							kind,
+							tok.text,
+							active.id,
+							variant?.label,
+							castStart,
+							spawn,
+							castEvent,
+							undefined,
+							states,
+							charConstellationLevel,
+							chainIdx,
+							fillStacks,
+							undefined,
+							end
+						);
+					});
+				}
 				scheduleSummonTicks(
 					ctx,
 					clock,
@@ -1945,7 +2038,8 @@ export function runRotation(
 				// at the landing: a context is a moment (§1.K).
 				// ⚠️ No landing stated (unmeasured, or a hit at Durability 0) keeps
 				// the synchronous path verbatim — no frame to move to, no mark.
-				if (char.element && !castIsNonHitting(active, variant)) {
+				// A flask stance's one hit is its drain, dispatched there (above).
+				if (char.element && !castIsNonHitting(active, variant) && !fillSpec) {
 					const hit: HitEvent = {
 						characterId: char.id,
 						time: castStart,
@@ -2121,6 +2215,18 @@ export function runRotation(
 				(tok.kind === 'E' || tok.kind === 'Q' || (tok.kind === 'label' && tok.text !== 'W'))
 			)
 				timedBlessingOnAction(ctx, char, clock.now, tok.kind === 'Q');
+			// ⚓ A FLASK STANCE HOLDS ITS HOLDER (`StanceFill`, Jahoda): nothing but
+			// the re-press starts while it runs, so any other action waits for the
+			// live end (a poll during the wait can bring it closer, hence the loop)
+			// and then the slice from the end.
+			if (tok.kind === 'E' || tok.kind === 'Q' || tok.kind === 'label') {
+				const st = cs.stance;
+				if (st?.fill && !st.fill.released && !(tok.kind === 'E' && st.end > clock.now)) {
+					runToStanceEnd(clock, st);
+					clock.advance(releaseAt(st, peekActionKey(lookahead, j - 1, isBow), clock.now));
+					st.fill.released = true;
+				}
+			}
 
 			if (tok.kind === 'Q') {
 				handleCast('burst', tok, j);
@@ -3400,6 +3506,14 @@ export function runRotation(
 				const stance = cs.stance;
 				while (stance.end > clock.now) clock.advance(stance.end);
 			}
+		}
+		// ⚓ A flask stance holds the field to its live end, a trailing wait
+		// included (`StanceFill`): gcsim refuses the swap until the drain.
+		if (!continues && cs.stance?.fill && !cs.stance.fill.released) {
+			const stance = cs.stance;
+			runToStanceEnd(clock, stance);
+			if (swapFollows) clock.advance(releaseAt(stance, 'swap', clock.now));
+			cs.stance.fill.released = true;
 		}
 
 		const stayStart: number = carried?.start ?? turnStart;

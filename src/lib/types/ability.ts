@@ -1529,6 +1529,11 @@ export type Summon = {
 	 *  in it (Mavuika: a swap off the Flamestrider leaves the Ring, gcsim
 	 *  `exitBike` on `OnCharacterSwap`). Its first tick counts from the swap. */
 	spawnsAtSwapOutFrom?: State;
+	/** The summon spawns when its cast's stance flask is full, at the stance's
+	 *  end (`StanceFill`), and only if `conditions` hold then (Jahoda's Fluffy
+	 *  Meowballs, under Ascendant Gleam). Its lock is the flask's element, so an
+	 *  `absorbed` series lands in it. Its first tick counts from the end. */
+	spawnsAtFill?: { conditions?: Condition };
 	/** Nightsoul points each tick spends from the owner's pool, AFTER the hit
 	 *  (Mavuika's Ring, 3 — gcsim `reduceNightsoulPoints(3)` after `QueueAttack`). */
 	nightsoulCostPerTick?: number;
@@ -1887,6 +1892,13 @@ export type Effect =
 			 * `absorbed` condition.
 			 */
 			opensAtLock?: true;
+			/**
+			 * The window opens where the triggering cast's stance flask drained
+			 * full (`StanceFill`, `CastEvent.filledAt`), its `duration` counted from
+			 * there (Jahoda's C6: gcsim calls `c6()` in `drainFlask`). A flask that
+			 * never filled opens nothing. Only on an `onCast` skill buff (lint B.14d).
+			 */
+			opensAtFill?: true;
 			/**
 			 * ⚓ HOW LONG THE RECEIVER MUST HAVE BEEN ON FIELD before this buff
 			 * lands (Nicole, 2026-08-18) — "after the observed character has
@@ -3312,6 +3324,38 @@ export type ChargeHold = {
 	};
 };
 
+/**
+ * ⚓ A STANCE WHOSE END COMES FROM THE LIVE GAUGE (Jahoda's flask, 2026-11-27;
+ * gcsim `jahoda/skill.go`; the logic is `sim/stanceFill.ts`). From `from`, every
+ * `every` frames while the stance lasts, the flask polls the enemy's aura in
+ * `order`, the element it locked asked first: the locked element adds
+ * `gain.locked`, any other held element `gain.other`, and the first match locks.
+ * At `full` the stance ends `endsAfter` frames later. Otherwise it ends at its
+ * `duration`, or at the sibling skill's `endsStance` re-press.
+ *
+ * - `drain` — the hit at the end, frames after it: `full` when the flask was
+ *   full at the end, `unfilled` otherwise (gcsim `fillHitmark`, `unfillHitmark`).
+ * - `afterEnd` — the cancel slice from the end to the next action. ⚓ Nothing
+ *   but the re-press starts while the stance runs (gcsim's frames refuse every
+ *   other action until `drainFlask`), so every other action, a swap included,
+ *   waits for the end and then this slice (⚓ Nate 2026-11-27: model the fill
+ *   and the re-press exit, no attack exit).
+ *
+ * A summon with `spawnsAtFill` spawns at the end of a full flask, in the
+ * element the flask locked; a buff with `opensAtFill` opens there.
+ * All FRAMES.
+ */
+export type StanceFill = {
+	order: AbsorbableElement[];
+	from: number;
+	every: number;
+	gain: { locked: number; other: number };
+	full: number;
+	endsAfter: number;
+	drain: { full: ElementalApplication; unfilled: ElementalApplication };
+	afterEnd: FrameMap;
+};
+
 export type ChargeChannel = {
 	windup: number;
 	absorbAt: number;
@@ -3727,6 +3771,9 @@ export type SkillAbility =
 			 *  {@link StanceTimeCooldown}. Only beside `cooldownStartsAtStanceEnd`
 			 *  (lint D.49). */
 			cooldownByStanceTime?: StanceTimeCooldown;
+			/** The stance ends when a gauge the live aura fills is full — see
+			 *  {@link StanceFill}. */
+			endsOnFill?: StanceFill;
 			/** Additional named state opened when this stance is active, alongside the
 			 *  default "inStance". Closes with the stance window. Used for Natlan
 			 *  Nightsoul characters where the stance is semantically a Nightsoul Blessing
@@ -4150,6 +4197,11 @@ export function getCooldownByStanceTime(a: CastAbility): StanceTimeCooldown | un
 	return a.behavior === 'stance' && 'cooldownByStanceTime' in a
 		? a.cooldownByStanceTime
 		: undefined;
+}
+
+/** The flask that ends a skill stance (`StanceFill`), on a skill stance only. */
+export function getStanceFill(a: CastAbility): StanceFill | undefined {
+	return a.behavior === 'stance' && 'endsOnFill' in a ? a.endsOnFill : undefined;
 }
 
 // ---------------------------------------------------------------------------

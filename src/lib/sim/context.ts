@@ -438,6 +438,10 @@ export type SimContext = {
 	 *  the pool at the swap-out, read by finalize so the window and the live
 	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
 	swapSpawns: Map<number, number>;
+	/** A cast's `spawnsAtFill` summons spawned at this frame (its full flask's
+	 *  end) — written at the drain, read by finalize. Absent = no full flask, or
+	 *  the spawn's conditions failed. */
+	fillSpawns: Map<number, number>;
 	/**
 	 * The live `summonsFollowState` cast each character is currently holding open,
 	 * carrying everything the flip site needs to end one chain and start another.
@@ -592,6 +596,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		absorbLocks: new Map(),
 		absorbedMarks: new Map(),
 		swapSpawns: new Map(),
+		fillSpawns: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],
 		infusionProcAt: new Map(),

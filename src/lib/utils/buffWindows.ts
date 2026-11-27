@@ -310,8 +310,13 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		const parts: T[][] = [];
 		const byDur = new Map<string, T[]>();
 		for (const fx of effects) {
-			const f = fx as { duration?: number; opensAfter?: number; opensAtLock?: true };
-			const d = `${f.duration ?? -1}|${f.opensAfter ?? 0}|${f.opensAtLock ? 'lock' : ''}`;
+			const f = fx as {
+				duration?: number;
+				opensAfter?: number;
+				opensAtLock?: true;
+				opensAtFill?: true;
+			};
+			const d = `${f.duration ?? -1}|${f.opensAfter ?? 0}|${f.opensAtLock ? 'lock' : ''}|${f.opensAtFill ? 'fill' : ''}`;
 			let p = byDur.get(d);
 			if (!p) {
 				p = [];
@@ -349,6 +354,12 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			if ((part[0] as { opensAtLock?: true }).opensAtLock) {
 				const lockAt = cast.absorbed?.[0]?.at;
 				return lockAt === undefined ? [] : [{ anchor: lockAt, extend: 0, part }];
+			}
+			// ⚓ …and one that opens where the cast's stance flask drained full
+			// (`opensAtFill`, Jahoda's C6). No full flask, no window.
+			if ((part[0] as { opensAtFill?: true }).opensAtFill) {
+				const at = cast.filledAt;
+				return at === undefined ? [] : [{ anchor: at, extend: 0, part }];
 			}
 			const delay = (part[0] as { opensAfter?: number }).opensAfter;
 			if (delay === undefined) return [{ anchor: cast.fieldStart, extend: 0, part }];
