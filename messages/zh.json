@@ -3031,6 +3031,7 @@
 	"changelog_when_prune_s_skill_triggers_swirl_pressing": "布伦妮的元素战技触发扩散后，6秒内再次按下，现在会以被扩散的元素施放「咚锵锵·裁魔之惩」，「振铃鼓舞」也由这一击触发。",
 	"changelog_wanderer_s_jade_claimed_flower_now_grants": "流浪者的拾玉得花现在会依据元素战技吸收的元素（至多两种）提供对应的增益。砂糖的6命会提升元素爆发所吸收元素的伤害加成；枫原万叶在元素战技之后立即进行的下落攻击，现在会以元素战技吸收的元素造成追加的一击。",
 	"changelog_under_moonsign_ascendant_gleam_jahoda_s": "月兆·满辉状态下，雅珂达的猫型家用互助协调器现在会以各自吸收的元素进行攻击。索酬的巧计会在队伍中雷元素角色最多时增加一台协调器，在冰元素角色最多时提升其攻击频率。",
+	"changelog_jahoda_s_shadow_pursuit_now_ends_when": "雅珂达的掠影追袭状态现在会在呼噜噜秘藏瓶装满或再次施放元素战技时结束，冷却时间和下一个动作都从此时开始。月兆·满辉状态下，装满的秘藏瓶会以吸收的元素发射软绒绒猫猫球，「最渺小的幸运」为月兆角色提供的暴击率与暴击伤害提升也从此时开始。",
 	"changelog_imaginarium_theater_added_to_the_team": "配队工具新增幻想真境剧诗",
 	"changelog_you_can_now_plan_lineups_for_imaginarium": "现在可以为幻想真境剧诗规划阵容，根据你当前拥有的角色，确认能挑战哪个难度。所有已拥有的角色都默认等级在70级及以上，因此「我的角色」中新增了一项设置，用来让低于70级的角色不出现在剧诗阵容中：编辑角色时，将鼠标悬停在任意已拥有的角色上，右上角会出现一个按钮（带有删除线的蝴蝶）。点击后，该角色将不会出现在剧诗阵容中。",
 	"changelog_sandrone_is_ready_in_the_rotation": "排轴工具已适配桑多涅",

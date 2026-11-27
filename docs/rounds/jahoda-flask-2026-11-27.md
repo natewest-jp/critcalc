@@ -38,4 +38,4 @@ On `Bennett E > Jahoda E N1` with Flins and Ineffa: Jahoda's stance pill ends 2.
 
 ## What's new
 
-Held as a proposal (the report lists it).
+✅ Approved by Nate 2026-11-27 and landed on `docs/whats-new-jahoda-flask` as a fifth paragraph of the day's entry, in English, Japanese, and Chinese.
