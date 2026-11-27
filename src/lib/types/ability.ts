@@ -436,6 +436,14 @@ export type Condition =
 	 *  element count): the TB still narrows by enabler and element; this leaf
 	 *  only narrows the planner further. */
 	| { type: 'inPolestarField' }
+	/** True when the triggering cast's absorption lock (`absorbs`) holds
+	 *  `element` — the buffs one draw chooses between (Wanderer's Jade-Claimed
+	 *  Flower, Sucrose's Chaotic Entropy). ⚓ Resolved off the cast: finalize
+	 *  publishes `CastEvent.absorbed` and the buff pass hands it over as
+	 *  `ConditionContext.absorbed`. Absent → null, so the Team Builder lists each
+	 *  branch with an `absorbs:` caveat. Lint C.21: only on an `onCast` effect of
+	 *  a character with an `absorbs` lock. */
+	| { type: 'absorbed'; element: AbsorbableElement }
 	/** True when the count of NON-HOLDER team members whose `character.element`
 	 *  is in `elements` satisfies `comparison` against `value`. Resolves
 	 *  definitively at planner time since team composition is fully known.
@@ -1841,6 +1849,14 @@ export type Effect =
 			 */
 			opensAfter?: number;
 			/**
+			 * The window opens at the triggering cast's absorption LOCK, not at the
+			 * cast, its `duration` counted from there (Sucrose's Chaotic Entropy:
+			 * gcsim calls `c6()` when `absorbCheck` resolves, 10s from that poll).
+			 * Nothing locked, no window. Lint B.14c: an `onCast` buff gated by an
+			 * `absorbed` condition.
+			 */
+			opensAtLock?: true;
+			/**
 			 * ⚓ HOW LONG THE RECEIVER MUST HAVE BEEN ON FIELD before this buff
 			 * lands (Nicole, 2026-08-18) — "after the observed character has
 			 * remained on the field for 3s, their Grace of Kenosis is upgraded".
@@ -3028,11 +3044,20 @@ export type ElementRef =
  * `order` IS the mechanic: Pyro > Hydro > Electro > Cryo for most, Cryo first
  * for the Anemo Traveler and Lynette.
  */
+export type AbsorbableElement = 'pyro' | 'hydro' | 'electro' | 'cryo';
+
 export type AbsorbSpec = {
-	order: ('pyro' | 'hydro' | 'electro' | 'cryo')[];
+	order: AbsorbableElement[];
 	from: number;
 	every?: number;
 	polls?: number;
+	/**
+	 * How many elements one draw takes, walking `order` and taking each the
+	 * target holds (default 1). Wanderer's Jade-Claimed Flower is 2: gcsim's
+	 * `absorbCheckA1` calls `AbsorbCheck` twice, deleting the first match from
+	 * the list between. Only on a one-draw spec (no `every`; lint D.54).
+	 */
+	picks?: number;
 	/**
 	 * ⚓ A named state opened AT THE LOCK, for `duration` seconds (Lan Yan round,
 	 * 2026-11-07) — what a later ability's `conditions` read to ask "did this

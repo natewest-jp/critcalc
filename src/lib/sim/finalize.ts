@@ -46,6 +46,7 @@ import {
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
 import { materialiseStateChains } from './states';
+import { lockElements } from './absorb';
 import { deriveFieldWindows, polestarFieldOpenAt } from './fields';
 import { deriveGadgetWindows } from './gadgets';
 
@@ -754,6 +755,27 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 
 	// Deterministic window order (by start, then end).
 	windows.sort((a, b) => a.start - b.start || a.end - b.end);
+
+	// 7b. Each cast's absorption lock (absorbed-condition round, 2026-11-27):
+	// the cast's own (`cast#id`, Wanderer's draw) or a summon it spawned (Sucrose's
+	// wind spirit, keyed like its marks). Every poll has run by now, and the buff
+	// pass reads it for an `absorbed` condition and `opensAtLock`.
+	{
+		const summonLocks = new Map<number, ReturnType<typeof lockElements>>();
+		for (const w of windows) {
+			if (w.kind !== 'summon' || w.sourceCastId === undefined) continue;
+			const got = lockElements(
+				ctx.absorbLocks.get(`${w.characterId}::${w.label}::${w.source}::${w.start}`)
+			);
+			if (got.length > 0 && !summonLocks.has(w.sourceCastId)) summonLocks.set(w.sourceCastId, got);
+		}
+		for (const ev of ctx.events) {
+			if (ev.kind !== 'cast') continue;
+			const own = lockElements(ctx.absorbLocks.get(`cast#${ev.id}`));
+			const absorbed = own.length > 0 ? own : summonLocks.get(ev.id);
+			if (absorbed) ev.absorbed = absorbed;
+		}
+	}
 
 	// 8. Buff windows (post-P4 #5 — parser-side who-buffs-whom-when). Runs
 	// AFTER the sorts so the derivation consumes the exact time-ordered

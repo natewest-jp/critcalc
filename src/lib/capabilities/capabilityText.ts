@@ -143,6 +143,8 @@ export function caveatText(caveat: string): string {
 			return m.tb_depends_on_recipient_hp();
 		case 'enemyAura':
 			return m.tb_vs_arg_affected_enemies({ element: elementLabel(arg) });
+		case 'absorbs':
+			return m.tb_after_absorbing_arg({ element: elementLabel(arg) });
 		case 'chainStage':
 			return m.tb_at_a_specific_cast_in_the_chain();
 		case 'weaponType':

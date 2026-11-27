@@ -381,7 +381,7 @@
 			"name": "Chaotic Entropy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Not modeled: the party-wide 20% DMG bonus for the absorbed element, or the further 8.6% Hexerei party members get.",
+			"caveat": "Hexerei party members get a further 8.6% that isn’t shown.",
 			"_curatorNotes": [
 				"[Hexerei] Permanent patch, NOT count-gated: gcsim internal/characters/sucrose/cons.go:47-59 c6() adds .20 elemental DmgP to every party member and +0.0857142 more when that member's own IsHexerei is set — no GetHexereiCount() check. Per-receiver faction routing is not expressible (EffectTarget has no faction subset and the existing effect is target:'team'), so the extra 8.57142 is stated in the caveat rather than modeled; the authored value:20 is unchanged.",
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger). ↻ CORRECTED 2026-09-15 (essential-characters T0): the '6s base / 8s at C2+' above is the BURST's duration (burst.go 360/480f), not C6's. gcsim c6() is called ONCE, when absorbCheck resolves an element (burst.go:112), and adds a modifier.NewBaseWithHitlag('sucrose-c6', 60*10) — 10s from the absorption. The kit text says 'during its duration', which reads as the burst's; the two sources disagree, so ⚠️ settle which before ever authoring a duration here.",
@@ -390,9 +390,88 @@
 				"⏭ WORK ITEM if this is ever upgraded: the blocker named above ('absorbed-element state is null-resolving') is still real — there is no absorption in the sim at all (rubric N13; grep for `absorb` over src/lib finds no path, and gauge.ts's anemo case emits `swirl` with an `of` key without re-applying the swirled element). What HAS changed since 2026-05-14 is that the surrounding machinery would carry it: an `onCast` buff on this constellation entry would draw, and constellation gating at collection (effectCollection.ts `effectSourcesAtConstellation`) now keeps a C6 bar and its caveat out of a C0 rotation for free. The missing primitive is an absorbed-element resolution, not a trigger or a gate.",
 				"[A7] C6's +20% DMG bonus fires per burst cast when the burst absorbs one of Pyro/Hydro/Cryo/Electro; the timeline can't resolve which element absorbs, so it is authored as a team-wide manual-trigger window rather than a per-element buff.",
 				"[A7] In game the bonus routes only to the absorbed element (e.g. a Pyro DMG bonus), so the rendered team-wide value is an upper bound for teammates dealing off-element damage. ↻ 2026-08-18: 'the rendered team-wide value' is stale for the same reason as the toggle above — the manual trigger renders NOTHING on the timeline, so there is no over-broad bar for a reader to mistake. The routing claim itself stays true and is the reason the ability caveat lists the bonus as not modeled rather than describing a bar.",
-				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6 \"Chaotic Entropy\" — effects[0] (buff allDmgBonus 20, team) DEFERRED. gcsim: `~/Code/gcsim/internal/characters/sucrose/burst.go:103-120` — `absorbCheck()` polls `Combat.AbsorbCheck(…Pyro, Hydro, Electro, Cryo)` from frame 136 every 18f until an element resolves into `c.qAbsorb`; on the first success it calls `c6()` ONCE. `cons.go:45-60` then adds `attributes.EleToDmgP(c.qAbsorb) = .20` to every party member for `60*10` frames, `+0.085714` more for members with `IsHexerei` — ⚠️ no `GetHexereiCount()` gate, so the Hexerei top-up is unconditional per receiver. Retain — `c6()` is called ONCE, at `burst.go:112`, the instant `absorbCheck` resolves an element (⛔ not per tick — the \"6s base / 8s at C2\" figures in the older note are the BURST's duration, `burst.go` 360/480f, not C6's); `EleToDmgP(c.qAbsorb)` routes the 20% to the absorbed element alone; the `+0.085714` Hexerei top-up is per-receiver and uncounted (`cons.go:53-56`); and the real blocker is that there is no absorption anywhere in `src/lib` — `gauge.ts`'s anemo case emits `swirl` with an `of` key without re-applying the swirled element. ⚠️ The authored `allDmgBonus` is a genuine over-claim in kind, not just in scope — it buffs every element for every teammate where the game buffs one, which is why deleting it now is an improvement even before the restore. ⚠️ The Hexerei top-up: `activeCharFaction` resolves only in the per-segment slice with `target: \"active\"` (the Linnea A4 shape), so a `target: \"active\"` + `{\"type\":\"activeCharFaction\",\"faction\":\"hexerei\"}` twin at `value: 8.571429` would draw for an on-field Hexerei receiver — ⛔ but it would miss their off-field damage entirely, and the four element effects are `target: \"team\"`, so the pair cannot share a stat without the active-target pass's stat-dedupe silently keeping whichever was authored first. Keep it caveated. ⚠️ Deleting this effect also removes a live Team Builder claim: `deriveCharacterCapabilities('sucrose')` currently emits `{kind:'buff', detail:'allDmgBonus', target:'team', minConstellation:6}` — verified 2026-08-18 — so the TB stops calling C6 Sucrose a team all-damage buffer, which is correct and should be expected in the diff."
+				"↻ 2026-09-21 (manual-trigger retirement, docs/rounds/manual-trigger-retirement-round.md). C6 \"Chaotic Entropy\" — effects[0] (buff allDmgBonus 20, team) DEFERRED. gcsim: `~/Code/gcsim/internal/characters/sucrose/burst.go:103-120` — `absorbCheck()` polls `Combat.AbsorbCheck(…Pyro, Hydro, Electro, Cryo)` from frame 136 every 18f until an element resolves into `c.qAbsorb`; on the first success it calls `c6()` ONCE. `cons.go:45-60` then adds `attributes.EleToDmgP(c.qAbsorb) = .20` to every party member for `60*10` frames, `+0.085714` more for members with `IsHexerei` — ⚠️ no `GetHexereiCount()` gate, so the Hexerei top-up is unconditional per receiver. Retain — `c6()` is called ONCE, at `burst.go:112`, the instant `absorbCheck` resolves an element (⛔ not per tick — the \"6s base / 8s at C2\" figures in the older note are the BURST's duration, `burst.go` 360/480f, not C6's); `EleToDmgP(c.qAbsorb)` routes the 20% to the absorbed element alone; the `+0.085714` Hexerei top-up is per-receiver and uncounted (`cons.go:53-56`); and the real blocker is that there is no absorption anywhere in `src/lib` — `gauge.ts`'s anemo case emits `swirl` with an `of` key without re-applying the swirled element. ⚠️ The authored `allDmgBonus` is a genuine over-claim in kind, not just in scope — it buffs every element for every teammate where the game buffs one, which is why deleting it now is an improvement even before the restore. ⚠️ The Hexerei top-up: `activeCharFaction` resolves only in the per-segment slice with `target: \"active\"` (the Linnea A4 shape), so a `target: \"active\"` + `{\"type\":\"activeCharFaction\",\"faction\":\"hexerei\"}` twin at `value: 8.571429` would draw for an on-field Hexerei receiver — ⛔ but it would miss their off-field damage entirely, and the four element effects are `target: \"team\"`, so the pair cannot share a stat without the active-target pass's stat-dedupe silently keeping whichever was authored first. Keep it caveated. ⚠️ Deleting this effect also removes a live Team Builder claim: `deriveCharacterCapabilities('sucrose')` currently emits `{kind:'buff', detail:'allDmgBonus', target:'team', minConstellation:6}` — verified 2026-08-18 — so the TB stops calling C6 Sucrose a team all-damage buffer, which is correct and should be expected in the diff.",
+				"↻ 2026-11-27 (absorbed-condition round, docs/rounds/absorbed-condition-2026-11-27.md): RESTORED as four `team` buffs, one per absorbable element, each gated `{type: 'absorbed', element}` on the burst's lock and `opensAtLock` — gcsim `burst.go` `absorbCheck` calls `c6()` once, at the poll that locks (136f + 18k), and `cons.go` adds `EleToDmgP(qAbsorb)` = .20 for 600f. ⚠️ 10s is gcsim's; the kit text says \"during its duration\" (the burst's 6s, 8s at C2), and no in-game test settles it — authored gcsim's per the data rules and flagged to Nate. The Hexerei +0.085714 stays in the caveat (per-receiver faction routing on a team buff; see the note above)."
 			],
-			"description": "If Forbidden Creation - Isomer 75 / Type II triggers an Elemental Absorption, all party members gain a 20% Elemental DMG Bonus for the corresponding absorbed element during its duration."
+			"description": "If Forbidden Creation - Isomer 75 / Type II triggers an Elemental Absorption, all party members gain a 20% Elemental DMG Bonus for the corresponding absorbed element during its duration.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"opensAtLock": true,
+					"conditions": {
+						"type": "absorbed",
+						"element": "pyro"
+					},
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"opensAtLock": true,
+					"conditions": {
+						"type": "absorbed",
+						"element": "hydro"
+					},
+					"source": "character",
+					"stat": "hydroDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"opensAtLock": true,
+					"conditions": {
+						"type": "absorbed",
+						"element": "electro"
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"opensAtLock": true,
+					"conditions": {
+						"type": "absorbed",
+						"element": "cryo"
+					},
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			]
 		}
 	],
 	"factionBonuses": [

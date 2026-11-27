@@ -1696,8 +1696,8 @@
 		},
 		"sucrose__constellation__chaotic_entropy": {
 			"caveat": {
-				"en": "0eda2e2b",
-				"text": "未适配：全队对应被吸收元素的20%伤害加成，以及魔导队伍角色额外获得的8.6%。"
+				"en": "048ad66f",
+				"text": "魔导队伍角色额外获得的8.6%不会显示。"
 			}
 		},
 		"sucrose__passive__catalyst_conversion": {
@@ -1994,8 +1994,8 @@
 		},
 		"wanderer__passive__jadeclaimed_flower": {
 			"caveat": {
-				"en": "15f89a78",
-				"text": "未适配：吸收元素带来的增益——冰元素的+20%暴击率和火元素的+30%攻击力都不会出现。"
+				"en": "2b0133a1",
+				"text": "吸收水元素时，优风倾姿会少画2秒：额外的20点空居力不被追踪。"
 			}
 		}
 	},

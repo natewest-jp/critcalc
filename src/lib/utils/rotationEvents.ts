@@ -135,6 +135,12 @@ export type CastEvent = {
 	 *  record fires at each; an `onHit skill|burst` window opens at the first and is
 	 *  REFRESHED by the rest. Absent exactly when `firstHitAt` is. */
 	hitsAt?: number[];
+	/** The elements this cast's absorption lock took, in draw order, each with
+	 *  the instant it locked: the cast's own `absorbs`, or the lock of a summon it
+	 *  spawned. Stamped at finalize, once every poll has run; read by the buff
+	 *  pass for an `absorbed` condition and `opensAtLock`. Absent when nothing
+	 *  locked. */
+	absorbed?: { element: Element; at: number }[];
 	/** True when a Sacrificial-series proc fired on this cast (CD reset to 0);
 	 *  the bar renders as a dim continuation instead of uptime + ghost CD. */
 	sacProcFired?: boolean;

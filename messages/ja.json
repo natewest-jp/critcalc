@@ -1706,6 +1706,7 @@
 	"tb_depends_on_own_hp": "自身のHPによる",
 	"tb_depends_on_recipient_hp": "対象のHPによる",
 	"tb_vs_arg_affected_enemies": "{element}の影響を受けた敵に",
+	"tb_after_absorbing_arg": "{element}を元素変化した後",
 	"tb_at_a_specific_cast_in_the_chain": "連続発動の特定の段で",
 	"tb_weapon_type_dependent": "武器種による",
 	"tb_kind_detail": "{kind}：{detail}",
