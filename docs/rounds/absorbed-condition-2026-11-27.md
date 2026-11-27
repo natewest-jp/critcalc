@@ -46,4 +46,11 @@ The 2026-09-21 re-trigger round restored both A1 buffs with a placeholder condit
 2. Wanderer, Jade-Claimed Flower caveat. Now: "Not modeled: the absorption buffs — Cryo’s +20% CRIT Rate and Pyro’s +30% ATK never appear." → "With Hydro absorbed, Windfavored is drawn 2s short: the 20 extra Kuugoryoku Points aren’t tracked."
 3. Sucrose, Chaotic Entropy caveat. Now: "Not modeled: the party-wide 20% DMG bonus for the absorbed element, or the further 8.6% Hexerei party members get." → "Hexerei party members get a further 8.6% that isn’t shown."
 
-The old lines were wrong once the buffs draw, so the new ones are landed (with ja and zh) and held for a ruling.
+The old lines were wrong once the buffs draw, so the new ones were landed (with ja and zh) and held for a ruling.
+
+## Rulings after the build
+
+- Nate confirmed Wanderer and Kazuha working, and the Sucrose row fix.
+- All three strings approved as landed.
+- The Sucrose C6 in-game test waits for a later session with more checks collected (`docs/rounds/ingame-test-batch.md`).
+- What's new: still held until the absorption batch is done; the Prune draft is in `prune-recast-2026-11-27.md`.
