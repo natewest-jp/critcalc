@@ -27,10 +27,10 @@ On `Bennett E > Jahoda Q ~13s` with Flins and Ineffa, the robots' row turns Pyro
 
 ## What's left
 
-- **The flask** (`skill.go`): its fill, the Meowball volley under Gleam, and C1 and C6, all of which hang on the flask state. Unchanged from the skill's notes.
+- **The flask** (`skill.go`), the next round. ⚓ Nate 2026-11-27: players mostly wait for the flask to fill, since it is her main gimmick, so model the fill and gcsim's E re-press exit, and no attack exit. What gcsim does: Shadow Pursuit starts 30f after the press for up to 334f. The flask polls from 37f every 30f, P > H > E > C with the locked element first, +20 for the locked element and +10 for another, so a steady aura fills it at 157f and drains 4f later (Filled Treasure Flask, Anemo). The unfilled drain is at the stance's end or 4f after an E re-press. Under Gleam a full flask fires 10 Meowballs in its element, the first 129f after the drain and then every 116f, ICDTagNone, landing 13f after each (`travel`), and C6 opens at the drain (+5% CRIT Rate, +40% CRIT DMG to Moonsign members, 20s). Her cooldown starts at the stance's end. Nothing but an E re-press can start while the stance runs. Today the planner draws the full 6.07s, lets an N1 follow at 43f, and lands the drain at 368f even after a swap. The engine piece is a stance whose end comes from the live gauge. C1's bounce stays out (a coin flip).
 - **`holdsField` for Jahoda** (the Mizuki round's F7) is a separate item.
 
-## What's new (proposed, held for Nate)
+## What's new (✅ approved by Nate, landed with Japanese and Chinese)
 
 One entry for 2026-11-27, covering the merged batch, plus Jahoda once this branch merges:
 
