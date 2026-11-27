@@ -76,7 +76,7 @@ import {
 } from './conditions';
 import { polestarFieldOpenAt } from './fields';
 import { moondriftStandsAt } from './gadgets';
-import { lockedAt, lockOf, schedulePolls } from './absorb';
+import { lockedAt, lockOf, schedulePolls, swirledElement, takeLock } from './absorb';
 import { dispatchOnReactionExtensions } from './extensions';
 import {
 	applyRotationLifetimeExpiry,
@@ -174,6 +174,9 @@ type Offer = AuraApplication & {
 	/** Reached the CORES only (`offerCoreContact`) — the enemy's ICD refused
 	 *  it, so it is not one of the rotation's applications. */
 	contactOnly?: true;
+	/** The lock a Swirl this application causes takes (`SwirlLock`, Prune's
+	 *  chime) — set only on the hits of a cast that `locksSwirl`. */
+	swirlLockKey?: string;
 };
 
 export type AuraState = {
@@ -448,6 +451,12 @@ function emitReaction(
 	// key's fire is then (re)predicted from the status this reaction opened.
 	checkStackThresholds(ctx, clock, time, null);
 	scheduleAccrualFires(ctx, clock, time);
+	// ⚓ A cast whose own hit Swirls takes its lock here (`SwirlLock`, Prune's
+	// chime) — after the dispatches, so the state it opens follows the reaction.
+	if (src.swirlLockKey !== undefined) {
+		const el = swirledElement(reaction);
+		if (el !== undefined) takeLock(ctx, src.swirlLockKey, el, time);
+	}
 }
 
 /**
@@ -835,7 +844,9 @@ export function emitReactionsAtCast(
 	icdCounter?: string,
 	/** The stance this cast opened, read LIVE at each `whileStance` hit's launch
 	 *  (its `end` moves with extensions, a swap and `endsStance`). */
-	stance?: StanceRecord
+	stance?: StanceRecord,
+	/** The cast's `SwirlLock` key — a Swirl its hits cause takes that lock. */
+	swirlLockKey?: string
 ): void {
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
 	type Entry = ReturnType<typeof resolveCastApplications>[number];
@@ -859,7 +870,8 @@ export function emitReactionsAtCast(
 				preStates,
 				constellation,
 				chainIdx,
-				stacks
+				stacks,
+				...(swirlLockKey !== undefined ? { swirlLockKey } : {})
 			});
 		});
 	};

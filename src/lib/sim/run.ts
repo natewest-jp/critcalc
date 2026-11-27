@@ -1152,6 +1152,30 @@ export function runRotation(
 				// gated `minStacksAtCast` lands only when the caster held that many at the
 				// press — Alhaitham's burst deals 2 more instances per Mirror it consumes.
 				// Post-gain, pre-consume: the snapshot the cast event carries.
+				// ⚓ WHOSE LOCK this cast reads, when it is another cast's
+				// (`absorbedFrom`): the stance opener's (Lan Yan's dash), or the opener of
+				// the named state's current window (Prune's chime, round 2026-11-27).
+				const inheritedLockKey = ((): string | undefined => {
+					if (variant?.absorbs ?? active.absorbs) return undefined;
+					const from = active.absorbedFrom;
+					if (from === 'stance')
+						return cs.stance && cs.stance.sourceCastId !== castId
+							? `cast#${cs.stance.sourceCastId}`
+							: undefined;
+					if (from === undefined) return undefined;
+					for (let i = ctx.stateWindowRecs.length - 1; i >= 0; i--) {
+						const rec = ctx.stateWindowRecs[i];
+						if (
+							rec.characterId === char.id &&
+							rec.name === from.state &&
+							rec.start <= castStart &&
+							rec.end > castStart &&
+							rec.sourceCastId !== undefined
+						)
+							return `cast#${rec.sourceCastId}`;
+					}
+					return undefined;
+				})();
 				const castApps = (
 					held
 						? heldApplications(variant?.application ?? active.application, held, heldFor)
@@ -1161,8 +1185,23 @@ export function runRotation(
 						a.minStacksAtCast === undefined ||
 						(stacks?.get(a.minStacksAtCast.key) ?? 0) >= a.minStacksAtCast.min
 				);
+				// ⚓ A lock ALREADY HELD at the cast is known here, so its entries are
+				// certain hits in that element: counted as landings and naming the
+				// cast's element. ⚠️ They are still OFFERED by `emitAbsorbedAtCast`
+				// (below), on their own counter: gcsim gives Lan Yan's twins a separate
+				// ICD group, and a literal entry would spend the cast's.
+				const inheritedElement =
+					inheritedLockKey !== undefined ? lockedAt(ctx, inheritedLockKey, castStart) : undefined;
+				const landingApps =
+					inheritedElement === undefined
+						? castApps
+						: castApps?.map((a) =>
+								typeof a.element === 'object' && a.element.type === 'absorbed'
+									? { ...a, element: inheritedElement }
+									: a
+							);
 				{
-					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
+					const first = resolveElementRef(landingApps?.[0]?.element, variantCtx);
 					if (first !== undefined && first !== char.element) castEvent.element = first;
 				}
 				// ⚓ The cast's LANDINGS (cast hit-record round, 2026-09-21): every entry
@@ -1176,8 +1215,8 @@ export function runRotation(
 				// only at its frame (the lock), so counting it would claim a hit that
 				// may not exist — a small under-count when it does.
 				const landings =
-					castApps && castApps.length > 0 && !castIsNonHitting(active, variant)
-						? [...castApps]
+					landingApps && landingApps.length > 0 && !castIsNonHitting(active, variant)
+						? [...landingApps]
 								.filter((a) => !(typeof a.element === 'object' && a.element.type === 'absorbed'))
 								.sort((a, b) => a.frame - b.frame)
 						: [];
@@ -1574,8 +1613,13 @@ export function runRotation(
 				// `apexDrive`. The cast itself resolved under the pre-close `states`
 				// snapshot, so ordering within this cast is immaterial; the window
 				// record is clamped to the cast start for rendering.
-				if (variant?.consumesState !== undefined) {
-					closeStateWindows(ctx, cs, char.id, variant.consumesState, castStart);
+				{
+					// …and a sibling ability that consumes one (Prune's recast closes
+					// the window her chime's Swirl opened).
+					const consumes =
+						variant?.consumesState ??
+						('consumesState' in active ? active.consumesState : undefined);
+					if (consumes !== undefined) closeStateWindows(ctx, cs, char.id, consumes, castStart);
 				}
 				// ⚓ This cast ENDS the caster's stance (`EndsStance`): Zibai's last
 				// Stride, Nilou's third step, Wanderer's Windfavored burst. Read off
@@ -1680,6 +1724,28 @@ export function runRotation(
 				// teammate's summon tick at 30, which is the whole point of the 2026-08-17
 				// reordering. A hit that lands PAST the animation simply waits for a
 				// later advance, which is equally what should happen.
+				// ⚓ A cast whose own hit SWIRLING takes its lock (`SwirlLock`, Prune's
+				// chime, 2026-11-27): the state opens at the Swirl, naming this cast, so
+				// the follow-up that reads it (`absorbedFrom: {state}`) finds this lock.
+				const swirlLock = 'locksSwirl' in active ? active.locksSwirl : undefined;
+				const swirlLockKey = swirlLock ? `cast#${castId}` : undefined;
+				if (swirlLock && swirlLockKey) {
+					const opens = swirlLock.opensState;
+					lockOf(ctx, swirlLockKey).onLock.push((_el, at) =>
+						applyTransientState(
+							ctx,
+							{ state: opens.state, duration: opens.duration },
+							cs,
+							char.id,
+							at,
+							states,
+							charConstellationLevel,
+							{ sourceCastId: castId, source: kind },
+							chainIdx,
+							stackState
+						)
+					);
+				}
 				emitReactionsAtCast(
 					ctx,
 					clock,
@@ -1711,7 +1777,8 @@ export function runRotation(
 					// The stance THIS cast opened, for its `whileStance` hits (Mizuki
 					// round, 2026-10-16) — identified by its cast id, so a cast that
 					// opens none never gates against an older stance.
-					cs.stance?.sourceCastId === castId ? cs.stance : undefined
+					cs.stance?.sourceCastId === castId ? cs.stance : undefined,
+					swirlLockKey
 				);
 				// ⚓ A cast that ABSORBS (absorption round, 2026-10-17): its lock is
 				// polled from the cast, and its `{type: 'absorbed'}` entries land in
@@ -1721,13 +1788,7 @@ export function runRotation(
 					// ⚓ A follow-up that reads ANOTHER cast's lock (`absorbedFrom`,
 					// Lan Yan round 2026-11-07): the stance opener's, so her rings twin
 					// in the element her dash locked.
-					const fromStance =
-						!absorbs &&
-						active.absorbedFrom === 'stance' &&
-						cs.stance &&
-						cs.stance.sourceCastId !== castId
-							? `cast#${cs.stance.sourceCastId}`
-							: undefined;
+					const fromStance = inheritedLockKey;
 					if (fromStance) {
 						emitAbsorbedAtCast(
 							ctx,

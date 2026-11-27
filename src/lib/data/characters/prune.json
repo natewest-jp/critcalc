@@ -84,18 +84,18 @@
 			"effects": [],
 			"description": "Determined to take down the \"evil\" witch and save her beloved Descartes, Prune unleashes the power of the wind! She strikes at the Witchlure Bell using her Banehunter Oathhammer, dealing Anemo DMG.\nIf Prune triggers a Swirl or Stellar Swirl reaction in the opponent with this attack, her Ring-A-Ding-Ding! Hexhunter Chime is changed to Clang Clang! Witch-tribution Comes! for the next 6s.\n\nClang Clang! Witch-tribution Comes!\nEnsconces the **Banehunter Oathhammer** in the element involved in the earlier Swirl or Stellar Swirl reaction. After tapping to unleash, Prune will launch a midair kick at the Banehunter Oathhammer, dealing DMG to opponents in front of her of the corresponding elemental type.",
 			"behavior": "instant",
-			"caveat": "The Tolling Rally team buff is shown after every skill hit; in game only the element-converted hammer, available for 6s after a Swirl, grants it.",
 			"_curatorNotes": [
 				"[superseded 2026-09-15 — gcsim shipped him] No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide).",
 				"[A7] The converted follow-up form is 'Clang Clang! Witch-tribution Comes!'; the base cast and the converted form aren't modeled as separate variants because there is no verified frame data source for their hit timing (already in _curatorNotes).",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).\"",
 				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
-				"gcsim `SetCDWithDelay(15*60, 25)` → cooldownStartDelay 25. Not modelled: the recast \"Clang Clang! Witch-tribution Comes!\" (a second E inside the 364f window opened by a Swirl the chime caused, dealing the swirled element) — the dumper runs one character in an empty core, so the branch is unreachable and its skillConvertFrames (anim 82) are unmeasured for us."
+				"gcsim `SetCDWithDelay(15*60, 25)` → cooldownStartDelay 25.",
+				"↻ 2026-11-27 (Prune round): the recast is modelled. `locksSwirl`: a Swirl the chime's own hit causes (gcsim `skill.go` checks `Abil == \"Ring-A-Ding-Ding! Hexhunter Chime DMG\"`; a Stellar Swirl counts as Cryo) opens `witchtribution` for 364f (6.0667s) and keeps the swirled element for the sibling ability \"Clang Clang! Witch-tribution Comes!\". gcsim's 0.2s shared swirl ICD lets one hit set the element once, which is the lock's first-match rule. ⚠️ frames.E is 28, gcsim's cancel INTO the recast (`next == ActionSkill && StatusIsActive(skillRecastWindowKey)`), not skillFrames[E] = 41: without a Swirl the next E waits out the 15s cooldown, so 41 never decides a cast time. The frames audit will show E 28 vs 41; ⛔ don't migrate it back."
 			],
 			"frames": {
 				"anim": 59,
 				"N": 56,
-				"E": 41,
+				"E": 28,
 				"Q": 28,
 				"D": 28,
 				"J": 29,
@@ -109,7 +109,55 @@
 					"units": 1
 				}
 			],
-			"cooldownStartDelay": 25
+			"cooldownStartDelay": 25,
+			"locksSwirl": {
+				"opensState": {
+					"state": "witchtribution",
+					"duration": 6.0667
+				}
+			}
+		},
+		{
+			"id": "prune__skill__clang_clang_witchtribution_comes",
+			"name": "Clang Clang! Witch-tribution Comes!",
+			"input": ["E"],
+			"abilityType": "skill",
+			"conditions": {
+				"type": "state",
+				"state": "witchtribution"
+			},
+			"consumesState": "witchtribution",
+			"absorbedFrom": {
+				"state": "witchtribution"
+			},
+			"cooldown": 0,
+			"behavior": "instant",
+			"tags": [],
+			"effects": [],
+			"noICD": true,
+			"frames": {
+				"anim": 82,
+				"N": 65,
+				"C": 76,
+				"E": 69,
+				"Q": 67,
+				"D": 67,
+				"J": 66,
+				"swap": 65
+			},
+			"application": [
+				{
+					"frame": 30,
+					"element": {
+						"type": "absorbed"
+					},
+					"units": 1
+				}
+			],
+			"_curatorNotes": [
+				"gcsim a284a499b `skill.go` `skillConvert()`: a second E inside `prune-skill-recast-window` (364f from the Swirl the chime caused). One hit at 30f in `skillConvertEle`, Durability 25, ICDTagNone (→ noICD), 485.8% ATK at T10 (sidecar). Frames are `skillConvertFrames`: InitAbilSlice(82) (walk), N 65, C 76, E 69, Q 67, D 67, J 66, swap 65. `ActionReady` skips the cooldown check while the window is open and the recast sets no cooldown, so it is a sibling with its own zero-length queue: the chime's 15s keeps running. It deletes the window on cast (`consumesState`).",
+				"The hit carries A4's Tolling Rally, C1's energy and C4's ricochet (`makeA4CB`, `makeC1CB`, `c4Ricochet`); those effects filter on this name. A1's Burst hammers carry them too in gcsim, but a reaction proc's landing is not a hit record the buff passes read, so they are not shown (an under-claim). The frames dumper runs one character in an empty core, so the oracle never reaches this branch."
+			]
 		},
 		{
 			"id": "prune__burst__the_bell_tolls_the_hunt_is_on",
@@ -224,7 +272,10 @@
 					"target": "teamExcludingSelf",
 					"trigger": {
 						"type": "onHit",
-						"abilityType": "skill"
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Clang Clang"
+						}
 					},
 					"duration": 5,
 					"durationType": "refresh",
@@ -263,7 +314,10 @@
 					"target": "self",
 					"trigger": {
 						"type": "onHit",
-						"abilityType": "skill"
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Clang Clang"
+						}
 					},
 					"procCooldown": 1.8,
 					"amount": 2,
@@ -350,7 +404,10 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onHit",
-						"abilityType": "skill"
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Clang Clang"
+						}
 					},
 					"scaling": 80,
 					"stat": "atk",

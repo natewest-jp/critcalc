@@ -262,6 +262,8 @@ const STATES = new Set([
 	// Mavuika's Ring (DEF & RES pass, 2026-10-06).
 	'searingRing',
 	'charmAbsorbed',
+	// Prune's recast window (Prune round, 2026-11-27).
+	'witchtribution',
 	'pneuma',
 	// Lauma's two charged forms (charged-forms round, 2026-09-16).
 	'spiritEnvoy',
@@ -740,12 +742,39 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				b.behavior === 'stance' &&
 				b.absorbs !== undefined
 		);
+		// ⚓ `absorbedFrom: {state}` reads the lock of the cast that opened the
+		// state, so some cast of the character must open that state AT a lock
+		// (`absorbs.opensState` or `locksSwirl.opensState`).
+		const lockStates = new Set<string>();
+		for (const b of c.abilities) {
+			if (b.abilityType !== 'skill' && b.abilityType !== 'burst') continue;
+			for (const spec of [b.absorbs, ...(b.variants ?? []).map((v) => v.absorbs)])
+				if (spec?.opensState) lockStates.add(spec.opensState.state);
+			const sl = (b as { locksSwirl?: { opensState?: { state?: unknown; duration?: unknown } } })
+				.locksSwirl;
+			if (sl !== undefined) {
+				const os = sl.opensState;
+				if (
+					os === undefined ||
+					typeof os.state !== 'string' ||
+					!STATES.has(os.state) ||
+					!((os.duration as number) > 0)
+				)
+					bad(`${b.id}: locksSwirl.opensState needs a known State and a positive duration`, b.id);
+				else lockStates.add(os.state);
+			}
+		}
 		for (const a of c.abilities) {
 			const from = (a as { absorbedFrom?: unknown }).absorbedFrom;
 			if (from === undefined) continue;
-			if (from !== 'stance') bad(`${a.id}: absorbedFrom must be 'stance'`, a.id);
-			else if (!stanceLock)
-				bad(`${a.id}: absorbedFrom 'stance' but no stance of this character absorbs`, a.id);
+			if (from === 'stance') {
+				if (!stanceLock)
+					bad(`${a.id}: absorbedFrom 'stance' but no stance of this character absorbs`, a.id);
+			} else if (typeof from === 'object' && from !== null && 'state' in from) {
+				const st = (from as { state: unknown }).state;
+				if (typeof st !== 'string' || !lockStates.has(st))
+					bad(`${a.id}: absorbedFrom {state} names no state a lock of this character opens`, a.id);
+			} else bad(`${a.id}: absorbedFrom must be 'stance' or {state}`, a.id);
 		}
 		const isAbsorbedRef = (el: unknown) =>
 			typeof el === 'object' && el !== null && (el as { type?: string }).type === 'absorbed';
