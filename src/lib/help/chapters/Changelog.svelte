@@ -90,6 +90,13 @@
 	<h2 id="2026-11">{monthOf('2026-11-01')}</h2>
 
 	<div class="timeline">
+		<!-- Approved by Nate, 2026-11-27; docs/rounds/jahoda-robots-2026-11-27.md. -->
+		<article class="entry">
+			{@render head(m.changelog_elemental_absorption_for_prune_wanderer_sucrose(), '2026-11-27')}
+			<p>{m.changelog_when_prune_s_skill_triggers_swirl_pressing()}</p>
+			<p>{m.changelog_wanderer_s_jade_claimed_flower_now_grants()}</p>
+			<p>{m.changelog_under_moonsign_ascendant_gleam_jahoda_s()}</p>
+		</article>
 		<!-- Nate's wording, 2026-11-11 ("exlude" corrected to "exclude"). -->
 		<article class="entry">
 			{@render head(m.changelog_imaginarium_theater_added_to_the_team(), '2026-11-11')}

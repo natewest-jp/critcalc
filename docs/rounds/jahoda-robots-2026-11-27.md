@@ -30,7 +30,7 @@ On `Bennett E > Jahoda Q ~13s` with Flins and Ineffa, the robots' row turns Pyro
 - **The flask** (`skill.go`): its fill, the Meowball volley under Gleam, and C1 and C6, all of which hang on the flask state. Unchanged from the skill's notes.
 - **`holdsField` for Jahoda** (the Mizuki round's F7) is a separate item.
 
-## What's new (proposed, held for Nate)
+## What's new (✅ approved by Nate, landed with Japanese and Chinese)
 
 One entry for 2026-11-27, covering the merged batch, plus Jahoda once this branch merges:
 

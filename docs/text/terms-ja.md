@@ -289,7 +289,7 @@ Help's prose needed these. The game's words come from genshin-db's Japanese tale
 About, What's new, Contribute, Beta, and Privacy needed these. The game's words come from
 genshin-db's Japanese talent text unless marked otherwise.
 
-181. What's new's ability names in prose → the game's Japanese: 衡平な裁量 (Equitable Judgment, as 重撃·衡平な裁量), 変転・漆黒の否 (Denial of Darkness), 白焔の龍 and 黒蝕の龍 (Durin's White and Dark forms), 鳳跡随翦舞 and 翦月輪 (Swallow-Wisp Pinion Dance, Feathermoon Rings), 化海月 and 葛籠の中の玉櫛 (Bake-Kurage, Tamakushi Casket), 聖祝の導き (Guidance of Theosis), フリーズキャッツクロー (Icy Paws), 琢光鏡 and 光幕攻撃 (Chisel-Light Mirror, Projection Attack), 夜魂値 (Nightsoul points), 万象、灰に帰す (All Is Ash) · game
+181. What's new's ability names in prose → the game's Japanese: 衡平な裁量 (Equitable Judgment, as 重撃·衡平な裁量), 変転・漆黒の否 (Denial of Darkness), 白焔の龍 and 黒蝕の龍 (Durin's White and Dark forms), 鳳跡随翦舞 and 翦月輪 (Swallow-Wisp Pinion Dance, Feathermoon Rings), 化海月 and 葛籠の中の玉櫛 (Bake-Kurage, Tamakushi Casket), 聖祝の導き (Guidance of Theosis), フリーズキャッツクロー (Icy Paws), 琢光鏡 and 光幕攻撃 (Chisel-Light Mirror, Projection Attack), 夜魂値 (Nightsoul points), 万象、灰に帰す (All Is Ash), カンカン！魔女に下す罰 and 鈴の鼓舞 (Clang Clang! Witch-tribution Comes!, Tolling Rally), 拾玉得花 (Jade-Claimed Flower), 家庭用肉球アシスタントマシン and 報酬ゲットの妙案 (Purrsonal Coordinated Assistance Robots, Plan to Get Paid) · game
 182. Witch's Revelation (the Hexerei talents unlocked by a quest) → 魔女の諭示 · game, from the text map (5 lines)
 183. Known gaps → 既知の未対応事項 · ours, from 40
 184. tick cadence → 判定間隔, from the interiors' 1回の判定 · ours
