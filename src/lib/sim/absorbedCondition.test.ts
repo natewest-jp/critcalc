@@ -11,6 +11,10 @@
  * - Sucrose's Chaotic Entropy (`sucrose/burst.go` `absorbCheck`, `cons.go` `c6`):
  *   once, when the wind spirit's poll locks, every party member gains 20% DMG
  *   Bonus of that element for 600f.
+ * - Kazuha's Soumon Swordsmanship (`kazuha/skill.go`, `asc.go`, `plunge.go`): the
+ *   skill polls from 1f every 6f, hitmark/6 times; the Midare Ranzan plunge after
+ *   it lands at 36f (press) or 41f (hold), and 1f before that one more hit in
+ *   the locked element, Durability 25.
  */
 import { describe, expect, it } from 'vitest';
 import { parseNotation } from '$lib/utils/notationParser';
@@ -114,5 +118,43 @@ describe("Sucrose's Chaotic Entropy", () => {
 		const bare = parse('Sucrose Q', ['Sucrose'], { sucrose: 6 });
 		for (const s of ['pyroDmgBonus', 'hydroDmgBonus', 'electroDmgBonus', 'cryoDmgBonus'])
 			expect(buffsWith(bare, 'sucrose', s)).toHaveLength(0);
+	});
+});
+
+describe("Kazuha's Soumon Swordsmanship", () => {
+	const kazuhaApps = (r: Parsed) =>
+		r.applications.filter((a) => a.characterId === 'kaedehara_kazuha');
+	const plungeOf = (r: Parsed) =>
+		r.events.find(
+			(e) => e.kind === 'action' && e.characterId === 'kaedehara_kazuha' && e.action === 'plunge'
+		)!;
+
+	it('after a press E that absorbed Pyro, the plunge lands Pyro 35f in, then its own Anemo at 36f', () => {
+		const r = parse('Bennett E > Kazuha E P', ['Bennett', 'Kazuha']);
+		const p = plungeOf(r);
+		const after = kazuhaApps(r)
+			.filter((a) => a.time >= p.time)
+			.map((a) => [a.time - p.time, a.element, a.units]);
+		expect(after).toEqual([
+			[35, 'pyro', 1],
+			[36, 'anemo', 1]
+		]);
+	});
+
+	it('after a hold E, 40f and 41f', () => {
+		const r = parse('Bennett E > Kazuha hE P', ['Bennett', 'Kazuha']);
+		const p = plungeOf(r);
+		const after = kazuhaApps(r)
+			.filter((a) => a.time >= p.time)
+			.map((a) => [a.time - p.time, a.element]);
+		expect(after).toEqual([
+			[40, 'pyro'],
+			[41, 'anemo']
+		]);
+	});
+
+	it('with nothing absorbed the plunge lands Anemo alone', () => {
+		const r = parse('Kazuha E P', ['Kazuha']);
+		expect(kazuhaApps(r).every((a) => a.element === 'anemo')).toBe(true);
 	});
 });

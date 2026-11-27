@@ -82,7 +82,12 @@
 						"anim": 55,
 						"D": 43,
 						"J": 50,
-						"swap": 50
+						"swap": 50,
+						"lands": 36
+					},
+					"element": "anemo",
+					"absorbedHit": {
+						"frame": 35
 					}
 				},
 				{
@@ -95,7 +100,12 @@
 						"Q": 60,
 						"D": 48,
 						"J": 55,
-						"swap": 54
+						"swap": 54,
+						"lands": 41
+					},
+					"element": "anemo",
+					"absorbedHit": {
+						"frame": 40
 					}
 				}
 			],
@@ -118,7 +128,8 @@
 			],
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.",
 			"_curatorNotes": [
-				"↻ CORRECTED 2026-09-17 (T1.5). This note used to say the base plungeFrames were the Press-E plunge; they are gcsim's GENERIC high plunge (highPlungeFrames: InitAbilSlice(73), N 54, E/Q 53, D 47, J 69, swap 55 — verified against the dump's P key), which is right for a plunge that follows no skill. The two Midare Ranzan plunges are plungeVariants, selected by the E token that preceded P: 'After Press E' is plungePressFrames (InitAbilSlice(55), D 43, J 50, swap 50; hitmark 36f) and was missing, so `E P Q` ran 18f long; 'After Hold E' is plungeHoldFrames (hitmark 41f), whose `anim` was 54 — its own swap, the pre-L4b stand-in — against gcsim's InitAbilSlice(61)."
+				"↻ CORRECTED 2026-09-17 (T1.5). This note used to say the base plungeFrames were the Press-E plunge; they are gcsim's GENERIC high plunge (highPlungeFrames: InitAbilSlice(73), N 54, E/Q 53, D 47, J 69, swap 55 — verified against the dump's P key), which is right for a plunge that follows no skill. The two Midare Ranzan plunges are plungeVariants, selected by the E token that preceded P: 'After Press E' is plungePressFrames (InitAbilSlice(55), D 43, J 50, swap 50; hitmark 36f) and was missing, so `E P Q` ran 18f long; 'After Hold E' is plungeHoldFrames (hitmark 41f), whose `anim` was 54 — its own swap, the pre-L4b stand-in — against gcsim's InitAbilSlice(61).",
+				"↻ 2026-11-27 (absorbed-condition round): the two Midare Ranzan variants now state gcsim's hitmarks as `lands` (plungePressHitmark 36, plungeHoldHitmark 41; before this they had none, so the plunge landed at the swing's end) and `element: anemo` (gcsim `skillPlunge`: Anemo, Durability 25, IgnoreInfusion; a sword plunge resolved Physical). `absorbedHit` at hitmark − 1 is Soumon Swordsmanship's 200% ATK hit in the element the E locked, Durability 25, ICDTagNone, Plunging Attack DMG (`plunge.go`). gcsim's optional collision hit (6f earlier, Durability 0, a `collision` param) is not authored. The generic high plunge (`plungeFrames`) is unchanged."
 			],
 			"lowPlungeFrames": {
 				"anim": 73,
@@ -182,14 +193,21 @@
 							"element": "anemo",
 							"units": 2
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["pyro", "hydro", "electro", "cryo"],
+						"from": 1,
+						"every": 6,
+						"polls": 5
+					}
 				}
 			],
 			"description": "Unleashes a secret technique as fierce as the rushing wind that pulls objects and opponents towards Kazuha's current position before launching opponents within the AoE, dealing Anemo DMG and lifting Kazuha into the air on a rushing gust of wind.\nWithin 10s of remaining airborne after casting Chihayaburu, Kazuha can unleash a powerful Plunging Attack known as Midare Ranzan.\n\nPress\nCan be used in mid-air.\n\nHold\nCharges up before unleashing greater Anemo DMG over a larger AoE than Press Mode.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG. On landing, Kazuha creates a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.\nMidare Ranzan's DMG is considered Plunging Attack DMG.",
 			"behavior": "instant",
 			"_curatorNotes": [
 				"[A7] Glide-cancel path frames (common when going E→Q or E→swap): swap=60, Q=61, D=61, J=59. Not authored as a separate cast/plunge variant.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Where the NEXT bar starts. Chihayaburu's FrameMap is `{anim: 77, P: 24}` — only the plunge has an override, so E→Q and E→swap both fall back to `anim` and the following bar sits 77f (~1.28s) after the cast. The glide-cancel that every real Kazuha rotation uses is much shorter, so a Kazuha timeline runs visibly long from the E onward. Explicitly framed as an assumption, which is what the disclosure is for. Category: approximation-disclosure."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Where the NEXT bar starts. Chihayaburu's FrameMap is `{anim: 77, P: 24}` — only the plunge has an override, so E→Q and E→swap both fall back to `anim` and the following bar sits 77f (~1.28s) after the cast. The glide-cancel that every real Kazuha rotation uses is much shorter, so a Kazuha timeline runs visibly long from the E onward. Explicitly framed as an assumption, which is what the disclosure is for. Category: approximation-disclosure.",
+				"↻ 2026-11-27 (absorbed-condition round): `absorbs` is Soumon Swordsmanship's lock — gcsim `skill.go` queues `absorbCheckA1` 1f after the press, every 6f, `int(hitmark/6)` polls: press 10f → 1 poll, hold 33f → 5 polls (the Hold variant's own spec), P > H > E > C. A new E clears it (`c.a1Absorb = NoElement` in `Skill`). The Midare Ranzan plunge variants read it (`absorbedHit`)."
 			],
 			"application": [
 				{
@@ -197,7 +215,13 @@
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"absorbs": {
+				"order": ["pyro", "hydro", "electro", "cryo"],
+				"from": 1,
+				"every": 6,
+				"polls": 1
+			}
 		},
 		{
 			"id": "kaedehara_kazuha__burst__kazuha_slash",
@@ -284,7 +308,10 @@
 			"id": "kaedehara_kazuha__passive__soumon_swordsmanship",
 			"name": "Soumon Swordsmanship",
 			"abilityType": "passive",
-			"description": "If Chihayaburu comes into contact with Hydro/Pyro/Cryo/Electro when cast, this Chihayaburu will absorb that element and if Plunging Attack: Midare Ranzan is used before the effect expires, it will deal an additional 200% ATK of the absorbed elemental type as DMG. This will be considered Plunging Attack DMG.\nElemental Absorption may only occur once per use of Chihayaburu."
+			"description": "If Chihayaburu comes into contact with Hydro/Pyro/Cryo/Electro when cast, this Chihayaburu will absorb that element and if Plunging Attack: Midare Ranzan is used before the effect expires, it will deal an additional 200% ATK of the absorbed elemental type as DMG. This will be considered Plunging Attack DMG.\nElemental Absorption may only occur once per use of Chihayaburu.",
+			"_curatorNotes": [
+				"Built 2026-11-27 (absorbed-condition round, docs/rounds/absorbed-condition-2026-11-27.md) as data on the skill (`absorbs`) and the Midare Ranzan plunge variants (`absorbedHit`); this passive carries no effect of its own. gcsim has no expiry on the absorbed element other than the next E or the plunge itself, and only a plunge straight after the E (`skillPlunge`) reads it."
+			]
 		},
 		{
 			"id": "kaedehara_kazuha__passive__poetics_of_fuubutsu",

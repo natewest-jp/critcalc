@@ -2968,6 +2968,20 @@ export type PlungeVariant = {
 	label: string;
 	input: Input[];
 	frames: FrameMap;
+	/**
+	 * The element this plunge lands, over the weapon's and any infusion (Kazuha's
+	 * Midare Ranzan is Anemo: gcsim `skillPlunge`, `IgnoreInfusion`). Absent
+	 * means the ordinary plunge's element.
+	 */
+	element?: Element;
+	/**
+	 * One more hit `frame` frames into the plunge, in the element the preceding
+	 * E's absorption lock took, or none when it took nothing (Kazuha's Soumon
+	 * Swordsmanship: gcsim `skillPlunge` queues it 1f before the plunge's own,
+	 * ICDTagNone, Durability 25, Plunging Attack DMG). Lint D.54: the E it
+	 * follows carries `absorbs`.
+	 */
+	absorbedHit?: { frame: number };
 };
 
 /**

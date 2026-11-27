@@ -808,6 +808,32 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 					bad(`${a.id}: absorbedFrom {state} names no state a lock of this character opens`, a.id);
 			} else bad(`${a.id}: absorbedFrom must be 'stance' or {state}`, a.id);
 		}
+		// A plunge variant's `absorbedHit` reads the lock of the E it follows, so
+		// every form of the skill its inputs name must lock.
+		for (const n of c.abilities) {
+			if (n.abilityType !== 'normal') continue;
+			for (const pv of (n as NormalAbility).plungeVariants ?? []) {
+				if (!pv.absorbedHit) continue;
+				if (!frames(pv.absorbedHit.frame, 1))
+					bad(
+						`${n.id} plunge "${pv.label}": absorbedHit.frame must be positive integer FRAMES`,
+						n.id
+					);
+				const locks = pv.input.every((inp) =>
+					c.abilities.some((b) => {
+						if (b.abilityType !== 'skill') return false;
+						const v = (b.variants ?? []).find((x) => x.input?.includes(inp));
+						if (v) return (v.absorbs ?? b.absorbs) !== undefined;
+						return b.input.includes(inp) && b.absorbs !== undefined;
+					})
+				);
+				if (!locks)
+					bad(
+						`${n.id} plunge "${pv.label}": absorbedHit needs the E it follows to carry \`absorbs\``,
+						n.id
+					);
+			}
+		}
 		const isAbsorbedRef = (el: unknown) =>
 			typeof el === 'object' && el !== null && (el as { type?: string }).type === 'absorbed';
 		for (const a of c.abilities) {
