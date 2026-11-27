@@ -412,7 +412,8 @@
 					"source": "character",
 					"stat": "pyroDmgBonus",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Chaotic Entropy"
 				},
 				{
 					"type": "buff",
@@ -431,7 +432,8 @@
 					"source": "character",
 					"stat": "hydroDmgBonus",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Chaotic Entropy"
 				},
 				{
 					"type": "buff",
@@ -450,7 +452,8 @@
 					"source": "character",
 					"stat": "electroDmgBonus",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Chaotic Entropy"
 				},
 				{
 					"type": "buff",
@@ -469,7 +472,8 @@
 					"source": "character",
 					"stat": "cryoDmgBonus",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Chaotic Entropy"
 				}
 			]
 		}

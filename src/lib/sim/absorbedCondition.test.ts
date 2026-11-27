@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 import { parseNotation } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
 import type { CastEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 
 const all = Object.values(import.meta.glob('../data/characters/*.json', { eager: true })).map(
 	(m) => (m as { default: CharacterData }).default
@@ -92,6 +93,19 @@ describe("Sucrose's Chaotic Entropy", () => {
 		expect(lock!.at - cast.time).toBe(136);
 		for (const other of ['hydroDmgBonus', 'electroDmgBonus', 'cryoDmgBonus'])
 			expect(buffsWith(r, 'sucrose', other)).toHaveLength(0);
+	});
+
+	it("draws on a row of its own, not under the burst's other bars", () => {
+		// The EM share opens a frame after the lock and outlasts it; in one row it
+		// painted over the bonus whole.
+		const r = parse('Bennett E > Sucrose Q', ['Bennett', 'Sucrose'], { sucrose: 6 });
+		const rows = projectTeamBuffRows(r.windows, (id) => all.find((c) => c.id === id) ?? null);
+		const own = rows.filter((row) =>
+			row.bars.some((b) => b.effects.some((e) => e.stat === 'pyroDmgBonus'))
+		);
+		expect(own).toHaveLength(1);
+		expect(own[0].bars.every((b) => b.effects.every((e) => e.stat === 'pyroDmgBonus'))).toBe(true);
+		expect(own[0].sourceLabel).toBe('Sucrose Chaotic Entropy');
 	});
 
 	it('below C6, or with nothing to absorb, there is no bonus', () => {

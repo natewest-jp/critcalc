@@ -90,7 +90,22 @@ export function projectTeamBuffRows(
 		let explicitKind: 'buff' | 'debuff' | undefined;
 		let rowIcon: string | undefined;
 		if (src.type === 'character') {
-			if (src.trigger === 'cast' || src.trigger === 'block') {
+			if (
+				src.trigger === 'cast' &&
+				!w.debuff &&
+				(w.effects[0] as BuffEffect | undefined)?.opensAtLock
+			) {
+				// ⚓ A bar that opens at the cast's absorption LOCK gets its own row
+				// (Sucrose's Chaotic Entropy): it starts later than the cast's other
+				// bars, so in their row a longer bar opening a frame after it painted
+				// over it whole. Named after the effect, like an afterDuration row.
+				const lbl = AB_LABEL[src.abilityClass!];
+				rowKey = `${w.characterId}::char::${lbl}::lock`;
+				const attribution = (w.effects[0] as BuffEffect).attribution;
+				sourceLabel = attribution
+					? `${displayName} ${named(attribution)}`
+					: `${displayName} ${lbl}`;
+			} else if (src.trigger === 'cast' || src.trigger === 'block') {
 				const lbl = AB_LABEL[src.abilityClass!];
 				rowKey = `${w.characterId}::char::${lbl}${w.debuff ? '::resShred' : ''}`;
 				sourceLabel = `${displayName} ${lbl}`;
