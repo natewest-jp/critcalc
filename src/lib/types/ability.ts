@@ -1249,6 +1249,10 @@ export type State =
 	/** Lan Yan: her dash absorbed an element (A1) — opened at the lock by the
 	 *  dash's `absorbs.opensState`, for the leap-back window. Her C1 rings read it. */
 	| 'charmAbsorbed'
+	/** Prune: her chime's own hit Swirled, so a second E is "Clang Clang!
+	 *  Witch-tribution Comes!" in the swirled element — opened at the Swirl by
+	 *  the chime's `locksSwirl`, for gcsim's 364f recast window. */
+	| 'witchtribution'
 	/** Furina: her Arkhe alignment is PNEUMA. ⚓ THE ONLY TOGGLE STATE IN THE
 	 *  CORPUS, and the only one whose absence is itself a meaning — Furina
 	 *  starts in Ousia (gcsim `furina.go:61`) and her Charged Attack flips
@@ -3039,7 +3043,11 @@ export type AbsorbSpec = {
 };
 
 /**
- * ⚓ WHOSE LOCK A FOLLOW-UP READS (Lan Yan round, 2026-11-07). `'stance'`: the
+ * ⚓ WHOSE LOCK A FOLLOW-UP READS (Lan Yan round, 2026-11-07). `{state}` (Prune
+ * round, 2026-11-27): the lock of the cast that opened the named state's current
+ * window — her recast lands the element her chime swirled. A lock already held
+ * at the follow-up's cast is resolved there, so its entries are ordinary hits.
+ * `'stance'`: the
  * lock of the cast that opened the caster's current stance, so a later press
  * inside it lands the element that cast absorbed — Lan Yan's Feathermoon Rings
  * twin in the element her dash locked (gcsim keeps `absorbedElement` on the
@@ -3047,7 +3055,18 @@ export type AbsorbSpec = {
  * `{type: 'absorbed'}` entries, or a normal's `coInfusion: {type: 'absorbed'}`,
  * stand on an ability with no `absorbs` of its own (lint D.54).
  */
-export type AbsorbedFrom = 'stance';
+export type AbsorbedFrom = 'stance' | { state: State };
+
+/**
+ * ⚓ A LOCK TAKEN FROM A SWIRL (Prune round, 2026-11-27). Where `AbsorbSpec` polls
+ * the enemy's aura, this listens to the cast's OWN hits: the first Swirl one of
+ * them causes locks its element (a Stellar Swirl as Cryo, gcsim
+ * `OnStellarSwirl → Cryo`) and opens `opensState` for `duration` seconds. Prune's
+ * chime: gcsim `skill.go` subscribes to the four Swirls, keeps the hit's element
+ * in `skillConvertEle`, and opens a 364f recast window. A follow-up reads the
+ * lock through `absorbedFrom: {state}`. Nothing swirled, nothing opens.
+ */
+export type SwirlLock = { opensState: { state: State; duration: number } };
 
 export type ElementalApplication = {
 	/** Frames (60fps) from cast start to the hitmark. */
@@ -3423,6 +3442,13 @@ type SkillCommonFields = AbilityCommon & {
 	absorbs?: AbsorbSpec;
 	/** Read another cast's lock instead — see `AbsorbedFrom`. */
 	absorbedFrom?: AbsorbedFrom;
+	/** This cast's lock is taken from a Swirl its own hit causes — see
+	 *  `SwirlLock`. */
+	locksSwirl?: SwirlLock;
+	/** Casting this closes the named state early (gcsim `DeleteStatus` on cast) —
+	 *  the sibling-ability twin of `AbilityVariant.consumesState`. Prune's recast
+	 *  closes the window her chime's Swirl opened, so a third E is the chime. */
+	consumesState?: State;
 	/** The sibling skill whose charge pool this one spends — one in-game skill
 	 *  in two forms (Varesa's Rush and Fiery Passion Rush; gcsim has ONE
 	 *  `ActionSkill`). Without it each form keeps its own charges. */

@@ -97,6 +97,7 @@ const STATE_PHRASE: Record<State, string> = labels({
 	soloDanceDouble: m.tb_while_the_solo_dance_double_is_present,
 	searingRing: m.tb_while_the_ring_of_searing_radiance_is,
 	charmAbsorbed: m.tb_after_an_elemental_absorption,
+	witchtribution: m.tb_while_clang_clang_witch_tribution_comes_is_ready,
 	pneuma: m.tb_in_pneuma_alignment,
 	spiritEnvoy: m.tb_during_spirit_envoy_metamorphosis,
 	envoyCooldown: m.tb_while_spirit_envoy_is_on_cooldown,

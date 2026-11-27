@@ -8,6 +8,8 @@
  * and keeps that element for the rest of its life. What the lock FEEDS is the
  * consumer's business: a twin tick series, an own stream started at the lock,
  * or a cast's `application[]` entry (`ElementRef {type: 'absorbed'}`).
+ * A lock can also be taken from a Swirl the cast's own hit causes
+ * (`SwirlLock`, Prune's chime) — `takeLock`, called from the reaction dispatch.
  *
  * ⚓ ASKED LIVE, on the clock — the answer depends on every application before
  * the poll, and the absorbed stream's own applications change every later
@@ -19,7 +21,7 @@
  * Quicken and Dendro are not absorbable.
  */
 
-import type { AbsorbSpec, Element } from '$lib/types/ability';
+import type { AbsorbSpec, Element, Reaction } from '$lib/types/ability';
 import { Band, type Clock } from './clock';
 import type { SimContext } from './context';
 
@@ -67,6 +69,34 @@ export function lockedAt(ctx: SimContext, key: string, at: number): Element | un
 		: undefined;
 }
 
+/** Take `key`'s lock at `at`, unless it already holds one — the first match
+ *  wins, for a poll and a Swirl alike. Its `onLock` hooks run here. */
+export function takeLock(ctx: SimContext, key: string, element: Element, at: number): void {
+	const lock = lockOf(ctx, key);
+	if (lock.element !== undefined) return;
+	lock.element = element;
+	lock.at = at;
+	for (const cb of lock.onLock) cb(element, at);
+}
+
+/** The element a Swirl reaction swirled, or undefined for any other reaction.
+ *  ⚓ A Stellar Swirl is a converted CRYO Swirl (gcsim `OnStellarSwirl` → Cryo). */
+export function swirledElement(reaction: Reaction): Element | undefined {
+	switch (reaction) {
+		case 'pyroSwirl':
+			return 'pyro';
+		case 'hydroSwirl':
+			return 'hydro';
+		case 'electroSwirl':
+			return 'electro';
+		case 'cryoSwirl':
+		case 'stellarSwirl':
+			return 'cryo';
+		default:
+			return undefined;
+	}
+}
+
 /**
  * Schedule the polls for one absorber. `castStart` anchors `spec.from`; `alive`
  * says whether the absorber still exists at a poll's instant (a summon's
@@ -89,9 +119,7 @@ export function schedulePolls(
 		if (lock.element !== undefined || !alive(at)) return;
 		for (const el of spec.order) {
 			if (holds(ctx, el, at)) {
-				lock.element = el;
-				lock.at = at;
-				for (const cb of lock.onLock) cb(el, at);
+				takeLock(ctx, key, el, at);
 				return;
 			}
 		}
